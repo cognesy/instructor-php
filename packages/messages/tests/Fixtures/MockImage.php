@@ -2,10 +2,13 @@
 
 namespace Cognesy\Messages\Tests\Fixtures;
 
+use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Utils\Image;
 
 class MockImage extends Image {
-    public function toArray(): array {
-        return ['type' => 'image', 'url' => 'http://example.com/image.jpg'];
+    public function toContentPart(): ContentPart {
+        return new ContentPart('image_url', [
+            'image_url' => ['url' => 'http://example.com/image.jpg']
+        ]);
     }
 }

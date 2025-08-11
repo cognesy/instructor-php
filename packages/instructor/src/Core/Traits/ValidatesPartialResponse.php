@@ -19,14 +19,6 @@ trait ValidatesPartialResponse
         bool $preventJsonSchema,
         bool $matchToExpectedFields
     ) : Result {
-//        return ResultChain::make()
-//            ->through(fn() => $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText))
-//            ->through(fn() => $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel))
-//            ->onFailure(fn($result) => throw new JsonParsingException(
-//                message: $result->errorMessage(),
-//                json: $partialResponseText,
-//            ))
-//            ->result();
         $pipeline = Pipeline::builder()
             ->through(fn(string $text) => $this->preventJsonSchemaResponse($preventJsonSchema, $text))
             ->through(fn(string $text) => $this->detectNonMatchingJson($matchToExpectedFields, $text, $responseModel))
@@ -34,11 +26,21 @@ trait ValidatesPartialResponse
                 message: $state->result()->errorMessage(),
                 json: $partialResponseText,
             ))
-//            ->onFailure(fn($s) => dd($s))
+            //            ->onFailure(fn($s) => dd($s))
             ->create();
+
         return $pipeline
             ->executeWith($partialResponseText)
             ->result();
+
+        //        return ResultChain::make()
+        //            ->through(fn() => $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText))
+        //            ->through(fn() => $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel))
+        //            ->onFailure(fn($result) => throw new JsonParsingException(
+        //                message: $result->errorMessage(),
+        //                json: $partialResponseText,
+        //            ))
+        //            ->result();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////

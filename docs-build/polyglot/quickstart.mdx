@@ -1,9 +1,8 @@
 ---
-title: 'Quickstart'
+title: Quickstart
 description: 'Start working with LLMs in under 5 minutes'
 meta:
-  - name: 'has_code'
-    content: true
+    - { name: has_code, content: true }
 ---
 
 This guide will help you get started with Polyglot in your PHP project in under 5 minutes.
@@ -16,6 +15,7 @@ For detailed setup instructions, see [Setup](setup).
 To install Polyglot in your project, run following command in your terminal:
 
 ```bash
+# @doctest id="e0bd"
 composer require cognesy/instructor-polyglot
 ```
 
@@ -33,6 +33,7 @@ In this example, we'll use OpenAI as the LLM provider. You can get it from the [
 In your project directory, create a new PHP file `test-polyglot.php`:
 
 ```php
+// @doctest id="9a3f"
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
@@ -60,6 +61,7 @@ echo "ASSISTANT: $answer\n";
 Now, you can run the example:
 
 ```bash
+# @doctest id="b694"
 php test-polyglot.php
 
 # Output:

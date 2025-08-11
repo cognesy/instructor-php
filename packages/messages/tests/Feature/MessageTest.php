@@ -187,7 +187,7 @@ test('creates a message from an image', function () {
     $message = Message::fromImage($image, 'user');
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::User)
-        ->and($message->content()->toArray())->toBe([['type' => 'image_url', 'url' => 'http://example.com/image.jpg']]);
+        ->and($message->content()->toArray())->toBe([['type' => 'image_url', 'image_url' => ['url' => 'http://example.com/image.jpg']]]);
 });
 
 // HandlesMutation Tests

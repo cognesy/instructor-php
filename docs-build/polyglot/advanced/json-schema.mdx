@@ -1,6 +1,6 @@
 ---
-title: Structured outputs with JsonSchema class
-description: Learn how to use JSON Schemas to generate structured outputs using LLMs. 
+title: 'Structured outputs with JsonSchema class'
+description: 'Learn how to use JSON Schemas to generate structured outputs using LLMs.'
 ---
 
 JsonSchema is a powerful utility in the Polyglot library that enables developers to define structured data schemas for LLM interactions. This guide explains how to use JsonSchema to shape your LLM outputs and ensure consistent, typed responses from language models.
@@ -10,6 +10,7 @@ JsonSchema is a powerful utility in the Polyglot library that enables developers
 Here's a simple example of how to use JsonSchema with Polyglot's Inference API:
 
 ```php
+// @doctest id="7c47"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -64,6 +65,7 @@ JsonSchema provides several benefits when working with LLMs:
 For text values of any length:
 
 ```php
+// @doctest id="943d"
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 $nameSchema = JsonSchema::string(
@@ -77,6 +79,7 @@ $nameSchema = JsonSchema::string(
 For numeric values:
 
 ```php
+// @doctest id="076f"
 $ageSchema = JsonSchema::integer(
     name: 'age',
     description: 'The user\'s age in years'
@@ -93,6 +96,7 @@ $priceSchema = JsonSchema::number(
 For true/false values:
 
 ```php
+// @doctest id="9d21"
 $activeSchema = JsonSchema::boolean(
     name: 'is_active',
     description: 'Whether the user account is active'
@@ -104,6 +108,7 @@ $activeSchema = JsonSchema::boolean(
 For lists of items:
 
 ```php
+// @doctest id="0d4e"
 $tagsSchema = JsonSchema::array(
     name: 'tags',
     description: 'List of tags associated with the post',
@@ -116,6 +121,7 @@ $tagsSchema = JsonSchema::array(
 For values from a specific set of options:
 
 ```php
+// @doctest id="92f1"
 $statusSchema = JsonSchema::enum(
     name: 'status',
     description: 'The current status of the post',
@@ -128,6 +134,7 @@ $statusSchema = JsonSchema::enum(
 For complex, nested data structures:
 
 ```php
+// @doctest id="0007"
 $profileSchema = JsonSchema::object(
     name: 'profile',
     description: 'A user\'s public profile information',
@@ -147,6 +154,7 @@ $profileSchema = JsonSchema::object(
 Required fields are specified at the object level using the `requiredProperties` parameter:
 
 ```php
+// @doctest id="34d7"
 $userSchema = JsonSchema::object(
     properties: [
         JsonSchema::string('email', 'Primary email address'),
@@ -162,6 +170,7 @@ $userSchema = JsonSchema::object(
 Nullable fields are specified at the individual field level:
 
 ```php
+// @doctest id="9e03"
 $bioSchema = JsonSchema::string(
     name: 'bio',
     description: 'Optional user biography',
@@ -179,6 +188,7 @@ $bioSchema = JsonSchema::string(
 ### Common Patterns
 
 ```php
+// @doctest id="3daa"
 // Required and Non-nullable (most strict)
 JsonSchema::string('email', 'Primary email', nullable: false);
 // requiredProperties: ['email']
@@ -201,6 +211,7 @@ JsonSchema::string('website', 'Personal website', nullable: true);
 When working with OpenAI in strict mode, follow these guidelines:
 
 ```php
+// @doctest id="8cde"
 // For OpenAI strict mode: 
 // - All fields should be required
 // - Use nullable: true for optional fields
@@ -218,6 +229,7 @@ $userSchema = JsonSchema::object(
 For more complex data structures, you can nest schemas:
 
 ```php
+// @doctest id="470e"
 // Define child schemas first
 $addressSchema = JsonSchema::object(
     name: 'address',
@@ -245,6 +257,7 @@ $userSchema = JsonSchema::object(
 JsonSchema supports method chaining for a more fluent API:
 
 ```php
+// @doctest id="69f8"
 $schema = JsonSchema::array('tags')
     ->withItemSchema(JsonSchema::string())
     ->withDescription('A list of tags')
@@ -268,6 +281,7 @@ Available methods include:
 JsonSchema provides various methods to access schema properties:
 
 ```php
+// @doctest id="adcb"
 $schema->type();                // Get schema type (e.g., 'object')
 $schema->name();                // Get schema name
 $schema->isNullable();          // Check if schema is nullable
@@ -288,6 +302,7 @@ $schema->meta('key');           // Get specific meta field
 JsonSchema can be converted to arrays and function calls:
 
 ```php
+// @doctest id="53b1"
 // Convert to array
 $schemaArray = $schema->toArray();
 
@@ -307,6 +322,7 @@ $functionCall = $schema->toFunctionCall(
 You can add custom meta fields to your schemas:
 
 ```php
+// @doctest id="ce6a"
 $schema = JsonSchema::string(
     name: 'username',
     description: 'The username',
@@ -325,6 +341,7 @@ Meta fields will be transformed to include the `x-` prefix when converted to arr
 1. **Clear Descriptions**: Write clear, concise descriptions for each field.
 
 ```php
+// @doctest id="4860"
 // ❌ Not helpful
 JsonSchema::string('name', 'the name');
 
@@ -337,6 +354,7 @@ JsonSchema::string('name', 'The user\'s display name (2-50 characters)');
 3. **Organize Nested Schemas**: Keep your schemas organized when dealing with complex structures.
 
 ```php
+// @doctest id="a6c5"
 // Define child schemas first for clarity
 $addressSchema = JsonSchema::object(/*...*/);
 $contactSchema = JsonSchema::object(/*...*/);
@@ -352,6 +370,7 @@ $userSchema = JsonSchema::object(
 ## Full Example: Creating User Profile Schema
 
 ```php
+// @doctest id="5dba"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -438,6 +457,7 @@ print_r($userData);
 JsonSchema can be used to define function/tool parameters for LLMs:
 
 ```php
+// @doctest id="ec14"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;

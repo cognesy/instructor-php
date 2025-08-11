@@ -1,14 +1,14 @@
 ---
-title: MdJSON Mode
+title: 'MdJSON Mode'
 description: 'Learn how to use Markdown JSON mode in Polyglot for structured LLM responses.'
 ---
-
 
 Markdown JSON mode is a special mode that requests the model to format its response as JSON within a Markdown code block. This is particularly useful for models or providers that don't have native JSON output support.
 
 ### Using Markdown JSON Mode
 
 ```php
+// @doctest id="be4e"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -40,6 +40,7 @@ foreach ($response['languages'] as $language) {
 While MdJson is more flexible across providers, you still need to provide clear instructions:
 
 ```php
+// @doctest id="14de"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

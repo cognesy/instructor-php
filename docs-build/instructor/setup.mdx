@@ -16,6 +16,7 @@ Full Instructor setup consists of following steps:
 You can install Instructor via Composer by running:
 
 ```bash
+# @doctest id="1bad"
 composer require cognesy/instructor-php
 ```
 
@@ -33,6 +34,7 @@ These files can be found in the `vendor/cognesy/instructor-php` directory:
 You can publish these files to your project directory by running following command:
 
 ```bash
+# @doctest id="46d7"
 ./vendor/bin/instructor-setup publish \n
   --target-config-dir=<target config dir location>
   --target-prompts-dir=<target prompts dir location>
@@ -58,7 +60,8 @@ If you're using commercial LLM providers like OpenAI, you'll need to set up API 
 Open the `.env` file in your project directory and set up API keys for the LLM providers you plan to use. You can find
 the keys in the respective provider's dashboard.
 
-```ini .env
+```ini
+# @doctest .env=true
 # OpenAI (default provider)
 OPENAI_API_KEY='your-openai-api-key'
 ```
@@ -75,7 +78,8 @@ You can set the path to this directory via `Settings::setPath('/path/to/config')
 But to make it easier you can just set the value in your `.env` file. `Settings` will pick it up automatically
 from there. This way you don't have to set it in every script.
 
-```ini .env
+```ini
+# @doctest .env=true
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config/dir/,another/path'
 ```
 
@@ -92,6 +96,7 @@ INSTRUCTOR_CONFIG_PATHS='/path/to/your/config/dir/,another/path'
 For Laravel applications, it's recommended to align with the framework's directory structure:
 
 ```bash
+# @doctest id="f830"
 ./vendor/bin/instructor-setup publish \
     --target-config-dir=config/instructor \
     --target-prompts-dir=resources/prompts \
@@ -111,6 +116,7 @@ After publishing, you can load Instructor configuration in your `config/app.php`
 For Symfony applications, use the standard Symfony directory structure:
 
 ```bash
+# @doctest id="0f51"
 ./vendor/bin/instructor-setup publish \
     --target-config-dir=config/packages/instructor \
     --target-prompts-dir=resources/instructor/prompts \
@@ -129,6 +135,7 @@ For Symfony Flex applications, you may want to create a recipe to automate this 
 
 You can use environment variables to set the location of configuration files:
 ```
+// @doctest id="5565"
 INSTRUCTOR_CONFIG_PATHS=/path/to/config,another/path
 ```
 
@@ -144,6 +151,7 @@ and resources to your project, so you can modify them according to your needs. Y
 manually or automatically using the provided CLI tool.
 
 ```bash
+# @doctest id="b5a4"
 ./vendor/bin/instructor-setup publish
 ```
 
@@ -163,6 +171,7 @@ By default, this command will:
 ### Example Usage
 
 ```bash
+# @doctest id="f5bb"
 ./vendor/bin/instructor-setup publish \
     --target-config-dir=./config/instructor \
     --target-prompts-dir=./resources/prompts \
@@ -181,6 +190,7 @@ If you prefer to set up Instructor manually or need more control over the proces
 ### Configuration Files
 
 ```bash
+# @doctest id="4556"
 # Create config in your preferred directory
 mkdir -p config/instructor
 
@@ -192,6 +202,7 @@ These files contain LLM API connection settings and Instructor's behavior config
 ### Prompt Templates
 
 ```bash
+# @doctest id="9786"
 # Create prompts in your preferred directory
 mkdir -p resources/prompts
 
@@ -205,11 +216,13 @@ Prompt templates define how Instructor communicates with LLMs for different task
 If .env doesn't exist, copy the environment template:
 
 ```bash
+# @doctest id="dc04"
 [ ! -f .env ] && cp vendor/cognesy/instructor-php/config/.env-dist .env
 ```
 
 Add key values to your .env:
 ```ini
+# @doctest id="5fcc"
 # OpenAI API key
 OPENAI_API_KEY=your_api_key
 # Other API keys (if you use other LLM providers)

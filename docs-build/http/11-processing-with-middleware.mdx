@@ -627,15 +627,7 @@ When building complex applications, you'll often need to combine multiple middle
 ```php
 <?php
 
-use Cognesy\Polyglot\Http\HttpClient;
-use YourNamespace\Http\Middleware\AuthenticationMiddleware;
-use YourNamespace\Http\Middleware\CircuitBreakerMiddleware;
-use YourNamespace\Http\Middleware\RateLimitingMiddleware;
-use YourNamespace\Http\Middleware\RetryMiddleware;
-use YourNamespace\Http\Middleware\TracingMiddleware;
-use YourNamespace\Http\Middleware\LoggingMiddleware;
-use YourNamespace\Http\Middleware\CachingMiddleware;
-use YourNamespace\Http\Middleware\AnalyticsMiddleware;
+use Cognesy\Polyglot\Http\HttpClient;use Middleware\AuthenticationMiddleware\AuthenticationMiddleware;use Middleware\BasicHttpMiddleware\LoggingMiddleware;use Middleware\CachingMiddleware\CachingMiddleware;use Middleware\RateLimitingMiddleware\RateLimitingMiddleware;use Middleware\RetryMiddleware\RetryMiddleware;use YourNamespace\Http\Middleware\AnalyticsMiddleware;use YourNamespace\Http\Middleware\CircuitBreakerMiddleware;use YourNamespace\Http\Middleware\TracingMiddleware;
 
 // Create services needed by middleware
 $cache = new YourCacheService();

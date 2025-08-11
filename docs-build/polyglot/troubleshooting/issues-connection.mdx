@@ -1,5 +1,5 @@
 ---
-title: Connection Issues
+title: 'Connection Issues'
 description: 'Learn how to troubleshoot connection issues when using Polyglot.'
 ---
 
@@ -16,6 +16,7 @@ Network connectivity problems can prevent successful API requests.
 
 2. **Verify API Endpoint**: Make sure the API endpoint URL is correct
 ```php
+// @doctest id="f5d3"
 // In your configuration file (config/llm.php)
 'apiUrl' => 'https://api.openai.com/v1', // Correct URL
 ```
@@ -23,6 +24,7 @@ Network connectivity problems can prevent successful API requests.
 3. **Proxy Settings**: If you're behind a proxy, configure it properly
 
 ```php
+// @doctest id="2e35"
 // Using custom HTTP client with proxy settings
 use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
 

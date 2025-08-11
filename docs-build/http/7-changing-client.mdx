@@ -1,9 +1,10 @@
 ---
-title: Changing the Underlying Client
+title: 'Changing the Underlying Client'
 description: 'Learn how to switch between different HTTP client implementations using the Instructor HTTP client API.'
-doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
-doctest_case_prefix: 'ChangingClient_'
-doctest_included_types: ['php']
+doctest_case_dir: codeblocks/D03_Docs_HTTP
+doctest_case_prefix: ChangingClient_
+doctest_included_types:
+    - php
 doctest_min_lines: 10
 ---
 
@@ -93,6 +94,7 @@ You can switch between the available client implementations in several ways:
 The simplest approach is to specify the client when creating the `HttpClient` instance:
 
 ```php
+// @doctest id="b6bc"
 // Use Guzzle (assuming it's configured in config/http.php)
 $guzzleClient = HttpClient::using('guzzle');
 
@@ -110,6 +112,7 @@ The client name must correspond to a configuration entry in your `config/http.ph
 If you don't specify a client, the default one from your configuration will be used:
 
 ```php
+// @doctest id="4fcb"
 // Uses the default client specified in config/http.php
 $client = HttpClient::default();
 ```
@@ -117,6 +120,7 @@ $client = HttpClient::default();
 The default client is specified in the `config/http.php` file:
 
 ```php
+// @doctest id="00f4"
 return [
     'defaultClient' => 'guzzle',
     'clients' => [
@@ -130,6 +134,7 @@ return [
 You can create different clients for different requirements within the same application:
 
 ```php
+// @doctest id="e77b"
 // Create clients with different configurations
 $defaultClient = HttpClient::default();
 $symfonyClient = HttpClient::using('symfony');
@@ -144,6 +149,7 @@ Note: HttpClient instances are immutable, so you create new instances rather tha
 The `HttpClient` class provides a static `make` method as an alternative to the constructor:
 
 ```php
+// @doctest id="09bd"
 use Cognesy\Http\HttpClientBuilder;
 
 // Create with specific client using builder
@@ -161,6 +167,7 @@ $client = (new HttpClientBuilder())->withEventBus($events)->create();
 Each client type can have its own configuration in the `config/http.php` file:
 
 ```php
+// @doctest id="9ac3"
 <?php
 return [
     'defaultClient' => 'guzzle',
@@ -201,6 +208,7 @@ return [
 You can define multiple configurations for the same client type, each with different settings:
 
 ```php
+// @doctest id="3acd"
 'clients' => [
     'guzzle' => [
         'httpClientType' => 'guzzle',
@@ -242,6 +250,7 @@ You can define multiple configurations for the same client type, each with diffe
 Then you can select the appropriate configuration based on your needs:
 
 ```php
+// @doctest id="4df6"
 // For quick API calls
 $quickClient = HttpClient::using('guzzle-short-timeout');
 
@@ -278,6 +287,7 @@ Some parameters might only be relevant to specific client implementations. For e
 Here's an example of selecting different client configurations based on the task:
 
 ```php
+// @doctest id="3c65"
 <?php
 
 use Cognesy\Http\HttpClient;

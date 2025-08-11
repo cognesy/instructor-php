@@ -29,21 +29,6 @@ class ResponseGenerator implements CanGenerateResponse
     ) {}
 
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
-//        return ResultChain::from(fn() => $response->findJsonData($mode)->toString())
-//            ->through(fn($responseJson) => match(true) {
-//                ($responseJson === '') => Result::failure('No JSON found in the response'),
-//                default => Result::success($responseJson)
-//            })
-//            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
-//            ->through(fn($object) => $this->responseValidator->validate($object))
-//            ->through(fn($object) => $this->responseTransformer->transform($object))
-//            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
-//            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
-//            ->then(fn($result) => match(true) {
-//                $result->isSuccess() => $result,
-//                default => Result::failure($this->extractErrors($result))
-//            })
-//            ->result();
         $pipeline = Pipeline::builder()
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),
@@ -61,6 +46,22 @@ class ResponseGenerator implements CanGenerateResponse
             ->create();
 
         return $pipeline->executeWith($response->findJsonData($mode)->toString())->result();
+
+        //        return ResultChain::from(fn() => $response->findJsonData($mode)->toString())
+        //            ->through(fn($responseJson) => match(true) {
+        //                ($responseJson === '') => Result::failure('No JSON found in the response'),
+        //                default => Result::success($responseJson)
+        //            })
+        //            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
+        //            ->through(fn($object) => $this->responseValidator->validate($object))
+        //            ->through(fn($object) => $this->responseTransformer->transform($object))
+        //            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
+        //            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
+        //            ->then(fn($result) => match(true) {
+        //                $result->isSuccess() => $result,
+        //                default => Result::failure($this->extractErrors($result))
+        //            })
+        //            ->result();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////

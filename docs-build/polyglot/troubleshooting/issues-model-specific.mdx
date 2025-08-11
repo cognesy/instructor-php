@@ -1,5 +1,5 @@
 ---
-title: Model-Specific Issues
+title: 'Model-Specific Issues'
 description: 'Learn how to troubleshoot model-specific issues when using Polyglot.'
 ---
 
@@ -15,12 +15,14 @@ When working with different LLM models, you may encounter issues that are specif
 
 1. **Check Model Availability**: Ensure the model you're requesting is available from the provider
 ```php
+// @doctest id="32f3"
 // Check available models for each provider in their documentation
 // Example: For OpenAI 'gpt-4o-mini' is valid, but 'gpt5' is not
 ```
 
 2. **Context Length**: Be aware of each model's maximum context length
 ```php
+// @doctest id="b829"
 // In config/llm.php, check contextLength for each model
 // Example: OpenAI models have different context windows
 // - gpt-3.5-turbo: 16K tokens
@@ -30,6 +32,7 @@ When working with different LLM models, you may encounter issues that are specif
 
 3. **Feature Support**: Different models support different features
 ```php
+// @doctest id="408c"
 // Some features may not work with all models
 // Example: Vision capabilities are only available in select models
 
@@ -46,6 +49,7 @@ if (!$modelSupportsVision) {
 4. **Fallback Models**: Implement fallbacks to other models when preferred models fail
 
 ```php
+// @doctest id="9053"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;

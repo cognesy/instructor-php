@@ -1,6 +1,6 @@
 ---
-title: Preset Management
-description: How to manage LLM connection presets in Polyglot
+title: 'Preset Management'
+description: 'How to manage LLM connection presets in Polyglot'
 ---
 
 One of Polyglot's strengths is the ability to easily switch between different LLM providers, which is made easy by
@@ -14,6 +14,7 @@ implement fallback strategies or leverage the strengths of different models and 
 ## Switching Providers
 
 ```php
+// @doctest id="1a19"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -43,6 +44,7 @@ echo "Anthropic response: $anthropicResponse\n";
 You can implement a fallback mechanism to try alternative providers if one fails:
 
 ```php
+// @doctest id="1690"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -88,6 +90,7 @@ try {
 You might want to select providers based on cost considerations:
 
 ```php
+// @doctest id="b6bb"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -150,6 +153,7 @@ echo "Response: " . $costAwareLLM->ask($complexQuestion, 'high') . "\n\n";
 You can implement a strategy to select the most appropriate provider for each request:
 
 ```php
+// @doctest id="69ee"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

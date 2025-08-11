@@ -3,8 +3,8 @@
 namespace Cognesy\Doctor;
 
 use Cognesy\Config\BasePath;
-use Cognesy\Doctor\Archived\GenerateDocs;
-use Cognesy\Doctor\Archived\MintlifyDocGenerator;
+use Cognesy\Doctor\Docgen\MintlifyDocumentation;
+use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
 use Cognesy\Doctor\Docgen\Commands\ClearDocs;
 use Cognesy\Doctor\Docgen\Commands\GenerateExamplesCommand;
 use Cognesy\Doctor\Docgen\Commands\GeneratePackagesCommand;
@@ -20,7 +20,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class Docs extends Application
 {
-    private MintlifyDocGenerator $docGen;
+    private MintlifyDocumentation $docGen;
     private Filesystem $filesystem;
     private DocRepository $docRepository;
     private FileDiscoveryService $fileDiscoveryService;
@@ -78,14 +78,19 @@ class Docs extends Application
             'Cookbook \ Prompting \ Miscellaneous',
         ];
 
-        $this->docGen = new MintlifyDocGenerator(
-            examples: $this->examples,
+        $config = new DocumentationConfig(
             docsSourceDir: $this->docsSourceDir,
             docsTargetDir: $this->docsTargetDir,
             cookbookTargetDir: $this->cookbookTargetDir,
             mintlifySourceIndexFile: $this->mintlifySourceIndexFile,
             mintlifyTargetIndexFile: $this->mintlifyTargetIndexFile,
+            codeblocksDir: $this->codeblocksDir,
             dynamicGroups: $this->dynamicGroups,
+        );
+        
+        $this->docGen = new MintlifyDocumentation(
+            examples: $this->examples,
+            config: $config,
         );
 
         $this->filesystem = new Filesystem();
@@ -100,17 +105,6 @@ class Docs extends Application
     {
         // Register docs-specific commands
         $this->addCommands([
-            new GenerateDocs(
-                $this->docGen,
-                $this->examples,
-                $this->docsSourceDir,
-                $this->docsTargetDir,
-                $this->cookbookTargetDir,
-                $this->mintlifySourceIndexFile,
-                $this->mintlifyTargetIndexFile,
-                $this->codeblocksDir,
-                $this->dynamicGroups
-            ),
             new GenerateExamplesCommand(
                 $this->examples,
                 $this->docsSourceDir,

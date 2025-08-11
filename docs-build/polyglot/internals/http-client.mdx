@@ -1,5 +1,5 @@
 ---
-title: HTTP Client Layer
+title: 'HTTP Client Layer'
 description: 'Understanding the HTTP client layer in Polyglot'
 ---
 
@@ -15,6 +15,7 @@ At the lowest level, Polyglot uses an HTTP client layer to communicate with prov
 The `HttpClient` class provides a unified interface for HTTP requests:
 
 ```php
+// @doctest id="ddca"
 namespace Cognesy\Http;
 
 class HttpClient implements CanHandleHttpRequest {
@@ -47,6 +48,7 @@ class HttpClient implements CanHandleHttpRequest {
 These classes represent HTTP requests and responses:
 
 ```php
+// @doctest id="2eb5"
 namespace Cognesy\Http\Data;
 
 class HttpRequest {
@@ -84,6 +86,7 @@ interface HttpResponse {
 The HTTP client layer includes a middleware system that allows extending functionality:
 
 ```php
+// @doctest id="74d3"
 namespace Cognesy\Http;
 
 interface HttpMiddleware {

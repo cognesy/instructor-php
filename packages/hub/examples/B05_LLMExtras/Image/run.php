@@ -16,20 +16,23 @@ be sent as part of the message content to the LLM.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Messages\Content;
+use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Polyglot\Inference\Inference;
 
+$content = (new Content)
+    ->addContentPart(ContentPart::text('Describe the car damage in the image.'))
+    ->addContentPart(Image::fromFile(__DIR__ . '/car-damage.jpg')->toContentPart());
+
 $messages = (new Messages)
     ->asSystem('You are an expert in car damage assessment.')
-    ->asUser([
-        'Describe the car damage in the image.',
-        Image::fromFile(__DIR__ . '/car-damage.jpg')->toContentPart(),
-    ]);
+    ->asUser($content);
 
 $response = (new Inference)
     ->using('openai')
-    ->withModel('gpt-4o')
+    ->withModel('gpt-4o-mini')
     ->withMessages($messages)
     ->get();
 

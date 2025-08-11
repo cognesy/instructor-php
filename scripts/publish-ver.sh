@@ -31,7 +31,7 @@ source "$SCRIPT_DIR/load-packages.sh" "$PROJECT_ROOT"
 
 # 0. Build docs
 echo "Step 0: Rebuilding documentation..."
-composer docs gen
+composer docs gen:examples && composer docs gen:packages
 
 # 0.1. Copy resource files
 echo "Step 0.1: Copying resource files..."
