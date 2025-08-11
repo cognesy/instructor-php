@@ -11,6 +11,7 @@ use Cognesy\Pipeline\Operators\CallBefore;
 use Cognesy\Pipeline\Operators\ConditionalCall;
 use Cognesy\Pipeline\Operators\Fail;
 use Cognesy\Pipeline\Operators\FailWhen;
+use Cognesy\Pipeline\Operators\RawCall;
 use Cognesy\Pipeline\Operators\Skip;
 use Cognesy\Pipeline\Operators\Tap;
 use Cognesy\Pipeline\Operators\TapOnFailure;
@@ -143,6 +144,16 @@ class PipelineBuilder
 
     public function throughOperator(CanProcessState $operator): static {
         $this->steps->add($operator);
+        return $this;
+    }
+
+    /**
+     * Raw call for fast execution - no normalization, null processing, or error handling.
+     *
+     * @param callable(ProcessingState, ?callable):ProcessingState $operation
+     */
+    public function throughRaw(callable $operation): static {
+        $this->steps->add(RawCall::with($operation));
         return $this;
     }
 

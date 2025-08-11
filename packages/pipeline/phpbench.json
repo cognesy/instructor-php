@@ -1,18 +1,7 @@
 {
     "runner.bootstrap": "vendor/autoload.php",
     "runner.path": "tests/Benchmarks",
-    "runner.iterations": [5],
+    "runner.iterations": [10],
     "runner.revs": [1000],
-    "runner.warmup": [2],
-    "report.generators": {
-        "table": {
-            "cols": ["benchmark", "subject", "mem_peak", "time_avg", "diff"],
-            "sort": {
-                "time_avg": "asc"
-            }
-        },
-        "console": {
-            "title": "Pipeline Performance Benchmarks"
-        }
-    }
+    "runner.warmup": [3]
 }

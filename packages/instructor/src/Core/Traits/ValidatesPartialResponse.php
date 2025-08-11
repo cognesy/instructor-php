@@ -3,8 +3,9 @@
 namespace Cognesy\Instructor\Core\Traits;
 
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Arrays;
-use Cognesy\Pipeline\Legacy\Chain\ResultChain;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;
@@ -18,13 +19,25 @@ trait ValidatesPartialResponse
         bool $preventJsonSchema,
         bool $matchToExpectedFields
     ) : Result {
-        return ResultChain::make()
-            ->through(fn() => $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText))
-            ->through(fn() => $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel))
-            ->onFailure(fn($result) => throw new JsonParsingException(
-                message: $result->errorMessage(),
+//        return ResultChain::make()
+//            ->through(fn() => $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText))
+//            ->through(fn() => $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel))
+//            ->onFailure(fn($result) => throw new JsonParsingException(
+//                message: $result->errorMessage(),
+//                json: $partialResponseText,
+//            ))
+//            ->result();
+        $pipeline = Pipeline::builder()
+            ->through(fn(string $text) => $this->preventJsonSchemaResponse($preventJsonSchema, $text))
+            ->through(fn(string $text) => $this->detectNonMatchingJson($matchToExpectedFields, $text, $responseModel))
+            ->onFailure(fn(ProcessingState $state) => throw new JsonParsingException(
+                message: $state->result()->errorMessage(),
                 json: $partialResponseText,
             ))
+//            ->onFailure(fn($s) => dd($s))
+            ->create();
+        return $pipeline
+            ->executeWith($partialResponseText)
             ->result();
     }
 
@@ -32,10 +45,10 @@ trait ValidatesPartialResponse
 
     private function preventJsonSchemaResponse(bool $check, string $partialResponseText) : Result {
         if (!$check) {
-            return Result::success(true);
+            return Result::success($partialResponseText);
         }
         if (!$this->isJsonSchemaResponse($partialResponseText)) {
-            return Result::success(true);
+            return Result::success($partialResponseText);
         }
         return Result::failure(new JsonParsingException(
             message: 'You started responding with JSONSchema. Respond correctly with strict JSON object data instead.',
@@ -55,10 +68,10 @@ trait ValidatesPartialResponse
 
     private function detectNonMatchingJson(bool $check, string $responseText, ResponseModel $responseModel) : Result {
         if (!$check) {
-            return Result::success(true);
+            return Result::success($responseText);
         }
         if ($this->isMatchingResponseModel($responseText, $responseModel)) {
-            return Result::success(true);
+            return Result::success($responseText);
         }
         return Result::failure(new JsonParsingException(
             message: 'JSON does not match schema.',
