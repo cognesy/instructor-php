@@ -41,6 +41,6 @@ readonly class StepTiming implements CanProcessState
             success: $output->result()->isSuccess(),
         );
 
-        return $output->withTags($stepTiming);
+        return $output->addTags($stepTiming);
     }
 }

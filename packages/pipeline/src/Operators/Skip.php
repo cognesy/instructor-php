@@ -29,7 +29,7 @@ readonly final class Skip implements CanProcessState {
         $tempState = $this->conditionChecker->process($state, fn($s) => $s);
         return match(true) {
             $tempState->isFailure() => $tempState
-                ->mergeInto($state)
+                ->transform()->mergeInto($state)
                 ->withTags(new ErrorTag(new RuntimeException('Failure while evaluating skip condition'))),
             $tempState->value() => $state,
             default => $next ? $next($state) : $state,

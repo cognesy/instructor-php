@@ -80,7 +80,7 @@ describe('TransformQuery', function () {
     describe('transformations', function () {
         it('transforms value with map()', function () {
             $state = ProcessingState::with(10);
-            $result = $state->map(fn($x) => $x * 2);
+            $result = $state->transform()->map(fn($x) => $x * 2);
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(20);
@@ -91,6 +91,7 @@ describe('TransformQuery', function () {
             $failureState = ProcessingState::with(null)->withResult(Result::failure(new Exception('failed')));
             
             $result = $failureState
+                ->transform()
                 ->map(function($x) use (&$executed) {
                     $executed = true;
                     return $x * 2;
@@ -102,7 +103,7 @@ describe('TransformQuery', function () {
 
         it('applies map with ProcessingState return', function () {
             $state = ProcessingState::with(10);
-            $result = $state->map(fn($x) => ProcessingState::with($x * 3));
+            $result = $state->transform()->map(fn($x) => ProcessingState::with($x * 3));
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(30);
@@ -110,8 +111,8 @@ describe('TransformQuery', function () {
 
         it('filters values with filter()', function () {
             $state = ProcessingState::with(15);
-            $passed = $state->failWhen(fn($x) => $x > 10);
-            $failed = $state->failWhen(fn($x) => $x > 20);
+            $passed = $state->transform()->failWhen(fn($x) => $x > 10);
+            $failed = $state->transform()->failWhen(fn($x) => $x > 20);
             
             expect($passed->isSuccess())->toBeTrue();
             expect($passed->value())->toBe(15);
@@ -122,7 +123,7 @@ describe('TransformQuery', function () {
 
         it('uses custom filter error message', function () {
             $state = ProcessingState::with(5);
-            $result = $state->failWhen(fn($x) => $x > 10, 'Value too small');
+            $result = $state->transform()->failWhen(fn($x) => $x > 10, 'Value too small');
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('Value too small');
@@ -132,7 +133,7 @@ describe('TransformQuery', function () {
     describe('error handling', function () {
         it('recovers from failure with recover()', function () {
             $failureState = ProcessingState::with(null)->withResult(Result::failure(new Exception('failed')));
-            $result = $failureState->recover('recovered');
+            $result = $failureState->transform()->recover('recovered');
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe('recovered');
@@ -140,7 +141,7 @@ describe('TransformQuery', function () {
 
         it('does not recover from success with recover()', function () {
             $successState = ProcessingState::with('original');
-            $result = $successState->recover('recovered');
+            $result = $successState->transform()->recover('recovered');
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe('original');
@@ -148,7 +149,9 @@ describe('TransformQuery', function () {
 
         it('recovers with function using recoverWith()', function () {
             $failureState = ProcessingState::with(null)->withResult(Result::failure(new Exception('failed')));
-            $result = $failureState->recoverWith(fn(ProcessingState $state) => 'recovered from: ' . $state->exception()->getMessage());
+            $result = $failureState->transform()->recoverWith(
+                fn(ProcessingState $state) => 'recovered from: ' . $state->exception()->getMessage()
+            );
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe('recovered from: failed');
@@ -158,7 +161,7 @@ describe('TransformQuery', function () {
             $originalException = new Exception('original error');
             $failureState = ProcessingState::with(null)->withResult(Result::failure($originalException));
             
-            $result = $failureState->recoverWith(fn() => throw new Exception('recovery failed'));
+            $result = $failureState->transform()->recoverWith(fn() => throw new Exception('recovery failed'));
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exception())->toBe($originalException);
@@ -170,8 +173,8 @@ describe('TransformQuery', function () {
             $tag = new TransformTestTag('conditional');
             $state = ProcessingState::with(42);
             
-            $withTag = $state->addTagsIf(fn() => true, $tag);
-            $withoutTag = $state->addTagsIf(fn() => false, $tag);
+            $withTag = $state->transform()->addTagsIf(fn() => true, $tag);
+            $withoutTag = $state->transform()->addTagsIf(fn() => false, $tag);
             
             expect($withTag->allTags(TransformTestTag::class))->toHaveCount(1);
             expect($withoutTag->allTags(TransformTestTag::class))->toHaveCount(0);
@@ -182,8 +185,8 @@ describe('TransformQuery', function () {
             $successState = ProcessingState::with(42);
             $failureState = ProcessingState::with(null)->withResult(Result::failure(new Exception('failed')));
             
-            $successResult = $successState->addTagsIfSuccess($tag);
-            $failureResult = $failureState->addTagsIfSuccess($tag);
+            $successResult = $successState->transform()->addTagsIfSuccess($tag);
+            $failureResult = $failureState->transform()->addTagsIfSuccess($tag);
             
             expect($successResult->allTags(TransformTestTag::class))->toHaveCount(1);
             expect($failureResult->allTags(TransformTestTag::class))->toHaveCount(0);
@@ -194,8 +197,8 @@ describe('TransformQuery', function () {
             $successState = ProcessingState::with(42);
             $failureState = ProcessingState::with(null)->withResult(Result::failure(new Exception('failed')));
             
-            $successResult = $successState->addTagsIfFailure($tag);
-            $failureResult = $failureState->addTagsIfFailure($tag);
+            $successResult = $successState->transform()->addTagsIfFailure($tag)->state();
+            $failureResult = $failureState->transform()->addTagsIfFailure($tag)->state();
             
             expect($successResult->allTags(TransformTestTag::class))->toHaveCount(0);
             expect($failureResult->allTags(TransformTestTag::class))->toHaveCount(1);
@@ -208,7 +211,7 @@ describe('TransformQuery', function () {
             $originalState = ProcessingState::with('original', [$tag1]);
             $sourceState = ProcessingState::with('source', [$tag2]);
             
-            $result = $originalState->mergeFrom($sourceState);
+            $result = $originalState->transform()->mergeFrom($sourceState)->state();
             
             expect($result->value())->toBe('original'); // keeps original value
             expect($result->allTags(TransformTestTag::class))->toHaveCount(1);
@@ -220,8 +223,8 @@ describe('TransformQuery', function () {
         it('applies transformation conditionally with when()', function () {
             $state = ProcessingState::with(10);
             
-            $applied = $state->when(fn() => true, fn($s) => 20);
-            $notApplied = $state->when(fn() => false, fn($s) => 20);
+            $applied = $state->transform()->when(fn() => true, fn($s) => 20);
+            $notApplied = $state->transform()->when(fn() => false, fn($s) => 20);
             
             expect($applied->value())->toBe(20);
             expect($notApplied->value())->toBe(10);
@@ -230,11 +233,11 @@ describe('TransformQuery', function () {
         it('applies transformation based on value with whenValue()', function () {
             $state = ProcessingState::with(15);
             
-            $applied = $state->whenState(
+            $applied = $state->transform()->whenState(
                 fn(ProcessingState $s) => $s->value() > 10,
                 fn(ProcessingState $s) => $s->withResult(Result::success('large'))
             );
-            $notApplied = $state->whenState(
+            $notApplied = $state->transform()->whenState(
                 fn(ProcessingState $s) => $s->value() > 20,
                 fn(ProcessingState $s) => $s->withResult(Result::success('large'))
             );
@@ -249,9 +252,10 @@ describe('TransformQuery', function () {
             $tag = new TransformTestTag('chained');
             $state = ProcessingState::with(5, [$tag]);
             
-            $result = $state->map(fn($x) => $x * 2)      // 10
+            $result = $state->transform()->mapState(fn($x) => $x->value() * 2) // 10
                 ->failWhen(fn($x) => $x > 5)   // passes
-                ->map(fn($x) => $x + 3);      // 13
+                ->mapState(fn($x) => $x->value() + 3)
+                ->state();  // 13
 
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(13);
@@ -262,6 +266,7 @@ describe('TransformQuery', function () {
             $executed = false;
             
             $result = ProcessingState::with(3)
+                ->transform()
                 ->map(fn($x) => $x * 2)           // 6
                 ->failWhen(fn($x) => $x > 10)       // fails
                 ->map(function($x) use (&$executed) { // should not execute

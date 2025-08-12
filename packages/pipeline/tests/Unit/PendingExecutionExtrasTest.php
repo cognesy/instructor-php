@@ -56,6 +56,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith(10);
             
             $result = $pending->state()
+                ->transform()
                 ->map(fn($x) => $x + 5)
                 ->failWhen(fn($x) => $x > 15);
             
@@ -71,8 +72,10 @@ describe('PendingExecution Enhanced Operations', function () {
             
             $state = $pending->state();
             $result = $state
+                ->transform()
                 ->map(fn($x) => $x + 5)
-                ->withTags(new ExecutionTag('monadic'));
+                ->state()
+                ->addTags(new ExecutionTag('monadic'));
             
             $tags = $result->allTags(ExecutionTag::class);
             expect($tags)->toHaveCount(2);
@@ -101,6 +104,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith(10);
             
             $result = $pending->state()
+                ->transform()
                 ->map(fn($x) => $x + 5)
                 ->failWhen(fn($x) => $x > 100, 'Value too small'); // Will fail
             
@@ -116,8 +120,8 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith([1, 2, 3]);
             
             $state = $pending->state()
-                ->map(fn($array) => array_map(fn($x) => $x * 2, $array))
-                ;
+                ->transform()
+                ->map(fn($array) => array_map(fn($x) => $x * 2, $array));
             
             $stream = $pending->for($state->value())->stream();
             $results = iterator_to_array($stream);
@@ -131,6 +135,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith([1, 2, 3]);
             
             $state = $pending->state()
+                ->transform()
                 ->failWhen(fn($array) => count($array) > 5); // Will fail
 
             $stream = $pending->for($state->valueOr([]))->stream();
@@ -148,6 +153,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith(10);
             
             $finalValue = $pending->state()
+                ->transform()
                 ->map(fn($x) => $x + 5)
                 ->value();
             
@@ -161,6 +167,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith(10);
             
             $finalValue = $pending->state()
+                ->transform()
                 ->failWhen(fn($x) => $x > 100)
                 ->valueOr(42);
             
@@ -174,6 +181,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith(10);
             
             $result = $pending->state()
+                ->transform()
                 ->map(fn($x) => $x + 5)
                 ->result();
             
@@ -193,6 +201,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $results = [];
             foreach ([1, 2, 3] as $input) {
                 $result = $pipeline->for($input)->state()
+                    ->transform()
                     ->map(fn($x) => $x * 10)
                     ->value();
                 $results[] = $result;
@@ -210,9 +219,8 @@ describe('PendingExecution Enhanced Operations', function () {
             $results = [];
             foreach ([-1, 2, -3, 4] as $input) {
                 $state = $pipeline->for($input)->state()
-                    ->map(fn($x) => $x + 10)
-                    ;
-
+                    ->transform()
+                    ->map(fn($x) => $x + 10);
                     
                 $results[] = $state->isSuccess() ? $state->value() : 'error';
             }
@@ -242,7 +250,7 @@ describe('PendingExecution Enhanced Operations', function () {
             expect($pipelineExecuted)->toBeTrue();
             
             // Now apply monadic operations (these are immediate on ProcessingState)
-            $chained = $state->map(function($x) use (&$monadicExecuted) {
+            $chained = $state->transform()->map(function($x) use (&$monadicExecuted) {
                 $monadicExecuted = true;
                 return $x + 5;
             });

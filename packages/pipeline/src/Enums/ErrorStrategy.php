@@ -3,6 +3,6 @@
 namespace Cognesy\Pipeline\Enums;
 
 enum ErrorStrategy {
-    case FailFast;
-    case Continue;
+    case FailFast; // throw an exception immediately on failure
+    case ContinueWithFailure; // continue processing with Result set to failure
 }

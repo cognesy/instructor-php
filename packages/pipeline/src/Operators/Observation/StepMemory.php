@@ -39,6 +39,6 @@ readonly class StepMemory implements CanProcessState
             memoryUsed: $endMemory - $startMemory,
         );
 
-        return $output->withTags($stepMemory);
+        return $output->addTags($stepMemory);
     }
 }

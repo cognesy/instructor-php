@@ -116,5 +116,5 @@ it('handles mixed content in XML', function () {
     $xml = SimpleXmlParser::from($xmlString)->withRoot()->toArray();
     $expected = ['root' => ['textmore text', ['child' => 'content']]];
     expect($xml)->toEqual($expected);
-})->skip();
+})->skip('Mixed content handling not yet implemented');
 

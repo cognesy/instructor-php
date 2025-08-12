@@ -41,6 +41,6 @@ readonly class TrackTime implements CanProcessState
             success: $output->result()->isSuccess(),
         );
 
-        return $output->withTags($timingTag);
+        return $output->addTags($timingTag);
     }
 }

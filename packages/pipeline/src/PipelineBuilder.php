@@ -3,6 +3,8 @@
 namespace Cognesy\Pipeline;
 
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Internal\OperatorStack;
 use Cognesy\Pipeline\Operators\Call;
@@ -23,15 +25,17 @@ class PipelineBuilder
     private OperatorStack $middleware; // per-pipeline execution middleware stack
     private OperatorStack $hooks; // per-processor execution hooks
     private OperatorStack $finalizers;
+    private ErrorStrategy $onError;
 
     /**
      * @param ?callable():mixed $source
      */
-    public function __construct() {
+    public function __construct(ErrorStrategy $onError = ErrorStrategy::ContinueWithFailure) {
         $this->steps = new OperatorStack();
         $this->middleware = new OperatorStack();
         $this->hooks = new OperatorStack();
         $this->finalizers = new OperatorStack();
+        $this->onError = $onError;
     }
 
     // MIDDLEWARE SUPPORT /////////////////////////////////////////////////////////////////////
@@ -227,6 +231,11 @@ class PipelineBuilder
             middleware: $this->middleware,
             hooks: $this->hooks,
             finalizers: $this->finalizers,
+            onError: $this->onError,
         );
+    }
+
+    public function executeWith(mixed $initialValue, TagInterface ...$tags): mixed {
+        return $this->create()->executeWith($initialValue, ...$tags)->value();
     }
 }

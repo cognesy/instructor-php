@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Pipeline\Legacy\Chain\RawChain;
+use Cognesy\Pipeline\Pipeline;
 use InvalidArgumentException;
 
 trait CreatesSignatureFromString
@@ -18,11 +18,11 @@ trait CreatesSignatureFromString
         if (!str_contains($signatureString, Signature::ARROW)) {
             throw new InvalidArgumentException('Invalid signature string, missing arrow -> marker separating inputs and outputs');
         }
-        $signatureString = (new RawChain)
+        $signatureString = Pipeline::builder()
             ->through(fn(string $str) => trim($str))
             ->through(fn(string $str) => str_replace("\n", ' ', $str))
             ->through(fn(string $str) => str_replace(Signature::ARROW, '>', $str))
-            ->process($signatureString);
+            ->executeWith($signatureString);
         // split inputs and outputs
         [$inputs, $outputs] = explode('>', $signatureString);
 

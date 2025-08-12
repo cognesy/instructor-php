@@ -24,7 +24,8 @@ interface TagMapInterface
 
     /** @param array<TagInterface> $tags */
     public function newInstance(array $tags): self;
-    public function with(TagInterface ...$tags): self;
+    public function add(TagInterface ...$tags): self;
+    public function replace(TagInterface ...$tags): self;
 
     public function query(): TagQuery;
 }

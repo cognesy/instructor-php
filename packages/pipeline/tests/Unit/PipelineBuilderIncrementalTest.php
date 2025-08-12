@@ -13,7 +13,7 @@ class TestMiddleware implements CanProcessState {
     public function __construct(private string $name) {}
     
     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-        $output = $state->withTags(new BuilderTestTag($this->name));
+        $output = $state->addTags(new BuilderTestTag($this->name));
         return $next ? $next($output) : $output;
     }
 }
@@ -180,7 +180,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
             it('adds processor that implements CanProcessState', function () {
                 $processor = new class implements CanProcessState {
                     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-                        $output = $state->map(fn($x) => $x . '_processed');
+                        $output = $state->transform()->map(fn($x) => $x . '_processed')->state();
                         return $next ? $next($output) : $output;
                     }
                 };

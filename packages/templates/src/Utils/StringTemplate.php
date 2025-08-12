@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\Template\Utils;
 
 use Cognesy\Messages\Message;

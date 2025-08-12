@@ -145,7 +145,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         it('works with pipelines containing middleware', function () {
             $middleware = new class implements \Cognesy\Pipeline\Contracts\CanProcessState {
                 public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-                    return $next ? $next($state->withTags(new ExecutionTestTag('middleware'))) : $state;
+                    return $next ? $next($state->addTags(new ExecutionTestTag('middleware'))) : $state;
                 }
             };
             

@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Core\Traits;
 
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Arrays;
@@ -19,7 +20,7 @@ trait ValidatesPartialResponse
         bool $preventJsonSchema,
         bool $matchToExpectedFields
     ) : Result {
-        $pipeline = Pipeline::builder()
+        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn(string $text) => $this->preventJsonSchemaResponse($preventJsonSchema, $text))
             ->through(fn(string $text) => $this->detectNonMatchingJson($matchToExpectedFields, $text, $responseModel))
             ->onFailure(fn(ProcessingState $state) => throw new JsonParsingException(

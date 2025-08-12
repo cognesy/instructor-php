@@ -13,6 +13,10 @@ use Cognesy\Utils\Json\Json;
  */
 class TextRepresentation
 {
+    public function __construct() {
+
+    }
+
     public static function fromAny(string|array|object $input) : string {
         return match(true) {
             is_string($input) => $input,

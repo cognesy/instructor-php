@@ -44,6 +44,6 @@ readonly class TrackMemory implements CanProcessState
             operationName: $this->operationName,
         );
 
-        return $output->withTags($memoryTag);
+        return $output->addTags($memoryTag);
     }
 }

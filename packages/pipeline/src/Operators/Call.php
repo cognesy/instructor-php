@@ -87,20 +87,20 @@ readonly final class Call implements CanProcessState {
                     ->withResult(Result::from(null)),
                 NullStrategy::Fail => $state
                     ->withResult(Result::failure(new RuntimeException('Null value encountered')))
-                    ->withTags(ErrorTag::fromException(new RuntimeException('Null value encountered'))),
+                    ->addTags(ErrorTag::fromException(new RuntimeException('Null value encountered'))),
                 NullStrategy::Skip => $state
                     ->withResult(Result::from(null))
-                    ->withTags(new SkipProcessingTag('Null value encountered')),
+                    ->addTags(new SkipProcessingTag('Null value encountered')),
             };
             return $next ? $next($nullState) : $nullState;
         }
 
         $modifiedState = match(true) {
             $outputState instanceof ProcessingState => $outputState
-                ->mergeInto($state),
+                ->transform()->mergeInto($state)->state(),
             $outputState instanceof Failure => $state
                 ->withResult($outputState)
-                ->withTags(ErrorTag::fromException($outputState->exception())),
+                ->addTags(ErrorTag::fromException($outputState->exception())),
             $outputState instanceof Success => $state
                 ->withResult($outputState),
             default => $state

@@ -74,7 +74,7 @@ final class OperatorStack implements Countable, IteratorAggregate
                 default => $next($state),
             };
         }
-        $stack = $this->stack($next);
+        $stack = $this->callStack($next);
         return $stack($state);
     }
 
@@ -84,7 +84,7 @@ final class OperatorStack implements Countable, IteratorAggregate
      *
      * @param ?callable(ProcessingState):ProcessingState $next Final processor to execute after all middleware
      */
-    public function stack(callable $next): callable {
+    public function callStack(callable $next): callable {
         $stack = $next ?? fn(ProcessingState $s) => $s;
         // Build stack from last to first middleware
         for ($i = count($this->operators) - 1; $i >= 0; $i--) {

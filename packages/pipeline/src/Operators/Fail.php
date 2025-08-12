@@ -28,7 +28,7 @@ readonly final class Fail implements CanProcessState {
 
         $failedState = $state
             ->withResult(Result::failure($this->e))
-            ->withTags(ErrorTag::fromException($this->e));
+            ->addTags(ErrorTag::fromException($this->e));
 
         return $next ? $next($failedState) : $failedState;
     }

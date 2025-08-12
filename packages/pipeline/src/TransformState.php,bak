@@ -1,0 +1,116 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Pipeline;
+
+use Cognesy\Pipeline\Contracts\CanCarryState;
+use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\Result\Result;
+
+class TransformState {
+    public function __construct(private CanCarryState $state) {}
+
+    public static function with(CanCarryState $state): self {
+        return new self($state);
+    }
+
+    /**
+     * @param callable(mixed):bool $conditionFn
+     * @param callable(mixed):mixed $transformationFn
+     */
+    public function when(
+        callable $conditionFn,
+        callable $transformationFn,
+    ): CanCarryState {
+        if ($this->state->isFailure()) {
+            return $this->state;
+        }
+        return $conditionFn($this->state->value())
+            ? $this->state->withResult(Result::from($transformationFn($this->state->value())))
+            : $this->state->withResult(Result::from($this->state->value()));
+    }
+
+    /**
+     * @param callable(ProcessingState):bool $stateConditionFn
+     * @param callable(ProcessingState):ProcessingState $stateTransformationFn
+     */
+    public function whenState(
+        callable $stateConditionFn,
+        callable $stateTransformationFn,
+    ): CanCarryState {
+        return $stateConditionFn($this->state)
+            ? $stateTransformationFn($this->state)
+            : $this->state;
+    }
+
+    /**
+     * @param callable(mixed):bool $condition Condition to check before adding tags
+     */
+    public function addTagsIf(callable $condition, TagInterface ...$tags): CanCarryState {
+        return $condition($this->state)
+            ? $this->state->addTags(...$tags)
+            : $this->state;
+    }
+
+    public function addTagsIfSuccess(TagInterface ...$tags): CanCarryState {
+        return $this->addTagsIf(fn($state) => $state->result()->isSuccess(), ...$tags);
+    }
+
+    public function addTagsIfFailure(TagInterface ...$tags): CanCarryState {
+        return $this->addTagsIf(fn($state) => $state->result()->isFailure(), ...$tags);
+    }
+
+    public function mergeFrom(mixed $source): CanCarryState {
+        return $this->state->replaceTags(...$this->state->tagMap()->merge($source->tagMap())->getAllInOrder());
+    }
+
+    public function mergeInto(mixed $target): CanCarryState {
+        return $this->state->replaceTags(
+            ...$target->tagMap()->merge($this->state->tagMap())->getAllInOrder()
+        );
+    }
+
+    /**
+     * Combines this state with another state, merging tags and optionally combining results.
+     * @param callable(Result, Result): Result|null $resultCombinator Optional function to combine results
+     */
+    public function combine(CanCarryState $other, ?callable $resultCombinator = null): CanCarryState {
+        $resultCombinator ??= fn($a, $b) => $b; // Default: use second result
+        $output = $resultCombinator($this->state->result(), $other->result());
+        return $this->state->withResult($output)->addTags(...$other->tagMap()->getAllInOrder());
+    }
+
+    /** @param callable(mixed):bool $conditionFn */
+    public function failWhen(callable $conditionFn, string $errorMessage = 'Failure condition met'): CanCarryState {
+        if ($this->state->isFailure()) {
+            return $this->state;
+        }
+        return $conditionFn($this->state->value())
+            ? $this->state
+            : $this->state->failWith($errorMessage);
+    }
+
+    // TRANSFORMATIONS
+
+    public function map(callable $fn): mixed {
+        if ($this->state->isFailure()) {
+            return $this;
+        }
+        return $this->mapAnyInput(fn() => $this->state->result()->unwrap(), $fn);
+    }
+
+    public function mapResult(callable $fn): Result {
+        return $this->mapAnyInput(fn() => $this->state->result(), $fn)->result();
+    }
+
+    public function mapState(callable $fn): CanCarryState {
+        return $this->mapAnyInput(fn() => $this->state, $fn);
+    }
+
+    private function mapAnyInput(callable $inputFn, callable $fn): CanCarryState {
+        $output = $fn($inputFn());
+        return match(true) {
+            $output instanceof ProcessingState => $output->transform()->mergeInto($this->state),
+            default => $this->state->withResult(Result::from($output)),
+        };
+    }
+}

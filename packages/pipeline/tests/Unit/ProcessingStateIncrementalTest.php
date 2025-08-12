@@ -64,7 +64,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             $originalState = ProcessingState::with(10, [$tag1]);
             $sourceState = ProcessingState::with(20, [$tag2]);
             
-            $merged = $originalState->mergeFrom($sourceState);
+            $merged = $originalState->transform()->mergeFrom($sourceState);
             
             expect($merged->value())->toBe(10); // Keeps original result
             expect($merged->hasTag(StateTag::class))->toBeTrue();
@@ -79,7 +79,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             $sourceState = ProcessingState::with(10, [$tag1]);
             $targetState = ProcessingState::with(20, [$tag2]);
             
-            $merged = $sourceState->mergeInto($targetState);
+            $merged = $sourceState->transform()->mergeInto($targetState);
             
             expect($merged->value())->toBe(10); // Keeps source result
             expect($merged->hasTag(StateTag::class))->toBeTrue();

@@ -55,13 +55,10 @@ final readonly class SimpleTagMap implements TagMapInterface
      * @param TagInterface[] $tags Array of tags to include
      */
     public static function create(array $tags = []): self {
-        $indexed = [];
-        foreach ($tags as $tag) {
-            $class = $tag::class;
-            $indexed[$class] = $indexed[$class] ?? [];
-            $indexed[$class][] = $tag;
-        }
-        return new self($indexed);
+        return match(true) {
+            empty($tags) => self::empty(),
+            default => new self(self::addTagsTo([], $tags)),
+        };
     }
 
     public static function empty(): self {
@@ -107,21 +104,11 @@ final readonly class SimpleTagMap implements TagMapInterface
     }
 
     public function merge(TagMapInterface $other): TagMapInterface {
-        $outputTags = $this->tags;
-        foreach ($other->tags as $class => $tags) {
-            $outputTags[$class] = $outputTags[$class] ?? [];
-            $outputTags[$class] = array_merge($outputTags[$class], $tags);
-        }
-        return new self($outputTags);
+        return new self(self::mergeGroupedTags($this->tags, $other->tags));
     }
 
     public function mergeInto(TagMapInterface $target): TagMapInterface {
-        $outputTags = $target->tags;
-        foreach ($this->tags as $class => $tags) {
-            $outputTags[$class] = $outputTags[$class] ?? [];
-            $outputTags[$class] = array_merge($outputTags[$class], $tags);
-        }
-        return new self($outputTags);
+        return new self(self::mergeGroupedTags($target->tags, $this->tags));
     }
 
     public function newInstance(array $tags): TagMapInterface {
@@ -132,13 +119,30 @@ final readonly class SimpleTagMap implements TagMapInterface
         return new TagQuery($this);
     }
 
-    public function with(TagInterface ...$tags): self {
-        $newTags = $this->tags;
+    public function add(TagInterface ...$tags): self {
+        return new self(self::addTagsTo($this->tags, $tags));
+    }
+
+    public function replace(TagInterface ...$tags): TagMapInterface {
+        return self::create($tags);
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////////////
+
+    private static function addTagsTo(array $target, array $tags) : array {
         foreach ($tags as $tag) {
             $class = $tag::class;
-            $newTags[$class] = $newTags[$class] ?? [];
-            $newTags[$class][] = $tag;
+            $target[$class] = $target[$class] ?? [];
+            $target[$class][] = $tag;
         }
-        return new self($newTags);
+        return $target;
+    }
+
+    private static function mergeGroupedTags(array $target, array $tags): array {
+        foreach ($tags as $class => $tagList) {
+            $target[$class] = $target[$class] ?? [];
+            $target[$class] = array_merge($target[$class], $tagList);
+        }
+        return $target;
     }
 }

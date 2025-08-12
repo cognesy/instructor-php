@@ -17,33 +17,35 @@ class Pipeline implements CanProcessState
     private OperatorStack $middleware; // per-pipeline execution middleware stack
     private OperatorStack $hooks; // per-step execution hooks
     private OperatorStack $finalizers; // per-pipeline execution finalizers, regardless of success or failure
-    private ErrorStrategy $errorStrategy;
+    private ErrorStrategy $onError;
 
     public function __construct(
         ?OperatorStack $steps = null,
         ?OperatorStack $middleware = null,
         ?OperatorStack $hooks = null,
         ?OperatorStack $finalizers = null,
-        ErrorStrategy $errorStrategy = ErrorStrategy::Continue,
+        ErrorStrategy $onError = ErrorStrategy::ContinueWithFailure,
     ) {
         $this->steps = $steps ?? new OperatorStack();
         $this->finalizers = $finalizers ?? new OperatorStack();
         $this->middleware = $middleware ?? new OperatorStack();
         $this->hooks = $hooks ?? new OperatorStack();
-        $this->errorStrategy = $errorStrategy;
+        $this->onError = $onError;
     }
 
     // STATIC FACTORY METHODS ////////////////////////////////////////////////////////////////
 
-    public static function builder(): PipelineBuilder {
-        return new PipelineBuilder();
+    public static function builder(ErrorStrategy $onError = ErrorStrategy::ContinueWithFailure): PipelineBuilder {
+        return new PipelineBuilder($onError);
     }
 
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
     public function executeWith(mixed $initialValue = null, TagInterface ...$tags): PendingExecution {
-        $initialState = ProcessingState::with($initialValue, $tags);
-        return new PendingExecution($initialState, $this);
+        return new PendingExecution(
+            initialState: ProcessingState::with($initialValue, $tags),
+            pipeline: $this
+        );
     }
 
 
@@ -67,7 +69,7 @@ class Pipeline implements CanProcessState
         return match (true) {
             $middleware->isEmpty() => $this->applySteps($state, $steps, $hooks),
             default => $this->tryProcess(
-                $middleware->stack(fn($comp) => $this->applySteps($comp, $steps, $hooks)),
+                $middleware->callStack(fn($comp) => $this->applySteps($comp, $steps, $hooks)),
                 $state
             ),
         };
@@ -97,7 +99,7 @@ class Pipeline implements CanProcessState
         ProcessingState $state,
         OperatorStack $hooks,
     ): ProcessingState {
-        $stack = $hooks->stack(function (ProcessingState $state) use ($step) {
+        $stack = $hooks->callStack(function (ProcessingState $state) use ($step) {
             return match (true) {
                 !$this->shouldContinueProcessing($state) => $state,
                 default => $this->tryProcess($step, $state),
@@ -108,10 +110,10 @@ class Pipeline implements CanProcessState
 
     private function processStack(
         ProcessingState $state,
-        OperatorStack $steps,
+        OperatorStack $operators,
     ): ProcessingState {
         $currentState = $state;
-        foreach ($steps->getIterator() as $step) {
+        foreach ($operators->getIterator() as $step) {
             $nextState = $this->tryProcess($step, $currentState);
             if (!$this->shouldContinueProcessing($nextState)) {
                 return $nextState;
@@ -132,7 +134,7 @@ class Pipeline implements CanProcessState
                 default => $processable($state),
             };
         } catch (Exception $e) {
-            if ($this->errorStrategy === ErrorStrategy::FailFast) {
+            if ($this->onError === ErrorStrategy::FailFast) {
                 throw $e;
             }
             return $state->failWith($e);

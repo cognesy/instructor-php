@@ -33,7 +33,7 @@ final class IndexedTagMap implements TagMapInterface
      * @param TagInterface[] $tags
      */
     public static function create(array $tags): self {
-        return self::empty()->with(...$tags);
+        return self::empty()->add(...$tags);
     }
 
     public static function empty(): self {
@@ -76,7 +76,7 @@ final class IndexedTagMap implements TagMapInterface
         if ($this->isEmpty()) {
             return $other;
         }
-        return $this->with(...$other->getAllInOrder());
+        return $this->add(...$other->getAllInOrder());
     }
 
     public function mergeInto(TagMapInterface $target): TagMapInterface {
@@ -86,18 +86,18 @@ final class IndexedTagMap implements TagMapInterface
         if ($target->isEmpty()) {
             return $this;
         }
-        return $target->with(...$this->getAllInOrder());
+        return $target->add(...$this->getAllInOrder());
     }
 
     public function newInstance(array $tags): TagMapInterface {
-        return self::empty()->with(...$tags);
+        return self::empty()->add(...$tags);
     }
 
     public function query(): TagQuery {
         return new TagQuery($this);
     }
 
-    public function with(TagInterface ...$tags): self {
+    public function add(TagInterface ...$tags): self {
         if (empty($tags)) {
             return $this;
         }
@@ -115,5 +115,11 @@ final class IndexedTagMap implements TagMapInterface
 
     private function generateId(): string {
         return (string) self::$nextId++;
+    }
+
+    public function replace(TagInterface ...$tags): TagMapInterface {
+        $this->tagsById = [];
+        $this->insertionOrder = [];
+        return $this->add(...$tags);
     }
 }

@@ -10,6 +10,7 @@ use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -29,7 +30,7 @@ class ResponseGenerator implements CanGenerateResponse
     ) {}
 
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
-        $pipeline = Pipeline::builder()
+        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),
                 default => Result::success($responseJson)

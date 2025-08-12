@@ -2,16 +2,19 @@
 
 namespace Cognesy\Schema\Utils;
 
-use Cognesy\Pipeline\Legacy\Chain\RawChain;
+use Cognesy\Pipeline\Enums\ErrorStrategy;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 class DocstringUtils
 {
     public static function descriptionsOnly(string $code): string {
-        return (new RawChain)
+        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($code) => self::removeMarkers($code))
             ->through(fn($code) => self::removeAnnotations($code))
-            ->then(fn($code) => trim($code))
-            ->process($code);
+            ->finally(fn(ProcessingState $code) => trim($code->value()))
+            ->create();
+        return $pipeline->executeWith($code)->value();
     }
 
     public static function getParameterDescription(string $name, string $text): string {
