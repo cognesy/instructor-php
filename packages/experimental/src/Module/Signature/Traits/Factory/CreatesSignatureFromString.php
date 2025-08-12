@@ -4,6 +4,7 @@ namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 use InvalidArgumentException;
 
 trait CreatesSignatureFromString
@@ -22,7 +23,9 @@ trait CreatesSignatureFromString
             ->through(fn(string $str) => trim($str))
             ->through(fn(string $str) => str_replace("\n", ' ', $str))
             ->through(fn(string $str) => str_replace(Signature::ARROW, '>', $str))
-            ->executeWith($signatureString);
+            ->executeWith(ProcessingState::with($signatureString))
+            ->value();
+
         // split inputs and outputs
         [$inputs, $outputs] = explode('>', $signatureString);
 

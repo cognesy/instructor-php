@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\Legacy\Chain\ResultChain;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 describe('Accurate Memory Measurement', function () {
     
@@ -36,7 +37,7 @@ describe('Accurate Memory Measurement', function () {
                 ->through($this->processors[4])
                 ->create();
                 
-            $result = $pipeline->executeWith($this->testData)->value();
+            $result = $pipeline->executeWith(ProcessingState::with($this->testData))->value();
             // Store results to prevent premature garbage collection
             $pipelineResults[] = $result;
         }
@@ -103,7 +104,7 @@ describe('Accurate Memory Measurement', function () {
             ->create();
             
         $afterConstruction = memory_get_usage(false);
-        $result = $pipeline->executeWith($this->testData)->value();
+        $result = $pipeline->executeWith(ProcessingState::with($this->testData))->value();
         $afterExecution = memory_get_usage(false);
         
         $pipelineConstructionMemory = $afterConstruction - $beforePipeline;

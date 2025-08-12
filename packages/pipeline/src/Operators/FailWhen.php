@@ -3,8 +3,8 @@
 namespace Cognesy\Pipeline\Operators;
 
 use Closure;
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Middleware that fails the pipeline when a condition is met.
@@ -20,13 +20,13 @@ readonly final class FailWhen implements CanProcessState
     ) {}
 
     /**
-     * @param callable(ProcessingState):bool $condition
+     * @param callable(CanCarryState):bool $condition
      */
     public static function with(callable $condition, string $message = 'Condition failed'): self {
         return new self($condition, $message);
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         if (($this->condition)($state)) {
             return $state->failWith($this->message);
         }

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators\Observation;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\Observation\TimingTag;
 
 /**
@@ -25,7 +25,7 @@ readonly class TrackTime implements CanProcessState
         return new self($operationName);
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $startTime = microtime(true);
 
         $output = $next ? $next($state) : $state;

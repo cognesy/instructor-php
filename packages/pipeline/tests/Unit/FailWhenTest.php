@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 describe('FailWhen functionality', function () {
     test('fails pipeline when condition is met', function () {
@@ -8,7 +9,7 @@ describe('FailWhen functionality', function () {
             ->failWhen(fn($state) => $state->value() > 5, 'Value too large')
             ->through(fn($x) => $x * 2)
             ->create()
-            ->executeWith(10);
+            ->executeWith(ProcessingState::with(10));
 
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception()->getMessage())->toBe('Value too large');
@@ -19,7 +20,7 @@ describe('FailWhen functionality', function () {
             ->failWhen(fn($state) => $state->value() > 5, 'Value too large')
             ->through(fn($x) => $x * 2)
             ->create()
-            ->executeWith(3);
+            ->executeWith(ProcessingState::with(3));
 
         expect($pipeline->isSuccess())->toBeTrue();
         expect($pipeline->value())->toBe(6);
@@ -30,7 +31,7 @@ describe('FailWhen functionality', function () {
             ->failWhen(fn($state) => $state->value() > 5)
             ->through(fn($x) => $x * 2)
             ->create()
-            ->executeWith(10);
+            ->executeWith(ProcessingState::with(10));
 
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception()->getMessage())->toBe('Condition failed');
@@ -42,7 +43,7 @@ describe('FailWhen functionality', function () {
             ->failWhen(fn($state) => $state->value() > 20, 'Value too large')
             ->through(fn($x) => $x * 2)
             ->create()
-            ->executeWith(10);
+            ->executeWith(ProcessingState::with(10));
 
         expect($pipeline->isSuccess())->toBeTrue();
         expect($pipeline->value())->toBe(20);
@@ -59,7 +60,7 @@ describe('FailWhen functionality', function () {
                 return $x * 2;
             })
             ->create()
-            ->executeWith(10);
+            ->executeWith(ProcessingState::with(10));
 
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception()->getMessage())->toBe('First failure');

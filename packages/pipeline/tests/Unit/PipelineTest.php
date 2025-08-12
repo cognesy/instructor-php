@@ -3,6 +3,7 @@
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineBuilder;
+use Cognesy\Pipeline\ProcessingState;
 
 describe('Pipeline static factory methods', function () {
     test('empty returns PipelineBuilder', function () {
@@ -18,7 +19,7 @@ describe('Pipeline main usage patterns', function () {
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 10)
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         expect($pipeline)->toBeInstanceOf(PendingExecution::class);
     });
@@ -28,7 +29,7 @@ describe('Pipeline main usage patterns', function () {
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 10)
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         $output = $pipeline->for(5)->value();
         
@@ -40,7 +41,7 @@ describe('Pipeline main usage patterns', function () {
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 1)
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         expect($pipeline->for(1)->value())->toBe(3);   // (1 * 2) + 1 = 3
         expect($pipeline->for(5)->value())->toBe(11);  // (5 * 2) + 1 = 11
@@ -51,7 +52,7 @@ describe('Pipeline main usage patterns', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         $inputs = [1, 2, 3];
         $outputs = [];
@@ -69,7 +70,7 @@ describe('Pipeline main usage patterns', function () {
             ->through(fn($text) => strtoupper($text))
             ->through(fn($text) => str_replace(' ', '_', $text))
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         $output = $pipeline->for('  hello world  ')->value();
         
@@ -82,7 +83,7 @@ describe('Pipeline main usage patterns', function () {
             ->through(fn($data) => array_map(fn($x) => $x * 2, $data))
             ->through(fn($data) => array_sum($data))
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         $input = [-1, 2, 3, -4, 5];
         $output = $pipeline->for($input)->value();
@@ -96,7 +97,7 @@ describe('Pipeline error handling', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($value) => throw new RuntimeException('Test error'))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception())->toBeInstanceOf(RuntimeException::class);
@@ -112,7 +113,7 @@ describe('Pipeline error handling', function () {
                 return $x * 2;
             })
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         expect($pipeline->for(1)->value())->toBe(2);
         expect($pipeline->for(2)->isFailure())->toBeTrue();
@@ -123,7 +124,7 @@ describe('Pipeline error handling', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($value) => throw new RuntimeException('Test error'))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->valueOr('default'))->toBe('default');
     });
@@ -140,7 +141,7 @@ describe('Pipeline with conditional and tap operations', function () {
             })
             ->through(fn($x) => $x + 1)
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         $result = $pipeline->for(5)->value();
         
@@ -153,7 +154,7 @@ describe('Pipeline with conditional and tap operations', function () {
             ->when(fn($x) => $x > 10, fn($x) => $x * 2)
             ->through(fn($x) => $x + 1)
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         expect($pipeline->for(5)->value())->toBe(6);   // 5 + 1 = 6 (condition false)
         expect($pipeline->for(15)->value())->toBe(31); // (15 * 2) + 1 = 31 (condition true)
@@ -168,7 +169,7 @@ describe('Pipeline with conditional and tap operations', function () {
             ->when(fn($x) => $x > 10, fn($x) => $x + 100)
             ->tap(function($x) use (&$log) { $log[] = "final: $x"; })
             ->create()
-            ->executeWith();
+            ->executeWith(ProcessingState::with(null));
         
         $result1 = $pipeline->for(3)->value();  // 6, no bonus
         $result2 = $pipeline->for(8)->value();  // 16, with bonus = 116

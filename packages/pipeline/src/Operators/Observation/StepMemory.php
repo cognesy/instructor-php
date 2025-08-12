@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators\Observation;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\Observation\StepMemoryTag;
 
 /**
@@ -25,7 +25,7 @@ readonly class StepMemory implements CanProcessState
         return new self($stepName);
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $startMemory = memory_get_usage(true);
 
         $output = $next ? $next($state) : $state;

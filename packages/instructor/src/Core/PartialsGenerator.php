@@ -19,6 +19,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -171,7 +172,7 @@ class PartialsGenerator implements CanGeneratePartials
             ->create();
 
         return $pipeline
-            ->executeWith($partialJson)
+            ->executeWith(ProcessingState::with($partialJson))
             ->result();
 
         //        return ResultChain::make()
@@ -194,8 +195,8 @@ class PartialsGenerator implements CanGeneratePartials
             ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->create();
-        return $pipeline->executeWith(Json::fromPartial($partialJsonData)->toString())->result();
-
+        $json = Json::fromPartial($partialJsonData)->toString();
+        return $pipeline->executeWith(ProcessingState::with($json))->result();
         //        return ResultChain::from(fn() => Json::fromPartial($partialJsonData)->toString())
         //            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
         //            ->through(fn($object) => $this->responseTransformer->transform($object))

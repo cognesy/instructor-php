@@ -43,7 +43,7 @@ describe('FastCall Performance Test', function () {
                 ->through($this->userProcessors[4])
                 ->create();
                 
-            $result = $pipeline->executeWith($this->testData)->value();
+            $result = $pipeline->executeWith(ProcessingState::with($this->testData))->value();
         }
         
         $regularPipelineEnd = hrtime(true);
@@ -61,7 +61,7 @@ describe('FastCall Performance Test', function () {
                 ->throughRaw($this->fastProcessors[4])
                 ->create();
                 
-            $result = $pipeline->executeWith($this->testData)->value();
+            $result = $pipeline->executeWith(ProcessingState::with($this->testData))->value();
         }
         
         $fastPipelineEnd = hrtime(true);
@@ -111,7 +111,7 @@ describe('FastCall Performance Test', function () {
             ->through($this->userProcessors[3])
             ->through($this->userProcessors[4])
             ->create()
-            ->executeWith($this->testData)->value();
+            ->executeWith(ProcessingState::with($this->testData))->value();
             
         $fastResult = Pipeline::builder()
             ->throughRaw($this->fastProcessors[0])
@@ -120,7 +120,7 @@ describe('FastCall Performance Test', function () {
             ->throughRaw($this->fastProcessors[3])
             ->throughRaw($this->fastProcessors[4])
             ->create()
-            ->executeWith($this->testData)->value();
+            ->executeWith(ProcessingState::with($this->testData))->value();
             
         $chainResult = ResultChain::make()
             ->through($this->userProcessors[0])

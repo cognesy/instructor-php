@@ -2,12 +2,12 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Fast execution operator that directly executes closures without any overhead.
- * Expects closure to handle (ProcessingState, ?callable) -> ProcessingState pattern.
+ * Expects closure to handle (CanCarryState, ?callable) -> CanCarryState pattern.
  */
 readonly final class RawCall implements CanProcessState
 {
@@ -20,13 +20,13 @@ readonly final class RawCall implements CanProcessState
     /**
      * Create a FastCall operator from a user closure.
      *
-     * @param callable(ProcessingState, ?callable):ProcessingState $closure
+     * @param callable(CanCarryState, ?callable):CanCarryState $closure
      */
     public static function with(callable $closure): self {
         return new self($closure(...));
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         return ($this->closure)($state, $next);
     }
 }

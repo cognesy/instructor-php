@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
 
 readonly final class ConditionalCall implements CanProcessState {
@@ -14,22 +14,22 @@ readonly final class ConditionalCall implements CanProcessState {
         private ?CanProcessState $elseOperator = null,
     ) {}
 
-    /** @param callable():ProcessingState $callable */
+    /** @param callable():CanCarryState $callable */
     public static function withNoArgs(callable $callable): self {
         return new self(Call::withNoArgs($callable), Call::pass());
     }
 
-    /** @param callable(ProcessingState):ProcessingState $callable */
+    /** @param callable(CanCarryState):CanCarryState $callable */
     public static function withState(callable $callable): self {
         return new self(Call::withState($callable), Call::pass());
     }
 
-    /** @param callable(mixed):ProcessingState $callable */
+    /** @param callable(mixed):CanCarryState $callable */
     public static function withValue(callable $callable): self {
         return new self(Call::withValue($callable), Call::pass());
     }
 
-    /** @param callable(Result):ProcessingState $callable */
+    /** @param callable(Result):CanCarryState $callable */
     public static function withResult(callable $callable): self {
         return new self(Call::withResult($callable), Call::pass());
     }
@@ -61,7 +61,7 @@ readonly final class ConditionalCall implements CanProcessState {
         );
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $newState = $this->conditionChecker->process($state, fn($s) => $s);
         if ($newState->isFailure()) {
             return $next ? $next($newState) : $newState;

@@ -31,7 +31,7 @@ trait ValidatesPartialResponse
             ->create();
 
         return $pipeline
-            ->executeWith($partialResponseText)
+            ->executeWith(ProcessingState::with($partialResponseText))
             ->result();
 
         //        return ResultChain::make()

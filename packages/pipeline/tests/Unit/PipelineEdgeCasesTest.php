@@ -13,7 +13,7 @@ describe('Pipeline Edge Cases - Null Handling', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($x) => $x ?? 'default')
             ->create()
-            ->executeWith(null);
+            ->executeWith(ProcessingState::with(null));
 
         expect($pipeline->value())->toBe('default');
         expect($pipeline->isSuccess())->toBeTrue();
@@ -24,7 +24,7 @@ describe('Pipeline Edge Cases - Null Handling', function () {
             ->through(fn($x) => null, NullStrategy::Allow)
             ->through(fn($x) => $x ?? 'fallback', NullStrategy::Allow)
             ->create()
-            ->executeWith('input');
+            ->executeWith(ProcessingState::with('input'));
         
         // Since first processor returns null and passes through, second processor processes null
         expect($pipeline->isSuccess())->toBeTrue();
@@ -58,7 +58,7 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($x) => throw new InvalidArgumentException('Original error'))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->isFailure())->toBeTrue();
         $exception = $pipeline->exception();
@@ -73,7 +73,7 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
             ->through(fn($x) => throw new RuntimeException('First error'))
             ->through(fn($x) => $x . ' processed') // Should not execute
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception()->getMessage())->toContain('First error');
@@ -84,7 +84,7 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
             ->through(fn($x) => $x . ' processed')
             ->finally(fn($state) => throw new RuntimeException('Finalizer error'))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception())->toBeInstanceOf(RuntimeException::class);
@@ -99,7 +99,7 @@ describe('Pipeline Edge Cases - Complex Type Conversions', function () {
         $pipeline = Pipeline::builder()
             ->throughOperator(Call::withState(fn($state) => $customState))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         $result = $pipeline->state();
         expect($result->value())->toBe('custom');
@@ -110,7 +110,7 @@ describe('Pipeline Edge Cases - Complex Type Conversions', function () {
         $pipeline = Pipeline::builder()
             ->throughOperator(Call::withResult(fn($result) => Result::success('converted')))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->value())->toBe('converted');
         expect($pipeline->isSuccess())->toBeTrue();
@@ -127,7 +127,7 @@ describe('Pipeline Edge Cases - Complex Type Conversions', function () {
             ->through(fn($data) => json_encode($data))
             ->through(fn($json) => json_decode($json, true))
             ->create()
-            ->executeWith($complexInput);
+            ->executeWith(ProcessingState::with($complexInput));
         
         $result = $pipeline->value();
         expect($result['processed'])->toBeTrue();
@@ -144,7 +144,7 @@ describe('Pipeline Edge Cases - Memory and Performance', function () {
             ->through(fn($arr) => array_filter($arr, fn($x) => $x % 4 === 0))
             ->through(fn($arr) => array_sum($arr))
             ->create()
-            ->executeWith($largeArray);
+            ->executeWith(ProcessingState::with($largeArray));
         
         $result = $pipeline->value();
         expect($result)->toBeInt();
@@ -159,7 +159,7 @@ describe('Pipeline Edge Cases - Memory and Performance', function () {
             $builder = $builder->through(fn($x) => $x + 1);
         }
         
-        $pipeline = $builder->create()->executeWith(1);
+        $pipeline = $builder->create()->executeWith(ProcessingState::with(1));
         expect($pipeline->value())->toBe(51);
     });
 
@@ -167,7 +167,7 @@ describe('Pipeline Edge Cases - Memory and Performance', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         // Process multiple inputs
         $results = [];
@@ -196,7 +196,7 @@ describe('Pipeline Edge Cases - State Combination and Tags', function () {
                 return $state->withResult(Result::success($state->value() + 10));
             }))
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         $result = $pipeline->for(5, $initialTags)->state();
         expect($result->value())->toBe(20); // (5 * 2) + 10
@@ -235,7 +235,7 @@ describe('Pipeline Edge Cases - State Combination and Tags', function () {
                 return $state;
             })
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
 
         // Success case
         $executionOrder = [];
@@ -258,7 +258,7 @@ describe('Pipeline Edge Cases - Boundary Conditions', function () {
             ->through(fn($x) => trim($x))
             ->through(fn($x) => $x ?: 'empty')
             ->create()
-            ->executeWith('');
+            ->executeWith(ProcessingState::with(''));
         
         expect($pipeline->value())->toBe('empty');
     });
@@ -268,7 +268,7 @@ describe('Pipeline Edge Cases - Boundary Conditions', function () {
             ->through(fn($x) => $x === 0 ? 'zero' : $x)
             ->through(fn($x) => $x === false ? 'false' : $x)
             ->create()
-            ->executeWith('test');
+            ->executeWith(ProcessingState::with('test'));
         
         expect($pipeline->for(0)->value())->toBe('zero');
         expect($pipeline->for(false)->value())->toBe('false');
@@ -291,7 +291,7 @@ describe('Pipeline Edge Cases - Boundary Conditions', function () {
                 return $encoded;
             })
             ->create()
-            ->executeWith($obj1);
+            ->executeWith(ProcessingState::with($obj1));
         
         // Pipeline should fail due to circular reference handling
         expect($pipeline->isFailure())->toBeTrue();
@@ -303,7 +303,7 @@ describe('Pipeline Edge Cases - Boundary Conditions', function () {
         $pipeline = Pipeline::builder()
             ->through(fn($r) => is_resource($r) ? 'valid_resource' : 'invalid')
             ->create()
-            ->executeWith($resource);
+            ->executeWith(ProcessingState::with($resource));
         
         expect($pipeline->value())->toBe('valid_resource');
         
@@ -323,7 +323,7 @@ describe('Pipeline Edge Cases - Result and State Interaction', function () {
                 return $result->unwrap();
             }))
             ->create()
-            ->executeWith($failedResult);
+            ->executeWith(ProcessingState::with($failedResult));
         
         expect($pipeline->value())->toBe('handled_failure');
     });

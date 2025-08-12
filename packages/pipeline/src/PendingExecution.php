@@ -2,6 +2,7 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Utils\Result\Result;
 use Generator;
@@ -9,20 +10,20 @@ use RuntimeException;
 use Throwable;
 
 /**
- * PendingExecution supports ProcessingState-aware operations.
+ * PendingExecution supports CanCarryState-aware operations.
  *
- * This class extends the lazy evaluation pattern to work with ProcessingState objects,
+ * This class extends the lazy evaluation pattern to work with CanCarryState objects,
  * providing multiple ways to extract results while preserving tags and metadata.
  */
 class PendingExecution
 {
-    private ProcessingState $initialState;
+    private CanCarryState $initialState;
     private CanProcessState $pipeline;
 
-    private ?ProcessingState $cachedOutput = null;
+    private ?CanCarryState $cachedOutput = null;
 
     public function __construct(
-        ProcessingState $initialState,
+        CanCarryState $initialState,
         CanProcessState $pipeline,
     ) {
         $this->initialState = $initialState;
@@ -30,7 +31,9 @@ class PendingExecution
     }
 
     public function for(mixed $value, array $tags = []): self {
-        $this->initialState = ProcessingState::with($value, $tags);
+        $this->initialState = $this->initialState
+            ->withResult(Result::from($value))
+            ->replaceTags(...$tags);
         $this->cachedOutput = null; // Reset cached output
         return $this;
     }
@@ -45,11 +48,11 @@ class PendingExecution
         }
     }
 
-    public function execute(): ProcessingState {
+    public function execute(): CanCarryState {
         return $this->executeOnce($this->initialState, $this->pipeline);
     }
 
-    public function state(): ProcessingState {
+    public function state(): CanCarryState {
         return $this->execute();
     }
 
@@ -100,7 +103,7 @@ class PendingExecution
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    private function executeOnce(ProcessingState $state, CanProcessState $pipeline): ProcessingState {
+    private function executeOnce(CanCarryState $state, CanProcessState $pipeline): CanCarryState {
         if (is_null($this->cachedOutput)) {
             $this->cachedOutput = $pipeline->process($state);
         }

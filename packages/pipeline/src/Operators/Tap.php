@@ -2,9 +2,9 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
 
 readonly final class Tap implements CanProcessState {
@@ -38,7 +38,7 @@ readonly final class Tap implements CanProcessState {
     }
 
     /**
-     * @param callable(ProcessingState):mixed $callable
+     * @param callable(CanCarryState):mixed $callable
      */
     public static function withState(callable $callable): self {
         return new self(Call::withState($callable));
@@ -52,7 +52,7 @@ readonly final class Tap implements CanProcessState {
         );
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $this->operator->process($state, fn($s) => $s);
         return $next ? $next($state) : $state;
     }

@@ -4,6 +4,7 @@ namespace Cognesy\Utils;
 
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 /**
  * String manipulation utilities.
@@ -115,7 +116,10 @@ class Str
                 fn ($data) => trim($data),
             )
             ->create();
-        return $pipeline->executeWith($input)->value();
+
+        return $pipeline
+            ->executeWith(ProcessingState::with($input))
+            ->value();
     }
 
     /**

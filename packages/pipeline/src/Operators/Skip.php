@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use RuntimeException;
 
@@ -19,13 +19,13 @@ readonly final class Skip implements CanProcessState {
     ) {}
 
     /**
-     * @param callable(ProcessingState):bool $condition
+     * @param callable(CanCarryState):bool $condition
      */
     public static function when(callable $condition): self {
         return new self(ConditionalCall::withState($condition)->then(Call::withNoArgs(fn() => true)));
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $tempState = $this->conditionChecker->process($state, fn($s) => $s);
         return match(true) {
             $tempState->isFailure() => $tempState

@@ -3,9 +3,9 @@
 namespace Cognesy\Pipeline\Operators;
 
 use Closure;
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
 use Cognesy\Utils\Result\Failure;
@@ -18,7 +18,7 @@ readonly final class Call implements CanProcessState {
     private NullStrategy $onNull;
 
     /**
-     * @param callable(ProcessingState):mixed $callable
+     * @param callable(CanCarryState):mixed $callable
      */
     private function __construct(callable $callable, NullStrategy $onNull) {
         $this->onNull = $onNull;
@@ -33,7 +33,7 @@ readonly final class Call implements CanProcessState {
      * @param callable(mixed):mixed $callable
      */
     public static function withNoArgs(callable $callable) : self {
-        return new self(function (ProcessingState $state) use ($callable) {
+        return new self(function (CanCarryState $state) use ($callable) {
             if ($state->isFailure()) {
                 return $state;
             }
@@ -45,7 +45,7 @@ readonly final class Call implements CanProcessState {
      * @param callable(mixed):mixed $callable
      */
     public static function withValue(callable $callable) : self {
-        return new self(function (ProcessingState $state) use ($callable) {
+        return new self(function (CanCarryState $state) use ($callable) {
             if ($state->isFailure()) {
                 return $state;
             }
@@ -57,16 +57,16 @@ readonly final class Call implements CanProcessState {
      * @param callable(Result):mixed $callable
      */
     public static function withResult(callable $callable) : self {
-        return new self(function (ProcessingState $state) use ($callable) {
+        return new self(function (CanCarryState $state) use ($callable) {
             return $callable($state->result());
         }, NullStrategy::Allow);
     }
 
     /**
-     * @param callable(ProcessingState):ProcessingState $callable
+     * @param callable(CanCarryState):CanCarryState $callable
      */
     public static function withState(callable $callable) : self {
-        return new self(function (ProcessingState $state) use ($callable) {
+        return new self(function (CanCarryState $state) use ($callable) {
             return $callable($state);
         }, NullStrategy::Allow);
     }
@@ -76,9 +76,9 @@ readonly final class Call implements CanProcessState {
     }
 
     /**
-     * @param callable(ProcessingState):ProcessingState $next
+     * @param callable(CanCarryState):CanCarryState $next
      */
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $outputState = ($this->normalizedCall)($state);
 
         if (is_null($outputState)) {
@@ -96,7 +96,7 @@ readonly final class Call implements CanProcessState {
         }
 
         $modifiedState = match(true) {
-            $outputState instanceof ProcessingState => $outputState
+            $outputState instanceof CanCarryState => $outputState
                 ->transform()->mergeInto($state)->state(),
             $outputState instanceof Failure => $state
                 ->withResult($outputState)

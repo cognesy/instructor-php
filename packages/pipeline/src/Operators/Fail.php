@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Utils\Result\Result;
 use RuntimeException;
@@ -21,7 +21,7 @@ readonly final class Fail implements CanProcessState {
         });
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         if ($state->isFailure()) {
             return $next ? $next($state) : $state;
         }

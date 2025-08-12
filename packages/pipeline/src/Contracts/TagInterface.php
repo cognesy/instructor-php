@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Contracts;
 
 /**
- * Represents a tag that can be attached to a ProcessingState.
+ * Represents a tag that can be attached to a CanCarryState implementers.
  * 
  * Tags are immutable metadata objects that provide cross-cutting concerns
  * like observability, retry logic, error handling, and tracing information.

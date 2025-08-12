@@ -109,8 +109,8 @@ class TransformState {
     }
 
     /**
-     * @param callable(ProcessingState):bool $stateConditionFn
-     * @param callable(ProcessingState):ProcessingState $stateTransformationFn
+     * @param callable(CanCarryState):bool $stateConditionFn
+     * @param callable(CanCarryState):CanCarryState $stateTransformationFn
      */
     public function whenState(
         callable $stateConditionFn,
@@ -199,7 +199,7 @@ class TransformState {
     private function mapAnyInput(callable $inputFn, callable $fn): CanCarryState {
         $output = $fn($inputFn());
         return match(true) {
-            $output instanceof ProcessingState => $output->transform()->mergeInto($this->state)->state(),
+            $output instanceof CanCarryState => $output->transform()->mergeInto($this->state)->state(),
             default => $this->state->withResult(Result::from($output)),
         };
     }

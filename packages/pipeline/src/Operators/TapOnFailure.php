@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Middleware that executes a callback when processing results in failure.
@@ -22,16 +22,16 @@ readonly final class TapOnFailure implements CanProcessState
     ) {}
 
     /**
-     * @param callable(ProcessingState):void $callback
+     * @param callable(CanCarryState):void $callback
      */
     public static function with(callable $callback): self {
         return new self(Call::withState($callback));
     }
 
     /**
-     * @param callable(ProcessingState):ProcessingState $next
+     * @param callable(CanCarryState):CanCarryState $next
      */
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $newState = $next ? $next($state) : $state;
         if (!$newState->isFailure()) {
             return $newState;

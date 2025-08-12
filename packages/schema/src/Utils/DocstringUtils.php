@@ -14,7 +14,10 @@ class DocstringUtils
             ->through(fn($code) => self::removeAnnotations($code))
             ->finally(fn(ProcessingState $code) => trim($code->value()))
             ->create();
-        return $pipeline->executeWith($code)->value();
+
+        return $pipeline
+            ->executeWith(ProcessingState::with($code))
+            ->value();
     }
 
     public static function getParameterDescription(string $name, string $text): string {

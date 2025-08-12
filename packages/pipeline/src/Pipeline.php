@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Internal\OperatorStack;
 use Exception;
@@ -41,15 +41,12 @@ class Pipeline implements CanProcessState
 
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
-    public function executeWith(mixed $initialValue = null, TagInterface ...$tags): PendingExecution {
-        return new PendingExecution(
-            initialState: ProcessingState::with($initialValue, $tags),
-            pipeline: $this
-        );
+    public function executeWith(CanCarryState $state): PendingExecution {
+        return new PendingExecution(initialState: $state, pipeline: $this);
     }
 
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $processedState = match (true) {
             ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->processStack($state, $this->steps),
             default => $this->applyStepsWithMiddleware($state, $this->middleware, $this->steps, $this->hooks),
@@ -61,11 +58,11 @@ class Pipeline implements CanProcessState
     // INTERNAL IMPLEMENTATION ///////////////////////////////////////////////////////////////
 
     private function applyStepsWithMiddleware(
-        ProcessingState $state,
+        CanCarryState $state,
         OperatorStack $middleware,
         OperatorStack $steps,
         OperatorStack $hooks,
-    ): ProcessingState {
+    ): CanCarryState {
         return match (true) {
             $middleware->isEmpty() => $this->applySteps($state, $steps, $hooks),
             default => $this->tryProcess(
@@ -76,10 +73,10 @@ class Pipeline implements CanProcessState
     }
 
     private function applySteps(
-        ProcessingState $state,
+        CanCarryState $state,
         OperatorStack $steps,
         OperatorStack $hooks,
-    ): ProcessingState {
+    ): CanCarryState {
         $currentState = $state;
         foreach ($steps->getIterator() as $step) {
             $nextState = match (true) {
@@ -96,10 +93,10 @@ class Pipeline implements CanProcessState
 
     private function executeStepWithHooks(
         CanProcessState $step,
-        ProcessingState $state,
+        CanCarryState $state,
         OperatorStack $hooks,
-    ): ProcessingState {
-        $stack = $hooks->callStack(function (ProcessingState $state) use ($step) {
+    ): CanCarryState {
+        $stack = $hooks->callStack(function (CanCarryState $state) use ($step) {
             return match (true) {
                 !$this->shouldContinueProcessing($state) => $state,
                 default => $this->tryProcess($step, $state),
@@ -109,9 +106,9 @@ class Pipeline implements CanProcessState
     }
 
     private function processStack(
-        ProcessingState $state,
+        CanCarryState $state,
         OperatorStack $operators,
-    ): ProcessingState {
+    ): CanCarryState {
         $currentState = $state;
         foreach ($operators->getIterator() as $step) {
             $nextState = $this->tryProcess($step, $currentState);
@@ -123,11 +120,14 @@ class Pipeline implements CanProcessState
         return $currentState;
     }
 
-    private function shouldContinueProcessing(ProcessingState $state): bool {
+    private function shouldContinueProcessing(CanCarryState $state): bool {
         return $state->result()->isSuccess();
     }
 
-    private function tryProcess(CanProcessState|callable $processable, ProcessingState $state): ProcessingState {
+    private function tryProcess(
+        CanProcessState|callable $processable,
+        CanCarryState $state
+    ): CanCarryState {
         try {
             return match(true) {
                 $processable instanceof CanProcessState => $processable->process($state),

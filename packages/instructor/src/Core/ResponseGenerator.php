@@ -12,6 +12,7 @@ use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
@@ -46,7 +47,8 @@ class ResponseGenerator implements CanGenerateResponse
             })
             ->create();
 
-        return $pipeline->executeWith($response->findJsonData($mode)->toString())->result();
+        $json = $response->findJsonData($mode)->toString();
+        return $pipeline->executeWith(ProcessingState::with($json))->result();
 
         //        return ResultChain::from(fn() => $response->findJsonData($mode)->toString())
         //            ->through(fn($responseJson) => match(true) {

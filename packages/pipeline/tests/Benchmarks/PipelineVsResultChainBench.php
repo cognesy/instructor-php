@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\Legacy\Chain\ResultChain;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Benchmark comparing Pipeline vs ResultChain performance
@@ -46,7 +47,7 @@ class PipelineVsResultChainBench
             ->create();
             
         // Execute pipeline (this is where the actual work happens due to lazy evaluation)
-        $result = $pipeline->executeWith($testData)->value();
+        $result = $pipeline->executeWith(ProcessingState::with($testData))->value();
     }
 
     /**
@@ -127,7 +128,7 @@ class PipelineVsResultChainBench
                 ->create();
         }
         
-        $result = $pipeline->executeWith($testData)->value();
+        $result = $pipeline->executeWith(ProcessingState::with($testData))->value();
     }
 
     /**

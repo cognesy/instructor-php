@@ -43,7 +43,7 @@ use Cognesy\Utils\Arrays;
 final readonly class SimpleTagMap implements TagMapInterface
 {
     /**
-     * @param TagInterface $tags Tags indexed by class name
+     * @param TagInterface[] $tags Tags indexed by class name
      */
     private function __construct(
         private array $tags = [],

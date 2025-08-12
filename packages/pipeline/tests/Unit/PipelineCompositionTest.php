@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 test('nested pipelines - pipeline containing other pipelines as steps', function () {
     // Create first sub-pipeline using builder API: multiply by 2, then add 10
@@ -30,7 +31,11 @@ test('nested pipelines - pipeline containing other pipelines as steps', function
     // 22 * 3 = 66
     // Pipeline2: 66 / 3 - 5 = 22 - 5 = 17
     // round(17) = 17
-    expect($mainPipeline->executeWith()->for(5)->value())->toBe(17.0);
+    expect($mainPipeline
+        ->executeWith(ProcessingState::with(null))
+        ->for(5)
+        ->value()
+    )->toBe(17.0);
 
     // Test with input 10:
     // 10 + 1 = 11
@@ -38,5 +43,9 @@ test('nested pipelines - pipeline containing other pipelines as steps', function
     // 32 * 3 = 96
     // Pipeline2: 96 / 3 - 5 = 32 - 5 = 27
     // round(27) = 27
-    expect($mainPipeline->executeWith()->for(10)->value())->toBe(27.0);
+    expect($mainPipeline
+        ->executeWith(ProcessingState::with(null))
+        ->for(10)
+        ->value()
+    )->toBe(27.0);
 });

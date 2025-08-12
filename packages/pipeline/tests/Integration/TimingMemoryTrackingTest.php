@@ -6,6 +6,7 @@ use Cognesy\Pipeline\Operators\Observation\StepTiming;
 use Cognesy\Pipeline\Operators\Observation\TrackMemory;
 use Cognesy\Pipeline\Operators\Observation\TrackTime;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\Observation\MemoryTag;
 use Cognesy\Pipeline\Tag\Observation\StepMemoryTag;
 use Cognesy\Pipeline\Tag\Observation\StepTimingTag;
@@ -18,7 +19,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->withOperator(TrackTime::capture('test-operation'))
             ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
-            ->executeWith(5)
+            ->executeWith(ProcessingState::with(5))
             ->state();
 
         $timings = $result->allTags(TimingTag::class);
@@ -43,7 +44,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 return $x + count($data);
             }))
             ->create()
-            ->executeWith(10)
+            ->executeWith(ProcessingState::with(10))
             ->state();
 
         $memoryTags = $result->allTags(MemoryTag::class);
@@ -63,7 +64,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->throughOperator(Call::withValue(fn($x) => $x + 1))
             ->throughOperator(Call::withValue(fn($x) => $x * 3))
             ->create()
-            ->executeWith(2)
+            ->executeWith(ProcessingState::with(2))
             ->state();
 
         $stepTimings = $result->allTags(StepTimingTag::class);
@@ -88,7 +89,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 return $x . $data;
             }))
             ->create()
-            ->executeWith('test')
+            ->executeWith(ProcessingState::with('test'))
             ->state();
 
         $stepMemory = $result->allTags(StepMemoryTag::class);
@@ -110,7 +111,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->aroundEach(StepMemory::capture('multiply-step'))
             ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
-            ->executeWith(10)
+            ->executeWith(ProcessingState::with(10))
             ->state();
 
         // Check we have all expected tags
@@ -132,7 +133,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 throw new Exception('Test failure');
             }))
             ->create()
-            ->executeWith(5)
+            ->executeWith(ProcessingState::with(5))
             ->state();
 
         $timing = $result->allTags(TimingTag::class)[0];
@@ -153,7 +154,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 return $x;
             }))
             ->create()
-            ->executeWith(1)
+            ->executeWith(ProcessingState::with(1))
             ->state();
 
         $timing = $result->allTags(TimingTag::class)[0];

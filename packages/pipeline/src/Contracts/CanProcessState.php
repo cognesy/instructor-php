@@ -2,8 +2,6 @@
 
 namespace Cognesy\Pipeline\Contracts;
 
-use Cognesy\Pipeline\ProcessingState;
-
 /**
  * Interface for state processing components.
  * 
@@ -21,7 +19,7 @@ use Cognesy\Pipeline\ProcessingState;
 interface CanProcessState
 {
     /**
-     * @param callable(ProcessingState):ProcessingState $next Callback to invoke next component
+     * @param callable(CanCarryState):CanCarryState $next Callback to invoke next component
      */
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState;
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState;
 }

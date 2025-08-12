@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
@@ -27,7 +29,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(42);
+                ->executeWith(ProcessingState::with(42));
             
             $result = $pending->result();
             
@@ -40,7 +42,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => throw new RuntimeException('Pipeline error'))
                 ->create()
-                ->executeWith(42);
+                ->executeWith(ProcessingState::with(42));
             
             $result = $pending->result();
             
@@ -57,7 +59,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(42);
+                ->executeWith(ProcessingState::with(42));
             
             $result1 = $pending->result();
             $result2 = $pending->result();
@@ -73,7 +75,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                 ->through(fn($x) => $x * 3)
                 ->through(fn($x) => $x + 5)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $value = $pending->value();
             $state = $pending->state();
@@ -91,7 +93,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                 ->through(fn($x) => $x * 2)
                 ->through(fn($x) => throw new RuntimeException('Test error'))
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $isFailure = $pending->isFailure();
             $exception = $pending->exception();
@@ -109,7 +111,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
     describe('for method with tags', function () {
         it('updates initial state with tags', function () {
             $tag = new ExecutionTestTag('updated');
-            $pending = Pipeline::builder()->create()->executeWith('original');
+            $pending = Pipeline::builder()->create()->executeWith(ProcessingState::with('original'));
             
             $newExecution = $pending->for('updated', [$tag]);
             $state = $newExecution->state();
@@ -127,7 +129,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             // First execution
             $value1 = $pending->value();
@@ -143,8 +145,8 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
     describe('integration with complex pipelines', function () {
         it('works with pipelines containing middleware', function () {
-            $middleware = new class implements \Cognesy\Pipeline\Contracts\CanProcessState {
-                public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+            $middleware = new class implements CanProcessState {
+                public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
                     return $next ? $next($state->addTags(new ExecutionTestTag('middleware'))) : $state;
                 }
             };
@@ -153,7 +155,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                 ->withOperator($middleware)
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $state = $pending->state();
             
@@ -171,7 +173,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                 })
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $value = $pending->value();
             
@@ -184,7 +186,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
                 ->through(fn($x) => $x * 2)
                 ->finally(fn($state) => $state->value() . '_finalized')
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $value = $pending->value();
             
@@ -197,7 +199,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x ?? 'was_null')
                 ->create()
-                ->executeWith(null);
+                ->executeWith(ProcessingState::with(null));
             
             $value = $pending->value();
             
@@ -207,7 +209,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         it('handles empty arrays in stream', function () {
             $pending = Pipeline::builder()
                 ->create()
-                ->executeWith([]);
+                ->executeWith(ProcessingState::with([]));
             
             $stream = $pending->stream();
             $results = iterator_to_array($stream);
@@ -221,7 +223,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => throw $originalException)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $exception = $pending->exception();
             

@@ -2,6 +2,7 @@
 
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 class ExecutionTag implements TagInterface {
     public function __construct(public readonly string $step) {}
@@ -19,7 +20,7 @@ describe('PendingExecution Enhanced Operations', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             expect($executed)->toBeFalse();
             
@@ -37,7 +38,7 @@ describe('PendingExecution Enhanced Operations', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $value1 = $pending->value();
             $value2 = $pending->value();
@@ -53,7 +54,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $result = $pending->state()
                 ->transform()
@@ -68,7 +69,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10, new ExecutionTag('pipeline'));
+                ->executeWith(ProcessingState::with(10, [new ExecutionTag('pipeline')]));
             
             $state = $pending->state();
             $result = $state
@@ -89,7 +90,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => throw new \RuntimeException('Pipeline error'))
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             // Error not thrown until execution
             $result = $pending->state();
@@ -101,7 +102,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $result = $pending->state()
                 ->transform()
@@ -117,7 +118,7 @@ describe('PendingExecution Enhanced Operations', function () {
         it('works with monadic transformations', function () {
             $pending = Pipeline::builder()
                 ->create()
-                ->executeWith([1, 2, 3]);
+                ->executeWith(ProcessingState::with([1, 2, 3]));
             
             $state = $pending->state()
                 ->transform()
@@ -132,7 +133,7 @@ describe('PendingExecution Enhanced Operations', function () {
         it('handles empty results gracefully', function () {
             $pending = Pipeline::builder()
                 ->create()
-                ->executeWith([1, 2, 3]);
+                ->executeWith(ProcessingState::with([1, 2, 3]));
             
             $state = $pending->state()
                 ->transform()
@@ -150,7 +151,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $finalValue = $pending->state()
                 ->transform()
@@ -164,7 +165,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $finalValue = $pending->state()
                 ->transform()
@@ -178,7 +179,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pending = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             $result = $pending->state()
                 ->transform()
@@ -196,7 +197,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->through(fn($x) => $x * 2)
                 ->through(fn($x) => $x + 1)
                 ->create()
-                ->executeWith(0);
+                ->executeWith(ProcessingState::with(0));
             
             $results = [];
             foreach ([1, 2, 3] as $input) {
@@ -214,7 +215,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $pipeline = Pipeline::builder()
                 ->through(fn($x) => $x > 0 ? $x * 2 : throw new \Exception('Negative'))
                 ->create()
-                ->executeWith(0);
+                ->executeWith(ProcessingState::with(0));
             
             $results = [];
             foreach ([-1, 2, -3, 4] as $input) {
@@ -240,7 +241,7 @@ describe('PendingExecution Enhanced Operations', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
             
             // Pipeline hasn't executed yet
             expect($pipelineExecuted)->toBeFalse();

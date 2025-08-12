@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Pipeline;
@@ -16,7 +17,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $result = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($result)->toBe(20);
@@ -28,7 +29,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($x) => $x + 5)    // 25
                 ->map(fn($x) => $x / 5)    // 5
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($result)->toBe(5);
@@ -38,13 +39,13 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $mapResult = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             $throughResult = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($mapResult)->toBe($throughResult);
@@ -56,7 +57,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(20);
@@ -66,7 +67,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $state = Pipeline::builder()
                 ->map(fn($x) => ProcessingState::with($x * 2, [new BuilderTag('mapped')]))
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->state();
             
             expect($state->value())->toBe(20);
@@ -79,7 +80,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($x) => $x + 5)        // 15
                 ->map(fn($x) => $x * 2)        // 30
                 ->create()
-                ->executeWith(5)
+                ->executeWith(ProcessingState::with(5))
                 ->value();
             
             expect($value)->toBe(30);
@@ -89,7 +90,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $state = Pipeline::builder()
                 ->map(fn($x) => ProcessingState::with($x * 2, [new BuilderTag('mapped')]))
                 ->create()
-                ->executeWith(10, new BuilderTag('initial'))
+                ->executeWith(ProcessingState::with(10, [new BuilderTag('initial')]))
                 ->state();
             
             $tags = $state->allTags(BuilderTag::class);
@@ -104,7 +105,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $value = Pipeline::builder()
                 ->filter(fn($x) => $x > 5)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(10);
@@ -120,7 +121,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
 
             expect($pending->isFailure())->toBeTrue();
             expect($executed)->toBeFalse();
@@ -132,7 +133,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->filter(fn($x) => $x > 15)  // passes
                 ->map(fn($x) => $x + 5)      // 25
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(25);
@@ -142,7 +143,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $state = Pipeline::builder()
                 ->filter(fn($x) => $x > 5)
                 ->create()
-                ->executeWith(10, new BuilderTag('filtered'))
+                ->executeWith(ProcessingState::with(10, [new BuilderTag('filtered')]))
                 ->state();
             
             expect($state->tags()->only(BuilderTag::class)->first()->operation)->toBe('filtered');
@@ -157,7 +158,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($x) => $x + 5)                // 15
                 ->map(fn($x) => $x * 2)                    // 30
                 ->create()
-                ->executeWith(5)
+                ->executeWith(ProcessingState::with(5))
                 ->value();
             
             expect($value)->toBe(30);
@@ -183,7 +184,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                     return $x * 2;
                 })
                 ->create()
-                ->executeWith(5);
+                ->executeWith(ProcessingState::with(5));
 
             expect($pending->isFailure())->toBeTrue();
             expect($step1Executed)->toBeTrue();   // Executed before filter
@@ -198,7 +199,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($s) => $s . ' WORLD')        // 'HELLO WORLD'
                 ->map(fn($s) => str_replace(' ', '_', $s)) // 'HELLO_WORLD'
                 ->create()
-                ->executeWith('hello')
+                ->executeWith(ProcessingState::with('hello'))
                 ->value();
             
             expect($value)->toBe('HELLO_WORLD');
@@ -212,7 +213,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->when(fn($x) => $x > 15, fn($x) => $x + 10)      // 30
                 ->filter(fn($x) => $x > 25)                       // passes
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(30);
@@ -228,7 +229,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 })
                 ->filter(fn($x) => $x > 15)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(20);
@@ -241,7 +242,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $middleware = new class($middlewareExecuted) implements CanProcessState {
                 public function __construct(private bool &$executed) {}
                 
-                public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+                public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
                     $this->executed = true;
                     return $next($state);
                 }
@@ -252,7 +253,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->withOperator($middleware)
                 ->filter(fn($x) => $x > 5)
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(20);
@@ -266,7 +267,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($x) => throw new \RuntimeException('Map error'))
                 ->filter(fn($x) => $x > 5)
                 ->create()
-                ->executeWith(10);
+                ->executeWith(ProcessingState::with(10));
 
             expect($pending->isFailure())->toBeTrue();
             expect($pending->exception()->getMessage())->toBe('Map error');
@@ -279,7 +280,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($x) => $x + 5)      // 25
                 ->filter(fn($x) => $x > 20)  // passes
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->value();
             
             expect($value)->toBe(25);
@@ -292,7 +293,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->map(fn($x) => $x + 5)      // 25
                 ->filter(fn($x) => $x > 30)  // fails
                 ->create()
-                ->executeWith(10)
+                ->executeWith(ProcessingState::with(10))
                 ->result();
 
             expect($result->isFailure())->toBeTrue();

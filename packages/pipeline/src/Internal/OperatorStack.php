@@ -3,8 +3,8 @@
 namespace Cognesy\Pipeline\Internal;
 
 use ArrayIterator;
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 use Countable;
 use Iterator;
 use IteratorAggregate;
@@ -65,31 +65,17 @@ final class OperatorStack implements Countable, IteratorAggregate
     }
 
     /**
-     * @param ?callable(ProcessingState):ProcessingState $next Final processor to execute after all middleware
-     */
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-        if (empty($this->operators)) {
-            return match(true) {
-                ($next === null) => $state,
-                default => $next($state),
-            };
-        }
-        $stack = $this->callStack($next);
-        return $stack($state);
-    }
-
-    /**
      * Builds the middleware stack by wrapping each operator in a closure that
      * calls the next operator in the stack.
      *
-     * @param ?callable(ProcessingState):ProcessingState $next Final processor to execute after all middleware
+     * @param ?callable(CanCarryState):CanCarryState $next Final processor to execute after all middleware
      */
     public function callStack(callable $next): callable {
-        $stack = $next ?? fn(ProcessingState $s) => $s;
+        $stack = $next ?? fn(CanCarryState $s) => $s;
         // Build stack from last to first middleware
         for ($i = count($this->operators) - 1; $i >= 0; $i--) {
             $operator = $this->operators[$i];
-            $stack = function(ProcessingState $s) use ($operator, $stack) {
+            $stack = static function(CanCarryState $s) use ($operator, $stack) : CanCarryState {
                 return $operator->process($s, $stack);
             };
         }

@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\Legacy\Chain\ResultChain;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 
 describe('Pipeline vs ResultChain Performance Comparison', function () {
     
@@ -32,7 +33,7 @@ describe('Pipeline vs ResultChain Performance Comparison', function () {
                 ->through($this->processors[4])
                 ->create();
                 
-            $result = $pipeline->executeWith($this->testData)->value();
+            $result = $pipeline->executeWith(ProcessingState::with($this->testData))->value();
         }
         
         $pipelineMemoryEnd = memory_get_usage(true);
@@ -78,7 +79,7 @@ describe('Pipeline vs ResultChain Performance Comparison', function () {
             ->through($this->processors[3])
             ->through($this->processors[4])
             ->create()
-            ->executeWith($this->testData)->value();
+            ->executeWith(ProcessingState::with($this->testData))->value();
             
         $chainResult = ResultChain::make()
             ->through($this->processors[0])
@@ -104,7 +105,7 @@ describe('Pipeline vs ResultChain Performance Comparison', function () {
                 ->through($this->processors[4])
                 ->create();
                 
-            $result = $pipeline->executeWith($this->testData)->value();
+            $result = $pipeline->executeWith(ProcessingState::with($this->testData))->value();
         }
         
         $pipelineEnd = hrtime(true);
@@ -173,7 +174,7 @@ describe('Pipeline vs ResultChain Performance Comparison', function () {
         $pipelineExecutionStart = hrtime(true);
         
         for ($i = 0; $i < $this->iterations; $i++) {
-            $result = $preBuildPipeline->executeWith($this->testData)->value();
+            $result = $preBuildPipeline->executeWith(ProcessingState::with($this->testData))->value();
         }
         
         $pipelineExecutionEnd = hrtime(true);

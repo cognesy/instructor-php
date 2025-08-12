@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\ProcessingState;
 
 readonly final class Terminal implements CanProcessState
 {
@@ -12,12 +12,12 @@ readonly final class Terminal implements CanProcessState
     }
 
     public static function callable(): callable {
-        return function(ProcessingState $state, ?callable $next = null): ProcessingState {
+        return function(CanCarryState $state, ?callable $next = null): CanCarryState {
             return $state;
         };
     }
 
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         return $state;
     }
 }
