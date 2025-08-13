@@ -2,7 +2,10 @@
 
 namespace Cognesy\Utils\JsonSchema;
 
-class JsonSchemaType implements \JsonSerializable, \Stringable
+use JsonSerializable;
+use Stringable;
+
+class JsonSchemaType implements JsonSerializable, Stringable
 {
     use Traits\DefinesJsonTypes;
     use Traits\JsonSchemaType\HandlesAccess;

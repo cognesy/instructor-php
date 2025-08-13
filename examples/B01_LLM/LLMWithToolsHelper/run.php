@@ -29,20 +29,21 @@ $schema = JsonSchema::object(
 
 $data = (new Inference)
     ->using('openai')
+    //->withDebugPreset('on')
     ->with(
         messages: [
             ['role' => 'user', 'content' => 'What is capital of France? Respond with function call.']
         ],
         tools: [
             $schema->toFunctionCall(
-               functionName: 'extract_data',
-               functionDescription: 'Extract city data'
+               functionName: 'provide_data',
+               functionDescription: 'Provide city data'
             )
         ],
         toolChoice: [
             'type' => 'function',
             'function' => [
-                'name' => 'extract_data'
+                'name' => 'provide_data'
             ]
         ],
         options: ['max_tokens' => 64],

@@ -234,7 +234,7 @@ class PipelineBuilder
         );
     }
 
-    public function executeWith(?CanCarryState $state = null): PendingExecution {
+    public function executeWith(CanCarryState $state): PendingExecution {
         return $this->create()->executeWith($state);
     }
 }

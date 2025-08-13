@@ -10,9 +10,9 @@ trait HandlesTypeFactory
     public static function array(
         string      $name = '',
         ?JsonSchema $itemSchema = null,
-        ?bool       $nullable = null,
         ?string     $description = null,
         ?string     $title = null,
+        ?bool       $nullable = null,
         array       $meta = [],
     ) : self {
         return new self(
@@ -29,11 +29,11 @@ trait HandlesTypeFactory
     public static function object(
         string  $name = '',
         array   $properties = [],
-        ?bool   $nullable = null,
         ?array  $requiredProperties = null,
         ?string $description = null,
         ?string $title = null,
         bool    $additionalProperties = false,
+        ?bool   $nullable = null,
         array   $meta = [],
     ) : self {
         return new self(
@@ -52,9 +52,9 @@ trait HandlesTypeFactory
     public static function enum(
         string $name = '',
         array  $enumValues = [],
-        ?bool  $nullable = null,
         string $description = '',
         string $title = '',
+        ?bool  $nullable = null,
         array  $meta = [],
     ) : self {
         return new self(
@@ -70,9 +70,9 @@ trait HandlesTypeFactory
 
     public static function string(
         string $name = '',
-        ?bool $nullable = null,
         string $description = '',
         string $title = '',
+        ?bool $nullable = null,
         array $meta = [],
     ) : self {
         return new self(
@@ -87,9 +87,9 @@ trait HandlesTypeFactory
 
     public static function boolean(
         string $name = '',
-        ?bool $nullable = null,
         string $description = '',
         string $title = '',
+        ?bool $nullable = null,
         array $meta = [],
     ) : self {
         return new self(
@@ -104,9 +104,9 @@ trait HandlesTypeFactory
 
     public static function number(
         string $name = '',
-        ?bool $nullable = null,
         string $description = '',
         string $title = '',
+        ?bool $nullable = null,
         array $meta = [],
     ) : self {
         return new self(
@@ -121,9 +121,9 @@ trait HandlesTypeFactory
 
     public static function integer(
         string $name = '',
-        ?bool $nullable = null,
         string $description = '',
         string $title = '',
+        ?bool $nullable = null,
         array $meta = [],
     ) : self {
         return new self(
@@ -139,9 +139,9 @@ trait HandlesTypeFactory
     public static function collection(
         string $name = '',
         ?JsonSchema $itemSchema = null,
-        ?bool $nullable = null,
         string $description = '',
         string $title = '',
+        ?bool $nullable = null,
         array $meta = [],
     ) : self {
         return new self(

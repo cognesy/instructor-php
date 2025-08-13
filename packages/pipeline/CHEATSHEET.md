@@ -1,360 +1,299 @@
-# Pipeline Package API Cheatsheet
+# Pipeline Package Cheatsheet
 
-## Quick Start - Clean API Pattern
+## Core Interfaces
 
+### `CanCarryState` - State Container
 ```php
-// 1. Build pipeline (stateless)
-$pipeline = Pipeline::builder()
-    ->through(fn($x) => $x * 2)
-    ->withMiddleware($middleware)
-    ->create();
+// Factory
+ProcessingState::empty(): self
+ProcessingState::with(mixed $value, array $tags = []): self
 
-// 2. Execute with data and optional tags
-$result = $pipeline->executeWith($data, $tag1, $tag2);
+// State Operations
+->withResult(Result $result): self
+->addTags(TagInterface ...$tags): self
+->replaceTags(TagInterface ...$tags): self
+->failWith(string|Throwable $cause): self
 
-// 3. Access results
-$value = $result->value();                 // Extract value
-$state = $result->state();                 // Get processing state
-$tags = $state->allTags(CustomTag::class); // Query tags
+// Access
+->result(): Result
+->value(): mixed
+->valueOr(mixed $default): mixed
+->isSuccess(): bool
+->isFailure(): bool
+->exception(): Throwable
+->exceptionOr(mixed $default): mixed
+
+// Tags
+->tagMap(): TagMapInterface
+->allTags(?string $tagClass = null): array
+->hasTag(string $tagClass): bool
+->tags(): TagQuery
+->transform(): TransformState
 ```
 
-
-## Pipeline Factory Methods
-
+### `CanProcessState` - Processor Contract
 ```php
-// Create empty pipeline builder (only available method)
-Pipeline::builder()  // Returns PipelineBuilder
+public function process(CanCarryState $state, ?callable $next = null): CanCarryState;
 ```
 
-## PipelineBuilder API
+## Pipeline Construction & Execution
 
-### Construction
+### `Pipeline::builder()` - Fluent Builder
 ```php
-$builder = new PipelineBuilder();  // Clean constructor - no parameters
-// Note: withSource(), withInitialValue(), withTags() methods removed
-// Values and tags are provided at execution time via executeWith()
+Pipeline::builder()
+    // Core Processing
+    ->through(callable|CanProcessState $processor)
+    
+    // Middleware (wraps entire chain)
+    ->withMiddleware(CanProcessState $middleware)
+    
+    // Hooks (wraps each step)
+    ->beforeEach(callable|CanProcessState $hook)
+    ->afterEach(callable|CanProcessState $hook)
+    ->aroundEach(callable|CanProcessState $hook)
+    
+    // Finalizers (always run)
+    ->finally(callable|CanProcessState $finalizer)
+    
+    // Error Strategy
+    ->onError(ErrorStrategy::FailFast|ContinueWithFailure)
+    
+    // Build
+    ->create(): Pipeline
 ```
 
-### Processing Chain
+### Pipeline Execution
 ```php
-// Add processors
-$builder->through($callable);
-$builder->throughAll(...$callables);
-$builder->throughOperator($processor);
+$pipeline = Pipeline::builder()->through($processor)->create();
 
-// Conditional processing
-$builder->when($condition, $callback);
+// Execute
+->executeWith(CanCarryState $state): PendingExecution
 
-// Side effects (don't change result)
-$builder->tap($callback);
-$builder->tapWithState($stateCallback);
-
-// Transformations
-$builder->map($fn);
-$builder->filter($condition, $message);
-$builder->filterWithState($condition, $message);
-
-// Finalization
-$builder->finally($finalizer);
+// Direct processing
+->process(CanCarryState $state, ?callable $next = null): CanCarryState
 ```
 
-### Middleware & Hooks
+### `PendingExecution` - Lazy Evaluator
 ```php
-// Pipeline-level middleware
-$builder->withOperator(...$operator);
-$builder->prependOperator(...$operator);
+// Result Access
+->execute(): CanCarryState
+->state(): CanCarryState  
+->result(): Result
+->value(): mixed
+->valueOr(mixed $default): mixed
 
-// Per-processor hooks
-$builder->beforeEach($operator);         // Execute before each processor
-$builder->afterEach($operator);          // Execute after each processor  
-$builder->aroundEach($operator);   // Wrap around each processor
-$builder->onFailure($operator);
+// Status
+->isSuccess(): bool
+->isFailure(): bool
+->exception(): ?Throwable
 
-// Control flow
-$builder->finishWhen($condition);
-$builder->failWhen($condition, $message);
+// Batch Processing
+->for(mixed $value, array $tags = []): self
+->each(iterable $inputs, array $tags = []): Generator
+->stream(): Generator
 ```
 
-### Execution
+## State Management
+
+### `ProcessingState` - Immutable State
 ```php
-$pipeline = $builder->create();  // Returns Pipeline instance
-```
+// Creation
+ProcessingState::empty()
+ProcessingState::with($data, [$tag1, $tag2])
 
-## Pipeline Execution API
-
-```php
-// Execute with data and optional tags
-$pending = $pipeline->executeWith($data);                    // PendingExecution
-$pending = $pipeline->executeWith($data, $tag1, $tag2);      // With tags
-$pending = $pipeline->executeWith($data, ...$tagArray);      // With tag array
-
-// Process state directly (middleware interface)
-$state = $pipeline->process($processingState, $nextCallable);  // ProcessingState
-```
-
-## PendingExecution API
-
-### Value Access
-```php
-$pending->execute();           // ProcessingState
-$pending->state();            // ProcessingState
-$pending->result();           // Result
-$pending->value();            // mixed (throws on failure)
-$pending->valueOr($default);  // mixed
-$pending->stream();           // Generator
-```
-
-### Status Checks
-```php
-$pending->isSuccess();  // bool
-$pending->isFailure();  // bool
-$pending->exception();  // ?Throwable
-```
-
-### Batch Processing
-```php
-$pending->for($value, $tags);
-$pending->each($inputs, $tags);
-```
-
-## ProcessingState API
-
-### Construction
-```php
-ProcessingState::empty();
-ProcessingState::with($value, $tags);
-```
-
-### State Management
-```php
-$state->withResult($result);
-$state->withTags(...$tags);
-$state->failWith($cause);
-```
-
-### Value Access
-```php
-$state->result();              // Result
-$state->value();              // mixed (throws on failure)
-$state->valueOr($default);   // mixed
-$state->isSuccess();          // bool
-$state->isFailure();          // bool
-$state->exception();          // throws on success
-$state->exceptionOr($default);// mixed
-```
-
-### Transformations
-```php
-$state->map($fn);           // ProcessingState
-$state->mapResult($fn);     // ProcessingState
-$state->mapState($fn);      // ProcessingState
-```
-
-### Error Handling
-```php
-$state->recover($defaultValue);
-$state->recoverWith($recoveryFn);
-$state->failWhen($condition, $message);
-```
-
-### Conditional Operations
-```php
-$state->when($condition, $transformation);
-$state->whenState($stateCondition, $stateTransformation);
-```
-
-### Tag Operations
-```php
-$state->tagMap();                    // TagMapInterface
-$state->allTags($tagClass);          // TagInterface[]
-$state->hasTag($tagClass);           // bool
-$state->tags();                      // TagQuery
-
-// Conditional tag operations
-$state->addTagsIf($condition, ...$tags);
-$state->addTagsIfSuccess(...$tags);
-$state->addTagsIfFailure(...$tags);
-
-// State merging
-$state->mergeFrom($source);
-$state->mergeInto($target);
-$state->combine($other, $resultCombinator);
-```
-
-## Workflow API
-
-### Construction
-```php
-Workflow::empty();
-```
-
-### Step Types
-```php
-// Sequential execution
-$workflow->through($pipeline);
-
-// Conditional execution
-$workflow->when($condition, $pipeline);
-
-// Side effects (don't affect result)
-$workflow->tap($pipeline);
-```
-
-### Execution
-```php
-$workflow->executeWith($data);  // PendingExecution
+// Transformation (returns new instance)
+$state->withResult(Result::success($newValue))
+$state->addTags(new TimingTag(), new MetricTag())
+$state->replaceTags(new ErrorTag($error))
+$state->failWith('Error message')
 ```
 
 ## Tag System
 
+### Tag Query API
+```php
+$state->tags()
+    // Filtering
+    ->filter(callable $predicate)
+    ->ofType(string $class)
+    ->only(string ...$classes)
+    ->without(string ...$classes)
+    ->limit(int $count)
+    ->skip(int $count)
+    
+    // Transformation
+    ->map(callable $callback)
+    ->mapTo(callable $transformer): array
+    
+    // Terminals
+    ->all(): array
+    ->first(): ?TagInterface
+    ->last(): ?TagInterface
+    ->count(): int
+    ->has(string|TagInterface $tag): bool
+    ->hasAll(string|TagInterface ...$tags): bool
+    ->hasAny(string|TagInterface ...$tags): bool
+    ->isEmpty(): bool
+    ->classes(): array
+```
+
 ### Built-in Tags
 ```php
-new TimingTag($start, $end, $duration, $name, $success);
-new StepTimingTag($stepName, $start, $end, $duration, $success);
-new MemoryTag($startMem, $endMem, $used, $startPeak, $endPeak, $peakUsed, $name);
-new StepMemoryTag($stepName, $startMem, $endMem, $used);
-new ErrorTag($error, $timestamp, $context);
-new SkipProcessingTag();
+new ErrorTag(string $error, array $context = [])
+new SkipProcessingTag()
+
+// Observation Tags
+new TimingTag(float $start, float $end, float $duration)
+new MemoryTag(int $start, int $end, int $peak)
+new StepTimingTag(string $step, float $duration)
+new StepMemoryTag(string $step, int $usage)
+```
+
+## TagMap Implementations
+
+### `IndexedTagMap` (Default)
+```php
+IndexedTagMap::create(array $tags): self
+IndexedTagMap::empty(): self
+
+->add(TagInterface ...$tags): self
+->replace(TagInterface ...$tags): self
+->merge(TagMapInterface $other): self
+->has(string $tagClass): bool
+->getAllInOrder(): array
+->query(): TagQuery
+```
+
+### `SimpleTagMap` (Type-optimized)
+```php
+SimpleTagMap::create(array $tags): self
+SimpleTagMap::empty(): self
+// Same methods as IndexedTagMap but with O(1) class lookups
+```
+
+## Middleware Patterns
+
+### Pipeline Middleware (wraps entire chain)
+```php
+class CustomMiddleware implements CanProcessState {
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
+        // Before processing
+        $result = $next ? $next($state) : $state;
+        // After processing
+        return $result;
+    }
+}
+
+$pipeline->withMiddleware(new CustomMiddleware());
+```
+
+### Step Hooks (wraps individual steps)
+```php
+$pipeline->aroundEach(function(CanCarryState $state, ?callable $next = null) {
+    // Before step
+    $result = $next ? $next($state) : $state;
+    // After step
+    return $result;
+});
+```
+
+## Built-in Operators
+
+### Core Operators
+```php
+// Direct calls
+Call::with(callable $processor)
+CallBefore::with(callable $processor) 
+CallAfter::with(callable $processor)
+RawCall::with(callable $processor)
+
+// Conditional
+ConditionalCall::when(callable $condition, CanProcessState $processor)
+FailWhen::condition(callable $condition, string $message = '')
+
+// Control Flow
+Skip::processing()
+Fail::with(string $message)
+Terminal::value(mixed $value)
+NoOp::create()
+
+// Side Effects
+Tap::with(callable $processor)
+TapOnFailure::with(callable $processor)
+
+// Lifecycle
+Finalize::with(callable $processor)
+```
+
+### Observation Operators
+```php
+// Pipeline-level timing
+StepTiming::capture(string $name = 'step')
+StepMemory::capture(string $name = 'step')
+
+// Memory tracking  
+TrackMemory::during(string $name = 'operation')
+TrackTime::during(string $name = 'operation')
+```
+
+## Quick Examples
+
+### Basic Pipeline
+```php
+$result = Pipeline::builder()
+    ->through(fn($x) => $x * 2)
+    ->through(fn($x) => $x + 10)
+    ->create() // creates Pipeline instance
+    ->executeWith(ProcessingState::with(5))
+    ->value(); // 20
+```
+
+### With Middleware
+```php
+$pipeline = Pipeline::builder()
+    ->withMiddleware(new TimingMiddleware())
+    ->through($businessLogic)
+    ->aroundEach(new StepLogger())
+    ->finally($cleanup)
+    ->create(); // creates Pipeline instance
+```
+
+### Error Handling
+```php
+$result = $pipeline->executeWith($data);
+if ($result->isFailure()) {
+    $error = $result->exception();
+    $errorTags = $result->state()->allTags(ErrorTag::class);
+}
 ```
 
 ### Tag Operations
 ```php
-// Factory
-TagMapFactory::create($tags);
-TagMapFactory::empty();
+$state = ProcessingState::with($data, [new MetricTag('start')])
+    ->addTags(new TimingTag($start, $end, $duration))
+    ->addTags(new CustomTag($metadata));
 
-// Query API
-$tagMap->query()
-  ->only($tagClass)
-  ->all();
-
-// Map operations
-$tagMap->has($tagClass);
-$tagMap->isEmpty();
-$tagMap->merge($other);
-$tagMap->with(...$tags);
+$timings = $state->tags()->ofType(TimingTag::class)->all();
+$hasErrors = $state->hasTag(ErrorTag::class);
 ```
 
-## Contracts & Interfaces
-
-### Core Interfaces
-- `CanProcessState` - Process ProcessingState objects (unified interface)
-- `TagInterface` - Tag implementation interface
-- `TagMapInterface` - Tag storage interface
-
-### Common Patterns
+### Conditional Processing
 ```php
-// Value processor (auto-wrapped)
-fn($value) => $transformedValue
-
-// State processor (full control)
-fn(ProcessingState $state) => ProcessingState
-
-// Middleware (unified interface)
-class MyMiddleware implements CanProcessState {
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-        // Pre-processing
-        $result = $next ? $next($state) : $state;
-        // Post-processing
-        return $result;
-    }
-}
-```
-
-## Timing & Memory Tracking
-
-### Pipeline-Level Monitoring
-```php
-// Capture entire pipeline timing
-$pipeline = Pipeline::builder()
-    ->withMiddleware(Timing::capture('operation'))
-    ->withMiddleware(Memory::capture('operation'))
-    ->through($processor)
+Pipeline::builder()
+    ->through($validation)
+    ->when(fn($state) => $state->value()['premium'], $premiumFeatures)
+    ->through($standardProcessing)
     ->create();
-
-$result = $pipeline->executeWith($data);
-
-// Extract data from execution state
-$state = $result->state();
-$timings = $state->allTags(TimingTag::class);
-$memory = $state->allTags(MemoryTag::class);
 ```
 
-### Step-Level Monitoring  
+## Error Strategies
 ```php
-// Capture timing/memory for each processor
-$pipeline = Pipeline::builder()
-    ->aroundEach(StepTiming::capture('processing'))    // Applied to ALL processors
-    ->aroundEach(StepMemory::capture('processing'))    // Applied to ALL processors  
-    ->through($validateProcessor)
-    ->through($heavyProcessor)
-    ->create();
-
-$result = $pipeline->executeWith($data);
-
-// Extract step data - one entry per processor
-$state = $result->state();
-$stepTimings = $state->allTags(StepTimingTag::class);  // 2 entries
-$stepMemory = $state->allTags(StepMemoryTag::class);   // 2 entries
+ErrorStrategy::ContinueWithFailure  // Default - capture errors, continue
+ErrorStrategy::FailFast             // Throw on first error
 ```
 
-### Monitoring Data Access
-```php
-// TimingTag methods
-$timing->durationMs();                // Duration in milliseconds
-$timing->durationFormatted();         // Human-readable (e.g., "125ms")
-$timing->startDateTime();             // DateTime object
-$timing->toArray();                   // Serializable array
-
-// MemoryTag methods  
-$memory->memoryUsedMB();             // Memory used in MB
-$memory->memoryUsedFormatted();      // Human-readable (e.g., "2.5MB")
-$memory->isMemoryFreed();            // true if negative delta
-```
-
-## Error Handling Patterns
-
-### Result Pattern
-```php
-if ($result->isFailure()) {
-    $error = $result->exception()->getMessage();
-}
-```
-
-### State-based Error Handling
-```php
-if ($state->isFailure()) {
-    $errorTag = $state->allTags(ErrorTag::class)[0] ?? null;
-}
-```
-
-### Recovery Patterns
-```php
-$state->recover($defaultValue);
-$state->recoverWith(fn($failedState) => $recoveryLogic);
-```
-
-## Performance Optimization
-
-### Lazy Evaluation
-```php
-$pending = $pipeline->executeWith($data);  // No execution yet (lazy)
-$value = $pending->value();                 // Execute when needed
-```
-
-### Middleware Placement
-```php
-// Efficient: pipeline-level timing
-$builder->withMiddleware(Timing::capture('operation'));
-$builder->withMiddleware(Memory::capture('operation'));
-
-// Step-level timing (around each processor)
-$builder->aroundEach(StepTiming::capture('step-name'));
-$builder->aroundEach(StepMemory::capture('step-name'));
-```
-
-### Condition Optimization
-```php
-// Cheap conditions first
-$workflow->when($cheapCheck, $expensivePipeline);
-```
+## Performance Tips
+- Use `IndexedTagMap` for general use, `SimpleTagMap` for heavy tag filtering
+- Pipeline middleware wraps entire chain (1 call), hooks wrap each step (N calls)
+- `PendingExecution` caches results - safe to call `->value()` multiple times
+- Prefer immutable operations - all state changes return new instances

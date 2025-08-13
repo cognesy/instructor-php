@@ -17,7 +17,7 @@ The overarching theme of using Instructor for function calling is to make the mo
 Use PHP's nullable types by prefixing type name with question mark (?) and set a default value to prevent undesired defaults like empty strings.
 
 ```php
-// @doctest id="c688"
+// @doctest id="070e"
 <?php
 class UserDetail
 {
@@ -33,7 +33,7 @@ class UserDetail
 You can create a wrapper class to hold either the result of an operation or an error message. This allows you to remain within a function call even if an error occurs, facilitating better error handling without breaking the code flow.
 
 ```php
-// @doctest id="8960"
+// @doctest id="3d6e"
 <?php
 class UserDetail
 {
@@ -66,7 +66,7 @@ With the `MaybeUser` class, you can either receive a `UserDetail` object in resu
 To prevent data misalignment, use Enums for standardized fields. Always include an "Other" option as a fallback so the model can signal uncertainty.
 
 ```php
-// @doctest id="4588"
+// @doctest id="45da"
 <?php
 enum Role : string {
     case Principal = 'principal'
@@ -93,7 +93,7 @@ If you'd like to improve LLM inference performance, try reiterating the requirem
 For complex attributes, it helps to reiterate the instructions in the field's description.
 
 ```php
-// @doctest id="1535"
+// @doctest id="b24e"
 <?php
 /** Extract the role based on the following rules: <your rules go here> */
 class Role
@@ -117,7 +117,7 @@ class UserDetail
 When you need to extract undefined attributes, use a list of key-value pairs.
 
 ```php
-// @doctest id="2798"
+// @doctest id="faed"
 <?php
 class Property
 {
@@ -140,7 +140,7 @@ class UserDetail
 When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
 
 ```php
-// @doctest id="3d09"
+// @doctest id="2253"
 <?php
 class Property
 {
@@ -168,7 +168,7 @@ To be 100% certain the list does not exceed the limit add extra validation, e.g.
 For multiple records containing arbitrary properties, instruct LLM to use consistent key names when extracting properties.
 
 ```php
-// @doctest id="df99"
+// @doctest id="5c4d"
 <?php
 class Property {
     public int $id;
@@ -192,7 +192,7 @@ In cases where relationships exist between entities, it's vital to define them e
 Following example demonstrates how to define relationships between users by incorporating an ```$id``` and ```$coworkers``` field:
 
 ```php
-// @doctest id="82c8"
+// @doctest id="d560"
 <?php
 class UserDetail
 {
@@ -221,7 +221,7 @@ This approach to "chain of thought" improves data quality but can have modular c
 
 
 ```php
-// @doctest id="93db"
+// @doctest id="7f52"
 <?php
 class Role
 {
@@ -246,7 +246,7 @@ You can reuse the same component for different contexts within a model. In this 
 
 
 ```php
-// @doctest id="8ab4"
+// @doctest id="3524"
 <?php
 class TimeRange {
     /** The start time in hours. */
@@ -273,7 +273,7 @@ Sometimes, a component like TimeRange may require some context or additional log
 
 
 ```php
-// @doctest id="c55c"
+// @doctest id="59fd"
 <?php
 class TimeRange
 {

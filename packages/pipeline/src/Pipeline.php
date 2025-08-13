@@ -45,7 +45,6 @@ class Pipeline implements CanProcessState
         return new PendingExecution(initialState: $state, pipeline: $this);
     }
 
-
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $processedState = match (true) {
             ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->processStack($state, $this->steps),

@@ -15,7 +15,7 @@ After sending an HTTP request, you need to process the response received from th
 All responses implement the `HttpResponse` interface, which provides a uniform way to access response data:
 
 ```php
-// @doctest id="8875"
+// @doctest id="c30a"
 interface HttpResponse
 {
     public function statusCode(): int;
@@ -32,7 +32,7 @@ This interface ensures that the same code will work whether you're using Guzzle,
 When you send a request using the `HttpClient::handle()` method, it returns an implementation of `HttpResponse`:
 
 ```php
-// @doctest id="b737"
+// @doctest id="59ff"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Contracts\HttpResponse;
@@ -56,7 +56,7 @@ However, since all these implementations provide the same interface, your code d
 The status code indicates the result of the HTTP request. You can access it using the `statusCode()` method:
 
 ```php
-// @doctest id="4358"
+// @doctest id="43cc"
 $response = $client->withRequest($request)->get();
 $statusCode = $response->statusCode();
 
@@ -78,7 +78,7 @@ Status codes are grouped into categories:
 You can check if a response was successful:
 
 ```php
-// @doctest id="cfc2"
+// @doctest id="7d74"
 $response = $client->withRequest($request)->get();
 
 if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
@@ -119,7 +119,7 @@ Here are some common HTTP status codes you might encounter:
 Response headers provide metadata about the response. You can access the headers using the `headers()` method:
 
 ```php
-// @doctest id="a21a"
+// @doctest id="e593"
 $response = $client->withRequest($request)->get();
 $headers = $response->headers();
 
@@ -156,7 +156,7 @@ Here are some common response headers you might encounter:
 For non-streaming responses, you can get the entire response body as a string using the `body()` method:
 
 ```php
-// @doctest id="1dcc"
+// @doctest id="472c"
 $response = $client->withRequest($request)->get();
 $body = $response->body();
 
@@ -168,7 +168,7 @@ echo "Response body: $body\n";
 Many APIs return JSON responses. You can decode them using PHP's `json_decode()` function:
 
 ```php
-// @doctest id="469f"
+// @doctest id="0e42"
 $response = $client->withRequest($request)->get();
 $body = $response->body();
 
@@ -189,7 +189,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 For XML responses, you can use PHP's built-in XML functions:
 
 ```php
-// @doctest id="67e9"
+// @doctest id="ace7"
 $response = $client->withRequest($request)->get();
 $body = $response->body();
 
@@ -210,7 +210,7 @@ if ($xml === false) {
 For binary responses (like file downloads), you can save the response body to a file:
 
 ```php
-// @doctest id="cbd0"
+// @doctest id="1860"
 $response = $client->withRequest($request)->get();
 $body = $response->body();
 
@@ -228,7 +228,7 @@ When making HTTP requests, various errors can occur. The Instructor HTTP client 
 The main exception type is `RequestException`, which is thrown when a request fails:
 
 ```php
-// @doctest id="008c"
+// @doctest id="31f2"
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
@@ -251,7 +251,7 @@ The `RequestException` often wraps another exception from the underlying HTTP cl
 By default, HTTP error responses (4xx, 5xx status codes) do not throw exceptions. You can control this behavior using the `failOnError` configuration option:
 
 ```php
-// @doctest id="b139"
+// @doctest id="c4a4"
 // In config/http.php
 'failOnError' => true, // Throw exceptions for 4xx/5xx responses
 ```
@@ -259,7 +259,7 @@ By default, HTTP error responses (4xx, 5xx status codes) do not throw exceptions
 When `failOnError` is set to `true`, the client will throw a `RequestException` for error responses. When it's `false`, you need to check the status code yourself:
 
 ```php
-// @doctest id="eee7"
+// @doctest id="d625"
 $response = $client->withRequest($request)->get();
 
 if ($response->statusCode() >= 400) {
@@ -276,7 +276,7 @@ if ($response->statusCode() >= 400) {
 If a request fails, you might want to retry it. Here's a simple implementation of a retry mechanism:
 
 ```php
-// @doctest id="648f"
+// @doctest id="682b"
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Contracts\HttpResponse;
 

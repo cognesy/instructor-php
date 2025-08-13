@@ -174,17 +174,6 @@ class PartialsGenerator implements CanGeneratePartials
         return $pipeline
             ->executeWith(ProcessingState::with($partialJson))
             ->result();
-
-        //        return ResultChain::make()
-        //            ->through(fn() => $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
-        //            ->tap(fn() => $this->events->dispatch(new PartialJsonReceived(['partialJson' => $partialJson])))
-        //            ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->toolName()))
-        //            ->through(fn() => $this->tryGetPartialObject($partialJson, $responseModel))
-        //            ->onFailure(fn($result) => $this->events->dispatch(
-        //                new PartialResponseGenerationFailed(Arrays::asArray($result->error()))
-        //            ))
-        //            ->then(fn($result) => $this->getChangedOnly($result))
-        //            ->result();
     }
 
     protected function tryGetPartialObject(
@@ -195,12 +184,9 @@ class PartialsGenerator implements CanGeneratePartials
             ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->create();
+
         $json = Json::fromPartial($partialJsonData)->toString();
         return $pipeline->executeWith(ProcessingState::with($json))->result();
-        //        return ResultChain::from(fn() => Json::fromPartial($partialJsonData)->toString())
-        //            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
-        //            ->through(fn($object) => $this->responseTransformer->transform($object))
-        //            ->result();
     }
 
     protected function getChangedOnly(Result $result) : ?Result {

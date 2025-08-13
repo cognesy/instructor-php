@@ -94,7 +94,11 @@ class JsonSchema implements CanProvideJsonSchema
 
     // MAIN ////////////////////////////////////////////////////////////////////
 
-    public static function fromArray(array $data, ?string $name = null, ?bool $required = null) : JsonSchema {
+    public static function fromArray(
+        array $data,
+        ?string $name = null,
+        ?bool $required = null
+    ) : JsonSchema {
         if (empty($data)) {
             return new self(
                 type: JsonSchemaType::any(),

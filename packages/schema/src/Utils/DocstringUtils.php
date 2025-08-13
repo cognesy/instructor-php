@@ -2,6 +2,7 @@
 
 namespace Cognesy\Schema\Utils;
 
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
@@ -12,7 +13,7 @@ class DocstringUtils
         $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($code) => self::removeMarkers($code))
             ->through(fn($code) => self::removeAnnotations($code))
-            ->finally(fn(ProcessingState $code) => trim($code->value()))
+            ->finally(fn(CanCarryState $state) => trim($state->value()))
             ->create();
 
         return $pipeline

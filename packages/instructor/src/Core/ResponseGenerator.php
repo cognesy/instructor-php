@@ -10,16 +10,16 @@ use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Json\Json;
-use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 
 class ResponseGenerator implements CanGenerateResponse
 {
@@ -41,7 +41,7 @@ class ResponseGenerator implements CanGenerateResponse
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
             ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
-            ->finally(fn($state) => match(true) {
+            ->finally(fn(CanCarryState $state) => match(true) {
                 $state->isSuccess() => $state->result(),
                 default => Result::failure(implode('; ', $this->extractErrors($state)))
             })
@@ -49,49 +49,18 @@ class ResponseGenerator implements CanGenerateResponse
 
         $json = $response->findJsonData($mode)->toString();
         return $pipeline->executeWith(ProcessingState::with($json))->result();
-
-        //        return ResultChain::from(fn() => $response->findJsonData($mode)->toString())
-        //            ->through(fn($responseJson) => match(true) {
-        //                ($responseJson === '') => Result::failure('No JSON found in the response'),
-        //                default => Result::success($responseJson)
-        //            })
-        //            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
-        //            ->through(fn($object) => $this->responseValidator->validate($object))
-        //            ->through(fn($object) => $this->responseTransformer->transform($object))
-        //            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
-        //            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
-        //            ->then(fn($result) => match(true) {
-        //                $result->isSuccess() => $result,
-        //                default => Result::failure($this->extractErrors($result))
-        //            })
-        //            ->result();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    protected function extractErrors(\Cognesy\Pipeline\ProcessingState|Result|Exception $result) : array {
-        if ($result instanceof Exception) {
-            return [$result->getMessage()];
-        }
-        if ($result instanceof \Cognesy\Pipeline\ProcessingState) {
-            if ($result->isSuccess()) {
-                return [];
-            }
-            $errorValue = $result->exception();
-        } else {
-            if ($result->isSuccess()) {
-                return [];
-            }
-            $errorValue = $result->error();
-        }
+    protected function extractErrors(CanCarryState|Result|Exception|ValidationResult $output) : array {
         return match(true) {
-            is_array($errorValue) => $errorValue,
-            is_string($errorValue) => [$errorValue],
-            $errorValue instanceof ValidationResult => [$errorValue->getErrorMessage()],
-            $errorValue instanceof JsonParsingException => [$errorValue->message],
-            $errorValue instanceof Exception => [$errorValue->getMessage()],
-            $errorValue instanceof \Throwable => [$errorValue->getMessage()],
-            default => [Json::encode($errorValue)]
+            $output instanceof Throwable => [$output->getMessage()],
+            $output instanceof CanCarryState && $output->isSuccess() => [],
+            $output instanceof CanCarryState && $output->isFailure() => [$output->exception()->getMessage()],
+            $output instanceof Result && $output->isSuccess() => [],
+            $output instanceof Result && $output->isFailure() => [$output->errorMessage()],
+            default => []
         };
     }
 }

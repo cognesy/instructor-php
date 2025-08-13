@@ -1,842 +1,387 @@
-# Pipeline Package Overview
+# Pipeline Package Internals Overview
 
-The Pipeline package provides a sophisticated, production-ready processing framework for PHP applications. It implements composable data transformation chains with middleware support, lazy evaluation, and comprehensive observability features.
+## Architecture Foundation
 
-## Architecture Overview
+The Pipeline package implements a **composable processing framework** built on immutable state management and middleware-driven execution. The system enables complex data transformations through layered abstraction with comprehensive observability.
 
-The pipeline architecture follows a layered design with four core components working together to provide composable, observable, and fault-tolerant data processing:
+## Core Interfaces & Contracts
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ PipelineBuilder │ -> │ PendingExecution │ -> │ ProcessingState │
-│  (Construction) │    │ (Lazy Evaluation)│    │  (State + Tags) │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                                v
-                        ┌─────────────┐
-                        │   Pipeline  │
-                        │ (Execution) │
-                        └─────────────┘
-```
+### `CanCarryState` Interface
+*Location: `packages/pipeline/src/Contracts/CanCarryState.php`*
 
-## Key Concepts & Abstractions
+The foundational state container contract that defines:
 
-### 1. ProcessingState - Immutable State Container
+- **Factory Methods**: `empty()`, `with(mixed $value, array $tags)`
+- **State Operations**: `withResult()`, `addTags()`, `replaceTags()`, `failWith()`
+- **Result Access**: `result()`, `value()`, `isSuccess()`, `isFailure()`
+- **Tag Operations**: `tagMap()`, `allTags()`, `hasTag()`, `tags()`
 
-**File**: `src/ProcessingState.php`
+**Purpose**: Provides immutable state encapsulation with typed metadata support.
 
-ProcessingState is the fundamental data structure that flows through the entire pipeline. It wraps your data in a `Result<T>` monad and attaches metadata via a `TagMap`.
+### `CanProcessState` Interface  
+*Location: `packages/pipeline/src/Contracts/CanProcessState.php`*
+
+The processing component contract defining:
 
 ```php
-// Creating processing state
-$state = ProcessingState::with($data, [$customTag]);
-
-// Accessing data
-$value = $state->value();           // Extract the wrapped value
-$result = $state->result();         // Get the Result monad
-$isSuccess = $state->isSuccess();   // Check processing status
+public function process(CanCarryState $state, ?callable $next = null): CanCarryState;
 ```
 
-**Essential Value**: Provides type-safe, immutable state management with rich metadata support. Enables clean separation between business data and observability concerns.
+**Key Properties**:
+- **Stateless Design**: Components should carry no internal state
+- **Middleware Pattern**: `$next` continuation enables composition
+- **Uniform API**: All processors implement identical interface
 
-### 2. Pipeline - Execution Engine
+**Purpose**: Enables composable middleware-style processing chains.
 
-**File**: `src/Pipeline.php`
+## State Management System
 
-The Pipeline orchestrates sequential processor execution with comprehensive middleware support and error handling.
+### `ProcessingState` Implementation
+*Location: `packages/pipeline/src/ProcessingState.php`*
+
+Immutable implementation of `CanCarryState` containing:
+
+- **Result Wrapper**: `Result<T>` monad for success/failure handling
+- **Tag Storage**: `TagMapInterface` for typed metadata
+- **Readonly Design**: Final readonly class prevents mutation
+- **Factory Pattern**: Static constructors for common use cases
 
 ```php
-$pipeline = Pipeline::builder()
-    ->through(fn($x) => $x * 2)     // Value processor
-    ->through(fn($x) => $x + 10)    // Another processor
-    ->withMiddleware(Timing::capture('operation'))
-    ->create();      // Create pipeline instance
-
-$result = $pipeline
-    ->executeWith($data)  // Execute with data and get result
-    ->value();            // Extract value
+// State creation and transformation
+$state = ProcessingState::with($data, [$metadataTag]);
+$newState = $state->addTags(new TimingTag())->withResult(Result::success($newValue));
 ```
 
-**Essential Value**: Provides predictable, observable execution with automatic error handling, short-circuiting on failures, and performance optimization.
+### Tag System Architecture
 
-#### Clean Pipeline API
+#### `TagInterface` & Implementations
+Tags provide **typed metadata attachment** for cross-cutting concerns:
 
-The pipeline follows a clean, stateless design where:
+- **Marker Interface**: Simple contract for type-based identification
+- **Immutable Design**: Tags should be readonly data structures  
+- **Built-in Types**: `ErrorTag`, `TimingTag`, `MemoryTag`, `SkipProcessingTag`
 
-- **PipelineBuilder**: Constructs pipelines without injecting values or tags
-- **Pipeline**: Executes with provided data and optional tags
-- **Tags at Execution**: Applied during `executeWith()`, not during construction
+#### Tag Storage: Dual Implementation Strategy
+
+**1. `IndexedTagMap`** *(Default)*
+- **Sequential ID-based**: Generates unique IDs for each tag
+- **Dual indexing**: `tagsById` + `insertionOrder` arrays
+- **Memory efficient**: Lower overhead for general use
+- **O(n) class lookup**: Linear search for type filtering
+
+**2. `SimpleTagMap`** *(Type-optimized)*
+- **Class-grouped storage**: `array<class-string, array<TagInterface>>`
+- **O(1) class lookup**: Direct access by type
+- **Higher memory usage**: Class-based indexing overhead
+- **Better for type-heavy filtering**: Efficient tag queries
+
+#### `TagQuery` Fluent API
+*Location: `packages/pipeline/src/Tag/TagQuery.php`*
+
+Provides **chainable tag operations**:
 
 ```php
-// ✅ Clean API - tags applied at execution time
-$pipeline = Pipeline::builder()
-    ->through(fn($x) => $x * 2)
-    ->create();
-
-$result = $pipeline->executeWith($data, new CustomTag('execution'));
-
-// ✅ Multiple tags supported
-$result = $pipeline->executeWith($data, 
-    new TimingTag('start', microtime(true)),
-    new CustomTag('execution-context')
-);
+$timingTags = $state->tags()
+    ->ofType(TimingTag::class)
+    ->filter(fn($tag) => $tag->duration > 1.0)
+    ->limit(5)
+    ->all();
 ```
 
-This design ensures:
-- **Stateless pipelines**: No hidden state injection
-- **Clear separation**: Construction vs execution
-- **Debuggable**: No surprise initial values
-- **Reusable**: Same pipeline, different data/tags
+**Operations**: `filter()`, `ofType()`, `only()`, `without()`, `map()`, `limit()`
+**Terminals**: `all()`, `count()`, `has()`, `first()`, `last()`
 
-### 3. Processors - Data Transformers
+## Pipeline Execution Engine
 
-**Directory**: `src/Processor/`
+### `Pipeline` Class
+*Location: `packages/pipeline/src/Pipeline.php`*
 
-Processors are the building blocks that transform data. The pipeline supports two types:
+The main orchestrator implementing **four-layer architecture**:
 
-- **Value Processors**: `fn($value) -> $newValue`
-- **State Processors**: `fn(ProcessingState) -> ProcessingState`
-
-```php
-// Value processor (automatic wrapping)
-$pipeline->through(fn($x) => $x * 2);
-
-// State processor (full control)
-$pipeline->through(fn(ProcessingState $state) => 
-    $state->withTags(new MetricTag('processed'))
-);
+```
+Pipeline Middleware (wraps entire execution)
+├── Steps (sequential processors)  
+│   └── Hooks (per-step middleware)
+└── Finalizers (cleanup operations)
 ```
 
-**Essential Value**: Enables composable data transformations while maintaining type safety and automatic error handling.
+#### Execution Layers
 
-### 4. Middleware - Cross-Cutting Concerns
+**1. Pipeline Middleware**: Applied once around entire chain
+```php
+$pipeline->withMiddleware(new TimingMiddleware()); // Wraps [Step1→Step2→Step3]
+```
 
-**Directory**: `src/Middleware/`
-**Interface**: `CanProcessState`
+**2. Processing Steps**: Core business logic sequence
+```php
+$pipeline->through(fn($x) => $x * 2)->through(fn($x) => $x + 10);
+```
 
-Middleware provides a composable way to add cross-cutting concerns like logging, metrics, tracing, and validation.
+**3. Step Hooks**: Applied to each individual step
+```php
+$pipeline->beforeEach(fn($state) => $state->addTags(new TraceTag()));
+```
+
+**4. Finalizers**: Always execute regardless of success/failure
+```php
+$pipeline->finally(fn($state) => $this->cleanup($state));
+```
+
+#### Middleware Composition Mechanism
+
+The pipeline uses **recursive middleware composition** with continuation passing:
 
 ```php
-class LoggingMiddleware implements CanProcessState 
+private function applyStepsWithMiddleware(CanCarryState $state, OperatorStack $middleware, OperatorStack $steps, OperatorStack $hooks): CanCarryState 
 {
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState 
+    return $middleware->callStack(fn($state) => $this->applySteps($state, $steps, $hooks))($state);
+}
+```
+
+**Key Features**:
+- **Nested Composition**: Middleware wraps steps, hooks wrap individual processors
+- **Short-circuiting**: Failures halt processing but preserve state
+- **Error Strategy**: Configurable failure handling (`ContinueWithFailure`, `FailFast`)
+
+### `PendingExecution` Lazy Evaluator
+*Location: `packages/pipeline/src/PendingExecution.php`*
+
+Provides **deferred execution with memoization**:
+
+```php
+$pending = $pipeline->executeWith($data);  // No execution yet
+$value = $pending->value();                // Executes and caches result
+$sameValue = $pending->value();            // Uses cached result
+```
+
+**Features**:
+- **Lazy Evaluation**: Computation deferred until result needed
+- **Result Caching**: Single execution with multiple access methods
+- **Batch Processing**: `each()` method for iterable input processing
+- **Stream Interface**: Generator-based result iteration
+
+## Middleware System Deep Dive
+
+### Middleware as CanProcessState Wrappers
+
+The pipeline system enables **two-level middleware composition**:
+
+#### 1. Pipeline-Level Middleware
+Wraps the **entire processing chain** as a single unit:
+
+```php
+class TimingMiddleware implements CanProcessState 
+{
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState 
     {
-        $this->logger->info('Processing started');
+        $start = microtime(true);
         $result = $next ? $next($state) : $state;
-        $this->logger->info('Processing completed', ['success' => $result->isSuccess()]);
+        $duration = microtime(true) - $start;
+        return $result->addTags(new TimingTag($duration));
+    }
+}
+
+$pipeline->withMiddleware(new TimingMiddleware()); // Times entire pipeline
+```
+
+#### 2. Step-Level Hooks
+Wraps **individual processing steps**:
+
+```php
+$pipeline->aroundEach(StepTiming::capture()); // Times each step individually
+```
+
+### Middleware Use Cases & Examples
+
+#### Cross-Cutting Concerns Implementation
+
+**Observability Middleware**:
+```php
+class ObservabilityMiddleware implements CanProcessState
+{
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState 
+    {
+        $this->logger->info('Pipeline started');
+        $this->metrics->increment('pipeline.started');
+        
+        $result = $next ? $next($state) : $state;
+        
+        $status = $result->isSuccess() ? 'success' : 'failure';
+        $this->logger->info("Pipeline completed: {$status}");
+        $this->metrics->increment("pipeline.{$status}");
+        
         return $result;
     }
 }
 ```
 
-**Essential Value**: Separates business logic from infrastructure concerns, enabling reusable, testable cross-cutting functionality.
-
-### 5. Tags - Metadata System
-
-**Directory**: `src/Tag/`
-**Core**: `TagMapInterface` and `TagMapFactory`
-
-Tags provide a type-safe, indexed metadata system for observability and middleware coordination.
-
+**Security Middleware**:
 ```php
-// Built-in tags
-$state->withTags(new TimingTag('start', microtime(true)));
-$state->withTags(new ErrorTag($exception));
-
-// Custom tags
-class MetricTag implements TagInterface {
-    public function __construct(public readonly string $name, public readonly float $value) {}
+class AuthenticationMiddleware implements CanProcessState
+{
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState 
+    {
+        $request = $state->value();
+        if (!$this->isAuthenticated($request['token'])) {
+            return $state->failWith('Authentication failed');
+        }
+        return $next ? $next($state) : $state;
+    }
 }
-
-// Querying tags
-$timingTags = $state->allTags(TimingTag::class);
-$firstError = $state->firstTag(ErrorTag::class);
 ```
 
-**Essential Value**: Provides O(1) metadata access, enabling rich observability without affecting business logic performance.
-
-### 6. PendingExecution - Lazy Evaluation
-
-**File**: `src/PendingExecution.php`
-
-PendingExecution implements lazy evaluation with memoization, ensuring expensive computations only run when needed.
-
+**Rate Limiting Middleware**:
 ```php
-$pending = $pipeline->executeWith($data);  // No execution yet (lazy)
-
-$value = $pending->value();                 // Executes and caches
-$state = $pending->state();                 // Uses cached result
-$stream = $pending->stream();               // Transform to generator
-```
-
-**Essential Value**: Optimizes performance by deferring execution and caching results, enabling efficient pipeline composition.
-
-## Processor, Middleware & Hook Relationships
-
-### Execution Hierarchy
-
-```
-Pipeline Middleware (wraps entire chain)
-    ├── Processor 1
-    │   └── Per-Processor Hooks (wrap individual processor)
-    ├── Processor 2
-    │   └── Per-Processor Hooks
-    └── Processor N
-        └── Per-Processor Hooks
-```
-
-### Dual Middleware Architecture
-
-**Pipeline Middleware** - Applied once around the entire processor chain:
-```php
-$pipeline->withMiddleware(new TimingMiddleware());
-// Wraps: [P1 → P2 → P3] as a unit
-```
-
-**Per-Processor Hooks** - Applied individually to each processor:
-```php
-$pipeline->beforeEach(fn($state) => $state->withTags(new TraceTag()));
-// Wraps: [P1], [P2], [P3] separately
-```
-
-### Error Handling Architecture
-
-The pipeline uses a **dual error tracking system**:
-
-1. **Result::failure()** - Monadic error handling for business logic
-2. **ErrorTag** - Rich error metadata for observability
-
-```php
-// Business logic check
-if ($result->isFailure()) {
-    return new ErrorResponse($result->errorMessage());
+class RateLimitMiddleware implements CanProcessState
+{
+    public function process(CanCarryState $state, ?callable $next = null): CanCarryState 
+    {
+        $clientId = $state->value()['client_id'];
+        if ($this->rateLimiter->isExceeded($clientId)) {
+            return $state->failWith('Rate limit exceeded');
+        }
+        return $next ? $next($state) : $state;
+    }
 }
-
-// Observability analysis
-$errorTag = $state->firstTag(ErrorTag::class);
-$logger->error('Pipeline failed', [
-    'timestamp' => $errorTag->timestamp,
-    'context' => $errorTag->context
-]);
 ```
 
-**Key Principle**: Middleware operates on Results, never raw exceptions. The infrastructure ensures exceptions are always converted to Results before reaching middleware.
+## Advanced Composition Patterns
 
-## Timing and Memory Tracking
-
-The pipeline package provides clean, atomic components for performance monitoring through dedicated middleware and hooks.
-
-### Pipeline-Level Monitoring (Middleware)
-
-Middleware wraps the entire pipeline execution:
-
-```php
-$result = Pipeline::builder()
-    ->withMiddleware(Timing::capture('llm-processing'))  // Pipeline timing
-    ->withMiddleware(Memory::capture('llm-processing'))  // Pipeline memory
-    ->through(fn($x) => $x * 2)
-    ->through(fn($x) => $x + 10)
-    ->create()
-    ->executeWith($data);
-
-// Extract timing data from the execution state
-$state = $result->state();
-$timings = $state->allTags(TimingTag::class);
-$memory = $state->allTags(MemoryTag::class);
-```
-
-### Step-Level Monitoring (Hooks)
-
-Hooks wrap individual processor execution:
-
-```php
-$result = Pipeline::builder()
-    ->aroundEach(StepTiming::capture('processing'))    // Applies to all processors
-    ->aroundEach(StepMemory::capture('processing'))    // Applies to all processors
-    ->through(fn($x) => $this->validate($x))
-    ->through(fn($x) => $this->heavyProcess($x))
-    ->create()
-    ->executeWith($data);
-
-// Extract step-level data - one entry per processor
-$state = $result->state();
-$stepTimings = $state->allTags(StepTimingTag::class);  // 2 entries
-$stepMemory = $state->allTags(StepMemoryTag::class);   // 2 entries
-```
-
-### Monitoring Data Usage
-
-The captured data is consumed by dedicated components:
-
-```php
-// SLA monitoring
-$slaMonitor = new SLAMonitor(['processing' => 2.0]);
-$violations = $slaMonitor->checkViolations($result);
-
-// Circuit breaker control  
-$circuitBreaker = new CircuitBreaker();
-$shouldOpen = $circuitBreaker->shouldOpen($result);
-
-// Metrics export
-$metricsCollector = new MetricsCollector();
-$metricsCollector->export($result);
-```
-
-**Key Benefits:**
-- **Atomic Concerns**: Timing and memory tracking are separate
-- **Performance**: Timing is fast, memory tracking optional  
-- **Flexible**: Use pipeline-level, step-level, or both
-- **Clean Data**: Pure capture, dedicated consumer components
-
-## Typical Use Cases
-
-### 1. Data Processing Pipelines
-
-Transform and validate data through multiple stages:
-
+### Conditional Processing
 ```php
 $pipeline = Pipeline::builder()
-    ->through(fn($data) => $this->validate($data))
-    ->through(fn($data) => $this->normalize($data))
-    ->through(fn($data) => $this->enrich($data))
-    ->withMiddleware(Timing::capture('data-processing'))
-    ->withMiddleware(new LoggingMiddleware())
-    ->create();
-
-$result = $pipeline->executeWith($rawData);
+    ->through($validation)
+    ->when(
+        fn($state) => $state->value()['requires_premium'],
+        fn($state) => $this->premiumProcessing($state)
+    )
+    ->through($standardProcessing);
 ```
 
-### 2. API Request Processing
-
-Handle HTTP requests with validation, authentication, and response formatting:
-
+### Error Recovery Patterns
 ```php
-$pipeline = Pipeline::builder()
-    ->through(fn($req) => $this->authenticate($req))
-    ->through(fn($req) => $this->validateInput($req))
-    ->through(fn($req) => $this->processBusinessLogic($req))
-    ->through(fn($req) => $this->formatResponse($req))
+$resilientPipeline = Pipeline::builder()
+    ->through($primaryProcessor)
+    ->onFailure($fallbackProcessor)
+    ->withMiddleware(new CircuitBreakerMiddleware())
+    ->withMiddleware(new RetryMiddleware(attempts: 3));
+```
+
+### Parallel Processing Coordination
+```php
+$orchestrator = Pipeline::builder()
+    ->through($dataPreparation)
+    ->split([
+        'validation' => $validationPipeline,
+        'enrichment' => $enrichmentPipeline,
+        'transformation' => $transformationPipeline
+    ])
+    ->merge($resultCombiner);
+```
+
+## Production Use Cases
+
+### 1. API Request Processing
+```php
+$apiPipeline = Pipeline::builder()
+    ->withMiddleware(new AuthenticationMiddleware())
     ->withMiddleware(new RateLimitMiddleware())
-    ->withMiddleware(Timing::capture('api-request'))
-    ->create();
-
-$result = $pipeline->executeWith($request);
+    ->withMiddleware(new TimingMiddleware())
+    ->through($inputValidation)
+    ->through($businessLogic)
+    ->through($responseFormatting)
+    ->finally($cleanupResources);
 ```
 
-### 3. Workflow Orchestration
-
-Coordinate complex business processes with conditional execution:
-
-```php
-$workflow = Workflow::empty()
-    ->through($orderValidationPipeline)
-    ->when(fn($order) => $order['requires_inventory_check'])
-        ->through($inventoryPipeline)
-    ->through($paymentPipeline)
-    ->when(fn($order) => $order['payment_status'] === 'success')
-        ->through($fulfillmentPipeline);
-```
-
-### 4. ETL (Extract, Transform, Load) Operations
-
-Process large datasets with observability:
-
+### 2. Data ETL Operations  
 ```php
 $etlPipeline = Pipeline::builder()
-    ->through(fn($data) => $this->extract($data))
-    ->through(fn($data) => $this->transform($data))
-    ->through(fn($data) => $this->load($data))
-    ->withMiddleware(new MemoryMonitorMiddleware())
-    ->withMiddleware(new ProgressTrackingMiddleware())
-    ->create();
-
-$result = $etlPipeline->executeWith($sourceData);
-```
-
-## Component Necessity & Value
-
-### Why ProcessingState?
-- **Immutability**: Prevents accidental state mutations
-- **Type Safety**: Compile-time guarantees about data structure
-- **Metadata Separation**: Business data separate from observability concerns
-- **Result Monad**: Predictable error handling without exceptions
-
-### Why Middleware?
-- **Cross-Cutting Concerns**: Logging, metrics, tracing without code duplication
-- **Composability**: Mix and match concerns as needed
-- **Testability**: Each middleware can be tested in isolation
-- **Reusability**: Write once, use across multiple pipelines
-
-### Why Lazy Evaluation?
-- **Performance**: Expensive computations only run when needed
-- **Memory Efficiency**: Results computed on-demand
-- **Composability**: Chain operations without intermediate execution
-- **Caching**: Automatic memoization prevents duplicate work
-
-### Why Dual Error Tracking?
-- **Clean APIs**: Simple Result for business logic decisions
-- **Rich Observability**: Detailed ErrorTag for monitoring and debugging
-- **Middleware Power**: Cross-cutting concerns access rich error context
-- **Independent Evolution**: Each mechanism enhanced without affecting the other
-
-## Key Takeaways for Developers
-
-### 1. Embrace Immutability
-```php
-// ✅ Correct - creates new state
-$newState = $state->withTags(new CustomTag());
-
-// ❌ Incorrect - attempting mutation
-$state->tags[] = new CustomTag(); // Won't work - readonly
-```
-
-### 2. Use Appropriate Processor Types
-```php
-// ✅ Value processor for simple transformations
-$pipeline->through(fn($x) => $x * 2);
-
-// ✅ State processor for metadata manipulation
-$pipeline->through(fn($state) => $state->withTags(new MetricTag()));
-```
-
-### 3. Leverage Middleware for Cross-Cutting Concerns
-```php
-// ✅ Correct - separate concerns
-$pipeline
-    ->through($businessLogic)                    // Core logic
-    ->withMiddleware(new TimingMiddleware())     // Observability
-    ->withMiddleware(new LoggingMiddleware());   // Diagnostics
-```
-
-### 4. Handle Errors via Result Pattern
-```php
-// ✅ Check result status
-$result = $pipeline->executeWith($data);
-if ($result->isFailure()) {
-    $this->handleError($result->exception()->getMessage());
-}
-
-// ✅ Access rich error context via tags
-$errorTag = $result->state()->firstTag(ErrorTag::class);
-```
-
-### 5. Optimize Performance with Lazy Evaluation
-```php
-// ✅ Defer execution until needed
-$pending = $pipeline->executeWith($data);  // Fast - no execution
-
-// Execute only when result is needed
-if ($condition) {
-    $value = $pending->value();  // Now executes
-}
-```
-
-### 6. Use Workflows for Complex Orchestration
-```php
-// ✅ For complex conditional flows
-$workflow = Workflow::empty()
-    ->through($alwaysRun)
-    ->when($condition, $conditionalPipeline)
-    ->through($finalStep);
-```
-
-### 7. Monitor Performance and Behavior
-```php
-// ✅ Add observability without changing business logic
-$pipeline
-    ->withMiddleware(new TimingMiddleware())
-    ->withMiddleware(new MemoryMonitorMiddleware())
-    ->withMiddleware(new MetricsCollectionMiddleware());
-```
-
-## Essential Patterns
-
-1. **Builder Pattern**: Use `Pipeline::builder()` and `PipelineBuilder` for fluent construction
-2. **Chain of Responsibility**: Middleware and processors form execution chains
-3. **Result Monad**: All operations return Results for predictable error handling
-4. **Lazy Evaluation**: Computations deferred until results needed
-5. **Immutable State**: All state changes create new instances
-6. **Tag-Based Metadata**: Type-safe, indexed metadata system
-7. **Clean API**: Stateless pipelines with execution-time data/tag injection
-
-The Pipeline package transforms complex data processing workflows into composable, observable, and maintainable code while providing production-ready error handling and performance optimization.
-
-## Advanced Composition: Workflows
-
-### Overview
-
-While Pipeline handles linear processing chains, **Workflow** orchestrates multiple pipelines into complex processing graphs with conditional execution, branching logic, and sophisticated control flow.
-
-### Workflow Architecture
-
-**File**: `src/Workflow/Workflow.php`
-
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  Pipeline A │ -> │ Condition?  │ -> │  Pipeline B │
-└─────────────┘    └─────────────┘    └─────────────┘
-                           │
-                           v
-                   ┌─────────────┐
-                   │  Pipeline C │ (always)
-                   └─────────────┘
-                           │
-                           v
-                   ┌─────────────┐
-                   │ Tap Pipeline│ (side effect)
-                   └─────────────┘
-```
-
-### Core Workflow Operations
-
-#### 1. Sequential Execution (`through`)
-
-Execute pipelines in sequence, passing state between them:
-
-```php
-$workflow = Workflow::empty()
-    ->through($validationPipeline)
-    ->through($transformationPipeline)
-    ->through($persistencePipeline);
-```
-
-#### 2. Conditional Execution (`when`)
-
-Execute pipelines based on runtime conditions:
-
-```php
-$workflow = Workflow::empty()
-    ->through($orderValidation)
-    ->when(
-        fn($state) => $state->value()['total'] > 1000,
-        $premiumProcessingPipeline
-    )
-    ->when(
-        fn($state) => $state->value()['requires_approval'],
-        $approvalWorkflow
-    );
-```
-
-#### 3. Side Effects (`tap`)
-
-Execute pipelines for side effects without affecting main flow:
-
-```php
-$workflow = Workflow::empty()
-    ->through($businessLogicPipeline)
-    ->tap($auditLoggingPipeline)     // Audit - doesn't affect result
-    ->tap($metricsCollectionPipeline) // Metrics - doesn't affect result
-    ->through($responseFormattingPipeline);
-```
-
-### Workflow Step Types
-
-#### ThroughStep
-**File**: `src/Workflow/ThroughStep.php`
-
-Executes a pipeline and passes its result to the next step:
-
-```php
-class ThroughStep implements CanProcessState 
-{
-    public function process(ProcessingState $state): ProcessingState {
-        return $this->step->process($state);
-    }
-}
-```
-
-#### ConditionalStep
-**File**: `src/Workflow/ConditionalStep.php`
-
-Executes a pipeline only if condition is met:
-
-```php
-class ConditionalStep implements CanProcessState 
-{
-    public function process(ProcessingState $state): ProcessingState {
-        return match(true) {
-            ($this->condition)($state) => $this->step->process($state),
-            default => $state, // Skip execution
-        };
-    }
-}
-```
-
-#### TapStep
-**File**: `src/Workflow/TapStep.php`
-
-Executes a pipeline for side effects, ignoring its result:
-
-```php
-class TapStep implements CanProcessState 
-{
-    public function process(ProcessingState $state): ProcessingState {
-        $this->step->process($state); // Execute but ignore result
-        return $state; // Return original state
-    }
-}
-```
-
-### Complex Processing Graph Examples
-
-#### 1. E-commerce Order Processing
-
-**Example**: `examples/WorkflowExample.php`
-
-```php
-$orderWorkflow = Workflow::empty()
-    // Always validate
-    ->through($validationPipeline)
-    
-    // Check inventory only if validation passed
-    ->when(
-        fn($state) => $state->isSuccess(),
-        $inventoryPipeline
-    )
-    
-    // Process payment only for orders > $50
-    ->when(
-        fn($state) => $state->isSuccess() && $state->value()['total'] > 50,
-        $paymentPipeline
-    )
-    
-    // Create order record
-    ->through($fulfillmentPipeline)
-    
-    // Always audit, regardless of outcome
-    ->tap($auditPipeline);
-
-$result = $orderWorkflow->executeWith($orderData);
-```
-
-#### 2. Content Processing Pipeline
-
-```php
-$contentWorkflow = Workflow::empty()
-    // Basic content validation
-    ->through($contentValidationPipeline)
-    
-    // Image processing (only if content has images)
-    ->when(
-        fn($state) => !empty($state->value()['images']),
-        $imageProcessingPipeline
-    )
-    
-    // Video processing (only if content has videos)
-    ->when(
-        fn($state) => !empty($state->value()['videos']),
-        $videoProcessingPipeline
-    )
-    
-    // SEO optimization
-    ->through($seoOptimizationPipeline)
-    
-    // Analytics tracking (side effect)
-    ->tap($analyticsTrackingPipeline)
-    
-    // Content publishing
-    ->through($publishingPipeline);
-```
-
-#### 3. API Request Processing Graph
-
-```php
-$apiWorkflow = Workflow::empty()
-    // Authentication (always required)
-    ->through($authenticationPipeline)
-    
-    // Rate limiting check
-    ->when(
-        fn($state) => $state->isSuccess(),
-        $rateLimitingPipeline
-    )
-    
-    // Input validation
-    ->through($inputValidationPipeline)
-    
-    // Business logic (different pipelines for different endpoints)
-    ->when(
-        fn($state) => $state->value()['endpoint'] === 'users',
-        $userManagementPipeline
-    )
-    ->when(
-        fn($state) => $state->value()['endpoint'] === 'orders',
-        $orderManagementPipeline
-    )
-    
-    // Response formatting
-    ->through($responseFormattingPipeline)
-    
-    // Logging (side effect)
-    ->tap($requestLoggingPipeline);
-```
-
-### Workflow vs Pipeline: When to Use What
-
-#### Use Pipeline When:
-- **Linear processing**: Sequential transformations
-- **Simple flow**: No conditional branching needed
-- **Single concern**: Processing one type of data
-- **Performance critical**: Minimal overhead needed
-
-```php
-// ✅ Perfect for Pipeline
-$dataTransformation = Pipeline::builder()
-    ->through($normalize)
-    ->through($validate)
-    ->through($transform)
-    ->through($serialize)
-    ->create();
-
-$result = $dataTransformation->executeWith($rawData);
-```
-
-#### Use Workflow When:
-- **Complex orchestration**: Multiple pipelines coordination
-- **Conditional logic**: Branching based on runtime data
-- **Multiple concerns**: Different processing paths
-- **Enterprise workflows**: Business process automation
-
-```php
-// ✅ Perfect for Workflow
-$businessProcess = Workflow::empty()
+    ->through($dataExtraction)
     ->through($dataValidation)
-    ->when($needsApproval, $approvalProcess)
-    ->when($isHighValue, $specialHandling)
-    ->tap($auditLogging)
-    ->through($finalProcessing)
-    ->create();
-
-$result = $businessProcess->executeWith($businessData);
+    ->through($dataTransformation)
+    ->through($dataLoad)
+    ->withMiddleware(new ProgressTrackingMiddleware())
+    ->withMiddleware(new MemoryMonitoringMiddleware())
+    ->aroundEach(StepTiming::capture());
 ```
 
-### Error Handling in Workflows
-
-Workflows implement **fail-fast semantics**:
-
-1. **Sequential Steps**: If any `through` step fails, remaining steps are skipped
-2. **Conditional Steps**: Failed conditions simply skip their pipelines
-3. **Tap Steps**: Always execute, but failures don't affect main flow
-4. **Error Propagation**: Original error context preserved through workflow execution
-
+### 3. Event Stream Processing
 ```php
-$robustWorkflow = Workflow::empty()
-    ->through($criticalValidation)      // Fail here stops everything
-    ->when($condition, $optionalStep)   // Skip if condition fails
-    ->tap($alwaysRunLogging)           // Runs even if main flow failed
-    ->through($finalProcessing);       // Only runs if no prior failures
+$eventProcessor = Pipeline::builder()
+    ->through($eventValidation)
+    ->through($eventEnrichment)
+    ->when($shouldRoute, $eventRouting)
+    ->tap($eventAudit)  // Side effect - doesn't affect main flow
+    ->through($eventPersistence);
 ```
 
-### Performance Considerations
-
-#### Workflow Optimization Strategies:
-
-1. **Condition Placement**: Put expensive conditions after cheap ones
-2. **Pipeline Reuse**: Cache and reuse pipeline instances
-3. **Lazy Evaluation**: Use PendingExecution for deferred computation
-4. **Middleware Efficiency**: Apply middleware at pipeline level, not workflow level
-
+### 4. Machine Learning Pipeline
 ```php
-// ✅ Optimized workflow structure
-$optimizedWorkflow = Workflow::empty()
-    ->through($cheapValidationPipeline)     // Fast validation first
-    ->when($cheapCondition, $expensiveStep) // Cheap condition first
-    ->tap($efficientLoggingPipeline)        // Minimal overhead logging
-    ->through($finalProcessingPipeline);
+$mlPipeline = Pipeline::builder()
+    ->through($featureExtraction)
+    ->through($dataPreprocessing)
+    ->through($modelPrediction)
+    ->through($resultPostprocessing)
+    ->withMiddleware(new ModelPerformanceMiddleware())
+    ->withMiddleware(new DataQualityMiddleware());
 ```
 
-### Testing Workflows
+## Performance & Design Considerations
 
-#### Unit Testing Individual Steps:
+### Immutability Benefits
+- **Thread Safety**: No shared mutable state
+- **Predictable Behavior**: No side effects from state changes  
+- **Debugging**: Clear state transitions
+- **Testing**: Isolated, reproducible test scenarios
 
+### Middleware Composition Efficiency  
+- **Lazy Construction**: Middleware chains built once, executed many times
+- **Memory Efficiency**: Shared instances across pipeline executions
+- **Short-circuiting**: Failed steps prevent unnecessary downstream processing
+
+### Tag System Performance
+- **Indexed Access**: O(1) or O(log n) tag retrieval based on implementation
+- **Type Safety**: Compile-time guarantees prevent runtime type errors
+- **Memory Overhead**: Minimal metadata storage cost
+
+## Key Integration Points
+
+### Framework Integration
 ```php
-class OrderWorkflowTest extends TestCase 
+// Laravel Service Provider
+$this->app->singleton(PipelineFactory::class, function() {
+    return new PipelineFactory([
+        'observability' => new ObservabilityMiddleware(),
+        'security' => new SecurityMiddleware(),
+    ]);
+});
+```
+
+### Testing Strategy
+```php
+class PipelineTest extends TestCase 
 {
-    public function testValidationStep() {
-        $validationPipeline = $this->createValidationPipeline();
-        $result = $validationPipeline->executeWith($invalidOrder);
-        
-        $this->assertTrue($result->isFailure());
-        $this->assertStringContains('validation', $result->exception()->getMessage());
-    }
-    
-    public function testConditionalExecution() {
-        $workflow = Workflow::empty()
-            ->when(fn($state) => $state->value()['total'] > 100, $expensivePipeline);
+    public function testMiddlewareComposition() {
+        $mockMiddleware = $this->createMock(CanProcessState::class);
+        $pipeline = Pipeline::builder()
+            ->withMiddleware($mockMiddleware)
+            ->through($processor);
             
-        $cheapOrder = ProcessingState::with(['total' => 50]);
-        $result = $workflow->executeWith($cheapOrder);
-        
-        // Expensive pipeline should not have executed
-        $this->assertFalse($result->hasTag(ExpensiveProcessingTag::class));
+        $result = $pipeline->executeWith(ProcessingState::with($data));
+        // Assert middleware was called...
     }
 }
 ```
 
-#### Integration Testing Complete Workflows:
+## Summary
 
-```php
-public function testCompleteOrderWorkflow() {
-    $order = $this->createValidOrder();
-    $result = $this->orderWorkflow->executeWith($order);
-    
-    $this->assertTrue($result->isSuccess());
-    $this->assertTrue($result->value()['validated']);
-    $this->assertTrue($result->value()['payment_processed']);
-    $this->assertNotEmpty($result->state()->allTags(TimingTag::class));
-}
-```
+The Pipeline package provides a **production-ready processing framework** that enables:
 
-### Best Practices for Workflow Design
+- **Composable Architecture**: Middleware and processors as building blocks
+- **Rich Metadata System**: Type-safe observability through tags
+- **Immutable State Management**: Predictable data flow with no side effects  
+- **Flexible Error Handling**: Monadic result pattern with detailed error context
+- **Performance Optimization**: Lazy evaluation with automatic memoization
+- **Enterprise Patterns**: Authentication, monitoring, rate limiting, circuit breaking
 
-#### 1. Design for Observability
-```php
-$workflow = Workflow::empty()
-    ->through($businessLogic)
-    ->tap($metricsCollection)    // Always measure
-    ->tap($auditLogging);        // Always audit
-```
-
-#### 2. Fail Fast, Recover Gracefully
-```php
-$workflow = Workflow::empty()
-    ->through($criticalValidation)  // Fail fast on critical errors
-    ->when($canRecover, $recoveryPipeline)  // Attempt recovery
-    ->tap($errorNotification);     // Always notify on issues
-```
-
-#### 3. Compose Reusable Workflows
-```php
-$baseOrderProcessing = Workflow::empty()
-    ->through($validation)
-    ->through($inventory);
-
-$premiumOrderWorkflow = clone $baseOrderProcessing
-    ->through($premiumServices)
-    ->through($expeditedShipping);
-
-$standardOrderWorkflow = clone $baseOrderProcessing
-    ->through($standardServices);
-```
-
-#### 4. Optimize for Maintainability
-```php
-// ✅ Clear, self-documenting workflow
-$ecommerceWorkflow = Workflow::empty()
-    ->through($this->createValidationStage())
-    ->when($this->requiresInventoryCheck(), $this->createInventoryStage())
-    ->when($this->requiresPayment(), $this->createPaymentStage())
-    ->through($this->createFulfillmentStage())
-    ->tap($this->createAuditStage());
-```
-
-### Key Workflow Takeaways
-
-1. **Orchestration Layer**: Workflows coordinate multiple pipelines
-2. **Conditional Execution**: Runtime decisions determine execution paths
-3. **Side Effect Management**: Tap steps for non-affecting operations
-4. **Fail-Fast Semantics**: Errors stop main flow but preserve context
-5. **Pipeline Composition**: Reuse existing pipelines as building blocks
-6. **Enterprise Ready**: Supports complex business process automation
-
-Workflows enable sophisticated processing graphs while maintaining the Pipeline package's core principles of immutability, observability, and predictable error handling.
+The middleware wrapping capability transforms individual processing steps and entire pipelines into **observable, controllable, and maintainable** data processing systems suitable for complex enterprise applications.
