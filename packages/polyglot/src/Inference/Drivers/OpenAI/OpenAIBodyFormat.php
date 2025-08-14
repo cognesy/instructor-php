@@ -33,6 +33,12 @@ class OpenAIBodyFormat implements CanMapRequestBody
             'messages' => $this->messageFormat->map($messages),
         ]), $options);
 
+        // max_tokens is deprecated in OpenAI API, use max_completion_tokens instead.
+        // Preserve an explicitly provided max_completion_tokens (from options) if present.
+        if (array_key_exists('max_tokens', $requestBody) && !array_key_exists('max_completion_tokens', $requestBody)) {
+            $requestBody['max_completion_tokens'] = $requestBody['max_tokens'];
+        }
+        unset($requestBody['max_tokens']);
         if ($options['stream'] ?? false) {
             $requestBody['stream_options']['include_usage'] = true;
         }
