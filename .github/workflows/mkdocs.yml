@@ -29,6 +29,9 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader
       
+      - name: Rebuild autoloader
+        run: composer dump-autoload --optimize
+      
       - name: Generate MkDocs documentation
         run: php bin/instructor-docs gen:mkdocs
       
