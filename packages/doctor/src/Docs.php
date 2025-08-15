@@ -4,13 +4,19 @@ namespace Cognesy\Doctor;
 
 use Cognesy\Config\BasePath;
 use Cognesy\Doctor\Docgen\MintlifyDocumentation;
+use Cognesy\Doctor\Docgen\MkDocsDocumentation;
 use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
-use Cognesy\Doctor\Docgen\Commands\ClearDocs;
+use Cognesy\Doctor\Docgen\Commands\ClearMintlifyDocsCommand;
+use Cognesy\Doctor\Docgen\Commands\ClearMkDocsCommand;
 use Cognesy\Doctor\Docgen\Commands\GenerateExamplesCommand;
+use Cognesy\Doctor\Docgen\Commands\GenerateMintlifyCommand;
+use Cognesy\Doctor\Docgen\Commands\GenerateMkDocsCommand;
 use Cognesy\Doctor\Docgen\Commands\GeneratePackagesCommand;
 use Cognesy\Doctor\Doctest\Commands\ExtractCodeBlocks;
 use Cognesy\Doctor\Doctest\Commands\MarkSnippets;
 use Cognesy\Doctor\Doctest\Commands\MarkSnippetsRecursively;
+use Cognesy\Doctor\Lesson\Commands\MakeLesson;
+use Cognesy\Doctor\Lesson\Commands\MakeLessonImage;
 use Cognesy\Doctor\Doctest\Services\BatchProcessingService;
 use Cognesy\Doctor\Doctest\Services\DocRepository;
 use Cognesy\Doctor\Doctest\Services\FileDiscoveryService;
@@ -21,6 +27,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class Docs extends Application
 {
     private MintlifyDocumentation $docGen;
+    private MkDocsDocumentation $mkDocsGen;
     private Filesystem $filesystem;
     private DocRepository $docRepository;
     private FileDiscoveryService $fileDiscoveryService;
@@ -36,7 +43,9 @@ class Docs extends Application
     private ExampleRepository $examples;
     private string $docsSourceDir;
     private string $docsTargetDir;
+    private string $mkdocsTargetDir;
     private string $cookbookTargetDir;
+    private string $mkdocsCookbookTargetDir;
     private string $mintlifySourceIndexFile;
     private string $mintlifyTargetIndexFile;
     private string $codeblocksDir;
@@ -51,7 +60,9 @@ class Docs extends Application
 
         $this->docsSourceDir = BasePath::get('docs');
         $this->docsTargetDir = BasePath::get('docs-build');
+        $this->mkdocsTargetDir = BasePath::get('docs-mkdocs');
         $this->cookbookTargetDir = BasePath::get('docs-build/cookbook');
+        $this->mkdocsCookbookTargetDir = BasePath::get('docs-mkdocs/cookbook');
         $this->mintlifySourceIndexFile = BasePath::get('docs/mint.json');
         $this->mintlifyTargetIndexFile = BasePath::get('docs-build/mint.json');
         $this->codeblocksDir = BasePath::get('codeblocks');
@@ -93,6 +104,19 @@ class Docs extends Application
             config: $config,
         );
 
+        $mkDocsConfig = DocumentationConfig::createForMkDocs(
+            docsSourceDir: $this->docsSourceDir,
+            mkdocsTargetDir: $this->mkdocsTargetDir,
+            mkdocsCookbookTargetDir: $this->mkdocsCookbookTargetDir,
+            codeblocksDir: $this->codeblocksDir,
+            dynamicGroups: $this->dynamicGroups,
+        );
+
+        $this->mkDocsGen = new MkDocsDocumentation(
+            examples: $this->examples,
+            config: $mkDocsConfig,
+        );
+
         $this->filesystem = new Filesystem();
         $this->docRepository = new DocRepository($this->filesystem);
         $this->fileDiscoveryService = new FileDiscoveryService();
@@ -125,7 +149,26 @@ class Docs extends Application
                 $this->codeblocksDir,
                 $this->dynamicGroups
             ),
-            new ClearDocs($this->docGen),
+            new ClearMintlifyDocsCommand($this->docGen),
+            new GenerateMintlifyCommand(
+                $this->examples,
+                $this->docsSourceDir,
+                $this->docsTargetDir,
+                $this->cookbookTargetDir,
+                $this->mintlifySourceIndexFile,
+                $this->mintlifyTargetIndexFile,
+                $this->codeblocksDir,
+                $this->dynamicGroups
+            ),
+            new GenerateMkDocsCommand(
+                $this->examples,
+                $this->docsSourceDir,
+                $this->mkdocsTargetDir,
+                $this->mkdocsCookbookTargetDir,
+                $this->codeblocksDir,
+                $this->dynamicGroups
+            ),
+            new ClearMkDocsCommand($this->mkDocsGen),
             new MarkSnippets(
                 $this->docRepository,
             ),
@@ -136,6 +179,8 @@ class Docs extends Application
             new ExtractCodeBlocks(
                 $this->docRepository,
             ),
+            new MakeLesson($this->examples),
+            new MakeLessonImage(),
         ]);
     }
 }

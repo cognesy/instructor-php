@@ -53,9 +53,6 @@ class GeneratePackagesCommand extends Command
         $documentation = new MintlifyDocumentation($this->examples, $config);
 
         try {
-            // Initialize base files for standalone execution
-            $documentation->initializeBaseFiles();
-
             // Show individual package processing
             $packages = ['instructor', 'polyglot', 'http-client'];
             foreach ($packages as $package) {

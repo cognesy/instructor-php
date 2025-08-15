@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\InstructorHub\Utils;
 
 use cebe\markdown\GithubMarkdown;
@@ -7,20 +8,6 @@ use Cognesy\Utils\Cli\Color as IColor;
 use Toolkit\Cli\Color;
 use Toolkit\Cli\Color\ColorTag;
 use Toolkit\Cli\Util\Highlighter;
-use function array_merge;
-use function array_sum;
-use function count;
-use function explode;
-use function implode;
-use function ltrim;
-use function mb_strlen;
-use function sprintf;
-use function str_pad;
-use function str_repeat;
-use function str_replace;
-use function substr;
-use function trim;
-use function ucwords;
 
 /**
  * Class CliMarkdown
@@ -208,13 +195,6 @@ class CliMarkdown extends GithubMarkdown
         ]);
     }
 
-    protected function oldRenderCode($block): string {
-        $lines = explode(self::NL, $block['content']);
-        $text = implode("\n    ", $lines);
-
-        return "\n    " . ColorTag::add($text, $this->theme['code']) . self::NL2;
-    }
-
     protected function renderCode($block): string {
         $highlighted = Highlighter::create()->highlight($block['content']);
         $lines = explode("\n", $highlighted);
@@ -227,7 +207,7 @@ class CliMarkdown extends GithubMarkdown
         foreach ($lines as $i => $line) {
             $number = $i + 1;
             $number = sprintf("%{$digits}d", $number);
-            $lines[$i] = implode("",[
+            $lines[$i] = implode("", [
                 "   ",
                 Cli::str("{$number}", IColor::DARK_GRAY),
                 Cli::str(" | ", IColor::DARK_BLUE),
@@ -264,8 +244,7 @@ class CliMarkdown extends GithubMarkdown
         return $this->theme;
     }
 
-    public function setTheme(array $theme): void
-    {
+    public function setTheme(array $theme): void {
         $this->theme = array_merge($this->theme, $theme);
     }
 

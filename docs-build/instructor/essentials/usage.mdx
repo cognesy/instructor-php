@@ -9,7 +9,7 @@ Response model class is a plain PHP class with typehints specifying the types of
 > Instructor instance.
 
 ```php
-// @doctest id="7fc8"
+// @doctest id="c752"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -61,7 +61,7 @@ StructuredOutput provides a comprehensive fluent API for configuring requests:
 
 ### Request Configuration
 ```php
-// @doctest id="bcf3"
+// @doctest id="a8d4"
 $structuredOutput = (new StructuredOutput)
     ->withMessages($messages)           // Set chat messages
     ->withInput($input)                 // Set input (converted to messages)
@@ -75,7 +75,7 @@ $structuredOutput = (new StructuredOutput)
 
 ### Response Model Configuration
 ```php
-// @doctest id="64ad"
+// @doctest id="b964"
 $structuredOutput = (new StructuredOutput)
     ->withResponseModel($model)         // Set response model (class/object/array)
     ->withResponseClass($className)     // Set response class specifically
@@ -85,7 +85,7 @@ $structuredOutput = (new StructuredOutput)
 
 ### Configuration and Behavior
 ```php
-// @doctest id="b975"
+// @doctest id="f755"
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
@@ -98,7 +98,7 @@ $structuredOutput = (new StructuredOutput)
 
 ### LLM Provider Configuration
 ```php
-// @doctest id="f874"
+// @doctest id="2bcc"
 $structuredOutput = (new StructuredOutput)
     ->using($preset)                    // Use LLM preset (e.g., 'openai')
     ->withDsn($dsn)                     // Set connection DSN
@@ -110,7 +110,7 @@ $structuredOutput = (new StructuredOutput)
 
 ### Processing Overrides
 ```php
-// @doctest id="2691"
+// @doctest id="dcee"
 $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
@@ -125,7 +125,7 @@ After configuring your `StructuredOutput` instance, you have several ways to exe
 ### Direct Execution Methods
 
 ```php
-// @doctest id="1139"
+// @doctest id="101a"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -150,7 +150,7 @@ $stream = $structuredOutput->stream();
 The `create()` method returns a `PendingStructuredOutput` instance, which acts as an execution handler that provides the same access methods:
 
 ```php
-// @doctest id="a197"
+// @doctest id="5034"
 <?php
 $pending = $structuredOutput->create();
 
@@ -184,7 +184,7 @@ The `PendingStructuredOutput` class serves as a flexible execution interface tha
 You can provide a string instead of an array of messages. This is useful when you want to extract data from a single block of text and want to keep your code simple.
 
 ```php
-// @doctest id="5a61"
+// @doctest id="4780"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -208,7 +208,7 @@ The `input` field of Instructor's `with()` method
 can be an object, but also an array or just a string.
 
 ```php
-// @doctest id="d60b"
+// @doctest id="e1bf"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -243,7 +243,7 @@ Instructor supports streaming of partial results, allowing you to start
 processing the data as soon as it is available.
 
 ```php
-// @doctest id="146f"
+// @doctest id="3f09"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -287,7 +287,7 @@ See [FunctionCall helper class](/advanced/function_calls) for more information o
 Once configured, you can execute your request using different methods depending on your needs:
 
 ```php
-// @doctest id="1b39"
+// @doctest id="7b7d"
 // Direct execution methods
 $result = $structuredOutput->get();       // Get structured result
 $response = $structuredOutput->response(); // Get raw LLM response  

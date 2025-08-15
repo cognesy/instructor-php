@@ -26,11 +26,13 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^1.4",
-    "symfony/yaml": "^6.0|^7.0",
+    "cognesy/instructor-pipeline": "^1.4",
+    "nikic/iter": "^2.0",
+    "symfony/console": "^6.0|^7.0",
     "symfony/filesystem": "^6.0|^7.0",
     "symfony/finder": "^6.0|^7.0",
-    "symfony/console": "^6.0|^7.0",
-    "nikic/iter": "^2.0"
+    "symfony/process": "^7.3",
+    "symfony/yaml": "^6.0|^7.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

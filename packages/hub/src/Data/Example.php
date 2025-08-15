@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\InstructorHub\Data;
 
 use Cognesy\Auxiliary\Mintlify\NavigationItem;

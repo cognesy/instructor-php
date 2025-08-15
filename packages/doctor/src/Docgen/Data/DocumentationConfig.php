@@ -14,6 +14,24 @@ readonly class DocumentationConfig
         public array $dynamicGroups,
     ) {}
 
+    public static function createForMkDocs(
+        string $docsSourceDir,
+        string $mkdocsTargetDir,
+        string $mkdocsCookbookTargetDir,
+        string $codeblocksDir,
+        array $dynamicGroups = [],
+    ): self {
+        return new self(
+            docsSourceDir: $docsSourceDir,
+            docsTargetDir: $mkdocsTargetDir,
+            cookbookTargetDir: $mkdocsCookbookTargetDir,
+            mintlifySourceIndexFile: '',
+            mintlifyTargetIndexFile: '',
+            codeblocksDir: $codeblocksDir,
+            dynamicGroups: $dynamicGroups,
+        );
+    }
+
     public static function create(
         string $docsSourceDir,
         string $docsTargetDir,

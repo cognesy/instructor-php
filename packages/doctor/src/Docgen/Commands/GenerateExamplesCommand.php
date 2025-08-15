@@ -54,9 +54,6 @@ class GenerateExamplesCommand extends Command
         $documentation = new MintlifyDocumentation($this->examples, $config);
 
         try {
-            // Initialize base files for standalone execution
-            $documentation->initializeBaseFiles();
-
             // Show individual example processing
             $exampleGroups = $this->examples->getExampleGroups();
             foreach ($exampleGroups as $exampleGroup) {

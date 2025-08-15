@@ -16,7 +16,7 @@ class ArrowpipeDriver implements CanHandleTemplate
     public function __construct(
         private TemplateEngineConfig $config,
     ) {
-        $this->baseDir = BasePath::get($this->config->resourcePath);
+        $this->baseDir = rtrim(BasePath::get($this->config->resourcePath), '/') . '/';
         $this->extension = $this->config->extension;
     }
 

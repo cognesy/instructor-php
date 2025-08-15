@@ -1,0 +1,75 @@
+---
+title: Environment
+description: 'Configure your environment for Instructor'
+---
+
+## Environment Configuration
+
+Instructor uses environment variables for configuration settings and API keys. The library comes with
+a `.env-dist` template file that lists all supported variables.
+
+You can copy it to `.env` (or merge with your `.env` file) and fill in your values.
+
+Alternatively, you can set the variables directly in your environment
+
+Check [setup instructions](/setup) for more details on how to set up your environment and how it can
+be done automatically with the Instructor's CLI tool.
+
+<Warning>
+    Keep your .env file secure and never commit it to version control.
+    For production, consider using your environment's secrets management system.
+</Warning>
+
+
+### LLM Provider API Keys
+
+Instructor supports multiple LLM providers.
+
+Configure the ones you plan to use:
+
+```ini
+# @doctest id="d1fa"
+# OpenAI (default provider)
+OPENAI_API_KEY=''
+
+# Alternative providers
+ANTHROPIC_API_KEY=''
+ANYSCALE_API_KEY=''
+AZURE_OPENAI_API_KEY=''
+AZURE_OPENAI_EMBED_API_KEY=''
+COHERE_API_KEY=''
+FIREWORKS_API_KEY=''
+GEMINI_API_KEY=''
+GROK_API_KEY=''
+GROQ_API_KEY=''
+MISTRAL_API_KEY=''
+OLLAMA_API_KEY=''
+OPENROUTER_API_KEY=''
+TOGETHER_API_KEY=''
+JINA_API_KEY=''
+```
+
+Only configure the services you plan to use; others can remain empty.
+
+### Other API Keys in `.env-dist`
+
+Instructor comes with bundled add-on capabilities that use other APIs for various purposes.
+You can find them in the `.env-dist` file. They are not required for the core functionality of Instructor.
+
+
+### Instructor Configuration Directory Path
+
+Instructor uses a configuration directory to store its settings, e.g. LLM provider configurations.
+
+You can set the path to this directory in your `.env` file:
+```
+// @doctest id="4038"
+INSTRUCTOR_CONFIG_PATHS='/../../config/,another/path'
+```
+
+This tells Instructor where to find its configuration files, if it has not been configured manually
+via `Settings` class. The path is relative to the vendor directory where Instructor is installed.
+
+<Note>
+    `INSTRUCTOR_CONFIG_PATHS` is set automatically if you use the Instructor CLI tool to publish assets.
+</Note>

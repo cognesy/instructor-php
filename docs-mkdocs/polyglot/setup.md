@@ -1,0 +1,197 @@
+---
+title: Setup
+description: 'Setup of Polyglot in your PHP project'
+meta:
+    - { name: has_code, content: true }
+---
+
+This chapter will guide you through the initial steps of setting up and using Polyglot in your PHP project. We'll cover installation and configuration to get you up and running quickly.
+
+
+
+
+## Installation
+
+You can install it using Composer:
+
+```bash
+# @doctest id="ea8c"
+composer require cognesy/instructor-polyglot
+```
+
+This will install Polyglot along with its dependencies.
+
+
+> NOTE: Polyglot is distributed as part of the Instructor PHP package, so if you have it installed, you don't need to install Polyglot separately.
+
+## Requirements
+
+- PHP 8.2 or higher
+- Composer
+- Valid API keys for at least one supported LLM provider
+
+
+
+
+## Configuration
+
+### Setting Up API Keys
+
+Polyglot requires API keys to authenticate with LLM providers. The recommended approach is to use environment variables:
+
+1. Create a `.env` file in your project root (or use your existing one)
+2. Add your API keys:
+
+```shell
+# @doctest id="64cb"
+# OpenAI
+OPENAI_API_KEY=sk-your-openai-key
+
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+
+# Other providers as needed
+MISTRAL_API_KEY=your-mistral-key
+GEMINI_API_KEY=your-gemini-key
+# etc.
+```
+
+### Configuration Files
+
+Polyglot loads its configuration from PHP files.
+
+The default configuration files are located in the Instructor package, but you can publish and customize them:
+
+1. Create a `config` directory in your project if it doesn't exist
+2. Copy the configuration files from the Instructor package:
+
+```bash
+# @doctest id="53af"
+# Create config directory if it doesn't exist
+mkdir -p config
+
+# Copy configuration files
+cp vendor/cognesy/instructor-polyglot/config/* config/
+```
+
+3. Customize the configuration files as needed
+
+
+#### LLM Configuration
+
+The `llm.php` configuration file contains settings for LLM providers:
+
+```php
+// @doctest id="101d"
+<?php
+// Example of a simplified config/llm.php
+
+use Cognesy\Config\Env;
+
+return [
+    'defaultPreset' => 'openai',  // Default connection to use
+
+    'presets' => [
+        'openai' => [
+            'driver' => 'openai',
+            'apiUrl' => 'https://api.openai.com/v1',
+            'apiKey' => Env::get('OPENAI_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'model' => 'gpt-4o-mini',
+            'maxTokens' => 1024,
+        ],
+
+        'anthropic' => [
+            'driver' => 'anthropic',
+            'apiUrl' => 'https://api.anthropic.com/v1',
+            'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
+            'endpoint' => '/messages',
+            'metadata' => [
+                'apiVersion' => '2023-06-01',
+            ],
+            'model' => 'claude-3-haiku-20240307',
+            'maxTokens' => 1024,
+        ],
+
+        // Other connections...
+    ],
+];
+```
+
+#### Embeddings Configuration
+
+The `embed.php` configuration file contains settings for embeddings providers:
+
+```php
+// @doctest id="9513"
+<?php
+// Example of a simplified config/embed.php
+
+use Cognesy\Config\Env;
+
+return [
+    'defaultPreset' => 'openai',
+
+    'presets' => [
+        'openai' => [
+            'driver' => 'openai',
+            'apiUrl' => 'https://api.openai.com/v1',
+            'apiKey' => Env::get('OPENAI_API_KEY', ''),
+            'endpoint' => '/embeddings',
+            'model' => 'text-embedding-3-small',
+            'dimensions' => 1536,
+            'maxInputs' => 16,
+        ],
+
+        // Other connections...
+    ],
+];
+```
+
+### Custom Configuration Location
+
+By default, Polyglot looks for custom configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATHS` environment variable:
+
+```shell
+# @doctest id="b0c4"
+INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
+```
+
+### Overriding Configuration Location
+
+You can use `Settings` class static `setPath()` method to override the value of config path set in environment variable with your own value.
+
+```php
+// @doctest id="a27a"
+use Cognesy\Config\Settings;
+
+Settings::setPath('/your/path/to/config');
+```
+
+
+## Troubleshooting
+
+### Common Installation Issues
+
+- **Composer Dependencies**: Make sure you have PHP 8.2+ installed and Composer correctly configured.
+- **API Keys**: Verify that your API keys are correctly set in your environment variables.
+- **Configuration Files**: Check that your configuration files are properly formatted and accessible.
+
+
+### Testing Your Installation
+
+A simple way to test if everything is working correctly is to run a small script:
+
+```php
+// @doctest id="97a5"
+<?php
+require 'vendor/autoload.php';
+
+use Cognesy\Polyglot\Inference\Inference;
+
+$result = (new Inference)
+    ->withMessages('Say hello.')
+    ->get();
+```
+
+If you see a friendly greeting, your installation is working correctly!

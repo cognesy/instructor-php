@@ -1,0 +1,11 @@
+[project]
+name = "instructor-php-docs"
+version = "1.0.0"
+description = "Documentation build tools for Instructor PHP"
+dependencies = [
+    "mkdocs-material",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

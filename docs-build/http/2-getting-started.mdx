@@ -15,7 +15,7 @@ The Instructor HTTP client API is part of the Instructor library (https://instru
 You can install it separately via Composer:
 
 ```bash
-# @doctest id="daa2"
+# @doctest id="1cf0"
 composer require cognesy/instructor-http-client
 ```
 
@@ -25,13 +25,13 @@ The Instructor HTTP client API requires at least one of the supported HTTP clien
 
 **For Guzzle:**
 ```bash
-# @doctest id="2c64"
+# @doctest id="4fd3"
 composer require guzzlehttp/guzzle
 ```
 
 **For Symfony HTTP Client:**
 ```bash
-# @doctest id="1075"
+# @doctest id="3e32"
 composer require symfony/http-client
 ```
 
@@ -57,7 +57,7 @@ Using the Instructor HTTP client API involves a few key steps:
 Here's a simple example:
 
 ```php
-// @doctest id="653f"
+// @doctest id="c03c"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 
@@ -90,7 +90,7 @@ echo "Body: $body\n";
 HTTP requests can fail for various reasons. You should always wrap request handling in a try-catch block:
 
 ```php
-// @doctest id="9947"
+// @doctest id="11f2"
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
@@ -149,7 +149,7 @@ return [
 
 **config/debug.php:**
 ```php
-// @doctest id="c6c6"
+// @doctest id="ecbe"
 return [
     'http' => [
         'enabled' => false, // enable/disable debug
@@ -170,7 +170,7 @@ return [
 You can also configure the client at runtime:
 
 ```php
-// @doctest id="1163"
+// @doctest id="a63c"
 <?php
 use Cognesy\Http\HttpClient;
 
@@ -189,7 +189,7 @@ $client = (new HttpClientBuilder())
 Let's put everything together with a practical example of making a POST request to create a new resource:
 
 ```php
-// @doctest id="e495"
+// @doctest id="10fb"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -242,7 +242,7 @@ try {
 Here's an example of making a GET request to fetch data:
 
 ```php
-// @doctest id="b284"
+// @doctest id="ba84"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
