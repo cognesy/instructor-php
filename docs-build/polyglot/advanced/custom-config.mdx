@@ -29,7 +29,7 @@ Let's focus on the structure of these configuration files.
 The `llm.php` configuration file has the following structure:
 
 ```php
-// @doctest id="ddad"
+// @doctest id="0192"
 <?php
 use Cognesy\Config\Env;
 
@@ -81,7 +81,7 @@ return [
 The `embed.php` configuration file follows a similar pattern:
 
 ```php
-// @doctest id="6441"
+// @doctest id="3f1f"
 <?php
 use Cognesy\Config\Env;
 
@@ -161,7 +161,7 @@ for API keys.
 Create a `.env` file in your project root:
 
 ```bash
-# @doctest id="978e"
+# @doctest id="8147"
 # OpenAI
 OPENAI_API_KEY=sk-your-key-here
 
@@ -178,7 +178,7 @@ COHERE_API_KEY=your-key-here
 Then load these environment variables using a package like `vlucas/phpdotenv`:
 
 ```php
-// @doctest id="417a"
+// @doctest id="2517"
 require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -204,7 +204,7 @@ Different providers may support unique parameters and features. You can pass the
 ### OpenAI-Specific Parameters
 
 ```php
-// @doctest id="33b0"
+// @doctest id="796d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -229,7 +229,7 @@ $response = $inference->with(
 ### Anthropic-Specific Parameters
 
 ```php
-// @doctest id="72e2"
+// @doctest id="bb55"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -262,7 +262,7 @@ or to modify existing ones.
 You can edit the `config/llm.php` and `config/embed.php` files directly:
 
 ```php
-// @doctest id="8a83"
+// @doctest id="894a"
 // In config/llm.php
 return [
     'defaultPreset' => 'custom_openai',
@@ -290,7 +290,7 @@ return [
 You can also create custom configurations at runtime using the `LLMConfig` class:
 
 ```php
-// @doctest id="ea09"
+// @doctest id="1fdb"
 <?php
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
@@ -329,7 +329,7 @@ echo $response;
 You might want to use different providers in different environments:
 
 ```php
-// @doctest id="9047"
+// @doctest id="2b0f"
 <?php
 // config/llm.php
 
@@ -376,7 +376,7 @@ for our custom driver.
 The driver can be any class that implements `CanHandleInference` interface.
 
 ```php
-// @doctest id="ca46"
+// @doctest id="625f"
 // we register new provider type - 'custom-driver'
 LLM::registerDriver(
     'custom-driver',
@@ -413,6 +413,6 @@ $answer = (new Inference)
 An alternative way of providing driver definition is via class-string:
 
 ```php
-// @doctest id="31f2"
+// @doctest id="5d48"
 LLM::registerDriver('another-driver', AnotherDriver::class);
 ```

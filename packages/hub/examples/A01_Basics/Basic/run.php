@@ -51,7 +51,7 @@ print("Extracting structured data using LLM...\n\n");
 $user = (new StructuredOutput)
     ->using('openai')
     ->withMessages($text)
-    ->withResponseModel(User::class)
+    ->withResponseClass(User::class)
     ->get();
 
 // Step 4: Now you can use the extracted data in your application

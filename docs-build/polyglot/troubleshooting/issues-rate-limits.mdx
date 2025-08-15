@@ -15,7 +15,7 @@ Provider rate limits can cause request failures during high traffic periods.
 1. **Implement Retry Logic**: Add automatic retries with exponential backoff
 
 ```php
-// @doctest id="a8bc"
+// @doctest id="06c0"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -69,7 +69,7 @@ try {
 
 2. **Request Throttling**: Limit the rate of requests from your application
 ```php
-// @doctest id="18ad"
+// @doctest id="350a"
 <?php
 class RateLimiter {
     private $lastRequestTime = 0;
@@ -110,7 +110,7 @@ for ($i = 0; $i < 10; $i++) {
 3. **Request Batching**: Combine multiple requests into batches when possible
 
 ```php
-// @doctest id="1904"
+// @doctest id="3ca9"
 <?php
 // Instead of making many small requests
 $responses = [];
