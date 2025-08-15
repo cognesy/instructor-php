@@ -17,7 +17,7 @@ The simplest way to use Polyglot is to generate text using static `Inference::te
 Simplified inference API uses the default connection for convenient ad-hoc calls.
 
 ```php
-// @doctest id="f392"
+// @doctest id="4740"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -38,7 +38,7 @@ Default LLM connection can be configured via config/llm.php.
 For more control, you can create an instance of the `Inference` class:
 
 ```php
-// @doctest id="234c"
+// @doctest id="6533"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -59,7 +59,7 @@ echo "Answer: $answer";
 You can specify which connection preset to use:
 
 ```php
-// @doctest id="6c72"
+// @doctest id="15ce"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -79,7 +79,7 @@ echo "Answer (using Anthropic): $answer";
 For multi-turn conversations, provide an array of messages:
 
 ```php
-// @doctest id="b6ab"
+// @doctest id="76c8"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -104,7 +104,7 @@ echo "Answer: $answer";
 You can customize various parameters for your requests:
 
 ```php
-// @doctest id="4f34"
+// @doctest id="0569"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -134,7 +134,7 @@ This example shows how to create an inference object, specify a connection and g
 The `toText()` method returns text completion from the LLM response.
 
 ```php
-// @doctest id="b55e"
+// @doctest id="d742"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -156,7 +156,7 @@ as you can display partial responses from LLM as soon as they arrive, without wa
 the whole response is ready.
 
 ```php
-// @doctest id="8901"
+// @doctest id="67c4"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -190,7 +190,7 @@ the default connection to be used when calling Instructor without specifying
 the client connection.
 
 ```php
-// @doctest id="5af7"
+// @doctest id="4cf7"
     // This is fragment of /config/llm.php file
     'defaultPreset' => 'openai',
     //...
@@ -224,7 +224,7 @@ Connecting to LLM API via predefined connection is as simple as calling `withPre
 method with the connection preset name.
 
 ```php
-// @doctest id="abc5"
+// @doctest id="7607"
 <?php
 // ...
 $answer = (new Inference)
@@ -250,7 +250,7 @@ Polyglot makes it easy to switch between different LLM providers at runtime.
 ### Using Different Providers for LLM Requests
 
 ```php
-// @doctest id="1ea6"
+// @doctest id="0341"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -305,7 +305,7 @@ Each provider offers multiple models with different capabilities, context length
 ### Specifying Models for LLM Requests
 
 ```php
-// @doctest id="aa69"
+// @doctest id="d8bb"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

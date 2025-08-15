@@ -16,7 +16,7 @@ Use PHP type hints to specify the type of extracted data.
 > Use nullable types to indicate that given field is optional.
 
 ```php
-// @doctest id="1d39"
+// @doctest id="f17a"
 <?php
 
 class Person {
@@ -53,7 +53,7 @@ of extraction for classes with private and public fields,
 You can also use PHP DocBlock style comments to specify the type of extracted data. This is useful when you want to specify property types for LLM, but can't or don't want to enforce type at the code level.
 
 ```php
-// @doctest id="80d2"
+// @doctest id="c52f"
 <?php
 
 class Person {
@@ -80,7 +80,7 @@ Instructor extracts PHP DocBlocks comments from class and property defined and i
 Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
 
 ```php
-// @doctest id="bef6"
+// @doctest id="abef"
     /**
      * Represents a skill of a person and context in which it was mentioned. 
      */
@@ -113,7 +113,7 @@ Instructor will still include any PHPDoc comments provided in the class, but
 using attributes might be more convenient and easier to read.
 
 ```php
-// @doctest id="b83c"
+// @doctest id="0784"
 <?php
 #[Description("Information about user")]
 class User {
@@ -137,7 +137,7 @@ PHP currently [does not support generics](https://wiki.php.net/rfc/generics) or 
 Use PHP DocBlock style comments to specify the type of array elements.
 
 ```php
-// @doctest id="dee5"
+// @doctest id="d468"
 <?php
 class Person {
     // ...
@@ -160,7 +160,7 @@ class Event {
 Instructor can retrieve complex data structures from text. Your response model can contain nested objects, arrays, and enums.
 
 ```php
-// @doctest id="f113"
+// @doctest id="b9c2"
 <?php
 use Cognesy/Instructor/Instructor;
 
@@ -238,7 +238,7 @@ The `Maybe` class provides a way to handle optional data that may or may not be 
 ### Basic Usage
 
 ```php
-// @doctest id="a742"
+// @doctest id="9e56"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Extras\Maybe\Maybe;

@@ -12,7 +12,7 @@ Polyglot's support for different output formats gives you the flexibility to wor
 Polyglot supports multiple output modes through the `Mode` enum:
 
 ```php
-// @doctest id="0849"
+// @doctest id="d4c5"
 <?php
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 

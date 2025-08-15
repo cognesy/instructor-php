@@ -22,7 +22,7 @@ and promotes extensibility. The high-level architecture consists of:
 
 
 ```text
-// @doctest id="c15b"
+// @doctest id="d59d"
 +---------------------+    +---------------------+
 |      Inference      |    |     Embeddings      |
 +---------------------+    +---------------------+

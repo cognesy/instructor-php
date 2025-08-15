@@ -15,7 +15,7 @@ For detailed setup instructions, see [Setup](setup).
 To install Polyglot in your project, run following command in your terminal:
 
 ```bash
-# @doctest id="341e"
+# @doctest id="67b9"
 composer require cognesy/instructor-polyglot
 ```
 
@@ -33,7 +33,7 @@ In this example, we'll use OpenAI as the LLM provider. You can get it from the [
 In your project directory, create a new PHP file `test-polyglot.php`:
 
 ```php
-// @doctest id="811f"
+// @doctest id="ca56"
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
@@ -61,7 +61,7 @@ echo "ASSISTANT: $answer\n";
 Now, you can run the example:
 
 ```bash
-# @doctest id="f4b0"
+# @doctest id="a288"
 php test-polyglot.php
 
 # Output:

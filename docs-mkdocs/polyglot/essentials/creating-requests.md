@@ -15,7 +15,7 @@ The `with()` method is the main way to set the parameters of the requests to LLM
 It accepts several parameters:
 
 ```php
-// @doctest id="69e6"
+// @doctest id="f380"
 public function with(
     string|array $messages = [],    // The messages to send to the LLM
     string $model = '',             // The model to use (overrides default)
@@ -33,7 +33,7 @@ public function with(
 Here's a simple example of creating a request:
 
 ```php
-// @doctest id="a774"
+// @doctest id="588c"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -54,7 +54,7 @@ echo "Response: $response";
 For chat-based interactions, you can pass an array of messages:
 
 ```php
-// @doctest id="5252"
+// @doctest id="ad17"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -76,7 +76,7 @@ echo "Response: $response";
 You can also use the `Messages` class to create message sequences more conveniently:
 
 ```php
-// @doctest id="8ec5"
+// @doctest id="0e88"
 <?php
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Utils\Image;
@@ -108,7 +108,7 @@ Polyglot supports different message formats depending on the provider:
 Example with image (for providers that support it):
 
 ```php
-// @doctest id="d99b"
+// @doctest id="f21d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

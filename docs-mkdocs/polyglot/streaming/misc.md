@@ -8,7 +8,7 @@ description: 'How to use advanced stream processing features in Polyglot'
 You can use the `onPartialResponse` method to register a callback that is called for each partial response:
 
 ```php
-// @doctest id="0785"
+// @doctest id="85bf"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -37,7 +37,7 @@ foreach ($stream->responses() as $_) {
 You can process and transform the content as it streams:
 
 ```php
-// @doctest id="e734"
+// @doctest id="fd69"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -71,7 +71,7 @@ foreach ($stream as $partialResponse) {
 For streaming JSON responses, you need to accumulate content until you have valid JSON:
 
 ```php
-// @doctest id="50e8"
+// @doctest id="dbc9"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -125,7 +125,7 @@ try {
 In some cases, you may want to stop the generation early:
 
 ```php
-// @doctest id="4b39"
+// @doctest id="3832"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -172,7 +172,7 @@ When working with streaming responses, keep these performance considerations in 
 Here's an example of memory-efficient processing for very long responses:
 
 ```php
-// @doctest id="74b5"
+// @doctest id="6b09"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

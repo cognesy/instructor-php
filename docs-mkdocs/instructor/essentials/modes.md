@@ -24,7 +24,7 @@ Mode can be set via parameter of `StructuredOutput::create()` method.
 The default mode is `OutputMode::Tools`, which leverages OpenAI-style tool calls.
 
 ```php
-// @doctest id="09d3"
+// @doctest id="45ee"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -40,7 +40,7 @@ $response = $structuredOutput->with(
 Mode, like other parameters can also be set via fluent API methods.
 
 ```php
-// @doctest id="7f9c"
+// @doctest id="56fe"
 <?php
 $response = $structuredOutput
     ->withMessages("...")

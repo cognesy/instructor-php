@@ -8,7 +8,7 @@ JSON Schema mode takes JSON generation a step further by validating the response
 ## Defining and Using a JSON Schema
 
 ```php
-// @doctest id="4859"
+// @doctest id="f04f"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

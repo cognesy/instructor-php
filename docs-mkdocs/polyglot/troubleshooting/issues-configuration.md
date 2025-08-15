@@ -19,7 +19,7 @@ description: 'How to troubleshoot provider configurations in Polyglot'
 Make sure your API keys are correct and have the necessary permissions:
 
 ```php
-// @doctest id="1bdb"
+// @doctest id="977d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -54,7 +54,7 @@ foreach ($presets as $preset) {
 Use debug mode to see the actual requests and responses:
 
 ```php
-// @doctest id="70a7"
+// @doctest id="676c"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -82,7 +82,7 @@ Some issues might be related to the provider's service status. Check their statu
 Ensure all required configuration parameters are present and correctly formatted:
 
 ```php
-// @doctest id="5085"
+// @doctest id="bf8e"
 <?php
 
 function verifyConfig(string $preset): void {

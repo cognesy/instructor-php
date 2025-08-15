@@ -8,7 +8,7 @@ Markdown JSON mode is a special mode that requests the model to format its respo
 ### Using Markdown JSON Mode
 
 ```php
-// @doctest id="7e6f"
+// @doctest id="96fc"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -40,7 +40,7 @@ foreach ($response['languages'] as $language) {
 While MdJson is more flexible across providers, you still need to provide clear instructions:
 
 ```php
-// @doctest id="2976"
+// @doctest id="94a6"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

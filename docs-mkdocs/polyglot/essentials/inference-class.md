@@ -19,7 +19,7 @@ The `Inference` class combines functionality through traits:
 ## Basic Usage
 
 ```php
-// @doctest id="cf58"
+// @doctest id="dc62"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -41,7 +41,7 @@ $response = (new Inference())
 Configure the underlying LLM provider:
 
 ```php
-// @doctest id="bee3"
+// @doctest id="3c40"
 // Provider selection and configuration
 $inference->using('openai');                           // Use preset configuration
 $inference->withDsn('openai://model=gpt-4');          // Configure via DSN
@@ -64,7 +64,7 @@ $inference->withDriver($customDriver);               // Custom inference driver
 Configure the inference request:
 
 ```php
-// @doctest id="e67b"
+// @doctest id="4036"
 // Message configuration
 $inference->withMessages('Hello, world!');           // String message
 $inference->withMessages(['user' => 'Hello']);       // Array format
@@ -94,7 +94,7 @@ $inference->withCachedContext($messages, $tools);   // Context caching
 Execute inference requests:
 
 ```php
-// @doctest id="a791"
+// @doctest id="f24e"
 // Flexible configuration method
 $inference->with(
     messages: 'Hello',
@@ -119,7 +119,7 @@ $inference->withRequest($existingRequest);
 Get responses in different formats:
 
 ```php
-// @doctest id="0d31"
+// @doctest id="9bcd"
 // Text responses
 $text = $inference->get();                           // Plain text
 $response = $inference->response();                  // Full InferenceResponse object
@@ -138,7 +138,7 @@ $stream = $inference->stream();                      // InferenceStream object
 Register custom drivers for new providers:
 
 ```php
-// @doctest id="6dc9"
+// @doctest id="b673"
 // Register with class name
 Inference::registerDriver('custom-provider', CustomDriver::class);
 

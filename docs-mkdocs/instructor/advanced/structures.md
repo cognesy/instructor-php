@@ -25,7 +25,7 @@ Let's first define the structure, which is a shape of the data we want to
 extract from the message.
 
 ```php
-// @doctest id="ab4c"
+// @doctest id="0046"
 <?php
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
@@ -59,7 +59,7 @@ Fields can be marked as optional with `$field->optional()`.  By default, all
 defined fields are required.
 
 ```php
-// @doctest id="2a36"
+// @doctest id="f2ed"
 <?php
 $structure = Structure::define('person', [
     //...
@@ -78,7 +78,7 @@ can use them to provide explanations, detailed specifications or requirements fo
 You can also provide extra inference instructions for LLM at the structure level with `$structure->description(string $description)`
 
 ```php
-// @doctest id="29cc"
+// @doctest id="447a"
 <?php
 $structure = Structure::define('person', [
     Field::string('name', 'Name of the person'),
@@ -94,7 +94,7 @@ You can use `Field::structure()` to nest structures in case you want to define
 more complex data shapes.
 
 ```php
-// @doctest id="4304"
+// @doctest id="c2f7"
 <?php
 $structure = Structure::define('person', [
     Field::string('name','Name of the person'),
@@ -123,7 +123,7 @@ You can define field validator with:
 Let's add a simple field validation to the example above: 
 
 ```php
-// @doctest id="82c4"
+// @doctest id="86d3"
 <?php
 $structure = Structure::define('person', [
     // ...
@@ -140,7 +140,7 @@ $structure = Structure::define('person', [
 Now, let's extract the data from the message.
 
 ```php
-// @doctest id="b70a"
+// @doctest id="2551"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -173,7 +173,7 @@ Structure object properties can be accessed using `get()` and `set()` methods,
 but also directly as properties.
 
 ```php
-// @doctest id="7821"
+// @doctest id="7ce9"
 <?php
 $person = Structure::define('person', [
     Field::string('name'),

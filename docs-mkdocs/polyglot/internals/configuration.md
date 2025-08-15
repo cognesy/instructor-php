@@ -8,7 +8,7 @@ Polyglot's configuration layer manages settings for different providers.
 ## LLM Configuration
 
 ```php
-// @doctest id="be65"
+// @doctest id="acd6"
 namespace Cognesy\Polyglot\Inference\Data;
 
 class LLMConfig {
@@ -33,7 +33,7 @@ class LLMConfig {
 ## Embeddings Configuration
 
 ```php
-// @doctest id="6e7c"
+// @doctest id="5f45"
 namespace Cognesy\Polyglot\Embeddings\Data;
 
 class EmbeddingsConfig {

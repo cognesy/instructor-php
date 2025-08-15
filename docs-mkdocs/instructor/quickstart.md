@@ -13,7 +13,7 @@ For detailed setup instructions, see [Setup](setup).
 Run following command in your terminal:
 
 ```bash
-# @doctest id="92d1"
+# @doctest id="8662"
 composer require cognesy/instructor-php
 ```
 
@@ -29,7 +29,7 @@ In this example, we'll use OpenAI as the LLM provider. You can get it from the [
 In your project directory, create a new PHP file `test-instructor.php`:
 
 ```php
-// @doctest id="3522"
+// @doctest id="dfd5"
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
@@ -66,7 +66,7 @@ You should never put your API keys directly in your real project code to avoid g
 Now, you can run the example:
 
 ```bash
-# @doctest id="b70d"
+# @doctest id="fd1c"
 php test-instructor.php
 
 # Output:

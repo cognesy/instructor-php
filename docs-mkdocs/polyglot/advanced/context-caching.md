@@ -11,7 +11,7 @@ Context caching improves performance by reusing parts of a conversation, reducin
 Polyglot supports context caching through the `withCachedContext()` method:
 
 ```php
-// @doctest id="8f5a"
+// @doctest id="e31e"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -59,7 +59,7 @@ Different providers have varying levels of support for context caching:
 Context caching is particularly valuable when working with large documents:
 
 ```php
-// @doctest id="1f67"
+// @doctest id="8518"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

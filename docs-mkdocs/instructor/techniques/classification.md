@@ -16,7 +16,7 @@ This tutorial showcases how to implement text classification tasks—specificall
 For single-label classification, we first define an **`enum`** for possible labels and a PHP class for the output.
 
 ```php
-// @doctest id="17e9"
+// @doctest id="fbb3"
 <?php
 // Enumeration for single-label text classification. 
 enum Label : string {
@@ -36,7 +36,7 @@ class SinglePrediction {
 The function **`classify`** will perform the single-label classification.
 
 ```php
-// @doctest id="e529"
+// @doctest id="6e25"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -61,7 +61,7 @@ function classify(string $data) : SinglePrediction {
 Let's run an example to see if it correctly identifies a spam message.
 
 ```php
-// @doctest id="4175"
+// @doctest id="5017"
 <?php
 
 // Test single-label classification
@@ -78,7 +78,7 @@ assert($prediction->classLabel == Label::SPAM);
 For multi-label classification, we introduce a new enum class and a different PHP class to handle multiple labels.
 
 ```php
-// @doctest id="44b2"
+// @doctest id="179d"
 <?php
 /** Potential ticket labels */
 enum Label : string {
@@ -102,7 +102,7 @@ class Ticket {
 The function **`multi_classify`** executes multi-label classification using LLM.
 
 ```php
-// @doctest id="5653"
+// @doctest id="f32a"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -124,7 +124,7 @@ function multi_classify(string $data) : Ticket {
 Finally, we test the multi-label classification function using a sample support ticket.
 
 ```php
-// @doctest id="0ee4"
+// @doctest id="b620"
 <?php
 // Test single-label classification
 $ticket = "My account is locked and I can't access my billing info.";

@@ -8,7 +8,7 @@ Polyglot uses an event system to generate internal notifications at the various 
 It has been built primarily to ensure observability of the internal components of the library.
 
 ```php
-// @doctest id="168f"
+// @doctest id="181b"
 namespace Cognesy\Utils\Events;
 
 use Cognesy\Events\Event;
