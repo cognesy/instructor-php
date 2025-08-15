@@ -19,9 +19,11 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 ![image](docs/images/extraction.gif)
 
 
+## Read More
 
-
-
+https://instructorphp.com - official website
+https://docs.instructorphp.com - docs website (Mintlify)
+https://cognesy.github.io/instructor-php/ - docs on Github Pages
 
 
 ## How Instructor Enhances Your Workflow
