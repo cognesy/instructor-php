@@ -19,7 +19,7 @@ All HTTP requests are created using the `HttpRequest` class, which encapsulates 
 The constructor for `HttpRequest` takes several parameters:
 
 ```php
-// @doctest id="5130"
+// @doctest id="338d"
 use Cognesy\Http\Data\HttpRequest;
 
 $request = new HttpRequest(
@@ -44,7 +44,7 @@ The parameters are:
 Once you've created a request, you can access its properties using the following methods:
 
 ```php
-// @doctest id="b1a0"
+// @doctest id="617b"
 // Get the request URL
 $url = $request->url();
 
@@ -69,7 +69,7 @@ $isStreaming = $request->isStreamed();
 You can also modify a request after it's been created:
 
 ```php
-// @doctest id="b48f"
+// @doctest id="5d18"
 // Enable streaming for this request
 $streamingRequest = $request->withStreaming(true);
 ```
@@ -85,7 +85,7 @@ The HTTP method is specified as a string in the `HttpClientRequest` constructor.
 GET requests are used to retrieve data from a server:
 
 ```php
-// @doctest id="9585"
+// @doctest id="fb0f"
 $getRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'GET',
@@ -98,7 +98,7 @@ $getRequest = new HttpRequest(
 For GET requests with query parameters, include them in the URL:
 
 ```php
-// @doctest id="32eb"
+// @doctest id="6a97"
 $getRequestWithParams = new HttpRequest(
     url: 'https://api.example.com/users?page=1&limit=10&sort=name',
     method: 'GET',
@@ -113,7 +113,7 @@ $getRequestWithParams = new HttpRequest(
 POST requests are used to create new resources or submit data:
 
 ```php
-// @doctest id="c565"
+// @doctest id="8f35"
 $postRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
@@ -134,7 +134,7 @@ $postRequest = new HttpRequest(
 PUT requests are used to update existing resources:
 
 ```php
-// @doctest id="a553"
+// @doctest id="30bf"
 $putRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'PUT',
@@ -155,7 +155,7 @@ $putRequest = new HttpRequest(
 PATCH requests are used to partially update resources:
 
 ```php
-// @doctest id="4540"
+// @doctest id="3310"
 $patchRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'PATCH',
@@ -175,7 +175,7 @@ $patchRequest = new HttpRequest(
 DELETE requests are used to remove resources:
 
 ```php
-// @doctest id="3191"
+// @doctest id="124d"
 $deleteRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'DELETE',
@@ -190,7 +190,7 @@ $deleteRequest = new HttpRequest(
 The library also supports other HTTP methods like HEAD, OPTIONS, etc. Just specify the method name as a string:
 
 ```php
-// @doctest id="63b4"
+// @doctest id="abce"
 $headRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'HEAD',
@@ -213,7 +213,7 @@ $optionsRequest = new HttpRequest(
 HTTP headers are specified as an associative array where keys are header names and values are header values:
 
 ```php
-// @doctest id="7c38"
+// @doctest id="ea2e"
 $request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
@@ -234,37 +234,37 @@ Some commonly used HTTP headers include:
 
 - **Content-Type**: Specifies the format of the request body
 ```php
-// @doctest id="9028"
+// @doctest id="c51a"
 'Content-Type' => 'application/json'
 ```
 
 - **Accept**: Indicates what response format the client can understand
 ```php
-// @doctest id="4b48"
+// @doctest id="d7d5"
 'Accept' => 'application/json'
 ```
 
 - **Authorization**: Provides authentication credentials
 ```php
-// @doctest id="bfb4"
+// @doctest id="55b9"
 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 ```
 
 - **User-Agent**: Identifies the client application
 ```php
-// @doctest id="6578"
+// @doctest id="d457"
 'User-Agent' => 'MyApp/1.0 (https://example.com)'
 ```
 
 - **Cache-Control**: Directives for caching mechanisms
 ```php
-// @doctest id="af3f"
+// @doctest id="2b49"
 'Cache-Control' => 'no-cache'
 ```
 
 - **Accept-Language**: Indicates the preferred language
 ```php
-// @doctest id="dc6f"
+// @doctest id="2e31"
 'Accept-Language' => 'en-US,en;q=0.9'
 ```
 
@@ -277,7 +277,7 @@ The request body can be provided in two ways:
 If you provide an array as the request body, it will automatically be converted to a JSON string:
 
 ```php
-// @doctest id="9812"
+// @doctest id="2370"
 $request = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
@@ -304,7 +304,7 @@ When using an array for the body, you should set the `Content-Type` header to `a
 You can also provide the body as a raw string:
 
 ```php
-// @doctest id="0c78"
+// @doctest id="9add"
 // JSON string
 $jsonBody = json_encode([
     'name' => 'John Doe',
@@ -323,7 +323,7 @@ $request = new HttpRequest(
 This approach is useful for other content types:
 
 ```php
-// @doctest id="892e"
+// @doctest id="c2a4"
 // Form URL-encoded data
 $formBody = http_build_query([
     'name' => 'John Doe',
@@ -344,7 +344,7 @@ $request = new HttpRequest(
 The body is managed by the `HttpRequestBody` class, which provides methods to access the body in different formats:
 
 ```php
-// @doctest id="bb82"
+// @doctest id="2548"
 // Get the body as a string
 $bodyString = $request->body()->toString();
 
@@ -357,7 +357,7 @@ $bodyArray = $request->body()->toArray();
 The `options` parameter allows you to specify additional options for the request:
 
 ```php
-// @doctest id="377c"
+// @doctest id="99e4"
 $request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
@@ -378,7 +378,7 @@ Currently, the main supported option is:
 You can check if a request is configured for streaming:
 
 ```php
-// @doctest id="11e0"
+// @doctest id="16bd"
 if ($request->isStreamed()) {
     // Handle streaming response
 }
@@ -389,7 +389,7 @@ if ($request->isStreamed()) {
 Here's how to create a request for a streaming API:
 
 ```php
-// @doctest id="a0a1"
+// @doctest id="dcac"
 $streamingRequest = new HttpRequest(
     url: 'https://api.openai.com/v1/completions',
     method: 'POST',

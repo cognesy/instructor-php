@@ -15,7 +15,7 @@ This chapter will guide you through the initial steps of setting up and using Po
 You can install it using Composer:
 
 ```bash
-# @doctest id="03fb"
+# @doctest id="3986"
 composer require cognesy/instructor-polyglot
 ```
 
@@ -43,7 +43,7 @@ Polyglot requires API keys to authenticate with LLM providers. The recommended a
 2. Add your API keys:
 
 ```shell
-# @doctest id="115e"
+# @doctest id="13eb"
 # OpenAI
 OPENAI_API_KEY=sk-your-openai-key
 
@@ -66,7 +66,7 @@ The default configuration files are located in the Instructor package, but you c
 2. Copy the configuration files from the Instructor package:
 
 ```bash
-# @doctest id="d293"
+# @doctest id="4c8f"
 # Create config directory if it doesn't exist
 mkdir -p config
 
@@ -82,7 +82,7 @@ cp vendor/cognesy/instructor-polyglot/config/* config/
 The `llm.php` configuration file contains settings for LLM providers:
 
 ```php
-// @doctest id="9bc5"
+// @doctest id="d9c9"
 <?php
 // Example of a simplified config/llm.php
 
@@ -123,7 +123,7 @@ return [
 The `embed.php` configuration file contains settings for embeddings providers:
 
 ```php
-// @doctest id="bcaf"
+// @doctest id="0afe"
 <?php
 // Example of a simplified config/embed.php
 
@@ -153,7 +153,7 @@ return [
 By default, Polyglot looks for custom configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATHS` environment variable:
 
 ```shell
-# @doctest id="7f4f"
+# @doctest id="6394"
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
 ```
 
@@ -162,7 +162,7 @@ INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
 You can use `Settings` class static `setPath()` method to override the value of config path set in environment variable with your own value.
 
 ```php
-// @doctest id="51f8"
+// @doctest id="b58b"
 use Cognesy\Config\Settings;
 
 Settings::setPath('/your/path/to/config');
@@ -183,7 +183,7 @@ Settings::setPath('/your/path/to/config');
 A simple way to test if everything is working correctly is to run a small script:
 
 ```php
-// @doctest id="8a0d"
+// @doctest id="25f5"
 <?php
 require 'vendor/autoload.php';
 

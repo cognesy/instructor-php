@@ -3,7 +3,7 @@
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-// @doctest id="368b"
+// @doctest id="876c"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -28,7 +28,7 @@ Additionally, you can use Scalar adapter to extract enums via `Scalar::enum()`.
 ### String result
 
 ```php
-// @doctest id="2f4c"
+// @doctest id="a18a"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -43,7 +43,7 @@ $value = (new StructuredOutput)
 ### Integer result
 
 ```php
-// @doctest id="b552"
+// @doctest id="51e2"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -58,7 +58,7 @@ $value = (new StructuredOutput)
 ### Boolean result
 
 ```php
-// @doctest id="2dd7"
+// @doctest id="5836"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -73,7 +73,7 @@ $value = (new StructuredOutput)
 ### Float result
 
 ```php
-// @doctest id="d217"
+// @doctest id="7004"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -88,7 +88,7 @@ $value = (new StructuredOutput)
 ### Enum result / select one of the options
 
 ```php
-// @doctest id="1f66"
+// @doctest id="56e7"
 <?php
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
 $value = (new StructuredOutput)

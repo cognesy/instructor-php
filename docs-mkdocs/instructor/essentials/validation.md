@@ -3,7 +3,7 @@
 Instructor validates results of LLM response against validation rules specified in your data model.
 
 ```php
-// @doctest id="65a0"
+// @doctest id="3ab3"
 <?php
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -33,7 +33,7 @@ In case maxRetries parameter is provided and LLM response does not meet validati
 Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
 
 ```php
-// @doctest id="3f1a"
+// @doctest id="55ac"
 <?php
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -61,7 +61,7 @@ You can easily add custom validation code to your response model by using ```Val
 and defining validation logic in ```validate()``` method.
 
 ```php
-// @doctest id="73df"
+// @doctest id="5e0e"
 <?php
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
@@ -100,7 +100,7 @@ Note that method ```validate()``` has to return:
 This information will be used by LLM to make subsequent attempts to correct the response.
 
 ```php
-// @doctest id="2b23"
+// @doctest id="570c"
 $violations = [
     [
         'message' => "Error message with violation details.",
@@ -119,7 +119,7 @@ Instructor uses Symfony validation component to validate extracted data.
 You can use ```#[Assert/Callback]``` annotation to build fully customized validation logic.
 
 ```php
-// @doctest id="e4f9"
+// @doctest id="4840"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;

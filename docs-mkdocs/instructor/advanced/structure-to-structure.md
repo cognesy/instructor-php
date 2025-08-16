@@ -8,7 +8,7 @@ The `input` field of Instructor's `create()` method
 can be an object, but also an array or just a string.
 
 ```php
-// @doctest id="a8f7"
+// @doctest id="85ae"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 

@@ -12,7 +12,7 @@ Instructor provides extensive configuration options through fluent API methods t
 Configure how Instructor processes your input and builds requests:
 
 ```php
-// @doctest id="005a"
+// @doctest id="10a5"
 $structuredOutput = (new StructuredOutput)
     ->withMessages($messages)           // Set chat messages
     ->withInput($input)                 // Set input (converted to messages)
@@ -31,7 +31,7 @@ $structuredOutput = (new StructuredOutput)
 Define how Instructor should process and validate responses:
 
 ```php
-// @doctest id="13e7"
+// @doctest id="b48d"
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count for failed validations
     ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
@@ -46,7 +46,7 @@ $structuredOutput = (new StructuredOutput)
 Fine-tune Instructor's internal processing:
 
 ```php
-// @doctest id="8c07"
+// @doctest id="97e5"
 $structuredOutput = (new StructuredOutput)
     ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
     ->withConfigPreset($presetName)     // Use predefined configuration preset
@@ -62,7 +62,7 @@ $structuredOutput = (new StructuredOutput)
 Configure connection and communication with LLM providers:
 
 ```php
-// @doctest id="7ebf"
+// @doctest id="7a27"
 $structuredOutput = (new StructuredOutput)
     ->using($preset)                    // Use LLM preset (e.g., 'openai', 'anthropic')
     ->withDsn($dsn)                     // Set connection DSN
@@ -81,7 +81,7 @@ $structuredOutput = (new StructuredOutput)
 Customize validation, transformation, and deserialization:
 
 ```php
-// @doctest id="ffad"
+// @doctest id="d846"
 $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override response validators
     ->withTransformers(...$transformers) // Override response transformers  
@@ -93,7 +93,7 @@ $structuredOutput = (new StructuredOutput)
 Configure real-time processing callbacks:
 
 ```php
-// @doctest id="5a3a"
+// @doctest id="496a"
 $structuredOutput = (new StructuredOutput)
     ->onPartialUpdate($callback)        // Handle partial response updates during streaming
     ->onSequenceUpdate($callback)       // Handle sequence item completion during streaming
@@ -103,7 +103,7 @@ $structuredOutput = (new StructuredOutput)
 
 ### Basic OpenAI Configuration
 ```php
-// @doctest id="fd46"
+// @doctest id="dd73"
 $result = (new StructuredOutput)
     ->using('openai')
     ->withModel('gpt-4')
@@ -115,7 +115,7 @@ $result = (new StructuredOutput)
 
 ### Streaming with Callbacks
 ```php
-// @doctest id="80fe"
+// @doctest id="2520"
 $result = (new StructuredOutput)
     ->using('openai')
     ->withStreaming(true)
@@ -127,7 +127,7 @@ $result = (new StructuredOutput)
 
 ### Custom Configuration Object
 ```php
-// @doctest id="df36"
+// @doctest id="ce06"
 $config = new StructuredOutputConfig(
     maxRetries: 5,
     outputMode: OutputMode::JsonSchema,

@@ -17,7 +17,7 @@ received, but only when any property of the object is updated.
 
 
 ```php
-// @doctest id="f821"
+// @doctest id="6c7d"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -52,7 +52,7 @@ with it, e.g. save it to the database.
 You can get a stream of responses by calling the `stream()` method instead of `get()`. The `stream()` method is available on both `StructuredOutput` and `PendingStructuredOutput` instances.
 
 ```php
-// @doctest id="b0b9"
+// @doctest id="c09b"
 // Direct streaming
 $stream = $structuredOutput->stream();
 
@@ -85,7 +85,7 @@ The `StructuredOutputStream` class provides comprehensive methods for processing
 ### Example: streaming partial responses
 
 ```php
-// @doctest id="0414"
+// @doctest id="2483"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -110,7 +110,7 @@ $db->savePerson($person);
 ### Example: streaming sequence items
 
 ```php
-// @doctest id="3528"
+// @doctest id="21c4"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 

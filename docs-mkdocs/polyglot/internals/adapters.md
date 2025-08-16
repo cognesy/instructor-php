@@ -11,7 +11,7 @@ Each provider has a set of adapters that handle its specific format requirements
 Request adapters convert Polyglot's unified request format to provider-specific HTTP requests:
 
 ```php
-// @doctest id="ef32"
+// @doctest id="6d86"
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 class OpenAIRequestAdapter implements ProviderRequestAdapter {
@@ -40,7 +40,7 @@ class OpenAIRequestAdapter implements ProviderRequestAdapter {
 Message formatters handle the conversion of messages to provider-specific formats:
 
 ```php
-// @doctest id="49a7"
+// @doctest id="788b"
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 class OpenAIMessageFormat implements CanMapMessages {
@@ -58,7 +58,7 @@ class OpenAIMessageFormat implements CanMapMessages {
 Body formatters handle the conversion of request bodies to provider-specific formats:
 
 ```php
-// @doctest id="0759"
+// @doctest id="6af2"
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 class OpenAIBodyFormat implements CanMapRequestBody {
@@ -93,7 +93,7 @@ class OpenAIBodyFormat implements CanMapRequestBody {
 Response adapters convert provider-specific responses to Polyglot's unified format:
 
 ```php
-// @doctest id="fe66"
+// @doctest id="6db8"
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 class OpenAIResponseAdapter implements ProviderResponseAdapter {
@@ -121,7 +121,7 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter {
 Usage formatters extract token usage information from provider responses:
 
 ```php
-// @doctest id="a396"
+// @doctest id="b7a9"
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 class OpenAIUsageFormat implements CanMapUsage {

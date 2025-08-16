@@ -19,7 +19,7 @@ To check how to publish configuration files to your project see [Setup](/setup) 
 You can set Instructor configuration path using the `Settings::setPath()` method:
 
 ```php
-// @doctest id="2bf3"
+// @doctest id="a9da"
 <?php
 use Cognesy\Config\Settings;
 
@@ -33,7 +33,7 @@ Settings::setPath('/path/to/config');
 You can set the path to Instructor's configuration directory in your `.env` file:
 
 ```ini
-# @doctest id="c4f4"
+# @doctest id="419f"
 INSTRUCTOR_CONFIG_PATHS='/path/to/config/,another/path'
 ```
 

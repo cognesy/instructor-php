@@ -8,7 +8,7 @@ description: 'Explore the public API layer of Polyglot, including the Inference 
 The `Inference` class is the main entry point for LLM interactions. It encapsulates the complexities of different providers behind a unified interface.
 
 ```php
-// @doctest id="7303"
+// @doctest id="275e"
 namespace Cognesy\Polyglot\LLM;
 
 class Inference {
@@ -60,7 +60,7 @@ The `Inference` class follows a fluent interface pattern, allowing method chaini
 Similarly, the `Embeddings` class provides a unified interface for generating embeddings:
 
 ```php
-// @doctest id="5a1e"
+// @doctest id="b395"
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;class Embeddings {

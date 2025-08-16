@@ -30,7 +30,7 @@ you can use Blade syntax in your prompts if you prefer it.
 
 Example prompt template in Twig:
 ```
-// @doctest id="3848"
+// @doctest id="ffd4"
 Hello, world.
 ```
 
@@ -39,7 +39,7 @@ Hello, world.
 You can define variables in your prompt templates and inject values when rendering the prompt.
 
 ```twig
-// @doctest id="e3fa"
+// @doctest id="7cbb"
 Hello, {{ name }}!
 ```
 
@@ -49,7 +49,7 @@ You can define chat messages in your prompts, which can be used to generate a se
 for LLM chat APIs.
 
 ```twig
-// @doctest id="66a4"
+// @doctest id="ae30"
 <chat>
     <message role="system">You are a helpful assistant.</message>
     <message role="user">What is the capital of {{ country }}?</message>
@@ -63,7 +63,7 @@ prompt and its variables. This metadata can be used for validation, documentatio
 generation.
 
 ```twig
-// @doctest id="fde1"
+// @doctest id="682f"
 {#---
 description: Capital finder template
 variables:
@@ -119,7 +119,7 @@ a flexible way to do it in a way that suits your application.
 To get started, you can create and render a simple prompt defined in the bundled library using the `Prompt::using` or `Prompt::make` methods. Here's how you can use them:
 
 ```php
-// @doctest id="7f36"
+// @doctest id="6ce5"
 <?php
 use Cognesy\Template\Template;
 
@@ -132,7 +132,7 @@ echo $prompt->toText(); // Outputs: "Hello, World!"
 Or, using the shorthand `make()` syntax:
 
 ```php
-// @doctest id="99cf"
+// @doctest id="ac7a"
 <?php
 $prompt = Template::make('demo-twig:hello')->with(['name' => 'World']);
 
@@ -145,7 +145,7 @@ echo $prompt->toText(); // Outputs: "Hello, World!"
 The Prompt class can also render prompts directly as chat-style messages:
 
 ```php
-// @doctest id="368b"
+// @doctest id="4f35"
 <?php
 $messages = Template::messages('demo-twig:hello', ['name' => 'World']);
 
@@ -162,7 +162,7 @@ print_r($messages->toArray());
 If you need to customize the configuration or set the template content directly, you can do so with additional methods:
 
 ```php
-// @doctest id="abef"
+// @doctest id="1244"
 <?php
 use Cognesy\Template\Config\TemplateEngineConfig;use Cognesy\Template\Enums\TemplateEngineType;
 
@@ -188,7 +188,7 @@ echo $prompt->toText(); // Outputs: "Hello, World!"
 If you need to create an inline prompt (without saving it to a file), you can use following syntax:
 
 ```php
-// @doctest id="cf2c"
+// @doctest id="b017"
 <?php
 $prompt = Template::twig() // or Template::blade() for Blade syntax
     ->withTemplateContent('Hello, {{ name }}!')
@@ -200,7 +200,7 @@ $prompt = Template::twig() // or Template::blade() for Blade syntax
 There's shorter syntax for creating in-memory prompts:
 
 ```php
-// @doctest id="a287"
+// @doctest id="f193"
 <?php
 $prompt = Template::twig() // or Template::blade() for Blade syntax
     ->from('Hello, {{ name }}!')
@@ -214,7 +214,7 @@ $prompt = Template::twig() // or Template::blade() for Blade syntax
 To check which variables are available in a prompt template:
 
 ```php
-// @doctest id="bcb0"
+// @doctest id="b923"
 <?php
 $prompt = Template::using('demo-twig')
     ->withTemplateContent('Hello, {{ name }}!')
@@ -231,7 +231,7 @@ print_r($variables); // Outputs: ['name']
 For more flexible template loading, you can load templates by name or use a 'DSN-like' (Data Source Name) syntax:
 
 ```php
-// @doctest id="217d"
+// @doctest id="9550"
 <?php
 // Load a template by name using specified library 'demo-blade'
 $prompt = Template::using('demo-blade')->withTemplate('hello');
@@ -249,7 +249,7 @@ The Prompt class also supports converting templates containing chat-specific mar
 
 Here is an example XML that can be used to generate a sequence of chat messages:
 ```xml
-<!-- @doctest id="bd2e"
+<!-- @doctest id="0a1d"
 <chat>
     <message role="system">You are a helpful assistant.</message>
     <message role="user">Hello, {{ name }}</message>
@@ -259,7 +259,7 @@ Here is an example XML that can be used to generate a sequence of chat messages:
 And here is how you use `Prompt` class to convert XML template into a sequence of messages:
 
 ```php
-// @doctest id="c380"
+// @doctest id="81b6"
 <?php
 
 $prompt = Template::using('demo-blade')

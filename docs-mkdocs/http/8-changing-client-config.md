@@ -19,7 +19,7 @@ The primary configuration files for the HTTP client are:
 This file defines the available client types and their settings:
 
 ```php
-// @doctest id="187d"
+// @doctest id="7207"
 return [
     'defaultClient' => 'guzzle',
     'clients' => [
@@ -59,7 +59,7 @@ return [
 This file controls debugging options for HTTP requests and responses:
 
 ```php
-// @doctest id="9936"
+// @doctest id="fb7b"
 return [
     'http' => [
         'enabled' => false, // enable/disable debug
@@ -82,7 +82,7 @@ The library uses a settings management system to load these configurations. The 
 For Laravel, you might publish these configurations as Laravel config files:
 
 ```bash
-# @doctest id="bb44"
+# @doctest id="8410"
 php artisan vendor:publish --tag=polyglot-config
 ```
 
@@ -149,7 +149,7 @@ While configuration files provide a static way to configure clients, you often n
 The simplest way to switch configurations at runtime is to use the `withClient` method to select a different pre-configured client:
 
 ```php
-// @doctest id="309d"
+// @doctest id="e454"
 // Start with default client
 $client = new HttpClient();
 
@@ -165,7 +165,7 @@ $client->withClient('guzzle-streaming');
 For more dynamic configuration, you can create a custom `HttpClientConfig` object and apply it using the `withConfig` method:
 
 ```php
-// @doctest id="36ad"
+// @doctest id="bd8c"
 use Cognesy\Http\Config\HttpClientConfig;
 
 // Create a custom configuration
@@ -190,7 +190,7 @@ This method gives you complete control over the configuration at runtime.
 You can also create a configuration from an associative array:
 
 ```php
-// @doctest id="1dc2"
+// @doctest id="361a"
 $configArray = [
     'httpClientType' => 'symfony',
     'connectTimeout' => 2,
@@ -212,7 +212,7 @@ This approach is useful when loading configuration from external sources like en
 You can enable debug mode to see detailed information about requests and responses:
 
 ```php
-// @doctest id="5058"
+// @doctest id="8c33"
 // Enable debug mode
 $client->withDebugPreset('on');
 
@@ -230,7 +230,7 @@ When debug mode is enabled, detailed information about requests and responses is
 Here's an example of dynamically adjusting configuration based on the type of request:
 
 ```php
-// @doctest id="bb8a"
+// @doctest id="a90e"
 function configureClientForRequest(HttpClient $client, HttpRequest $request): HttpClient {
     // Get the current configuration
     $config = HttpClientConfig::load($client->getClientName());
@@ -297,7 +297,7 @@ This approach allows for highly dynamic and contextual configuration adjustments
 Different environments often require different configurations. Here's how you might handle this:
 
 ```php
-// @doctest id="35b7"
+// @doctest id="393e"
 // In your application bootstrap or service provider
 function configureHttpClient() {
     $env = getenv('APP_ENV') ?: 'production';

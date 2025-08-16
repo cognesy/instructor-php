@@ -11,7 +11,7 @@ Recent changes to the Instructor package may require some manual fixes in your c
 Run the following command in your CLI:
 
 ```bash
-# @doctest id="fc87"
+# @doctest id="78ba"
 composer update cognesy/instructor
 ```
 

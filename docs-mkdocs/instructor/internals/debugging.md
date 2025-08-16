@@ -14,7 +14,7 @@ For more details see the [Events](events.mdx) section.
 The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.
 
 ```php
-// @doctest id="fb16"
+// @doctest id="c5cf"
 $result = (new StructuredOutput)
     ->withDebugPreset('on')
     ->with(

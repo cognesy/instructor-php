@@ -13,7 +13,7 @@ It is returned by the `Inference` class when you call the `create()` method.
 ## Basic Response Handling
 
 ```php
-// @doctest id="0c04"
+// @doctest id="11ab"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -48,7 +48,7 @@ echo "Usage - Output tokens: " . $fullResponse->usage()->output() . "\n";
 For streaming responses, use the `stream()` method:
 
 ```php
-// @doctest id="4832"
+// @doctest id="ac21"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -84,7 +84,7 @@ echo "\n\nComplete response: " . $response->get();
 For models that support function calling or tools:
 
 ```php
-// @doctest id="d8e6"
+// @doctest id="98f7"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

@@ -8,7 +8,7 @@ description: 'Learn about the request and response objects used in Polyglot.'
 The `InferenceRequest` class encapsulates all the parameters needed for an LLM request:
 
 ```php
-// @doctest id="173f"
+// @doctest id="d4c9"
 namespace Cognesy\Polyglot\LLM;
 
 class InferenceRequest {
@@ -58,7 +58,7 @@ class InferenceRequest {
 The `PendingInference` class handles the response from an LLM API:
 
 ```php
-// @doctest id="a841"
+// @doctest id="653d"
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
@@ -80,7 +80,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
 For streaming responses, the `InferenceStream` class provides methods to process the stream:
 
 ```php
-// @doctest id="a7a4"
+// @doctest id="fdd5"
 namespace Cognesy\Polyglot\LLM;
 
 class InferenceStream {
@@ -105,7 +105,7 @@ class InferenceStream {
 The `EmbeddingsResponse` class encapsulates the result of an embeddings request:
 
 ```php
-// @doctest id="78ba"
+// @doctest id="b769"
 namespace Cognesy\Polyglot\Embeddings;
 
 class EmbeddingsResponse {

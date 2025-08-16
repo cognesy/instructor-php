@@ -12,7 +12,7 @@ Polyglot debug mode provides a simple way to enable debugging for LLM interactio
 Polyglot provides a simple way to enable debug mode:
 
 ```php
-// @doctest id="0296"
+// @doctest id="19a2"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -36,7 +36,7 @@ You can manually add debugging middleware to inspect raw HTTP requests and respo
 In this example we're using built-in middleware, but you can also create your own custom middleware.
 
 ```php
-// @doctest id="ed12"
+// @doctest id="8a91"
 <?php
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 use Cognesy\Http\HttpClient;
@@ -73,7 +73,7 @@ $response = $inference->with(
 Use event listeners to trace the flow of requests and responses:
 
 ```php
-// @doctest id="2c6a"
+// @doctest id="1fcc"
 <?php
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
@@ -112,7 +112,7 @@ $response = $inference->with(
 For more persistent debugging, you can log to files:
 
 ```php
-// @doctest id="5281"
+// @doctest id="709c"
 <?php
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;

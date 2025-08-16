@@ -7,7 +7,7 @@ Commonly used option supported by many providers is `temperature`, which control
 Lower values make the output more deterministic, while higher values make it more random.
 
 ```php
-// @doctest id="4b36"
+// @doctest id="59d1"
 <?php
 $person = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
@@ -31,7 +31,7 @@ This allows you to specify your own API key, base URI or,
 which might be helpful in the case you are using OpenAI - organization.
 
 ```php
-// @doctest id="4968"
+// @doctest id="f0a0"
 <?php
 use Cognesy\Instructor\StructuredOutput;use Cognesy\Polyglot\Inference\Config\LLMConfig;
 

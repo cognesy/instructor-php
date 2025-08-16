@@ -14,7 +14,7 @@ One of the most common issues when working with LLM APIs is authentication probl
 
 1. **Verify API Key**: Ensure your API key is correctly set in your environment variables
 ```php
-// @doctest id="f89a"
+// @doctest id="b9af"
 // Check if API key is set
 if (empty(getenv('OPENAI_API_KEY'))) {
 echo "API key is not set in environment variables\n";
@@ -23,7 +23,7 @@ echo "API key is not set in environment variables\n";
 
 2. **Check API Key Format**: Some providers require specific formats for API keys
 ```php
-// @doctest id="f4b8"
+// @doctest id="48fe"
 // OpenAI keys typically start with 'sk-'
 if (!str_starts_with(getenv('OPENAI_API_KEY'), 'sk-')) {
 echo "OpenAI API key format is incorrect\n";
@@ -38,7 +38,7 @@ echo "Anthropic API key format is incorrect\n";
 3. **Test Keys Directly**: Use a simple script to test your API keys
 
 ```php
-// @doctest id="10d0"
+// @doctest id="eb60"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -70,7 +70,7 @@ testApiKey('mistral');
 
 4. **Environment Variables**: Ensure your environment variables are being loaded correctly
 ```php
-// @doctest id="c5b2"
+// @doctest id="37f9"
 <?php
 // If using dotenv
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
