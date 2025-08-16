@@ -23,6 +23,8 @@
 /archived/        export-ignore
 /docs/            export-ignore
 /docs-build/      export-ignore
+/docs-mkdocs/     export-ignore
+/docs-site/       export-ignore
 /evals/           export-ignore
 /examples/        export-ignore
 /src-experimental/ export-ignore
@@ -62,6 +64,9 @@
 *.mdx             linguist-documentation
 *.json            linguist-vendored
 /vendor/          linguist-vendored
+/docs-build/      linguist-generated
+/docs-mkdocs/     linguist-generated
+/docs-site/       linguist-generated
 
 # Ignore logs and temp files in exports (optional)
 *.bak             export-ignore
