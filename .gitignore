@@ -53,6 +53,10 @@ Thumbs.db
 /.crush/
 /temp/
 
+# Documentation build artifacts (generated in CI)
+/docs-site/
+/docs-mkdocs/
+
 # Claude Code project files
 CLAUDE.md
 CRUSH.md
