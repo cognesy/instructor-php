@@ -3,7 +3,7 @@
 namespace Cognesy\Template\Data;
 
 use Cognesy\Template\Config\TemplateEngineConfig;
-use Cognesy\Utils\FrontMatter;
+use Cognesy\Utils\Markdown\FrontMatter;
 
 class TemplateInfo
 {

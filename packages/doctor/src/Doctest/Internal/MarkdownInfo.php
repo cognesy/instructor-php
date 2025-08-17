@@ -20,8 +20,7 @@ final readonly class MarkdownInfo
         public array $includedTypes,
     ) {}
 
-    public static function from(MarkdownFile $markdown): self
-    {
+    public static function from(MarkdownFile $markdown): self {
         return new self(
             path: $markdown->path(),
             title: $markdown->metadata('title', ''),
@@ -33,10 +32,9 @@ final readonly class MarkdownInfo
         );
     }
 
-    private static function generateCasePrefix(string $markdownPath): string
-    {
+    private static function generateCasePrefix(string $markdownPath): string {
         $filename = pathinfo($markdownPath, PATHINFO_FILENAME);
         $cleanName = preg_replace('/^([0-9]+[-_\s]*)+/', '', $filename);
-        return \Cognesy\Utils\Str::camel($cleanName) . '_';  
+        return \Cognesy\Utils\Str::camel($cleanName) . '_';
     }
 }

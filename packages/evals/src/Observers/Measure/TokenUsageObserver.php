@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Observers\Measure;
 
@@ -35,7 +35,7 @@ class TokenUsageObserver implements CanGenerateObservations
      * Generates observations for the subject.
      *
      * @param T $subject The subject for which observations need to be generated.
-     * @return iterable<\Cognesy\Evals\Observation> Yields a series of Observation objects.
+     * @return iterable<Observation> Yields a series of Observation objects.
      */
     public function observations(mixed $subject): iterable {
         yield from match(true) {
@@ -67,8 +67,8 @@ class TokenUsageObserver implements CanGenerateObservations
     /**
      * Generate observations from an Experiment
      *
-     * @param \Cognesy\Evals\Experiment $experiment Observation subject.
-     * @return iterable<\Cognesy\Evals\Observation> Yields Observation objects with token usage.
+     * @param Experiment $experiment Observation subject.
+     * @return iterable<Observation> Yields Observation objects with token usage.
      */
     private function experimentUsage(Experiment $experiment): iterable {
         $observations = [
@@ -88,7 +88,7 @@ class TokenUsageObserver implements CanGenerateObservations
      * @param string $id Object identifier.
      * @param string $key The key for the observation metric.
      * @param mixed $value The value for the observation metric.
-     * @return \Cognesy\Evals\Observation The created Observation object.
+     * @return Observation The created Observation object.
      */
     private function makeObservation(string $idName, string $id, string $key, mixed $value): Observation {
         return Observation::make(

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Data\ErrorEvent;

@@ -8,7 +8,9 @@ final readonly class ContentNode extends Node
 
     public function __construct(
         public string $content,
+        int $lineNumber = 0,
     ) {
+        parent::__construct($lineNumber);
         $this->codeQuotes = $this->extractCodeQuotes($content);
     }
 

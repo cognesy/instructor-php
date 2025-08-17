@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Cognesy\Addons\FunctionCall\Traits;
 
 use Cognesy\Schema\Data\Schema\Schema;

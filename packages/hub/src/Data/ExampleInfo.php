@@ -2,8 +2,8 @@
 
 namespace Cognesy\InstructorHub\Data;
 
+use Cognesy\Utils\Markdown\FrontMatter;
 use Cognesy\Utils\Str;
-use Cognesy\Utils\FrontMatter;
 
 class ExampleInfo
 {

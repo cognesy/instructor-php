@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Utils;
+namespace Cognesy\Utils\Data;
 
 use Adbar\Dot;
 use Aimeos\Map;
@@ -24,8 +24,7 @@ class DataMap implements JsonSerializable
      *
      * @param array<TKey, TValue|self> $data
      */
-    public function __construct(array $data = [])
-    {
+    public function __construct(array $data = []) {
         $this->dot = new Dot($data);
     }
 
@@ -36,8 +35,7 @@ class DataMap implements JsonSerializable
      * @param TValue|null $default
      * @return TValue|null|self
      */
-    public function get(string $key, mixed $default = null): mixed
-    {
+    public function get(string $key, mixed $default = null): mixed {
         $value = $this->dot->get($key, $default);
 
         if (is_array($value)) {
@@ -54,8 +52,7 @@ class DataMap implements JsonSerializable
      * @param TValue $value
      * @return self
      */
-    public function set(string $key, mixed $value): self
-    {
+    public function set(string $key, mixed $value): self {
         if ($value instanceof self) {
             $this->dot->set($key, $value->toArray());
         } else {
@@ -71,8 +68,7 @@ class DataMap implements JsonSerializable
      * @param string $key
      * @return bool
      */
-    public function has(string $key): bool
-    {
+    public function has(string $key): bool {
         return $this->dot->has($key);
     }
 
@@ -84,8 +80,7 @@ class DataMap implements JsonSerializable
      *
      * @throws InvalidArgumentException If the key does not exist.
      */
-    public function getType(string $key): string
-    {
+    public function getType(string $key): string {
         if (!$this->has($key)) {
             throw new InvalidArgumentException("Key '{$key}' does not exist.");
         }
@@ -250,6 +245,32 @@ class DataMap implements JsonSerializable
         return new self(array_intersect_key($data, array_flip($keys)));
     }
 
+    public function with(array $values): self {
+        $data = $this->toArray();
+        foreach ($values as $key => $value) {
+            if ($value instanceof self) {
+                $data[$key] = $value->toArray();
+            } else {
+                $data[$key] = $value;
+            }
+        }
+        return new self($data);
+    }
+
+    public function clone(): self {
+        return clone $this;
+    }
+
+    public function __clone() {
+        $data = $this->toArray();
+        foreach ($data as $key => $value) {
+            if ($value instanceof self) {
+                $data[$key] = clone $value;
+            }
+        }
+        $this->dot = new Dot($data);
+    }
+
     // INTERNAL /////////////////////////////////////////////////
 
     /**
@@ -284,8 +305,7 @@ class DataMap implements JsonSerializable
      *
      * @throws InvalidArgumentException If wildcards are used on non-array/object paths.
      */
-    private function collectWildcardValues(string $path): array
-    {
+    private function collectWildcardValues(string $path): array {
         $pathParts = explode('.', $path);
         return $this->traverseWithWildcards($this->toArray(), $pathParts);
     }
@@ -299,8 +319,7 @@ class DataMap implements JsonSerializable
      *
      * @throws InvalidArgumentException If wildcards are used on non-array/object paths.
      */
-    private function traverseWithWildcards(mixed $currentData, array $pathParts): array
-    {
+    private function traverseWithWildcards(mixed $currentData, array $pathParts): array {
         if (empty($pathParts)) {
             return [$currentData]; // Always return an array of collected items
         }

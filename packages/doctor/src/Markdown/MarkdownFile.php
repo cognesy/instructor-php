@@ -13,9 +13,9 @@ use Cognesy\Doctor\Markdown\Nodes\HeaderNode;
 use Cognesy\Doctor\Markdown\Nodes\Node;
 use Cognesy\Doctor\Markdown\Visitors\ReplaceCodeBlockByCallable;
 use Cognesy\Doctor\Markdown\Visitors\ToString;
+use Cognesy\Utils\Markdown\FrontMatter;
 use Iterator;
 use Symfony\Component\Yaml\Yaml;
-use Cognesy\Utils\FrontMatter;
 
 final readonly class MarkdownFile
 {
@@ -136,11 +136,11 @@ final readonly class MarkdownFile
             // Resolve path relative to markdown file
             $path = $markdownDir . '/' . ltrim($includeDir, './');
             if (!file_exists($path)) {
-                throw new \Exception("Codeblock include file '$path' does not exist (resolved from markdown: {$markdownDir})");
+                throw new \RuntimeException("Codeblock include file '$path' does not exist (resolved from markdown: {$markdownDir})");
             }
             $content = file_get_contents($path);
             if ($content === false) {
-                throw new \Exception("Failed to read codeblock include file '$path'");
+                throw new \RuntimeException("Failed to read codeblock include file '$path'");
             }
             $madeReplacements = true;
             return $codeblock->withContent($content);

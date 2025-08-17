@@ -8,7 +8,7 @@ namespace Cognesy\Doctor\Doctest\Data;
 class FileDiscoveryResult
 {
     /**
-     * @param \Cognesy\InstructorHub\Services\TestDocs\FileDiscovery\DiscoveredFile[] $files
+     * @param DiscoveredFile[] $files
      */
     public function __construct(
         private readonly array $files,
@@ -18,7 +18,7 @@ class FileDiscoveryResult
     /**
      * Get all discovered files
      *
-     * @return \Cognesy\InstructorHub\Services\TestDocs\FileDiscovery\DiscoveredFile[]
+     * @return DiscoveredFile[]
      */
     public function getFiles(): array {
         return $this->files;
@@ -48,7 +48,7 @@ class FileDiscoveryResult
     /**
      * Get files grouped by extension
      *
-     * @return DiscoveredFile
+     * @return DiscoveredFile[][]
      */
     public function getFilesByExtension(): array {
         $grouped = [];

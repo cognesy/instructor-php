@@ -16,7 +16,9 @@ final readonly class CodeBlockNode extends Node
         public bool $hasPhpOpenTag = false,
         public bool $hasPhpCloseTag = false,
         public string $originalContent = '',  // Original content with PHP tags if needed
+        int $lineNumber = 0,
     ) {
+        parent::__construct($lineNumber);
         $this->linesOfCode = ProgrammingLanguage::linesOfCode($this->language, $this->content);
     }
 
@@ -45,6 +47,7 @@ final readonly class CodeBlockNode extends Node
             hasPhpOpenTag: $this->hasPhpOpenTag,
             hasPhpCloseTag: $this->hasPhpCloseTag,
             originalContent: $this->originalContent,
+            lineNumber: $this->lineNumber,
         );
     }
 
@@ -57,6 +60,7 @@ final readonly class CodeBlockNode extends Node
             hasPhpOpenTag: $this->hasPhpOpenTag,
             hasPhpCloseTag: $this->hasPhpCloseTag,
             originalContent: $this->originalContent,
+            lineNumber: $this->lineNumber,
         );
     }
 }

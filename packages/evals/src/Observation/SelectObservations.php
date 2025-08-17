@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Observation;
 
@@ -72,14 +72,14 @@ class SelectObservations
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function all() : array {
         return $this->observations;
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function get(?string $key = null) : array {
         return match(true) {

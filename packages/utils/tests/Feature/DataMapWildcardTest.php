@@ -1,7 +1,7 @@
 <?php
 
 use Aimeos\Map;
-use Cognesy\Utils\DataMap;
+use Cognesy\Utils\Data\DataMap;
 
 test('wildcard path "b.*.x" returns [1, 2]', function () {
     $dataMap = new DataMap([

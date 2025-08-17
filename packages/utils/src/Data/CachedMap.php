@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Utils;
+namespace Cognesy\Utils\Data;
 
 use ArrayAccess;
 use Closure;

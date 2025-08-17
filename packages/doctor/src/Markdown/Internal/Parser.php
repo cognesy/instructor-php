@@ -30,7 +30,7 @@ final class Parser
                 TokenType::Header => $this->parseHeader(),
                 TokenType::CodeBlockFenceStart => $this->parseCodeBlock(),
                 TokenType::Content => $this->parseContent(),
-                TokenType::Newline => new NewlineNode(),
+                TokenType::Newline => new NewlineNode($this->currentToken->line),
                 default => null,
             };
 
@@ -66,11 +66,12 @@ final class Parser
             $content = trim(ltrim($token->value, '# '));
         }
 
-        return new HeaderNode($level, $content);
+        return new HeaderNode($level, $content, $token->line);
     }
 
     private function parseCodeBlock(): ?Node {
-        // Current token is CodeBlockFenceStart, move to next
+        // Current token is CodeBlockFenceStart, capture line number
+        $codeBlockStartLine = $this->currentToken->line;
         $this->advance();
         
         // Check for optional CodeBlockFenceInfo (language and metadata)
@@ -134,13 +135,14 @@ final class Parser
             $combinedMetadata,
             $hasPhpOpenTag,
             $hasPhpCloseTag,
-            $content  // Store original content with PHP tags for reference if needed
+            $content,  // Store original content with PHP tags for reference if needed
+            $codeBlockStartLine
         );
     }
 
     private function parseContent(): Node {
         $token = $this->currentToken;
-        return new ContentNode($token->value);
+        return new ContentNode($token->value, $token->line);
     }
 
 }

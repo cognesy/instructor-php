@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Auxiliary\Mintlify\MintlifyIndex;
 use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
 use Cognesy\Doctor\Docgen\Data\GenerationResult;
 use Cognesy\Doctor\Docgen\MintlifyDocumentation;

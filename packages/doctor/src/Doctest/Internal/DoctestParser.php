@@ -13,15 +13,16 @@ final class DoctestParser
     private ?DoctestToken $currentToken = null;
     private bool $hasMoreTokens = true;
 
-    public function parse(iterable $tokens): \Generator
-    {
+    public function parse(iterable $tokens): \Generator {
         // Convert iterable to Iterator for consistent interface
         $this->tokens = match (true) {
             $tokens instanceof \Iterator => $tokens,
             is_array($tokens) => new \ArrayIterator($tokens),
-            default => (function() use ($tokens) { yield from $tokens; })()
+            default => (function () use ($tokens) {
+                yield from $tokens;
+            })()
         };
-        
+
         $this->hasMoreTokens = true;
         $this->advance();
 
@@ -43,8 +44,7 @@ final class DoctestParser
         }
     }
 
-    private function advance(): void
-    {
+    private function advance(): void {
         if ($this->tokens->valid()) {
             $this->currentToken = $this->tokens->current();
             $this->tokens->next();
@@ -56,11 +56,10 @@ final class DoctestParser
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    private function parseDoctestId(): ?DoctestNode
-    {
+    private function parseDoctestId(): ?DoctestNode {
         $token = $this->currentToken;
         $id = $token->metadata['id'] ?? '';
-        
+
         if (empty($id)) {
             return null;
         }
@@ -68,43 +67,41 @@ final class DoctestParser
         return new DoctestIdNode($id, $token->line, $token->line);
     }
 
-    private function parseDoctestRegion(): ?DoctestNode
-    {
+    private function parseDoctestRegion(): ?DoctestNode {
         $startToken = $this->currentToken;
         $regionName = $startToken->metadata['name'] ?? '';
-        
+
         if (empty($regionName)) {
             return null;
         }
 
         $startLine = $startToken->line;
         $content = '';
-        
+
         // Advance past the region start token
         $this->advance();
-        
+
         // Collect content until we find the region end
-        while ($this->hasMoreTokens && 
-               $this->currentToken !== null && 
-               $this->currentToken->type !== DoctestTokenType::DoctestRegionEnd &&
-               $this->currentToken->type !== DoctestTokenType::EOF) {
-            
+        while ($this->hasMoreTokens &&
+            $this->currentToken !== null &&
+            $this->currentToken->type !== DoctestTokenType::DoctestRegionEnd &&
+            $this->currentToken->type !== DoctestTokenType::EOF) {
+
             if ($this->currentToken->type === DoctestTokenType::Newline) {
                 $content .= "\n";
             } else {
                 $content .= $this->currentToken->value;
             }
-            
+
             $this->advance();
         }
-        
+
         $endLine = $this->currentToken?->line ?? $startLine;
-        
+
         return new DoctestRegionNode($regionName, trim($content), $startLine, $endLine);
     }
 
-    private function parseCode(): ?DoctestNode
-    {
+    private function parseCode(): ?DoctestNode {
         $token = $this->currentToken;
         return new DoctestCodeNode($token->value, $token->line, $token->line);
     }

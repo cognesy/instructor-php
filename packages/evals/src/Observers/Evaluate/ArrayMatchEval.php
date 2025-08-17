@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Observers\Evaluate;
 
@@ -15,7 +15,7 @@ use Cognesy\Evals\Utils\CompareNestedArrays;
  * This class evaluates the match between expected and actual arrays
  * and generates observations for precision, recall, and detailed feedback.
  *
- * @template T of \Cognesy\Evals\Execution
+ * @template T of Execution
  */
 class ArrayMatchEval implements CanGenerateObservations
 {
@@ -27,7 +27,7 @@ class ArrayMatchEval implements CanGenerateObservations
     /**
      * Checks if the provided subject is an instance of Execution.
      *
-     * @param \Cognesy\Evals\Execution $subject The subject to be checked.
+     * @param Execution $subject The subject to be checked.
      * @return bool True if the subject is an instance of Execution, false otherwise.
      */
     public function accepts(mixed $subject): bool {
@@ -38,7 +38,7 @@ class ArrayMatchEval implements CanGenerateObservations
      * Generates a series of observational metrics for the given subject.
      *
      * @param mixed $subject The subject to analyze.
-     * @return iterable<\Cognesy\Evals\Observation> An iterable collection of observational metrics.
+     * @return iterable<Observation> An iterable collection of observational metrics.
      */
     public function observations(mixed $subject): iterable {
         $analysis = $this->analyse($subject);

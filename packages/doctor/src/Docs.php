@@ -15,6 +15,8 @@ use Cognesy\Doctor\Docgen\Commands\GeneratePackagesCommand;
 use Cognesy\Doctor\Doctest\Commands\ExtractCodeBlocks;
 use Cognesy\Doctor\Doctest\Commands\MarkSnippets;
 use Cognesy\Doctor\Doctest\Commands\MarkSnippetsRecursively;
+use Cognesy\Doctor\Doctest\Commands\ValidateCodeBlocks;
+use Cognesy\Doctor\Doctest\Services\ValidationService;
 use Cognesy\Doctor\Lesson\Commands\MakeLesson;
 use Cognesy\Doctor\Lesson\Commands\MakeLessonImage;
 use Cognesy\Doctor\Doctest\Services\BatchProcessingService;
@@ -32,6 +34,7 @@ class Docs extends Application
     private DocRepository $docRepository;
     private FileDiscoveryService $fileDiscoveryService;
     private BatchProcessingService $batchProcessingService;
+    private ValidationService $validationService;
 
     public function __construct() {
         parent::__construct('Instructor Docs // Documentation Automation', '1.0.0');
@@ -123,6 +126,7 @@ class Docs extends Application
         $this->batchProcessingService = new BatchProcessingService(
             $this->docRepository,
         );
+        $this->validationService = new ValidationService();
     }
 
     private function registerCommands(): void
@@ -179,6 +183,7 @@ class Docs extends Application
             new ExtractCodeBlocks(
                 $this->docRepository,
             ),
+            new ValidateCodeBlocks(),
             new MakeLesson($this->examples),
             new MakeLessonImage(),
         ]);

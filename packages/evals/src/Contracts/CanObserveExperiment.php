@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Contracts;
 
@@ -11,7 +11,7 @@ interface CanObserveExperiment
      * Observe the experiment.
      *
      * @param Experiment $experiment
-     * @return \Cognesy\Evals\Observation
+     * @return Observation
      */
     public function observe(Experiment $experiment) : Observation;
 }

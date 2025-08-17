@@ -1,21 +1,19 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals;
 
-use Cognesy\Utils\DataMap;
+use Cognesy\Utils\Data\ImmutableDataMap;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
-class Observation
+readonly class Observation
 {
-    use Traits\Observation\HandlesAccess;
-
-    private readonly string $id;
-    private readonly DateTimeImmutable $timestamp;
+    private string $id;
+    private DateTimeImmutable $timestamp;
     private string $type;
     private string $key;
     private mixed $value;
-    private DataMap $metadata;
+    private ImmutableDataMap $metadata;
 
     private function __construct(
         string $id,
@@ -30,7 +28,7 @@ class Observation
         $this->type = $type;
         $this->key = $key;
         $this->value = $value;
-        $this->metadata = new DataMap($metadata);
+        $this->metadata = new ImmutableDataMap($metadata);
     }
 
     public static function make(
@@ -69,5 +67,56 @@ class Observation
             'value' => $this->value,
             'metadata' => $this->metadata->toArray(),
         ];
+    }
+
+    public function withMetadata(array $metadata) : self {
+        return new self(
+            id: $this->id,
+            timestamp: $this->timestamp,
+            type: $this->type,
+            key: $this->key,
+            value: $this->value,
+            metadata: array_merge($this->metadata->toArray(), $metadata)
+        );
+    }
+
+    public function has(string $key) : bool {
+        return $this->metadata->has($key);
+    }
+
+    public function get(string $key, mixed $default = null) : mixed {
+        return $this->metadata->get($key, $default);
+    }
+
+    public function id() : string {
+        return $this->id;
+    }
+
+    public function timestamp() : DateTimeImmutable {
+        return $this->timestamp;
+    }
+
+    public function type() : string {
+        return $this->type;
+    }
+
+    public function key() : string {
+        return $this->key;
+    }
+
+    public function value() : mixed {
+        return $this->value;
+    }
+
+    public function toInt() : int {
+        return (int) $this->value;
+    }
+
+    public function toFloat() : float {
+        return (float) $this->value;
+    }
+
+    public function metadata() : ImmutableDataMap {
+        return $this->metadata;
     }
 }

@@ -304,14 +304,16 @@ Implementing proper logging and tracing is essential for troubleshooting HTTP is
 
 Create a custom logging middleware:
 
-```php include='D03_Docs_HTTP/Logging/code.php'
+```php
+// @doctest id='D03_Docs_HTTP/Logging/code.php'
 ```
 
 ### Distributed Tracing
 
 For production environments, consider implementing distributed tracing with systems like Jaeger, Zipkin, or OpenTelemetry:
 
-```php include='D03_Docs_HTTP/DistributedTracing/code.php'
+```php
+// @doctest id='D03_Docs_HTTP/DistributedTracing/code.php'
 ```
 
 ## Error Handling Strategies
@@ -338,35 +340,40 @@ try {
 
 You can categorize errors based on the underlying exception or status code:
 
-```php include='codeblocks/ErrorCategorization/code.php'
+```php
+// @doctest id='codeblocks/ErrorCategorization/code.php'
 ```
 
 ### Implementing Retry Logic
 
 For transient errors, implement retry logic:
 
-```php include='codeblocks/RetryLogic/code.php'
+```php
+// @doctest id='codeblocks/RetryLogic/code.php'
 ```
 
 ### Circuit Breaker Pattern
 
 For critical services, implement a circuit breaker to prevent cascading failures:
 
-```php include='codeblocks/CircuitBreaker/code.php'
+```php
+// @doctest id='codeblocks/CircuitBreaker/code.php'
 ```
 
 ### Graceful Degradation
 
 When a service is unavailable, implement graceful degradation by providing fallback functionality:
 
-```php include='codeblocks/GracefulDegradation/code.php'
+```php
+// @doctest id='codeblocks/GracefulDegradation/code.php'
 ```
 
 ### Comprehensive Error Handling Example
 
 Here's a comprehensive example that combines multiple error handling strategies:
 
-```php include='codeblocks/ErrorHandling/code.php'
+```php
+// @doctest id='codeblocks/ErrorHandling/code.php'
 ```
 
 This comprehensive approach combines:
@@ -593,21 +600,24 @@ return [
 
 The HTTP client dispatches events at key points in the request lifecycle:
 
-```php include='codeblocks/EventDispatching/code.php'
+```php
+// @doctest id='codeblocks/EventDispatching/code.php'
 ```
 
 ### Manual Debugging
 
 You can implement your own debugging by adding logging statements:
 
-```php include='codeblocks/ManualDebugging/code.php'
+```php
+// @doctest id='codeblocks/ManualDebugging/code.php'
 ```
 
 ### Record/Replay Middleware for Debugging
 
 The `RecordReplayMiddleware` can be useful for debugging by recording HTTP interactions and replaying them later:
 
-```php include='codeblocks/RecordReplay/code.php'
+```php
+// @doctest id='codeblocks/RecordReplay/code.php'
 ```
 
 ## Logging and Tracing
@@ -618,5 +628,6 @@ Implementing proper logging and tracing is essential for troubleshooting HTTP is
 
 Create a custom logging middleware:
 
-```php include='codeblocks/Logging/code.php'
+```php
+// @doctest id='codeblocks/Logging/code.php'
 ```

@@ -10,6 +10,7 @@ final readonly class DocumentNode extends Node
     public function __construct(
         Node ...$children
     ) {
+        parent::__construct(1); // Document starts at line 1
         $this->children = $children;
     }
 

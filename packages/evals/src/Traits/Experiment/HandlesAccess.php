@@ -1,11 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Traits\Experiment;
 
 use Cognesy\Evals\Execution;
+use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observation\SelectObservations;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Utils\DataMap;
+use Cognesy\Utils\Data\DataMap;
 use DateTime;
 
 trait HandlesAccess
@@ -31,28 +32,28 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Cognesy\Evals\Execution[]
+     * @return Execution[]
      */
     public function executions() : array {
         return $this->executions;
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function metrics(string $name) : array {
         return SelectObservations::from($this->observations)->withTypes(['metric'])->get($name);
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function summaries() : array {
         return SelectObservations::from($this->observations)->withTypes(['summary'])->all();
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function feedback() : array {
         return SelectObservations::from($this->observations)->withTypes(['feedback'])->all();
@@ -63,14 +64,14 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function observations() : array {
         return $this->observations;
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function executionObservations() : array {
         $observations = [];

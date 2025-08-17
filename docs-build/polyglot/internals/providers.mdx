@@ -18,7 +18,7 @@ The provider abstraction layer is where Polyglot handles the differences between
 The `LLMProvider` class is a builder that configures and creates inference drivers. It provides a fluent interface for setting up LLM configurations:
 
 ```php
-// @doctest id="3f8a"
+// @doctest id="489a"
 <?php
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -53,7 +53,7 @@ Key methods:
 The `EmbeddingsProvider` class builds and configures embeddings drivers:
 
 ```php
-// @doctest id="78ce"
+// @doctest id="effd"
 <?php
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
@@ -88,7 +88,7 @@ Key methods:
 Several interfaces define the contract for LLM drivers and adapters:
 
 ```php
-// @doctest id="e545"
+// @doctest id="5d4f"
 namespace Cognesy\Polyglot\Inference\Contracts;
 
 interface CanHandleInference {
@@ -144,7 +144,7 @@ interface CanMapUsage {
 The embeddings functionality uses these key interfaces:
 
 ```php
-// @doctest id="34a6"
+// @doctest id="ccb8"
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
 // Main driver interface
@@ -177,7 +177,7 @@ interface CanMapUsage {
 The `ModularLLMDriver` is a central component that implements the `CanHandleInference` interface using adapters:
 
 ```php
-// @doctest id="cb63"
+// @doctest id="0fff"
 namespace Cognesy\Polyglot\Inference\Drivers;
 
 class ModularLLMDriver implements CanHandleInference {
@@ -205,7 +205,7 @@ class ModularLLMDriver implements CanHandleInference {
 The `InferenceDriverFactory` creates the appropriate driver for each LLM provider:
 
 ```php
-// @doctest id="d5ae"
+// @doctest id="e425"
 namespace Cognesy\Polyglot\Inference\Drivers;
 
 class InferenceDriverFactory {
@@ -230,7 +230,7 @@ class InferenceDriverFactory {
 The `EmbeddingsDriverFactory` creates embeddings drivers:
 
 ```php
-// @doctest id="23e1"
+// @doctest id="c868"
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
 class EmbeddingsDriverFactory {

@@ -4,7 +4,7 @@
 
 ## Core Architecture
 
-### Three Main Components:
+### Four Main Components:
 
 1. **Markdown Processing** (`src/Markdown/`)
    - `MarkdownFile`: Parses markdown with YAML frontmatter, extracts code blocks and metadata
@@ -20,10 +20,15 @@
    - Filtering based on language, minimum lines, IDs
 
 3. **Documentation Generation** (`src/Docgen/`)
-   - `MintlifyDocumentation`: Generates Mintlify-compatible documentation
+   - Supports both Mintlify and MkDocs documentation formats
    - Handles package docs, examples, and navigation index generation
    - Inlines external code blocks from separate files
    - Manages release notes and dynamic navigation groups
+
+4. **Code Screenshot Generation** (`src/Freeze/`)
+   - Creates visual screenshots of code snippets
+   - Configurable themes, fonts, and styling options
+   - Multiple execution backends (shell, exec, Symfony Process)
 
 ## Key Features
 
@@ -36,13 +41,21 @@
 
 ## CLI Commands
 
-Via `Docs` console application:
-- `generate-docs`: Full documentation generation
-- `generate-examples`: Example-only generation  
-- `generate-packages`: Package docs only
-- `clear-docs`: Clean build directory
-- `mark-snippets`: Process individual files
-- `extract-codeblocks`: Extract code for testing
+### Doctest Commands
+- `mark`: Process single Markdown file and add IDs to code snippets
+- `mark-dir`: Recursively process Markdown files in a directory and add IDs to code snippets
+- `extract`: Extract code blocks from Markdown files to target directory
+
+### Documentation Generation Commands
+- `generate-mintlify`: Generate Mintlify-compatible documentation
+- `generate-mkdocs`: Generate MkDocs-compatible documentation
+- `generate-examples`: Generate examples only
+- `generate-packages`: Generate package documentation only
+- `clear-mintlify`: Clean Mintlify build directory
+- `clear-mkdocs`: Clean MkDocs build directory
+
+### Code Screenshot Commands
+- `freeze`: Create visual screenshots of code snippets with configurable styling
 
 ## Configuration
 

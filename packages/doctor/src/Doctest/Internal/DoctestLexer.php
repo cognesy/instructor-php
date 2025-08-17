@@ -10,8 +10,7 @@ final class DoctestLexer
     private int $length;
     private string $language;
 
-    public function __construct(string $language = 'php')
-    {
+    public function __construct(string $language = 'php') {
         $this->language = $language;
     }
 
@@ -21,8 +20,7 @@ final class DoctestLexer
      * @param string $input The input string to tokenize.
      * @return \Generator<DoctestToken> A generator yielding tokens lazily.
      */
-    public function tokenize(string $input): \Generator
-    {
+    public function tokenize(string $input): \Generator {
         // Normalize line endings to \n only
         $this->input = str_replace(["\r\n", "\r"], "\n", $input);
         $this->length = strlen($this->input);
@@ -38,7 +36,7 @@ final class DoctestLexer
                 $char === "\n" => $this->tokenizeNewline(),
                 default => $this->tokenizeCode(),
             };
-            
+
             foreach ($generator as $token) {
                 yield $token;
             }
@@ -49,25 +47,22 @@ final class DoctestLexer
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    private function isDoctestAnnotation(): bool
-    {
+    private function isDoctestAnnotation(): bool {
         $commentStart = $this->getCommentStart();
         if (!str_starts_with(substr($this->input, $this->position), $commentStart)) {
             return false;
         }
-        
+
         $lineContent = $this->peekLine();
         return str_contains($lineContent, '@doctest');
     }
 
-    private function isComment(): bool
-    {
+    private function isComment(): bool {
         $commentStart = $this->getCommentStart();
         return str_starts_with(substr($this->input, $this->position), $commentStart);
     }
 
-    private function getCommentStart(): string
-    {
+    private function getCommentStart(): string {
         return match ($this->language) {
             'php', 'javascript', 'java', 'c', 'cpp', 'go', 'rust' => '//',
             'python', 'ruby', 'shell', 'bash' => '#',
@@ -78,24 +73,22 @@ final class DoctestLexer
         };
     }
 
-    private function peekLine(): string
-    {
+    private function peekLine(): string {
         $startPos = $this->position;
         $line = '';
         $pos = $startPos;
-        
+
         while ($pos < $this->length && $this->input[$pos] !== "\n") {
             $line .= $this->input[$pos];
             $pos++;
         }
-        
+
         return $line;
     }
 
-    private function tokenizeDoctestAnnotation(): \Generator
-    {
+    private function tokenizeDoctestAnnotation(): \Generator {
         $line = $this->consumeUntil("\n");
-        
+
         if (preg_match('/@doctest\s+id[=:]\s*["\']?([^"\'\s]+)["\']?/', $line, $matches)) {
             yield new DoctestToken(DoctestTokenType::DoctestId, $line, $this->line, ['id' => $matches[1]]);
         } elseif (preg_match('/@doctest-region-start\s+name[=:]\s*["\']?([^"\'\s]+)["\']?/', $line, $matches)) {
@@ -108,21 +101,18 @@ final class DoctestLexer
         }
     }
 
-    private function tokenizeComment(): \Generator
-    {
+    private function tokenizeComment(): \Generator {
         $line = $this->consumeUntil("\n");
         yield new DoctestToken(DoctestTokenType::Comment, $line, $this->line);
     }
 
-    private function tokenizeNewline(): \Generator
-    {
+    private function tokenizeNewline(): \Generator {
         yield new DoctestToken(DoctestTokenType::Newline, "\n", $this->line);
         $this->position++;
         $this->line++;
     }
 
-    private function tokenizeCode(): \Generator
-    {
+    private function tokenizeCode(): \Generator {
         $line = $this->consumeUntil("\n");
         if ($line !== '') {
             yield new DoctestToken(DoctestTokenType::Code, $line, $this->line);
@@ -133,8 +123,7 @@ final class DoctestLexer
         }
     }
 
-    private function consumeUntil(string $delimiters): string
-    {
+    private function consumeUntil(string $delimiters): string {
         $content = '';
         while ($this->position < $this->length && !str_contains($delimiters, $this->input[$this->position])) {
             $char = $this->input[$this->position];

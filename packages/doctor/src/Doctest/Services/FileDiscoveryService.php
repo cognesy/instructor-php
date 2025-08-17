@@ -16,8 +16,7 @@ class FileDiscoveryService
 {
     private Filesystem $filesystem;
 
-    public function __construct(?Filesystem $filesystem = null)
-    {
+    public function __construct(?Filesystem $filesystem = null) {
         $this->filesystem = $filesystem ?? new Filesystem();
     }
 
@@ -30,14 +29,14 @@ class FileDiscoveryService
      * @throws InvalidArgumentException If directory doesn't exist or extensions are invalid
      * @throws RuntimeException If directory cannot be read
      */
-    public function discoverFiles(string $sourceDirectory, array $extensions): FileDiscoveryResult
-    {
+    public function discoverFiles(string $sourceDirectory, array $extensions): FileDiscoveryResult {
         $this->validateSourceDirectory($sourceDirectory);
         $this->validateExtensions($extensions);
 
         try {
             $finder = new Finder();
-            $finder->files()
+            $finder
+                ->files()
                 ->in($sourceDirectory)
                 ->name($this->buildNamePatterns($extensions))
                 ->sortByName();
@@ -50,7 +49,7 @@ class FileDiscoveryService
                 $discoveredFiles[] = new DiscoveredFile(
                     absolutePath: $absolutePath,
                     relativePath: $relativePath,
-                    extension: $file->getExtension()
+                    extension: $file->getExtension(),
                 );
             }
 
@@ -60,7 +59,7 @@ class FileDiscoveryService
             throw new RuntimeException(
                 "Failed to discover files in directory '{$sourceDirectory}': {$e->getMessage()}",
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -68,16 +67,14 @@ class FileDiscoveryService
     /**
      * Build file name patterns from extensions
      */
-    private function buildNamePatterns(array $extensions): array
-    {
+    private function buildNamePatterns(array $extensions): array {
         return array_map(fn($ext) => "*.{$ext}", $extensions);
     }
 
     /**
      * Get relative path from source directory to target file
      */
-    private function getRelativePath(string $sourceDirectory, string $absolutePath): string
-    {
+    private function getRelativePath(string $sourceDirectory, string $absolutePath): string {
         $sourceDirectory = rtrim(realpath($sourceDirectory), DIRECTORY_SEPARATOR);
         $relativePath = substr($absolutePath, strlen($sourceDirectory) + 1);
 
@@ -87,8 +84,7 @@ class FileDiscoveryService
     /**
      * Validate that source directory exists and is readable
      */
-    private function validateSourceDirectory(string $sourceDirectory): void
-    {
+    private function validateSourceDirectory(string $sourceDirectory): void {
         if (empty($sourceDirectory)) {
             throw new InvalidArgumentException('Source directory cannot be empty');
         }
@@ -109,8 +105,7 @@ class FileDiscoveryService
     /**
      * Validate file extensions array
      */
-    private function validateExtensions(array $extensions): void
-    {
+    private function validateExtensions(array $extensions): void {
         if (empty($extensions)) {
             throw new InvalidArgumentException('At least one file extension must be specified');
         }

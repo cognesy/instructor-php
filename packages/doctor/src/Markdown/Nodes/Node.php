@@ -7,6 +7,10 @@ use Cognesy\Doctor\Markdown\Contracts\NodeVisitor;
 
 abstract readonly class Node implements NodeInterface
 {
+    public function __construct(
+        public int $lineNumber = 0,
+    ) {}
+
     public function accept(NodeVisitor $visitor): mixed {
         return $visitor->visit($this);
     }

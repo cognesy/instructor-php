@@ -14,7 +14,7 @@ final class CodeBlockIdentifier
         foreach ($allSyntax as $syntax) {
             $escapedSyntax = preg_quote($syntax, '/');
             // Match @doctest with id parameter - stop at line end
-            $pattern = "/^{$escapedSyntax}\s*@doctest\s+.*?id=([\"']?)([a-zA-Z0-9_-]+)\\1.*?$/m";
+            $pattern = "/^{$escapedSyntax}\s*@doctest\s+.*?id=([\"']?)([^\"'\\s]+)\\1.*?$/m";
             
             if (preg_match($pattern, $content, $matches)) {
                 return $matches[2]; // Return the ID value
@@ -47,10 +47,10 @@ final class CodeBlockIdentifier
 
     /**
      * Validates if a given codeblock ID is in the correct format
-     * Accepts both human-readable IDs and generated hex IDs
+     * Accepts both human-readable IDs, generated hex IDs, and file paths
      */
     public static function isValid(string $codeblockId): bool {
-        return preg_match('/^[a-zA-Z0-9_-]+$/', $codeblockId) === 1;
+        return preg_match('/^[a-zA-Z0-9_.\/-]+$/', $codeblockId) === 1;
     }
 
 }

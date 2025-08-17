@@ -25,25 +25,23 @@ class MarkSnippets extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this
             ->addOption(
                 'source',
                 's',
                 InputOption::VALUE_REQUIRED,
-                'Source Markdown file path'
+                'Source Markdown file path',
             )
             ->addOption(
                 'output',
                 'o',
                 InputOption::VALUE_OPTIONAL,
-                'Output Markdown file path (if not provided, content is displayed on screen)'
+                'Output Markdown file path (if not provided, content is displayed on screen)',
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $io = new SymfonyStyle($input, $output);
 
         try {
@@ -56,7 +54,7 @@ class MarkSnippets extends Command
             // Process content
             $markdown = MarkdownFile::fromString(
                 text: $sourceContent,
-                path: $sourcePath
+                path: $sourcePath,
             );
 
             // Write or display result
@@ -81,8 +79,7 @@ class MarkSnippets extends Command
         }
     }
 
-    private function getRequiredOption(InputInterface $input, string $optionName): string
-    {
+    private function getRequiredOption(InputInterface $input, string $optionName): string {
         $value = $input->getOption($optionName);
         if (empty($value)) {
             throw new InvalidArgumentException("Source file path is required. Use --{$optionName} option.");
@@ -90,8 +87,7 @@ class MarkSnippets extends Command
         return $value;
     }
 
-    private function displayContent(string $content, SymfonyStyle $io): void
-    {
+    private function displayContent(string $content, SymfonyStyle $io): void {
         $io->writeln("Processed Markdown content:");
         $io->writeln(str_repeat('=', 50));
         $io->writeln($content);

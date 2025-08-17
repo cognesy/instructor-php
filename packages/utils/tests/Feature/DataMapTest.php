@@ -1,7 +1,7 @@
 <?php
 
 use Aimeos\Map;
-use Cognesy\Utils\DataMap;
+use Cognesy\Utils\Data\DataMap;
 
 beforeEach(function () {
     $this->testData = [

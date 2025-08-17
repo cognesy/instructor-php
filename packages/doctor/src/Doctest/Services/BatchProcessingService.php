@@ -26,8 +26,7 @@ class BatchProcessingService
      * @return BatchProcessingResult The result of the batch operation
      * @throws RuntimeException If processing fails
      */
-    public function processFiles(FileDiscoveryResult $discoveryResult, string $targetDirectory): BatchProcessingResult
-    {
+    public function processFiles(FileDiscoveryResult $discoveryResult, string $targetDirectory): BatchProcessingResult {
         $this->validateTargetDirectory($targetDirectory);
 
         $results = [];
@@ -44,22 +43,23 @@ class BatchProcessingService
                     file: $file,
                     success: false,
                     snippetsProcessed: 0,
-                    error: $e->getMessage()
+                    error: $e->getMessage(),
                 );
             }
         }
 
         return new BatchProcessingResult(
             results: $results,
-            totalSnippetsProcessed: $totalSnippetsProcessed
+            totalSnippetsProcessed: $totalSnippetsProcessed,
         );
     }
+
+    // INTERNAL ///////////////////////////////////////////////////////
 
     /**
      * Process a single file
      */
-    private function processFile(DiscoveredFile $file, string $targetDirectory): FileProcessingResult
-    {
+    private function processFile(DiscoveredFile $file, string $targetDirectory): FileProcessingResult {
         // Read source content
         $sourceContent = $this->docRepository->readFile($file->absolutePath);
 
@@ -79,15 +79,14 @@ class BatchProcessingService
             file: $file,
             success: true,
             snippetsProcessed: $snippetsProcessed,
-            targetPath: $targetPath
+            targetPath: $targetPath,
         );
     }
 
     /**
      * Validate target directory can be used for writing
      */
-    private function validateTargetDirectory(string $targetDirectory): void
-    {
+    private function validateTargetDirectory(string $targetDirectory): void {
         if (empty($targetDirectory)) {
             throw new RuntimeException('Target directory cannot be empty');
         }

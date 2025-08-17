@@ -13,21 +13,21 @@ class Usage
     ) {}
 
     public static function none() : Usage {
-        return new Usage();
+        return new self();
     }
 
     public static function fromArray(array $value) : static {
-        return new Usage(
-            $value['input'] ?? 0,
-            $value['output'] ?? 0,
-            $value['cacheWrite'] ?? 0,
-            $value['cacheRead'] ?? 0,
-            $value['reasoning'] ?? 0,
+        return new self(
+            inputTokens: $value['input'] ?? 0,
+            outputTokens: $value['output'] ?? 0,
+            cacheWriteTokens: $value['cacheWrite'] ?? 0,
+            cacheReadTokens: $value['cacheRead'] ?? 0,
+            reasoningTokens: $value['reasoning'] ?? 0,
         );
     }
 
     public static function copy(Usage $usage) : static {
-        return new Usage(
+        return new self(
             inputTokens: $usage->inputTokens,
             outputTokens: $usage->outputTokens,
             cacheWriteTokens: $usage->cacheWriteTokens,

@@ -16,7 +16,7 @@ Streaming responses can encounter specific problems.
 1. **Connection Timeouts**: Increase timeout settings for streaming responses
 
 ```php
-// @doctest id="541f"
+// @doctest id="b48d"
 <?php
 use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
 
@@ -46,7 +46,7 @@ foreach ($stream as $partial) {
 
 2. **Buffer Flushing**: Ensure output buffers are properly flushed during streaming
 ```php
-// @doctest id="d624"
+// @doctest id="5192"
 foreach ($stream as $partial) {
     echo $partial->contentDelta;
 
@@ -60,7 +60,7 @@ foreach ($stream as $partial) {
 
 3. **Error Handling in Streams**: Implement specific error handling for streams
 ```php
-// @doctest id="c5b0"
+// @doctest id="9875"
 <?php
 try {
     $response = $inference->with(
@@ -92,7 +92,7 @@ try {
 
 4. **Fallback to Non-streaming**: Implement a fallback to non-streaming mode
 ```php
-// @doctest id="8d46"
+// @doctest id="8843"
 <?php
 function getResponse(string $prompt, bool $preferStreaming = true): string {
     $inference = new Inference();

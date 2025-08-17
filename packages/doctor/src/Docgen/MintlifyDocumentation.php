@@ -224,13 +224,13 @@ class MintlifyDocumentation
                     unlink($targetFilePath);
                     Files::copyFile($example->runPath, $targetFilePath);
                     return FileProcessingResult::updated($targetFilePath, 'Source file updated');
-                } else {
-                    return FileProcessingResult::skipped($targetFilePath, 'No changes detected');
                 }
-            } else {
-                Files::copyFile($example->runPath, $targetFilePath);
-                return FileProcessingResult::created($targetFilePath, 'New example file');
+
+                return FileProcessingResult::skipped($targetFilePath, 'No changes detected');
             }
+
+            Files::copyFile($example->runPath, $targetFilePath);
+            return FileProcessingResult::created($targetFilePath, 'New example file');
 
         } catch (\Throwable $e) {
             return FileProcessingResult::error($example->name, $e->getMessage(), $e);

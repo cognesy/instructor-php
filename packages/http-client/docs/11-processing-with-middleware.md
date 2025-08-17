@@ -21,7 +21,8 @@ There are three main approaches to creating custom middleware:
 
 The most direct approach is to implement the `HttpMiddleware` interface:
 
-```php include="codeblocks/D03_Docs_HTTP/BasicHttpMiddleware/code.php"
+```php
+// @doctest id='codeblocks/Middleware/BasicHttpMiddleware/code.php'
 ```
 
 This approach gives you complete control over the middleware behavior, but it requires you to implement the entire logic from scratch.
@@ -30,7 +31,8 @@ This approach gives you complete control over the middleware behavior, but it re
 
 For most cases, extending the `BaseMiddleware` abstract class is more convenient:
 
-```php include="codeblocks/D03_Docs_HTTP/AuthenticationMiddleware/code.php"
+```php
+// @doctest id='codeblocks/D03_Docs_HTTP/AuthenticationMiddleware/code.php'
 ```
 
 With `BaseMiddleware`, you only need to override the methods that matter for your middleware:
@@ -75,21 +77,24 @@ This approach is concise but less reusable than defining a named class.
 
 This middleware automatically retries failed requests:
 
-```php include="codeblocks/D03_Docs_HTTP/RetryMiddleware/code.php"
+```php
+// @doctest id='codeblocks/D03_Docs_HTTP/RetryMiddleware/code.php'
 ```
 
 #### Rate Limiting Middleware
 
 This middleware throttles requests to respect API rate limits:
 
-```php include="codeblocks/D03_Docs_HTTP/RateLimitingMiddleware/code.php"
+```php
+// @doctest id='codeblocks/D03_Docs_HTTP/RateLimitingMiddleware/code.php'
 ```
 
 #### Caching Middleware
 
 This middleware caches responses for GET requests:
 
-```php include="codeblocks/D03_Docs_HTTP/CachingMiddleware/code.php"
+```php
+// @doctest id='codeblocks/D03_Docs_HTTP/CachingMiddleware/code.php'
 ```
 
 ## Response Decoration
@@ -100,14 +105,16 @@ Response decoration is a powerful technique for wrapping HTTP responses to add f
 
 All response decorators should implement the `HttpResponse` interface. The library provides a `BaseResponseDecorator` class that makes this easier:
 
-```php include="codeblocks/D03_Docs_HTTP/MiddleResponseDecorator/code.php"
+```php
+// @doctest id='codeblocks/D03_Docs_HTTP/MiddleResponseDecorator/code.php'
 ```
 
 ### Using Response Decorators in Middleware
 
 To use a response decorator, you need to create a middleware that wraps the response:
 
-```php include="codeblocks/D03_Docs_HTTP/MiddlewareStreamDecorator/code.php"
+```php
+// @doctest id='codeblocks/D03_Docs_HTTP/MiddlewareStreamDecorator/code.php'
 ```
 
 Then add the middleware to your client:

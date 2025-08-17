@@ -5,7 +5,7 @@ namespace Cognesy\Config;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Config\Providers\SettingsConfigProvider;
-use Cognesy\Utils\CachedMap;
+use Cognesy\Utils\Data\CachedMap;
 use Cognesy\Utils\Deferred;
 use InvalidArgumentException;
 

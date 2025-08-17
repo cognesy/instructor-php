@@ -1,11 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Traits\Execution;
 
 use Cognesy\Evals\Contracts\CanRunExecution;
+use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observation\SelectObservations;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Utils\DataMap;
+use Cognesy\Utils\Data\DataMap;
 use DateTime;
 use Exception;
 
@@ -55,7 +56,7 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function observations() : array {
         return $this->observations;
@@ -108,7 +109,7 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function metrics() : array {
         return SelectObservations::from($this->observations)
@@ -121,7 +122,7 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function feedback() : array {
         return SelectObservations::from($this->observations)
@@ -134,7 +135,7 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Cognesy\Evals\Observation[]
+     * @return Observation[]
      */
     public function summaries() : array {
         return SelectObservations::from([$this->observations])

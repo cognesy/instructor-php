@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Cognesy\Instructor\Transformation\Traits\ResponseTransformer;
 
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;

@@ -1,9 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Evals\Utils;
 
 use ArrayIterator;
-use Cognesy\Evals\Contracts\CanMapValues;
 use Generator;
 use InvalidArgumentException;
 use Iterator;

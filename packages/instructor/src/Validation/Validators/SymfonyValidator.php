@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Cognesy\Instructor\Validation\Validators;
 
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;

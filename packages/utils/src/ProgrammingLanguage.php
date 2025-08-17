@@ -45,7 +45,7 @@ class ProgrammingLanguage {
 
     public static function fileTemplate(string $language) : string {
         return match($language) {
-            'php' => "<?php\n// @doctest id=%s\n%s\n?>\n",
+            'php' => "// @doctest id=%s\n%s\n",
             'python' => "# @doctest id=%s\n%s\n",
             'ruby' => "# @doctest id=%s\n%s\n",
             'bash' => "# @doctest id=%s\n%s\n",
