@@ -26,10 +26,13 @@ beforeEach(function () {
 
 afterEach(function () {
     Settings::flush(); // clear static cache
-    collect(new RecursiveIteratorIterator(
+    $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($this->dir, RecursiveDirectoryIterator::SKIP_DOTS),
         RecursiveIteratorIterator::CHILD_FIRST
-    ))->each(fn($f) => $f->isDir() ? rmdir($f) : unlink($f));
+    );
+    foreach ($iterator as $f) {
+        $f->isDir() ? rmdir($f) : unlink($f);
+    }
     rmdir($this->dir);
     unset($_ENV['INSTRUCTOR_CONFIG_PATHS'], $_ENV['INSTRUCTOR_CONFIG_PATH']);
 });

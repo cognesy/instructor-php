@@ -1,9 +1,10 @@
 ---
-title: Custom Processing with Middleware
+title: 'Custom Processing with Middleware'
 description: 'Learn how to use middleware to process HTTP requests and responses using the Instructor HTTP client API.'
-doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
-doctest_case_prefix: 'MiddlewareProcessing_'
-doctest_included_types: ['php']
+doctest_case_dir: codeblocks/D03_Docs_HTTP
+doctest_case_prefix: MiddlewareProcessing_
+doctest_included_types:
+    - php
 doctest_min_lines: 10
 ---
 
@@ -22,7 +23,8 @@ There are three main approaches to creating custom middleware:
 The most direct approach is to implement the `HttpMiddleware` interface:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/BasicHttpMiddleware/code.php'
+// @doctest id="codeblocks/Middleware/BasicHttpMiddleware/code.php"
+
 ```
 
 This approach gives you complete control over the middleware behavior, but it requires you to implement the entire logic from scratch.
@@ -32,7 +34,8 @@ This approach gives you complete control over the middleware behavior, but it re
 For most cases, extending the `BaseMiddleware` abstract class is more convenient:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/AuthenticationMiddleware/code.php'
+// @doctest id="codeblocks/D03_Docs_HTTP/AuthenticationMiddleware/code.php"
+
 ```
 
 With `BaseMiddleware`, you only need to override the methods that matter for your middleware:
@@ -47,6 +50,7 @@ With `BaseMiddleware`, you only need to override the methods that matter for you
 For simple middleware that you only need to use once, you can use anonymous classes:
 
 ```php
+// @doctest id="1f0b"
 use Cognesy\Http\Contracts\HttpMiddleware;
 
 $client = new HttpClient();
@@ -78,7 +82,8 @@ This approach is concise but less reusable than defining a named class.
 This middleware automatically retries failed requests:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/RetryMiddleware/code.php'
+// @doctest id="codeblocks/D03_Docs_HTTP/RetryMiddleware/code.php"
+
 ```
 
 #### Rate Limiting Middleware
@@ -86,7 +91,8 @@ This middleware automatically retries failed requests:
 This middleware throttles requests to respect API rate limits:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/RateLimitingMiddleware/code.php'
+// @doctest id="codeblocks/D03_Docs_HTTP/RateLimitingMiddleware/code.php"
+
 ```
 
 #### Caching Middleware
@@ -94,7 +100,8 @@ This middleware throttles requests to respect API rate limits:
 This middleware caches responses for GET requests:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/CachingMiddleware/code.php'
+// @doctest id="codeblocks/D03_Docs_HTTP/CachingMiddleware/code.php"
+
 ```
 
 ## Response Decoration
@@ -106,7 +113,8 @@ Response decoration is a powerful technique for wrapping HTTP responses to add f
 All response decorators should implement the `HttpResponse` interface. The library provides a `BaseResponseDecorator` class that makes this easier:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/MiddleResponseDecorator/code.php'
+// @doctest id="codeblocks/D03_Docs_HTTP/MiddleResponseDecorator/code.php"
+
 ```
 
 ### Using Response Decorators in Middleware
@@ -114,12 +122,14 @@ All response decorators should implement the `HttpResponse` interface. The libra
 To use a response decorator, you need to create a middleware that wraps the response:
 
 ```php
-// @doctest id='codeblocks/D03_Docs_HTTP/MiddlewareStreamDecorator/code.php'
+// @doctest id="codeblocks/D03_Docs_HTTP/MiddlewareStreamDecorator/code.php"
+
 ```
 
 Then add the middleware to your client:
 
 ```php
+// @doctest id="e288"
 $client = new HttpClient();
 $client->withMiddleware(new JsonStreamMiddleware());
 ```
@@ -129,6 +139,7 @@ $client->withMiddleware(new JsonStreamMiddleware());
 You can use response decoration to transform response content on-the-fly:
 
 ```php
+// @doctest id="bf0b"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -164,6 +175,7 @@ class XmlToJsonDecorator extends BaseResponseDecorator
 And the corresponding middleware:
 
 ```php
+// @doctest id="7e53"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -199,6 +211,7 @@ Here are some more advanced middleware examples that demonstrate the power and f
 This middleware collects analytics data about HTTP requests:
 
 ```php
+// @doctest id="cd4c"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -252,6 +265,7 @@ class AnalyticsMiddleware extends BaseMiddleware
 This middleware implements the circuit breaker pattern to prevent repeated calls to failing services:
 
 ```php
+// @doctest id="923c"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -341,6 +355,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
 This middleware only applies to certain requests based on a condition:
 
 ```php
+// @doctest id="fd1d"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -378,6 +393,7 @@ class ConditionalMiddleware implements HttpMiddleware
 Usage example:
 
 ```php
+// @doctest id="0fbe"
 // Only apply caching middleware to GET requests
 $cachingMiddleware = new CachingMiddleware($cache);
 $conditionalCaching = new ConditionalMiddleware(
@@ -393,6 +409,7 @@ $client->withMiddleware($conditionalCaching);
 This middleware adds a unique ID to each request and tracks it through the response:
 
 ```php
+// @doctest id="99ce"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -445,6 +462,7 @@ class RequestIdMiddleware extends BaseMiddleware
 This middleware adds OpenTelemetry tracing to HTTP requests:
 
 ```php
+// @doctest id="1650"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -527,6 +545,7 @@ class TracingMiddleware extends BaseMiddleware
 When working with Large Language Model (LLM) APIs, you can create specialized middleware to handle their unique requirements:
 
 ```php
+// @doctest id="7d2f"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -632,6 +651,7 @@ class LlmStreamingMiddleware extends BaseMiddleware
 When building complex applications, you'll often need to combine multiple middleware components. Here's an example of how to set up a complete HTTP client pipeline:
 
 ```php
+// @doctest id="0cd3"
 <?php
 
 use Cognesy\Polyglot\Http\HttpClient;use Middleware\AuthenticationMiddleware\AuthenticationMiddleware;use Middleware\BasicHttpMiddleware\LoggingMiddleware;use Middleware\CachingMiddleware\CachingMiddleware;use Middleware\RateLimitingMiddleware\RateLimitingMiddleware;use Middleware\RetryMiddleware\RetryMiddleware;use YourNamespace\Http\Middleware\AnalyticsMiddleware;use YourNamespace\Http\Middleware\CircuitBreakerMiddleware;use YourNamespace\Http\Middleware\TracingMiddleware;

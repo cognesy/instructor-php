@@ -3,6 +3,7 @@
 namespace Cognesy\Evals\Utils;
 
 use ArrayIterator;
+use Cognesy\Evals\Contracts\CanMapValues;
 use Generator;
 use InvalidArgumentException;
 use Iterator;
@@ -17,7 +18,7 @@ class Combination
      *
      * @template T
      *
-     * @param class-string<\Cognesy\Evals\Contracts\CanMapValues> $mapping The fully qualified class name that implements CanMapValues.
+     * @param class-string<CanMapValues> $mapping The fully qualified class name that implements CanMapValues.
      * @param array<string, iterable> $sources Associative array mapping keys to their respective iterables.
      *
      * @return Generator<int, T> Yields instances of the mapping class for each combination.
@@ -51,7 +52,7 @@ class Combination
      *
      * @template T
      *
-     * @param class-string<\Cognesy\Evals\Contracts\CanMapValues> $mapping
+     * @param class-string<CanMapValues> $mapping
      * @param string[] $keys
      * @param array<string, Iterator> $iterators
      * @param array<string, mixed> $currentCombination

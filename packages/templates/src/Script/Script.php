@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\Template\Script;
 
 use Cognesy\Template\Script\Traits\RendersContent;
@@ -15,7 +16,8 @@ use Cognesy\Template\Script\Traits\RendersContent;
  * such as adding, removing, reordering, transforming, and converting sections and
  * individual messages.
  */
-class Script {
+class Script
+{
     use Traits\Script\HandlesAccess;
     use Traits\Script\HandlesParameters;
     use Traits\Script\HandlesConversion;

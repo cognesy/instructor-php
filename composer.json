@@ -151,7 +151,6 @@
     "docs": "@php ./bin/instructor-docs",
     "hub": "@php ./bin/instructor-hub",
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php ./vendor/bin/psalm",
     "tell": "bin/tell",
     "test": "@php ./vendor/bin/pest --testsuite=Unit,Feature",
     "tests": "@php ./vendor/bin/pest --testsuite=Unit,Feature",

@@ -17,23 +17,20 @@ class BufferResponseDecorator extends BaseResponseDecorator
     private bool $isStreamBuffered = false;
 
     public function __construct(
-        HttpRequest  $request,
+        HttpRequest $request,
         HttpResponse $response,
-    )
-    {
+    ) {
         parent::__construct($request, $response);
     }
 
-    public function body(): string
-    {
+    public function body(): string {
         if ($this->bufferedBody === null) {
             $this->bufferedBody = $this->response->body();
         }
         return $this->bufferedBody;
     }
 
-    public function stream(?int $chunkSize = null): iterable
-    {
+    public function stream(?int $chunkSize = null): iterable {
         if (!$this->isStreamBuffered) {
             foreach ($this->response->stream($chunkSize) as $chunk) {
                 $this->bufferedChunks[] = $chunk;

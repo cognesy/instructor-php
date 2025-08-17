@@ -10,7 +10,7 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 
 1. **Organization IDs**: Set the organization ID if using a shared account
 ```php
-// @doctest id="544d"
+// @doctest id="5d68"
 // In config/llm.php
 'metadata' => [
     'organization' => 'org-your-organization-id',
@@ -19,7 +19,7 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 
 2. **API Versions**: Pay attention to API version changes
 ```php
-// @doctest id="6311"
+// @doctest id="afc4"
 // Updates to OpenAI API may require changes to your code
 // Monitor OpenAI's release notes for changes
 ```
@@ -28,13 +28,13 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 
 1. **Message Format**: Anthropic uses a different message format
 ```php
-// @doctest id="9809"
+// @doctest id="9e73"
 // Polyglot handles this automatically, but be aware when debugging
 ```
 
 2. **Tool Support**: Tool support has specific requirements
 ```php
-// @doctest id="e3b6"
+// @doctest id="b2d6"
 // When using tools with Anthropic, check their latest documentation
 // for supported features and limitations
 ```
@@ -43,7 +43,7 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 
 1. **Rate Limits**: Mistral has strict rate limits on free tier
 ```php
-// @doctest id="8d0e"
+// @doctest id="7262"
 // Implement more aggressive rate limiting for Mistral
 ```
 
@@ -52,14 +52,14 @@ Each LLM provider has unique quirks and issues. This section covers common provi
 
 1. **Local Setup**: Ensure Ollama is properly installed and running
 ```bash
-# @doctest id="e162"
+# @doctest id="9285"
 # Check if Ollama is running
 curl http://localhost:11434/api/version
 ```
 
 2. **Model Availability**: Download models before using them
 ```bash
-# @doctest id="850e"
+# @doctest id="a6e2"
 # Pull a model before using it
 ollama pull llama2
 ```

@@ -8,7 +8,7 @@ Tools mode enables function calling, allowing the model to request specific acti
 ## Setting Up Tools
 
 ```php
-// @doctest id="4a7c"
+// @doctest id="8d53"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -144,7 +144,7 @@ function simulateWeatherApi(string $location, string $unit): array {
 You can control how tools are used with the `toolChoice` parameter:
 
 ```php
-// @doctest id="4da2"
+// @doctest id="4e72"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -187,7 +187,7 @@ $noToolResponse = $inference->with(
 You can also stream tool calls to provide real-time feedback:
 
 ```php
-// @doctest id="b5fb"
+// @doctest id="d06f"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

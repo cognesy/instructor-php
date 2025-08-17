@@ -304,47 +304,6 @@ $lineParser = function (string $line) {
 $client->withMiddleware(new StreamByLineMiddleware($lineParser));
 ```
 
-### RecordReplay Middleware
-
-The `RecordReplayMiddleware` records HTTP interactions and can replay them later:
-
-```php
-use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
-
-// Create a record/replay middleware in record mode
-$recordReplayMiddleware = new RecordReplayMiddleware(
-    mode: RecordReplayMiddleware::MODE_RECORD,
-    storageDir: __DIR__ . '/recordings',
-    fallbackToRealRequests: true
-);
-
-// Add it to the client
-$client->withMiddleware($recordReplayMiddleware);
-```
-
-The middleware has three modes:
-- `MODE_PASS`: Normal operation, no recording or replaying
-- `MODE_RECORD`: Records all HTTP interactions to the storage directory
-- `MODE_REPLAY`: Replays recorded interactions instead of making real requests
-
-This is particularly useful for:
-- Testing: Record real API responses once, then replay them in tests
-- Offline development: Develop without access to real APIs
-- Demo environments: Ensure consistent responses for demos
-- Performance testing: Replay recorded responses to eliminate API variability
-
-Example of switching modes:
-
-```php
-// Switch to replay mode
-$recordReplayMiddleware->setMode(RecordReplayMiddleware::MODE_REPLAY);
-
-// Switch to record mode
-$recordReplayMiddleware->setMode(RecordReplayMiddleware::MODE_RECORD);
-
-// Switch to pass-through mode
-$recordReplayMiddleware->setMode(RecordReplayMiddleware::MODE_PASS);
-```
 
 ### Example Middleware Combinations
 

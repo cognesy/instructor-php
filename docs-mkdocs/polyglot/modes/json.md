@@ -8,7 +8,7 @@ JSON mode instructs the model to return responses formatted as valid JSON object
 ### Basic JSON Generation
 
 ```php
-// @doctest id="edef"
+// @doctest id="ba45"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -32,7 +32,7 @@ foreach ($response['cities'] as $city) {
 For best results, include clear instructions about the expected JSON structure:
 
 ```php
-// @doctest id="0c18"
+// @doctest id="bb2c"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -72,7 +72,7 @@ foreach ($response['cities'] as $index => $city) {
 Some providers offer additional options for JSON mode:
 
 ```php
-// @doctest id="1729"
+// @doctest id="c54e"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

@@ -6,7 +6,7 @@ description: 'Learn how to use custom HTTP clients in Polyglot.'
 Polyglot allows you to use custom HTTP clients for specific connection requirements:
 
 ```php
-// @doctest id="424f"
+// @doctest id="9a38"
 <?php
 use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;
 

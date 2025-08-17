@@ -14,7 +14,7 @@ implement fallback strategies or leverage the strengths of different models and 
 ## Switching Providers
 
 ```php
-// @doctest id="fd89"
+// @doctest id="fe0d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -44,7 +44,7 @@ echo "Anthropic response: $anthropicResponse\n";
 You can implement a fallback mechanism to try alternative providers if one fails:
 
 ```php
-// @doctest id="0a3c"
+// @doctest id="665b"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -90,7 +90,7 @@ try {
 You might want to select providers based on cost considerations:
 
 ```php
-// @doctest id="3ba8"
+// @doctest id="a4d8"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -153,7 +153,7 @@ echo "Response: " . $costAwareLLM->ask($complexQuestion, 'high') . "\n\n";
 You can implement a strategy to select the most appropriate provider for each request:
 
 ```php
-// @doctest id="61db"
+// @doctest id="9fd1"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

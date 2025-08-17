@@ -12,7 +12,7 @@ The `options` parameter allows you to customize various aspects of the request.
 ## Common Options
 
 ```php
-// @doctest id="a663"
+// @doctest id="ffaa"
 $options = [
     // Generation parameters
     'temperature' => 0.7,         // Controls randomness (0.0 to 1.0)
@@ -45,7 +45,7 @@ $response = $inference->with(
 Different providers may support additional options. Consult the provider's documentation for details:
 
 ```php
-// @doctest id="4873"
+// @doctest id="a288"
 // Anthropic-specific options
 $anthropicOptions = [
     'temperature' => 0.7,

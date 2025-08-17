@@ -28,7 +28,7 @@ Instructor supports multiple LLM providers.
 Configure the ones you plan to use:
 
 ```ini
-# @doctest id="b1d7"
+# @doctest id="6847"
 # OpenAI (default provider)
 OPENAI_API_KEY=''
 
@@ -63,7 +63,7 @@ Instructor uses a configuration directory to store its settings, e.g. LLM provid
 
 You can set the path to this directory in your `.env` file:
 ```
-// @doctest id="30ad"
+// @doctest id="f5c9"
 INSTRUCTOR_CONFIG_PATHS='/../../config/,another/path'
 ```
 

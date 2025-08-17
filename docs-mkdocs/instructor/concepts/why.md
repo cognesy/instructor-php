@@ -25,7 +25,7 @@ Let's see how we can leverage it to make use of instructor
 Create a data model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
 
 ```php
-// @doctest id="780d"
+// @doctest id="3965"
 <?php
 class UserDetail {
     public string $name;
@@ -38,7 +38,7 @@ class UserDetail {
 Use the `StructuredOutput::create()` method to send a prompt and extract the data into the target object. The `responseModel` parameter specifies the model to use for extraction.
 
 ```php
-// @doctest id="8d60"
+// @doctest id="1459"
 /** @var UserDetail */
 $user = (new StructuredOutput)->with(
     messages: [["role": "user", "content": "Extract Jason is 25 years old"]],
@@ -65,7 +65,7 @@ Validation can also be plugged into the same data model. If the response trigger
 Here, the `LeadReport` model is passed as the `$responseModel`, and `$maxRetries` is set to 2. It means that if the extracted data does not match the model, Instructor will re-ask the model 2 times before giving up.
 
 ```php
-// @doctest id="931f"
+// @doctest id="6062"
 use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -97,7 +97,7 @@ Instructor uses Symfony validation component to validate extracted data. You can
 See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
 
 ```php
-// @doctest id="44ae"
+// @doctest id="4f87"
 use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;

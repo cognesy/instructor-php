@@ -5,7 +5,7 @@
 When processing many documents, it's more efficient to batch them:
 
 ```php
-// @doctest id="bbec"
+// @doctest id="db49"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -44,7 +44,7 @@ echo "Processed " . count($vectors) . " embeddings in total.\n";
 For better performance, you can cache embeddings to avoid regenerating them:
 
 ```php
-// @doctest id="0c95"
+// @doctest id="5252"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 

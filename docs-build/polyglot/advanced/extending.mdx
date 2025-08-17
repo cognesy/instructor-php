@@ -18,7 +18,7 @@ To add support for a new LLM provider, you need to implement several components:
 Then, you need to modify the `InferenceDriverFactory` to create the appropriate driver for your provider:
 
 ```php
-// @doctest id="62dd"
+// @doctest id="c1d1"
 // In InferenceDriverFactory
 public function newProvider(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
     return new ModularLLMDriver(
@@ -43,7 +43,7 @@ Finally, add your provider to the `make` method's match statement.
 Similarly, to add a new embeddings provider, implement the `CanVectorize` interface:
 
 ```php
-// @doctest id="d7ab"
+// @doctest id="fb12"
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
 class NewEmbeddingsDriver implements CanVectorize {
@@ -66,7 +66,7 @@ class NewEmbeddingsDriver implements CanVectorize {
 Then, modify the `Embeddings` class to create your driver:
 
 ```php
-// @doctest id="b51a"
+// @doctest id="32f8"
 // In Embeddings::getDriver
 protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient): CanVectorize {
     return match ($config->providerType) {
@@ -84,7 +84,7 @@ protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $htt
 You can extend Polyglot's HTTP layer by creating custom middleware:
 
 ```php
-// @doctest id="1aa4"
+// @doctest id="f6f5"
 namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
@@ -107,7 +107,7 @@ class YourCustomMiddleware extends BaseMiddleware {
 Then, add your middleware to the HTTP client:
 
 ```php
-// @doctest id="06b4"
+// @doctest id="6ec3"
 $httpClient = new HttpClient();
 $httpClient->withMiddleware(new YourCustomMiddleware());
 

@@ -7,7 +7,8 @@ use Cognesy\Addons\Chat\Utils\SplitMessages;
 use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
-class MoveMessagesToBuffer implements ScriptProcessor {
+class MoveMessagesToBuffer implements ScriptProcessor
+{
     private string $sourceSection;
     private string $targetSection;
     private int $maxTokens;

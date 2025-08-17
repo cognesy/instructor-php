@@ -8,7 +8,7 @@ Text mode is the default and simplest output format, returning unstructured text
 ### Basic Text Generation
 
 ```php
-// @doctest id="e2c2"
+// @doctest id="0752"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -41,7 +41,7 @@ Text mode is ideal for:
 Text mode works consistently across all providers, making it the most portable option:
 
 ```php
-// @doctest id="6155"
+// @doctest id="9eab"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 

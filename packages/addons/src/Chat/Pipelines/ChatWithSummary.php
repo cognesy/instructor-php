@@ -8,7 +8,8 @@ use Cognesy\Addons\Chat\Processors\SummarizeBuffer;
 use Cognesy\Addons\Chat\ScriptPipeline;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 
-class ChatWithSummary {
+class ChatWithSummary
+{
     public static function create(
         int $maxChatTokens = 1024,
         int $maxBufferTokens = 1024,
@@ -17,13 +18,17 @@ class ChatWithSummary {
     ) : ScriptPipeline {
         $sections = ['main', 'buffer', 'summary'];
         $processors = [
-            new MoveMessagesToBuffer('main', 'buffer', $maxChatTokens),
+            new MoveMessagesToBuffer(
+                sourceSection: 'main',
+                targetSection: 'buffer',
+                maxTokens: $maxChatTokens
+            ),
             new SummarizeBuffer(
-                'buffer',
-                'summary',
-                $maxBufferTokens,
-                $maxSummaryTokens,
-                $summarizer ?? new SummarizeMessages()
+                sourceSection: 'buffer',
+                targetSection: 'summary',
+                maxBufferTokens: $maxBufferTokens,
+                maxSummaryTokens: $maxSummaryTokens,
+                summarizer: $summarizer ?? new SummarizeMessages()
             )
         ];
         return new ScriptPipeline($sections, $processors);

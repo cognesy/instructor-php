@@ -15,14 +15,14 @@ When working with different LLM models, you may encounter issues that are specif
 
 1. **Check Model Availability**: Ensure the model you're requesting is available from the provider
 ```php
-// @doctest id="b60b"
+// @doctest id="80d1"
 // Check available models for each provider in their documentation
 // Example: For OpenAI 'gpt-4o-mini' is valid, but 'gpt5' is not
 ```
 
 2. **Context Length**: Be aware of each model's maximum context length
 ```php
-// @doctest id="426b"
+// @doctest id="ba49"
 // In config/llm.php, check contextLength for each model
 // Example: OpenAI models have different context windows
 // - gpt-3.5-turbo: 16K tokens
@@ -32,7 +32,7 @@ When working with different LLM models, you may encounter issues that are specif
 
 3. **Feature Support**: Different models support different features
 ```php
-// @doctest id="a153"
+// @doctest id="340c"
 // Some features may not work with all models
 // Example: Vision capabilities are only available in select models
 
@@ -49,7 +49,7 @@ if (!$modelSupportsVision) {
 4. **Fallback Models**: Implement fallbacks to other models when preferred models fail
 
 ```php
-// @doctest id="13f1"
+// @doctest id="21ff"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
