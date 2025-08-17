@@ -64,9 +64,9 @@
 *.mdx             linguist-documentation
 *.json            linguist-vendored
 /vendor/          linguist-vendored
-/docs-build/      linguist-generated
-/docs-mkdocs/     linguist-generated
-/docs-site/       linguist-generated
+/docs-build/      linguist-generated linguist-documentation
+/docs-mkdocs/     linguist-generated linguist-documentation  
+/docs-site/       linguist-generated linguist-documentation
 
 # Ignore logs and temp files in exports (optional)
 *.bak             export-ignore
