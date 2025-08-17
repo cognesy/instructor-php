@@ -310,3 +310,32 @@ it('handles structure with collection field', function() {
         ['stringProperty' => 'string1'],
     ]);
 });
+
+it('handles nested structures within collection items', function () {
+    $structure = Structure::define('test', [
+        Field::collection('items',
+            Structure::define('item', [
+                Field::structure('nested', [
+                    Field::string('value', 'A value')
+                ], 'Nested structure')
+            ], 'Item'),
+        'Items')
+    ]);
+    
+    $data = [
+        'items' => [
+            ['nested' => ['value' => 'hello']],
+            ['nested' => ['value' => 'world']]
+        ]
+    ];
+    
+    // This should deserialize correctly without errors
+    $result = $structure->fromArray($data);
+    
+    // Verify the structure was deserialized correctly
+    expect($result->get('items'))->toHaveCount(2);
+    expect($result->get('items')[0]->get('nested'))->toBeInstanceOf(Structure::class);
+    expect($result->get('items')[0]->get('nested')->get('value'))->toBe('hello');
+    expect($result->get('items')[1]->get('nested'))->toBeInstanceOf(Structure::class);
+    expect($result->get('items')[1]->get('nested')->get('value'))->toBe('world');
+});
