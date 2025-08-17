@@ -261,6 +261,9 @@ class MkDocsDocumentation
                 return GenerationResult::failure(['Failed to parse MkDocs template']);
             }
 
+            // Add dynamic release notes section to navigation
+            $config = $this->addReleaseNotesToNavigation($config);
+
             // Use template navigation structure as-is - user has crafted it intentionally
             // No filtering needed since template should only reference existing files
 
@@ -566,5 +569,109 @@ class MkDocsDocumentation
             
             file_put_contents($filePath, $content);
         }
+    }
+
+    private function scanReleaseNotes(): array {
+        $releaseNotesDir = $this->config->docsTargetDir . '/release-notes';
+        if (!is_dir($releaseNotesDir)) {
+            return [];
+        }
+
+        $files = glob($releaseNotesDir . '/*.md');
+        $versions = [];
+
+        foreach ($files as $file) {
+            $filename = basename($file, '.md');
+            if ($filename === 'versions') {
+                continue; // Skip the overview file
+            }
+            
+            // Extract version from filename (e.g., v1.4.0, v1.0.0-RC22)
+            if (preg_match('/^v(.+)$/', $filename, $matches)) {
+                $versions[] = [
+                    'version' => $matches[1],
+                    'filename' => $filename,
+                    'path' => 'release-notes/' . $filename . '.md'
+                ];
+            }
+        }
+
+        // Sort versions in descending order (newest first)
+        usort($versions, function($a, $b) {
+            return $this->compareVersions($b['version'], $a['version']);
+        });
+
+        return $versions;
+    }
+
+    private function compareVersions(string $version1, string $version2): int {
+        // Handle release candidates and pre-release versions
+        $normalize = function($version) {
+            // Convert to lowercase for consistent comparison
+            $version = strtolower($version);
+            
+            // Split version and pre-release parts
+            if (preg_match('/^(\d+\.\d+\.\d+)(.*)$/', $version, $matches)) {
+                $baseVersion = $matches[1];
+                $preRelease = $matches[2] ?? '';
+                
+                // Assign priority: stable > rc > other pre-releases
+                $priority = 1000; // stable release
+                if (str_contains($preRelease, 'rc')) {
+                    $priority = 100;
+                    // Extract RC number for proper sorting
+                    if (preg_match('/rc(\d+)/', $preRelease, $rcMatches)) {
+                        $priority += (int)$rcMatches[1];
+                    }
+                } elseif (!empty($preRelease)) {
+                    $priority = 50; // other pre-releases (alpha, beta, etc.)
+                }
+                
+                return $baseVersion . '.' . str_pad((string)$priority, 4, '0', STR_PAD_LEFT);
+            }
+            
+            return $version;
+        };
+
+        return version_compare($normalize($version1), $normalize($version2));
+    }
+
+    private function buildReleaseNotesNavigation(): array {
+        $releaseNotes = $this->scanReleaseNotes();
+        
+        if (empty($releaseNotes)) {
+            return [];
+        }
+
+        $navigation = [];
+        
+        // Add overview first if it exists
+        $versionsPath = $this->config->docsTargetDir . '/release-notes/versions.md';
+        if (file_exists($versionsPath)) {
+            $navigation[] = ['Overview' => 'release-notes/versions.md'];
+        }
+
+        // Add all version entries
+        foreach ($releaseNotes as $release) {
+            $navigation[] = ['v' . $release['version'] => $release['path']];
+        }
+
+        return $navigation;
+    }
+
+    private function addReleaseNotesToNavigation(array $config): array {
+        if (!isset($config['nav']) || !is_array($config['nav'])) {
+            return $config;
+        }
+
+        $releaseNotesNav = $this->buildReleaseNotesNavigation();
+        if (empty($releaseNotesNav)) {
+            return $config;
+        }
+
+        // Add the Changelog section after the existing navigation items
+        $config['nav'][] = ['Changelog' => $releaseNotesNav];
+
+        return $config;
     }
 }

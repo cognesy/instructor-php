@@ -105,7 +105,7 @@ nav:
       - { Contributing: instructor/misc/contributing.md }
       - { Help: instructor/misc/help.md }
       - { 'LLM API Providers': instructor/misc/llm_providers.md }
-      - { Changelog: [{ Overview: release-notes/versions.md }, { v1.4.0: release-notes/v1.4.0.md }, { v1.3.0: release-notes/v1.3.0.md }, { v1.2.0: release-notes/v1.2.0.md }, { v1.1.0: release-notes/v1.1.0.md }, { v1.0.0: release-notes/v1.0.0.md }, { v1.0.0-RC22: release-notes/v1.0.0-RC22.md }, { v1.0.0-RC21: release-notes/v1.0.0-RC21.md }, { v1.0.0-RC20: release-notes/v1.0.0-RC20.md }, { v1.0.0-RC19: release-notes/v1.0.0-RC19.md }, { v1.0.0-RC18: release-notes/v1.0.0-RC18.md }, { v1.0.0-RC17: release-notes/v1.0.0-RC17.md }, { v1.0.0-RC16: release-notes/v1.0.0-RC16.md }, { v1.0.0-RC15: release-notes/v1.0.0-RC15.md }, { v1.0.0-RC14: release-notes/v1.0.0-RC14.md }, { v1.0.0-RC13: release-notes/v1.0.0-RC13.md }, { v1.0.0-RC12: release-notes/v1.0.0-RC12.md }, { v1.0.0-RC11: release-notes/v1.0.0-RC11.md }, { v1.0.0-RC10: release-notes/v1.0.0-RC10.md }, { v1.0.0-RC9: release-notes/v1.0.0-RC9.md }, { v1.0.0-RC8: release-notes/v1.0.0-RC8.md }, { v1.0.0-RC7: release-notes/v1.0.0-RC7.md }, { v1.0.0-RC6: release-notes/v1.0.0-RC6.md }, { v1.0.0-rc5: release-notes/v1.0.0-rc5.md }, { v1.0.0-rc4: release-notes/v1.0.0-rc4.md }, { v1.0.0-rc3: release-notes/v1.0.0-rc3.md }, { v1.0.0-rc2: release-notes/v1.0.0-rc2.md }, { v1.0.0-rc1: release-notes/v1.0.0-rc1.md }, { v0.17.12: release-notes/v0.17.12.md }, { v0.17.11: release-notes/v0.17.11.md }, { v0.17.10: release-notes/v0.17.10.md }, { v0.17.9: release-notes/v0.17.9.md }, { v0.17.8: release-notes/v0.17.8.md }, { v0.17.7: release-notes/v0.17.7.md }, { v0.17.6: release-notes/v0.17.6.md }, { v0.17.5: release-notes/v0.17.5.md }, { v0.17.4: release-notes/v0.17.4.md }, { v0.17.3: release-notes/v0.17.3.md }, { v0.17.1: release-notes/v0.17.1.md }, { v0.17.0: release-notes/v0.17.0.md }, { v0.16.0: release-notes/v0.16.0.md }, { v0.15.2: release-notes/v0.15.2.md }, { v0.15.1: release-notes/v0.15.1.md }, { v0.15.0: release-notes/v0.15.0.md }, { v0.14.7: release-notes/v0.14.7.md }, { v0.14.6: release-notes/v0.14.6.md }, { v0.14.5: release-notes/v0.14.5.md }, { v0.14.4: release-notes/v0.14.4.md }, { v0.14.3: release-notes/v0.14.3.md }, { v0.14.2: release-notes/v0.14.2.md }, { v0.14.1: release-notes/v0.14.1.md }, { v0.14.0: release-notes/v0.14.0.md }, { v0.13.0: release-notes/v0.13.0.md }, { v0.12.13: release-notes/v0.12.13.md }, { v0.12.12: release-notes/v0.12.12.md }, { v0.12.11: release-notes/v0.12.11.md }, { v0.12.10: release-notes/v0.12.10.md }, { v0.12.9: release-notes/v0.12.9.md }, { v0.12.8: release-notes/v0.12.8.md }, { v0.12.7: release-notes/v0.12.7.md }, { v0.12.6: release-notes/v0.12.6.md }, { v0.12.5: release-notes/v0.12.5.md }, { v0.12.4: release-notes/v0.12.4.md }, { v0.12.3: release-notes/v0.12.3.md }, { v0.12.2: release-notes/v0.12.2.md }, { v0.12.0: release-notes/v0.12.0.md }, { v0.8.0: release-notes/v0.8.0.md }] }
+      - { 'Changelog Overview': release-notes/versions.md }
   -
     Instructor:
       - { Introduction: instructor/introduction.md }
@@ -150,6 +150,76 @@ nav:
       - { Instructor: [{ Basics: [{ 'Basic Use': cookbook/instructor/basics/basic_use.md }, { 'Constructor Parameters': cookbook/instructor/basics/constructor_parameters.md }, { 'Getters and Setters': cookbook/instructor/basics/getters_and_setters.md }, { 'Public vs Private Fields': cookbook/instructor/basics/public_vs_private.md }, { 'Using Attributes': cookbook/instructor/basics/attributes.md }, { 'Fluent API': cookbook/instructor/basics/fluent_api.md }, { 'Maybe Type': cookbook/instructor/basics/maybe.md }, { 'Messages API': cookbook/instructor/basics/messages_api.md }, { 'Mixed Type Property': cookbook/instructor/basics/mixed_type_property.md }, { 'Response Modes': cookbook/instructor/basics/modes.md }, { 'Optional Fields': cookbook/instructor/basics/optional_fields.md }, { 'Self Correction': cookbook/instructor/basics/self_correction.md }, { 'Using Config': cookbook/instructor/basics/using_config.md }, { Validation: cookbook/instructor/basics/validation.md }, { 'Custom Validation': cookbook/instructor/basics/custom_validation.md }, { 'Validation Mixin': cookbook/instructor/basics/validation_multifield.md }, { 'Validation with LLM': cookbook/instructor/basics/validation_with_llm.md }, { 'Using Mixin': cookbook/instructor/basics/basic_use_mixin.md }] }, { Advanced: [{ 'Config Providers': cookbook/instructor/advanced/config_providers.md }, { 'Context Caching': cookbook/instructor/advanced/context_cache_structured.md }, { 'Custom Client Parameters': cookbook/instructor/advanced/custom_config.md }, { 'Custom HTTP Client': cookbook/instructor/advanced/custom_http_client.md }, { 'Custom HTTP Client Laravel': cookbook/instructor/advanced/custom_http_client_laravel.md }, { 'Custom Prompts': cookbook/instructor/advanced/custom_prompts.md }, { 'DSN Configuration': cookbook/instructor/advanced/custom_llm_with_dsn.md }, { 'Function Calls': cookbook/instructor/advanced/function_calls.md }, { 'Logging Monolog': cookbook/instructor/advanced/logging_monolog.md }, { 'Logging PSR': cookbook/instructor/advanced/logging_psr.md }, { 'Partial Updates': cookbook/instructor/advanced/partials.md }, { 'Providing Examples': cookbook/instructor/advanced/demonstrations.md }, { Scalars: cookbook/instructor/advanced/scalars.md }, { Sequences: cookbook/instructor/advanced/sequences.md }, { Streaming: cookbook/instructor/advanced/streaming.md }, { Structures: cookbook/instructor/advanced/structures.md }] }, { 'API Support': [{ A21: cookbook/instructor/api_support/a21.md }, { Anthropic: cookbook/instructor/api_support/anthropic.md }, { 'Azure OpenAI': cookbook/instructor/api_support/azure_openai.md }, { Cerebras: cookbook/instructor/api_support/cerebras.md }, { Cohere: cookbook/instructor/api_support/cohere.md }, { DeepSeek: cookbook/instructor/api_support/deepseek.md }, { 'Fireworks AI': cookbook/instructor/api_support/fireworks.md }, { 'Google Gemini': cookbook/instructor/api_support/google_gemini.md }, { 'Google Gemini OpenAI': cookbook/instructor/api_support/google_gemini_oai.md }, { Groq: cookbook/instructor/api_support/groq.md }, { HuggingFace: cookbook/instructor/api_support/huggingface.md }, { Meta: cookbook/instructor/api_support/meta.md }, { Minimaxi: cookbook/instructor/api_support/minimaxi.md }, { 'Mistral AI': cookbook/instructor/api_support/mistralai.md }, { 'Moonshot AI': cookbook/instructor/api_support/moonshotai.md }, { Ollama: cookbook/instructor/api_support/ollama.md }, { OpenAI: cookbook/instructor/api_support/openai.md }, { OpenRouter: cookbook/instructor/api_support/openrouter.md }, { Perplexity: cookbook/instructor/api_support/perplexity.md }, { SambaNova: cookbook/instructor/api_support/sambanova.md }, { 'Together AI': cookbook/instructor/api_support/togetherai.md }, { xAI: cookbook/instructor/api_support/xai.md }] }, { Extras: [{ 'Complex Extraction': cookbook/instructor/extras/complex_extraction.md }, { 'Complex Extraction Claude': cookbook/instructor/extras/complex_extraction_claude.md }, { 'Complex Extraction Cohere': cookbook/instructor/extras/complex_extraction_cohere.md }, { 'Complex Extraction Gemini': cookbook/instructor/extras/complex_extraction_gemini.md }, { 'Structured Input': cookbook/instructor/extras/structured_input.md }, { 'Image Car Damage': cookbook/instructor/extras/image_car_damage.md }, { 'Image to Data': cookbook/instructor/extras/image_to_data.md }, { 'Image to Data Anthropic': cookbook/instructor/extras/image_to_data_anthropic.md }, { 'Image to Data Gemini': cookbook/instructor/extras/image_to_data_gemini.md }, { Schema: cookbook/instructor/extras/schema.md }, { 'Dynamic Schema': cookbook/instructor/extras/schema_dynamic.md }, { 'Transcription to Tasks': cookbook/instructor/extras/transcription_to_tasks.md }, { 'Translate UI Fields': cookbook/instructor/extras/translate_ui_fields.md }, { 'Web to Objects': cookbook/instructor/extras/web_to_objects.md }] }, { Troubleshooting: [{ Debugging: cookbook/instructor/troubleshooting/debugging.md }, { 'Event Handling': cookbook/instructor/troubleshooting/on_event.md }, { Settings: cookbook/instructor/troubleshooting/settings.md }, { 'Token Usage': cookbook/instructor/troubleshooting/token_usage_events.md }, { Wiretap: cookbook/instructor/troubleshooting/wiretap.md }] }] }
       - { Polyglot: [{ 'LLM Basics': [{ 'Basic LLM Use': cookbook/polyglot/llm_basics/inference.md }, { 'JSON Mode': cookbook/polyglot/llm_basics/llm_json.md }, { 'JSON Schema Mode': cookbook/polyglot/llm_basics/llm_json_schema.md }, { 'MdJSON Mode': cookbook/polyglot/llm_basics/llm_md_json.md }, { 'Tools Mode': cookbook/polyglot/llm_basics/llm_tools.md }, { 'JSON Schema API': cookbook/polyglot/llm_basics/json_schema_api.md }] }, { 'LLM Advanced': [{ 'Config Providers': cookbook/polyglot/llm_advanced/config_providers.md }, { 'Context Caching': cookbook/polyglot/llm_advanced/context_cache_llm.md }, { 'Custom Configuration': cookbook/polyglot/llm_advanced/custom_config.md }, { 'Custom Embeddings Driver': cookbook/polyglot/llm_advanced/custom_embeddings_config.md }, { 'Custom LLM Driver': cookbook/polyglot/llm_advanced/custom_llm_driver.md }, { 'DSN Configuration': cookbook/polyglot/llm_advanced/custom_llm_via_dsn.md }, { 'Embed Utils': cookbook/polyglot/llm_advanced/embed_utils.md }, { Embeddings: cookbook/polyglot/llm_advanced/embeddings.md }, { 'HTTP Client': cookbook/polyglot/llm_advanced/http_client.md }, { 'Parallel Calls': cookbook/polyglot/llm_advanced/parallel_calls.md }, { 'Reasoning Content': cookbook/polyglot/llm_advanced/reasoning_content.md }] }, { 'LLM API Support': [{ A21: cookbook/polyglot/llm_api_support/a21.md }, { Anthropic: cookbook/polyglot/llm_api_support/anthropic.md }, { 'Azure OpenAI': cookbook/polyglot/llm_api_support/azure_openai.md }, { Cerebras: cookbook/polyglot/llm_api_support/cerebras.md }, { Cohere: cookbook/polyglot/llm_api_support/cohere.md }, { DeepSeek: cookbook/polyglot/llm_api_support/deepseek.md }, { 'Fireworks AI': cookbook/polyglot/llm_api_support/fireworks.md }, { 'Google Gemini': cookbook/polyglot/llm_api_support/google_gemini.md }, { Groq: cookbook/polyglot/llm_api_support/groq.md }, { Meta: cookbook/polyglot/llm_api_support/meta.md }, { Minimaxi: cookbook/polyglot/llm_api_support/minimaxi.md }, { 'Mistral AI': cookbook/polyglot/llm_api_support/mistralai.md }, { 'Moonshot AI': cookbook/polyglot/llm_api_support/moonshotai.md }, { Ollama: cookbook/polyglot/llm_api_support/ollama.md }, { OpenAI: cookbook/polyglot/llm_api_support/openai.md }, { OpenRouter: cookbook/polyglot/llm_api_support/openrouter.md }, { Perplexity: cookbook/polyglot/llm_api_support/perplexity.md }, { SambaNova: cookbook/polyglot/llm_api_support/sambanova.md }, { 'Together AI': cookbook/polyglot/llm_api_support/togetherai.md }, { xAI: cookbook/polyglot/llm_api_support/xai.md }] }, { 'LLM Extras': [{ 'Chat with Summary': cookbook/polyglot/llm_extras/chat_with_summary.md }, { 'Image Processing': cookbook/polyglot/llm_extras/image_data.md }, { 'Prompt Templates': cookbook/polyglot/llm_extras/prompt_templates.md }, { 'Summary with LLM': cookbook/polyglot/llm_extras/summary_with_llm.md }, { 'Tool Use': cookbook/polyglot/llm_extras/tool_use.md }] }, { 'LLM Troubleshooting': [{ 'HTTP Debug': cookbook/polyglot/llm_troubleshooting/http_debug.md }] }] }
       - { Prompting: [{ 'Zero Shot': [{ 'Assign Role': cookbook/prompting/zero_shot/assign_role.md }, { 'Auto Refine': cookbook/prompting/zero_shot/auto_refine.md }, { 'Clarify Ambiguity': cookbook/prompting/zero_shot/clarify_ambiguity.md }, { 'Define Style': cookbook/prompting/zero_shot/define_style.md }, { 'Emotional Stimuli': cookbook/prompting/zero_shot/emotional_stimuli.md }, { 'Follow Up Questions': cookbook/prompting/zero_shot/follow_up_questions.md }, { 'Repeat Query': cookbook/prompting/zero_shot/repeat_query.md }, { 'Simulate Perspective': cookbook/prompting/zero_shot/simulate_perspective.md }] }, { 'Few Shot': [{ 'In Context Examples': cookbook/prompting/few_shot/in_context_examples.md }] }, { 'Thought Generation': [{ 'Analogical Prompting': cookbook/prompting/thought_gen/analogical_prompting.md }] }, { Miscellaneous: [{ 'Arbitrary Properties': cookbook/prompting/misc/arbitrary_properties.md }, { 'Arbitrary Properties Consistent': cookbook/prompting/misc/arbitrary_properties_consistent.md }, { 'Chain of Summaries': cookbook/prompting/misc/chain_of_summaries.md }, { 'Chain of Thought': cookbook/prompting/misc/chain_of_thought.md }, { Classification: cookbook/prompting/misc/classification.md }, { 'Classification Multiclass': cookbook/prompting/misc/classification_multiclass.md }, { 'Component Reuse': cookbook/prompting/misc/component_reuse.md }, { 'Component Reuse CoT': cookbook/prompting/misc/component_reuse_cot.md }, { 'Entity Relationships': cookbook/prompting/misc/entity_relationships.md }, { 'Handling Errors': cookbook/prompting/misc/handling_errors.md }, { 'Limiting Lists': cookbook/prompting/misc/limiting_lists.md }, { 'Reflection Prompting': cookbook/prompting/misc/reflection_prompting.md }, { 'Restate Instructions': cookbook/prompting/misc/restate_instructions.md }, { 'Rewrite Instructions': cookbook/prompting/misc/rewrite_instructions.md }, { 'Search Query Expansion': cookbook/prompting/misc/search_query_expansion.md }, { 'Summary with Keywords': cookbook/prompting/misc/summary_with_keywords.md }] }] }
+  -
+    Changelog:
+      - { Overview: release-notes/versions.md }
+      - { v1.4.1: release-notes/v1.4.1.md }
+      - { v1.4.0: release-notes/v1.4.0.md }
+      - { v1.3.0: release-notes/v1.3.0.md }
+      - { v1.2.0: release-notes/v1.2.0.md }
+      - { v1.1.0: release-notes/v1.1.0.md }
+      - { v1.0.0: release-notes/v1.0.0.md }
+      - { v1.0.0-RC22: release-notes/v1.0.0-RC22.md }
+      - { v1.0.0-RC21: release-notes/v1.0.0-RC21.md }
+      - { v1.0.0-RC20: release-notes/v1.0.0-RC20.md }
+      - { v1.0.0-RC19: release-notes/v1.0.0-RC19.md }
+      - { v1.0.0-RC18: release-notes/v1.0.0-RC18.md }
+      - { v1.0.0-RC17: release-notes/v1.0.0-RC17.md }
+      - { v1.0.0-RC16: release-notes/v1.0.0-RC16.md }
+      - { v1.0.0-RC15: release-notes/v1.0.0-RC15.md }
+      - { v1.0.0-RC14: release-notes/v1.0.0-RC14.md }
+      - { v1.0.0-RC13: release-notes/v1.0.0-RC13.md }
+      - { v1.0.0-RC12: release-notes/v1.0.0-RC12.md }
+      - { v1.0.0-RC11: release-notes/v1.0.0-RC11.md }
+      - { v1.0.0-RC10: release-notes/v1.0.0-RC10.md }
+      - { v1.0.0-RC9: release-notes/v1.0.0-RC9.md }
+      - { v1.0.0-RC8: release-notes/v1.0.0-RC8.md }
+      - { v1.0.0-RC7: release-notes/v1.0.0-RC7.md }
+      - { v1.0.0-RC6: release-notes/v1.0.0-RC6.md }
+      - { v1.0.0-rc5: release-notes/v1.0.0-rc5.md }
+      - { v1.0.0-rc4: release-notes/v1.0.0-rc4.md }
+      - { v1.0.0-rc3: release-notes/v1.0.0-rc3.md }
+      - { v1.0.0-rc2: release-notes/v1.0.0-rc2.md }
+      - { v1.0.0-rc1: release-notes/v1.0.0-rc1.md }
+      - { v0.17.12: release-notes/v0.17.12.md }
+      - { v0.17.11: release-notes/v0.17.11.md }
+      - { v0.17.10: release-notes/v0.17.10.md }
+      - { v0.17.9: release-notes/v0.17.9.md }
+      - { v0.17.8: release-notes/v0.17.8.md }
+      - { v0.17.7: release-notes/v0.17.7.md }
+      - { v0.17.6: release-notes/v0.17.6.md }
+      - { v0.17.5: release-notes/v0.17.5.md }
+      - { v0.17.4: release-notes/v0.17.4.md }
+      - { v0.17.3: release-notes/v0.17.3.md }
+      - { v0.17.1: release-notes/v0.17.1.md }
+      - { v0.17.0: release-notes/v0.17.0.md }
+      - { v0.16.0: release-notes/v0.16.0.md }
+      - { v0.15.2: release-notes/v0.15.2.md }
+      - { v0.15.1: release-notes/v0.15.1.md }
+      - { v0.15.0: release-notes/v0.15.0.md }
+      - { v0.14.7: release-notes/v0.14.7.md }
+      - { v0.14.6: release-notes/v0.14.6.md }
+      - { v0.14.5: release-notes/v0.14.5.md }
+      - { v0.14.4: release-notes/v0.14.4.md }
+      - { v0.14.3: release-notes/v0.14.3.md }
+      - { v0.14.2: release-notes/v0.14.2.md }
+      - { v0.14.1: release-notes/v0.14.1.md }
+      - { v0.14.0: release-notes/v0.14.0.md }
+      - { v0.13.0: release-notes/v0.13.0.md }
+      - { v0.12.13: release-notes/v0.12.13.md }
+      - { v0.12.12: release-notes/v0.12.12.md }
+      - { v0.12.11: release-notes/v0.12.11.md }
+      - { v0.12.10: release-notes/v0.12.10.md }
+      - { v0.12.9: release-notes/v0.12.9.md }
+      - { v0.12.8: release-notes/v0.12.8.md }
+      - { v0.12.7: release-notes/v0.12.7.md }
+      - { v0.12.6: release-notes/v0.12.6.md }
+      - { v0.12.5: release-notes/v0.12.5.md }
+      - { v0.12.4: release-notes/v0.12.4.md }
+      - { v0.12.3: release-notes/v0.12.3.md }
+      - { v0.12.2: release-notes/v0.12.2.md }
+      - { v0.12.0: release-notes/v0.12.0.md }
+      - { v0.8.0: release-notes/v0.8.0.md }
 plugins:
   -
     search:
