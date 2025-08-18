@@ -10,7 +10,7 @@ Polyglot provides the `Embeddings` class as the primary interface for generating
 ### Creating an Embeddings Instance
 
 ```php
-// @doctest id="6eea"
+// @doctest id="9ece"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -45,7 +45,7 @@ The core functionality of the `Embeddings` class is to transform text into vecto
 ### Basic Embedding Generation
 
 ```php
-// @doctest id="f3f1"
+// @doctest id="7af2"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -63,7 +63,7 @@ echo "Generated a vector with " . count($vector) . " dimensions.\n";
 You can generate embeddings for multiple texts in a single request, which is more efficient than making separate requests:
 
 ```php
-// @doctest id="4351"
+// @doctest id="d1ef"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -90,7 +90,7 @@ foreach ($vectors as $index => $vector) {
 The `create()` method returns an `EmbeddingsResponse` object with several useful methods:
 
 ```php
-// @doctest id="2681"
+// @doctest id="c5f2"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -121,7 +121,7 @@ echo "Total tokens: " . $usage->total() . "\n";
 Each vector in the response is represented by a `Vector` object with its own methods:
 
 ```php
-// @doctest id="96b1"
+// @doctest id="1fe9"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -149,7 +149,7 @@ Polyglot supports multiple embedding providers, each with their own strengths an
 ### Switching Between Providers
 
 ```php
-// @doctest id="0358"
+// @doctest id="27da"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -177,7 +177,7 @@ echo "Mistral embedding dimensions: " . count($mistralResult->first()?->values()
 Different providers may support additional options for embedding generation:
 
 ```php
-// @doctest id="bf6c"
+// @doctest id="b915"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -207,7 +207,7 @@ $response = $cohereEmbeddings->with(
 Different embedding models produce vectors of different dimensions:
 
 ```php
-// @doctest id="a07d"
+// @doctest id="3ad3"
 <?php
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;use Cognesy\Polyglot\Embeddings\Embeddings;
 

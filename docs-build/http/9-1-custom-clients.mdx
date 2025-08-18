@@ -20,7 +20,7 @@ Creating a custom HTTP client driver involves implementing the `CanHandleHttpReq
 The `CanHandleHttpRequest` interface requires implementing a single method:
 
 ```php
-// @doctest id="d6d9"
+// @doctest id="152e"
 interface CanHandleHttpRequest
 {
     public function handle(HttpClientRequest $request): HttpResponse;
@@ -30,7 +30,7 @@ interface CanHandleHttpRequest
 Here's a template for creating a custom HTTP client driver:
 
 ```php
-// @doctest id="f031"
+// @doctest id="fa04"
 namespace YourNamespace\Http\Drivers;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -138,7 +138,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
 You also need to create a response adapter that implements the `HttpResponse` interface:
 
 ```php
-// @doctest id="d65c"
+// @doctest id="f12a"
 namespace YourNamespace\Http\Adapters;
 
 use Cognesy\Http\Contracts\HttpResponse;
@@ -204,7 +204,7 @@ class YourHttpResponse implements HttpResponse
 Once you've implemented your custom driver, you can use it with the `HttpClient`:
 
 ```php
-// @doctest id="6e41"
+// @doctest id="0daa"
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\HttpClient;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
@@ -235,7 +235,7 @@ $response = $client->withRequest(new HttpRequest(/* ... */))->get();
 Here's a practical example of implementing a custom driver using PHP's cURL extension directly:
 
 ```php
-// @doctest id="da3b"
+// @doctest id="d53f"
 namespace YourNamespace\Http\Drivers;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -456,7 +456,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
 And here's the corresponding response adapter:
 
 ```php
-// @doctest id="2b7b"
+// @doctest id="bef1"
 namespace YourNamespace\Http\Adapters;
 
 use Cognesy\Http\Contracts\HttpResponse;
@@ -555,7 +555,7 @@ class CurlHttpResponse implements HttpResponse
 To use your custom driver, you can register it with the driver factory or use it directly with the HttpClientBuilder:
 
 ```php
-// @doctest id="6dbf"
+// @doctest id="3431"
 use Cognesy\Http\HttpClientBuilder;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
 
@@ -571,7 +571,7 @@ $client = (new HttpClientBuilder())
 Use your custom driver in the HTTP client configuration file (`config/http-client.php`):
 
 ```php
-// @doctest id="56e5"
+// @doctest id="a7b8"
 // http-client.php configuration file
 // ...
     'clients' => [
@@ -596,7 +596,7 @@ Use your custom driver in the HTTP client configuration file (`config/http-clien
 After adding the driver to the configuration, you can use it in your code:
 
 ```php
-// @doctest id="a03c"
+// @doctest id="6be6"
 use Cognesy\Http\HttpClient;
 
 // Create a client with your custom driver
@@ -608,7 +608,7 @@ $client = HttpClient::using('my-custom-client');
 Or you can refer to it in your LLM connections configuration:
 
 ```php
-// @doctest id="5b95"
+// @doctest id="bae5"
     // llm-connections.php configuration file
     // ...
         'a21' => [

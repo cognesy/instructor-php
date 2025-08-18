@@ -142,3 +142,7 @@ Create comprehensive but concise release notes that:
 5. Maintain consistent formatting with previous releases
 
 The final output should be ready for immediate use in the release process without further editing.
+
+# TARGET LOCATION OF NEW RELEASE NOTES
+
+./docs/release-notes/

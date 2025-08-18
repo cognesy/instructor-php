@@ -50,7 +50,7 @@ final class LLMProvider
     ) {
         $this->events = EventBusResolver::using($events);
         $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
-        $this->presets = ConfigPresets::using($configProvider)->for(LLMConfig::group());
+        $this->presets = ConfigPresets::using($this->configProvider)->for(LLMConfig::group());
 
         $this->debugPreset = $debugPreset;
         $this->dsn = $dsn;
@@ -61,7 +61,7 @@ final class LLMProvider
     }
 
     public static function using(string $preset): LLMProvider {
-        return self::new()->using($preset);
+        return self::new()->withLLMPreset($preset);
     }
 
     public static function dsn(string $dsn): LLMProvider {

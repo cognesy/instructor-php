@@ -5,15 +5,15 @@ namespace Cognesy\Addons\ToolUse\Drivers;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\ToolExecution;
 use Cognesy\Addons\ToolUse\ToolExecutions;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 use Cognesy\Addons\ToolUse\ToolUseStep;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
@@ -54,14 +54,14 @@ class ToolCallingDriver implements CanUseTools
     /**
      * Executes tool usage within a given context and returns the result as a ToolUseStep.
      *
-     * @param \Cognesy\Addons\ToolUse\ToolUseContext $context The context containing messages, tools, and other related information
+     * @param ToolUseState $state The context containing messages, tools, and other related information
      *                                required for tool usage.
      * @return ToolUseStep Returns an instance of ToolUseStep containing the response, executed tools,
      *                     follow-up messages, and additional usage data.
      */
-    public function useTools(ToolUseContext $context) : ToolUseStep {
-        $messages = $context->messages();
-        $tools = $context->tools();
+    public function useTools(ToolUseState $state) : ToolUseStep {
+        $messages = $state->messages();
+        $tools = $state->tools();
 
         $inferenceResponse = (new Inference)
             ->withLLMProvider($this->llm)
@@ -79,7 +79,7 @@ class ToolCallingDriver implements CanUseTools
             )
             ->response();
 
-        $toolExecutions = $tools->useTools($inferenceResponse->toolCalls(), $context);
+        $toolExecutions = $tools->useTools($inferenceResponse->toolCalls(), $state);
         $followUpMessages = $this->makeFollowUpMessages($toolExecutions);
 
         return new ToolUseStep(
@@ -97,8 +97,8 @@ class ToolCallingDriver implements CanUseTools
     /**
      * Generates and returns follow-up messages based on the provided tool executions.
      *
-     * @param \Cognesy\Addons\ToolUse\ToolExecutions $toolExecutions A collection of tool execution instances to process.
-     * @return \Cognesy\Messages\Messages A Messages object containing the generated follow-up messages.
+     * @param ToolExecutions $toolExecutions A collection of tool execution instances to process.
+     * @return Messages A Messages object containing the generated follow-up messages.
      */
     protected function makeFollowUpMessages(ToolExecutions $toolExecutions) : Messages {
         $messages = new Messages();
@@ -111,8 +111,8 @@ class ToolCallingDriver implements CanUseTools
     /**
      * Creates and returns messages corresponding to the execution of a single tool.
      *
-     * @param \Cognesy\Addons\ToolUse\ToolExecution $toolExecution An instance representing the tool execution to process.
-     * @return \Cognesy\Messages\Messages A Messages object containing the generated messages for the tool execution.
+     * @param ToolExecution $toolExecution An instance representing the tool execution to process.
+     * @return Messages A Messages object containing the generated messages for the tool execution.
      */
     protected function makeToolExecutionMessages(ToolExecution $toolExecution) : Messages {
         $messages = new Messages();
@@ -125,7 +125,7 @@ class ToolCallingDriver implements CanUseTools
      * Creates a tool invocation message based on the provided tool call object.
      *
      * @param ToolCall $toolCall The tool call object to be transformed into a message.
-     * @return \Cognesy\Messages\Message A message instance representing the tool invocation information.
+     * @return Message A message instance representing the tool invocation information.
      */
     protected function makeToolInvocationMessage(ToolCall $toolCall) : Message {
         return new Message(
@@ -141,8 +141,8 @@ class ToolCallingDriver implements CanUseTools
      * Constructs a Message object based on the outcome of a tool execution.
      *
      * @param ToolCall $toolCall The tool call information used during the execution.
-     * @param \Cognesy\Utils\Result\Result $result The result of the tool execution, which determines the type of message.
-     * @return \Cognesy\Messages\Message The constructed message representing the execution result.
+     * @param Result $result The result of the tool execution, which determines the type of message.
+     * @return Message The constructed message representing the execution result.
      */
     protected function makeToolExecutionResultMessage(ToolCall $toolCall, Result $result) : Message {
         return match(true) {
@@ -155,8 +155,8 @@ class ToolCallingDriver implements CanUseTools
      * Creates a Message object to represent a successful execution of a tool.
      *
      * @param ToolCall $toolCall The tool call information used during the execution.
-     * @param \Cognesy\Utils\Result\Success $result The result of the tool execution, containing the successful outcome.
-     * @return \Cognesy\Messages\Message The constructed message containing the success details and metadata.
+     * @param Success $result The result of the tool execution, containing the successful outcome.
+     * @return Message The constructed message containing the success details and metadata.
      */
     protected function makeToolExecutionSuccessMessage(ToolCall $toolCall, Success $result) : Message {
         $value = $result->unwrap();
@@ -181,7 +181,7 @@ class ToolCallingDriver implements CanUseTools
      *
      * @param ToolCall $toolCall The tool call information related to the execution.
      * @param Failure $result The failure result of the tool execution, containing the error details.
-     * @return \Cognesy\Messages\Message The constructed message encapsulating the error information.
+     * @return Message The constructed message encapsulating the error information.
      */
     protected function makeToolExecutionErrorMessage(ToolCall $toolCall, Failure $result) : Message {
         return new Message(

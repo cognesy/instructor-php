@@ -2,9 +2,13 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\ToolUse\Contracts\CanAccessContext;
+use Cognesy\Addons\ToolUse\Contracts\CanAccessToolUseState;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
+use Cognesy\Addons\ToolUse\Traits\Tools\HandlesAccess;
+use Cognesy\Addons\ToolUse\Traits\Tools\HandlesFunctions;
+use Cognesy\Addons\ToolUse\Traits\Tools\HandlesMutation;
+use Cognesy\Addons\ToolUse\Traits\Tools\HandlesTransformation;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Utils\Result\Result;
@@ -13,10 +17,10 @@ use Throwable;
 
 class Tools
 {
-    use \Cognesy\Addons\ToolUse\Traits\Tools\HandlesAccess;
-    use \Cognesy\Addons\ToolUse\Traits\Tools\HandlesFunctions;
-    use \Cognesy\Addons\ToolUse\Traits\Tools\HandlesMutation;
-    use \Cognesy\Addons\ToolUse\Traits\Tools\HandlesTransformation;
+    use HandlesAccess;
+    use HandlesFunctions;
+    use HandlesMutation;
+    use HandlesTransformation;
 
     private bool $parallelToolCalls;
     /** @var ToolInterface[] */
@@ -24,7 +28,7 @@ class Tools
     private $throwOnToolFailure = true;
 
     /**
-     * @param \Cognesy\Addons\ToolUse\Contracts\ToolInterface[] $tools
+     * @param ToolInterface[] $tools
      */
     public function __construct(
         array $tools = [],
@@ -36,9 +40,9 @@ class Tools
         $this->parallelToolCalls = $parallelToolCalls;
     }
 
-    public function useTool(ToolCall $toolCall, ToolUseContext $context) : ToolExecution {
+    public function useTool(ToolCall $toolCall, ToolUseState $state) : ToolExecution {
         $startedAt = new DateTimeImmutable();
-        $result = $this->execute($toolCall->name(), $toolCall->args(), $context);
+        $result = $this->execute($toolCall->name(), $toolCall->args(), $state);
         $endedAt = new DateTimeImmutable();
         $toolExecution = new ToolExecution(
             toolCall: $toolCall,
@@ -52,20 +56,20 @@ class Tools
         return $toolExecution;
     }
 
-    public function useTools(ToolCalls $toolCalls, ToolUseContext $context): ToolExecutions {
+    public function useTools(ToolCalls $toolCalls, ToolUseState $state): ToolExecutions {
         $toolExecutions = new ToolExecutions();
         foreach ($toolCalls->all() as $toolCall) {
-            $toolExecutions->add($this->useTool($toolCall, $context));
+            $toolExecutions->add($this->useTool($toolCall, $state));
         }
         return $toolExecutions;
     }
 
     // INTERNAL ////////////////////////////////////////////////
 
-    protected function execute(string $name, array $args, ToolUseContext $context): Result {
+    protected function execute(string $name, array $args, ToolUseState $state): Result {
         try {
-            $tool = match($this->tools[$name] instanceof CanAccessContext) {
-                true => $this->tools[$name]->withContext($context),
+            $tool = match($this->tools[$name] instanceof CanAccessToolUseState) {
+                true => $this->tools[$name]->withState($state),
                 false => $this->tools[$name],
             };
             $result = $tool->use(...$args);

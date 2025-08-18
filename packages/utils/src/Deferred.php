@@ -18,7 +18,7 @@ class Deferred
     }
 
     public function isSet() : bool {
-        return !isset($this->deferred);
+        return isset($this->deferred);
     }
 
     public static function from(callable|Closure $deferred) : self {

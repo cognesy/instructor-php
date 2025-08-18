@@ -3,10 +3,10 @@
 namespace Cognesy\Addons\ToolUse;
 
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
-class ToolUseContext
+class ToolUseState
 {
     private ToolUseStatus $status = ToolUseStatus::InProgress;
     private Tools $tools;

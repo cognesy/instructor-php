@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\ToolUse\Contracts;
 
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 
 interface CanDecideToContinue
 {
-    public function canContinue(ToolUseContext $context) : bool;
+    public function canContinue(ToolUseState $state) : bool;
 }

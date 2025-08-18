@@ -91,10 +91,10 @@ class ConfigResolver implements CanProvideConfig
     private function createDeferred(mixed $provider): Deferred {
         return match (true) {
             is_null($provider) => throw new InvalidArgumentException('Provider cannot be null.'),
-            is_callable($provider) => new Deferred($provider),
             $provider instanceof Deferred => $provider,
-            $provider instanceof ConfigResolver => $provider,
+            $provider instanceof ConfigResolver => new Deferred(fn() => $provider),
             $provider instanceof CanProvideConfig => new Deferred(fn() => $provider),
+            is_callable($provider) => new Deferred($provider),
             default => throw new InvalidArgumentException('Provider must be callable, Deferred, or CanProvideConfig.'),
         };
     }

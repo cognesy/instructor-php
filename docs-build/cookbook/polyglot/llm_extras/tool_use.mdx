@@ -85,7 +85,7 @@ foreach ($toolUse->iterator() as $step) {
 }
 
 // print final response
-$result = $toolUse->context()->currentStep()->response();
+$result = $toolUse->state()->currentStep()->response();
 print("RESULT: " . $result . "\n");
 
 

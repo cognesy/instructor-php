@@ -7,7 +7,7 @@ use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\ToolUse\Processors\AppendContextVariables;
 use Cognesy\Addons\ToolUse\Processors\AppendStepMessages;
 use Cognesy\Addons\ToolUse\Processors\UpdateStep;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 use Cognesy\Addons\ToolUse\ToolUseStep;
 
 trait HandlesStepProcessors
@@ -31,9 +31,9 @@ trait HandlesStepProcessors
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function processStep(\Cognesy\Addons\ToolUse\ToolUseStep $step, ToolUseContext $context): ToolUseStep {
+    protected function processStep(ToolUseStep $step, ToolUseState $state): ToolUseStep {
         foreach ($this->processors as $processor) {
-            $step = $processor->processStep($step, $context);
+            $step = $processor->processStep($step, $state);
         }
         return $step;
     }

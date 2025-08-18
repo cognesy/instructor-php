@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 
 class ExecutionTimeLimit implements CanDecideToContinue
 {
@@ -15,7 +15,7 @@ class ExecutionTimeLimit implements CanDecideToContinue
         $this->executionStartTime = time();
     }
 
-    public function canContinue(ToolUseContext $context): bool {
+    public function canContinue(ToolUseState $state): bool {
         return ((time() - $this->executionStartTime) < $this->maxExecutionTime);
     }
 }

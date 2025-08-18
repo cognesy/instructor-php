@@ -11,7 +11,7 @@ use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 
 trait HandlesContinuationCriteria
 {
@@ -42,19 +42,19 @@ trait HandlesContinuationCriteria
     }
 
     public function hasNextStep() : bool {
-        if ($this->context->currentStep() === null) {
+        if ($this->state->currentStep() === null) {
             return true;
         }
-        return $this->canContinue($this->context);
+        return $this->canContinue($this->state);
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function canContinue(ToolUseContext $context) : bool {
+    protected function canContinue(ToolUseState $state) : bool {
         foreach ($this->continuationCriteria as $criterion) {
-            if (!$criterion->canContinue($context)) {
-                $context->withStatus(match(true) {
-                    $context->currentStep()?->hasErrors() => ToolUseStatus::Failed,
+            if (!$criterion->canContinue($state)) {
+                $state->withStatus(match(true) {
+                    $state->currentStep()?->hasErrors() => ToolUseStatus::Failed,
                     default => ToolUseStatus::Completed,
                 });
                 return false;

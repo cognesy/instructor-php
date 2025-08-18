@@ -2,12 +2,12 @@
 
 namespace Cognesy\Addons\ToolUse\Tools;
 
-use Cognesy\Addons\ToolUse\Contracts\CanAccessContext;
-use Cognesy\Addons\ToolUse\Traits\HandlesContext;
+use Cognesy\Addons\ToolUse\Contracts\CanAccessToolUseState;
+use Cognesy\Addons\ToolUse\Traits\HandlesState;
 
-class UpdateContextVariable extends BaseTool implements CanAccessContext
+class UpdateToolUseStateVariable extends BaseTool implements CanAccessToolUseState
 {
-    use HandlesContext;
+    use HandlesState;
 
     protected string $name = 'update_context_variable';
     protected string $description = 'Update a variable in the context';
@@ -17,7 +17,7 @@ class UpdateContextVariable extends BaseTool implements CanAccessContext
     }
 
     public function __invoke(string $variableName, string $jsonValue): mixed {
-        $this->context->withVariable($variableName, json_decode($jsonValue, true));
+        $this->state->withVariable($variableName, json_decode($jsonValue, true));
         return null;
     }
 }

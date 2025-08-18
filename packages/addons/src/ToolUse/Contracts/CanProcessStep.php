@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse\Contracts;
 
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 use Cognesy\Addons\ToolUse\ToolUseStep;
 
 interface CanProcessStep
 {
-    public function processStep(ToolUseStep $step, ToolUseContext $context): ToolUseStep;
+    public function processStep(ToolUseStep $step, ToolUseState $state): ToolUseStep;
 }

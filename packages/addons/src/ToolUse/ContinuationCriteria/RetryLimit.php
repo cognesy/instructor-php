@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 
 class RetryLimit implements CanDecideToContinue
 {
@@ -14,8 +14,8 @@ class RetryLimit implements CanDecideToContinue
         $this->maxRetries = $maxRetries;
     }
 
-    public function canContinue(ToolUseContext $context): bool {
-        if ($context->currentStep()?->hasErrors() ?? false) {
+    public function canContinue(ToolUseState $state): bool {
+        if ($state->currentStep()?->hasErrors() ?? false) {
             $this->currentRetries++;
             return ($this->currentRetries < $this->maxRetries);
         }

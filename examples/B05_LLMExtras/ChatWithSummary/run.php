@@ -11,16 +11,15 @@ docname: 'chat_with_summary'
 
 ```php
 <?php
-die(); // TO BE FIXED
 
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 $maxSteps = 5;
 $sys = [
@@ -38,21 +37,11 @@ $summarizer = new SummarizeMessages(
     tokenLimit: 1024,
 );
 
-//$chat = new ChatWithSummary(
-//    null,
-//    256,
-//    256,
-//    1024,
-//    true,
-//    true,
-//    $summarizer,
-//);
-
 $chat = ChatWithSummary::create(
-    256,
-    256,
-    1024,
-    $summarizer,
+    maxChatTokens: 256,
+    maxBufferTokens: 256,
+    maxSummaryTokens: 1024,
+    summarizer: $summarizer,
 );
 $chat->script()->section('main')->appendMessage($startMessage);
 

@@ -22,13 +22,12 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Polyglot\Inference\Inference;
 
-$content = (new Content)
-    ->addContentPart(ContentPart::text('Describe the car damage in the image.'))
-    ->addContentPart(Image::fromFile(__DIR__ . '/car-damage.jpg')->toContentPart());
-
 $messages = (new Messages)
     ->asSystem('You are an expert in car damage assessment.')
-    ->asUser($content);
+    ->asUser((new Content)
+        ->addContentPart(ContentPart::text('Describe the car damage in the image.'))
+        ->addContentPart(Image::fromFile(__DIR__ . '/car-damage.jpg')->toContentPart())
+    );
 
 $response = (new Inference)
     ->using('openai')

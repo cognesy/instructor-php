@@ -21,7 +21,7 @@ Instructor will append the list of examples to the prompt sent to LLM, with outp
 array data rendered as JSON text.
 
 ```php
-// @doctest id="707b"
+// @doctest id="b20d"
 <?php
 use Cognesy\Instructor\Extras\Example\Example;
 
@@ -62,7 +62,7 @@ In case input or output data is an array, Instructor will automatically convert 
 a JSON string before replacing the placeholders.
 
 ```php
-// @doctest id="f700"
+// @doctest id="9941"
 $user = (new StructuredOutput)->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
@@ -90,7 +90,7 @@ and differ in the way the input data is provided.
 an instance of Example using the constructor.
 
 ```php
-// @doctest id="6289"
+// @doctest id="e01e"
 $example = Example::fromText(
     input: 'Ian is 27 yo',
     output: ['name' => 'Ian', 'age' => 27]
@@ -103,7 +103,7 @@ $example = Example::fromText(
 you want to use a chat or chat fragment as a demonstration of the input.
 
 ```php
-// @doctest id="a657"
+// @doctest id="c0e4"
 $example = Example::fromChat(
     input: [['role' => 'user', 'content' => 'Ian is 27 yo']],
     output: ['name' => 'Ian', 'age' => 27]
@@ -117,7 +117,7 @@ convert it to a string. It may be useful to provide a complex data structure as 
 input.
 
 ```php
-// @doctest id="19ae"
+// @doctest id="0e90"
 $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthData' => '1994-01-01'],
     output: ['name' => 'Ian', 'age' => 27]

@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 
 class StepsLimit implements CanDecideToContinue
 {
@@ -14,7 +14,7 @@ class StepsLimit implements CanDecideToContinue
         $this->maxSteps = $maxSteps;
     }
 
-    public function canContinue(ToolUseContext $context): bool {
+    public function canContinue(ToolUseState $state): bool {
         $this->currentStep++;
         return ($this->currentStep < $this->maxSteps);
     }

@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseContext;
+use Cognesy\Addons\ToolUse\ToolUseState;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 class TokenUsageLimit implements CanDecideToContinue
@@ -16,8 +16,8 @@ class TokenUsageLimit implements CanDecideToContinue
         $this->usage = new Usage();
     }
 
-    public function canContinue(ToolUseContext $context): bool {
-        $this->usage->accumulate($context->currentStep()?->usage());
+    public function canContinue(ToolUseState $state): bool {
+        $this->usage->accumulate($state->currentStep()?->usage());
         return ($this->usage->total() < $this->maxTokens);
     }
 }

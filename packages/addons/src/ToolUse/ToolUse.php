@@ -17,15 +17,15 @@ class ToolUse {
     private array $processors;
     private array $continuationCriteria;
 
-    private ToolUseContext $context;
+    private ToolUseState $state;
 
     public function __construct(
-        ?ToolUseContext $context = null,
+        ?ToolUseState $state = null,
         ?CanUseTools $driver = null,
         ?array $processors = null,
         ?array $continuationCriteria = null
     ) {
-        $this->context = $context ?? new ToolUseContext;
+        $this->state = $state ?? new ToolUseState;
         $this->driver = $driver ?? new ToolCallingDriver;
         $this->processors = $processors ?? [];
         if (empty($this->processors)) {
@@ -48,20 +48,20 @@ class ToolUse {
         return $this->driver;
     }
 
-    public function withContext(ToolUseContext $context) : self {
-        $this->context = $context;
+    public function withState(ToolUseState $state) : self {
+        $this->state = $state;
         return $this;
     }
 
-    public function context() : ToolUseContext {
-        return $this->context;
+    public function state() : ToolUseState {
+        return $this->state;
     }
 
     public function withTools(array|Tools $tools) : self {
         if (is_array($tools)) {
             $tools = new Tools($tools);
         }
-        $this->context->withTools($tools);
+        $this->state->withTools($tools);
         return $this;
     }
 
@@ -72,26 +72,26 @@ class ToolUse {
             is_object($messages) && ($messages instanceof Messages) => $messages->toArray(),
             default => []
         };
-        $this->context->withMessages(Messages::fromArray($messages));
+        $this->state->withMessages(Messages::fromArray($messages));
         return $this;
     }
 
     public function messages() : Messages {
-        return $this->context->messages();
+        return $this->state->messages();
     }
 
     // HANDLE TOOL USE /////////////////////////////////////////////
 
     public function nextStep() : ToolUseStep {
-        $step = $this->driver->useTools($this->context);
-        return $this->processStep($step, $this->context);
+        $step = $this->driver->useTools($this->state);
+        return $this->processStep($step, $this->state);
     }
 
     public function finalStep() : ToolUseStep {
         while ($this->hasNextStep()) {
             $this->nextStep();
         }
-        return $this->context->currentStep();
+        return $this->state->currentStep();
     }
 
     /** @return Generator<ToolUseStep> */
