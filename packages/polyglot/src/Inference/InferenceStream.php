@@ -53,6 +53,14 @@ class InferenceStream
         }
     }
 
+    public function textChunks() : Generator {
+        foreach ($this->responses() as $partialInferenceResponse) {
+            if ($partialInferenceResponse->contentDelta !== '') {
+                yield $partialInferenceResponse->contentDelta;
+            }
+        }
+    }
+
     /**
      * Retrieves all partial LLM responses from the given stream.
      *

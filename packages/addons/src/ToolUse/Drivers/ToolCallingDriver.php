@@ -65,18 +65,17 @@ class ToolCallingDriver implements CanUseTools
 
         $inferenceResponse = (new Inference)
             ->withLLMProvider($this->llm)
-            ->with(
-                messages: $messages->toArray(),
-                model: $this->model,
-                tools: $tools->toToolSchema(),
-                toolChoice: $this->toolChoice,
-                responseFormat: $this->responseFormat,
-                options: array_merge(
-                    $this->options,
-                    ['parallel_tool_calls' => $this->parallelToolCalls]
-                ),
-                mode: $this->mode,
-            )
+            ->withDebugPreset('on')
+            ->withMessages($messages->toArray())
+            ->withModel($this->model)
+            ->withTools($tools->toToolSchema())
+            ->withToolChoice($this->toolChoice)
+            ->withResponseFormat($this->responseFormat)
+            ->withOptions(array_merge(
+                $this->options,
+                ['parallel_tool_calls' => $this->parallelToolCalls]
+            ))
+            ->withOutputMode($this->mode)
             ->response();
 
         $toolExecutions = $tools->useTools($inferenceResponse->toolCalls(), $state);

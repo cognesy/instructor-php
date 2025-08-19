@@ -42,9 +42,11 @@ trait HandlesContinuationCriteria
     }
 
     public function hasNextStep() : bool {
+        // if there are no steps defined, we can continue
         if ($this->state->currentStep() === null) {
             return true;
         }
+        // otherwise, check if we can continue based on the criteria
         return $this->canContinue($this->state);
     }
 
