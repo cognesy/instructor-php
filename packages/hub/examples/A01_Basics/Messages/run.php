@@ -27,7 +27,7 @@ class Code {
     public string $codeDescription;
 }
 
-$messages = (new Messages)
+$messages = Messages::empty()
     ->asSystem('You are a senior PHP8 backend developer.')
     ->asDeveloper('Be concise and use modern PHP8.2+ features.') // OpenAI developer role is supported and normalized for other providers
     ->asUser([

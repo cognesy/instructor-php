@@ -2,9 +2,9 @@
 
 namespace Cognesy\Template\Script\Traits;
 
-use Cognesy\Template\Template;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Template\Template;
 
 trait RendersContent
 {
@@ -21,9 +21,9 @@ trait RendersContent
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Messages\Message $messages
+     * @param Message $message
      * @param array<string,mixed>|null $parameters
-     * @return string
+     * @return Message
      */
     protected function renderMessage(Message $message, ?array $parameters) : Message {
         return match(true) {
@@ -33,9 +33,9 @@ trait RendersContent
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Messages\Messages $messages
+     * @param Messages $messages
      * @param array<string,mixed>|null $parameters
-     * @return string
+     * @return Messages
      */
     protected function renderMessages(Messages $messages, ?array $parameters) : Messages {
         return match(true) {

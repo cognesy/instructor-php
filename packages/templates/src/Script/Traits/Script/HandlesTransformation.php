@@ -14,36 +14,44 @@ trait HandlesTransformation
             is_string($sections) => [$sections],
             is_array($sections) => $sections,
         };
-        $script = new Script();
-        $script->withParams($this->parameters);
+        $selectedSections = [];
         foreach ($names as $sectionName) {
-            $script->appendSection($this->section($sectionName));
+            if ($this->hasSection($sectionName)) {
+                $selectedSections[] = $this->section($sectionName);
+            }
         }
-        return $script;
+        return new static(
+            sections: $selectedSections,
+            parameters: $this->parameters,
+        );
     }
 
     public function toMergedPerRole() : static {
-        $script = new Script();
-        $script->withParams($this->parameters());
+        $mergedSections = [];
         foreach ($this->sections as $item) {
             if ($item->isEmpty()) {
                 continue;
             }
-            $script->appendSection($item->toMergedPerRole());
+            $mergedSections[] = $item->toMergedPerRole();
         }
-        return $script;
+        return new static(
+            sections: $mergedSections,
+            parameters: $this->parameters,
+        );
     }
 
     public function trimmed() : static {
-        $script = new Script();
-        $script->withParams($this->parameters());
+        $trimmedSections = [];
         foreach ($this->sections as $section) {
             $trimmed = $section->trimmed();
             if ($trimmed->isEmpty()) {
                 continue;
             }
-            $script->appendSection($trimmed);
+            $trimmedSections[] = $trimmed;
         }
-        return $script;
+        return new static(
+            sections: $trimmedSections,
+            parameters: $this->parameters,
+        );
     }
 }

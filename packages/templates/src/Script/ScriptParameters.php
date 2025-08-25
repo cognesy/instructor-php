@@ -7,16 +7,14 @@ use Cognesy\Template\Script\Traits\ScriptParameters\HandlesConversion;
 use Cognesy\Template\Script\Traits\ScriptParameters\HandlesMutation;
 use Cognesy\Template\Script\Traits\ScriptParameters\HandlesTransformation;
 
-class ScriptParameters
+final readonly class ScriptParameters
 {
     use HandlesAccess;
     use HandlesConversion;
     use HandlesMutation;
     use HandlesTransformation;
 
-    private array $parameters;
-
-    public function __construct(?array $parameters) {
-        $this->parameters = $parameters ?? [];
-    }
+    public function __construct(
+        private array $parameters = [],
+    ) {}
 }

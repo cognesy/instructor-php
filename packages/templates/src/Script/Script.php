@@ -16,7 +16,7 @@ use Cognesy\Template\Script\Traits\RendersContent;
  * such as adding, removing, reordering, transforming, and converting sections and
  * individual messages.
  */
-class Script
+final readonly class Script
 {
     use Traits\Script\HandlesAccess;
     use Traits\Script\HandlesParameters;
@@ -28,10 +28,18 @@ class Script
     use RendersContent;
 
     /** @var Section[] */
-    private array $sections;
+    public array $sections;
+    public ScriptParameters $parameters;
 
-    public function __construct(Section ...$sections) {
+    public function __construct(
+        array $sections = [],
+        ?ScriptParameters $parameters = null,
+    ) {
         $this->sections = $sections;
-        $this->parameters = new ScriptParameters(null);
+        $this->parameters = $parameters ?? new ScriptParameters();
+    }
+
+    public static function fromSections(Section ...$sections): static {
+        return new static($sections);
     }
 }

@@ -182,7 +182,7 @@ test('static becomesEmpty correctly identifies empty values', function () {
     expect(Messages::becomesEmpty(new Message()))->toBeTrue();
     
     // Empty Messages collection
-    expect(Messages::becomesEmpty(new Messages()))->toBeTrue();
+    expect(Messages::becomesEmpty(Messages::empty()))->toBeTrue();
     
     // Non-empty array
     expect(Messages::becomesEmpty(['not empty']))->toBeFalse();

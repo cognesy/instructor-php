@@ -5,8 +5,14 @@ namespace Cognesy\Template\Script\Traits\Section;
 trait HandlesMetadata
 {
     public function withMetadata(array $metadata) : static {
-        $this->metadata = $metadata;
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $metadata,
+            messages: $this->messages,
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function metadata() : array {
@@ -17,9 +23,17 @@ trait HandlesMetadata
         return $this->metadata[$key] ?? $default;
     }
 
-    public function set(string $key, mixed $value) : self {
-        $this->metadata[$key] = $value;
-        return $this;
+    public function set(string $key, mixed $value) : static {
+        $newMetadata = $this->metadata;
+        $newMetadata[$key] = $value;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $newMetadata,
+            messages: $this->messages,
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function has(string $key) : bool {

@@ -91,8 +91,8 @@ test('accesses metadata values', function () {
 
 test('manages metadata through fluent interface', function () {
     $message = new Message();
-    $message->withMeta('key1', 'value1');
-    $message->withMeta('key2', 'value2');
+    $message = $message->withMeta('key1', 'value1');
+    $message = $message->withMeta('key2', 'value2');
     expect($message->meta())->toBe(['key1' => 'value1', 'key2' => 'value2']);
 });
 
@@ -135,7 +135,7 @@ test('creates a message from array', function () {
 });
 
 test('creates a message from content with role', function () {
-    $message = Message::fromContent(new Content('System instruction'), 'system');
+    $message = Message::fromContent(Content::text('System instruction'), 'system');
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::System)
@@ -193,14 +193,14 @@ test('creates a message from an image', function () {
 // HandlesMutation Tests
 test('adds content part to a message', function () {
     $message = new Message('user', []);
-    $message->addContentPart('Part 1');
+    $message = $message->addContentPart('Part 1');
 
     expect($message->content()->toArray())->toBe([[
         'type' => 'text',
         'text' => 'Part 1'
     ]]);
 
-    $message->addContentPart(['type' => 'image_url', 'url' => 'http://example.com/image.jpg']);
+    $message = $message->addContentPart(['type' => 'image_url', 'url' => 'http://example.com/image.jpg']);
     expect($message->content()->toArray())->toBe([
         ['type' => 'text', 'text' => 'Part 1'],
         ['type' => 'image_url', 'url' => 'http://example.com/image.jpg']
@@ -209,7 +209,7 @@ test('adds content part to a message', function () {
 
 test('changes message role using withRole', function () {
     $message = new Message('user', 'Content');
-    $message->withRole('assistant');
+    $message = $message->withRole('assistant');
 
     expect($message->role())->toBe(MessageRole::Assistant);
 });

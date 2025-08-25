@@ -16,12 +16,24 @@ trait HandlesHeaderFooter
     }
 
     public function withHeader(string|array|Message|Messages $message) : static {
-        $this->header->withMessages(Messages::fromAny($message));
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages,
+            header: Messages::fromAny($message),
+            footer: $this->footer,
+        );
     }
 
     public function withFooter(string|array|Message|Messages $message) : static {
-        $this->footer->withMessages(Messages::fromAny($message));
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages,
+            header: $this->header,
+            footer: Messages::fromAny($message),
+        );
     }
 }

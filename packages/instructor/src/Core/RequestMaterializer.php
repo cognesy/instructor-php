@@ -48,28 +48,15 @@ class RequestMaterializer implements CanMaterializeRequest
         if ($this->isRequestEmpty($request)) {
             throw new Exception('Request cannot be empty - you have to provide content for processing.');
         }
-
-        $script = new Script();
-
-        // GET DATA
         $messages = $request->messages();
-
-        // SYSTEM SECTION
-        $script->section('system')->appendMessages(
-            $this->makeSystem($messages, $request->system())
-        );
-        $script->section('messages')->appendMessages(
-            $this->makeMessages($messages)
-        );
-        $script->section('prompt')->appendMessage(
-            $this->makePrompt($request->prompt()
+        $script = (new Script())
+            ->withSectionMessages('system', $this->makeSystem($messages, $request->system()))
+            ->withSectionMessages('messages', $this->makeMessages($messages))
+            ->withSectionMessage('prompt', $this->makePrompt($request->prompt()
                 ?: $this->config->prompt($request->mode())
                 ?? ''
-            )
-        );
-        $script->section('examples')->appendMessages(
-            $this->makeExamples($request->examples())
-        );
+            ))
+            ->withSectionMessages('examples', $this->makeExamples($request->examples()));
         return $script->trimmed();
     }
 
@@ -77,25 +64,19 @@ class RequestMaterializer implements CanMaterializeRequest
         if ($cachedContext->isEmpty()) {
             return new Script();
         }
-
         $script = new Script();
-
         $script->section('system')
             ->prependMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()))
             ->appendContentField('cache_control', ['type' => 'ephemeral']);
-
         $script->section('cached-messages')
             ->appendMessages($this->makeMessages($cachedContext->messages()))
             ->appendContentField('cache_control', ['type' => 'ephemeral']);
-
         $script->section('cached-prompt')
             ->appendMessage(Message::fromString($cachedContext->prompt()))
             ->appendContentField('cache_control', ['type' => 'ephemeral']);
-
         $script->section('cached-examples')
             ->appendMessages($this->makeExamples($cachedContext->examples()))
             ->appendContentField('cache_control', ['type' => 'ephemeral']);
-
         return $script->trimmed();
     }
 
@@ -199,7 +180,7 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     protected function makeSystem(Messages $messages, string $system) : Messages {
-        $output = new Messages();
+        $output = Messages::empty();
         if (!empty($system)) {
             $output->appendMessage(new Message(role: 'system', content: $system));
         }
@@ -210,7 +191,7 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     protected function makeMessages(Messages $messages) : Messages {
-        $output = new Messages();
+        $output = Messages::empty();
         $output->appendMessages(
             $messages->tailAfterRoles(['developer', 'system'])
         );
@@ -218,7 +199,7 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     protected function makeExamples(array $examples) : Messages {
-        $output = new Messages();
+        $output = Messages::empty();
         if (empty($examples)) {
             return $output;
         }

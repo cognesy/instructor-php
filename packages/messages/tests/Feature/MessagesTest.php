@@ -70,7 +70,7 @@ test('can access first and last messages', function () {
 });
 
 test('returns empty message for first/last when collection is empty', function () {
-    $messages = new Messages();
+    $messages = Messages::empty();
     
     expect($messages->first())->toBeInstanceOf(Message::class)
         ->and($messages->first()->isEmpty())->toBeTrue()
@@ -104,7 +104,7 @@ test('can detect composite messages', function () {
         ['type' => 'text', 'text' => 'Hello 2'],
     ]);
     
-    $withComposite = (new Messages())
+    $withComposite = Messages::empty()
         ->appendMessages($simpleMessages)
         ->appendMessage($compositeMessage);
     
@@ -126,7 +126,7 @@ test('can get middle messages', function () {
 });
 
 test('can check if messages collection is empty', function () {
-    $emptyMessages = new Messages();
+    $emptyMessages = Messages::empty();
     $nonEmptyMessages = Messages::fromString('Hello');
     
     expect($emptyMessages->isEmpty())->toBeTrue()
@@ -177,21 +177,21 @@ test('can filter messages', function () {
 
 // Test HandlesMutation trait
 test('can set message', function () {
-    $messages = new Messages();
-    $messages->withMessage(new Message('user', 'Hello'));
+    $messages = Messages::empty();
+    $messages = $messages->withMessage(new Message('user', 'Hello'));
     
     expect($messages->all())->toHaveCount(1)
         ->and($messages->first()->content()->toString())->toBe('Hello');
 });
 
 test('can set messages', function () {
-    $messages = new Messages();
+    $messages = Messages::empty();
     $messagesToSet = Messages::fromArray([
         ['role' => 'user', 'content' => 'Hello'],
         ['role' => 'assistant', 'content' => 'Hi']
     ]);
     
-    $messages->withMessages($messagesToSet);
+    $messages = $messages->withMessages($messagesToSet);
     
     expect($messages->all())->toHaveCount(2)
         ->and($messages->first()->content()->toString())->toBe('Hello')
@@ -200,7 +200,7 @@ test('can set messages', function () {
 
 test('can append message', function () {
     $messages = Messages::fromString('Hello');
-    $messages->appendMessage(new Message('assistant', 'Hi'));
+    $messages = $messages->appendMessage(new Message('assistant', 'Hi'));
     
     expect($messages->all())->toHaveCount(2)
         ->and($messages->last()->content()->toString())->toBe('Hi');
@@ -213,7 +213,7 @@ test('can append messages', function () {
         ['role' => 'user', 'content' => 'How are you?']
     ]);
     
-    $messages->appendMessages($messagesToAppend);
+    $messages = $messages->appendMessages($messagesToAppend);
     
     expect($messages->all())->toHaveCount(3)
         ->and($messages->last()->content()->toString())->toBe('How are you?');
@@ -221,7 +221,7 @@ test('can append messages', function () {
 
 test('can prepend message', function () {
     $messages = Messages::fromString('Hello');
-    $messages->prependMessage(new Message('assistant', 'Hi'));
+    $messages = $messages->prependMessage(new Message('assistant', 'Hi'));
     
     expect($messages->all())->toHaveCount(2)
         ->and($messages->first()->content()->toString())->toBe('Hi');
@@ -234,7 +234,7 @@ test('can prepend messages', function () {
         ['role' => 'user', 'content' => 'How are you?']
     ]);
     
-    $messages->prependMessages($messagesToPrepend);
+    $messages = $messages->prependMessages($messagesToPrepend);
     
     expect($messages->all())->toHaveCount(3)
         ->and($messages->first()->content()->toString())->toBe('Hi');
@@ -247,11 +247,11 @@ test('can remove head and tail', function () {
         ['role' => 'user', 'content' => 'Last']
     ]);
     
-    $messages->removeHead();
+    $messages = $messages->removeHead();
     expect($messages->all())->toHaveCount(2)
         ->and($messages->first()->content()->toString())->toBe('Middle');
     
-    $messages->removeTail();
+    $messages = $messages->removeTail();
     expect($messages->all())->toHaveCount(1)
         ->and($messages->first()->content()->toString())->toBe('Middle');
 });

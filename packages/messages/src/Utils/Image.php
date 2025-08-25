@@ -141,6 +141,6 @@ class Image implements CanProvideMessages
     }
 
     public function toContent() : Content {
-        return (new Content)->addContentPart($this->toContentPart());
+        return Content::empty()->addContentPart($this->toContentPart());
     }
 }

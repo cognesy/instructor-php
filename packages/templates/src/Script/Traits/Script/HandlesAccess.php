@@ -3,6 +3,8 @@
 namespace Cognesy\Template\Script\Traits\Script;
 
 use Cognesy\Template\Script\Section;
+use Cognesy\Template\Script\SectionContext;
+use Exception;
 
 trait HandlesAccess
 {
@@ -12,13 +14,18 @@ trait HandlesAccess
     }
 
     public function section(string $name) : Section {
+        if (!$this->hasSection($name)) {
+            return new Section($name); // Return empty section for checking purposes
+        }
+        return $this->sections[$this->sectionIndex($name)];
+    }
+
+    public function getSection(string $name) : Section {
         $index = $this->sectionIndex($name);
         if ($index === -1) {
-            $section = $this->createSection($name);
-        } else {
-            $section = $this->sections[$index];
+            throw new Exception("Section '{$name}' does not exist. Use withSection() to add it first.");
         }
-        return $section;
+        return $this->sections[$index];
     }
 
     public function sectionNames() : array {

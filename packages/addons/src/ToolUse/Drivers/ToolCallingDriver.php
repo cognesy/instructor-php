@@ -100,7 +100,7 @@ class ToolCallingDriver implements CanUseTools
      * @return Messages A Messages object containing the generated follow-up messages.
      */
     protected function makeFollowUpMessages(ToolExecutions $toolExecutions) : Messages {
-        $messages = new Messages();
+        $messages = Messages::empty();
         foreach ($toolExecutions->all() as $toolExecution) {
             $messages->appendMessages($this->makeToolExecutionMessages($toolExecution));
         }
@@ -114,7 +114,7 @@ class ToolCallingDriver implements CanUseTools
      * @return Messages A Messages object containing the generated messages for the tool execution.
      */
     protected function makeToolExecutionMessages(ToolExecution $toolExecution) : Messages {
-        $messages = new Messages();
+        $messages = Messages::empty();
         $messages->appendMessage($this->makeToolInvocationMessage($toolExecution->toolCall()));
         $messages->appendMessage($this->makeToolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));
         return $messages;

@@ -2,11 +2,11 @@
 
 namespace Cognesy\Addons\ToolUse;
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Messages\Messages;
 use Throwable;
 
 class ToolUseStep
@@ -39,7 +39,7 @@ class ToolUseStep
     }
 
     public function messages() : Messages {
-        return $this->messages ?? new Messages();
+        return $this->messages ?? Messages::empty();
     }
 
     public function toolExecutions() : ToolExecutions {

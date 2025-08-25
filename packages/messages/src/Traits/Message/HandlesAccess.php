@@ -87,12 +87,17 @@ trait HandlesAccess
     }
 
     public function withMeta(string $key, mixed $value) : self {
-        $this->metadata[$key] = $value;
-        return $this;
+        $newMetadata = $this->metadata;
+        $newMetadata[$key] = $value;
+        return new self(
+            role: $this->role,
+            content: $this->content,
+            name: $this->name,
+            metadata: $newMetadata
+        );
     }
 
     public function withMetadata(string $key, mixed $value) : self {
-        $this->withMeta($key, $value);
-        return $this;
+        return $this->withMeta($key, $value);
     }
 }

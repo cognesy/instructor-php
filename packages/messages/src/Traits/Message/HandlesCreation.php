@@ -12,6 +12,13 @@ use Cognesy\Utils\TextRepresentation;
 
 trait HandlesCreation
 {
+    public static function empty() {
+        return new self(
+            role: self::DEFAULT_ROLE,
+            content: Content::empty(),
+        );
+    }
+
     public static function make(string $role, string|array|Content $content, string $name = '') : Message {
         return new Message(role: $role, content: $content, name: $name);
     }
@@ -80,7 +87,7 @@ trait HandlesCreation
     public static function fromContentPart(ContentPart $part, string|MessageRole|null $role = null) : static {
         return new static(
             role: $role,
-            content: (new Content)->addContentPart($part),
+            content: Content::empty()->addContentPart($part),
         );
     }
 
@@ -97,12 +104,12 @@ trait HandlesCreation
     }
 
     public function clone() : self {
-        $cloned = new static();
-        $cloned->role = $this->role;
-        $cloned->name = $this->name;
-        $cloned->content = $this->content->clone();
-        $cloned->metadata = $this->metadata;
-        return $cloned;
+        return new static(
+            role: $this->role,
+            content: $this->content->clone(),
+            name: $this->name,
+            metadata: $this->metadata,
+        );
     }
 
     private static function isArrayOfStrings(array $array): bool {

@@ -18,11 +18,11 @@ trait HandlesConversion
         }
 
         $role = 'user';
-        $merged = new Messages();
+        $merged = Messages::empty();
         $content = [];
         foreach ($messages as $message) {
             if ($role !== $message['role'] || Message::becomesComposite($message)) {
-                $merged->appendMessage(new Message(
+                $merged = $merged->appendMessage(new Message(
                     role: $role,
                     content: implode("\n\n", array_filter($content)),
                 ));
@@ -30,7 +30,7 @@ trait HandlesConversion
                 $content = [];
 
                 if (Message::becomesComposite($message)) {
-                    $merged->appendMessage($message);
+                    $merged = $merged->appendMessage($message);
                     continue;
                 }
             }
@@ -38,7 +38,7 @@ trait HandlesConversion
         }
         // append remaining content
         if (!empty($content)) {
-            $merged->appendMessage(new Message(
+            $merged = $merged->appendMessage(new Message(
                 role: $role,
                 content: implode("\n", array_filter($content)), // TODO: see above
                 metadata: $message['_metadata'] ?? [],

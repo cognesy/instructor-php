@@ -50,7 +50,7 @@ With `BaseMiddleware`, you only need to override the methods that matter for you
 For simple middleware that you only need to use once, you can use anonymous classes:
 
 ```php
-// @doctest id="f934"
+// @doctest id="d721"
 use Cognesy\Http\Contracts\HttpMiddleware;
 
 $client = new HttpClient();
@@ -129,7 +129,7 @@ To use a response decorator, you need to create a middleware that wraps the resp
 Then add the middleware to your client:
 
 ```php
-// @doctest id="9ce1"
+// @doctest id="fe75"
 $client = new HttpClient();
 $client->withMiddleware(new JsonStreamMiddleware());
 ```
@@ -139,7 +139,7 @@ $client->withMiddleware(new JsonStreamMiddleware());
 You can use response decoration to transform response content on-the-fly:
 
 ```php
-// @doctest id="a2b9"
+// @doctest id="3d63"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -175,7 +175,7 @@ class XmlToJsonDecorator extends BaseResponseDecorator
 And the corresponding middleware:
 
 ```php
-// @doctest id="1c6e"
+// @doctest id="a33c"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -211,7 +211,7 @@ Here are some more advanced middleware examples that demonstrate the power and f
 This middleware collects analytics data about HTTP requests:
 
 ```php
-// @doctest id="8a97"
+// @doctest id="76ac"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -265,7 +265,7 @@ class AnalyticsMiddleware extends BaseMiddleware
 This middleware implements the circuit breaker pattern to prevent repeated calls to failing services:
 
 ```php
-// @doctest id="61b4"
+// @doctest id="a2c1"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -355,7 +355,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
 This middleware only applies to certain requests based on a condition:
 
 ```php
-// @doctest id="1947"
+// @doctest id="4032"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -393,7 +393,7 @@ class ConditionalMiddleware implements HttpMiddleware
 Usage example:
 
 ```php
-// @doctest id="66bb"
+// @doctest id="7735"
 // Only apply caching middleware to GET requests
 $cachingMiddleware = new CachingMiddleware($cache);
 $conditionalCaching = new ConditionalMiddleware(
@@ -409,7 +409,7 @@ $client->withMiddleware($conditionalCaching);
 This middleware adds a unique ID to each request and tracks it through the response:
 
 ```php
-// @doctest id="79f9"
+// @doctest id="213d"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -462,7 +462,7 @@ class RequestIdMiddleware extends BaseMiddleware
 This middleware adds OpenTelemetry tracing to HTTP requests:
 
 ```php
-// @doctest id="2aea"
+// @doctest id="3c06"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -545,7 +545,7 @@ class TracingMiddleware extends BaseMiddleware
 When working with Large Language Model (LLM) APIs, you can create specialized middleware to handle their unique requirements:
 
 ```php
-// @doctest id="1ba4"
+// @doctest id="c6b4"
 <?php
 
 namespace YourNamespace\Http\Middleware;
@@ -651,7 +651,7 @@ class LlmStreamingMiddleware extends BaseMiddleware
 When building complex applications, you'll often need to combine multiple middleware components. Here's an example of how to set up a complete HTTP client pipeline:
 
 ```php
-// @doctest id="d875"
+// @doctest id="0e03"
 <?php
 
 use Cognesy\Polyglot\Http\HttpClient;use Middleware\AuthenticationMiddleware\AuthenticationMiddleware;use Middleware\BasicHttpMiddleware\LoggingMiddleware;use Middleware\CachingMiddleware\CachingMiddleware;use Middleware\RateLimitingMiddleware\RateLimitingMiddleware;use Middleware\RetryMiddleware\RetryMiddleware;use YourNamespace\Http\Middleware\AnalyticsMiddleware;use YourNamespace\Http\Middleware\CircuitBreakerMiddleware;use YourNamespace\Http\Middleware\TracingMiddleware;

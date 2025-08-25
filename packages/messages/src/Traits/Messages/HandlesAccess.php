@@ -39,7 +39,7 @@ trait HandlesAccess
     public function middle() : Messages {
         $messageCount = count($this->messages);
         if ($messageCount < 3) {
-            return new Messages();
+            return Messages::empty();
         }
         $slice = array_slice($this->messages, 1, $messageCount - 2);
         return Messages::fromMessages($slice);
@@ -95,16 +95,16 @@ trait HandlesAccess
     }
 
     public function filter(?callable $callback = null) : Messages {
-        $messages = new Messages();
+        $filteredMessages = [];
         foreach ($this->messages as $message) {
             if ($message->isEmpty()) {
                 continue;
             }
             if ($callback($message)) {
-                $messages->messages[] = $message->clone();
+                $filteredMessages[] = $message->clone();
             }
         }
-        return $messages;
+        return new Messages(...$filteredMessages);
     }
 
     public function count() : int {

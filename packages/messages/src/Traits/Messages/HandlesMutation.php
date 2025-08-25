@@ -27,29 +27,30 @@ trait HandlesMutation
     }
 
     public function withMessage(string|array|Message $message) : static {
-        $this->messages = match (true) {
+        $newMessages = match (true) {
             is_string($message) => [Message::fromString($message)],
             is_array($message) => [Message::fromArray($message)],
             default => [$message],
         };
-        return $this;
+        return new static(...$newMessages);
     }
 
     public function withMessages(array|Messages $messages) : static {
-        $this->messages = match (true) {
+        $newMessages = match (true) {
             $messages instanceof Messages => $messages->messages,
             default => Messages::fromAnyArray($messages)->messages,
         };
-        return $this;
+        return new static(...$newMessages);
     }
 
     public function appendMessage(string|array|Message $message) : static {
-        $this->messages[] = match (true) {
+        $newMessages = $this->messages;
+        $newMessages[] = match (true) {
             is_string($message) => Message::fromString($message),
             is_array($message) => Message::fromArray($message),
             default => $message,
         };
-        return $this;
+        return $this->withMessages($newMessages);
     }
 
     public function appendMessages(array|Messages $messages) : static {
@@ -60,51 +61,50 @@ trait HandlesMutation
             $messages instanceof Messages => $messages->messages,
             default => Messages::fromAnyArray($messages)->messages,
         };
-        $this->messages = array_merge($this->messages, $appended);
-        return $this;
+        $newMessages = array_merge($this->messages, $appended);
+        return $this->withMessages($newMessages);
     }
 
     public function prependMessages(array|Messages $messages) : static {
-        $this->messages = match (true) {
+        $newMessages = match (true) {
             empty($messages) => $this->messages,
             $messages instanceof Messages => array_merge($messages->messages, $this->messages),
             default => array_merge(Messages::fromAnyArray($messages)->messages, $this->messages),
         };
-        return $this;
+        return $this->withMessages($newMessages);
     }
 
     public function prependMessage(Message $param) : static {
-        $this->prependMessages([$param]);
-        return $this;
+        return $this->prependMessages([$param]);
     }
 
     public function removeHead() : static {
-        array_shift($this->messages);
-        return $this;
+        $newMessages = $this->messages;
+        array_shift($newMessages);
+        return $this->withMessages($newMessages);
     }
 
     public function removeTail() : static {
-        array_pop($this->messages);
-        return $this;
+        $newMessages = $this->messages;
+        array_pop($newMessages);
+        return $this->withMessages($newMessages);
     }
 
     public function appendContentFields(array $fields) : static {
-        $lastMessage = end($this->messages);
-        if (!$lastMessage) {
-            return $this;
-        }
-
-        $lastMessage->content()->appendContentFields($fields);
-        return $this;
+        $newMessages = $this->messages;
+        $lastMessage = $newMessages[array_key_last($newMessages)] ?? Message::empty();
+        $newContent = $lastMessage->content()->appendContentFields($fields);
+        $messagesExceptLast = array_slice($newMessages, 0, -1);
+        $messages = [...$messagesExceptLast, $lastMessage->withContent($newContent)];
+        return new static(...$messages);
     }
 
     public function appendContentField(string $key, mixed $value) : static {
-        $lastMessage = end($this->messages);
-        if (!$lastMessage) {
-            return $this;
-        }
-
-        $lastMessage->content()->appendContentField($key, $value);
-        return $this;
+        $newMessages = $this->messages;
+        $lastMessage = $newMessages[array_key_last($newMessages)] ?? Message::empty();
+        $newContent = $lastMessage->content()->appendContentField($key, $value);
+        $messagesExceptLast = array_slice($newMessages, 0, -1);
+        $messages = [...$messagesExceptLast, $lastMessage->withContent($newContent)];
+        return new static(...$messages);
     }
 }

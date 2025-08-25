@@ -57,7 +57,7 @@ Provider configurations are managed through the configuration system.
 ## Basic Usage
 
 ```php
-// @doctest id="f517"
+// @doctest id="af57"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -76,7 +76,7 @@ echo "Generated a vector with " . count($vector) . " dimensions.\n";
 Configure the underlying embeddings provider:
 
 ```php
-// @doctest id="a56c"
+// @doctest id="d057"
 // Provider selection and configuration
 $embeddings->using('openai');                          // Use preset configuration
 $embeddings->withPreset('openai');                     // Alternative preset method
@@ -99,7 +99,7 @@ $embeddings->withProvider($customProvider);           // Custom provider instanc
 Configure the embedding request:
 
 ```php
-// @doctest id="e75b"
+// @doctest id="c5ae"
 // Input configuration
 $embeddings->withInputs('Single text input');         // Single string
 $embeddings->withInputs(['Text 1', 'Text 2']);       // Multiple strings
@@ -123,7 +123,7 @@ $embeddings->with(
 Get embeddings in different formats:
 
 ```php
-// @doctest id="17da"
+// @doctest id="4ca2"
 // Full response object
 $response = $embeddings->get();                       // EmbeddingsResponse object
 
@@ -141,7 +141,7 @@ $response = $pending->get();                         // Execute and get response
 ## Working with Multiple Providers
 
 ```php
-// @doctest id="513b"
+// @doctest id="77f2"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -169,7 +169,7 @@ echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
 Create custom configurations for specific use cases:
 
 ```php
-// @doctest id="08d4"
+// @doctest id="18ec"
 <?php
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
@@ -200,7 +200,7 @@ echo "Generated embedding with " . count($vector) . " dimensions\n";
 Register custom drivers for new providers:
 
 ```php
-// @doctest id="4a83"
+// @doctest id="3367"
 // Register with class name
 Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
 

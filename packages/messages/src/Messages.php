@@ -8,7 +8,7 @@ use Cognesy\Messages\Traits\Messages\HandlesCreation;
 use Cognesy\Messages\Traits\Messages\HandlesMutation;
 use Cognesy\Messages\Traits\Messages\HandlesTransformation;
 
-class Messages {
+final readonly class Messages {
     use HandlesAccess;
     use HandlesConversion;
     use HandlesCreation;
@@ -16,5 +16,14 @@ class Messages {
     use HandlesTransformation;
 
     /** @var Message[] $messages */
-    private array $messages = [];
+    private array $messages;
+
+    /** @param Message[] $messages */
+    public function __construct(Message ...$messages) {
+        $this->messages = $messages;
+    }
+
+    public static function empty(): static {
+        return new static();
+    }
 }

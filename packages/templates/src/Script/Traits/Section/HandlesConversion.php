@@ -2,9 +2,8 @@
 
 namespace Cognesy\Template\Script\Traits\Section;
 
-use Cognesy\Template\Script\Traits\RendersContent;
 use Cognesy\Messages\Messages;
-use RuntimeException;
+use Cognesy\Template\Script\Traits\RendersContent;
 
 trait HandlesConversion
 {
@@ -26,19 +25,14 @@ trait HandlesConversion
     }
 
     /**
-     * @param array<string,mixed>|null $parameters
      * @param string $separator
      * @return array<string, mixed>
      */
-    public function toString(array $parameters = [], string $separator = "\n") : string {
-        if ($this->hasComposites()) {
-            // TODO: we should check if composites are text only and allow conversion if so
-            throw new RuntimeException('Section contains composite messages and cannot be converted to string.');
-        }
-        $text = array_reduce(
-            array: $this->messages()->toArray(),
-            callback: fn($carry, $message) => $carry . $message['content'] . $separator,
-        );
-        return $this->renderString($text, $parameters);
+    public function toString(string $separator = "\n") : string {
+        return implode($separator, [
+            $this->header->toString(),
+            $this->messages->toString(),
+            $this->footer->toString(),
+        ]);
     }
 }

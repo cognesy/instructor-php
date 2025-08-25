@@ -4,12 +4,15 @@ namespace Cognesy\Template\Script\Traits\ScriptParameters;
 trait HandlesMutation
 {
     public function set(string $name, mixed $value) : static {
-        $this->parameters[$name] = $value;
-        return $this;
+        $newParameters = $this->parameters;
+        $newParameters[$name] = $value;
+        return new static($newParameters);
     }
 
     public function unset(string $name) : static {
-        unset($this->parameters[$name]);
-        return $this;
+        $newParameters = $this->parameters;
+        unset($newParameters[$name]);
+        return new static($newParameters);
     }
+
 }

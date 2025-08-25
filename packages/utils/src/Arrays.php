@@ -221,4 +221,12 @@ class Arrays
         // if we reach here, it means that both arrays have the same values
         return true;
     }
+
+    public static function hasOnlyStrings(array $content) : bool {
+        return count($content) > 0 && array_reduce(
+            $content,
+            fn(bool $carry, $item) => $carry && is_string($item),
+            true
+        );
+    }
 }

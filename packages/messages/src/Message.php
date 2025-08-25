@@ -28,7 +28,7 @@ use Cognesy\Messages\Traits\Message\HandlesTransformation;
  * in the constructor.
  *
  */
-class Message {
+final readonly class Message {
     use HandlesCreation;
     use HandlesMutation;
     use HandlesAccess;
@@ -39,7 +39,7 @@ class Message {
     protected string $role;
     protected string $name;
     protected Content $content;
-    protected array $metadata = [];
+    protected array $metadata;
 
     /**
      * @param string $role

@@ -8,13 +8,13 @@ use Exception;
 trait HandlesConversion
 {
     public function toMessages() : Messages {
-        $messages = new Messages();
+        $messages = Messages::empty();
         foreach ($this->sections as $section) {
             foreach($section->messages()->each() as $message) {
                 if ($message->isEmpty()) {
                     continue;
                 }
-                $messages->appendMessage($message->clone());
+                $messages = $messages->appendMessage($message->clone());
             }
         }
         return $messages;
@@ -48,7 +48,7 @@ trait HandlesConversion
 
     protected function fromTemplate(string $name, ?array $parameters) : Messages {
         if (empty($parameters)) {
-            return new Messages();
+            return Messages::empty();
         }
 
         $source = $parameters[$name] ?? throw new Exception("Parameter does not have value: $name");

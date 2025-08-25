@@ -7,11 +7,11 @@ use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -30,7 +30,7 @@ class StructuredOutputRequestBuilder
 
     public function __construct()
     {
-        $this->messages = new Messages();
+        $this->messages = Messages::empty();
         $this->cachedContext = new CachedContext();
     }
 

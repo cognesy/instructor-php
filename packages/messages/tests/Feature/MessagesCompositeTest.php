@@ -14,7 +14,7 @@ test('can merge roles with composite messages', function () {
         ['role' => 'user', 'content' => 'Regular message'],
         ['role' => 'user', 'content' => 'Another regular message']
     ]);
-    $messages->appendMessage($compositeMessage);
+    $messages = $messages->appendMessage($compositeMessage);
     
     // Merge roles
     $merged = $messages->toMergedPerRole();
@@ -39,7 +39,7 @@ test('can merge many roles with composite messages', function () {
         ['role' => 'user', 'content' => 'Regular message'],
         ['role' => 'user', 'content' => 'Another regular message']
     ]);
-    $messages->appendMessage($compositeMessage);
+    $messages = $messages->appendMessage($compositeMessage);
 
     // Merge roles
     $merged = $messages->toMergedPerRole();
@@ -62,7 +62,7 @@ test('can merge multiple composite messages with the same role', function () {
     ]);
     
     // Add to collection
-    $messages = (new Messages())
+    $messages = Messages::empty()
         ->appendMessage($composite1)
         ->appendMessage($composite2);
 
@@ -86,7 +86,7 @@ test('merges roles correctly with mixed content types', function () {
     ]);
     
     // Add regular then composite
-    $messages1 = (new Messages())
+    $messages1 = Messages::empty()
         ->appendMessage($regular)
         ->appendMessage($composite);
     
@@ -97,7 +97,7 @@ test('merges roles correctly with mixed content types', function () {
         ->and($merged1->first()->isComposite())->toBeTrue();
     
     // Add composite then regular
-    $messages2 = (new Messages())
+    $messages2 = Messages::empty()
         ->appendMessage($composite)
         ->appendMessage($regular);
     
@@ -121,7 +121,7 @@ test('correctly handles toAllComposites transformation', function () {
         ['type' => 'text', 'text' => 'Composite message'],
         ['type' => 'text', 'text' => 'Composite message']
     ]);
-    $messages->appendMessage($compositeMessage);
+    $messages = $messages->appendMessage($compositeMessage);
     
     // Force merging all as composites by creating all composite messages
     $merged = $messages->toMergedPerRole();
@@ -170,10 +170,10 @@ test('mergeRolesFlat correctly handles composite messages', function () {
     $compositeMessage = new Message('system', [
         ['type' => 'image_url', 'url' => 'https://example.com/image.png']
     ]);
-    $messages->appendMessage($compositeMessage);
+    $messages = $messages->appendMessage($compositeMessage);
 
     // Add another regular message
-    $messages->appendMessage(new Message('user', 'Message 3'));
+    $messages = $messages->appendMessage(new Message('user', 'Message 3'));
 
     // Merge the roles
     $merged = $messages->toMergedPerRole();
@@ -228,7 +228,7 @@ test('forRoles and exceptRoles handle composite messages properly', function () 
         ['role' => 'user', 'content' => 'Regular user message'],
         ['role' => 'assistant', 'content' => 'Assistant message']
     ]);
-    $messages->appendMessage($compositeMessage);
+    $messages = $messages->appendMessage($compositeMessage);
     
     // Filter for user messages
     $userMessages = $messages->forRoles(['user']);
@@ -260,7 +260,7 @@ test('remapRoles handles composite messages properly', function () {
         ['role' => 'user', 'content' => 'Regular user message'],
         ['role' => 'assistant', 'content' => 'Assistant message']
     ]);
-    $messages->appendMessage($compositeMessage);
+    $messages = $messages->appendMessage($compositeMessage);
     
     // Remap roles
     $remapped = $messages->remapRoles([

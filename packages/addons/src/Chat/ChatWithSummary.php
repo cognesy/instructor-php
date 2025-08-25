@@ -4,9 +4,9 @@ namespace Cognesy\Addons\Chat;
 
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\Template\Script\Script;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
 class ChatWithSummary
@@ -110,8 +110,8 @@ class ChatWithSummary
 
         $this->chatTokens = 0;
         $this->bufferTokens = 0;
-        $limited = new Messages();
-        $overflow = new Messages();
+        $limited = Messages::empty();
+        $overflow = Messages::empty();
         $messages = $script->select([self::SECTION_BUFFER, self::SECTION_MAIN])->toMessages();
         $totalTokens = 0;
         foreach ($messages->reversed()->each() as $message) {

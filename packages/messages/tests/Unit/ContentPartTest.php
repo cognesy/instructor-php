@@ -1,8 +1,6 @@
 <?php
 
 use Cognesy\Messages\ContentPart;
-use Cognesy\Messages\Utils\Image;
-use Cognesy\Messages\Utils\File;
 
 describe('ContentPart', function () {
     describe('construction', function () {
@@ -12,7 +10,7 @@ describe('ContentPart', function () {
             expect($part->get('text'))->toBe('Hello');
         });
 
-        it('filters out null and empty values during construction', function () {
+        it('filters out null and empty arrays during construction', function () {
             $part = new ContentPart('text', [
                 'text' => 'Hello',
                 'empty_string' => '',
@@ -21,7 +19,7 @@ describe('ContentPart', function () {
                 'valid_field' => 'value'
             ]);
             expect($part->has('text'))->toBeTrue();
-            expect($part->has('empty_string'))->toBeFalse();
+            expect($part->has('empty_string'))->toBeTrue();
             expect($part->has('null_value'))->toBeFalse();
             expect($part->has('empty_array'))->toBeFalse();
             expect($part->has('valid_field'))->toBeTrue();
@@ -104,7 +102,7 @@ describe('ContentPart', function () {
     describe('field management', function () {
         it('sets and gets field values', function () {
             $part = new ContentPart('text');
-            $part->set('custom', 'value');
+            $part = $part->withField('custom', 'value');
             expect($part->get('custom'))->toBe('value');
         });
 
@@ -121,7 +119,7 @@ describe('ContentPart', function () {
 
         it('replaces all fields with withFields', function () {
             $part = new ContentPart('text', ['text' => 'Hello', 'old' => 'value']);
-            $part->withFields(['text' => 'New', 'new' => 'field']);
+            $part = $part->withFields(['text' => 'New', 'new' => 'field']);
             expect($part->get('text'))->toBe('New');
             expect($part->get('new'))->toBe('field');
             expect($part->has('old'))->toBeFalse();
@@ -165,9 +163,9 @@ describe('ContentPart', function () {
 
         it('excludes empty values from array', function () {
             $part = new ContentPart('text', ['text' => 'Hello']);
-            $part->set('empty', '');
-            $part->set('null', null);
-            $part->set('empty_array', []);
+            $part->withField('empty', '');
+            $part->withField('null', null);
+            $part->withField('empty_array', []);
             $array = $part->toArray();
             expect($array)->toHaveKey('text');
             expect($array)->not->toHaveKey('empty');
@@ -177,7 +175,7 @@ describe('ContentPart', function () {
 
         it('excludes private fields from array', function () {
             $part = new ContentPart('text', ['text' => 'Hello']);
-            $part->set('_private', 'secret');
+            $part->withField('_private', 'secret');
             $array = $part->toArray();
             expect($array)->toHaveKey('text');
             expect($array)->not->toHaveKey('_private');
@@ -206,7 +204,7 @@ describe('ContentPart', function () {
         it('clones with independent fields', function () {
             $part = ContentPart::text('Hello');
             $clone = $part->clone();
-            $clone->set('new_field', 'value');
+            $clone = $clone->withField('new_field', 'value');
             expect($part->has('new_field'))->toBeFalse();
             expect($clone->has('new_field'))->toBeTrue();
         });

@@ -2,98 +2,157 @@
 
 namespace Cognesy\Template\Script\Traits\Section;
 
-use Cognesy\Template\Script\Section;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Template\Script\Section;
 
 trait HandlesMutation
 {
     public function clear() : static {
-        $this->messages = new Messages();
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: Messages::empty(),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function withName(string $newName) : static {
-        $this->name = $newName;
-        return $this;
+        return new static(
+            name: $newName,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages,
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function withMessages(Messages $messages) : static {
-        $this->messages = $messages;
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $messages,
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function prependMessage(array|Message $message) : static {
-        $this->messages->prependMessages($message);
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages->prependMessage(Message::fromAny($message)),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function prependMessageIf(array|Message $message, callable $condition) : static {
         if ($condition($this)) {
-            $this->prependMessage($message);
+            return $this->prependMessage($message);
         }
         return $this;
     }
 
     public function prependMessageIfEmpty(array|Message $message) : static {
         if ($this->messages->isEmpty()) {
-            $this->prependMessage($message);
+            return $this->prependMessage($message);
         }
         return $this;
     }
 
     public function prependMessages(array|Messages $messages) : static {
-        $this->messages->prependMessages($messages);
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages->prependMessages($messages),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function appendMessage(array|Message $message) : static {
-        $this->messages->appendMessage($message);
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages->appendMessage(Message::fromAny($message)),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function appendMessageIfEmpty(array|Message $message) : static {
         if ($this->messages->isEmpty()) {
-            $this->appendMessage($message);
+            return $this->appendMessage($message);
         }
         return $this;
     }
 
     public function appendMessageIf(array|Message $message, callable $condition) : static {
         if ($condition($this)) {
-            $this->appendMessage($message);
+            return $this->appendMessage($message);
         }
         return $this;
     }
 
     public function appendMessages(array|Messages $messages) : static {
-        $this->messages->appendMessages($messages);
-        return $this;
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages->appendMessages($messages),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function mergeSection(Section $section) : static {
-        $this->appendMessages($section->messages());
-        return $this;
+        return $this->appendMessages($section->messages());
     }
 
     public function copyFrom(Section $section, bool $withMetadata = true) : static {
-        //$this->withName($section->name());
-        $this->withMessages($section->messages());
-        $this->withHeader($section->header());
-        $this->withFooter($section->footer());
-        if ($withMetadata) {
-            $this->withMetadata($section->metadata());
-        }
-        return $this;
+        return new static(
+            name: $this->name, // Keep current name
+            description: $section->description,
+            metadata: $withMetadata ? $section->metadata : $this->metadata,
+            messages: $section->messages,
+            header: $section->header,
+            footer: $section->footer,
+        );
     }
 
     public function appendContentFields(array $fields) : static {
-        $this->messages->last()->content()->appendContentFields($fields);
-        return $this;
+        $lastMessage = $this->messages->last();
+        $newContent = $lastMessage->content()->appendContentFields($fields);
+        $newMessage = $lastMessage->withContent($newContent);
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages->removeTail()->appendMessage($newMessage),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 
     public function appendContentField(string $key, mixed $value) : static {
-        $this->messages->last()->content()->appendContentField($key, $value);
-        return $this;
+        $lastMessage = $this->messages->last();
+        $newContent = $lastMessage->content()->appendContentField($key, $value);
+        $newMessage = $lastMessage->withContent($newContent);
+        return new static(
+            name: $this->name,
+            description: $this->description,
+            metadata: $this->metadata,
+            messages: $this->messages->removeTail()->appendMessage($newMessage),
+            header: $this->header,
+            footer: $this->footer,
+        );
     }
 }

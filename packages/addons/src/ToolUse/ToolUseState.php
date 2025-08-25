@@ -23,7 +23,7 @@ class ToolUseState
         ?Tools $tools = null,
     ) {
         $this->tools = $tools ?? new Tools();
-        $this->messages = new Messages();
+        $this->messages = Messages::empty();
         $this->usage = new Usage();
     }
 
