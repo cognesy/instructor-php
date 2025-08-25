@@ -68,7 +68,7 @@ describe('Pipeline vs ResultChain Performance Comparison', function () {
         echo sprintf("ResultChain memory per call: %.2f bytes\n", $chainMemoryPerCall);
         echo sprintf("Memory overhead: %.2f bytes (%.1f%% increase)\n", 
             $pipelineMemoryPerCall - $chainMemoryPerCall,
-            (($pipelineMemoryPerCall / $chainMemoryPerCall) - 1) * 100
+            $chainMemoryPerCall ? (($pipelineMemoryPerCall / $chainMemoryPerCall) - 1) * 100 : 0
         );
         
         // Ensure both produce the same result

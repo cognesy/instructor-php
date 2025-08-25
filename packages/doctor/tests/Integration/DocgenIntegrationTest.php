@@ -10,7 +10,7 @@ use Cognesy\Utils\Files;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir() . '/docgen_integration_test_' . uniqid();
-    $this->setupTestEnvironment();
+    setupTestEnvironment();
 });
 
 afterEach(function () {
@@ -62,6 +62,10 @@ function setupTestEnvironment(): void {
     file_put_contents("$tempDir/packages/instructor/docs/overview.md", "# Instructor Package\n\nOverview content.");
     file_put_contents("$tempDir/packages/instructor/docs/api.md", "# API Reference\n\nAPI documentation.");
     
+    // Create example PHP files
+    file_put_contents("$tempDir/examples/basics/simple.php", "<?php\necho 'Simple example';");
+    file_put_contents("$tempDir/examples/advanced/complex.php", "<?php\necho 'Complex example';");
+    
     file_put_contents("$tempDir/packages/polyglot/docs/overview.md", "# Polyglot Package\n\nPolyglot content.");
     file_put_contents("$tempDir/packages/http-client/docs/overview.md", "# HTTP Client\n\nHTTP client docs.");
     
@@ -77,24 +81,30 @@ describe('Documentation Generation Integration', function () {
         // Create test examples
         $basicExample = new Example(
             name: 'SimpleExample',
+            docName: 'SimpleExample',
             runPath: $this->tempDir . '/examples/basics/simple.php',
-            group: 'A01_Basics',
+            group: 'basics',
+            groupTitle: 'Basics',
             tab: 'basics',
             title: 'Simple Example',
-            hasTitle: true
+            hasTitle: true,
+            content: '<?php\necho "Simple example";'
         );
         
         $advancedExample = new Example(
-            name: 'ComplexExample', 
+            name: 'ComplexExample',
+            docName: 'ComplexExample',
             runPath: $this->tempDir . '/examples/advanced/complex.php',
-            group: 'A02_Advanced',
+            group: 'advanced',
+            groupTitle: 'Advanced',
             tab: 'advanced',
             title: 'Complex Example',
-            hasTitle: true
+            hasTitle: true,
+            content: '<?php\necho "Complex example";'
         );
         
-        $basicGroup = new ExampleGroup('Basics', [$basicExample]);
-        $advancedGroup = new ExampleGroup('Advanced', [$advancedExample]);
+        $basicGroup = new ExampleGroup('basics', 'Basics', [$basicExample]);
+        $advancedGroup = new ExampleGroup('advanced', 'Advanced', [$advancedExample]);
         
         $examples->method('getExampleGroups')->willReturn([$basicGroup, $advancedGroup]);
         
@@ -135,6 +145,18 @@ describe('Documentation Generation Integration', function () {
         expect(is_dir($this->tempDir . '/mintlify-target'))->toBeTrue();
         expect(file_exists($this->tempDir . '/mintlify-target/index.mdx'))->toBeTrue();
         expect(file_exists($this->tempDir . '/mintlify-target/mint.json'))->toBeTrue();
+        
+        // Debug: Check what files were actually created in cookbook
+        $cookbookFiles = glob($this->tempDir . '/cookbook/**/*.mdx');
+        if (empty($cookbookFiles)) {
+            echo "No .mdx files found in cookbook directory\n";
+            echo "Cookbook dir contents:\n";
+            $allFiles = glob($this->tempDir . '/cookbook/*');
+            foreach ($allFiles as $file) {
+                echo "  - " . $file . "\n";
+            }
+        }
+        
         expect(file_exists($this->tempDir . '/cookbook/basics/SimpleExample.mdx'))->toBeTrue();
         expect(file_exists($this->tempDir . '/cookbook/advanced/ComplexExample.mdx'))->toBeTrue();
         
@@ -190,14 +212,17 @@ describe('Documentation Generation Integration', function () {
         
         $example = new Example(
             name: 'TestExample',
+            docName: 'TestExample',
             runPath: $this->tempDir . '/examples/basics/simple.php',
-            group: 'A01_Test',
+            group: 'test',
+            groupTitle: 'Test',
             tab: 'test',
             title: 'Test Example',
-            hasTitle: true
+            hasTitle: true,
+            content: '<?php\necho "Test example";'
         );
         
-        $group = new ExampleGroup('Test', [$example]);
+        $group = new ExampleGroup('test', 'Test', [$example]);
         $examples->method('getExampleGroups')->willReturn([$group]);
         
         $mintlifyConfig = DocumentationConfig::create(

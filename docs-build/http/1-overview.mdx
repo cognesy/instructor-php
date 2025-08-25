@@ -85,7 +85,7 @@ The Instructor HTTP client follows a layered architecture with several key compo
 The `HttpClient` class serves as the main entry point and provides a fluent interface for configuring and using the HTTP client.
 
 ```
-// @doctest id="89b8"
+// @doctest id="1e56"
 HttpClient
   └── using() - Create client with specific configuration (static)
   └── default() - Create client with default configuration (static)
@@ -102,7 +102,7 @@ HttpClient
 The middleware system allows for processing requests and responses through a chain of handlers:
 
 ```
-// @doctest id="f62b"
+// @doctest id="5fcd"
 Request -> Middleware 1 -> Middleware 2 -> ... -> Driver -> External API
                                                    ↓
 Response <- Middleware 1 <- Middleware 2 <- ... <- Driver <- HTTP Response
@@ -118,7 +118,7 @@ Key components:
 Drivers implement the `CanHandleHttpRequest` interface and adapt different HTTP client libraries:
 
 ```
-// @doctest id="1268"
+// @doctest id="0c5d"
 CanHandleHttpRequest (interface)
   ├── GuzzleDriver
   ├── SymfonyDriver
@@ -131,7 +131,7 @@ CanHandleHttpRequest (interface)
 Response adapters convert client-specific responses to a common interface:
 
 ```
-// @doctest id="8b93"
+// @doctest id="97f5"
 HttpResponse (interface)
   ├── PsrHttpResponse (Guzzle)
   ├── SymfonyHttpResponse

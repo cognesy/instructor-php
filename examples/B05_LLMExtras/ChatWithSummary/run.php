@@ -32,7 +32,7 @@ $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
 $summarizer = new SummarizeMessages(
     //prompt: 'Summarize the messages.',
-    llm: LLMProvider::using('deepseek'),
+    llm: LLMProvider::using('openai'),
     //model: 'gpt-4o-mini',
     tokenLimit: 1024,
 );
@@ -59,7 +59,7 @@ for($i = 0; $i < $maxSteps; $i++) {
         ->remapRoles(['assistant' => 'user', 'user' => 'assistant', 'system' => 'system']);
 
     $response = (new Inference)
-        ->using('deepseek')
+        ->using('openai')
         ->with(
             messages: $messages->toArray(),
             options: ['max_tokens' => 256],

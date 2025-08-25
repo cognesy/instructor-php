@@ -77,7 +77,7 @@ trait HandlesCreation
         );
     }
 
-    public static function fromContentPart(ContentPart $part, string|MessageRole $role = null) : static {
+    public static function fromContentPart(ContentPart $part, string|MessageRole|null $role = null) : static {
         return new static(
             role: $role,
             content: (new Content)->addContentPart($part),

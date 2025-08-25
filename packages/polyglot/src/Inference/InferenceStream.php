@@ -53,10 +53,39 @@ class InferenceStream
         }
     }
 
-    public function textChunks() : Generator {
+    /**
+     * @template T
+     * @param callable(PartialInferenceResponse):T $mapper
+     * @return iterable<T>
+     */
+    public function map(callable $mapper) : iterable {
         foreach ($this->responses() as $partialInferenceResponse) {
-            if ($partialInferenceResponse->contentDelta !== '') {
-                yield $partialInferenceResponse->contentDelta;
+            yield $mapper($partialInferenceResponse);
+        }
+    }
+
+    /**
+     * @template T
+     * @param callable(T, PartialInferenceResponse):T $reducer
+     * @param mixed|null $initial
+     * @return T
+     */
+    public function reduce(callable $reducer, mixed $initial = null) : mixed {
+        $carry = $initial;
+        foreach ($this->responses() as $partialInferenceResponse) {
+            $carry = $reducer($carry, $partialInferenceResponse);
+        }
+        return $carry;
+    }
+
+    /**
+     * @param callable(PartialInferenceResponse):bool $filter
+     * @return iterable<PartialInferenceResponse>
+     */
+    public function filter(callable $filter) : iterable {
+        foreach ($this->responses() as $partialInferenceResponse) {
+            if ($filter($partialInferenceResponse)) {
+                yield $partialInferenceResponse;
             }
         }
     }

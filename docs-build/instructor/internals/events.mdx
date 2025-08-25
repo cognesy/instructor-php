@@ -26,7 +26,7 @@ Instructor allows you to receive detailed information at every stage of request 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
 ```php
-// @doctest id="be4e"
+// @doctest id="ee31"
 $structuredOutput = (new StructuredOutput)
     // see requests to LLM
     ->onEvent(HttpRequestSent::class, fn($e) => dump($e))

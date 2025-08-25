@@ -22,7 +22,7 @@ The Instructor HTTP client API provides robust support for streaming responses a
 To receive a streaming response, you need to configure the request with the `stream` option set to `true`:
 
 ```php
-// @doctest id="ed50"
+// @doctest id="6b59"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 
@@ -58,7 +58,7 @@ The `stream` option tells the HTTP client to treat the response as a stream, whi
 Once you have a streaming response, you can process it using the `stream()` method, which returns a PHP Generator:
 
 ```php
-// @doctest id="5a1c"
+// @doctest id="12fc"
 $response = $client->withRequest($streamingRequest)->get();
 
 // Process the stream chunk by chunk
@@ -75,7 +75,7 @@ foreach ($response->stream() as $chunk) {
 By default, the `stream()` method reads the response in small chunks. You can control the chunk size by passing a parameter:
 
 ```php
-// @doctest id="921d"
+// @doctest id="d41f"
 // Read in chunks of 1024 bytes
 foreach ($response->stream(1024) as $chunk) {
     // Process larger chunks of data
@@ -88,7 +88,7 @@ foreach ($response->stream(1024) as $chunk) {
 Here's an example of downloading a large file with streaming to avoid memory issues:
 
 ```php
-// @doctest id="524c"
+// @doctest id="5f44"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -150,7 +150,7 @@ This approach allows downloading very large files without loading the entire fil
 Server-Sent Events (SSE) are a common streaming format used by many APIs. Here's how to process them:
 
 ```php
-// @doctest id="f54c"
+// @doctest id="745c"
 $request = new HttpRequest(
     url: 'https://api.example.com/events',
     method: 'GET',
@@ -213,7 +213,7 @@ While this works, processing streaming responses line by line is common enough t
 For many streaming APIs, especially those that send event streams or line-delimited JSON, it's useful to process the response line by line. The library provides the `StreamByLineMiddleware` to simplify this task:
 
 ```php
-// @doctest id="a607"
+// @doctest id="3eaa"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
@@ -252,7 +252,7 @@ foreach ($response->stream() as $line) {
 You can customize how lines are parsed by providing a parser function to the middleware:
 
 ```php
-// @doctest id="9828"
+// @doctest id="7085"
 $lineParser = function (string $line) {
     // Pre-process each line before yielding it
     $trimmedLine = trim($line);
@@ -272,7 +272,7 @@ If your parser returns `null`, that line will be skipped in the stream.
 Here's a practical example of using the `StreamByLineMiddleware` to process streaming responses from the OpenAI API:
 
 ```php
-// @doctest id="8e57"
+// @doctest id="5be7"
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
