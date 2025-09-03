@@ -1,0 +1,13 @@
+ - Redesigned directory structure to separate the essential code from the addons, aux tools, etc.
+   - Directory 'src' to hold Instructor structured outputs code
+   - New directory `src-llm` to hold the LLM connectivity code (required for Instructor)
+   - New directory `src-utils` to hold the utility classes (required for Instructor)
+   - Directory `src-setup` to hold the Instructor setup tool
+   - Directory `src-hub` to hold the CLI tool for executing examples and generating documentation
+   - Directory 'src-tell' to hold a simple tool for prompting LLMs from CLI
+   - New directory `src-addons` to hold the additional capabilities (optional)
+   - New directory `src-aux` to hold the auxiliary tools used, e.g. by examples (optional)
+   - New directory `src-experimental` to hold the not yet ready, experimental work (not distributed)
+ - Moved package-specific events to their respective directories
+ - Moved embeddings API support to 'src-llm'
+ - Added version sync script and Github release automation

@@ -1,0 +1,25 @@
+{#
+---
+description: Summarize input
+params:
+    input:
+        description: Input text to summarize
+        type: string
+    depth:
+        description: Depth of summarization (number of essential questions)
+        type: int
+        default: 5
+---
+#}
+
+1) Analyze the input and generate {{ depth }} essential questions that, when answered, capture the main points and core meaning of the text.
+2) When formulating your questions:
+ - Address the central theme or argument
+ - Identify key supporting ideas
+ - Highlight important facts or evidence
+ - Reveal the author's purpose or perspective
+ - Explore any significant implications or conclusions.
+3) Answer all of your generated questions one-by-one in detail.
+
+# INPUT
+{{ input }}

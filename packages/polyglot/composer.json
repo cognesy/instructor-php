@@ -14,12 +14,12 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-config": "^1.4",
-    "cognesy/instructor-events": "^1.4",
-    "cognesy/instructor-http-client": "^1.4",
-    "cognesy/instructor-messages": "^1.4",
-    "cognesy/instructor-setup": "^1.4",
-    "cognesy/instructor-utils": "^1.4"
+    "cognesy/instructor-config": "^1.5",
+    "cognesy/instructor-events": "^1.5",
+    "cognesy/instructor-http-client": "^1.5",
+    "cognesy/instructor-messages": "^1.5",
+    "cognesy/instructor-setup": "^1.5",
+    "cognesy/instructor-utils": "^1.5"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
