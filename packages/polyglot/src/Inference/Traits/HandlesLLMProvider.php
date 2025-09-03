@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Traits;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -14,6 +15,12 @@ trait HandlesLLMProvider
 
     public function withLLMProvider(LLMProvider $llm) : static {
         $this->llmProvider = $llm;
+        return $this;
+    }
+
+    public function withLLMResolver(CanResolveLLMConfig $resolver) : static {
+        // Allow custom config resolver injection alongside provider
+        $this->llmResolver = $resolver;
         return $this;
     }
 

@@ -6,6 +6,7 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
 trait HandlesInitMethods
@@ -45,13 +46,18 @@ trait HandlesInitMethods
         return $this;
     }
 
+    public function withEmbeddingsResolver(CanResolveEmbeddingsConfig $resolver) : self {
+        $this->embeddingsResolver = $resolver;
+        return $this;
+    }
+
     public function withHttpClient(HttpClient $httpClient) : self {
         $this->httpClient = $httpClient;
         return $this;
     }
 
     public function withDebugPreset(?string $debug) : self {
-        $this->embeddingsProvider->withDebugPreset($debug);
+        $this->httpDebugPreset = $debug;
         return $this;
     }
 }

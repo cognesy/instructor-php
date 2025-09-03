@@ -2,17 +2,20 @@
 
 namespace Cognesy\Polyglot\Inference\Traits;
 
+use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\PendingInference;
 
 trait HandlesInvocation
 {
-    /** @var \Cognesy\Polyglot\Inference\InferenceDriverFactory|null */
-    private ?\Cognesy\Polyglot\Inference\InferenceDriverFactory $inferenceFactory = null;
+    /** @var InferenceDriverFactory|null */
+    private ?InferenceDriverFactory $inferenceFactory = null;
 
-    private function getInferenceFactory(): \Cognesy\Polyglot\Inference\InferenceDriverFactory {
-        return $this->inferenceFactory ??= new \Cognesy\Polyglot\Inference\InferenceDriverFactory($this->events);
+    private function getInferenceFactory(): InferenceDriverFactory {
+        return $this->inferenceFactory ??= new InferenceDriverFactory($this->events);
     }
     public function withRequest(InferenceRequest $request): static {
         $this->requestBuilder->withRequest($request);
@@ -44,7 +47,7 @@ trait HandlesInvocation
         if ($this->httpClient !== null) {
             $client = $this->httpClient;
         } else {
-            $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+            $builder = new HttpClientBuilder(events: $this->events);
             if ($this->httpDebugPreset !== null) {
                 $builder = $builder->withDebugPreset($this->httpDebugPreset);
             }
@@ -53,7 +56,7 @@ trait HandlesInvocation
 
         // Prefer explicit driver if provided via interface
         $resolver = $this->llmResolver ?? $this->llmProvider;
-        if ($resolver instanceof \Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver) {
+        if ($resolver instanceof HasExplicitInferenceDriver) {
             $explicit = $resolver->explicitInferenceDriver();
             if ($explicit !== null) {
                 $inferenceDriver = $explicit;

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -25,6 +26,8 @@ class Inference
     protected ?HttpClient $httpClient = null;
     /** @var string|null Facade-level HTTP debug preset (optional) */
     protected ?string $httpDebugPreset = null;
+    /** @var CanResolveLLMConfig|null Optional external config resolver */
+    protected ?CanResolveLLMConfig $llmResolver = null;
 
     /**
      * Constructor for initializing dependencies and configurations.

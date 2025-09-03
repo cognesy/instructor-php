@@ -29,7 +29,7 @@ trait HandlesFluentMethods
      * @return $this
      */
     public function withOptions(array $options) : self {
-        $this->$options = $options;
+        $this->options = $options;
         return $this;
     }
 }

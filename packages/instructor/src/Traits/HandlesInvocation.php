@@ -113,6 +113,17 @@ trait HandlesInvocation
             config: $config,
         );
 
+        // Ensure HttpClient is available; build default if not provided
+        if ($this->httpClient !== null) {
+            $client = $this->httpClient;
+        } else {
+            $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+            if ($this->httpDebugPreset !== null) {
+                $builder = $builder->withDebugPreset($this->httpDebugPreset);
+            }
+            $client = $builder->create();
+        }
+
         return new PendingStructuredOutput(
             request: $request,
             responseDeserializer: $responseDeserializer,
@@ -121,7 +132,7 @@ trait HandlesInvocation
             llmProvider: $this->llmProvider,
             config: $config,
             events: $this->events,
-            httpClient: $this->httpClient ?? null,
+            httpClient: $client,
         );
     }
 }

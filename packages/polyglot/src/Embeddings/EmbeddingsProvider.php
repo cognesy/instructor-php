@@ -6,14 +6,15 @@ use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\ConfigResolver;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Dsn;
+use Cognesy\Config\Events\ConfigResolutionFailed;
+use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
-use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
+use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -29,7 +30,6 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
     private ?string $preset;
     private ?string $dsn;
     private ?EmbeddingsConfig $explicitConfig;
-    // HTTP client is no longer owned here (moved to facades)
     private ?CanHandleVectorization $explicitDriver;
 
     private function __construct(
@@ -41,8 +41,8 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
         ?CanHandleVectorization   $explicitDriver = null,
     ) {
         $this->events = EventBusResolver::using($events);
-        $this->configProvider = ConfigResolver::using($configProvider);
-        $this->presets = ConfigPresets::using($configProvider)->for(EmbeddingsConfig::group());
+        $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
+        $this->presets = ConfigPresets::using($this->configProvider)->for(EmbeddingsConfig::group());
 
         $this->preset = $preset;
         $this->dsn = $dsn;
@@ -81,20 +81,15 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider): self {
+        $this->configProvider = $configProvider;
         $this->presets = $this->presets->withConfigProvider($configProvider);
-        $this->configProvider = ConfigResolver::using($configProvider);
         return $this;
     }
-
-    // HTTP client configuration is owned by facades; related setters removed.
 
     public function withDriver(CanHandleVectorization $driver): self {
         $this->explicitDriver = $driver;
         return $this;
     }
-
-    // Debug control moved to facades. No-op retained for BC for now.
-    public function withDebugPreset(string $preset): self { return $this; }
 
     /**
      * Resolves and returns the effective embeddings configuration for this provider.
@@ -107,29 +102,46 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
         return $this->explicitDriver;
     }
 
-    // createDriver() removed — use resolveConfig() + EmbeddingsDriverFactory::makeDriver()
-
     // INTERNAL ////////////////////////////////////////////////////////////
 
     private function buildConfig(): EmbeddingsConfig {
-        // If explicit config provided, use it
         if ($this->explicitConfig !== null) {
+            $this->events->dispatch(new ConfigResolved([
+                'group' => 'embeddings',
+                'config' => $this->explicitConfig->toArray()
+            ]));
             return $this->explicitConfig;
         }
 
-        // Determine effective preset
         $effectivePreset = $this->determinePreset();
-
-        // Get DSN overrides if any
         $dsnOverrides = $this->getDsnOverrides();
+        
+        $result = Result::try(fn() => $this->presets->getOrDefault($effectivePreset));
 
-        // Build config based on preset
-        $config = $this->presets->getOrDefault($effectivePreset);
+        if ($result->isFailure()) {
+            $this->events->dispatch(new ConfigResolutionFailed([
+                'group' => 'embeddings',
+                'effectivePreset' => $effectivePreset,
+                'preset' => $this->preset,
+                'dsn' => $this->dsn,
+                'error' => $result->errorMessage(),
+            ]));
+            throw $result->exception();
+        }
 
-        // Apply DSN overrides if present
+        $config = $result->unwrap();
         $data = !empty($dsnOverrides) ? array_merge($config, $dsnOverrides) : $config;
+        $final = EmbeddingsConfig::fromArray($data);
 
-        return EmbeddingsConfig::fromArray($data);
+        $this->events->dispatch(new ConfigResolved([
+            'group' => 'embeddings',
+            'effectivePreset' => $effectivePreset,
+            'preset' => $this->preset,
+            'dsn' => $this->dsn,
+            'config' => $final->toArray(),
+        ]));
+
+        return $final;
     }
 
     // HTTP client building removed from provider.

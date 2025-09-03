@@ -114,7 +114,7 @@
 - `withConfigProvider($provider)` - Set config provider
 - `withDsn($dsn)` - Set DSN string
 - `withDriver($driver)` - Set explicit inference driver
-- `createDriver(HttpClient $client)` - Build and return configured driver (HTTP injected)
+- Use `resolveConfig()` + `InferenceDriverFactory::makeDriver()` to create drivers
 
 ### EmbeddingsProvider
 **`EmbeddingsProvider`** - Builder for configuring embeddings drivers
@@ -126,7 +126,7 @@
 - `withConfig($config)` - Set explicit embeddings configuration
 - `withConfigProvider($provider)` - Set config provider
 - `withDriver($driver)` - Set explicit vectorization driver
-- `createDriver(HttpClient $client)` - Build and return configured driver (HTTP injected)
+- Use `resolveConfig()` + `EmbeddingsDriverFactory::makeDriver()` to create drivers
 
 ## Request/Response Classes
 

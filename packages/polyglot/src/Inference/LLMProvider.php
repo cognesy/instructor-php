@@ -12,11 +12,10 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
-use Cognesy\Utils\Result\Result;
-use Psr\EventDispatcher\EventDispatcherInterface;
-
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
+use Cognesy\Utils\Result\Result;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriver
 {
@@ -104,19 +103,10 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
         return $this;
     }
 
-    // HTTP client configuration is owned by facades; related setters removed.
-
     public function withDriver(CanHandleInference $driver): self {
         $this->explicitDriver = $driver;
         return $this;
     }
-
-    // Debug control moved to facades. No-op retained for BC for now.
-    public function withDebugPreset(?string $preset): self { return $this; }
-
-    // Custom raw client instances configuration removed from provider.
-
-    // createDriver() removed — use resolveConfig() + InferenceDriverFactory::makeDriver()
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
