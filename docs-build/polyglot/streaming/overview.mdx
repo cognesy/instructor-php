@@ -32,7 +32,7 @@ $response = $inference->with(
     messages: 'Write a short story about a space explorer.',
     options: ['stream' => true]  // Enable streaming
 );
-// @doctest id="e555"
+// @doctest id="327f"
 ```
 
 Once you have a streaming-enabled response, you can access the stream using the `stream()` method:
@@ -40,7 +40,7 @@ Once you have a streaming-enabled response, you can access the stream using the 
 ```php
 // Get the stream of partial responses
 $stream = $response->stream();
-// @doctest id="4fdf"
+// @doctest id="90f6"
 ```
 
 
@@ -73,7 +73,7 @@ foreach ($stream as $partialResponse) {
     }
 }
 echo "\n";
-// @doctest id="d520"
+// @doctest id="049c"
 ```
 
 ### Understanding Partial Responses
@@ -98,7 +98,7 @@ foreach ($stream as $partialResponse) {
         echo "Response finished: " . $partialResponse->finishReason . "\n";
     }
 }
-// @doctest id="82c5"
+// @doctest id="bee4"
 ```
 
 ## Retrieving the Final Response
@@ -112,7 +112,7 @@ $completeText = $response->get();
 // Method 2: Getting the final state from the stream
 $finalResponse = $response->stream()->final();
 $completeText = $finalResponse->content();
-// @doctest id="ae33"
+// @doctest id="9e09"
 ```
 
 

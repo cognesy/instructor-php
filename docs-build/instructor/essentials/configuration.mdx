@@ -23,7 +23,7 @@ $structuredOutput = (new StructuredOutput)
     ->withOption($key, $value)          // Set individual LLM option
     ->withStreaming(true)               // Enable streaming responses
     ->withCachedContext($messages, $system, $prompt, $examples) // Use cached context
-// @doctest id="1733"
+// @doctest id="e3d3"
 ```
 
 ## Response Configuration
@@ -38,7 +38,7 @@ $structuredOutput = (new StructuredOutput)
     ->withSchemaName($name)             // Set schema name for documentation
     ->withToolName($name)               // Set tool name for Tools mode
     ->withToolDescription($description) // Set tool description for Tools mode
-// @doctest id="b19d"
+// @doctest id="b01d"
 ```
 
 ## Advanced Configuration
@@ -54,7 +54,7 @@ $structuredOutput = (new StructuredOutput)
     ->withDefaultToStdClass(true)       // Default to stdClass for unknown types
     ->withDeserializationErrorPrompt($prompt) // Custom deserialization error prompt
     ->withThrowOnTransformationFailure(true)  // Throw on transformation failures
-// @doctest id="5828"
+// @doctest id="3092"
 ```
 
 ## LLM Provider Configuration
@@ -73,7 +73,7 @@ $structuredOutput = (new StructuredOutput)
     ->withHttpClientPreset($preset)     // Use HTTP client preset
     ->withDebugPreset($preset)          // Enable debug preset
     ->withClientInstance($driverName, $instance) // Set client instance for specific driver
-// @doctest id="dcb6"
+// @doctest id="c756"
 ```
 
 ## Processing Pipeline Overrides
@@ -85,7 +85,7 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override response validators
     ->withTransformers(...$transformers) // Override response transformers  
     ->withDeserializers(...$deserializers) // Override response deserializers
-// @doctest id="fdbe"
+// @doctest id="0baf"
 ```
 
 ## Event Handling
@@ -96,7 +96,7 @@ Configure real-time processing callbacks:
 $structuredOutput = (new StructuredOutput)
     ->onPartialUpdate($callback)        // Handle partial response updates during streaming
     ->onSequenceUpdate($callback)       // Handle sequence item completion during streaming
-// @doctest id="731f"
+// @doctest id="02ea"
 ```
 
 ## Configuration Examples
@@ -110,7 +110,7 @@ $result = (new StructuredOutput)
     ->withMessages("Extract person data from: John is 25 years old")
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="cd17"
+// @doctest id="73a8"
 ```
 
 ### Streaming with Callbacks
@@ -122,7 +122,7 @@ $result = (new StructuredOutput)
     ->withMessages("Generate a list of tasks")
     ->withResponseClass(Sequence::of(Task::class))
     ->get();
-// @doctest id="c9c4"
+// @doctest id="aef7"
 ```
 
 ### Custom Configuration Object
@@ -138,5 +138,5 @@ $result = (new StructuredOutput)
     ->withMessages($input)
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="cab5"
+// @doctest id="7ee0"
 ```

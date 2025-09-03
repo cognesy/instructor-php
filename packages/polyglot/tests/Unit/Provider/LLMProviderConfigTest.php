@@ -15,7 +15,8 @@ it('creates driver from explicit config and resolves correct class', function ()
 
     $provider = LLMProvider::new()->withConfig($config);
     $httpClient = (new HttpClientBuilder())->create();
-    $driver = $provider->createDriver($httpClient);
+    $factory = new \Cognesy\Polyglot\Inference\InferenceDriverFactory(new \Cognesy\Events\Dispatchers\EventDispatcher());
+    $driver = $factory->makeDriver($provider->resolveConfig(), $httpClient);
 
     // Should be OpenAI driver resolved via InferenceDriverFactory bundledDrivers
     expect(get_class($driver))->toContain('OpenAIDriver');
