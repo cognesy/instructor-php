@@ -9,10 +9,10 @@ it('supports HandlesExtraction mixin', function () {
         '{"name":"Jason","age":28}'
     ]);
 
-    $customLLM = LLMProvider::new()->withHttpClient($mockHttp);
     $person = PersonWithMixin::infer(
         messages: "His name is Jason, he is 28 years old.",
-        llm: $customLLM
+        llm: LLMProvider::new(),
+        httpClient: $mockHttp,
     );
 
     expect($person)->toBeInstanceOf(PersonWithMixin::class);

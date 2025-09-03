@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
@@ -26,6 +27,7 @@ class RequestHandler
     protected readonly CanMaterializeRequest $requestMaterializer;
     protected readonly LLMProvider $llmProvider;
     protected readonly CanHandleEvents $events;
+    protected readonly ?HttpClient $httpClient;
 
     protected int $retries = 0;
     protected array $errors = [];
@@ -36,12 +38,14 @@ class RequestHandler
         CanMaterializeRequest $requestMaterializer,
         LLMProvider           $llmProvider,
         CanHandleEvents       $events,
+        ?HttpClient           $httpClient = null,
     ) {
         $this->responseGenerator = $responseGenerator;
         $this->partialsGenerator = $partialsGenerator;
         $this->requestMaterializer = $requestMaterializer;
         $this->llmProvider = $llmProvider;
         $this->events = $events;
+        $this->httpClient = $httpClient;
 
         $this->retries = 0;
         $this->errors = [];
@@ -100,8 +104,12 @@ class RequestHandler
     // INTERNAL ///////////////////////////////////////////////////////////
 
     protected function getInference(StructuredOutputRequest $request) : PendingInference {
-        return (new Inference(events: $this->events))
-            ->withLLMProvider($this->llmProvider)
+        $inference = (new Inference(events: $this->events))
+            ->withLLMProvider($this->llmProvider);
+        if ($this->httpClient !== null) {
+            $inference = $inference->withHttpClient($this->httpClient);
+        }
+        return $inference
             ->with(
                 messages: $this->requestMaterializer->toMessages($request),
                 model: $request->model(),

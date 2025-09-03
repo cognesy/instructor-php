@@ -38,12 +38,14 @@ trait HandlesLLMProvider
     }
 
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->llmProvider->withHttpClient($httpClient);
+        $this->httpClient = $httpClient;
         return $this;
     }
 
     public function withHttpClientPreset(string $string) : static {
-        $this->llmProvider->withHttpPreset($string);
+        // Build a client using the HTTP config preset at the facade level
+        $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+        $this->httpClient = $builder->withPreset($string)->create();
         return $this;
     }
 
@@ -58,7 +60,7 @@ trait HandlesLLMProvider
     }
 
     public function withDebugPreset(?string $preset) : static {
-        $this->llmProvider->withDebugPreset($preset);
+        $this->httpDebugPreset = $preset;
         return $this;
     }
 }

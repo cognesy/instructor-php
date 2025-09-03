@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Http\HttpClient;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
@@ -34,6 +35,7 @@ class PendingStructuredOutput
     private readonly StructuredOutputConfig $config;
     private readonly LLMProvider $llmProvider;
     private readonly bool $cacheProcessedResponse;
+    private readonly ?HttpClient $httpClient;
 
     private InferenceResponse $cachedResponse;
     private array $cachedResponseStream;
@@ -46,6 +48,7 @@ class PendingStructuredOutput
         LLMProvider              $llmProvider,
         StructuredOutputConfig   $config,
         CanHandleEvents          $events,
+        ?HttpClient              $httpClient = null,
     ) {
         $this->cacheProcessedResponse = true;
         $this->request = $request;
@@ -55,6 +58,7 @@ class PendingStructuredOutput
         $this->responseTransformer = $responseTransformer;
         $this->llmProvider = $llmProvider;
         $this->config = $config;
+        $this->httpClient = $httpClient;
         $this->requestHandler = $this->makeRequestHandler();
     }
 
@@ -156,6 +160,7 @@ class PendingStructuredOutput
             ),
             requestMaterializer: new RequestMaterializer($this->config),
             llmProvider: $this->llmProvider,
+            httpClient: $this->httpClient,
             events: $this->events,
         );
     }

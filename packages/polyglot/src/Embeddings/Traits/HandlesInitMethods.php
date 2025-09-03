@@ -46,7 +46,7 @@ trait HandlesInitMethods
     }
 
     public function withHttpClient(HttpClient $httpClient) : self {
-        $this->embeddingsProvider->withHttpClient($httpClient);
+        $this->httpClient = $httpClient;
         return $this;
     }
 

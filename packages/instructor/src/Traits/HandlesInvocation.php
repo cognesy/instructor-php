@@ -121,6 +121,7 @@ trait HandlesInvocation
             llmProvider: $this->llmProvider,
             config: $config,
             events: $this->events,
+            httpClient: $this->httpClient ?? null,
         );
     }
 }

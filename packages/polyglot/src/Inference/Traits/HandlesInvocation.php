@@ -34,7 +34,17 @@ trait HandlesInvocation
 
     public function create(): PendingInference {
         $request = $this->requestBuilder->create();
-        $inferenceDriver = $this->llmProvider->createDriver();
+        // Ensure HttpClient is available; build default if not provided
+        if ($this->httpClient !== null) {
+            $client = $this->httpClient;
+        } else {
+            $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+            if (property_exists($this, 'httpDebugPreset') && $this->httpDebugPreset !== null) {
+                $builder = $builder->withDebugPreset($this->httpDebugPreset);
+            }
+            $client = $builder->create();
+        }
+        $inferenceDriver = $this->llmProvider->createDriver($client);
         return new PendingInference(
             request: $request,
             driver: $inferenceDriver,

@@ -30,12 +30,11 @@ $provider = LLMProvider::dsn('openai://model=gpt-4&temperature=0.7');
 // Fluent configuration
 $provider = LLMProvider::new()
     ->withLLMPreset('openai')
-    ->withConfig($customConfig)
-    ->withHttpClient($httpClient)
-    ->withDebugPreset('verbose');
+    ->withConfig($customConfig);
 
-// Create the final driver
-$driver = $provider->createDriver();
+// Create the final driver with injected HTTP client
+$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$driver = $provider->createDriver($httpClient);
 ```
 
 Key methods:
@@ -43,9 +42,8 @@ Key methods:
 - `withConfig(LLMConfig $config)`: Set explicit configuration
 - `withConfigOverrides(array $overrides)`: Override specific config values
 - `withDsn(string $dsn)`: Configure via DSN string
-- `withHttpClient(HttpClient $client)`: Set custom HTTP client
 - `withDriver(CanHandleInference $driver)`: Set explicit driver
-- `createDriver()`: Build and return the configured driver
+- `createDriver(HttpClient $client)`: Build and return the configured driver (HTTP injected)
 
 ### EmbeddingsProvider
 
@@ -64,21 +62,19 @@ $provider = EmbeddingsProvider::dsn('openai://model=text-embedding-3-large');
 // Fluent configuration
 $provider = EmbeddingsProvider::new()
     ->withPreset('openai')
-    ->withConfig($customConfig)
-    ->withHttpClient($httpClient)
-    ->withDebugPreset('verbose');
+    ->withConfig($customConfig);
 
-// Create the final driver
-$driver = $provider->createDriver();
+// Create the final driver with injected HTTP client
+$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$driver = $provider->createDriver($httpClient);
 ```
 
 Key methods:
 - `withPreset(string $preset)`: Set configuration preset
 - `withConfig(EmbeddingsConfig $config)`: Set explicit configuration
 - `withDsn(string $dsn)`: Configure via DSN string
-- `withHttpClient(HttpClient $client)`: Set custom HTTP client
 - `withDriver(CanHandleVectorization $driver)`: Set explicit driver
-- `createDriver()`: Build and return the configured driver
+- `createDriver(HttpClient $client)`: Build and return the configured driver (HTTP injected)
 
 
 ## Key Interfaces for LLM

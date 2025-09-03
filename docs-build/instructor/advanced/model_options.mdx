@@ -18,7 +18,7 @@ $person = (new StructuredOutput)->with(
         // ... other options - e.g. provider or model specific
     ],
 )->get();
-// @doctest id="be58"
+// @doctest id="e3de"
 ```
 
 > NOTE: Please note that many options might be specific to the provider or even some model that you are using.
@@ -42,7 +42,7 @@ $config = new LLMConfig(
     metadata: ['organization' => ''],
     model: 'gpt-4o-mini',
     maxTokens: 128,
-    httpClientPreset: 'guzzle',
+    // configure HTTP via HttpClientBuilder or facade-level methods
     driver: 'openai',
 ));
 
@@ -54,5 +54,5 @@ $person = $structuredOutput->with(
     responseModel: Person::class,
     options: ['temperature' => 0.0],
 )->get();
-// @doctest id="1a62"
+// @doctest id="30a5"
 ```

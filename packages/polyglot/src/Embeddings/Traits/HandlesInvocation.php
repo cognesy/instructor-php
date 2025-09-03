@@ -46,9 +46,20 @@ trait HandlesInvocation
         );
         $this->events->dispatch(new EmbeddingsRequested([$request->toArray()]));
 
+        // Ensure HttpClient is available; build default if not provided
+        if ($this->httpClient !== null) {
+            $client = $this->httpClient;
+        } else {
+            $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+            if (property_exists($this, 'httpDebugPreset') && $this->httpDebugPreset !== null) {
+                $builder = $builder->withDebugPreset($this->httpDebugPreset);
+            }
+            $client = $builder->create();
+        }
+
         return new PendingEmbeddings(
             request: $request,
-            driver: $this->embeddingsProvider->createDriver(),
+            driver: $this->embeddingsProvider->createDriver($client),
             events: $this->events,
         );
     }

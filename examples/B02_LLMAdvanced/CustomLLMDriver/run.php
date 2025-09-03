@@ -41,7 +41,6 @@ $config = new LLMConfig(
     apiUrl          : 'https://api.openai.com/v1',
     apiKey          : Env::get('OPENAI_API_KEY'),
     endpoint        : '/chat/completions', model: 'gpt-4o-mini', maxTokens: 128,
-    httpClientPreset: 'guzzle',
     driver          : 'custom-driver',
 );
 

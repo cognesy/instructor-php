@@ -21,7 +21,6 @@ final class EmbeddingsConfig
         public int    $dimensions = 0,
         public int    $maxInputs = 0,
         public array  $metadata = [],
-        public string $httpClientPreset = '',
         public string $driver = 'openai',
     ) {}
 
@@ -52,7 +51,6 @@ final class EmbeddingsConfig
             'defaultDimensions' => $this->dimensions,
             'maxInputs' => $this->maxInputs,
             'metadata' => $this->metadata,
-            'httpClientPreset' => $this->httpClientPreset,
             'driver' => $this->driver,
         ];
     }

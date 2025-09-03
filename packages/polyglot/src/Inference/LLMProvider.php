@@ -11,7 +11,6 @@ use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Utils\Result\Result;
@@ -27,36 +26,28 @@ final class LLMProvider
     // Configuration - all immutable after construction
     private ?string $dsn;
     private ?string $llmPreset;
-    private ?string $debugPreset;
-    private ?string $httpClientPreset;
     private ?array $configOverrides = null;
 
     private ?LLMConfig $explicitConfig;
     private ?CanHandleInference $explicitDriver;
 
-    private ?HttpClient $explicitHttpClient;
-    private ?string $explicitHttpDriverName = null;
-    private ?object $explicitHttpClientInstance = null;
+    // HTTP client is no longer owned here (moved to facades)
 
     private function __construct(
         null|CanHandleEvents|EventDispatcherInterface $events = null,
         ?CanProvideConfig         $configProvider = null,
-        ?string                   $debugPreset = null,
         ?string                   $dsn = null,
         ?string                   $preset = null,
         ?LLMConfig                $explicitConfig = null,
-        ?HttpClient               $explicitHttpClient = null,
         ?CanHandleInference       $explicitDriver = null,
     ) {
         $this->events = EventBusResolver::using($events);
         $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
         $this->presets = ConfigPresets::using($this->configProvider)->for(LLMConfig::group());
 
-        $this->debugPreset = $debugPreset;
         $this->dsn = $dsn;
         $this->llmPreset = $preset;
         $this->explicitConfig = $explicitConfig;
-        $this->explicitHttpClient = $explicitHttpClient;
         $this->explicitDriver = $explicitDriver;
     }
 
@@ -73,6 +64,13 @@ final class LLMProvider
         ?CanProvideConfig         $configProvider = null,
     ): self {
         return new self($events, $configProvider);
+    }
+
+    /**
+     * Resolves and returns the effective LLM configuration for this provider.
+     */
+    public function resolveConfig(): LLMConfig {
+        return $this->buildConfig();
     }
 
     public function withLLMPreset(string $preset): self {
@@ -100,42 +98,23 @@ final class LLMProvider
         return $this;
     }
 
-    public function withHttpClient(HttpClient $httpClient): self {
-        $this->explicitHttpClient = $httpClient;
-        return $this;
-    }
-
-    public function withHttpPreset(string $preset): self {
-        // Create a new HTTP client builder with the specified preset
-        $this->httpClientPreset = $preset;
-        return $this;
-    }
+    // HTTP client configuration is owned by facades; related setters removed.
 
     public function withDriver(CanHandleInference $driver): self {
         $this->explicitDriver = $driver;
         return $this;
     }
 
-    public function withDebugPreset(?string $preset): self {
-        $this->debugPreset = $preset;
-        return $this;
-    }
+    // Debug control moved to facades. No-op retained for BC for now.
+    public function withDebugPreset(?string $preset): self { return $this; }
 
-    public function withClientInstance(
-        string $driverName,
-        object $clientInstance
-    ) {
-        // Store the client instance for the specified driver
-        $this->explicitHttpDriverName = $driverName;
-        $this->explicitHttpClientInstance = $clientInstance;
-        return $this;
-    }
+    // Custom raw client instances configuration removed from provider.
 
     /**
      * Create the fully configured inference driver
      * This is the terminal operation that builds and returns the final instance
      */
-    public function createDriver(): CanHandleInference {
+    public function createDriver(HttpClient $httpClient): CanHandleInference {
         // If explicit driver provided, return it directly
         if ($this->explicitDriver !== null) {
             return $this->explicitDriver;
@@ -143,7 +122,6 @@ final class LLMProvider
 
         // Build all required components
         $config = $this->buildConfig();
-        $httpClient = $this->buildHttpClient($config);
 
         // Create and return the inference driver
         return (new InferenceDriverFactory(events: $this->events))
@@ -210,36 +188,7 @@ final class LLMProvider
         return $final;
     }
 
-    /**
-     * Build the HTTP client
-     */
-    private function buildHttpClient(LLMConfig $config): HttpClient {
-        // If explicit client provided, use it
-        if ($this->explicitHttpClient !== null) {
-            return $this->explicitHttpClient;
-        }
-
-        $preset = $this->httpClientPreset ?? $config->httpClientPreset;
-
-        // Build new client
-        $builder = (new HttpClientBuilder(
-            $this->events,
-            $this->configProvider,
-        ))->withPreset($preset);
-
-        // Apply debug setting if specified
-        $builder = $builder->withDebugPreset($this->debugPreset);
-
-        // If explicit driver name and instance provided, set them
-        if ($this->explicitHttpDriverName !== null && $this->explicitHttpClientInstance !== null) {
-            $builder = $builder->withClientInstance(
-                driverName: $this->explicitHttpDriverName,
-                clientInstance: $this->explicitHttpClientInstance,
-            );
-        }
-
-        return $builder->create();
-    }
+    // HTTP client building removed from provider.
 
     /**
      * Determine the effective preset from various sources

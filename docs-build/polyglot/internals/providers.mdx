@@ -30,13 +30,12 @@ $provider = LLMProvider::dsn('openai://model=gpt-4&temperature=0.7');
 // Fluent configuration
 $provider = LLMProvider::new()
     ->withLLMPreset('openai')
-    ->withConfig($customConfig)
-    ->withHttpClient($httpClient)
-    ->withDebugPreset('verbose');
+    ->withConfig($customConfig);
 
-// Create the final driver
-$driver = $provider->createDriver();
-// @doctest id="ba1c"
+// Create the final driver with injected HTTP client
+$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$driver = $provider->createDriver($httpClient);
+// @doctest id="3ef6"
 ```
 
 Key methods:
@@ -44,9 +43,8 @@ Key methods:
 - `withConfig(LLMConfig $config)`: Set explicit configuration
 - `withConfigOverrides(array $overrides)`: Override specific config values
 - `withDsn(string $dsn)`: Configure via DSN string
-- `withHttpClient(HttpClient $client)`: Set custom HTTP client
 - `withDriver(CanHandleInference $driver)`: Set explicit driver
-- `createDriver()`: Build and return the configured driver
+- `createDriver(HttpClient $client)`: Build and return the configured driver (HTTP injected)
 
 ### EmbeddingsProvider
 
@@ -65,22 +63,20 @@ $provider = EmbeddingsProvider::dsn('openai://model=text-embedding-3-large');
 // Fluent configuration
 $provider = EmbeddingsProvider::new()
     ->withPreset('openai')
-    ->withConfig($customConfig)
-    ->withHttpClient($httpClient)
-    ->withDebugPreset('verbose');
+    ->withConfig($customConfig);
 
-// Create the final driver
-$driver = $provider->createDriver();
-// @doctest id="63b4"
+// Create the final driver with injected HTTP client
+$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$driver = $provider->createDriver($httpClient);
+// @doctest id="6bad"
 ```
 
 Key methods:
 - `withPreset(string $preset)`: Set configuration preset
 - `withConfig(EmbeddingsConfig $config)`: Set explicit configuration
 - `withDsn(string $dsn)`: Configure via DSN string
-- `withHttpClient(HttpClient $client)`: Set custom HTTP client
 - `withDriver(CanHandleVectorization $driver)`: Set explicit driver
-- `createDriver()`: Build and return the configured driver
+- `createDriver(HttpClient $client)`: Build and return the configured driver (HTTP injected)
 
 
 ## Key Interfaces for LLM
@@ -134,7 +130,7 @@ interface CanMapRequestBody {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="220b"
+// @doctest id="3375"
 ```
 
 
@@ -167,7 +163,7 @@ interface EmbedResponseAdapter {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="40a0"
+// @doctest id="b66c"
 ```
 
 
@@ -193,7 +189,7 @@ class ModularLLMDriver implements CanHandleInference {
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
     public function toEventBody(string $data): string|bool { ... }
 }
-// @doctest id="694e"
+// @doctest id="0b5d"
 ```
 
 
@@ -222,7 +218,7 @@ class InferenceDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="fb1b"
+// @doctest id="3b50"
 ```
 
 ### EmbeddingsDriverFactory
@@ -247,5 +243,5 @@ class EmbeddingsDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="e727"
+// @doctest id="0e6e"
 ```

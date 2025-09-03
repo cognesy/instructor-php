@@ -23,7 +23,6 @@ final class LLMConfig
         public int    $maxTokens = 1024,
         public int    $contextLength = 8000,
         public int    $maxOutputLength = 4096,
-        public string $httpClientPreset = '',
         public string $driver = 'openai-compatible',
         public array  $options = [],
     ) {}
@@ -58,7 +57,6 @@ final class LLMConfig
             'maxTokens' => $this->maxTokens,
             'contextLength' => $this->contextLength,
             'maxOutputLength' => $this->maxOutputLength,
-            'httpClientPreset' => $this->httpClientPreset,
             'driver' => $this->driver,
             'options' => $this->options,
         ];

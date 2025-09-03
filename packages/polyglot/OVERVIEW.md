@@ -113,12 +113,8 @@
 - `withConfigOverrides($overrides)` - Override config values
 - `withConfigProvider($provider)` - Set config provider
 - `withDsn($dsn)` - Set DSN string
-- `withHttpClient($client)` - Set custom HTTP client
-- `withHttpPreset($preset)` - Set HTTP client preset
 - `withDriver($driver)` - Set explicit inference driver
-- `withDebugPreset($preset)` - Set debug configuration
-- `withClientInstance($driverName, $clientInstance)` - Set client instance
-- `createDriver()` - Build and return configured driver
+- `createDriver(HttpClient $client)` - Build and return configured driver (HTTP injected)
 
 ### EmbeddingsProvider
 **`EmbeddingsProvider`** - Builder for configuring embeddings drivers
@@ -129,10 +125,8 @@
 - `withDsn($dsn)` - Set DSN string
 - `withConfig($config)` - Set explicit embeddings configuration
 - `withConfigProvider($provider)` - Set config provider
-- `withHttpClient($client)` - Set custom HTTP client
 - `withDriver($driver)` - Set explicit vectorization driver
-- `withDebugPreset($preset)` - Set debug configuration
-- `createDriver()` - Build and return configured driver
+- `createDriver(HttpClient $client)` - Build and return configured driver (HTTP injected)
 
 ## Request/Response Classes
 

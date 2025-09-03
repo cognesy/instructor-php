@@ -86,7 +86,6 @@ $configData = [
                 'model' => 'deepseek-chat',
                 'maxTokens' => 128,
                 'driver' => 'deepseek',
-                'httpClientPreset' => 'symfony',
             ],
             'openai' => [
                 'apiUrl' => 'https://api.openai.com',
@@ -95,7 +94,6 @@ $configData = [
                 'model' => 'gpt-4',
                 'maxTokens' => 256,
                 'driver' => 'openai',
-                'httpClientPreset' => 'symfony',
             ],
         ],
     ],

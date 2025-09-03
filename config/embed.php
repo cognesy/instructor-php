@@ -67,7 +67,6 @@ return [
             'model' => 'nomic-embed-text',
             'dimensions' => 1024,
             'maxInputs' => 512,
-            'httpClientPreset' => 'http-ollama',
         ],
         'openai' => [
             'driver' => 'openai',

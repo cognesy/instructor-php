@@ -9,7 +9,6 @@ use Cognesy\Config\Dsn;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
@@ -27,9 +26,8 @@ final class EmbeddingsProvider
 
     private ?string $preset;
     private ?string $dsn;
-    private ?string $debugPreset;
     private ?EmbeddingsConfig $explicitConfig;
-    private ?HttpClient $explicitHttpClient;
+    // HTTP client is no longer owned here (moved to facades)
     private ?CanHandleVectorization $explicitDriver;
 
     private function __construct(
@@ -37,9 +35,7 @@ final class EmbeddingsProvider
         ?CanProvideConfig         $configProvider = null,
         ?string                   $preset = null,
         ?string                   $dsn = null,
-        ?string                   $debugPreset = null,
         ?EmbeddingsConfig         $explicitConfig = null,
-        ?HttpClient               $explicitHttpClient = null,
         ?CanHandleVectorization   $explicitDriver = null,
     ) {
         $this->events = EventBusResolver::using($events);
@@ -48,9 +44,7 @@ final class EmbeddingsProvider
 
         $this->preset = $preset;
         $this->dsn = $dsn;
-        $this->debugPreset = $debugPreset;
         $this->explicitConfig = $explicitConfig;
-        $this->explicitHttpClient = $explicitHttpClient;
         $this->explicitDriver = $explicitDriver;
     }
 
@@ -90,26 +84,28 @@ final class EmbeddingsProvider
         return $this;
     }
 
-    public function withHttpClient(HttpClient $httpClient): self {
-        $this->explicitHttpClient = $httpClient;
-        return $this;
-    }
+    // HTTP client configuration is owned by facades; related setters removed.
 
     public function withDriver(CanHandleVectorization $driver): self {
         $this->explicitDriver = $driver;
         return $this;
     }
 
-    public function withDebugPreset(string $preset): self {
-        $this->debugPreset = $preset;
-        return $this;
+    // Debug control moved to facades. No-op retained for BC for now.
+    public function withDebugPreset(string $preset): self { return $this; }
+
+    /**
+     * Resolves and returns the effective embeddings configuration for this provider.
+     */
+    public function resolveConfig(): EmbeddingsConfig {
+        return $this->buildConfig();
     }
 
     /**
      * Create the fully configured vectorization driver
      * This is the terminal operation that builds and returns the final instance
      */
-    public function createDriver(): CanHandleVectorization {
+    public function createDriver(HttpClient $httpClient): CanHandleVectorization {
         // If explicit driver provided, return it directly
         if ($this->explicitDriver !== null) {
             return $this->explicitDriver;
@@ -117,7 +113,6 @@ final class EmbeddingsProvider
 
         // Build all required components
         $config = $this->buildConfig();
-        $httpClient = $this->buildHttpClient($config);
 
         // Create and return the vectorization driver
         return (new EmbeddingsDriverFactory($this->events))
@@ -147,26 +142,7 @@ final class EmbeddingsProvider
         return EmbeddingsConfig::fromArray($data);
     }
 
-    private function buildHttpClient(EmbeddingsConfig $config): HttpClient {
-        // If explicit client provided, use it
-        if ($this->explicitHttpClient !== null) {
-            return $this->explicitHttpClient;
-        }
-
-        // Build new client
-        $builder = (new HttpClientBuilder(
-            events: $this->events,
-            configProvider: $this->configProvider
-        ))
-            ->withPreset($config->httpClientPreset);
-
-        // Apply debug setting if specified
-        if ($this->debugPreset !== null) {
-            $builder = $builder->withDebugPreset($this->debugPreset);
-        }
-
-        return $builder->create();
-    }
+    // HTTP client building removed from provider.
 
     private function determinePreset(): ?string {
         return match (true) {

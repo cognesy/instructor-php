@@ -67,7 +67,7 @@ return [
             'model' => 'nomic-embed-text',
             'defaultDimensions' => 1024,
             'maxInputs' => 512,
-            'httpClientPreset' => 'http-ollama',
+            // select HTTP behavior via HttpClientBuilder or facade-level methods
         ],
         'openai' => [
             'driver' => 'openai',

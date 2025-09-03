@@ -231,7 +231,7 @@ the default connection to be used when calling Instructor without specifying det
             'endpoint' => '/chat/completions',
             'model' => 'qwen2.5:0.5b',
             'maxTokens' => 1024,
-            'httpClientPreset' => 'guzzle-ollama', // use custom HTTP client configuration
+            // select HTTP behavior via HttpClientBuilder or facade-level methods
         ],
         'openai' => [ ... ],
         'openrouter' => [ ... ],
@@ -988,4 +988,3 @@ If you have any questions or need help, please reach out to me on [Twitter](http
 <a href="https://github.com/cognesy/instructor-php/graphs/contributors">
   <img alt="Contributors" src="https://contrib.rocks/image?repo=cognesy/instructor-php" />
 </a>
-

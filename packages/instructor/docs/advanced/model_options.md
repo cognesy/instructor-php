@@ -41,7 +41,7 @@ $config = new LLMConfig(
     metadata: ['organization' => ''],
     model: 'gpt-4o-mini',
     maxTokens: 128,
-    httpClientPreset: 'guzzle',
+    // configure HTTP via HttpClientBuilder or facade-level methods
     driver: 'openai',
 ));
 

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference;
 
+use Cognesy\Http\HttpClient;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -19,6 +20,11 @@ class Inference
     use Traits\HandlesRequestBuilder;
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
+
+    /** @var HttpClient|null Facade-level HTTP client (optional) */
+    protected ?HttpClient $httpClient = null;
+    /** @var string|null Facade-level HTTP debug preset (optional) */
+    protected ?string $httpDebugPreset = null;
 
     /**
      * Constructor for initializing dependencies and configurations.

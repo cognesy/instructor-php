@@ -73,7 +73,7 @@ return [
         // Additional connections...
     ],
 ];
-// @doctest id="6148"
+// @doctest id="8758"
 ```
 
 #### Embedding Configuration Structure
@@ -104,7 +104,7 @@ return [
         // Additional embedding connections...
     ],
 ];
-// @doctest id="0902"
+// @doctest id="eac3"
 ```
 
 ### Connection Parameters
@@ -172,7 +172,7 @@ GEMINI_API_KEY=your-key-here
 MISTRAL_API_KEY=your-key-here
 COHERE_API_KEY=your-key-here
 # etc.
-# @doctest id="afd7"
+# @doctest id="48c1"
 ```
 
 Then load these environment variables using a package like `vlucas/phpdotenv`:
@@ -182,7 +182,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-// @doctest id="5da6"
+// @doctest id="8008"
 ```
 
 Or in frameworks like Laravel, environment variables are automatically loaded.
@@ -223,7 +223,7 @@ $response = $inference->with(
         ],
     ]
 )->get();
-// @doctest id="2baa"
+// @doctest id="3626"
 ```
 
 ### Anthropic-Specific Parameters
@@ -245,7 +245,7 @@ $response = $inference->with(
         'system' => 'You are a creative storyteller who specializes in magical realism.',
     ]
 )->get();
-// @doctest id="7fb5"
+// @doctest id="32ec"
 ```
 
 
@@ -276,13 +276,13 @@ return [
             'maxTokens' => 2048,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,
-            'httpClientPreset' => 'guzzle-custom', // Custom HTTP client configuration
+            // HTTP client configuration is defined via HttpClientBuilder or facade-level methods
         ],
 
         // Other connections...
     ],
 ];
-// @doctest id="c631"
+// @doctest id="fbb7"
 ```
 
 ### Runtime Configuration
@@ -313,7 +313,7 @@ $response = $inference->with(
 )->get();
 
 echo $response;
-// @doctest id="46dd"
+// @doctest id="8d23"
 ```
 
 
@@ -356,13 +356,13 @@ return [
             'endpoint' => '/chat/completions',
             'model' => 'llama2',
             'maxTokens' => 1024,
-            'httpClientPreset' => 'http-ollama',
+            // Select appropriate HTTP client preset via HttpClientBuilder if needed
         ],
 
         // Other connections...
     ],
 ];
-// @doctest id="f5ac"
+// @doctest id="fbe4"
 ```
 
 
@@ -407,12 +407,12 @@ $answer = (new Inference)
         options: ['max_tokens' => 64]
     )
     ->toText();
-// @doctest id="7e0f"
+// @doctest id="9714"
 ```
 
 An alternative way of providing driver definition is via class-string:
 
 ```php
 LLM::registerDriver('another-driver', AnotherDriver::class);
-// @doctest id="d56a"
+// @doctest id="c1c4"
 ```

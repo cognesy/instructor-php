@@ -5,7 +5,6 @@ namespace Cognesy\Polyglot\Inference;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Drivers\A21\A21Driver;
@@ -63,7 +62,7 @@ class InferenceDriverFactory
     /**
      * Creates and returns an appropriate driver instance based on the given configuration.
      */
-    public function makeDriver(LLMConfig $config, ?HttpClient $httpClient = null): CanHandleInference {
+    public function makeDriver(LLMConfig $config, HttpClient $httpClient): CanHandleInference {
         $driver = $config->driver;
         if (empty($driver)) {
             throw new InvalidArgumentException("Provider type not specified in the configuration.");
@@ -73,15 +72,6 @@ class InferenceDriverFactory
         if ($driverFactory === null) {
             throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$driver}");
         }
-
-        $httpClient = match(true) {
-            !is_null($httpClient) => $httpClient,
-            !empty($config->httpClientPreset) => (new HttpClientBuilder(events: $this->events))
-                ->withPreset($config->httpClientPreset)
-                ->create(),
-            default => (new HttpClientBuilder(events: $this->events))
-                ->create(),
-        };
 
         $driver = $driverFactory(
             config: $config,
