@@ -8,6 +8,12 @@ use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 
 trait HandlesInvocation
 {
+    /** @var \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory|null */
+    private ?\Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory $embeddingsFactory = null;
+
+    private function getEmbeddingsFactory(): \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory {
+        return $this->embeddingsFactory ??= new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($this->events);
+    }
     public function withRequest(EmbeddingsRequest $request) : static {
         $this->with(
             input: $request->inputs(),
@@ -51,15 +57,30 @@ trait HandlesInvocation
             $client = $this->httpClient;
         } else {
             $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
-            if (property_exists($this, 'httpDebugPreset') && $this->httpDebugPreset !== null) {
+            if ($this->httpDebugPreset !== null) {
                 $builder = $builder->withDebugPreset($this->httpDebugPreset);
             }
             $client = $builder->create();
         }
 
+        // Prefer explicit driver if resolver/provider exposes it
+        $resolver = $this->embeddingsResolver ?? $this->embeddingsProvider;
+        if ($resolver instanceof \Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver) {
+            $explicit = $resolver->explicitEmbeddingsDriver();
+            if ($explicit !== null) {
+                $driver = $explicit;
+            } else {
+                $config = $resolver->resolveConfig();
+                $driver = $this->getEmbeddingsFactory()->makeDriver($config, $client);
+            }
+        } else {
+            $config = $resolver->resolveConfig();
+            $driver = $this->getEmbeddingsFactory()->makeDriver($config, $client);
+        }
+
         return new PendingEmbeddings(
             request: $request,
-            driver: $this->embeddingsProvider->createDriver($client),
+            driver: $driver,
             events: $this->events,
         );
     }

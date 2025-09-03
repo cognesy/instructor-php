@@ -12,13 +12,15 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Builder for creating fully configured embeddings vectorization drivers.
  * Once create() is called, returns a complete, ready-to-use instance.
  */
-final class EmbeddingsProvider
+final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplicitEmbeddingsDriver
 {
     private readonly CanHandleEvents $events;
     private CanProvideConfig $configProvider;
@@ -101,23 +103,11 @@ final class EmbeddingsProvider
         return $this->buildConfig();
     }
 
-    /**
-     * Create the fully configured vectorization driver
-     * This is the terminal operation that builds and returns the final instance
-     */
-    public function createDriver(HttpClient $httpClient): CanHandleVectorization {
-        // If explicit driver provided, return it directly
-        if ($this->explicitDriver !== null) {
-            return $this->explicitDriver;
-        }
-
-        // Build all required components
-        $config = $this->buildConfig();
-
-        // Create and return the vectorization driver
-        return (new EmbeddingsDriverFactory($this->events))
-            ->makeDriver($config, $httpClient);
+    public function explicitEmbeddingsDriver(): ?CanHandleVectorization {
+        return $this->explicitDriver;
     }
+
+    // createDriver() removed — use resolveConfig() + EmbeddingsDriverFactory::makeDriver()
 
     // INTERNAL ////////////////////////////////////////////////////////////
 

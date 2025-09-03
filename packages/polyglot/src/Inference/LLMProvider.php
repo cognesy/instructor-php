@@ -10,13 +10,15 @@ use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-final class LLMProvider
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
+
+final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriver
 {
     private readonly CanHandleEvents $events;
     private readonly CanProvideConfig $configProvider;
@@ -73,6 +75,10 @@ final class LLMProvider
         return $this->buildConfig();
     }
 
+    public function explicitInferenceDriver(): ?CanHandleInference {
+        return $this->explicitDriver;
+    }
+
     public function withLLMPreset(string $preset): self {
         $this->llmPreset = $preset;
         return $this;
@@ -110,23 +116,7 @@ final class LLMProvider
 
     // Custom raw client instances configuration removed from provider.
 
-    /**
-     * Create the fully configured inference driver
-     * This is the terminal operation that builds and returns the final instance
-     */
-    public function createDriver(HttpClient $httpClient): CanHandleInference {
-        // If explicit driver provided, return it directly
-        if ($this->explicitDriver !== null) {
-            return $this->explicitDriver;
-        }
-
-        // Build all required components
-        $config = $this->buildConfig();
-
-        // Create and return the inference driver
-        return (new InferenceDriverFactory(events: $this->events))
-            ->makeDriver($config, $httpClient);
-    }
+    // createDriver() removed — use resolveConfig() + InferenceDriverFactory::makeDriver()
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
