@@ -24,7 +24,6 @@ Streaming responses offer several advantages:
 Enabling streaming in Polyglot is straightforward - you need to set the `stream` option to `true` in your request:
 
 ```php
-// @doctest id="a045"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -33,14 +32,15 @@ $response = $inference->with(
     messages: 'Write a short story about a space explorer.',
     options: ['stream' => true]  // Enable streaming
 );
+// @doctest id="7bbd"
 ```
 
 Once you have a streaming-enabled response, you can access the stream using the `stream()` method:
 
 ```php
-// @doctest id="b6fc"
 // Get the stream of partial responses
 $stream = $response->stream();
+// @doctest id="d732"
 ```
 
 
@@ -49,7 +49,6 @@ $stream = $response->stream();
 The most common way to process a stream is to iterate through the partial responses:
 
 ```php
-// @doctest id="c4df"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -74,6 +73,7 @@ foreach ($stream as $partialResponse) {
     }
 }
 echo "\n";
+// @doctest id="35dc"
 ```
 
 ### Understanding Partial Responses
@@ -86,7 +86,6 @@ Each iteration of the stream yields a `PartialInferenceResponse` object with the
 - `usage`: Token usage statistics
 
 ```php
-// @doctest id="5275"
 foreach ($stream as $partialResponse) {
     // The new content in this chunk
     echo "New content: " . $partialResponse->contentDelta . "\n";
@@ -99,6 +98,7 @@ foreach ($stream as $partialResponse) {
         echo "Response finished: " . $partialResponse->finishReason . "\n";
     }
 }
+// @doctest id="ef92"
 ```
 
 ## Retrieving the Final Response
@@ -106,13 +106,13 @@ foreach ($stream as $partialResponse) {
 After processing the stream, you can get the complete response:
 
 ```php
-// @doctest id="2539"
 // Method 1: Using the original response object's get() method
 $completeText = $response->get();
 
 // Method 2: Getting the final state from the stream
 $finalResponse = $response->stream()->final();
 $completeText = $finalResponse->content();
+// @doctest id="2a62"
 ```
 
 

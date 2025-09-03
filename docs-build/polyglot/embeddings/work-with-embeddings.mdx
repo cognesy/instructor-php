@@ -10,7 +10,6 @@ Polyglot provides the `Embeddings` class as the primary interface for generating
 ### Creating an Embeddings Instance
 
 ```php
-// @doctest id="e35c"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -22,6 +21,7 @@ $embeddings = new Embeddings('openai');
 
 // Alternative method to specify connection
 $embeddings = (new Embeddings())->using('openai');
+// @doctest id="9257"
 ```
 
 ### Key Methods
@@ -45,7 +45,6 @@ The core functionality of the `Embeddings` class is to transform text into vecto
 ### Basic Embedding Generation
 
 ```php
-// @doctest id="ee1d"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -56,6 +55,7 @@ $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get
 $vector = $result->first()?->values();
 
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
+// @doctest id="2003"
 ```
 
 ### Embedding Multiple Texts
@@ -63,7 +63,6 @@ echo "Generated a vector with " . count($vector) . " dimensions.\n";
 You can generate embeddings for multiple texts in a single request, which is more efficient than making separate requests:
 
 ```php
-// @doctest id="40ba"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -83,6 +82,7 @@ $vectors = $result->vectors();
 foreach ($vectors as $index => $vector) {
     echo "Document " . ($index + 1) . " has a vector with " . count($vector->values()) . " dimensions.\n";
 }
+// @doctest id="9ba6"
 ```
 
 ### Accessing Embedding Results
@@ -90,7 +90,6 @@ foreach ($vectors as $index => $vector) {
 The `create()` method returns an `EmbeddingsResponse` object with several useful methods:
 
 ```php
-// @doctest id="4076"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -114,6 +113,7 @@ $usage = $result->usage();
 echo "Input tokens: " . $usage->input() . "\n";
 echo "Output tokens: " . $usage->output() . "\n";
 echo "Total tokens: " . $usage->total() . "\n";
+// @doctest id="3af2"
 ```
 
 ### Working with Vector Objects
@@ -121,7 +121,6 @@ echo "Total tokens: " . $usage->total() . "\n";
 Each vector in the response is represented by a `Vector` object with its own methods:
 
 ```php
-// @doctest id="303c"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -138,6 +137,7 @@ $id = $vector->id();
 // Compare with another vector
 $otherVector = $result->with('Another text for comparison')->first();
 $similarity = $vector->compareTo($otherVector, 'cosine');
+// @doctest id="7b70"
 ```
 
 
@@ -149,7 +149,6 @@ Polyglot supports multiple embedding providers, each with their own strengths an
 ### Switching Between Providers
 
 ```php
-// @doctest id="6f46"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -170,6 +169,7 @@ echo "Cohere embedding dimensions: " . count($cohereResult->first()?->values()) 
 $mistralEmbeddings = new Embeddings('mistral');
 $mistralResult = $mistralEmbeddings->with($text)->get();
 echo "Mistral embedding dimensions: " . count($mistralResult->first()?->values()) . "\n";
+// @doctest id="e99d"
 ```
 
 ### Provider-Specific Options
@@ -177,7 +177,6 @@ echo "Mistral embedding dimensions: " . count($mistralResult->first()?->values()
 Different providers may support additional options for embedding generation:
 
 ```php
-// @doctest id="2049"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -200,6 +199,7 @@ $response = $cohereEmbeddings->with(
         'truncate' => 'END',               // How to handle texts that exceed the token limit
     ]
 )->get();
+// @doctest id="ed6c"
 ```
 
 ### Models and Dimensions
@@ -207,7 +207,6 @@ $response = $cohereEmbeddings->with(
 Different embedding models produce vectors of different dimensions:
 
 ```php
-// @doctest id="51a0"
 <?php
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -225,5 +224,6 @@ $embeddings->withConfig($config);
 
 $response = $embeddings->with("Test text for large embedding model")->get();
 echo "Vector dimensions: " . count($response->first()?->values()) . "\n";
+// @doctest id="4e38"
 ```
 

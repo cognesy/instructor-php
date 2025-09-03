@@ -11,7 +11,6 @@ chatbots or agents.
 ## Extracting arguments for a function
 
 ```php
-// @doctest id="1d5f"
 <?php
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Instructor\StructuredOutput;
@@ -30,6 +29,7 @@ $args = (new StructuredOutput)->with(
 // call the function with the extracted arguments
 saveUser(...$args);
 ?>
+// @doctest id="fe05"
 ```
 
 
@@ -37,7 +37,6 @@ saveUser(...$args);
 ## Extracting arguments for a method call
 
 ```php
-// @doctest id="bf33"
 <?php
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Instructor\StructuredOutput;
@@ -58,6 +57,7 @@ $args = (new StructuredOutput)->with(
 // call the function with the extracted arguments
 (new DataStore)->saveUser(...$args);
 ?>
+// @doctest id="166d"
 ```
 
 
@@ -65,7 +65,6 @@ $args = (new StructuredOutput)->with(
 ## Extracting arguments for a callable
 
 ```php
-// @doctest id="2c11"
 <?php
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Instructor\StructuredOutput;
@@ -84,4 +83,5 @@ $args = (new StructuredOutput)->with(
 // call the function with the extracted arguments
 $callable(...$args);
 ?>
+// @doctest id="1c2b"
 ```

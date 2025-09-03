@@ -85,7 +85,6 @@ The Instructor HTTP client follows a layered architecture with several key compo
 The `HttpClient` class serves as the main entry point and provides a fluent interface for configuring and using the HTTP client.
 
 ```
-// @doctest id="5551"
 HttpClient
   └── using() - Create client with specific configuration (static)
   └── default() - Create client with default configuration (static)
@@ -95,6 +94,7 @@ HttpClient
   └── withRequest() - Create pending request for execution
   └── pool() - Execute multiple requests concurrently
   └── withPool() - Create pending pool for deferred execution
+// @doctest id="28de"
 ```
 
 ### Middleware Layer
@@ -102,10 +102,10 @@ HttpClient
 The middleware system allows for processing requests and responses through a chain of handlers:
 
 ```
-// @doctest id="3870"
 Request -> Middleware 1 -> Middleware 2 -> ... -> Driver -> External API
                                                    ↓
 Response <- Middleware 1 <- Middleware 2 <- ... <- Driver <- HTTP Response
+// @doctest id="494b"
 ```
 
 Key components:
@@ -118,12 +118,12 @@ Key components:
 Drivers implement the `CanHandleHttpRequest` interface and adapt different HTTP client libraries:
 
 ```
-// @doctest id="cb1a"
 CanHandleHttpRequest (interface)
   ├── GuzzleDriver
   ├── SymfonyDriver
   ├── LaravelDriver
   └── MockHttpDriver (for testing)
+// @doctest id="398c"
 ```
 
 ### Adapter Layer
@@ -131,12 +131,12 @@ CanHandleHttpRequest (interface)
 Response adapters convert client-specific responses to a common interface:
 
 ```
-// @doctest id="96c7"
 HttpResponse (interface)
   ├── PsrHttpResponse (Guzzle)
   ├── SymfonyHttpResponse
   ├── LaravelHttpResponse
   └── MockHttpResponse
+// @doctest id="5247"
 ```
 
 ## Supported HTTP Clients

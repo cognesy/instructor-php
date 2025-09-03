@@ -17,7 +17,6 @@ The simplest way to use Polyglot is to generate text using static `Inference::te
 Simplified inference API uses the default connection for convenient ad-hoc calls.
 
 ```php
-// @doctest id="2b95"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -27,6 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
+// @doctest id="5cf5"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -38,7 +38,6 @@ Default LLM connection can be configured via config/llm.php.
 For more control, you can create an instance of the `Inference` class:
 
 ```php
-// @doctest id="519c"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -51,6 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
+// @doctest id="0a9f"
 ```
 
 
@@ -59,7 +59,6 @@ echo "Answer: $answer";
 You can specify which connection preset to use:
 
 ```php
-// @doctest id="3003"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -71,6 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
+// @doctest id="eb47"
 ```
 
 
@@ -79,7 +79,6 @@ echo "Answer (using Anthropic): $answer";
 For multi-turn conversations, provide an array of messages:
 
 ```php
-// @doctest id="d82d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -96,6 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
+// @doctest id="e6ab"
 ```
 
 
@@ -104,7 +104,6 @@ echo "Answer: $answer";
 You can customize various parameters for your requests:
 
 ```php
-// @doctest id="9989"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -120,6 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
+// @doctest id="4623"
 ```
 
 
@@ -134,7 +134,6 @@ This example shows how to create an inference object, specify a connection and g
 The `toText()` method returns text completion from the LLM response.
 
 ```php
-// @doctest id="d748"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -146,6 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
+// @doctest id="f34c"
 ```
 
 
@@ -156,7 +156,6 @@ as you can display partial responses from LLM as soon as they arrive, without wa
 the whole response is ready.
 
 ```php
-// @doctest id="a10d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -173,6 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
+// @doctest id="a583"
 ```
 
 
@@ -190,7 +190,6 @@ the default connection to be used when calling Instructor without specifying
 the client connection.
 
 ```php
-// @doctest id="b305"
     // This is fragment of /config/llm.php file
     'defaultPreset' => 'openai',
     //...
@@ -216,6 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
+// @doctest id="53e9"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -224,7 +224,6 @@ Connecting to LLM API via predefined connection is as simple as calling `withPre
 method with the connection preset name.
 
 ```php
-// @doctest id="5fb0"
 <?php
 // ...
 $answer = (new Inference)
@@ -235,6 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
+// @doctest id="3abd"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -250,7 +250,6 @@ Polyglot makes it easy to switch between different LLM providers at runtime.
 ### Using Different Providers for LLM Requests
 
 ```php
-// @doctest id="0133"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -295,6 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
+// @doctest id="ff26"
 ```
 
 
@@ -305,7 +305,6 @@ Each provider offers multiple models with different capabilities, context length
 ### Specifying Models for LLM Requests
 
 ```php
-// @doctest id="c51d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -331,4 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
+// @doctest id="cee4"
 ```

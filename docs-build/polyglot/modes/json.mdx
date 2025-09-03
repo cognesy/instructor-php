@@ -8,7 +8,6 @@ JSON mode instructs the model to return responses formatted as valid JSON object
 ### Basic JSON Generation
 
 ```php
-// @doctest id="a7b8"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -25,6 +24,7 @@ echo "Top cities:\n";
 foreach ($response['cities'] as $city) {
     echo "- {$city['name']}: {$city['population']} million\n";
 }
+// @doctest id="aed0"
 ```
 
 ### Structuring JSON Responses with Instructions
@@ -32,7 +32,6 @@ foreach ($response['cities'] as $city) {
 For best results, include clear instructions about the expected JSON structure:
 
 ```php
-// @doctest id="5ae4"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -65,6 +64,7 @@ echo "Top cities by population:\n";
 foreach ($response['cities'] as $index => $city) {
     echo ($index + 1) . ". {$city['name']}, {$city['country']}: {$city['population']} million\n";
 }
+// @doctest id="e047"
 ```
 
 ### Provider-Specific JSON Options
@@ -72,7 +72,6 @@ foreach ($response['cities'] as $index => $city) {
 Some providers offer additional options for JSON mode:
 
 ```php
-// @doctest id="fd49"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -90,6 +89,7 @@ $response = $inference->with(
 )->asJsonData();
 
 // The response will be a JSON object
+// @doctest id="9a2c"
 ```
 
 ### When to Use JSON Mode

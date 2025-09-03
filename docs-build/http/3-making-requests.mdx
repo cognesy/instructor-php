@@ -19,7 +19,6 @@ All HTTP requests are created using the `HttpRequest` class, which encapsulates 
 The constructor for `HttpRequest` takes several parameters:
 
 ```php
-// @doctest id="fffc"
 use Cognesy\Http\Data\HttpRequest;
 
 $request = new HttpRequest(
@@ -29,6 +28,7 @@ $request = new HttpRequest(
     body: [],
     options: []
 );
+// @doctest id="fb2e"
 ```
 
 The parameters are:
@@ -44,7 +44,6 @@ The parameters are:
 Once you've created a request, you can access its properties using the following methods:
 
 ```php
-// @doctest id="c634"
 // Get the request URL
 $url = $request->url();
 
@@ -62,6 +61,7 @@ $options = $request->options();
 
 // Check if the request is configured for streaming
 $isStreaming = $request->isStreamed();
+// @doctest id="1ed3"
 ```
 
 ### Modifying Requests
@@ -69,9 +69,9 @@ $isStreaming = $request->isStreamed();
 You can also modify a request after it's been created:
 
 ```php
-// @doctest id="1be0"
 // Enable streaming for this request
 $streamingRequest = $request->withStreaming(true);
+// @doctest id="1724"
 ```
 
 Note that the `with*` methods return a new request instance rather than modifying the original one.
@@ -85,7 +85,6 @@ The HTTP method is specified as a string in the `HttpClientRequest` constructor.
 GET requests are used to retrieve data from a server:
 
 ```php
-// @doctest id="ba80"
 $getRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'GET',
@@ -93,12 +92,12 @@ $getRequest = new HttpRequest(
     body: [],
     options: []
 );
+// @doctest id="5558"
 ```
 
 For GET requests with query parameters, include them in the URL:
 
 ```php
-// @doctest id="bf09"
 $getRequestWithParams = new HttpRequest(
     url: 'https://api.example.com/users?page=1&limit=10&sort=name',
     method: 'GET',
@@ -106,6 +105,7 @@ $getRequestWithParams = new HttpRequest(
     body: [],
     options: []
 );
+// @doctest id="19f5"
 ```
 
 ### POST Requests
@@ -113,7 +113,6 @@ $getRequestWithParams = new HttpRequest(
 POST requests are used to create new resources or submit data:
 
 ```php
-// @doctest id="d99e"
 $postRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
@@ -127,6 +126,7 @@ $postRequest = new HttpRequest(
     ],
     options: []
 );
+// @doctest id="8902"
 ```
 
 ### PUT Requests
@@ -134,7 +134,6 @@ $postRequest = new HttpRequest(
 PUT requests are used to update existing resources:
 
 ```php
-// @doctest id="a550"
 $putRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'PUT',
@@ -148,6 +147,7 @@ $putRequest = new HttpRequest(
     ],
     options: []
 );
+// @doctest id="56c4"
 ```
 
 ### PATCH Requests
@@ -155,7 +155,6 @@ $putRequest = new HttpRequest(
 PATCH requests are used to partially update resources:
 
 ```php
-// @doctest id="1089"
 $patchRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'PATCH',
@@ -168,6 +167,7 @@ $patchRequest = new HttpRequest(
     ],
     options: []
 );
+// @doctest id="2c3d"
 ```
 
 ### DELETE Requests
@@ -175,7 +175,6 @@ $patchRequest = new HttpRequest(
 DELETE requests are used to remove resources:
 
 ```php
-// @doctest id="9dca"
 $deleteRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'DELETE',
@@ -183,6 +182,7 @@ $deleteRequest = new HttpRequest(
     body: [],
     options: []
 );
+// @doctest id="a429"
 ```
 
 ### Other Methods
@@ -190,7 +190,6 @@ $deleteRequest = new HttpRequest(
 The library also supports other HTTP methods like HEAD, OPTIONS, etc. Just specify the method name as a string:
 
 ```php
-// @doctest id="c422"
 $headRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'HEAD',
@@ -206,6 +205,7 @@ $optionsRequest = new HttpRequest(
     body: [],
     options: []
 );
+// @doctest id="bc05"
 ```
 
 ## Setting Headers
@@ -213,7 +213,6 @@ $optionsRequest = new HttpRequest(
 HTTP headers are specified as an associative array where keys are header names and values are header values:
 
 ```php
-// @doctest id="d286"
 $request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
@@ -226,6 +225,7 @@ $request = new HttpRequest(
     body: [],
     options: []
 );
+// @doctest id="250e"
 ```
 
 ### Common Headers
@@ -234,38 +234,38 @@ Some commonly used HTTP headers include:
 
 - **Content-Type**: Specifies the format of the request body
 ```php
-// @doctest id="ea44"
 'Content-Type' => 'application/json'
+// @doctest id="6a2e"
 ```
 
 - **Accept**: Indicates what response format the client can understand
 ```php
-// @doctest id="6616"
 'Accept' => 'application/json'
+// @doctest id="ced5"
 ```
 
 - **Authorization**: Provides authentication credentials
 ```php
-// @doctest id="7c38"
 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+// @doctest id="8638"
 ```
 
 - **User-Agent**: Identifies the client application
 ```php
-// @doctest id="ee8c"
 'User-Agent' => 'MyApp/1.0 (https://example.com)'
+// @doctest id="5e00"
 ```
 
 - **Cache-Control**: Directives for caching mechanisms
 ```php
-// @doctest id="09fc"
 'Cache-Control' => 'no-cache'
+// @doctest id="f719"
 ```
 
 - **Accept-Language**: Indicates the preferred language
 ```php
-// @doctest id="70cd"
 'Accept-Language' => 'en-US,en;q=0.9'
+// @doctest id="42b9"
 ```
 
 ## Request Body
@@ -277,7 +277,6 @@ The request body can be provided in two ways:
 If you provide an array as the request body, it will automatically be converted to a JSON string:
 
 ```php
-// @doctest id="52ce"
 $request = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
@@ -295,6 +294,7 @@ $request = new HttpRequest(
     ],
     options: []
 );
+// @doctest id="8731"
 ```
 
 When using an array for the body, you should set the `Content-Type` header to `application/json`.
@@ -304,7 +304,6 @@ When using an array for the body, you should set the `Content-Type` header to `a
 You can also provide the body as a raw string:
 
 ```php
-// @doctest id="b1ae"
 // JSON string
 $jsonBody = json_encode([
     'name' => 'John Doe',
@@ -318,12 +317,12 @@ $request = new HttpRequest(
     body: $jsonBody,
     options: []
 );
+// @doctest id="0aa6"
 ```
 
 This approach is useful for other content types:
 
 ```php
-// @doctest id="242f"
 // Form URL-encoded data
 $formBody = http_build_query([
     'name' => 'John Doe',
@@ -337,6 +336,7 @@ $request = new HttpRequest(
     body: $formBody,
     options: []
 );
+// @doctest id="2742"
 ```
 
 ### Working with Request Body
@@ -344,12 +344,12 @@ $request = new HttpRequest(
 The body is managed by the `HttpRequestBody` class, which provides methods to access the body in different formats:
 
 ```php
-// @doctest id="840a"
 // Get the body as a string
 $bodyString = $request->body()->toString();
 
 // Get the body as an array (for JSON bodies)
 $bodyArray = $request->body()->toArray();
+// @doctest id="bd4d"
 ```
 
 ## Request Options
@@ -357,7 +357,6 @@ $bodyArray = $request->body()->toArray();
 The `options` parameter allows you to specify additional options for the request:
 
 ```php
-// @doctest id="9384"
 $request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
@@ -367,6 +366,7 @@ $request = new HttpRequest(
         'stream' => true,  // Enable streaming response
     ]
 );
+// @doctest id="6ecf"
 ```
 
 ### Available Options
@@ -378,10 +378,10 @@ Currently, the main supported option is:
 You can check if a request is configured for streaming:
 
 ```php
-// @doctest id="fb99"
 if ($request->isStreamed()) {
     // Handle streaming response
 }
+// @doctest id="0cc2"
 ```
 
 ### Example: Streaming Request
@@ -389,7 +389,6 @@ if ($request->isStreamed()) {
 Here's how to create a request for a streaming API:
 
 ```php
-// @doctest id="05a5"
 $streamingRequest = new HttpRequest(
     url: 'https://api.openai.com/v1/completions',
     method: 'POST',
@@ -407,6 +406,7 @@ $streamingRequest = new HttpRequest(
         'stream' => true, // Enable streaming in the client
     ]
 );
+// @doctest id="7bfc"
 ```
 
 In the following chapters, we'll explore how to handle responses, including streaming responses, and how to use more advanced features like request pools and middleware.

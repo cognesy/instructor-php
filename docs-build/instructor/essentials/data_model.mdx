@@ -16,7 +16,6 @@ Use PHP type hints to specify the type of extracted data.
 > Use nullable types to indicate that given field is optional.
 
 ```php
-// @doctest id="0614"
 <?php
 
 class Person {
@@ -24,6 +23,7 @@ class Person {
     public ?int $age;
     public Address $address;
 }
+// @doctest id="096e"
 ```
 
 Instructor will only fill in the fields that are public. Private and protected fields are ignored and their values are not going to be extracted (they will be left empty, with default values set as defined in your class).
@@ -53,7 +53,6 @@ of extraction for classes with private and public fields,
 You can also use PHP DocBlock style comments to specify the type of extracted data. This is useful when you want to specify property types for LLM, but can't or don't want to enforce type at the code level.
 
 ```php
-// @doctest id="d20a"
 <?php
 
 class Person {
@@ -64,6 +63,7 @@ class Person {
     /** @var Address $address person's address */
     public $address;
 }
+// @doctest id="8418"
 ```
 
 See PHPDoc documentation for more details on DocBlock: https://docs.phpdoc.org/3.0/guide/getting-started/what-is-a-docblock.html#what-is-a-docblock
@@ -80,7 +80,6 @@ Instructor extracts PHP DocBlocks comments from class and property defined and i
 Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
 
 ```php
-// @doctest id="b9fa"
     /**
      * Represents a skill of a person and context in which it was mentioned. 
      */
@@ -91,6 +90,7 @@ Using PHP DocBlocks instructions is not required, but sometimes you may want to 
         /** Directly quoted, full sentence mentioning person's skill */
         public string $context;
     }
+// @doctest id="eac4"
 ```
 
 
@@ -113,7 +113,6 @@ Instructor will still include any PHPDoc comments provided in the class, but
 using attributes might be more convenient and easier to read.
 
 ```php
-// @doctest id="db7e"
 <?php
 #[Description("Information about user")]
 class User {
@@ -125,6 +124,7 @@ class User {
     #[Instructions("Ignore hobbies, identify profession")]
     public string $job;
 }
+// @doctest id="5047"
 ```
 
 > NOTE: Technically both `#[Description]` and `#[Instructions]` attributes do the same thing - they provide additional context to the language model. Yet, providing them in separate attributes allows you to better organize your code and make it more readable. In the future, we may extend the functionality of these attributes to provide more specific instructions to the language model, so it is a good idea to use them now.
@@ -137,7 +137,6 @@ PHP currently [does not support generics](https://wiki.php.net/rfc/generics) or 
 Use PHP DocBlock style comments to specify the type of array elements.
 
 ```php
-// @doctest id="687c"
 <?php
 class Person {
     // ...
@@ -149,6 +148,7 @@ class Event {
     public array $participants;
     // ...
 }
+// @doctest id="313e"
 ```
 
 
@@ -160,7 +160,6 @@ class Event {
 Instructor can retrieve complex data structures from text. Your response model can contain nested objects, arrays, and enums.
 
 ```php
-// @doctest id="043d"
 <?php
 use Cognesy/Instructor/Instructor;
 
@@ -221,6 +220,7 @@ var_dump($person);
 //         },
 //     ]
 // }
+// @doctest id="016f"
 ```
 
 
@@ -238,7 +238,6 @@ The `Maybe` class provides a way to handle optional data that may or may not be 
 ### Basic Usage
 
 ```php
-// @doctest id="ac98"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Extras\Maybe\Maybe;
@@ -263,6 +262,7 @@ if ($result->hasValue()) {
 } else {
     echo "No person found. Error: " . $result->error();
 }
+// @doctest id="e16c"
 ```
 
 ### Maybe Methods

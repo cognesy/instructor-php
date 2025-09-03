@@ -15,7 +15,6 @@ The `with()` method is the main way to set the parameters of the requests to LLM
 It accepts several parameters:
 
 ```php
-// @doctest id="6930"
 public function with(
     string|array $messages = [],    // The messages to send to the LLM
     string $model = '',             // The model to use (overrides default)
@@ -25,6 +24,7 @@ public function with(
     array $options = [],            // Additional request options
     Mode $mode = OutputMode::Text   // Output mode (Text, JSON, etc.)
 ) : self
+// @doctest id="573f"
 ```
 
 
@@ -33,7 +33,6 @@ public function with(
 Here's a simple example of creating a request:
 
 ```php
-// @doctest id="4968"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -46,6 +45,7 @@ $response = $inference
     ->get();   // get the data - here it executes the request
 
 echo "Response: $response";
+// @doctest id="0787"
 ```
 
 
@@ -54,7 +54,6 @@ echo "Response: $response";
 For chat-based interactions, you can pass an array of messages:
 
 ```php
-// @doctest id="a6ae"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -69,6 +68,7 @@ $response = $inference
     ->get();
 
 echo "Response: $response";
+// @doctest id="815d"
 ```
 
 ## Using `Messages` Class
@@ -76,7 +76,6 @@ echo "Response: $response";
 You can also use the `Messages` class to create message sequences more conveniently:
 
 ```php
-// @doctest id="020c"
 <?php
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Utils\Image;
@@ -95,6 +94,7 @@ $response = (new Inference)
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
+// @doctest id="c9c0"
 ```
 
 ## Message Formats
@@ -108,7 +108,6 @@ Polyglot supports different message formats depending on the provider:
 Example with image (for providers that support it):
 
 ```php
-// @doctest id="91bc"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -136,6 +135,7 @@ $response = (new Inference())
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();
+// @doctest id="2415"
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

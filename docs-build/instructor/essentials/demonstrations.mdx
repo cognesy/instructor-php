@@ -21,7 +21,6 @@ Instructor will append the list of examples to the prompt sent to LLM, with outp
 array data rendered as JSON text.
 
 ```php
-// @doctest id="a99e"
 <?php
 use Cognesy\Instructor\Extras\Example\Example;
 
@@ -46,6 +45,7 @@ $user = (new StructuredOutput)->with(
     mode: OutputMode::Json
 )->get();
 ?>
+// @doctest id="3776"
 ```
 
 ## Modifying the example template
@@ -62,7 +62,6 @@ In case input or output data is an array, Instructor will automatically convert 
 a JSON string before replacing the placeholders.
 
 ```php
-// @doctest id="3c9b"
 $user = (new StructuredOutput)->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
@@ -75,6 +74,7 @@ $user = (new StructuredOutput)->with(
     ],
     mode: OutputMode::Json
 )->get();
+// @doctest id="790d"
 ```
 
 
@@ -90,11 +90,11 @@ and differ in the way the input data is provided.
 an instance of Example using the constructor.
 
 ```php
-// @doctest id="baae"
 $example = Example::fromText(
     input: 'Ian is 27 yo',
     output: ['name' => 'Ian', 'age' => 27]
 );
+// @doctest id="77ac"
 ```
 
 ### Make example from chat
@@ -103,11 +103,11 @@ $example = Example::fromText(
 you want to use a chat or chat fragment as a demonstration of the input.
 
 ```php
-// @doctest id="16bf"
 $example = Example::fromChat(
     input: [['role' => 'user', 'content' => 'Ian is 27 yo']],
     output: ['name' => 'Ian', 'age' => 27]
 );
+// @doctest id="5182"
 ```
 
 ### Make example from data
@@ -117,9 +117,9 @@ convert it to a string. It may be useful to provide a complex data structure as 
 input.
 
 ```php
-// @doctest id="6ac8"
 $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthData' => '1994-01-01'],
     output: ['name' => 'Ian', 'age' => 27]
 );
+// @doctest id="25d7"
 ```

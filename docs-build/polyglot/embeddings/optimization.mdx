@@ -5,7 +5,6 @@
 When processing many documents, it's more efficient to batch them:
 
 ```php
-// @doctest id="a269"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -36,6 +35,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
 }
 
 echo "Processed " . count($vectors) . " embeddings in total.\n";
+// @doctest id="468d"
 ```
 
 
@@ -44,7 +44,6 @@ echo "Processed " . count($vectors) . " embeddings in total.\n";
 For better performance, you can cache embeddings to avoid regenerating them:
 
 ```php
-// @doctest id="453d"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -129,5 +128,6 @@ echo "Second call completed (from cache).\n";
 // Compare vectors to verify they're the same
 $equal = (serialize($vector1) === serialize($vector2));
 echo "Vectors are " . ($equal ? "identical" : "different") . ".\n";
+// @doctest id="4687"
 ```
 

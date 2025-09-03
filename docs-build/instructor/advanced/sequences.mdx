@@ -7,7 +7,6 @@ It is usually more convenient not create a dedicated class with a single array
 property just to handle a list of objects of a given class.
 
 ```php
-// @doctest id="943e"
 <?php
 class Person
 {
@@ -25,6 +24,7 @@ $list = (new StructuredOutput)
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
     )->get();
+// @doctest id="9b0a"
 ```
 
 
@@ -46,7 +46,6 @@ only when the sequence is fully extracted, the objects are validated and a full
 sequence is returned (see example below).
 
 ```php
-// @doctest id="c41c"
 <?php
 class Person
 {
@@ -81,6 +80,7 @@ foreach ($list as $person) {
     // do something with each person
     $this->db->save($person);
 }
+// @doctest id="65b7"
 ```
 
 
@@ -90,13 +90,13 @@ Sequences offer array access (via ArrayAccess) and convenience methods
 to work with the list of extracted objects.
 
 ```php
-// @doctest id="e7fa"
 <?php
 $sequence->count();   // returns the number of extracted items
 $sequence->first();   // returns the first extracted item
 $sequence->last();    // returns the last extracted item
 $sequence->get(1);    // returns the second extracted item
 $sequence->toArray(); // returns the list of extracted items as an array
+// @doctest id="329e"
 ```
 
 ## Streaming sequence updates

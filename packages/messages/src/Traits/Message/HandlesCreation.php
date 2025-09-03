@@ -65,7 +65,7 @@ trait HandlesCreation
         $role = $message['role'] ?? 'user';
         $content = match(true) {
             self::isArrayOfStrings($message) => Content::fromAny(array_map(fn($text) => ContentPart::text($text), $message)),
-            Message::isMessage($message) => Content::fromAny($message),
+            Message::isMessage($message) => Content::fromAny($message['content'] ?? ''),
             default => throw new \InvalidArgumentException('Invalid message array - must be an array of strings or a valid message structure'),
         };
 

@@ -19,7 +19,6 @@ description: 'How to troubleshoot provider configurations in Polyglot'
 Make sure your API keys are correct and have the necessary permissions:
 
 ```php
-// @doctest id="7477"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -46,6 +45,7 @@ $presets = ['openai', 'anthropic', 'mistral'];
 foreach ($presets as $preset) {
     testApiKey($preset);
 }
+// @doctest id="34f1"
 ```
 
 
@@ -54,7 +54,6 @@ foreach ($presets as $preset) {
 Use debug mode to see the actual requests and responses:
 
 ```php
-// @doctest id="611b"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -67,6 +66,7 @@ $inference = new Inference()
 $response = $inference->with(
     messages: 'Test message with debug enabled'
 )->get();
+// @doctest id="e657"
 ```
 
 
@@ -82,7 +82,6 @@ Some issues might be related to the provider's service status. Check their statu
 Ensure all required configuration parameters are present and correctly formatted:
 
 ```php
-// @doctest id="3d18"
 <?php
 
 function verifyConfig(string $preset): void {
@@ -115,4 +114,5 @@ foreach ($presets as $preset) {
     verifyConfig($preset);
     echo "\n";
 }
+// @doctest id="c37a"
 ```

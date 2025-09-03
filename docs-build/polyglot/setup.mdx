@@ -15,8 +15,8 @@ This chapter will guide you through the initial steps of setting up and using Po
 You can install it using Composer:
 
 ```bash
-# @doctest id="b22e"
 composer require cognesy/instructor-polyglot
+# @doctest id="6f71"
 ```
 
 This will install Polyglot along with its dependencies.
@@ -43,7 +43,6 @@ Polyglot requires API keys to authenticate with LLM providers. The recommended a
 2. Add your API keys:
 
 ```shell
-# @doctest id="c373"
 # OpenAI
 OPENAI_API_KEY=sk-your-openai-key
 
@@ -54,6 +53,7 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 MISTRAL_API_KEY=your-mistral-key
 GEMINI_API_KEY=your-gemini-key
 # etc.
+# @doctest id="b230"
 ```
 
 ### Configuration Files
@@ -66,12 +66,12 @@ The default configuration files are located in the Instructor package, but you c
 2. Copy the configuration files from the Instructor package:
 
 ```bash
-# @doctest id="4aa1"
 # Create config directory if it doesn't exist
 mkdir -p config
 
 # Copy configuration files
 cp vendor/cognesy/instructor-polyglot/config/* config/
+# @doctest id="66c0"
 ```
 
 3. Customize the configuration files as needed
@@ -82,7 +82,6 @@ cp vendor/cognesy/instructor-polyglot/config/* config/
 The `llm.php` configuration file contains settings for LLM providers:
 
 ```php
-// @doctest id="6e65"
 <?php
 // Example of a simplified config/llm.php
 
@@ -116,6 +115,7 @@ return [
         // Other connections...
     ],
 ];
+// @doctest id="3b4b"
 ```
 
 #### Embeddings Configuration
@@ -123,7 +123,6 @@ return [
 The `embed.php` configuration file contains settings for embeddings providers:
 
 ```php
-// @doctest id="15db"
 <?php
 // Example of a simplified config/embed.php
 
@@ -146,6 +145,7 @@ return [
         // Other connections...
     ],
 ];
+// @doctest id="0dcd"
 ```
 
 ### Custom Configuration Location
@@ -153,8 +153,8 @@ return [
 By default, Polyglot looks for custom configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATHS` environment variable:
 
 ```shell
-# @doctest id="cd4c"
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
+# @doctest id="9b2f"
 ```
 
 ### Overriding Configuration Location
@@ -162,10 +162,10 @@ INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
 You can use `Settings` class static `setPath()` method to override the value of config path set in environment variable with your own value.
 
 ```php
-// @doctest id="d58d"
 use Cognesy\Config\Settings;
 
 Settings::setPath('/your/path/to/config');
+// @doctest id="f575"
 ```
 
 
@@ -183,7 +183,6 @@ Settings::setPath('/your/path/to/config');
 A simple way to test if everything is working correctly is to run a small script:
 
 ```php
-// @doctest id="765c"
 <?php
 require 'vendor/autoload.php';
 
@@ -192,6 +191,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $result = (new Inference)
     ->withMessages('Say hello.')
     ->get();
+// @doctest id="56ae"
 ```
 
 If you see a friendly greeting, your installation is working correctly!

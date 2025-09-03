@@ -30,17 +30,16 @@ class Image extends ImageUtil
      * @return array
      */
     public function toArray(): array {
-        $array = [
-            'role' => 'user',
-            'content' => [
-                ['type' => 'text', 'text' => $this->prompt],
-                ['type' => 'image_url', 'image_url' => ['url' => $this->url ?: $this->base64bytes]],
-            ],
-        ];
-        if (empty($this->prompt)) {
-            unset($array['content'][0]);
+        $content = [];
+        if (!empty($this->prompt)) {
+            $content[] = ['type' => 'text', 'text' => $this->prompt];
         }
-        return $array;
+        $content[] = ['type' => 'image_url', 'image_url' => ['url' => $this->url ?: $this->base64bytes]];
+        
+        return [
+            'role' => 'user',
+            'content' => $content,
+        ];
     }
 
     /**

@@ -15,7 +15,6 @@ Provider rate limits can cause request failures during high traffic periods.
 1. **Implement Retry Logic**: Add automatic retries with exponential backoff
 
 ```php
-// @doctest id="49be"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -65,11 +64,11 @@ try {
 } catch (HttpRequestException $e) {
     echo "All retry attempts failed: " . $e->getMessage() . "\n";
 }
+// @doctest id="3ba2"
 ```
 
 2. **Request Throttling**: Limit the rate of requests from your application
 ```php
-// @doctest id="1980"
 <?php
 class RateLimiter {
     private $lastRequestTime = 0;
@@ -105,12 +104,12 @@ for ($i = 0; $i < 10; $i++) {
     )->toText();
     echo "Response $i: $response\n";
 }
+// @doctest id="414d"
 ```
 
 3. **Request Batching**: Combine multiple requests into batches when possible
 
 ```php
-// @doctest id="d2b9"
 <?php
 // Instead of making many small requests
 $responses = [];
@@ -127,6 +126,7 @@ foreach ($questions as $i => $question) {
 
 $batchResponse = $inference->with(messages: $batchedQuestions)->get();
 // Then parse the batch response into individual answers
+// @doctest id="49b3"
 ```
 
 4. **Upgrade API Plan**: Consider upgrading to a higher tier with increased rate limits

@@ -3,7 +3,6 @@
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-// @doctest id="de08"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -16,6 +15,7 @@ $value = (new StructuredOutput)
 
 var_dump($value);
 // int(28)
+// @doctest id="bf7f"
 ```
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
@@ -28,7 +28,6 @@ Additionally, you can use Scalar adapter to extract enums via `Scalar::enum()`.
 ### String result
 
 ```php
-// @doctest id="1a82"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -38,12 +37,12 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeString();
 // expect($value)->toBe("Jason");
+// @doctest id="c7cb"
 ```
 
 ### Integer result
 
 ```php
-// @doctest id="27e3"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -53,12 +52,12 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeInt();
 // expect($value)->toBe(28);
+// @doctest id="f0ae"
 ```
 
 ### Boolean result
 
 ```php
-// @doctest id="91d6"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -68,12 +67,12 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeBool();
 // expect($value)->toBe(true);
+// @doctest id="66aa"
 ```
 
 ### Float result
 
 ```php
-// @doctest id="3ff0"
 <?php
 $value = (new StructuredOutput)
     ->with(
@@ -83,12 +82,12 @@ $value = (new StructuredOutput)
     ->get();
 // expect($value)->toBeFloat();
 // expect($value)->toBe(11.6);
+// @doctest id="5523"
 ```
 
 ### Enum result / select one of the options
 
 ```php
-// @doctest id="dc61"
 <?php
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
 $value = (new StructuredOutput)
@@ -101,4 +100,5 @@ $value = (new StructuredOutput)
     )->get();
 // expect($value)->toBeString();
 // expect($value)->toBe('other');
+// @doctest id="e147"
 ```

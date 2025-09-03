@@ -140,10 +140,10 @@ final readonly class ContentPart
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function shouldExport(string $key, mixed $value): bool {
+    private function shouldExport(string|int $key, mixed $value): bool {
         return !is_null($value)
             && ($value !== '')
             && ($value !== [])
-            && (str_starts_with($key, '_') === false);
+            && (is_string($key) ? (str_starts_with($key, '_') === false) : true);
     }
 }
