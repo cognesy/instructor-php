@@ -30,7 +30,7 @@ trait CreatesStructureFromCallables
 
     static private function makeFromFunctionInfo(
         FunctionInfo $functionInfo,
-        string $name = null,
+        ?string $name = null,
         ?string $description = null
     ) : Structure {
         $functionName = $name ?? $functionInfo->getShortName();

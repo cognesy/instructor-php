@@ -8,9 +8,12 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 class OpenAIUsageFormat implements CanMapUsage
 {
     public function fromData(array $data): Usage {
+         $input = (int)($data['usage']['prompt_tokens'] ?? 0);
+         $total = (int)($data['usage']['total_tokens'] ?? 0);
+         $output = max(0, $total - $input);
          return new Usage(
-            inputTokens: $response['usage']['prompt_tokens'] ?? 0,
-            outputTokens: ($response['usage']['total_tokens'] ?? 0) - ($response['usage']['prompt_tokens'] ?? 0),
+            inputTokens: $input,
+            outputTokens: $output,
         );
    }
 }

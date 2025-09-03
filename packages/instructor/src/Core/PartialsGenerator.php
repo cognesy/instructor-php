@@ -87,16 +87,7 @@ class PartialsGenerator implements CanGeneratePartials
             $this->partialResponses[] = $partialResponse;
 
             // situation 1: new function call
-            $maybeToolName = $partialResponse->toolName;
-            // create next FC only if JSON buffer is not empty (which is the case for 1st iteration)
-            if ($maybeToolName) {
-                if (empty($this->responseJson)) {
-                    $this->newToolCall($response->toolName ?? $responseModel->toolName());
-                } else {
-                    $this->finalizeToolCall($this->responseJson, $responseModel->toolName());
-                    $this->responseJson = ''; // reset json buffer
-                }
-            }
+            $this->handleToolSignal($partialResponse, $responseModel);
 
             // situation 2: new delta
             $maybeArgumentChunk = $partialResponse->contentDelta;
@@ -155,6 +146,29 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
+    private function handleToolSignal(PartialInferenceResponse $partialResponse, ResponseModel $responseModel) : void {
+        $maybeToolName = $partialResponse->toolName;
+        if (!$maybeToolName) {
+            return;
+        }
+
+        $active = $this->toolCalls->last();
+        $hasBuffer = !empty($this->responseJson);
+
+        // If a tool is already active, buffer is empty, and the same tool is signaled again, ignore duplicate start
+        if ($active && !$hasBuffer && ($active->name() === $maybeToolName)) {
+            return;
+        }
+
+        // If we have buffered args, finalize the previous tool call first
+        if ($hasBuffer) {
+            $this->finalizeToolCall($this->responseJson, $responseModel->toolName());
+            $this->responseJson = '';
+        }
+
+        // Start the new (or first) tool call with the signaled or default name
+        $this->newToolCall($maybeToolName ?? $responseModel->toolName());
+    }
 
     protected function handleDelta(
         string $partialJson,

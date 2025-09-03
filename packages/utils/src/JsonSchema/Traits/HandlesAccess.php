@@ -60,7 +60,7 @@ trait HandlesAccess
         return $this->title ?? '';
     }
 
-    public function meta(string $key = null, mixed $default = null) : mixed {
+    public function meta(?string $key = null, mixed $default = null) : mixed {
         if ($key === null) {
             return $this->meta;
         }

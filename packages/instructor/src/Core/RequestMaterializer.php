@@ -67,18 +67,35 @@ class RequestMaterializer implements CanMaterializeRequest
             return new Script();
         }
         $script = new Script();
-        $script->section('system')
-            ->prependMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
-        $script->section('cached-messages')
-            ->appendMessages($this->makeMessages($cachedContext->messages()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
-        $script->section('cached-prompt')
-            ->appendMessage(Message::fromString($cachedContext->prompt()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
-        $script->section('cached-examples')
-            ->appendMessages($this->makeExamples($cachedContext->examples()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+
+        // system (cached)
+        $script = $script->withSectionMessages('system', $this->makeSystem($cachedContext->messages(), $cachedContext->system()));
+        if ($script->getSection('system')->notEmpty()) {
+            $updated = $script->getSection('system')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $script = $script->replaceSection('system', $updated);
+        }
+
+        // cached chat messages
+        $script = $script->withSectionMessages('cached-messages', $this->makeMessages($cachedContext->messages()));
+        if ($script->getSection('cached-messages')->notEmpty()) {
+            $updated = $script->getSection('cached-messages')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $script = $script->replaceSection('cached-messages', $updated);
+        }
+
+        // cached prompt
+        if ($cachedContext->prompt() !== '') {
+            $script = $script->withSectionMessage('cached-prompt', Message::fromString($cachedContext->prompt()));
+            $updated = $script->getSection('cached-prompt')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $script = $script->replaceSection('cached-prompt', $updated);
+        }
+
+        // cached examples
+        $script = $script->withSectionMessages('cached-examples', $this->makeExamples($cachedContext->examples()));
+        if ($script->getSection('cached-examples')->notEmpty()) {
+            $updated = $script->getSection('cached-examples')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $script = $script->replaceSection('cached-examples', $updated);
+        }
+
         return $script->trimmed();
     }
 
@@ -88,8 +105,8 @@ class RequestMaterializer implements CanMaterializeRequest
         }
 
         if ($script->section('cached-prompt')->notEmpty()) {
-            $script->removeSection('prompt');
-            $script->section('pre-cached-prompt')->appendMessageIfEmpty([
+            $script = $script->removeSection('prompt');
+            $script = $script->withSectionMessageIfEmpty('pre-cached-prompt', [
                 'role' => 'user',
                 'content' => [[
                     'type' => 'text',
@@ -99,7 +116,7 @@ class RequestMaterializer implements CanMaterializeRequest
         }
 
         if ($script->section('cached-examples')->notEmpty()) {
-            $script->section('pre-cached-examples')->appendMessageIfEmpty([
+            $script = $script->withSectionMessageIfEmpty('pre-cached-examples', [
                 'role' => 'user',
                 'content' => [[
                     'type' => 'text',
@@ -108,7 +125,7 @@ class RequestMaterializer implements CanMaterializeRequest
             ]);
         }
 
-        $script->section('post-cached')->appendMessageIfEmpty([
+        $script = $script->withSectionMessageIfEmpty('post-cached', [
             'role' => 'user',
             'content' => [[
                 'type' => 'text',
@@ -133,36 +150,36 @@ class RequestMaterializer implements CanMaterializeRequest
                 . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
-        $newScript->section('retries')->appendMessages($messages);
+        $newScript = $newScript->withSectionMessages('retries', Messages::fromArray($messages));
         return $newScript;
     }
 
     protected function withSections(Script $script) : Script {
         if ($script->section('prompt')->notEmpty()) {
-            $script->section('pre-prompt')->appendMessageIfEmpty([
+            $script = $script->withSectionMessageIfEmpty('pre-prompt', [
                 'role' => 'user',
                 'content' => "TASK:",
             ]);
         }
 
         if ($script->section('examples')->notEmpty()) {
-            $script->section('pre-examples')->appendMessageIfEmpty([
+            $script = $script->withSectionMessageIfEmpty('pre-examples', [
                 'role' => 'user',
                 'content' => "EXAMPLES:",
             ]);
         }
 
         if ($script->section('retries')->notEmpty()) {
-            $script->section('pre-retries')->appendMessageIfEmpty([
+            $script = $script->withSectionMessageIfEmpty('pre-retries', [
                 'role' => 'user',
                 'content' => "FEEDBACK:",
             ]);
-            $script->section('post-retries')->appendMessageIfEmpty([
+            $script = $script->withSectionMessageIfEmpty('post-retries', [
                 'role' => 'user',
                 'content' => "CORRECTED RESPONSE:",
             ]);
         } else {
-            $script->section('post-retries')->appendMessageIfEmpty([
+            $script = $script->withSectionMessageIfEmpty('post-retries', [
                 'role' => 'user',
                 'content' => "RESPONSE:",
             ]);
@@ -184,9 +201,9 @@ class RequestMaterializer implements CanMaterializeRequest
     protected function makeSystem(Messages $messages, string $system) : Messages {
         $output = Messages::empty();
         if (!empty($system)) {
-            $output->appendMessage(new Message(role: 'system', content: $system));
+            $output = $output->appendMessage(new Message(role: 'system', content: $system));
         }
-        $output->appendMessages(
+        $output = $output->appendMessages(
             $messages->headWithRoles(['system', 'developer'])
         );
         return $output;
@@ -194,7 +211,7 @@ class RequestMaterializer implements CanMaterializeRequest
 
     protected function makeMessages(Messages $messages) : Messages {
         $output = Messages::empty();
-        $output->appendMessages(
+        $output = $output->appendMessages(
             $messages->tailAfterRoles(['developer', 'system'])
         );
         return $output;
@@ -212,7 +229,7 @@ class RequestMaterializer implements CanMaterializeRequest
                 $item instanceof Example => $item,
                 default => throw new Exception('Invalid example type'),
             };
-            $output->appendMessages($example->toMessages());
+            $output = $output->appendMessages($example->toMessages());
         }
         return $output;
     }

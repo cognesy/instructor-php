@@ -66,7 +66,7 @@ $cached = (new StructuredOutput)->using('anthropic')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
     prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',
-);
+)->withDebugPreset('on');
 ?>
 ```
 At this point we can use Instructor structured output processing to extract the project

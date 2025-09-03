@@ -191,7 +191,7 @@ class Template
     public function renderMessages(Messages $messages) : Messages {
         $newMessages = Messages::empty();
         foreach ($messages->each() as $message) {
-            $newMessages->appendMessage($this->renderMessage($message));
+            $newMessages = $newMessages->appendMessage($this->renderMessage($message));
         }
         return $newMessages;
     }

@@ -85,6 +85,17 @@ final class HttpClientBuilder
         return $this;
     }
 
+    /**
+     * Convenience: attach a MockHttpDriver and optionally configure expectations.
+     */
+    public function withMock(?callable $configure = null): self {
+        $mock = new \Cognesy\Http\Drivers\Mock\MockHttpDriver($this->events);
+        if ($configure) {
+            $configure($mock);
+        }
+        return $this->withDriver($mock);
+    }
+
     public function withClientInstance(
         string $driverName,
         object $clientInstance,

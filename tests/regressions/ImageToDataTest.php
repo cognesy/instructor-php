@@ -17,12 +17,10 @@ it('should properly use toData() method on Image', function () {
     
     // First check what toArray returns directly
     $imageArray = $image->toArray();
-    dump('Direct toArray:', $imageArray);
     
     // Then verify that toMessages() works
     $messages = $image->toMessages();
     $messagesArray = $messages->toArray();
-    dump('Via toMessages:', $messagesArray);
     
     expect($messagesArray)->not->toBeEmpty();
     expect($messagesArray[0])->toHaveKey('role');

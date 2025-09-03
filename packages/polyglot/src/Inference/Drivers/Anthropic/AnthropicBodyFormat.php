@@ -109,8 +109,10 @@ class AnthropicBodyFormat implements CanMapRequestBody
         $cachedMessages = $request->cachedContext()?->messages() ?? [];
 
         $systemCached = Messages::fromArray($cachedMessages)
-            ->headWithRoles([MessageRole::System, MessageRole::Developer])
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+            ->headWithRoles([MessageRole::System, MessageRole::Developer]);
+        if (!$systemCached->isEmpty()) {
+            $systemCached = $systemCached->appendContentField('cache_control', ['type' => 'ephemeral']);
+        }
 
         $systemMessages = Messages::fromArray($request->messages())
             ->headWithRoles([MessageRole::System, MessageRole::Developer]);
@@ -150,8 +152,10 @@ class AnthropicBodyFormat implements CanMapRequestBody
         $cachedMessages = $request->cachedContext()?->messages() ?? [];
 
         $postSystemCached = Messages::fromArray($cachedMessages)
-            ->tailAfterRoles([MessageRole::System, MessageRole::Developer])
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+            ->tailAfterRoles([MessageRole::System, MessageRole::Developer]);
+        if (!$postSystemCached->isEmpty()) {
+            $postSystemCached = $postSystemCached->appendContentField('cache_control', ['type' => 'ephemeral']);
+        }
 
         $postSystemMessages = Messages::fromArray($request->messages())
             ->tailAfterRoles([MessageRole::System, MessageRole::Developer]);

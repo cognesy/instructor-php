@@ -14,7 +14,7 @@ trait HandlesTransformation
 
     public function trimmed() : static {
         $section = new Section($this->name(), $this->description());
-        $section->withMessages($this->messages()->trimmed());
+        $section = $section->withMessages($this->messages()->trimmed());
         return $section;
     }
 }

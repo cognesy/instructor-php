@@ -68,7 +68,6 @@ Metadata in markdown frontmatter:
 ## Dependencies
 
 - Symfony Console, Filesystem, YAML
-- webuni/front-matter for YAML parsing
 - nikic/iter for functional iteration
 - Custom utilities from `cognesy/instructor-utils`
 

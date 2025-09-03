@@ -85,6 +85,6 @@ trait HandlesCreation
     }
 
     public function clone() : self {
-        return new Messages(array_map(fn($message) => $message->clone(), $this->messages));
+        return new Messages(...array_map(fn($message) => $message->clone(), $this->messages));
     }
 }

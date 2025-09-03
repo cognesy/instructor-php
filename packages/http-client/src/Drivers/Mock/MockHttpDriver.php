@@ -18,8 +18,10 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class MockHttpDriver implements CanHandleHttpRequest
 {
-    /** @var array Array of request matchers to predefined responses */
+    /** @var array Array of legacy request matchers to predefined responses */
     private array $responses = [];
+    /** @var array<int,array{matchers: callable[], times: int|null, response: (callable|HttpResponse)}> */
+    private array $expectations = [];
     
     /** @var HttpRequest[] Array of received requests for inspection */
     private array $receivedRequests = [];
@@ -53,7 +55,26 @@ class MockHttpDriver implements CanHandleHttpRequest
             $this->events->dispatch(new HttpResponseReceived($request));
         }
         
-        // Search for a matching response based on defined matchers
+        // 1) Check new-style expectations first (fluent DSL)
+        foreach ($this->expectations as $idx => $exp) {
+            $matches = true;
+            foreach ($exp['matchers'] as $m) {
+                if (!$m($request)) { $matches = false; break; }
+            }
+            if ($matches) {
+                // Decrement times if limited
+                if ($exp['times'] !== null) {
+                    $this->expectations[$idx]['times'] -= 1;
+                    if ($this->expectations[$idx]['times'] <= 0) {
+                        array_splice($this->expectations, $idx, 1);
+                    }
+                }
+                $resp = $exp['response'];
+                return is_callable($resp) ? $resp($request) : $resp;
+            }
+        }
+
+        // 2) Fallback: Search legacy matchers for backward compatibility
         foreach ($this->responses as $matcher) {
             $matchesCriteria = true;
             
@@ -93,7 +114,7 @@ class MockHttpDriver implements CanHandleHttpRequest
         }
         
         throw new InvalidArgumentException(
-            "No response defined for request to {$request->method()} {$request->url()}"
+            "No mock match for {$request->method()} {$request->url()}"
         );
     }
     
@@ -165,6 +186,26 @@ class MockHttpDriver implements CanHandleHttpRequest
     public function clearResponses(): self
     {
         $this->responses = [];
+        $this->expectations = [];
+        return $this;
+    }
+
+    /**
+     * Begin a fluent expectation definition.
+     */
+    public function on(): MockExpectation { return new MockExpectation($this); }
+
+    /**
+     * Alias for on().
+     */
+    public function expect(): MockExpectation { return $this->on(); }
+
+    /**
+     * INTERNAL: Register a compiled expectation (used by MockExpectation::reply()).
+     * @param array{matchers: callable[], times: int|null, response: (callable|HttpResponse)} $compiled
+     */
+    public function registerExpectation(array $compiled): self {
+        $this->expectations[] = $compiled;
         return $this;
     }
 }

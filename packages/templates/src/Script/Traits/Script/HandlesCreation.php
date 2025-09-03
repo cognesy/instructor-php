@@ -22,15 +22,15 @@ trait HandlesCreation
                 }
             );
         }
-        return new self(...$sectionList);
+        return new self($sectionList);
     }
 
     public static function fromMessages(Messages $messages, string $section = 'messages') : Script {
-        return new self((new Section($section))->appendMessages($messages));
+        return new self([ (new Section($section))->appendMessages($messages) ]);
     }
 
     public function clone() : self {
-        return (new Script(...$this->sections))
+        return (new Script($this->sections))
             ->withParams($this->parameters());
     }
 }
