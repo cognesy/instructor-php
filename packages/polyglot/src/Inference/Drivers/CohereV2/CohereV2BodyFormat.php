@@ -12,6 +12,12 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
     public function toRequestBody(InferenceRequest $request) : array {
         $requestBody = parent::toRequestBody($request);
 
+        if (array_key_exists('max_completion_tokens', $requestBody)
+            && !array_key_exists('max_tokens', $requestBody)
+        ) {
+            $requestBody['max_tokens'] = $requestBody['max_completion_tokens'];
+        }
+        unset($requestBody['max_completion_tokens']);
         // Cohere V2 does not support some OpenAI params, so we unset it
         unset($requestBody['tool_choice']);
         unset($requestBody['parallel_tool_calls']);
