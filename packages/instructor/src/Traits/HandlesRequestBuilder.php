@@ -3,10 +3,14 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
-use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
+/**
+ * @template TResponse
+ */
 trait HandlesRequestBuilder
 {
     private StructuredOutputRequestBuilder $requestBuilder;
@@ -32,12 +36,20 @@ trait HandlesRequestBuilder
         return $this;
     }
 
-    public function withResponseClass(string $class) : static {
+    /**
+     * @param class-string<TResponse> $class
+     * @return StructuredOutput<TResponse>
+     */
+    public function withResponseClass(string $class) : StructuredOutput {
         $this->requestBuilder->withResponseModel($class);
         return $this;
     }
 
-    public function withResponseObject(object $responseObject) : static {
+    /**
+     * @param object<TResponse> $responseObject
+     * @return StructuredOutput<TResponse>
+     */
+    public function withResponseObject(object $responseObject) : StructuredOutput {
         $this->requestBuilder->withResponseModel($responseObject);
         return $this;
     }

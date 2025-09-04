@@ -5,6 +5,7 @@ namespace Cognesy\Auxiliary\Codebase\Data;
 class CodeClass
 {
     public function __construct(
+        readonly public string $docComment = '',
         readonly public string $namespace = '',
         readonly public string $name = '',
         readonly public string $shortName = '',
@@ -19,7 +20,6 @@ class CodeClass
         readonly public array $methods = [],
         /** @var string[] */
         readonly public array $properties = [],
-        readonly public string $docComment = '',
         readonly public string $body = '',
     ) {}
 }

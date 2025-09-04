@@ -21,6 +21,9 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use Generator;
 
+/**
+ * @template TResponse
+ */
 class PendingStructuredOutput
 {
     use HandlesResultTypecasting;
@@ -63,7 +66,9 @@ class PendingStructuredOutput
     }
 
     /**
-     * Executes the request and returns the response
+     * Executes the request and returns the parsed value
+     *
+     * @return TResponse
      */
     public function get() : mixed {
         return match(true) {
@@ -96,6 +101,8 @@ class PendingStructuredOutput
 
     /**
      * Executes the request and returns the response stream
+     *
+     * @return StructuredOutputStream<TResponse>
      */
     public function stream() : StructuredOutputStream {
         $stream = $this->getStream($this->request->withStreamed());

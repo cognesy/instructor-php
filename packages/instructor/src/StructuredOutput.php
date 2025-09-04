@@ -2,17 +2,22 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Http\HttpClient;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
+use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
  * The StructuredOutput is facade for handling structured output requests and responses.
+ *
+ * @template TResponse
+ * @use Traits\HandlesShortcuts<TResponse>
+ * @use Traits\HandlesInvocation<TResponse>
+ * @use Traits\HandlesRequestBuilder<TResponse>
  */
 class StructuredOutput
 {

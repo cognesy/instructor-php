@@ -13,7 +13,7 @@ trait HandlesSequenceUpdates
      *
      * @param-later-invoked-callable $listener
      */
-    public function onSequenceUpdate(callable $listener) : self {
+    public function onSequenceUpdate(callable $listener) : static {
         $this->onSequenceUpdate = $listener;
         $this->events->addListener(
             SequenceUpdated::class,

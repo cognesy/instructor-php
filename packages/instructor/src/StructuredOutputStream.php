@@ -11,6 +11,9 @@ use Exception;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * @template TResponse
+ */
 class StructuredOutputStream
 {
     private Generator $stream;
@@ -39,8 +42,9 @@ class StructuredOutputStream
     }
 
     /**
-     * Returns last received response object, can be used to retrieve
-     * current or final response from the stream
+     * Returns last received parsed value
+     *
+     * @return TResponse
      */
     public function lastUpdate() : mixed {
         return $this->lastResponse->value();
@@ -55,7 +59,9 @@ class StructuredOutputStream
     }
 
     /**
-     * Returns a stream of partial updates.
+     * Returns a stream of partial parsed values.
+     *
+     * @return Iterable<TResponse>
      */
     public function partials() : Iterable {
         foreach ($this->streamResponses() as $partialResponse) {
@@ -65,7 +71,9 @@ class StructuredOutputStream
     }
 
     /**
-     * Processes response stream and returns only the final update.
+     * Processes response stream and returns the final parsed value.
+     *
+     * @return TResponse
      */
     public function finalValue() : mixed {
         return $this->finalResponse()->value();

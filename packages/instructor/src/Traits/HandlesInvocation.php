@@ -16,6 +16,8 @@ use Exception;
 
 /**
  * Trait provides invocation handling functionality for the StructuredOutput class.
+ *
+ * @template TResponse
  */
 trait HandlesInvocation
 {
@@ -46,6 +48,11 @@ trait HandlesInvocation
      * @param string $retryPrompt The prompt to be used during retries.
      * @param OutputMode $mode The mode of operation for the request.
      * @throws Exception If the response model is empty or invalid.
+     *
+     * @template T of object
+     * @psalm-param class-string<T>|T|array|null $responseModel
+     * @phpstan-param class-string<T>|T|array|null $responseModel
+     * @return StructuredOutput<TResponse|T>
      */
     public function with(
         string|array|Message|Messages|null $messages = null,
@@ -86,7 +93,7 @@ trait HandlesInvocation
      * This method initializes the request factory, request handler, and response generator,
      * and returns a StructuredOutputResponse object that can be used to handle the request.
      *
-     * @return PendingStructuredOutput A response object providing access to various results retrieval methods.
+     * @return PendingStructuredOutput<TResponse> A response object providing access to various results retrieval methods.
      */
     public function create() : PendingStructuredOutput {
         $config = $this->configBuilder->create();

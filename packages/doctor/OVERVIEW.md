@@ -14,7 +14,7 @@
 
 2. **Doctest System** (`src/Doctest/`)
    - `DoctestFile`: Extracts code blocks from markdown, converts to testable files
-   - Region-based code extraction using special comments (e.g., `// region:example`)
+   - Region-based code extraction using special comments (`@doctest-region-start name=example` / `@doctest-region-end`)
    - Language-agnostic code generation with file templates
    - Batch processing for multiple markdown files
    - Filtering based on language, minimum lines, IDs
@@ -32,12 +32,14 @@
 
 ## Key Features
 
-- **Code Block Extraction**: Identifies code blocks with IDs in markdown, extracts to separate files for testing
-- **Region Support**: Extracts specific code regions using comment markers
-- **Multi-language**: Supports PHP, JavaScript, Python, etc. with appropriate file extensions
+- **Code Block Extraction**: Identifies code blocks with IDs (`@doctest id=example`) in markdown, extracts to separate files for testing
+- **Region Support**: Extracts specific code regions using comment markers (`@doctest-region-start name=region`)
+- **Validation**: Ensures extracted code files exist and match markdown blocks
+- **Multi-language**: Supports PHP, JavaScript, Python, etc. with appropriate file extensions and comment styles
 - **Metadata Processing**: YAML frontmatter parsing with doctest configuration
 - **Template System**: Language-specific file templates for generated code
 - **Build Pipeline**: Automated docs generation with file copying, renaming (.md → .mdx)
+- **Event System**: Domain events for tracking extraction and validation progress
 
 ## CLI Commands
 
@@ -45,6 +47,7 @@
 - `mark`: Process single Markdown file and add IDs to code snippets
 - `mark-dir`: Recursively process Markdown files in a directory and add IDs to code snippets
 - `extract`: Extract code blocks from Markdown files to target directory
+- `validate`: Validate extracted code blocks and list missing/wrong paths
 
 ### Documentation Generation Commands
 - `generate-mintlify`: Generate Mintlify-compatible documentation
@@ -59,11 +62,21 @@
 
 ## Configuration
 
-Metadata in markdown frontmatter:
-- `doctest_case_dir`: Output directory for extracted code
-- `doctest_case_prefix`: Filename prefix for generated files
-- `doctest_min_lines`: Minimum lines required for extraction
-- `doctest_included_types`: Array of programming languages to include
+### Metadata in markdown frontmatter:
+- `doctest_case_dir`: Output directory for extracted code (default: './tests')
+- `doctest_case_prefix`: Filename prefix for generated files (default: 'test_')
+- `doctest_min_lines`: Minimum lines required for extraction (default: 1)
+- `doctest_included_types`: Array of programming languages to include (default: ['php'])
+
+### Code Block Annotations:
+- `@doctest id=example`: Assigns unique ID to code block for extraction
+- `@doctest-region-start name=region`: Marks beginning of extractable region
+- `@doctest-region-end`: Marks end of extractable region
+
+### Metadata Precedence:
+1. YAML frontmatter (highest priority)
+2. Code block fence parameters
+3. Inline `@doctest` annotations (lowest priority)
 
 ## Dependencies
 
