@@ -14,7 +14,7 @@
 
 2. **Doctest System** (`src/Doctest/`)
    - `DoctestFile`: Extracts code blocks from markdown, converts to testable files
-   - Region-based code extraction using special comments (`@doctest-region-start name=example` / `@doctest-region-end`)
+   - Region-based code extraction using comment markers (`@doctest-region-start name=example` / `@doctest-region-end`)
    - Language-agnostic code generation with file templates
    - Batch processing for multiple markdown files
    - Filtering based on language, minimum lines, IDs
@@ -63,20 +63,43 @@
 ## Configuration
 
 ### Metadata in markdown frontmatter:
-- `doctest_case_dir`: Output directory for extracted code (default: './tests')
-- `doctest_case_prefix`: Filename prefix for generated files (default: 'test_')
-- `doctest_min_lines`: Minimum lines required for extraction (default: 1)
-- `doctest_included_types`: Array of programming languages to include (default: ['php'])
+- `doctest_case_dir`: Output directory for extracted code (default: `examples`)
+- `doctest_case_prefix`: Filename prefix (default: auto from filename, camelCase + `_`, e.g. `gettingStarted_`)
+- `doctest_min_lines`: Minimum lines required for extraction (default: 0)
+- `doctest_included_types`: Languages to include (default: none; specify e.g. `['php','javascript']`)
 
 ### Code Block Annotations:
 - `@doctest id=example`: Assigns unique ID to code block for extraction
 - `@doctest-region-start name=region`: Marks beginning of extractable region
 - `@doctest-region-end`: Marks end of extractable region
 
-### Metadata Precedence:
-1. YAML frontmatter (highest priority)
-2. Code block fence parameters
-3. Inline `@doctest` annotations (lowest priority)
+You can also provide fence parameters, e.g.:
+
+```markdown
+```php id="example" include="examples/example.php"
+// @doctest id="example"
+echo "...";
+```
+```
+
+### Metadata & ID Resolution
+- Frontmatter controls extraction config (case dir/prefix, filters) — not code block IDs.
+- For IDs/inline metadata inside a block:
+  1) Inline `@doctest` annotation takes precedence when present
+  2) Then fence parameters (e.g., `id=...`, `include=...`)
+  3) If no ID is provided, an auto 4‑char hex ID is generated
+  - A conflict between fence `id` and `@doctest id` raises a metadata conflict error
+
+### Include Metadata
+- `extract --modify-source` replaces extracted code blocks with a short placeholder and adds `include="<relative path>"` to the fence line so other tools can inline external files.
+- A timestamped backup of the original markdown is created before modification.
+
+### Validate Paths
+- `validate` resolves expected paths in this order:
+  1) `include` fence metadata → resolved relative to the markdown file
+  2) legacy inline `@doctest id="relative/path.ext"` → resolved relative to the markdown file
+  3) frontmatter‑derived path (`<case_dir>/<case_prefix><id>.<ext>`) → resolved relative to the markdown file
+- Use `--show-paths` to print resolved paths for each block.
 
 ## Dependencies
 

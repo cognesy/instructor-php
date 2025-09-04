@@ -21,7 +21,7 @@ $embeddings = new Embeddings('openai');
 
 // Alternative method to specify connection
 $embeddings = (new Embeddings())->using('openai');
-// @doctest id="6474"
+// @doctest id="5f08"
 ```
 
 ### Key Methods
@@ -55,7 +55,7 @@ $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get
 $vector = $result->first()?->values();
 
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
-// @doctest id="b1a7"
+// @doctest id="94cd"
 ```
 
 ### Embedding Multiple Texts
@@ -82,7 +82,7 @@ $vectors = $result->vectors();
 foreach ($vectors as $index => $vector) {
     echo "Document " . ($index + 1) . " has a vector with " . count($vector->values()) . " dimensions.\n";
 }
-// @doctest id="28c1"
+// @doctest id="0c46"
 ```
 
 ### Accessing Embedding Results
@@ -113,7 +113,7 @@ $usage = $result->usage();
 echo "Input tokens: " . $usage->input() . "\n";
 echo "Output tokens: " . $usage->output() . "\n";
 echo "Total tokens: " . $usage->total() . "\n";
-// @doctest id="5dc6"
+// @doctest id="19fc"
 ```
 
 ### Working with Vector Objects
@@ -137,7 +137,7 @@ $id = $vector->id();
 // Compare with another vector
 $otherVector = $result->with('Another text for comparison')->first();
 $similarity = $vector->compareTo($otherVector, 'cosine');
-// @doctest id="eeb6"
+// @doctest id="90f9"
 ```
 
 
@@ -169,7 +169,7 @@ echo "Cohere embedding dimensions: " . count($cohereResult->first()?->values()) 
 $mistralEmbeddings = new Embeddings('mistral');
 $mistralResult = $mistralEmbeddings->with($text)->get();
 echo "Mistral embedding dimensions: " . count($mistralResult->first()?->values()) . "\n";
-// @doctest id="f769"
+// @doctest id="784d"
 ```
 
 ### Provider-Specific Options
@@ -199,7 +199,7 @@ $response = $cohereEmbeddings->with(
         'truncate' => 'END',               // How to handle texts that exceed the token limit
     ]
 )->get();
-// @doctest id="7106"
+// @doctest id="fe2a"
 ```
 
 ### Models and Dimensions
@@ -224,6 +224,6 @@ $embeddings->withConfig($config);
 
 $response = $embeddings->with("Test text for large embedding model")->get();
 echo "Vector dimensions: " . count($response->first()?->values()) . "\n";
-// @doctest id="72bb"
+// @doctest id="e561"
 ```
 

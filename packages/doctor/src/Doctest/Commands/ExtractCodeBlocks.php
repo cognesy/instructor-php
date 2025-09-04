@@ -3,10 +3,16 @@
 namespace Cognesy\Doctor\Doctest\Commands;
 
 use Cognesy\Doctor\Doctest\DoctestFile;
+use Cognesy\Doctor\Doctest\Events\ExtractionCompleted;
+use Cognesy\Doctor\Doctest\Events\ExtractionStarted;
+use Cognesy\Doctor\Doctest\Events\FileExtracted;
 use Cognesy\Doctor\Doctest\Internal\MarkdownInfo;
+use Cognesy\Doctor\Doctest\Listeners\ExtractionMetricsCollector;
 use Cognesy\Doctor\Doctest\Services\DocRepository;
+use Cognesy\Doctor\Doctest\Services\DoctestPlanner;
 use Cognesy\Doctor\Markdown\MarkdownFile;
 use Cognesy\Doctor\Markdown\Nodes\CodeBlockNode;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -15,6 +21,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Finder\Finder;
 
 #[AsCommand(
     name: 'extract',
@@ -22,10 +30,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class ExtractCodeBlocks extends Command
 {
+    private ExtractionMetricsCollector $metricsCollector;
+    private EventDispatcher $eventDispatcher;
+    private DoctestPlanner $planner;
+
     public function __construct(
         private DocRepository $docRepository,
+        ?EventDispatcher $eventDispatcher = null,
     ) {
         parent::__construct();
+        $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
+        $this->metricsCollector = new ExtractionMetricsCollector();
+        $this->planner = new DoctestPlanner();
+        $this->eventDispatcher->addListener(ExtractionStarted::class, fn($e) => $this->metricsCollector->handle($e));
+        $this->eventDispatcher->addListener(FileExtracted::class, fn($e) => $this->metricsCollector->handle($e));
+        $this->eventDispatcher->addListener(ExtractionCompleted::class, fn($e) => $this->metricsCollector->handle($e));
     }
 
     protected function configure(): void {
@@ -108,6 +127,12 @@ class ExtractCodeBlocks extends Command
         $io->section("Processing file: {$sourcePath}");
 
         $sourceContent = $this->docRepository->readFile($sourcePath);
+        $startTime = microtime(true);
+        $this->eventDispatcher->dispatch(new ExtractionStarted([
+            'mode' => 'file',
+            'source' => $sourcePath,
+            'targetDir' => $targetDir,
+        ]));
         $markdown = MarkdownFile::fromString($sourceContent, $sourcePath);
 
         $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdown));
@@ -117,10 +142,26 @@ class ExtractCodeBlocks extends Command
             return Command::SUCCESS;
         }
 
-        $this->displayExtractionPlan($doctests, $targetDir, $io);
+        // Use planner to compute final paths for display (no behavior change)
+        $plan = $this->planner->planForMarkdown($markdown, $targetDir);
+        $this->displayExtractionPlanPlanned($doctests, $plan, $io);
 
         if ($isDryRun) {
+            // Compute would-be extracted snippets (main + regions) for summary
+            $wouldExtract = 0;
+            foreach ($plan as $item) {
+                $wouldExtract += 1 + count($item->regions);
+            }
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            $this->eventDispatcher->dispatch(new ExtractionCompleted([
+                'processedFiles' => 1,
+                'snippetsExtracted' => $wouldExtract,
+                'durationMs' => $durationMs,
+            ]));
+
             $io->success('Dry run completed. No files were written.');
+            $io->writeln('');
+            $io->writeln($this->metricsCollector->formatSummary());
             return Command::SUCCESS;
         }
 
@@ -130,12 +171,22 @@ class ExtractCodeBlocks extends Command
         }
 
         $extracted = 0;
+        // Build quick lookup for planned paths
+        $plannedById = [];
+        foreach ($plan as $item) { $plannedById[$item->id] = $item; }
+
         foreach ($doctests as $doctest) {
-            // Extract full code block first
-            $outputPath = $this->determineOutputPath($doctest, $targetDir);
+            // Extract full code block first (prefer planned path)
+            $outputPath = $plannedById[$doctest->id]->path ?? $this->determineOutputPath($doctest, $targetDir);
             $this->ensureDirectoryExists(dirname($outputPath));
 
             $this->docRepository->writeFile($outputPath, $doctest->toFileContent());
+            $this->eventDispatcher->dispatch(new FileExtracted([
+                'sourceFile' => $sourcePath,
+                'id' => (string)$doctest->id,
+                'language' => (string)$doctest->language,
+                'path' => $outputPath,
+            ]));
             $extracted++;
 
             if ($io->isVerbose()) {
@@ -144,12 +195,20 @@ class ExtractCodeBlocks extends Command
 
             // Extract individual regions if they exist
             if ($doctest->hasRegions()) {
-                $regions = $doctest->getAvailableRegions();
-                foreach ($regions as $regionName) {
-                    $regionOutputPath = $this->determineRegionOutputPath($doctest, $regionName, $targetDir);
+                $plannedRegions = $plannedById[$doctest->id]->regions ?? [];
+                foreach ($plannedRegions as $plannedRegion) {
+                    $regionName = $plannedRegion->name;
+                    $regionOutputPath = $plannedRegion->path ?? $this->determineRegionOutputPath($doctest, $regionName, $targetDir);
                     $this->ensureDirectoryExists(dirname($regionOutputPath));
 
                     $this->docRepository->writeFile($regionOutputPath, $doctest->toFileContent($regionName));
+                    $this->eventDispatcher->dispatch(new FileExtracted([
+                        'sourceFile' => $sourcePath,
+                        'id' => (string)$doctest->id,
+                        'language' => (string)$doctest->language,
+                        'path' => $regionOutputPath,
+                        'region' => $regionName,
+                    ]));
                     $extracted++;
 
                     if ($io->isVerbose()) {
@@ -164,7 +223,16 @@ class ExtractCodeBlocks extends Command
             $this->modifySourceFile($markdown, $sourcePath, $io);
         }
 
+        $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+        $this->eventDispatcher->dispatch(new ExtractionCompleted([
+            'processedFiles' => 1,
+            'snippetsExtracted' => $extracted,
+            'durationMs' => $durationMs,
+        ]));
+
         $io->success("Successfully extracted {$extracted} code blocks.");
+        $io->writeln('');
+        $io->writeln($this->metricsCollector->formatSummary());
         return Command::SUCCESS;
     }
 
@@ -172,6 +240,12 @@ class ExtractCodeBlocks extends Command
         $io->section("Processing directory: {$sourceDir}");
 
         $files = $this->discoverMarkdownFiles($sourceDir, $extensions);
+        $startTime = microtime(true);
+        $this->eventDispatcher->dispatch(new ExtractionStarted([
+            'mode' => 'dir',
+            'source' => $sourceDir,
+            'targetDir' => $targetDir,
+        ]));
 
         if (empty($files)) {
             $io->warning("No files found with extensions [" . implode(', ', $extensions) . "] in: {$sourceDir}");
@@ -184,12 +258,15 @@ class ExtractCodeBlocks extends Command
         $processedFiles = 0;
 
         foreach ($files as $filePath) {
-            $relativePath = str_replace($sourceDir . '/', '', $filePath);
+            $relativePath = Path::makeRelative($filePath, $sourceDir);
 
             try {
                 $sourceContent = $this->docRepository->readFile($filePath);
                 $markdown = MarkdownFile::fromString($sourceContent, $filePath);
                 $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdown));
+                $plan = $this->planner->planForMarkdown($markdown, $targetDir);
+                $plannedById = [];
+                foreach ($plan as $item) { $plannedById[$item->id] = $item; }
 
                 if (empty($doctests)) {
                     if ($io->isVerbose()) {
@@ -209,9 +286,15 @@ class ExtractCodeBlocks extends Command
                     }
 
                     foreach ($doctests as $doctest) {
-                        $outputPath = $this->determineOutputPath($doctest, $targetDir);
+                        $outputPath = $plannedById[$doctest->id]->path ?? $this->determineOutputPath($doctest, $targetDir);
                         $this->ensureDirectoryExists(dirname($outputPath));
                         $this->docRepository->writeFile($outputPath, $doctest->toFileContent());
+                        $this->eventDispatcher->dispatch(new FileExtracted([
+                            'sourceFile' => $filePath,
+                            'id' => (string)$doctest->id,
+                            'language' => (string)$doctest->language,
+                            'path' => $outputPath,
+                        ]));
                     }
 
                     // Modify source file if requested
@@ -229,9 +312,25 @@ class ExtractCodeBlocks extends Command
         }
 
         if ($isDryRun) {
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            $this->eventDispatcher->dispatch(new ExtractionCompleted([
+                'processedFiles' => $processedFiles,
+                'snippetsExtracted' => $totalExtracted,
+                'durationMs' => $durationMs,
+            ]));
             $io->success("Dry run completed. Would extract {$totalExtracted} code blocks from {$processedFiles} files.");
+            $io->writeln('');
+            $io->writeln($this->metricsCollector->formatSummary());
         } else {
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            $this->eventDispatcher->dispatch(new ExtractionCompleted([
+                'processedFiles' => $processedFiles,
+                'snippetsExtracted' => $totalExtracted,
+                'durationMs' => $durationMs,
+            ]));
             $io->success("Successfully extracted {$totalExtracted} code blocks from {$processedFiles} files.");
+            $io->writeln('');
+            $io->writeln($this->metricsCollector->formatSummary());
         }
 
         return Command::SUCCESS;
@@ -239,24 +338,13 @@ class ExtractCodeBlocks extends Command
 
     private function determineOutputPath(DoctestFile $doctest, ?string $targetDir): string {
         if ($targetDir) {
-            // Use provided target directory as root, but preserve the case_dir structure
             $filename = basename($doctest->codePath);
-            $caseDir = $doctest->sourceMarkdown->caseDir;
-
-            // Normalize path separators to system ones
-            $normalizedTargetDir = $this->normalizePath($targetDir);
-            $normalizedCaseDir = $this->normalizePath($caseDir);
-
-            // Combine target dir with case dir and filename
-            return rtrim($normalizedTargetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
-                ltrim($normalizedCaseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
-                $filename;
+            return Path::join($targetDir, $doctest->sourceMarkdown->caseDir, $filename);
         }
 
         // Resolve path relative to markdown file
         $markdownDir = dirname($doctest->sourceMarkdown->path);
-        $resolvedPath = $markdownDir . '/' . ltrim($doctest->codePath, './');
-        return $this->normalizePath($resolvedPath);
+        return Path::join($markdownDir, ltrim($doctest->codePath, './'));
     }
 
     private function determineRegionOutputPath(DoctestFile $doctest, string $regionName, ?string $targetDir): string {
@@ -268,19 +356,13 @@ class ExtractCodeBlocks extends Command
         $regionFilename = $baseFilename . '_' . $regionName . '.' . $extension;
 
         if ($targetDir) {
-            $normalizedTargetDir = $this->normalizePath($targetDir);
-            $normalizedCaseDir = $this->normalizePath($doctest->sourceMarkdown->caseDir);
-
-            return rtrim($normalizedTargetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
-                ltrim($normalizedCaseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
-                $regionFilename;
+            return Path::join($targetDir, $doctest->sourceMarkdown->caseDir, $regionFilename);
         }
 
         // Resolve path relative to markdown file
         $markdownDir = dirname($doctest->sourceMarkdown->path);
-        $resolvedCaseDir = $markdownDir . '/' . ltrim($doctest->sourceMarkdown->caseDir, './');
-        
-        return $this->normalizePath($resolvedCaseDir) . DIRECTORY_SEPARATOR . $regionFilename;
+        $resolvedCaseDir = Path::join($markdownDir, ltrim($doctest->sourceMarkdown->caseDir, './'));
+        return Path::join($resolvedCaseDir, $regionFilename);
     }
 
     private function ensureDirectoryExists(string $directory): void {
@@ -293,21 +375,19 @@ class ExtractCodeBlocks extends Command
 
     private function discoverMarkdownFiles(string $directory, array $extensions): array {
         $files = [];
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
-        );
+        $finder = new Finder();
+        $finder->files()->in($directory)->name($this->buildNamePatterns($extensions));
 
-        foreach ($iterator as $file) {
-            if ($file->isFile()) {
-                $extension = strtolower(pathinfo($file->getFilename(), PATHINFO_EXTENSION));
-                if (in_array($extension, $extensions, true)) {
-                    $files[] = $file->getPathname();
-                }
-            }
+        foreach ($finder as $file) {
+            $files[] = $file->getPathname();
         }
 
         sort($files);
         return $files;
+    }
+
+    private function buildNamePatterns(array $extensions): array {
+        return array_map(fn($ext) => "*.{$ext}", $extensions);
     }
 
     private function parseExtensions(string $extensionsString): array {
@@ -321,11 +401,15 @@ class ExtractCodeBlocks extends Command
         return $extensions;
     }
 
-    private function displayExtractionPlan(array $doctests, ?string $targetDir, SymfonyStyle $io): void {
+    private function displayExtractionPlanPlanned(array $doctests, array $plan, SymfonyStyle $io): void {
         $io->writeln("Found " . count($doctests) . " extractable code blocks:");
 
+        // Build lookup by id for quick access
+        $byId = [];
+        foreach ($plan as $item) { $byId[$item->id] = $item; }
+
         foreach ($doctests as $doctest) {
-            $outputPath = $this->determineOutputPath($doctest, $targetDir);
+            $outputPath = $byId[$doctest->id]->path ?? $this->determineOutputPath($doctest, null);
             $io->writeln("  • {$doctest->id} ({$doctest->language}, {$doctest->linesOfCode} lines) → {$outputPath}");
         }
     }

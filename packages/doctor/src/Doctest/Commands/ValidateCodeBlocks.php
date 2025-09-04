@@ -29,11 +29,11 @@ class ValidateCodeBlocks extends Command
 
     private EventDispatcher $eventDispatcher;
 
-    public function __construct() {
+    public function __construct(?EventDispatcher $eventDispatcher = null) {
         parent::__construct();
         
-        // Create event dispatcher and metrics collector
-        $this->eventDispatcher = new EventDispatcher();
+        // Create or use injected event dispatcher and metrics collector
+        $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
         $this->metricsCollector = new ValidationMetricsCollector();
         
         // Register listeners for each event type
@@ -83,6 +83,12 @@ class ValidateCodeBlocks extends Command
                 'p',
                 InputOption::VALUE_NONE,
                 'Show detailed processing information for directories and files',
+            )
+            ->addOption(
+                'show-paths',
+                null,
+                InputOption::VALUE_NONE,
+                'Print resolved expected paths for each validated code block',
             );
     }
 
@@ -95,6 +101,7 @@ class ValidateCodeBlocks extends Command
             $extensions = $this->parseExtensions($input->getOption('extensions'));
             $showAll = $input->getOption('show-all');
             $verbose = $input->getOption('show-progress');
+            $showPaths = $input->getOption('show-paths');
 
             // Validate input
             if (!$sourcePath && !$sourceDir) {
@@ -115,10 +122,13 @@ class ValidateCodeBlocks extends Command
                 if ($verbose && $result->totalBlocks === 0) {
                     $io->writeln("  No extracted code blocks found");
                 }
+                if ($showPaths) {
+                    $this->printBlockDetails($result, $io);
+                }
                 $this->eventDispatcher->dispatch(new ValidationCompleted($results));
             } else {
                 $this->eventDispatcher->dispatch(new ValidationStarted($sourceDir));
-                $results = $this->processDirectory($sourceDir, $extensions, $verbose, $io);
+                $results = $this->processDirectory($sourceDir, $extensions, $verbose, $showPaths, $io);
                 $this->eventDispatcher->dispatch(new ValidationCompleted($results));
             }
 
@@ -155,22 +165,22 @@ class ValidateCodeBlocks extends Command
             if (!empty($result->missingBlocks)) {
                 $io->writeln("<fg=red>❌</> {$result->filePath}");
                 foreach ($result->missingBlocks as $missing) {
-                    $lineInfo = $missing['lineNumber'] ? ":{$missing['lineNumber']}" : '';
-                    $io->writeln("  {$lineInfo} {$missing['id']} → {$missing['expectedPath']}");
+                    $lineInfo = $missing->lineNumber ? ":{$missing->lineNumber}" : '';
+                    $io->writeln("  {$lineInfo} {$missing->id} → {$missing->expectedPath}");
                 }
             }
 
             if ($showAll && !empty($result->validBlocks)) {
                 $io->writeln("<fg=green>✅</> {$result->filePath}");
                 foreach ($result->validBlocks as $valid) {
-                    $lineInfo = $valid['lineNumber'] ? ":{$valid['lineNumber']}" : '';
-                    $io->writeln("  {$lineInfo} {$valid['id']} → {$valid['expectedPath']}");
+                    $lineInfo = $valid->lineNumber ? ":{$valid->lineNumber}" : '';
+                    $io->writeln("  {$lineInfo} {$valid->id} → {$valid->expectedPath}");
                 }
             }
         }
     }
 
-    private function processDirectory(string $sourceDir, array $extensions, bool $verbose, SymfonyStyle $io): array
+    private function processDirectory(string $sourceDir, array $extensions, bool $verbose, bool $showPaths, SymfonyStyle $io): array
     {
         if ($verbose) {
             $io->writeln("Scanning directory: {$sourceDir}");
@@ -193,7 +203,7 @@ class ValidateCodeBlocks extends Command
 
         $results = [];
         foreach ($matchingFiles as $filePath) {
-            $relativePath = str_replace($sourceDir . '/', '', $filePath);
+            $relativePath = \Symfony\Component\Filesystem\Path::makeRelative($filePath, $sourceDir);
 
             if ($verbose) {
                 $io->writeln("  Processing: {$relativePath}");
@@ -211,6 +221,9 @@ class ValidateCodeBlocks extends Command
                         $status = $missingCount > 0 ? "<fg=red>{$missingCount} missing</>" : "<fg=green>all valid</>";
                         $io->writeln("    → {$result->totalBlocks} blocks, {$status}");
                     }
+                    if ($verbose || $showPaths) {
+                        $this->printBlockDetails($result, $io, indent: '    ');
+                    }
                 } else {
                     if ($verbose) {
                         $io->writeln("    → No extracted code blocks");
@@ -224,6 +237,32 @@ class ValidateCodeBlocks extends Command
         }
 
         return $results;
+    }
+
+    private function printBlockDetails(ValidationResult $result, SymfonyStyle $io, string $indent = ''): void
+    {
+        foreach ($result->validBlocks as $valid) {
+            $lineInfo = $valid->lineNumber ? ":{$valid->lineNumber}" : '';
+            $io->writeln(sprintf(
+                "%s  <fg=green>✔</> %s%s %s → %s",
+                $indent,
+                $result->filePath,
+                $lineInfo,
+                $valid->id ? " [{$valid->id}]" : '',
+                $valid->expectedPath
+            ));
+        }
+        foreach ($result->missingBlocks as $missing) {
+            $lineInfo = $missing->lineNumber ? ":{$missing->lineNumber}" : '';
+            $io->writeln(sprintf(
+                "%s  <fg=red>✖</> %s%s %s → %s",
+                $indent,
+                $result->filePath,
+                $lineInfo,
+                $missing->id ? " [{$missing->id}]" : '',
+                $missing->expectedPath
+            ));
+        }
     }
 
     private function processFileWithTiming(string $filePath): ValidationResult
