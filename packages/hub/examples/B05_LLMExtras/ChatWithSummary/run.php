@@ -14,11 +14,9 @@ docname: 'chat_with_summary'
 
 require 'examples/boot.php';
 
-use Cognesy\Addons\Chat\ChatWithSummary;
+use Cognesy\Addons\Chat\Pipelines\BuildChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $maxSteps = 5;
@@ -37,7 +35,7 @@ $summarizer = new SummarizeMessages(
     tokenLimit: 1024,
 );
 
-$chat = ChatWithSummary::create(
+$chat = BuildChatWithSummary::create(
     maxChatTokens: 256,
     maxBufferTokens: 256,
     maxSummaryTokens: 1024,
@@ -53,21 +51,18 @@ for($i = 0; $i < $maxSteps; $i++) {
         ->withSectionMessages('context', Messages::fromString($context, 'system'));
     $chat = $chat->withScript($script);
 
-    $messages = $chat->script()
+        $messages = $chat->state()->script()
         ->select(['system', 'context', 'summary', 'buffer', 'main'])
-        ->toMessages()
-        ->remapRoles(['assistant' => 'user', 'user' => 'assistant', 'system' => 'system']);
+        ->toMessages();
 
-    $response = (new Inference)
-        ->using('openai')
-        ->withMessages($messages->toArray())
-        ->withOptions(['max_tokens' => 256])
-        ->get();
+    $chat->withMessages(Messages::fromString($sys[$i % 2], 'user'));
+    $step = $chat->nextTurn();
+    $response = $step->messages()->toString();
 
     echo "\n";
     dump('>>> '.$response);
     echo "\n";
-    $chat = $chat->appendMessage(new Message(role: 'assistant', content: $response));
+    // response is already appended by Chat orchestrator
 }
 
 dump($chat->script());

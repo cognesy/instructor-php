@@ -24,7 +24,7 @@ abstract class AbstractResolver
             throw new RuntimeException('Resolver needs at least one provider.');
         }
 
-        $this->pipeline = array_map('Cognesy\\Utils\\defer', $providers);
+        $this->pipeline = array_map(fn($provider) => $this->defer($provider), $providers);
         $this->suppressErrors = $suppressErrors;
     }
 

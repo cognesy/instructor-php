@@ -8,6 +8,11 @@ use Cognesy\Addons\Chat\Processors\SummarizeBuffer;
 use Cognesy\Addons\Chat\ScriptPipeline;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 
+/**
+ * @deprecated Use Pipelines\\BuildChatWithSummary which returns a configured
+ *             Cognesy\\Addons\\Chat\\Chat instance. This legacy builder will
+ *             be removed in a future release.
+ */
 class ChatWithSummary
 {
     public static function create(

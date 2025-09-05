@@ -10,6 +10,9 @@ use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\TypeIdentifier;
+use Symfony\Component\TypeInfo\Type\CollectionType;
+use Symfony\Component\TypeInfo\Type\UnionType;
+use Symfony\Component\TypeInfo\Type\WrappingTypeInterface;
 
 class PropertyInfoV7Adapter implements CanGetPropertyType
 {
@@ -57,11 +60,46 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
     }
 
     private function getCollectionOrArrayType(Type $type): string {
-        $valueType = $type->getCollectionValueType();
-        if (is_null($valueType)) {
+        $valueType = $this->resolveCollectionValueType($type);
+        if ($valueType === null) {
             return 'array';
         }
         return $this->arrayTypeToString($valueType);
+    }
+
+    private function resolveCollectionValueType(Type $type): ?Type {
+        // Direct collection
+        if ($type instanceof CollectionType) {
+            return $type->getCollectionValueType();
+        }
+        // Nullable/Wrapper unwrapping for >=7.2
+        if (method_exists(Type::class, 'getBaseType')) {
+            $base = $type->getBaseType();
+            if ($base instanceof Type && $base !== $type) {
+                $resolved = $this->resolveCollectionValueType($base);
+                if ($resolved instanceof Type) {
+                    return $resolved;
+                }
+            }
+        } else {
+            // <7.2: unwrap nested wrappers
+            while ($type instanceof WrappingTypeInterface) {
+                $type = $type->getWrappedType();
+                if ($type instanceof CollectionType) {
+                    return $type->getCollectionValueType();
+                }
+            }
+        }
+        // Union: return first resolvable element type
+        if ($type instanceof UnionType) {
+            foreach ($type->getTypes() as $t) {
+                $resolved = $this->resolveCollectionValueType($t);
+                if ($resolved instanceof Type) {
+                    return $resolved;
+                }
+            }
+        }
+        return null;
     }
 
     private function arrayTypeToString(Type $type) : string {

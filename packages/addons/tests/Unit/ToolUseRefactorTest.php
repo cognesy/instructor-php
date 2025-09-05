@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\Drivers\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
-use Cognesy\Addons\ToolUse\ToolUseState;
-use Cognesy\Addons\ToolUse\ToolUseStep;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\FinishReasonCheck;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
@@ -65,8 +65,8 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
     // success step (no errors): empty tool executions
     $state->addStep(new ToolUseStep());
     // failed steps: emulate by creating ToolUseStep with error executions
-    $failedExecs = new \Cognesy\Addons\ToolUse\ToolExecutions([
-        new \Cognesy\Addons\ToolUse\ToolExecution(
+    $failedExecs = new \Cognesy\Addons\ToolUse\Data\ToolExecutions([
+        new \Cognesy\Addons\ToolUse\Data\ToolExecution(
             new ToolCall('noop', []),
             \Cognesy\Utils\Result\Result::failure(new Exception('x')),
             new DateTimeImmutable(),

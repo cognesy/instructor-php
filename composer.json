@@ -76,7 +76,8 @@
 
       "Tests\\": "tests/",
       "Evals\\": "evals/",
-      "Examples\\": "examples/"
+      "Examples\\": "examples/",
+      "Tests\\Addons\\Support\\": "packages/addons/tests/Support/"
     },
     "files": [
       "packages/addons/tests/Examples/Call/test_functions.php",
@@ -111,6 +112,7 @@
     "nikic/iter": "^2.4",
     "pestphp/pest": "^2.0",
     "phpstan/phpstan": "^1.11",
+    "phpstan/phpstan-strict-rules": "^1.6",
     "psr/http-factory-implementation": "*",
     "spatie/browsershot": "^4.1",
     "symfony/css-selector": "^7.0",
@@ -151,6 +153,8 @@
     "docs": "@php ./bin/instructor-docs",
     "hub": "@php ./bin/instructor-hub",
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php ./vendor/bin/psalm",
+    "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
     "tell": "bin/tell",
     "test": "@php ./vendor/bin/pest --testsuite=Unit,Feature",
     "tests": "@php ./vendor/bin/pest --testsuite=Unit,Feature",

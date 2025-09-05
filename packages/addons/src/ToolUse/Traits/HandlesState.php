@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse\Traits;
 
-use Cognesy\Addons\ToolUse\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
 trait HandlesState
 {

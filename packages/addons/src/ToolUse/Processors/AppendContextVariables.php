@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\ToolUse\Processors;
 
 use Cognesy\Addons\ToolUse\Contracts\CanProcessStep;
-use Cognesy\Addons\ToolUse\ToolUseState;
-use Cognesy\Addons\ToolUse\ToolUseStep;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Messages\Messages;
 
 class AppendContextVariables implements CanProcessStep
@@ -15,7 +15,7 @@ class AppendContextVariables implements CanProcessStep
         }
         $variables = array_filter($state->variables());
         $variablesStr = "```json\n" . json_encode($variables, JSON_PRETTY_PRINT) . "\n```";
-        $state->appendMessages(Messages::fromArray(['role' => 'user', 'content' => $variablesStr]));
+        $state->appendMessages(Messages::fromArray([[ 'role' => 'user', 'content' => $variablesStr ]]));
         return $step;
     }
 }

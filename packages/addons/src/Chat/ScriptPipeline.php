@@ -6,6 +6,11 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Template\Script\Script;
 
+/**
+ * @deprecated Use Cognesy\\Addons\\Chat\\Chat with script processors
+ *             via withScriptProcessors(...). This pipeline wrapper will be
+ *             removed in a future release.
+ */
 class ScriptPipeline
 {
     private array $sections;

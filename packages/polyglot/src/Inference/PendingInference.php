@@ -18,9 +18,9 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 readonly class PendingInference
 {
-    protected readonly CanHandleInference $driver;
-    protected readonly EventDispatcherInterface $events;
-    protected readonly InferenceRequest $request;
+    protected CanHandleInference $driver;
+    protected EventDispatcherInterface $events;
+    protected InferenceRequest $request;
 
     public function __construct(
         InferenceRequest         $request,

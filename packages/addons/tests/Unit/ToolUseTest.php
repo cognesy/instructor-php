@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
-use Cognesy\Addons\ToolUse\ToolUseState;
-use Cognesy\Addons\ToolUse\Drivers\ToolCallingDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;

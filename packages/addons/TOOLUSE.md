@@ -7,7 +7,9 @@ This document explains how to use ToolUse, customize its behavior, and integrate
 ## Overview
 
 - Orchestrator: `Cognesy\Addons\ToolUse\ToolUse`
-- Driver: `Drivers\ToolCallingDriver` (talks to `polyglot` Inference)
+- Drivers:
+  - `Drivers\ToolCallingDriver` — Provider tool-calling mode via Polyglot Inference (clean orchestration; pending inference, response, executions, follow‑ups)
+  - `Drivers\ReAct\ReActDriver` — ReAct loop using StructuredOutput (typed decision extraction, optional plain‑text finalization)
 - State: `ToolUseState` (messages, tools, usage, variables, steps, status)
 - Step: `ToolUseStep` (LLM response + tool calls/executions + follow‑up messages + usage)
 - Tools: `Tools` registry of `ToolInterface` implementations (`FunctionTool`, or custom tools)
@@ -18,10 +20,7 @@ This document explains how to use ToolUse, customize its behavior, and integrate
 ## Quick Start
 
 ```php
-use Cognesy\Addons\ToolUse\ToolUse;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Addons\ToolUse\Drivers\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUse;use Cognesy\Polyglot\Inference\LLMProvider;
 
 function add_numbers(int $a, int $b): int { return $a + $b; }
 
@@ -69,10 +68,37 @@ Notes:
 - Tool schemas are generated via `StructureFactory` from the `__invoke` signature.
 - Return values are wrapped in `Result::success(...)` or `Result::failure(...)` at the tool boundary.
 
+## Quick Start (ReAct)
+
+```php
+use Cognesy\Addons\ToolUse\ContinuationCriteria\{ExecutionTimeLimit,RetryLimit,StepsLimit,TokenUsageLimit};use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;use Cognesy\Addons\ToolUse\ToolUse;use Cognesy\Polyglot\Inference\LLMProvider;
+
+$driver = new ReActDriver(
+  llm: LLMProvider::using('openai'),
+  maxRetries: 2,
+  finalViaInference: true
+);
+
+$criteria = [new StepsLimit(6), new TokenUsageLimit(8192), new ExecutionTimeLimit(60), new RetryLimit(2), new StopOnFinalDecision()];
+
+$toolUse = (new ToolUse(continuationCriteria: $criteria))
+  ->withDriver($driver)
+  ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
+  ->withTools([ /* FunctionTool::fromCallable(...) */ ]);
+
+$final = $toolUse->finalStep();
+echo $final->response();
+```
+
+Notes:
+- ReAct driver extracts a typed decision (call_tool | final_answer) using StructuredOutput with retries.
+- For `final_answer` you can optionally finalize via Inference (plain-text).
+- Use `StopOnFinalDecision` to stop iteration when the model decides to finalize.
+
 ## Failure Handling
 
 - Default: Tool failures do not throw. Instead, `Result::failure(...)` is recorded in `ToolExecution` and a follow‑up error message is appended for the LLM.
-- To restore legacy exception behavior:
+- To restore legacy exception behavior for tool executions:
 
 ```php
 $tools = (new Tools())->withThrowOnToolFailure(true);
@@ -100,6 +126,9 @@ $toolUse->withDefaultContinuationCriteria(maxSteps: 5);
 $toolUse->withContinuationCriteria(new StepsLimit(10));
 ```
 
+ReAct-specific:
+- Recommended set excludes `ToolCallPresenceCheck` and includes `StopOnFinalDecision`.
+
 ## Step Processors
 
 Processors post‑process each step (accumulate usage, update step list, append follow‑up messages). Defaults:
@@ -113,6 +142,8 @@ Add or override:
 ```php
 $toolUse->withProcessors(new MyCustomProcessor());
 ```
+
+`AccumulateTokenUsage` aggregates per-step usage into state, enabling per-step and total token reporting.
 
 ## Observability
 
@@ -136,7 +167,7 @@ use Cognesy\Addons\ToolUse\Contracts\ToolsObserver;
 
 final class MyToolsObserver implements ToolsObserver {
     public function onToolStart(ToolUseState $state, \Cognesy\Polyglot\Inference\Data\ToolCall $call): void {}
-    public function onToolEnd(ToolUseState $state, \Cognesy\Addons\ToolUse\ToolExecution $exec): void {}
+    public function onToolEnd(ToolUseState $state, \Cognesy\Addons\ToolUse\Data\ToolExecution $exec): void {}
 }
 
 $state = $toolUse->state();
@@ -149,12 +180,14 @@ Before invoking a tool, `Tools` performs a pragmatic check against the tool’s 
 
 ## Interaction with Inference (Polyglot)
 
-`ToolCallingDriver` sends tool schemas to the `polyglot` Inference layer using `withTools(array $tools)`. This layer adapts messages and tool calls to provider‑specific formats.
+`ToolCallingDriver` uses pending inference (create → response) and executes provider-returned tool calls. `ReActDriver` uses StructuredOutput (for typed decision extraction with retries) and optionally Inference (for plain‑text final answer). Both rely on Polyglot to adapt requests/responses to providers.
 
 ## Advanced
 
-- Options: `ToolUseOptions` is an immutable container for future policy/config parameters (max steps/tokens/retries/timeouts, etc.).
-- Typed Collections: internal collections are used for processors and continuation criteria.
+- Options: `ToolUseOptions` is an immutable container for future policy/config parameters.
+- Typed Collections: `StepProcessors` and `ContinuationCriteria` collections keep orchestration readable.
+- Observability: `ToolUseObserver` (step-level) and `ToolsObserver` (tool-level).
+- Monadic errors: failures become `Result::failure(...)` in `ToolExecution` and are surfaced as error messages to the LLM.
 
 ## Known Limitations / Deferred Work
 
@@ -162,8 +195,14 @@ Before invoking a tool, `Tools` performs a pragmatic check against the tool’s 
 - Context variables: current `AppendContextVariables` remains; alternatives will be considered in a future major version.
 - Tool schema value objects: kept as arrays at the boundary to avoid breaking `polyglot`; wrappers may be added later.
 
+## State & Reuse
+
+- `ToolUse` is stateful: it holds a `ToolUseState` that accumulates messages, steps, usage, variables, and status.
+- Preferred: create a fresh `ToolUse` per run.
+- If reusing the same instance, reset state via `withState(new ToolUseState())` and reapply tools/messages.
+- Drivers (`ToolCallingDriver`, `ReActDriver`) are stateless (configuration only) and safe to reuse across runs.
+
 ## Troubleshooting
 
 - If tools appear not to run, ensure your tool names match the LLM tool call names.
 - If a tool fails due to missing parameters, the follow‑up tool message will include an error; the loop will continue per your criteria (e.g., retries).
-

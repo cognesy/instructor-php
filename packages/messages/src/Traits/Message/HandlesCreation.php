@@ -23,25 +23,26 @@ trait HandlesCreation
         return new Message(role: $role, content: $content, name: $name);
     }
 
-    public static function asUser(string|array|Message $message) : static {
-        return static::fromAny($message, MessageRole::User);
+    public static function asUser(string|array|Message $message, string $name = '') : static {
+        return static::fromAny($message, MessageRole::User, $name);
     }
 
-    public static function asAssistant(string|array|Message $message) : static {
-        return static::fromAny($message, MessageRole::Assistant);
+    public static function asAssistant(string|array|Message $message, string $name = '') : static {
+        return static::fromAny($message, MessageRole::Assistant, $name);
     }
 
-    public static function asSystem(string|array|Message $message) : static {
-        return static::fromAny($message, MessageRole::System);
+    public static function asSystem(string|array|Message $message, string $name = '') : static {
+        return static::fromAny($message, MessageRole::System, $name);
     }
 
-    public static function asDeveloper(string|array|Message $message) : static {
-        return static::fromAny($message, MessageRole::Developer);
+    public static function asDeveloper(string|array|Message $message, string $name = '') : static {
+        return static::fromAny($message, MessageRole::Developer, $name);
     }
 
     public static function fromAny(
         string|array|Message|Content|ContentPart $message,
-        string|MessageRole|null $role = null
+        string|MessageRole|null $role = null,
+        string $name = ''
     ) : static {
         $message = match (true) {
             is_string($message) => new Message(role: $role, content: $message),
@@ -51,14 +52,21 @@ trait HandlesCreation
             $message instanceof ContentPart => Message::fromContentPart($message),
             default => throw new \InvalidArgumentException('Unsupported message type: ' . gettype($message)),
         };
+        if ($name !== '') {
+            $message = $message->withName($name);
+        }
         return match (true) {
             $role === null => $message,
             default => $message->withRole(MessageRole::fromAny($role)),
         };
     }
 
-    public static function fromString(string $content, string $role = self::DEFAULT_ROLE) : static {
-        return new static(role: $role, content: $content);
+    public static function fromString(
+        string $content,
+        string $role = self::DEFAULT_ROLE,
+        string $name = ''
+    ) : static {
+        return new static(role: $role, content: $content, name: $name);
     }
 
     public static function fromArray(array $message) : static {

@@ -10,9 +10,10 @@ use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
+use Cognesy\Addons\ToolUse\Data\ContinuationCriteria as ContinuationCriteriaCollection;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\Addons\ToolUse\ToolUseState;
-use Cognesy\Addons\ToolUse\Collections\ContinuationCriteria as ContinuationCriteriaCollection;
+use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 
 trait HandlesContinuationCriteria
 {
@@ -61,6 +62,13 @@ trait HandlesContinuationCriteria
                 $state->currentStep()?->hasErrors() => ToolUseStatus::Failed,
                 default => ToolUseStatus::Completed,
             });
+            // emit finished event with status and summary
+            $this->dispatch(new ToolUseFinished([
+                'status' => $state->status()->value,
+                'steps' => $state->stepCount(),
+                'usage' => $state->usage()->toArray(),
+                'errors' => $state->currentStep()?->errorsAsString(),
+            ]));
         }
         return $can;
     }

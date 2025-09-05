@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
 class ToolCallPresenceCheck implements CanDecideToContinue
 {

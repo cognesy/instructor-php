@@ -9,8 +9,8 @@ use Cognesy\Messages\Message;
 
 trait HandlesMutation
 {
-    public function withContent(Content $content) : static {
-        return new static(
+    public function withContent(Content $content) : Message {
+        return new Message(
             role: $this->role,
             content: $content,
             name: $this->name,
@@ -18,12 +18,21 @@ trait HandlesMutation
         );
     }
 
-    public function withRole(string|MessageRole $role) : static {
+    public function withName(string $name) : Message {
+        return new Message(
+            role: $this->role,
+            content: $this->content,
+            name: $name,
+            metadata: $this->metadata,
+        );
+    }
+
+    public function withRole(string|MessageRole $role) : Message {
         $role = match (true) {
             is_string($role) => $role,
             $role instanceof MessageRole => $role->value,
         };
-        return new static(
+        return new Message(
             role: $role,
             content: $this->content,
             name: $this->name,
@@ -31,7 +40,7 @@ trait HandlesMutation
         );
     }
 
-    public function addContentFrom(Message $source) : static {
+    public function addContentFrom(Message $source) : Message {
         $newContent = $this->content->clone();
         foreach ($source->content()->parts() as $part) {
             $newContent = $newContent->addContentPart($part);
@@ -39,7 +48,7 @@ trait HandlesMutation
         return $this->withContent($newContent);
     }
 
-    public function addContentPart(string|array|ContentPart $part) : static {
+    public function addContentPart(string|array|ContentPart $part) : Message {
         $newContent = $this->content->addContentPart(ContentPart::fromAny($part));
         return $this->withContent($newContent);
     }

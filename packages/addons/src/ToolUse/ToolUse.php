@@ -3,20 +3,29 @@
 namespace Cognesy\Addons\ToolUse;
 
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
-use Cognesy\Addons\ToolUse\Drivers\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Contracts\ToolUseObserver;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
+use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
 use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesContinuationCriteria;
 use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesStepProcessors;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Messages\Messages;
 use Generator;
-use Cognesy\Addons\ToolUse\Contracts\ToolUseObserver;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ToolUse {
+    use HandlesEvents;
     use HandlesContinuationCriteria;
     use HandlesStepProcessors;
 
     private CanUseTools $driver;
-    private \Cognesy\Addons\ToolUse\Collections\StepProcessors $processors;
-    private \Cognesy\Addons\ToolUse\Collections\ContinuationCriteria $continuationCriteria;
+    private Data\StepProcessors $processors;
+    private Data\ContinuationCriteria $continuationCriteria;
 
     private ToolUseState $state;
     private ?ToolUseObserver $observer = null;
@@ -25,19 +34,23 @@ class ToolUse {
         ?ToolUseState $state = null,
         ?CanUseTools $driver = null,
         ?array $processors = null,
-        ?array $continuationCriteria = null
+        ?array $continuationCriteria = null,
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
     ) {
+        $this->events = EventBusResolver::using($events);
         $this->state = $state ?? new ToolUseState;
         $this->driver = $driver ?? new ToolCallingDriver;
-        $this->processors = new \Cognesy\Addons\ToolUse\Collections\StepProcessors();
+        $this->processors = new Data\StepProcessors();
         if (!empty($processors)) {
             // accept legacy arrays of processors
             foreach ($processors as $p) { $this->withProcessors($p); }
         } else { $this->withDefaultProcessors(); }
-        $this->continuationCriteria = new \Cognesy\Addons\ToolUse\Collections\ContinuationCriteria();
+        $this->continuationCriteria = new Data\ContinuationCriteria();
         if (!empty($continuationCriteria)) {
             foreach ($continuationCriteria as $c) { $this->withContinuationCriteria($c); }
         } else { $this->withDefaultContinuationCriteria(); }
+        // ensure Tools collection dispatches via the same event bus
+        $this->state->tools()->withEventHandler($this->events);
     }
 
     // HANDLE PARAMETRIZATION //////////////////////////////////////
@@ -69,6 +82,8 @@ class ToolUse {
         if (is_array($tools)) {
             $tools = new Tools($tools);
         }
+        // propagate event handler to Tools
+        $tools->withEventHandler($this->events);
         $this->state->withTools($tools);
         return $this;
     }
@@ -91,14 +106,24 @@ class ToolUse {
     // HANDLE TOOL USE /////////////////////////////////////////////
 
     public function nextStep() : ToolUseStep {
-        if ($this->observer) {
-            $this->observer->onStepStart($this->state);
-        }
+        if ($this->observer) { $this->observer->onStepStart($this->state); }
+        // emit event: step started
+        $this->dispatch(new ToolUseStepStarted([
+            'step' => $this->state->stepCount() + 1,
+            'messages' => $this->state->messages()->count(),
+            'tools' => count($this->state->tools()->nameList()),
+        ]));
         $step = $this->driver->useTools($this->state);
         $step = $this->processStep($step, $this->state);
-        if ($this->observer) {
-            $this->observer->onStepEnd($this->state, $step);
-        }
+        if ($this->observer) { $this->observer->onStepEnd($this->state, $step); }
+        // emit event: step completed
+        $this->dispatch(new ToolUseStepCompleted([
+            'step' => $this->state->stepCount(),
+            'hasToolCalls' => $step->hasToolCalls(),
+            'errors' => count($step->errors()),
+            'usage' => $step->usage()->toArray(),
+            'finishReason' => $step->finishReason()?->value,
+        ]));
         return $step;
     }
 

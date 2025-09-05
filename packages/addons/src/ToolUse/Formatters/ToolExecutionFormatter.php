@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\ToolUse\Formatters;
 
-use Cognesy\Addons\ToolUse\ToolExecution;
-use Cognesy\Addons\ToolUse\ToolExecutions;
+use Cognesy\Addons\ToolUse\Data\ToolExecution;
+use Cognesy\Addons\ToolUse\Data\ToolExecutions;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\ToolCall;

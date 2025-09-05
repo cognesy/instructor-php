@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\ToolUse\Processors;
 
 use Cognesy\Addons\ToolUse\Contracts\CanProcessStep;
-use Cognesy\Addons\ToolUse\ToolUseState;
-use Cognesy\Addons\ToolUse\ToolUseStep;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
 class AccumulateTokenUsage implements CanProcessStep
 {

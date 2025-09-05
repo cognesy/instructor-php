@@ -14,60 +14,56 @@ docname: 'chat_with_summary'
 
 require 'examples/boot.php';
 
-use Cognesy\Addons\Chat\ChatWithSummary;
+use Cognesy\Addons\Chat\Pipelines\BuildChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $maxSteps = 5;
-$sys = [
-    'You are helpful assistant explaining Challenger Sale method, you answer questions. Provide very brief answers, not more than one sentence. Simplify things, don\'t go into details, but be very pragmatic and focused on practical bizdev problems.',
-    'You are curious novice growth expert working to promote Instructor library, you keep asking questions. Use your knowledge of Instructor library and marketing of tech products for developers. Ask short, simple questions. Always ask a single question.'
-];
-$startMessage = new Message('assistant', 'Help me get better sales results. Be brief and concise.');
 
+$system = 'You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.';
 $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
 $summarizer = new SummarizeMessages(
-    //prompt: 'Summarize the messages.',
     llm: LLMProvider::using('openai'),
-    //model: 'gpt-4o-mini',
     tokenLimit: 1024,
 );
 
-$chat = ChatWithSummary::create(
+// Build a Chat with summary + buffer processors and an assistant participant
+$chat = BuildChatWithSummary::create(
     maxChatTokens: 256,
     maxBufferTokens: 256,
     maxSummaryTokens: 1024,
     summarizer: $summarizer,
+    model: 'gpt-4o-mini',
 );
-$chat = $chat->appendMessage($startMessage);
 
-for($i = 0; $i < $maxSteps; $i++) {
-    $script = $chat->script()
-        ->withSection('system')
-        ->withSection('context')
-        ->withSectionMessages('system', Messages::fromString($sys[$i % 2], 'system'))
-        ->withSectionMessages('context', Messages::fromString($context, 'system'));
-    $chat = $chat->withScript($script);
+// Add system + persistent context once
+$script = $chat->state()->script()
+    ->withSectionMessages('system', Messages::fromString($system, 'system'))
+    ->withSectionMessages('context', Messages::fromString($context, 'system'));
+$state = $chat->state();
+$state->withScript($script);
+$chat->withState($state);
 
-    $messages = $chat->script()
-        ->select(['system', 'context', 'summary', 'buffer', 'main'])
-        ->toMessages()
-        ->remapRoles(['assistant' => 'user', 'user' => 'assistant', 'system' => 'system']);
+$userPrompts = [
+    'Help me get better sales results.',
+    'What should I do next?',
+    'Give me one more actionable tip.',
+];
 
-    $response = (new Inference)
-        ->using('openai')
-        ->withMessages($messages->toArray())
-        ->withOptions(['max_tokens' => 256])
-        ->get();
+for ($i = 0; $i < $maxSteps; $i++) {
+    $prompt = $userPrompts[$i % count($userPrompts)];
+    // Append user message, then let assistant produce a reply
+    $chat->withMessages(Messages::fromString($prompt, 'user'));
+    $step = $chat->nextTurn();
 
-    echo "\n";
-    dump('>>> '.$response);
-    echo "\n";
-    $chat = $chat->appendMessage(new Message(role: 'assistant', content: $response));
+    echo "\nUser:  {$prompt}\n";
+    echo   "AI:    ".$step->messages()->toString()."\n";
 }
 
-dump($chat->script());
+// Show that older content has been summarized into the summary section
+echo "\n--- Summary (compressed history) ---\n";
+echo $chat->state()->script()->section('summary')->toMessages()->toString()."\n";
+?>
+```

@@ -9,6 +9,11 @@ use Cognesy\Messages\Messages;
 use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
+/**
+ * @deprecated Use Cognesy\\Addons\\Chat\\Chat orchestrator with
+ *             Pipelines\\BuildChatWithSummary to configure buffer/summarize
+ *             processors. This class will be removed in a future release.
+ */
 class ChatWithSummary
 {
     const SECTION_MAIN = 'main';
