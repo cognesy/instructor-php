@@ -7,11 +7,16 @@ use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
+/**
+ * @method mixed __invoke(mixed ...$args)
+ */
 abstract class BaseTool implements ToolInterface
 {
     protected string $name;
     protected string $description;
     protected array $jsonSchema;
+
+    // Intentionally rely on subclass __invoke signature.
 
     public function name(): string {
         return $this->name ?? static::class;

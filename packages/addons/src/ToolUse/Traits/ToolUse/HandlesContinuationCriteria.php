@@ -12,13 +12,15 @@ use Cognesy\Addons\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\ToolUseState;
+use Cognesy\Addons\ToolUse\Collections\ContinuationCriteria as ContinuationCriteriaCollection;
 
 trait HandlesContinuationCriteria
 {
     public function withContinuationCriteria(CanDecideToContinue ...$continuationCriteria) : self {
-        foreach ($continuationCriteria as $criterion) {
-            $this->continuationCriteria[] = $criterion;
+        if (!($this->continuationCriteria instanceof ContinuationCriteriaCollection)) {
+            $this->continuationCriteria = new ContinuationCriteriaCollection();
         }
+        $this->continuationCriteria->add(...$continuationCriteria);
         return $this;
     }
 
@@ -53,15 +55,13 @@ trait HandlesContinuationCriteria
     // INTERNAL /////////////////////////////////////////////
 
     protected function canContinue(ToolUseState $state) : bool {
-        foreach ($this->continuationCriteria as $criterion) {
-            if (!$criterion->canContinue($state)) {
-                $state->withStatus(match(true) {
-                    $state->currentStep()?->hasErrors() => ToolUseStatus::Failed,
-                    default => ToolUseStatus::Completed,
-                });
-                return false;
-            }
+        $can = $this->continuationCriteria->canContinue($state);
+        if (!$can) {
+            $state->withStatus(match(true) {
+                $state->currentStep()?->hasErrors() => ToolUseStatus::Failed,
+                default => ToolUseStatus::Completed,
+            });
         }
-        return true;
+        return $can;
     }
 }

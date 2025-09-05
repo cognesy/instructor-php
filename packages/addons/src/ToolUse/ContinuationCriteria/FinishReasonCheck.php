@@ -17,6 +17,7 @@ class FinishReasonCheck implements CanDecideToContinue
         if (empty($this->finishOnReasons)) {
             return true;
         }
-        return in_array($state->currentStep()?->finishReason(), $this->finishOnReasons);
+        // Stop when finish reason is one of the configured reasons
+        return !in_array($state->currentStep()?->finishReason(), $this->finishOnReasons, true);
     }
 }

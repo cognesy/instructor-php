@@ -8,16 +8,18 @@ use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesContinuationCriteria;
 use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesStepProcessors;
 use Cognesy\Messages\Messages;
 use Generator;
+use Cognesy\Addons\ToolUse\Contracts\ToolUseObserver;
 
 class ToolUse {
     use HandlesContinuationCriteria;
     use HandlesStepProcessors;
 
     private CanUseTools $driver;
-    private array $processors;
-    private array $continuationCriteria;
+    private \Cognesy\Addons\ToolUse\Collections\StepProcessors $processors;
+    private \Cognesy\Addons\ToolUse\Collections\ContinuationCriteria $continuationCriteria;
 
     private ToolUseState $state;
+    private ?ToolUseObserver $observer = null;
 
     public function __construct(
         ?ToolUseState $state = null,
@@ -27,14 +29,15 @@ class ToolUse {
     ) {
         $this->state = $state ?? new ToolUseState;
         $this->driver = $driver ?? new ToolCallingDriver;
-        $this->processors = $processors ?? [];
-        if (empty($this->processors)) {
-            $this->withDefaultProcessors();
-        }
-        $this->continuationCriteria = $continuationCriteria ?? [];
-        if (empty($this->continuationCriteria)) {
-            $this->withDefaultContinuationCriteria();
-        }
+        $this->processors = new \Cognesy\Addons\ToolUse\Collections\StepProcessors();
+        if (!empty($processors)) {
+            // accept legacy arrays of processors
+            foreach ($processors as $p) { $this->withProcessors($p); }
+        } else { $this->withDefaultProcessors(); }
+        $this->continuationCriteria = new \Cognesy\Addons\ToolUse\Collections\ContinuationCriteria();
+        if (!empty($continuationCriteria)) {
+            foreach ($continuationCriteria as $c) { $this->withContinuationCriteria($c); }
+        } else { $this->withDefaultContinuationCriteria(); }
     }
 
     // HANDLE PARAMETRIZATION //////////////////////////////////////
@@ -55,6 +58,11 @@ class ToolUse {
 
     public function state() : ToolUseState {
         return $this->state;
+    }
+
+    public function withObserver(ToolUseObserver $observer) : self {
+        $this->observer = $observer;
+        return $this;
     }
 
     public function withTools(array|Tools $tools) : self {
@@ -83,8 +91,15 @@ class ToolUse {
     // HANDLE TOOL USE /////////////////////////////////////////////
 
     public function nextStep() : ToolUseStep {
+        if ($this->observer) {
+            $this->observer->onStepStart($this->state);
+        }
         $step = $this->driver->useTools($this->state);
-        return $this->processStep($step, $this->state);
+        $step = $this->processStep($step, $this->state);
+        if ($this->observer) {
+            $this->observer->onStepEnd($this->state, $step);
+        }
+        return $step;
     }
 
     public function finalStep() : ToolUseStep {

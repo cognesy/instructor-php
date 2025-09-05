@@ -8,14 +8,12 @@ use Cognesy\Addons\ToolUse\ToolUseState;
 class StepsLimit implements CanDecideToContinue
 {
     private int $maxSteps;
-    private int $currentStep = 0;
 
     public function __construct(int $maxSteps) {
         $this->maxSteps = $maxSteps;
     }
 
     public function canContinue(ToolUseState $state): bool {
-        $this->currentStep++;
-        return ($this->currentStep < $this->maxSteps);
+        return ($state->stepCount() < $this->maxSteps);
     }
 }

@@ -8,14 +8,13 @@ use Cognesy\Addons\ToolUse\ToolUseState;
 class ExecutionTimeLimit implements CanDecideToContinue
 {
     private int $maxExecutionTime;
-    private int $executionStartTime;
 
     public function __construct(int $maxExecutionTime) {
         $this->maxExecutionTime = $maxExecutionTime;
-        $this->executionStartTime = time();
     }
 
     public function canContinue(ToolUseState $state): bool {
-        return ((time() - $this->executionStartTime) < $this->maxExecutionTime);
+        $startedAt = $state->startedAt();
+        return ((time() - $startedAt->getTimestamp()) < $this->maxExecutionTime);
     }
 }

@@ -3,6 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Traits\ToolUse;
 
 use Cognesy\Addons\ToolUse\Contracts\CanProcessStep;
+use Cognesy\Addons\ToolUse\Collections\StepProcessors;
 use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\ToolUse\Processors\AppendContextVariables;
 use Cognesy\Addons\ToolUse\Processors\AppendStepMessages;
@@ -13,9 +14,10 @@ use Cognesy\Addons\ToolUse\ToolUseStep;
 trait HandlesStepProcessors
 {
     public function withProcessors(CanProcessStep ...$processors): self {
-        foreach ($processors as $processor) {
-            $this->processors[] = $processor;
+        if (!($this->processors instanceof StepProcessors)) {
+            $this->processors = new StepProcessors();
         }
+        $this->processors->add(...$processors);
         return $this;
     }
 
@@ -32,9 +34,6 @@ trait HandlesStepProcessors
     // INTERNAL /////////////////////////////////////////////
 
     protected function processStep(ToolUseStep $step, ToolUseState $state): ToolUseStep {
-        foreach ($this->processors as $processor) {
-            $step = $processor->processStep($step, $state);
-        }
-        return $step;
+        return $this->processors->apply($step, $state);
     }
 }

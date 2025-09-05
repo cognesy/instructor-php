@@ -5,6 +5,8 @@ namespace Cognesy\Addons\ToolUse;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use DateTimeImmutable;
+use Cognesy\Addons\ToolUse\Options\ToolUseOptions;
 
 class ToolUseState
 {
@@ -18,6 +20,8 @@ class ToolUseState
     private ?ToolUseStep $currentStep = null;
 
     private Usage $usage;
+    private DateTimeImmutable $startedAt;
+    private ?ToolUseOptions $options = null;
 
     public function __construct(
         ?Tools $tools = null,
@@ -25,6 +29,7 @@ class ToolUseState
         $this->tools = $tools ?? new Tools();
         $this->messages = Messages::empty();
         $this->usage = new Usage();
+        $this->startedAt = new DateTimeImmutable();
     }
 
     // HANDLE STEPS ////////////////////////////////////////////////
@@ -82,6 +87,22 @@ class ToolUseState
 
     public function accumulateUsage(Usage $usage) {
         $this->usage->accumulate($usage);
+    }
+
+    // HANDLE TIMING //////////////////////////////////////////////
+
+    public function startedAt() : DateTimeImmutable {
+        return $this->startedAt;
+    }
+
+    // HANDLE OPTIONS /////////////////////////////////////////////
+
+    public function withOptions(?ToolUseOptions $options) : void {
+        $this->options = $options;
+    }
+
+    public function options() : ?ToolUseOptions {
+        return $this->options;
     }
 
     // HANDLE VARIABLES ////////////////////////////////////////////
