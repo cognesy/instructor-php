@@ -61,7 +61,7 @@ class ToolUseState
     }
 
     public function appendMessages(Messages $messages) {
-        $this->messages->appendMessages($messages);
+        $this->messages = $this->messages->appendMessages($messages);
     }
 
     // HANDLE TOOLS ////////////////////////////////////////////////

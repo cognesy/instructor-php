@@ -13,9 +13,9 @@ class SplitMessages
         foreach ($messages->reversed()->each() as $message) {
             $messageTokens = \Cognesy\Utils\Tokenizer::tokenCount($message->toString());
             if ($totalTokens + $messageTokens <= $tokenLimit) {
-                $limited->appendMessage($message);
+                $limited = $limited->appendMessage($message);
             } else {
-                $overflow->appendMessage($message);
+                $overflow = $overflow->appendMessage($message);
             }
             $totalTokens += $messageTokens;
         }

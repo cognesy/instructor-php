@@ -14,7 +14,7 @@ docname: 'chat_with_summary'
 
 require 'examples/boot.php';
 
-use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
+use Cognesy\Addons\Chat\ChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -43,15 +43,15 @@ $chat = ChatWithSummary::create(
     maxSummaryTokens: 1024,
     summarizer: $summarizer,
 );
-$chat->script()->section('main')->appendMessage($startMessage);
+$chat = $chat->appendMessage($startMessage);
 
 for($i = 0; $i < $maxSteps; $i++) {
-    $chat->script()
-        ->section('system')
-        ->withMessages(Messages::fromString($sys[$i % 2], 'system'));
-    $chat->script()
-        ->section('context')
-        ->withMessages(Messages::fromString($context, 'system'));
+    $script = $chat->script()
+        ->withSection('system')
+        ->withSection('context')
+        ->withSectionMessages('system', Messages::fromString($sys[$i % 2], 'system'))
+        ->withSectionMessages('context', Messages::fromString($context, 'system'));
+    $chat = $chat->withScript($script);
 
     $messages = $chat->script()
         ->select(['system', 'context', 'summary', 'buffer', 'main'])
@@ -67,7 +67,7 @@ for($i = 0; $i < $maxSteps; $i++) {
     echo "\n";
     dump('>>> '.$response);
     echo "\n";
-    $chat->appendMessage(new Message(role: 'assistant', content: $response), 'main');
+    $chat = $chat->appendMessage(new Message(role: 'assistant', content: $response));
 }
 
 dump($chat->script());

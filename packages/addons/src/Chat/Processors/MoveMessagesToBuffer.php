@@ -42,14 +42,16 @@ class MoveMessagesToBuffer implements ScriptProcessor
         foreach ($script->sections() as $section) {
             $sectionName = $section->name();
             if ($sectionName === $this->sourceSection) {
-                $newScript->section($sectionName)->appendMessages($keep);
+                $newScript = $newScript->withSectionMessages($sectionName, $keep);
             } elseif ($sectionName === $this->targetSection) {
                 $existingMessages = $script->section($sectionName)->toMessages();
-                $newScript->section($sectionName)
-                    ->appendMessages($existingMessages)
-                    ->appendMessages($overflow);
+                $combined = $existingMessages->appendMessages($overflow);
+                $newScript = $newScript->withSectionMessages($sectionName, $combined);
             } else {
-                $newScript->section($sectionName)->copyFrom($script->section($sectionName));
+                $newScript = $newScript->replaceSection(
+                    $sectionName,
+                    $newScript->withSection($sectionName)->section($sectionName)->copyFrom($script->section($sectionName))
+                );
             }
         }
 

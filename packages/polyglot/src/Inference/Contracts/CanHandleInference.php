@@ -10,11 +10,8 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 interface CanHandleInference
 {
     public function makeResponseFor(InferenceRequest $request) : InferenceResponse;
-
     /** iterable<PartialInferenceResponse> */
     public function makeStreamResponsesFor(InferenceRequest $request): iterable;
-
-    // direct access to HTTP request/response conversion methods
 
     public function toHttpRequest(InferenceRequest $request): HttpRequest;
     public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse;

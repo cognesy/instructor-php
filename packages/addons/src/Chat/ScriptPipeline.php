@@ -19,7 +19,7 @@ class ScriptPipeline
 
         // Initialize all sections
         foreach ($sections as $section) {
-            $this->script->section($section);
+            $this->script = $this->script->withSection($section);
         }
     }
 
@@ -29,12 +29,12 @@ class ScriptPipeline
     }
 
     public function appendMessage(Message $message, string $section): self {
-        $this->script->section($section)->appendMessage($message);
+        $this->script = $this->script->appendMessageToSection($section, $message);
         return $this->process();
     }
 
     public function appendMessages(Messages $messages, string $section): self {
-        $this->script->section($section)->appendMessages($messages);
+        $this->script = $this->script->withSectionMessages($section, $messages);
         return $this->process();
     }
 

@@ -77,7 +77,7 @@ class ChatWithSummary
 
     public function appendMessage(Message $message) : self {
         $messageTokens = Tokenizer::tokenCount($message->toString());
-        $this->script->section(self::SECTION_MAIN)->appendMessage($message);
+        $this->script = $this->script->appendMessageToSection(self::SECTION_MAIN, $message);
         $this->chatTokens += $messageTokens;
         if ($this->autoBuffer && ($this->chatTokens > $this->maxChatTokens)) {
             $this->buffer();
@@ -96,8 +96,13 @@ class ChatWithSummary
     public function summarize() : self {
         $summary = $this->makeSummary($this->script, $this->maxSummaryTokens);
         $this->summaryTokens = Tokenizer::tokenCount($summary);
-        $this->script->section(self::SECTION_BUFFER)->clear();
-        $this->script->section(self::SECTION_SUMMARY)->withMessages(Messages::fromString($summary));
+        // clear buffer section
+        $this->script = $this->script->replaceSection(
+            self::SECTION_BUFFER,
+            $this->script->withSection(self::SECTION_BUFFER)->section(self::SECTION_BUFFER)->clear()
+        );
+        // write summary section
+        $this->script = $this->script->withSectionMessages(self::SECTION_SUMMARY, Messages::fromString($summary));
         return $this;
     }
 
@@ -117,19 +122,24 @@ class ChatWithSummary
         foreach ($messages->reversed()->each() as $message) {
             $messageTokens = Tokenizer::tokenCount($message->toString());
             if ($totalTokens + $messageTokens <= $tokens) {
-                $limited->appendMessage($message);
+                $limited = $limited->appendMessage($message);
                 $this->chatTokens += $messageTokens;
             } else {
-                $overflow->appendMessage($message);
+                $overflow = $overflow->appendMessage($message);
                 $this->bufferTokens += $messageTokens;
             }
             $totalTokens += $messageTokens;
         }
 
         $newScript = new Script();
-        $newScript->section(self::SECTION_MAIN)->appendMessages($limited->reversed());
-        $newScript->section(self::SECTION_BUFFER)->appendMessages($overflow->reversed());
-        $newScript->section(self::SECTION_SUMMARY)->copyFrom($script->section(self::SECTION_SUMMARY));
+        $newScript = $newScript->withSectionMessages(self::SECTION_MAIN, $limited->reversed());
+        $newScript = $newScript->withSectionMessages(self::SECTION_BUFFER, $overflow->reversed());
+        $newScript = $newScript->replaceSection(
+            self::SECTION_SUMMARY,
+            $newScript->withSection(self::SECTION_SUMMARY)
+                ->section(self::SECTION_SUMMARY)
+                ->copyFrom($script->section(self::SECTION_SUMMARY))
+        );
         return $newScript;
     }
 

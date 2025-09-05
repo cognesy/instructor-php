@@ -76,7 +76,7 @@ readonly final class Call implements CanProcessState {
     }
 
     /**
-     * @param callable(CanCarryState):CanCarryState $next
+     * @param null|callable(CanCarryState):CanCarryState $next
      */
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $outputState = ($this->normalizedCall)($state);

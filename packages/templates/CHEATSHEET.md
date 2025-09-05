@@ -243,7 +243,8 @@ $script = new Script(
     new Section('system'),
     new Section('conversation')
 );
-$script->section('system')->appendMessage([...]);
+$script = $script->withSection('system');
+$script = $script->appendMessageToSection('system', [...]);
 ```
 
 ## Engine Requirements

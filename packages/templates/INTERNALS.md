@@ -102,20 +102,23 @@ $messages = Template::blade()
 
 ### Script-Based Organization
 ```php
+
 $script = new Script(
     new Section('system'),
     new Section('conversation')
 );
 
-$script->section('system')->appendMessage([
-    'role' => 'system', 
-    'content' => 'You are helpful'
-]);
+$script = $script->withSection('system')
+    ->appendMessageToSection('system', [
+        'role' => 'system', 
+        'content' => 'You are helpful'
+    ]);
 
-$script->section('conversation')->appendMessage([
-    'role' => 'user', 
-    'content' => 'Hello <|name|>'
-]);
+$script = $script->withSection('conversation')
+    ->appendMessageToSection('conversation', [
+        'role' => 'user', 
+        'content' => 'Hello <|name|>'
+    ]);
 
 $script->withParams(['name' => 'World']);
 $messages = $script->toArray();

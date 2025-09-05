@@ -3,6 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Drivers;
 
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
+use Cognesy\Http\HttpClient;
 use Cognesy\Addons\ToolUse\ToolExecution;
 use Cognesy\Addons\ToolUse\ToolExecutions;
 use Cognesy\Addons\ToolUse\ToolUseState;
@@ -27,6 +28,7 @@ use Cognesy\Utils\Result\Success;
 class ToolCallingDriver implements CanUseTools
 {
     private LLMProvider $llm;
+    private ?HttpClient $httpClient = null;
     private string|array $toolChoice;
     private string $model;
     private array $responseFormat;
@@ -36,6 +38,7 @@ class ToolCallingDriver implements CanUseTools
 
     public function __construct(
         ?LLMProvider $llm = null,
+        ?HttpClient   $httpClient = null,
         string|array $toolChoice = 'auto',
         array        $responseFormat = [],
         string       $model = '',
@@ -43,12 +46,18 @@ class ToolCallingDriver implements CanUseTools
         OutputMode   $mode = OutputMode::Tools,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
+        $this->httpClient = $httpClient;
 
         $this->toolChoice = $toolChoice;
         $this->model = $model;
         $this->responseFormat = $responseFormat;
         $this->mode = $mode;
         $this->options = $options;
+    }
+
+    public function withHttpClient(HttpClient $httpClient) : self {
+        $this->httpClient = $httpClient;
+        return $this;
     }
 
     /**
@@ -63,7 +72,7 @@ class ToolCallingDriver implements CanUseTools
         $messages = $state->messages();
         $tools = $state->tools();
 
-        $inferenceResponse = (new Inference)
+        $inference = (new Inference)
             ->withLLMProvider($this->llm)
             //->withDebugPreset('on')
             ->withMessages($messages->toArray())
@@ -75,8 +84,11 @@ class ToolCallingDriver implements CanUseTools
                 $this->options,
                 ['parallel_tool_calls' => $this->parallelToolCalls]
             ))
-            ->withOutputMode($this->mode)
-            ->response();
+            ->withOutputMode($this->mode);
+        if ($this->httpClient !== null) {
+            $inference = $inference->withHttpClient($this->httpClient);
+        }
+        $inferenceResponse = $inference->response();
 
         $toolExecutions = $tools->useTools($inferenceResponse->toolCalls(), $state);
         $followUpMessages = $this->makeFollowUpMessages($toolExecutions);
@@ -102,7 +114,7 @@ class ToolCallingDriver implements CanUseTools
     protected function makeFollowUpMessages(ToolExecutions $toolExecutions) : Messages {
         $messages = Messages::empty();
         foreach ($toolExecutions->all() as $toolExecution) {
-            $messages->appendMessages($this->makeToolExecutionMessages($toolExecution));
+            $messages = $messages->appendMessages($this->makeToolExecutionMessages($toolExecution));
         }
         return $messages;
     }
@@ -115,8 +127,8 @@ class ToolCallingDriver implements CanUseTools
      */
     protected function makeToolExecutionMessages(ToolExecution $toolExecution) : Messages {
         $messages = Messages::empty();
-        $messages->appendMessage($this->makeToolInvocationMessage($toolExecution->toolCall()));
-        $messages->appendMessage($this->makeToolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));
+        $messages = $messages->appendMessage($this->makeToolInvocationMessage($toolExecution->toolCall()));
+        $messages = $messages->appendMessage($this->makeToolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));
         return $messages;
     }
 
