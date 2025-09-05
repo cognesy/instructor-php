@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\Section;
+namespace Cognesy\Messages\Script\Traits\Section;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Section;
+use Cognesy\Messages\Script\Section;
 
 trait HandlesMutation
 {

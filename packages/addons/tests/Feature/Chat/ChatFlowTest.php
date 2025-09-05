@@ -5,13 +5,10 @@ use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Participants\HumanParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
-use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Inference;
 use Tests\Addons\Support\FakeInferenceDriver;
-
-
 
 it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     $script = (new Script())->withSection('summary')->withSection('buffer')->withSection('main');

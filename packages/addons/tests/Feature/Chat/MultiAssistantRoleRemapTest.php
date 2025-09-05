@@ -9,7 +9,7 @@ use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 it('remaps roles per active assistant in multi-participant chat', function () {
     // two dummy assistants

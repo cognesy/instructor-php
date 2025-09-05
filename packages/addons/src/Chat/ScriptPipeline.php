@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Chat;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 /**
  * @deprecated Use Cognesy\\Addons\\Chat\\Chat with script processors

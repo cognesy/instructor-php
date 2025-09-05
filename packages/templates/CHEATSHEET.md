@@ -82,56 +82,16 @@ renderFile(string $path, array $variables): string
 getVariableNames(string $content): array
 ```
 
-## Script Class
+## Message Renderers
 
-### Construction
+### ArrowpipeMessagesRenderer
 ```php
-new Script(Section ...$sections)
+renderMessages(Messages $messages, array $parameters = []): Messages
 ```
 
-### Parameters
+### MessageToRoleStringRenderer  
 ```php
-withParams(array $parameters): self
-getParameters(): array
-```
-
-### Section Management
-```php
-section(string $name): Section             // Get/create section
-hasSection(string $name): bool
-removeSection(string $name): self
-select(string|array $sections): self       // Select specific sections
-```
-
-### Output
-```php
-toString(): string
-toArray(): array
-toMessages(): Messages
-```
-
-## Section Class
-
-### Message Management
-```php
-appendMessage(array|Message $message): self
-prependMessage(array|Message $message): self
-insertMessage(int $index, array|Message $message): self
-removeMessage(int $index): self
-```
-
-### Access
-```php
-messages(): array
-messageAt(int $index): Message
-count(): int
-isEmpty(): bool
-```
-
-### Metadata
-```php
-name(): string
-setName(string $name): self
+renderMessages(Messages $messages, array $parameters = []): Messages
 ```
 
 ## StringTemplate Class
@@ -237,17 +197,44 @@ $messages = Template::using('demo-twig')
 'Hello <|name|>, welcome to <|app|>!'     // Variable syntax
 ```
 
-### Multi-Section Scripts
+### Message Renderers Usage
 ```php
-$script = new Script(
-    new Section('system'),
-    new Section('conversation')
-);
-$script = $script->withSection('system');
-$script = $script->appendMessageToSection('system', [...]);
+// Render messages with Arrowpipe template syntax
+$renderer = new ArrowpipeMessagesRenderer();
+$rendered = $renderer->renderMessages($messages, ['key' => 'value']);
+
+// Convert messages to role:content format
+$roleRenderer = new MessageToRoleStringRenderer();  
+$formatted = $roleRenderer->renderMessages($messages);
 ```
 
-## Engine Requirements
+## Template Engines
+
+### Supported Engines
+- **Twig**: Full-featured template engine with inheritance and filters
+- **Blade**: Laravel's template engine with directives and components  
+- **Arrowpipe**: Built-in simple variable substitution using `<|var|>` syntax
+
+### Engine Requirements
 - **Twig**: `composer require twig/twig`
 - **Blade**: `composer require eftec/bladeone`  
 - **Arrowpipe**: Built-in (no dependencies)
+
+## Driver Classes
+
+### ArrowpipeDriver
+```php
+renderFile(string $path, array $parameters = []): string
+renderString(string $content, array $parameters = []): string  
+getTemplateContent(string $path): string
+getVariableNames(string $content): array
+```
+
+### CanHandleTemplate Interface
+All template drivers must implement:
+```php
+renderFile(string $path, array $parameters = []): string
+renderString(string $content, array $parameters = []): string
+getTemplateContent(string $path): string
+getVariableNames(string $content): array
+```

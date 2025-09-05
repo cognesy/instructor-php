@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Chat\Traits\Chat;
 
 use Cognesy\Addons\Chat\Contracts\ScriptProcessor;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 trait HandlesScriptProcessors
 {

@@ -4,8 +4,8 @@ namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Template\Script\Script;
 use DateTimeImmutable;
 
 final class ChatState

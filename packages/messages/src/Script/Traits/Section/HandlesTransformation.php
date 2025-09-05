@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Template\Script\Traits\Section;
+namespace Cognesy\Messages\Script\Traits\Section;
 
-use Cognesy\Template\Script\Section;
+use Cognesy\Messages\Script\Section;
 
 trait HandlesTransformation
 {

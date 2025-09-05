@@ -8,7 +8,7 @@ use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Processors\MoveMessagesToBuffer;
 use Cognesy\Addons\Chat\Processors\SummarizeBuffer;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 final class BuildChatWithSummary
 {

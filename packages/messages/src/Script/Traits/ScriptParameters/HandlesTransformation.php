@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\ScriptParameters;
+namespace Cognesy\Messages\Script\Traits\ScriptParameters;
 
-use Cognesy\Template\Script\ScriptParameters;
+use Cognesy\Messages\Script\ScriptParameters;
 use Exception;
 
 trait HandlesTransformation

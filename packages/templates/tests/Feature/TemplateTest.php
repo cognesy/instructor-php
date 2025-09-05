@@ -1,10 +1,10 @@
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Enums\TemplateEngineType;
-use Cognesy\Template\Script\Script;
 use Cognesy\Template\Template;
-use Cognesy\Messages\Messages;
 
 // RECOMMENDED, READING FRIENDLY SYNTAX
 

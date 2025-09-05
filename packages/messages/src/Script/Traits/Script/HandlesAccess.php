@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\Script;
+namespace Cognesy\Messages\Script\Traits\Script;
 
-use Cognesy\Template\Script\Section;
-use Cognesy\Template\Script\SectionContext;
+use Cognesy\Messages\Script\Section;
 use Exception;
 
 trait HandlesAccess

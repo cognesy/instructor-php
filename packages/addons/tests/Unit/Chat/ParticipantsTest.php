@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Participants\HumanParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Template\Script\Script;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Inference;
 use Tests\Addons\Support\FakeInferenceDriver;
-
-
 
 it('human participant uses callback to provide messages', function () {
     $p = new HumanParticipant(id: 'user', messageProvider: fn() => 'hello');

@@ -53,6 +53,7 @@ The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI c
 - **Format Conversion**: Seamless conversion between string, array, and object representations
 - **Media Integration**: Built-in Image, File, and Audio utilities with base64 and URL support
 - **Collection Operations**: Advanced message collection operations including filtering, merging, and role-based partitioning
+- **Script System**: Multi-section chat sequence management with section selection
 - **Provider Compatibility**: OpenAI-compatible message format with extensibility for other providers
 
 **Key Integration Points**: Used by Instructor and Polyglot for all LLM communication; integrates with Templates for message generation and Utils for data transformation.
@@ -98,10 +99,10 @@ The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI c
 **Core Capabilities**:
 - **Multi-Engine Support**: Twig, Blade, and ArrowPipe template engine integration with unified API
 - **Template Provider**: Configuration management with preset support and DSN-based initialization
-- **Script System**: Multi-section prompt management with parameter injection and section selection
 - **Message Generation**: Direct conversion from templates to Messages format for LLM consumption
 - **Variable Management**: Template variable extraction, validation, and parameter management
 - **XML Chat Format**: Specialized chat markup for conversational prompt structures
+- **Message Rendering**: Template-based rendering of existing message content with parameter substitution
 
 **Key Integration Points**: Generates Messages for Polyglot consumption; uses Config for template path resolution and Events for template processing observability.
 

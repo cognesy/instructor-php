@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script;
+namespace Cognesy\Messages\Script;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;

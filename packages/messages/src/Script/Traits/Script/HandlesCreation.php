@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\Script;
+namespace Cognesy\Messages\Script\Traits\Script;
 
-use Cognesy\Template\Script\Script;
-use Cognesy\Template\Script\Section;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\Script\Section;
 
 trait HandlesCreation
 {

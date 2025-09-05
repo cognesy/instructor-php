@@ -3,8 +3,8 @@
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Template\Script\Script;
 
 it('stops when steps limit reached', function () {
     $state = new ChatState(new Script());

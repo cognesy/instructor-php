@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Template\Script\Traits\Section;
+namespace Cognesy\Messages\Script\Traits\Section;
 
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Messages;

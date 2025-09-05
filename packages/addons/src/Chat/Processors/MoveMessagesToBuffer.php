@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Chat\Processors;
 
 use Cognesy\Addons\Chat\Contracts\ScriptProcessor;
 use Cognesy\Addons\Chat\Utils\SplitMessages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
 class MoveMessagesToBuffer implements ScriptProcessor

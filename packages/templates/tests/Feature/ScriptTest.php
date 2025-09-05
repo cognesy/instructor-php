@@ -1,8 +1,8 @@
 <?php
 
-use Cognesy\Template\Script\Script;
-use Cognesy\Template\Script\Section;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\Script\Section;
 
 it('creates messages from script', function () {
     $script = Script::fromSections(

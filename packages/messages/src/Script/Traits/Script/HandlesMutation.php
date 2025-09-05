@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\Script;
+namespace Cognesy\Messages\Script\Traits\Script;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
-use Cognesy\Template\Script\ScriptParameters;
-use Cognesy\Template\Script\Section;
+use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\Script\ScriptParameters;
+use Cognesy\Messages\Script\Section;
 use Exception;
 
 trait HandlesMutation

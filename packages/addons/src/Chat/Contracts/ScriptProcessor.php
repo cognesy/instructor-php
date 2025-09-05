@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Chat\Contracts;
 
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 interface ScriptProcessor
 {

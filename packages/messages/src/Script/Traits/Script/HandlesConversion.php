@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\Script;
+namespace Cognesy\Messages\Script\Traits\Script;
 
 use Cognesy\Messages\Messages;
 use Exception;

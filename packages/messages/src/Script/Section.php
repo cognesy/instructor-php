@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Template\Script;
+namespace Cognesy\Messages\Script;
 
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Traits\Section\HandlesAccess;
-use Cognesy\Template\Script\Traits\Section\HandlesConversion;
-use Cognesy\Template\Script\Traits\Section\HandlesHeaderFooter;
-use Cognesy\Template\Script\Traits\Section\HandlesMetadata;
-use Cognesy\Template\Script\Traits\Section\HandlesMutation;
-use Cognesy\Template\Script\Traits\Section\HandlesTransformation;
+use Cognesy\Messages\Script\Traits\Section\HandlesAccess;
+use Cognesy\Messages\Script\Traits\Section\HandlesConversion;
+use Cognesy\Messages\Script\Traits\Section\HandlesHeaderFooter;
+use Cognesy\Messages\Script\Traits\Section\HandlesMetadata;
+use Cognesy\Messages\Script\Traits\Section\HandlesMutation;
+use Cognesy\Messages\Script\Traits\Section\HandlesTransformation;
 
 /**
  * Represents a distinct named section of message sequence (script).

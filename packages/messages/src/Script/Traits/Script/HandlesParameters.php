@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script\Traits\Script;
+namespace Cognesy\Messages\Script\Traits\Script;
 
-use Cognesy\Template\Script\ScriptParameters;
+use Cognesy\Messages\Script\ScriptParameters;
 
 trait HandlesParameters
 {

@@ -1,8 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Template\Script;
+namespace Cognesy\Messages\Script;
 
-use Cognesy\Template\Script\Traits\RendersContent;
+use Cognesy\Messages\Script\Traits\Script\HandlesAccess;
+use Cognesy\Messages\Script\Traits\Script\HandlesConversion;
+use Cognesy\Messages\Script\Traits\Script\HandlesCreation;
+use Cognesy\Messages\Script\Traits\Script\HandlesMutation;
+use Cognesy\Messages\Script\Traits\Script\HandlesParameters;
+use Cognesy\Messages\Script\Traits\Script\HandlesReordering;
+use Cognesy\Messages\Script\Traits\Script\HandlesTransformation;
 
 /**
  * Script represents a complex message sequence with multiple sections and messages.
@@ -18,14 +24,13 @@ use Cognesy\Template\Script\Traits\RendersContent;
  */
 final readonly class Script
 {
-    use Traits\Script\HandlesAccess;
-    use Traits\Script\HandlesParameters;
-    use Traits\Script\HandlesConversion;
-    use Traits\Script\HandlesCreation;
-    use Traits\Script\HandlesMutation;
-    use Traits\Script\HandlesReordering;
-    use Traits\Script\HandlesTransformation;
-    use RendersContent;
+    use HandlesAccess;
+    use HandlesParameters;
+    use HandlesConversion;
+    use HandlesCreation;
+    use HandlesMutation;
+    use HandlesReordering;
+    use HandlesTransformation;
 
     /** @var Section[] */
     public array $sections;

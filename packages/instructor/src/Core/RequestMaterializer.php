@@ -9,7 +9,7 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
 use Exception;

@@ -6,7 +6,7 @@ use Cognesy\Addons\Chat\Chat;
 use Cognesy\Addons\Chat\Participants\HumanParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 final class ChatQuickstart
 {

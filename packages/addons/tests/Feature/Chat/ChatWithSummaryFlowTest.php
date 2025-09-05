@@ -5,9 +5,9 @@ use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Template\Script\Script;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 it('builds up a conversation with user prompts and assistant replies', function () {

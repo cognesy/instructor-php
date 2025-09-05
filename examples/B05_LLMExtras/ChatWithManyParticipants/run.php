@@ -17,7 +17,7 @@ use Cognesy\Addons\Chat\Participants\HumanParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 // Human participant with callable for dynamic input
 $human = new HumanParticipant(id: 'user', messageProvider: function($state) {

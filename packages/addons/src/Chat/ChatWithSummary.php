@@ -6,7 +6,7 @@ use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
 /**

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Template\Script\Traits\Script;
+namespace Cognesy\Messages\Script\Traits\Script;
 
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 trait HandlesReordering
 {
@@ -27,17 +27,17 @@ trait HandlesReordering
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    /** @return \Cognesy\Template\Script\Section[] */
+    /** @return \Cognesy\Messages\Script\Section[] */
     private function listAsIs() : array {
         return $this->sections;
     }
 
-    /** @return \Cognesy\Template\Script\Section[] */
+    /** @return \Cognesy\Messages\Script\Section[] */
     private function listReverse() : array {
         return array_reverse($this->sections);
     }
 
-    /** @return \Cognesy\Template\Script\Section[] */
+    /** @return \Cognesy\Messages\Script\Section[] */
     private function listInOrder(array $order) : array {
         $ordered = [];
         foreach ($order as $name) {

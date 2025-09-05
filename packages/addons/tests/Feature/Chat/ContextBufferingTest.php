@@ -4,7 +4,7 @@ use Cognesy\Addons\Chat\Chat;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Participants\HumanParticipant;
 use Cognesy\Addons\Chat\Processors\MoveMessagesToBuffer;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 it('moves messages from main to buffer when token limit exceeded', function () {
     $script = (new Script())->withSection('summary')->withSection('buffer')->withSection('main');

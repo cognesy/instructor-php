@@ -4,7 +4,7 @@ use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\Script\Script;
 
 it('selects participants in round-robin order', function () {
     $p1 = new class implements CanParticipateInChat {
