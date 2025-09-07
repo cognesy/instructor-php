@@ -105,10 +105,8 @@ trait HandlesMutation
 
     public function withSectionMessages(string $sectionName, Messages $messages) : static {
         $script = $this->withSection($sectionName);
-        foreach ($messages->each() as $message) {
-            $script = $script->appendMessageToSection($sectionName, $message);
-        }
-        return $script;
+        $newSection = new Section($sectionName, messages: $messages);
+        return $script->replaceSection($sectionName, $newSection);
     }
 
     public function withSectionMessage(string $sectionName, array|Message $message) : static {

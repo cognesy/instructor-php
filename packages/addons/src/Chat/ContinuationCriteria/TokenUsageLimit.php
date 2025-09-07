@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\Chat\ContinuationCriteria;
 
-use Cognesy\Addons\Chat\Contracts\CanDecideToContinue;
+use Cognesy\Addons\Chat\Contracts\CanDecideToContinueChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 
-final class TokenUsageLimit implements CanDecideToContinue
+final class TokenUsageLimit implements CanDecideToContinueChat
 {
     public function __construct(private readonly int $maxTokens) {}
 

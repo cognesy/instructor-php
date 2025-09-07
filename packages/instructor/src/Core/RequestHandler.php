@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -17,6 +18,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Generator;
 
@@ -30,15 +32,16 @@ class RequestHandler
     protected readonly ?HttpClient $httpClient;
 
     protected int $retries = 0;
+    /** @var array<int, string> */
     protected array $errors = [];
 
     public function __construct(
-        CanGenerateResponse   $responseGenerator,
-        CanGeneratePartials   $partialsGenerator,
+        CanGenerateResponse $responseGenerator,
+        CanGeneratePartials $partialsGenerator,
         CanMaterializeRequest $requestMaterializer,
-        LLMProvider           $llmProvider,
-        CanHandleEvents       $events,
-        ?HttpClient           $httpClient = null,
+        LLMProvider $llmProvider,
+        CanHandleEvents $events,
+        ?HttpClient $httpClient = null,
     ) {
         $this->responseGenerator = $responseGenerator;
         $this->partialsGenerator = $partialsGenerator;
@@ -56,11 +59,11 @@ class RequestHandler
     /**
      * Generates response value
      */
-    public function responseFor(StructuredOutputRequest $request) : InferenceResponse {
+    public function responseFor(StructuredOutputRequest $request): InferenceResponse {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $inferenceResponse = $this->getInference($request)->response();
-            $inferenceResponse->withContent(match($request->mode()) {
+            $inferenceResponse->withContent(match ($request->mode()) {
                 OutputMode::Text => $inferenceResponse->content(),
                 OutputMode::Tools => $inferenceResponse->toolCalls()->first()?->argsAsJson()
                     ?? $inferenceResponse->content() // fallback if no tool calls - some LLMs return just a string
@@ -85,7 +88,7 @@ class RequestHandler
      * @param StructuredOutputRequest $request
      * @return Generator<PartialInferenceResponse>
      */
-    public function streamResponseFor(StructuredOutputRequest $request) : Generator {
+    public function streamResponseFor(StructuredOutputRequest $request): Generator {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $stream = $this->getInference($request)->stream()->responses();
@@ -103,7 +106,7 @@ class RequestHandler
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
-    protected function getInference(StructuredOutputRequest $request) : PendingInference {
+    protected function getInference(StructuredOutputRequest $request): PendingInference {
         $inference = (new Inference(events: $this->events))
             ->withLLMProvider($this->llmProvider);
         if ($this->httpClient !== null) {
@@ -117,17 +120,21 @@ class RequestHandler
                 toolChoice: $request->toolChoice(),
                 responseFormat: $request->responseFormat(),
                 options: $request->options(),
-                mode: $request->mode()
+                mode: $request->mode(),
             )
             ->create();
     }
 
-    protected function processResponse(StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : Result {
+    protected function processResponse(
+        StructuredOutputRequest $request,
+        InferenceResponse $inferenceResponse,
+        array $partialResponses
+    ): Result {
         // we have InferenceResponse here - let's process it: deserialize, validate, transform
         $processingResult = $this->responseGenerator->makeResponse(
             response: $inferenceResponse,
             responseModel: $request->responseModel(),
-            mode: $request->mode()
+            mode: $request->mode(),
         );
 
         if ($processingResult->isFailure()) {
@@ -138,24 +145,32 @@ class RequestHandler
         return $processingResult;
     }
 
-    protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : mixed {
+    protected function finalizeResult(
+        Result $processingResult,
+        StructuredOutputRequest $request,
+        InferenceResponse $inferenceResponse,
+        array $partialResponses
+    ): mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached(['retries' => $this->retries, 'errors' => $this->errors]));
             throw new ValidationException(
-                message: "Validation recovery attempts limit reached after {$this->retries} attempt(s) due to: ".implode(", ", $this->errors),
+                message: "Validation recovery attempts limit reached after {$this->retries} attempt(s) due to: " . implode(", ", $this->errors),
                 errors: $this->errors,
             );
         }
 
-        // get final value
         $value = $processingResult->unwrap();
-        // store response
         $request->setResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $value); // TODO: tx messages to Scripts
 
         return $value;
     }
 
-    protected function handleError(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : void {
+    protected function handleError(
+        Failure $processingResult,
+        StructuredOutputRequest $request,
+        InferenceResponse $inferenceResponse,
+        array $partialResponses
+    ): void {
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
 
@@ -167,7 +182,7 @@ class RequestHandler
         }
     }
 
-    protected function maxRetriesReached(StructuredOutputRequest $request) : bool {
+    protected function maxRetriesReached(StructuredOutputRequest $request): bool {
         return $this->retries > $request->maxRetries();
     }
 }

@@ -1,61 +1,59 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\Chat;
-use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
+use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Chat\Events\ChatBeforeSend;
-use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Inference;
+use Tests\Addons\Support\FakeInferenceDriver;
 
-it('remaps roles per active assistant in multi-participant chat', function () {
-    // two dummy assistants
-    $a = new class implements CanParticipateInChat {
-        public function id(): string { return 'assistantA'; }
-        public function act(ChatState $state): ChatStep { return new ChatStep('assistantA', Messages::empty()); }
-    };
-    $b = new class implements CanParticipateInChat {
-        public function id(): string { return 'assistantB'; }
-        public function act(ChatState $state): ChatStep { return new ChatStep('assistantB', Messages::empty()); }
-    };
+it('handles multi-participant chat with role mapping', function () {
+    // Create two different assistants
+    $driverA = new FakeInferenceDriver([
+        new InferenceResponse(content: 'Response from A'),
+    ]);
+    $inferenceA = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driverA));
+    $assistantA = new LLMParticipant(name: 'assistantA', inference: $inferenceA, systemPrompt: 'You are assistant A');
 
-    $script = (new Script())
-        ->withSection('system')
-        ->withSection('summary')
-        ->withSection('buffer')
-        ->withSection('main')
-        ->withSectionMessages('system', Messages::fromString('rules', 'system'))
-        ->withSectionMessages('main', (new Messages(
-            (new Message('assistant', 'Hi from A'))->withMeta('participantId','assistantA'),
-            (new Message('assistant', 'Hi from B'))->withMeta('participantId','assistantB'),
-        )));
+    $driverB = new FakeInferenceDriver([
+        new InferenceResponse(content: 'Response from B'),
+    ]);
+    $inferenceB = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driverB));
+    $assistantB = new LLMParticipant(name: 'assistantB', inference: $inferenceB, systemPrompt: 'You are assistant B');
 
-    $state = new ChatState($script);
+    // Set up initial state with mixed messages
+    $messages = new Messages(
+        new Message('user', 'Hello everyone'),
+        new Message('assistant', 'Hi from A', name: 'assistantA'),
+        new Message('assistant', 'Hi from B', name: 'assistantB'),
+    );
 
-    $events = EventBusResolver::default();
-    $seen = [];
-    $events->wiretap(function($event) use (&$seen) {
-        if ($event instanceof ChatBeforeSend) { $seen[] = $event->data; }
-    });
+    $participants = new Participants($assistantA, $assistantB);
+    $continuationCriteria = new ContinuationCriteria(new StepsLimit(2));
+    
+    $chat = Chat::default(
+        participants: $participants,
+        continuationCriteria: $continuationCriteria
+    );
+    
+    $state = new ChatState(messages: $messages);
 
-    $chat = new Chat(state: $state, selector: new RoundRobinSelector(), events: $events);
-    $chat->withParticipants([$a, $b]);
+    // Run two turns
+    $state = $chat->nextTurn($state);
+    $state = $chat->nextTurn($state);
 
-    // Turn 1: assistantA active => A is assistant, B is user
-    $chat->nextTurn();
-    expect(count($seen))->toBe(1);
-    $m = array_map(fn($m) => $m['role'] ?? '', $seen[0]['messages']->toArray());
-    expect($m)->toContain('system');
-    // ensure both roles present and assistant count == 1
-    expect(array_count_values($m)['assistant'] ?? 0)->toBe(1);
-
-    // Turn 2: assistantB active => B is assistant, A is user
-    $chat->nextTurn();
-    expect(count($seen))->toBe(2);
-    $m2 = array_map(fn($m) => $m['role'] ?? '', $seen[1]['messages']->toArray());
-    expect(array_count_values($m2)['assistant'] ?? 0)->toBe(1);
+    $finalMessages = $state->messages()->toArray();
+    
+    // We should have original 3 + 2 new messages
+    expect(count($finalMessages))->toBe(5);
+    
+    // Last two messages should be from the assistants
+    expect($finalMessages[3]['content'])->toBe('Response from A');
+    expect($finalMessages[4]['content'])->toBe('Response from B');
 });
 

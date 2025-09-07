@@ -5,36 +5,58 @@ namespace Cognesy\Addons\Chat\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Messages\Messages;
 use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
-final class LLMWithToolsParticipant implements CanParticipateInChat
+/**
+ * LLM participant with tool-calling capabilities.
+ * Integrates with the ToolUse system to provide AI responses with tool access.
+ */
+final readonly class LLMWithToolsParticipant implements CanParticipateInChat
 {
-    /** @var null|callable(ChatState): ToolUse */
-    private $factory;
-
     public function __construct(
-        private readonly string $id = 'assistant-tools',
-        private readonly ?ToolUse $toolUse = null,
-        ?callable $toolUseFactory = null,
-    ) {
-        $this->factory = $toolUseFactory;
+        private string $name = 'assistant-with-tools',
+        private ToolUse $toolUse,
+        private ?string $systemPrompt = null,
+    ) {}
+
+    public function name(): string {
+        return $this->name;
     }
 
-    public function id() : string { return $this->id; }
-
-    public function act(ChatState $state) : ChatStep {
-        $messages = $state->script()->select(['summary', 'buffer', 'main'])->toMessages();
-        $toolUse = $this->toolUse ?? (is_callable($this->factory) ? ($this->factory)($state) : null);
-        if (!$toolUse) {
-            return new ChatStep(participantId: $this->id, messages: Messages::empty());
-        }
-        $toolUse->withMessages($messages);
-        $step = $toolUse->finalStep();
-        return new ChatStep(
-            participantId: $this->id,
-            messages: $step->messages(),
-            usage: $step->usage(),
+    public function act(ChatState $state): ChatStep {
+        $messages = $this->prepareMessages($state);
+        $toolUse = $this->toolUse->withMessages($messages);
+        $toolStep = $toolUse->finalStep();
+        $outputMessage = new Message(
+            role: 'assistant',
+            content: $toolStep->response(),
+            name: $this->name,
         );
+
+        return new ChatStep(
+            participantName: $this->name,
+            inputMessages: $messages,
+            outputMessage: $outputMessage,
+            usage: $toolStep->usage(),
+            finishReason: $toolStep->finishReason()->value,
+            meta: [
+                'toolCalls' => $toolStep->hasToolCalls(),
+                'toolsUsed' => $toolStep->toolCalls()->toArray(),
+                'toolErrors' => count($toolStep->errors()),
+            ],
+        );
+    }
+
+    private function prepareMessages(ChatState $state): Messages {
+        $messages = $state->messages();
+        if (!$this->systemPrompt) {
+            return $messages;
+        }
+        return $messages->prependMessage(new Message(
+            role: 'system',
+            content: $this->systemPrompt,
+        ));
     }
 }

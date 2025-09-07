@@ -65,7 +65,7 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
     // success step (no errors): empty tool executions
     $state->addStep(new ToolUseStep());
     // failed steps: emulate by creating ToolUseStep with error executions
-    $failedExecs = new \Cognesy\Addons\ToolUse\Data\ToolExecutions([
+    $failedExecs = new \Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions([
         new \Cognesy\Addons\ToolUse\Data\ToolExecution(
             new ToolCall('noop', []),
             \Cognesy\Utils\Result\Result::failure(new Exception('x')),

@@ -5,15 +5,23 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\PendingHttpPool;
 use Cognesy\Utils\Result\Success;
 use Cognesy\Utils\Result\Failure;
+use Cognesy\Http\Tests\Support\IntegrationTestServer;
 
 beforeEach(function() {
+    // Start local test server for real HTTP integration testing
+    $this->baseUrl = IntegrationTestServer::start();
     $this->client = HttpClient::default();
+});
+
+afterEach(function() {
+    // Server stays running across tests for performance
+    // Will be stopped in tearDownAfterClass
 });
 
 test('HttpClient pool() method executes requests immediately', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
     ];
 
     $results = $this->client->pool($requests, maxConcurrent: 2);
@@ -25,8 +33,8 @@ test('HttpClient pool() method executes requests immediately', function() {
 
 test('HttpClient withPool() method returns PendingHttpPool', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -36,8 +44,8 @@ test('HttpClient withPool() method returns PendingHttpPool', function() {
 
 test('PendingHttpPool all() method executes deferred requests', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -50,9 +58,9 @@ test('PendingHttpPool all() method executes deferred requests', function() {
 
 test('pool handles different HTTP methods', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/post', 'POST', [], ['test' => 'data'], []),
-        new HttpRequest('https://httpbin.org/put', 'PUT', [], ['test' => 'data'], []),
+        new HttpRequest($this->baseUrl . '/get', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/post', 'POST', [], ['test' => 'data'], []),
+        new HttpRequest($this->baseUrl . '/put', 'PUT', [], ['test' => 'data'], []),
     ];
 
     $results = $this->client->pool($requests);
@@ -65,9 +73,9 @@ test('pool handles different HTTP methods', function() {
 
 test('pool with maxConcurrent parameter', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=3', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
     ];
 
     $results = $this->client->pool($requests, maxConcurrent: 2);
@@ -80,15 +88,15 @@ test('pool with maxConcurrent parameter', function() {
 
 test('pool handles request failures gracefully', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get', 'GET', [], [], []),
-        new HttpRequest('https://non-existent-domain.invalid', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/status/500', 'GET', [], [], []),
     ];
 
     $results = $this->client->pool($requests);
 
     expect($results)->toHaveCount(2);
     expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Failure::class); // Invalid domain should fail
+    expect($results[1])->toBeInstanceOf(Failure::class); // 500 status should fail
 });
 
 test('pool with empty requests array', function() {
@@ -100,7 +108,7 @@ test('pool with empty requests array', function() {
 
 test('pool with single request', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get', 'GET', [], [], []),
     ];
 
     $results = $this->client->pool($requests);
@@ -111,9 +119,9 @@ test('pool with single request', function() {
 
 test('pool concurrent execution works', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=3', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
     ];
 
     // Test concurrent execution
@@ -127,7 +135,7 @@ test('pool concurrent execution works', function() {
 
 test('different drivers can be used for pooling', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?driver=guzzle', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?driver=guzzle', 'GET', [], [], []),
     ];
 
     $guzzleClient = HttpClient::using('guzzle');
@@ -135,4 +143,9 @@ test('different drivers can be used for pooling', function() {
 
     expect($results)->toHaveCount(1);
     expect($results[0])->toBeInstanceOf(Success::class);
+});
+
+// Clean up server after all tests complete
+register_shutdown_function(function() {
+    IntegrationTestServer::stop();
 });

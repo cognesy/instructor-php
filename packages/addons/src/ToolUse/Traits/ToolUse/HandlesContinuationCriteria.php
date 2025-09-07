@@ -9,15 +9,15 @@ use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\Data\ContinuationCriteria as ContinuationCriteriaCollection;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
+use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria as ContinuationCriteriaCollection;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 
 trait HandlesContinuationCriteria
 {
-    public function withContinuationCriteria(CanDecideToContinue ...$continuationCriteria) : self {
+    public function withContinuationCriteria(CanDecideToContinueToolUse ...$continuationCriteria) : self {
         if (!($this->continuationCriteria instanceof ContinuationCriteriaCollection)) {
             $this->continuationCriteria = new ContinuationCriteriaCollection();
         }

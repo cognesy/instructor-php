@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\Chat\Contracts;
 
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
 
 interface CanChooseNextParticipant
 {
-    public function choose(ChatState $state) : ?CanParticipateInChat;
+    public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat;
 }
-

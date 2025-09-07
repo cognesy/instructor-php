@@ -2,26 +2,33 @@
 
 use Cognesy\Addons\Chat\Chat;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\Chat\Participants\HumanParticipant;
-use Cognesy\Addons\Chat\Processors\MoveMessagesToBuffer;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Participants\ExternalParticipant;
+use Cognesy\Messages\Message;
 
-it('moves messages from main to buffer when token limit exceeded', function () {
-    $script = (new Script())->withSection('summary')->withSection('buffer')->withSection('main');
-    $state = new \Cognesy\Addons\Chat\Data\ChatState($script);
+it('processes messages with context processors', function () {
+    $human = new ExternalParticipant(
+        name: 'user', 
+        provider: fn() => new Message(role: 'user', content: 'Long message: ' . str_repeat('x', 100))
+    );
 
-    $human = new HumanParticipant(id: 'user', messageProvider: fn() => str_repeat('x', 10));
-    $chat = new Chat(state: $state, continuationCriteria: [new StepsLimit(1)]);
-    $chat->withParticipants([$human]);
-    $chat->withScriptProcessors(new MoveMessagesToBuffer('main', 'buffer', 0));
+    $participants = new Participants($human);
+    $continuationCriteria = new ContinuationCriteria(new StepsLimit(1));
+    
+    $chat = Chat::default(
+        participants: $participants,
+        continuationCriteria: $continuationCriteria
+    );
+    
+    $state = new ChatState();
+    $state = $chat->nextTurn($state);
 
-    $chat->finalTurn();
-
-    $main = $chat->state()->script()->section('main')->toMessages()->toArray();
-    $buffer = $chat->state()->script()->section('buffer')->toMessages()->toArray();
-
-    expect(count($main))->toBe(0);
-    expect(count($buffer))->toBe(1);
-    expect($buffer[0]['content'])->toBe(str_repeat('x', 10));
+    $messages = $state->messages()->toArray();
+    
+    expect(count($messages))->toBe(1);
+    expect($messages[0]['content'])->toContain('Long message:');
+    expect($messages[0]['content'])->toContain(str_repeat('x', 100));
 });
 

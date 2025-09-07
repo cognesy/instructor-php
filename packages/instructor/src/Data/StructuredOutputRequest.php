@@ -5,9 +5,14 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Utils\Uuid;
+use DateTimeImmutable;
 
 class StructuredOutputRequest
 {
+    public readonly string $id;
+    public readonly DateTimeImmutable $createdAt;
+
     use Traits\StructuredOutputRequest\HandlesAccess;
     use Traits\StructuredOutputRequest\HandlesRetries;
     use Traits\StructuredOutputRequest\HandlesSchema;
@@ -35,7 +40,13 @@ class StructuredOutputRequest
         ?array         $options = null,
         ?CachedContext $cachedContext = null,
         ?StructuredOutputConfig $config = null,
+
+        ?string $id = null, // for deserialization
+        ?DateTimeImmutable $createdAt = null, // for deserialization
     ) {
+        $this->id = $id ?? Uuid::uuid4();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+
         $this->messages = Messages::fromAny($messages);
         $this->requestedSchema = $requestedSchema;
         $this->responseModel = $responseModel;
@@ -53,6 +64,8 @@ class StructuredOutputRequest
 
     public function toArray() : array {
         return [
+            'id' => $this->id,
+            'createdAt' => $this->createdAt->format(DATE_ATOM),
             'messages' => $this->messages->toArray(),
             'responseModel' => $this->responseModel,
             'system' => $this->system,
@@ -64,6 +77,23 @@ class StructuredOutputRequest
             'cachedContext' => $this->cachedContext?->toArray() ?? [],
             'config' => $this->config->toArray(),
         ];
+    }
+
+    public static function fromArray(array $data) : self {
+        return new self(
+            messages: $data['messages'] ?? null,
+            requestedSchema: $data['requestedSchema'] ?? null,
+            responseModel: $data['responseModel'] ?? null,
+            system: $data['system'] ?? null,
+            prompt: $data['prompt'] ?? null,
+            examples: $data['examples'] ?? null,
+            model: $data['model'] ?? null,
+            options: $data['options'] ?? null,
+            cachedContext: $data['cachedContext'] ?? null,
+            config: $data['config'] ?? null,
+            id: $data['id'] ?? null,
+            createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
+        );
     }
 
     public function isStreamed() : bool {

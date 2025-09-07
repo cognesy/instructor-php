@@ -5,15 +5,18 @@ namespace Cognesy\Addons\Chat\Selectors;
 use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
 
 final class RoundRobinSelector implements CanChooseNextParticipant
 {
-    private int $index = -1;
+    private int $index = 0;
 
-    public function choose(ChatState $state) : ?CanParticipateInChat {
-        $participants = $state->participants();
-        if ($participants->count() === 0) { return null; }
+    public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat {
+        if ($participants->count() === 0) {
+            throw new \RuntimeException('No participants available to select from.');
+        }
+        $participant = $participants->at($this->index);
         $this->index = ($this->index + 1) % $participants->count();
-        return $participants->at($this->index);
+        return $participant;
     }
 }

@@ -5,8 +5,8 @@ namespace Cognesy\Addons\ToolUse;
 use Cognesy\Addons\ToolUse\Contracts\CanAccessToolUseState;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Contracts\ToolsObserver;
+use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
-use Cognesy\Addons\ToolUse\Data\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Events\ToolCallCompleted;
 use Cognesy\Addons\ToolUse\Events\ToolCallStarted;
@@ -42,7 +42,7 @@ class Tools
      */
     public function __construct(
         array $tools = [],
-        bool $parallelToolCalls = false
+        bool $parallelToolCalls = false,
     ) {
         // default event bus to avoid requiring explicit wiring in tests
         $this->events = EventBusResolver::default();
@@ -57,14 +57,16 @@ class Tools
         return $this;
     }
 
-    public function useTool(ToolCall $toolCall, ToolUseState $state) : ToolExecution {
+    public function useTool(ToolCall $toolCall, ToolUseState $state): ToolExecution {
         $startedAt = new DateTimeImmutable();
         $this->dispatch(new ToolCallStarted([
             'tool' => $toolCall->name(),
             'args' => $toolCall->args(),
             'at' => $startedAt->format(DATE_ATOM),
         ]));
-        if ($this->observer) { $this->observer->onToolStart($state, $toolCall); }
+        if ($this->observer) {
+            $this->observer->onToolStart($state, $toolCall);
+        }
         $result = $this->execute($toolCall->name(), $toolCall->args(), $state);
         $endedAt = new DateTimeImmutable();
         $toolExecution = new ToolExecution(
@@ -73,7 +75,9 @@ class Tools
             startedAt: $startedAt,
             endedAt: $endedAt,
         );
-        if ($this->observer) { $this->observer->onToolEnd($state, $toolExecution); }
+        if ($this->observer) {
+            $this->observer->onToolEnd($state, $toolExecution);
+        }
         $this->dispatch(new ToolCallCompleted([
             'tool' => $toolCall->name(),
             'success' => $result->isSuccess(),
@@ -103,12 +107,12 @@ class Tools
         return $this;
     }
 
-    public function withObserver(ToolsObserver $observer) : self {
+    public function withObserver(ToolsObserver $observer): self {
         $this->observer = $observer;
         return $this;
     }
 
-    public function toToolSchema() : array {
+    public function toToolSchema(): array {
         $schema = [];
         foreach ($this->tools as $tool) {
             $schema[] = $tool->toToolSchema();
@@ -120,7 +124,7 @@ class Tools
 
     protected function execute(string $name, array $args, ToolUseState $state): Result {
         try {
-            $tool = match($this->tools[$name] instanceof CanAccessToolUseState) {
+            $tool = match ($this->tools[$name] instanceof CanAccessToolUseState) {
                 true => $this->tools[$name]->withState($state),
                 false => $this->tools[$name],
             };
@@ -136,7 +140,7 @@ class Tools
                 }
                 if (!empty($missing)) {
                     return Result::failure(new \Cognesy\Addons\ToolUse\Exceptions\InvalidToolArgumentsException(
-                        message: "Missing required parameters: " . implode(', ', $missing)
+                        message: "Missing required parameters: " . implode(', ', $missing),
                     ));
                 }
             }

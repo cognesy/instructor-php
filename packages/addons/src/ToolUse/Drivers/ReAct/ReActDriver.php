@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\ToolUse\Drivers\ReAct;
 
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
+use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
-use Cognesy\Addons\ToolUse\Data\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Http\HttpClient;

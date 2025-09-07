@@ -1,9 +1,16 @@
 ---
-title: 'Chat with many participants'
+title: 'Multi-Participant AI Chat Panel Discussion'
 docname: 'chat_with_many_participants'
 ---
 
 ## Overview
+
+This example demonstrates a sophisticated multi-participant chat system featuring:
+- **System prompt isolation** - each AI participant has their own persona
+- **Role normalization** - proper LLM role mapping for multi-participant conversations
+- **AI-powered moderation** - LLM coordinator decides who should speak next based on context
+- **Clean state management** - everything configured in immutable ChatState
+- **Type-safe participant selection** - StructuredOutput for decision making
 
 ## Example
 
@@ -13,66 +20,69 @@ docname: 'chat_with_many_participants'
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\Chat;
-use Cognesy\Addons\Chat\Participants\HumanParticipant;
+use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
-use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
-// Human participant with callable for dynamic input
-$human = new HumanParticipant(id: 'user', messageProvider: function($state) {
-    static $counter = 0;
-    $inputs = [
-        'Hello Dr. Chen and Marcus! I\'d love to hear both academic and industry perspectives on AI ethics.',
-        'What do you each see as the biggest challenge in addressing AI bias - from your respective viewpoints?',
-        'How do you balance innovation speed with ethical considerations in AI development?',
-        'What role should regulation play in AI governance? I\'m curious about both academic and practical views.',
-        'Thank you both for sharing your expertise!'
-    ];
-    return $inputs[$counter++] ?? 'No more input';
-});
+echo "🎙️ AI PANEL DISCUSSION: The Future of AI Development\n";
+echo "═══════════════════════════════════════════════════\n\n";
 
-// Two assistants; Chat will normalize roles so the active one is "assistant"
-$assistantA = new LLMParticipant(id: 'assistantA', model: 'gpt-4o-mini');
-$assistantB = new LLMParticipant(id: 'assistantB', model: 'gpt-4o-mini');
+// Create participants with distinct personas using system prompts
 
-$chat = new Chat(selector: new RoundRobinSelector());
-$chat->withParticipants([$human, $assistantA, $assistantB]);
+$moderator = new ScriptedParticipant(
+    name: 'moderator',
+    messages: [
+        "Welcome to our panel! Could you each introduce yourselves and share your main focus area in AI?",
+        "What do you see as the biggest challenge in AI adoption today?",
+        "How do you balance rapid innovation with responsible deployment?",
+        "What role should public funding play in AI research and development?",
+        "Any final thoughts for our audience about the future of AI?",
+    ],
+);
 
-// Initialize the script sections that LLM participants expect
+$researcher = new LLMParticipant(
+    name: 'dr_chen',
+    llmProvider: LLMProvider::using('openai'),
+    systemPrompt: 'You are Dr. Sarah Chen, a distinguished AI researcher at MIT focusing on machine reasoning and safety. You participate in a panel with other experts and a moderator. You speak from deep academic knowledge, cite research when relevant, and always consider long-term implications. Keep responses concise but insightful - 2-3 sentences max. Always end with your signature: "- Dr. Chen"'
+);
 
-$script = new Script();
-$script = $script->withSectionMessages('system', Messages::fromArray([
-         ['role' => 'system', 'content' => 'You are participating in a multi-participant discussion about AI ethics.'],
-         ['role' => 'assistant', 'name' => '', 'content' => 'AssistantA: You are Dr. Sarah Chen, an AI ethics researcher from MIT. You approach topics with academic rigor, cite research, and focus on policy implications. You tend to be cautious about AI deployment and emphasize the need for robust governance frameworks.'],
-         ['role' => 'assistant', 'name' => '', 'content' => 'AssistantB: You are Marcus Thompson, a tech industry veteran and AI product manager. You bring practical experience from deploying AI systems at scale. You focus on real-world implementation challenges and business considerations while maintaining ethical standards.'],
-     ]))
-     ->withSection('summary')
-     ->withSection('buffer')
-     ->withSection('main');
+$engineer = new LLMParticipant(
+    name: 'marcus',
+    llmProvider: LLMProvider::using('openai'),
+    systemPrompt: 'You are Marcus Rodriguez, a Senior AI Engineer at a major tech company with 10+ years building production AI systems. You participate in a panel with other experts and a moderator. You focus on practical implementation, scalability, and real-world challenges. Keep responses brief and pragmatic - 2-3 sentences max. Always end with: "- Marcus"'
+);
 
-$state = $chat->state()->withScript($script);
-$chat->withState($state);
+// Run the panel discussion
+$chat = Chat::default(
+    participants: new Participants($moderator, $engineer, $researcher),
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(5),
+    ),
+); //->wiretap(fn(Event $e) => $e->print());
 
-// Run conversation with human input from callable
-foreach (range(1, 10) as $turn) {
-    $step = $chat->nextTurn();
-    $participantId = $step->participantId();
-    $content = $step->messages()->toString();
-    
-    if ($participantId === 'user') {
-        echo "Human: $content\n";
-    } elseif ($participantId === 'assistantA') {
-        echo "Dr. Sarah Chen (AI Ethics Researcher): $content\n";
-    } elseif ($participantId === 'assistantB') {
-        echo "Marcus Thompson (AI Product Manager): $content\n";
-    } else {
-        echo "AI ($participantId): $content\n";
-    }
-    
-    if ($content === 'No more input') {
-        break;
+$state = new ChatState();
+
+while ($chat->hasNextTurn($state)) {
+    $state = $chat->nextTurn($state);
+    $step = $state->currentStep();
+
+    if ($step) {
+        $participantName = $step->participantName();
+        $content = trim($step->outputMessage()->toString());
+        
+        // Only display if there's actual content
+        if (!empty($content)) {
+            $displayName = $participantNames[$participantName] ?? "🤖 $participantName";
+            echo "\n$displayName:\n";
+            echo str_repeat('-', strlen($displayName)) . "\n";
+            echo "$content\n\n";
+        }
     }
 }
+echo "🎬 Panel discussion concluded!\n";
 ?>
 ```

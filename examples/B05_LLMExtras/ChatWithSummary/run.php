@@ -14,14 +14,40 @@ docname: 'chat_with_summary'
 
 require 'examples/boot.php';
 
-use Cognesy\Addons\Chat\Pipelines\BuildChatWithSummary;
+use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Data\Collections\StepProcessors;
+use Cognesy\Addons\Chat\Participants\LLMParticipant;
+use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
+use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\Chat\Processors\AddCurrentStep;
+use Cognesy\Addons\Chat\Processors\AppendStepMessages;
+use Cognesy\Addons\Chat\Processors\MoveMessagesToBuffer;
+use Cognesy\Addons\Chat\Processors\SummarizeBuffer;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $maxSteps = 5;
 
-$system = 'You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.';
+$student = new ScriptedParticipant(
+    name: 'student',
+    messages: [
+        'Help me get better sales results.',
+        'What should I do next?',
+        'Give me one more actionable tip.',
+    ],
+);
+
+$expert = new LLMParticipant(
+    name: 'expert',
+    llmProvider: LLMProvider::using('openai'),
+    systemPrompt: 'You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.'
+);
+
 $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
 $summarizer = new SummarizeMessages(
@@ -30,40 +56,30 @@ $summarizer = new SummarizeMessages(
 );
 
 // Build a Chat with summary + buffer processors and an assistant participant
-$chat = BuildChatWithSummary::create(
-    maxChatTokens: 256,
-    maxBufferTokens: 256,
-    maxSummaryTokens: 1024,
-    summarizer: $summarizer,
-    model: 'gpt-4o-mini',
-);
+$chat = Chat::default(
+    participants: new Participants($student, $expert),
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(6),
+    ),
+    stepProcessors: new StepProcessors(
+        new AccumulateTokenUsage(),
+        new AddCurrentStep(),
+        new AppendStepMessages(),
+        new MoveMessagesToBuffer(maxTokens: 512, bufferVariable: 'buffer'),
+        new SummarizeBuffer(maxBufferTokens: 1024, maxSummaryTokens: 512, bufferVariable: 'buffer', summarizer: $summarizer),
+    ),
+); //->wiretap(fn(Event $e) => $e->print());
 
-// Add system + persistent context once
-$script = $chat->state()->script()
-    ->withSectionMessages('system', Messages::fromString($system, 'system'))
-    ->withSectionMessages('context', Messages::fromString($context, 'system'));
-$state = $chat->state();
-$state->withScript($script);
-$chat->withState($state);
+$state = (new ChatState)->withMessages(Messages::fromString(content: $context, role: 'system'));
 
-$userPrompts = [
-    'Help me get better sales results.',
-    'What should I do next?',
-    'Give me one more actionable tip.',
-];
-
-for ($i = 0; $i < $maxSteps; $i++) {
-    $prompt = $userPrompts[$i % count($userPrompts)];
-    // Append user message, then let assistant produce a reply
-    $chat->withMessages(Messages::fromString($prompt, 'user'));
-    $step = $chat->nextTurn();
-
-    echo "\nUser:  {$prompt}\n";
-    echo   "AI:    ".$step->messages()->toString()."\n";
+while ($chat->hasNextTurn($state)) {
+    $state = $chat->nextTurn($state);
+    $step = $state->currentStep();
+    $name = $step?->participantName() ?? 'unknown';
+    $content = trim($step?->outputMessage()->toString() ?? '');
+    echo "\n--- Step " . ($state->stepCount()) . " ($name) ---\n";
+    echo $content . "\n";
 }
 
-// Show that older content has been summarized into the summary section
-echo "\n--- Summary (compressed history) ---\n";
-echo $chat->state()->script()->section('summary')->toMessages()->toString()."\n";
 ?>
 ```

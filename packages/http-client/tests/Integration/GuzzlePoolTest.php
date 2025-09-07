@@ -7,6 +7,7 @@ use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
+use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
@@ -15,6 +16,9 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
 beforeEach(function() {
+    // Start local test server for consistent URL handling
+    $this->baseUrl = IntegrationTestServer::start();
+    
     $this->mockHandler = new MockHandler();
     $handlerStack = HandlerStack::create($this->mockHandler);
     $this->client = new Client(['handler' => $handlerStack]);
@@ -30,6 +34,11 @@ beforeEach(function() {
     $this->pool = new GuzzlePool($this->config, $this->client, $this->events);
 });
 
+afterEach(function() {
+    // Server stays running across tests for performance
+    // Will be stopped in shutdown function
+});
+
 test('pool with successful requests', function() {
     $this->mockHandler->append(
         new Response(200, [], 'Response 1'),
@@ -38,9 +47,9 @@ test('pool with successful requests', function() {
     );
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], []),
-        new HttpRequest('https://example.com/3', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -54,12 +63,12 @@ test('pool with successful requests', function() {
 test('pool with mixed results', function() {
     $this->mockHandler->append(
         new Response(200, [], 'Success'),
-        new RequestException('Network error', new Request('GET', 'https://example.com/2'))
+        new RequestException('Network error', new Request('GET', $this->baseUrl . '/get?test=2'))
     );
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -85,12 +94,12 @@ test('pool with fail on error true', function() {
 
     $this->mockHandler->append(
         new Response(200, [], 'Success'),
-        new RequestException('Network error', new Request('GET', 'https://example.com/2'))
+        new RequestException('Network error', new Request('GET', $this->baseUrl . '/get?test=2'))
     );
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     expect(fn() => $pool->pool($requests))
@@ -104,8 +113,8 @@ test('pool with custom concurrency', function() {
     );
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests, 1);
@@ -121,7 +130,7 @@ test('pool with streamed response', function() {
     );
 
     $requests = [
-        new HttpRequest('https://example.com/stream', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/stream/5', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -136,7 +145,7 @@ test('pool with post request', function() {
     );
 
     $requests = [
-        new HttpRequest('https://example.com/api', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
+        new HttpRequest($this->baseUrl . '/post', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -157,4 +166,9 @@ test('pool with invalid request type', function() {
     
     expect(fn() => $this->pool->pool($requests))
         ->toThrow(InvalidArgumentException::class, 'Invalid request type in pool');
+});
+
+// Clean up server after all tests complete
+register_shutdown_function(function() {
+    IntegrationTestServer::stop();
 });

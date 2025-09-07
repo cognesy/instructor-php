@@ -81,41 +81,6 @@ it('selects sections from script', function () {
 });
 
 
-it('translates messages to native format - Cohere', function () {
-    $script = Script::fromSections(
-        new Section('section-1'),
-        new Section('section-2'),
-    );
-    $script = $script->withParams([
-        'key-1' => 'value-1',
-        'key-2' => 'value-2',
-    ]);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
-
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6 <|key-2|>']);
-});
-
-it('translates messages to native format - Anthropic', function () {
-    $script = Script::fromSections(
-        new Section('section-1'),
-        new Section('section-2'),
-    );
-    $script = $script->withParams([
-        'key-1' => 'value-1',
-        'key-2' => 'value-2',
-    ]);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
-
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6 <|key-2|>']);
-});
 
 it('translates messages to string', function () {
     $script = Script::fromSections(
@@ -141,30 +106,3 @@ it('translates messages to string', function () {
     expect($text)->toBe("content-1\ncontent-2\ncontent-3 <|key-1|>\n");
 });
 
-it('supports section templates', function() {
-    $script = new Script(
-        new Section('@section-1'),
-        new Section('@section-2'),
-        new Section('@section-3'),
-    );
-    $script->withParams([
-        'key-1' => 'value-1',
-        'key-2' => 'value-2',
-        'key-3' => 'value-3',
-        '@section-1' => [
-            ['role' => 'user', 'content' => 'content-3'],
-            ['role' => 'user', 'content' => 'content-4 <|key-1|>'],
-        ],
-        '@section-2' => Messages::fromArray([
-            ['role' => 'user', 'content' => 'content-3'],
-            ['role' => 'user', 'content' => 'content-4 <|key-2|>'],
-        ]),
-        '@section-3' => fn($parameters) => [
-            ['role' => 'user', 'content' => 'content-3'],
-            ['role' => 'user', 'content' => 'content-4 <|key-3|>'],
-        ],
-    ]);
-
-    $text = $script->toString();
-    expect($text)->toBe("content-3\ncontent-4 <|key-1|>\ncontent-3\ncontent-4 <|key-2|>\ncontent-3\ncontent-4 <|key-3|>\n");
-})->skip("Section templates support is being removed");

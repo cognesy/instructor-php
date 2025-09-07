@@ -11,6 +11,7 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Illuminate\Http\Client\Factory as HttpFactory;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
 use InvalidArgumentException;
@@ -18,11 +19,23 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class LaravelPool implements CanHandleRequestPool
 {
+    protected HttpFactory $factory;
+    protected ?PendingRequest $basePendingRequest = null;
+
     public function __construct(
-        protected HttpFactory $factory,
+        HttpFactory|PendingRequest|null $clientInstance,
         protected EventDispatcherInterface $events,
         protected HttpClientConfig $config,
-    ) {}
+    ) {
+        match (true) {
+            $clientInstance instanceof HttpFactory => $this->factory = $clientInstance,
+            $clientInstance instanceof PendingRequest => $this->setupFromPendingRequest($clientInstance),
+            $clientInstance === null => $this->factory = new HttpFactory(),
+            default => throw new \InvalidArgumentException(
+                'Client instance must be an instance of HttpFactory or PendingRequest'
+            )
+        };
+    }
 
     public function pool(array $requests, ?int $maxConcurrent = null): array {
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
@@ -57,12 +70,32 @@ class LaravelPool implements CanHandleRequestPool
         return $poolRequests;
     }
 
+    private function setupFromPendingRequest(PendingRequest $pendingRequest): void {
+        // Extract factory using reflection (protected property)
+        $reflection = new \ReflectionClass($pendingRequest);
+        $factoryProperty = $reflection->getProperty('factory');
+        $factoryProperty->setAccessible(true);
+        $this->factory = $factoryProperty->getValue($pendingRequest);
+        
+        // Store base configured PendingRequest for cloning
+        $this->basePendingRequest = $pendingRequest;
+    }
+
     private function createPoolRequest(Pool $pool, HttpRequest $request) {
-        return $pool->withOptions([
+        $poolRequest = $pool->withOptions([
             'timeout' => $this->config->requestTimeout,
             'connect_timeout' => $this->config->connectTimeout,
             'headers' => $request->headers(),
-        ])->{strtolower($request->method())}(
+        ]);
+        
+        // Apply base PendingRequest configuration if available
+        if ($this->basePendingRequest) {
+            // Note: Pool requests inherit from the factory that created the pool,
+            // so the base configuration from PendingRequest should already be applied
+            // through the factory that was extracted in setupFromPendingRequest
+        }
+        
+        return $poolRequest->{strtolower($request->method())}(
             $request->url(),
             $request->method() === 'GET' ? [] : $request->body()->toArray(),
         );

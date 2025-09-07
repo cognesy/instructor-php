@@ -45,19 +45,19 @@ Structured design for using multiple LLMs as distinct chat participants that tak
 
 ## Message Addressing
 Use `V2\\Message->metadata` to track conversation semantics without breaking provider roles:
-- `from: string` (participantId)
+- `from: string` (participantName)
 - `to: array<string>|'all'` (recipient(s))
 - `channel: 'public'|'private'`
 Keep provider roles via `MessageRole` (System/Developer/User/Assistant/Tool) for API compatibility.
 
 ## Prompt Composition (Script + Sections)
 Reuse `Cognesy\\Template\\Script\\Script` to assemble per-turn inputs. Suggested sections:
-- `persona/<participantId>`: system/developer instructions for the current speaker.
+- `persona/<participantName>`: system/developer instructions for the current speaker.
 - `summary/global`: rolling global summary (short context).
-- `summary/<participantId>`: speaker-specific memory/summary.
+- `summary/<participantName>`: speaker-specific memory/summary.
 - `buffer/global`: overflow messages not in the main transcript.
 - `transcript`: visible subset of the conversation (projected by visibility rules).
-- Optional `tools/<participantId>`: hints/schema previews for tools.
+- Optional `tools/<participantName>`: hints/schema previews for tools.
 The engine selects appropriate sections and renders to `V2\\Messages` per turn.
 
 ## Pipelines and Processors

@@ -7,12 +7,16 @@ use Cognesy\Http\Drivers\Laravel\LaravelPool;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
+use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Client\RequestException;
 
 beforeEach(function() {
+    // Start local test server for consistent URL handling
+    $this->baseUrl = IntegrationTestServer::start();
+    
     $this->mockResponses = [];
     $this->responseIndex = 0;
     
@@ -32,6 +36,8 @@ beforeEach(function() {
 
 afterEach(function() {
     Mockery::close();
+    // Server stays running across tests for performance
+    // Will be stopped in shutdown function
 });
 
 test('pool with successful requests', function() {
@@ -47,9 +53,9 @@ test('pool with successful requests', function() {
         ->andReturn($responses);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], []),
-        new HttpRequest('https://example.com/3', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -72,8 +78,8 @@ test('pool with failed responses', function() {
         ->andReturn($responses);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -95,8 +101,8 @@ test('pool with exception responses', function() {
         ->andReturn($responses);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -128,8 +134,8 @@ test('pool with fail on error true', function() {
         ->andReturn($responses);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     expect(fn() => $pool->pool($requests))
@@ -162,9 +168,9 @@ test('pool with batched requests', function() {
         ->andReturn($responses1, $responses2);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], []),
-        new HttpRequest('https://example.com/3', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
     ];
 
     $results = $pool->pool($requests);
@@ -186,7 +192,7 @@ test('pool with post request', function() {
         ->andReturn($responses);
 
     $requests = [
-        new HttpRequest('https://example.com/api', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
+        new HttpRequest($this->baseUrl . '/post', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -238,9 +244,14 @@ test('pool with exception in fail on error mode', function() {
         ->andReturn($responses);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], [])
     ];
 
     expect(fn() => $pool->pool($requests))
         ->toThrow(Exception::class, 'Connection failed');
+});
+
+// Clean up server after all tests complete
+register_shutdown_function(function() {
+    IntegrationTestServer::stop();
 });

@@ -4,8 +4,8 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\ToolUse\Processors\AppendContextVariables;
-use Cognesy\Addons\ToolUse\Processors\AppendStepMessages;
-use Cognesy\Addons\ToolUse\Processors\UpdateStep;
+use Cognesy\Addons\ToolUse\Processors\AppendToolStepMessages;
+use Cognesy\Addons\ToolUse\Processors\UpdateToolStep;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -46,7 +46,7 @@ it('appends step messages to state', function () {
     $msgs = Messages::fromMessages([ new Message(role: 'user', content: 'x') ]);
     $step = new ToolUseStep(messages: $msgs);
 
-    (new AppendStepMessages())->processStep($step, $state);
+    (new AppendToolStepMessages())->processStep($step, $state);
     expect($state->messages()->count())->toBe(1);
 });
 
@@ -54,7 +54,7 @@ it('updates current step and increments steps list', function () {
     $state = new ToolUseState();
     $step = new ToolUseStep();
 
-    (new UpdateStep())->processStep($step, $state);
+    (new UpdateToolStep())->processStep($step, $state);
     expect($state->currentStep())->toBe($step);
     expect($state->stepCount())->toBe(1);
 });

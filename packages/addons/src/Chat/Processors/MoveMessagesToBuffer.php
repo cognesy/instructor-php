@@ -2,59 +2,32 @@
 
 namespace Cognesy\Addons\Chat\Processors;
 
-use Cognesy\Addons\Chat\Contracts\ScriptProcessor;
+use Cognesy\Addons\Chat\Contracts\CanProcessChatStep;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Utils\SplitMessages;
-use Cognesy\Messages\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
-class MoveMessagesToBuffer implements ScriptProcessor
+final readonly class MoveMessagesToBuffer implements CanProcessChatStep
 {
-    private string $sourceSection;
-    private string $targetSection;
-    private int $maxTokens;
-
     public function __construct(
-        string $sourceSection,
-        string $targetSection,
-        int $maxTokens
-    ) {
-        $this->sourceSection = $sourceSection;
-        $this->targetSection = $targetSection;
-        $this->maxTokens = $maxTokens;
+        private int $maxTokens,
+        private string $bufferVariable,
+    ) {}
+
+    public function process(ChatStep $step, ChatState $state): ChatState {
+        if (! $this->shouldProcess($state->messages()->toString())) {
+            return $state;
+        }
+        [$keep, $overflow] = (new SplitMessages)->split($state->messages(), $this->maxTokens);
+        $newBuffer = $state->variable($this->bufferVariable, '') . $overflow->toString();
+        return $state
+            ->withMessages($keep)
+            ->withVariable($this->bufferVariable, $newBuffer);
     }
 
-    public function shouldProcess(Script $script): bool {
-        $tokens = Tokenizer::tokenCount(
-            $script->section($this->sourceSection)->toMessages()->toString()
-        );
+    private function shouldProcess(string $text): bool {
+        $tokens = Tokenizer::tokenCount($text);
         return $tokens > $this->maxTokens;
-    }
-
-    public function process(Script $script): Script {
-        if (!$this->shouldProcess($script)) {
-            return $script;
-        }
-
-        $messages = $script->section($this->sourceSection)->toMessages();
-        [$keep, $overflow] = (new SplitMessages)->split($messages, $this->maxTokens);
-
-        $newScript = new Script();
-        foreach ($script->sections() as $section) {
-            $sectionName = $section->name();
-            if ($sectionName === $this->sourceSection) {
-                $newScript = $newScript->withSectionMessages($sectionName, $keep);
-            } elseif ($sectionName === $this->targetSection) {
-                $existingMessages = $script->section($sectionName)->toMessages();
-                $combined = $existingMessages->appendMessages($overflow);
-                $newScript = $newScript->withSectionMessages($sectionName, $combined);
-            } else {
-                $newScript = $newScript->replaceSection(
-                    $sectionName,
-                    $newScript->withSection($sectionName)->section($sectionName)->copyFrom($script->section($sectionName))
-                );
-            }
-        }
-
-        return $newScript;
     }
 }

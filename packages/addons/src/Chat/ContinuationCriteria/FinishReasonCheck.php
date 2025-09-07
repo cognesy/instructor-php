@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\Chat\ContinuationCriteria;
 
-use Cognesy\Addons\Chat\Contracts\CanDecideToContinue;
+use Cognesy\Addons\Chat\Contracts\CanDecideToContinueChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 
-final class FinishReasonCheck implements CanDecideToContinue
+final class FinishReasonCheck implements CanDecideToContinueChat
 {
     /** @var string[] */
     private array $reasons;

@@ -2,12 +2,12 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Utils\Time\ClockInterface;
 use Cognesy\Utils\Time\SystemClock;
 
-class ExecutionTimeLimit implements CanDecideToContinue
+class ExecutionTimeLimit implements CanDecideToContinueToolUse
 {
     private int $maxExecutionTime;
     private ClockInterface $clock;

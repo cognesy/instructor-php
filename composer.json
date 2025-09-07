@@ -30,6 +30,7 @@
       "Cognesy\\Dynamic\\": "packages/dynamic/src/",
       "Cognesy\\Events\\": "packages/events/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
+      "Cognesy\\Http\\Tests\\": "packages/http-client/tests/",
       "Cognesy\\Instructor\\": "packages/instructor/src/",
       "Cognesy\\InstructorHub\\": "packages/hub/src/",
       "Cognesy\\Messages\\": "packages/messages/src/",

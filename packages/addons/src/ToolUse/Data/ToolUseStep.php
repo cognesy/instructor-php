@@ -2,6 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
+use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;

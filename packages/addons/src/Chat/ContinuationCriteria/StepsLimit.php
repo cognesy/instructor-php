@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\Chat\ContinuationCriteria;
 
-use Cognesy\Addons\Chat\Contracts\CanDecideToContinue;
+use Cognesy\Addons\Chat\Contracts\CanDecideToContinueChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 
-final class StepsLimit implements CanDecideToContinue
+final class StepsLimit implements CanDecideToContinueChat
 {
     public function __construct(private readonly int $maxSteps) {}
 

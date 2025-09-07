@@ -5,33 +5,50 @@ namespace Cognesy\Addons\Chat\Selectors;
 use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Data\ParticipantChoice;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Result\Result;
 
 final class LLMBasedCoordinator implements CanChooseNextParticipant
 {
     public function __construct(
-        private readonly ?Inference $inference = null,
-        private readonly ?string $model = null,
-        private readonly string $instruction = 'Choose next participant id from the list and output id only:',
+        private readonly ?StructuredOutput $structuredOutput = null,
+        private readonly string $instruction = 'Choose the next participant who should take turn in this conversation.',
     ) {}
 
-    public function choose(ChatState $state) : ?CanParticipateInChat {
-        $participants = $state->participants();
-        if ($participants->count() === 0) { return null; }
-        $ids = array_map(fn(CanParticipateInChat $p) => $p->id(), $participants->all());
-        $prompt = $this->instruction.' '.implode(', ', $ids);
-        $inference = $this->inference ?? new Inference();
-        $result = Result::try(fn() => $inference->with(
-            messages: $prompt,
-            model: (string)($this->model ?? ''),
-            mode: OutputMode::Text,
-        )->get());
-        $choice = trim((string) $result->valueOr(''));
-        foreach ($participants->all() as $p) {
-            if ($p->id() === $choice) { return $p; }
+    public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat {
+        if ($participants->count() === 0) {
+            return throw new \RuntimeException('No participants available to select from.');
         }
+        if ($participants->count() === 1) {
+            return $participants->at(0);
+        }
+
+        $ids = array_map(fn(CanParticipateInChat $p) => $p->name(), $participants->all());
+        $availableParticipants = 'Available participants: ' . implode(', ', $ids);
+        
+        $messages = $state->messages();
+        $prompt = "{$this->instruction}\nAvailable participants:\n{$availableParticipants}";
+        
+        $structuredOutput = $this->structuredOutput ?? new StructuredOutput();
+
+        $result = Result::try(fn() => $structuredOutput
+            ->withMessages($messages->toArray())
+            ->withPrompt($prompt)
+            ->withResponseModel(ParticipantChoice::class)
+            ->get());
+
+        $choice = $result->valueOr(null);
+        if ($choice instanceof ParticipantChoice) {
+            foreach ($participants->all() as $p) {
+                if ($p->name() === $choice->participantName) {
+                    return $p;
+                }
+            }
+        }
+
+        // Fallback to first participant if choice is invalid
         return $participants->at(0);
     }
 }

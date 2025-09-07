@@ -5,49 +5,70 @@ namespace Cognesy\Addons\Chat\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Result\Result;
 
-final class LLMParticipant implements CanParticipateInChat
+final readonly class LLMParticipant implements CanParticipateInChat
 {
     public function __construct(
-        private readonly string $id = 'assistant',
-        private readonly ?Inference $inference = null,
-        private readonly ?string $model = null,
-        private readonly array $options = [],
-        private readonly array $sectionOrder = ['summary', 'buffer', 'main'],
-        private readonly ?LLMProvider $llmProvider = null,
-        private readonly ?string $llmPreset = null,
+        private string $name = 'assistant',
+        private ?Inference $inference = null,
+        private ?LLMProvider $llmProvider = null,
+        private ?string $systemPrompt = null,
     ) {}
 
-    public function id() : string { return $this->id; }
+    public function name(): string {
+        return $this->name;
+    }
 
-    public function act(ChatState $state) : ChatStep {
-        $messages = $state->script()->select($this->sectionOrder)->toMessages();
-        $inference = $this->inference ?? new Inference();
-        $inference = match (true) {
-            !is_null($this->llmProvider) => $inference->withLLMProvider($this->llmProvider),
-            !is_null($this->llmPreset) => $inference->using($this->llmPreset),
-            default => $inference,
-        };
+    public function act(ChatState $state): ChatStep {
+        $inference = $this->inference ?? new Inference;
+        if ($this->llmProvider) {
+            $inference = $inference->withLLMProvider($this->llmProvider);
+        }
 
-        $result = Result::try(fn() => $inference->with(
+        $messages = $this->prepareMessages($state);
+        $response = $inference->with(
             messages: $messages->toArray(),
-            model: (string) ($this->model ?? ''),
-            options: $this->options,
             mode: OutputMode::Text,
-        )->get());
+        )->response();
 
-        $assistant = $result
-            ->map(fn($text) => Messages::fromString((string) $text, role: 'assistant'))
-            ->valueOr(Messages::empty());
+        $outputMessage = new Message(
+            role: 'assistant',
+            content: $response->content(),
+            name: $this->name,
+        );
 
         return new ChatStep(
-            participantId: $this->id,
-            messages: $assistant,
+            participantName: $this->name,
+            inputMessages: $messages,
+            outputMessage: $outputMessage,
+            usage: $response->usage(),
+            inferenceResponse: $response,
+            finishReason: $response->finishReason()->value,
         );
+    }
+
+    protected function prepareMessages(ChatState $state): Messages {
+        $newMessages = new Messages(...$state->messages()->map(fn(Message $m) => $this->mapRole($m)));
+        if (!$this->systemPrompt) {
+            return $newMessages;
+        }
+        return $newMessages->prependMessage(new Message(
+            role: 'system',
+            content: $this->systemPrompt,
+        ));
+    }
+
+    protected function mapRole(Message $message): Message {
+        return match (true) {
+            $message->name() === $this->name => $message->withRole(MessageRole::Assistant),
+            $message->role()->is(MessageRole::Assistant) && ($message->name() !== $this->name) => $message->withRole(MessageRole::User),
+            default => $message,
+        };
     }
 }

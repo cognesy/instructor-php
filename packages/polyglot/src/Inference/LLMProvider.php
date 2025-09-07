@@ -108,6 +108,15 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
         return $this;
     }
 
+    public function withModel(string $model) : static {
+        if ($this->explicitConfig !== null) {
+            $this->explicitConfig = $this->explicitConfig->withOverrides(['model' => $model]);
+        } else {
+            $this->configOverrides = array_merge($this->configOverrides ?? [], ['model' => $model]);
+        }
+        return $this;
+    }
+
     // INTERNAL ///////////////////////////////////////////////////////////
 
     /**

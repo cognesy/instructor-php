@@ -7,7 +7,7 @@ use Cognesy\Addons\Chat\Data\ChatStep;
 
 interface CanParticipateInChat
 {
-    public function id() : string;
+    public function name() : string;
     public function act(ChatState $state) : ChatStep;
 }
 

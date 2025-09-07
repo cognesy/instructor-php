@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-class FinishReasonCheck implements CanDecideToContinue
+class FinishReasonCheck implements CanDecideToContinueToolUse
 {
     private array $finishOnReasons;
 

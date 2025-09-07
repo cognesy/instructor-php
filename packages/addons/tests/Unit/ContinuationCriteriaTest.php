@@ -1,11 +1,15 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Tests\Support\FrozenClock;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\{StepsLimit, TokenUsageLimit, ExecutionTimeLimit, ToolCallPresenceCheck, ErrorPresenceCheck};
+use Cognesy\Addons\ToolUse\ContinuationCriteria\{ErrorPresenceCheck,
+    ExecutionTimeLimit,
+    StepsLimit,
+    TokenUsageLimit,
+    ToolCallPresenceCheck};
+use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
-use Cognesy\Addons\ToolUse\Data\ToolExecutions;
-use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;

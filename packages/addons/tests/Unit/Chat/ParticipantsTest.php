@@ -1,19 +1,21 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Participants\HumanParticipant;
+use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\Messages;
+use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Tests\Addons\Support\FakeInferenceDriver;
 
-it('human participant uses callback to provide messages', function () {
-    $p = new HumanParticipant(id: 'user', messageProvider: fn() => 'hello');
-    $step = $p->act(new ChatState(new Script()));
-    expect($step->participantId())->toBe('user');
-    expect($step->messages()->toArray()[0]['content'])->toBe('hello');
-    expect($step->messages()->toArray()[0]['role'])->toBe('user');
+it('external participant uses provider to generate messages', function () {
+    $provider = fn() => new Message(role: 'user', content: 'hello');
+    $p = new ExternalParticipant(name: 'user', provider: $provider);
+    $step = $p->act(new ChatState());
+    expect($step->participantName())->toBe('user');
+    expect($step->outputMessage()->content()->toString())->toBe('hello');
+    expect($step->outputMessage()->role()->value)->toBe('user');
 });
 
 it('llm participant uses provided inference driver', function () {
@@ -21,10 +23,17 @@ it('llm participant uses provided inference driver', function () {
         new InferenceResponse(content: 'hi there!'),
     ]);
     $inference = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
-    $p = new LLMParticipant(id: 'assistant', inference: $inference, model: 'fake');
-    $state = new ChatState((new Script())->withSection('main')->withSectionMessages('main', \Cognesy\Messages\Messages::fromString('hello')));
+    
+    $p = new LLMParticipant(name: 'assistant', inference: $inference);
+    
+    $messages = Messages::fromArray([
+        ['role' => 'user', 'content' => 'hello']
+    ]);
+    $state = new ChatState(messages: $messages);
+    
     $step = $p->act($state);
-    $arr = $step->messages()->toArray();
-    expect($arr[0]['role'])->toBe('assistant');
-    expect($arr[0]['content'])->toBe('hi there!');
+    
+    expect($step->participantName())->toBe('assistant');
+    expect($step->outputMessage()->content()->toString())->toBe('hi there!');
+    expect($step->outputMessage()->role()->value)->toBe('assistant');
 });

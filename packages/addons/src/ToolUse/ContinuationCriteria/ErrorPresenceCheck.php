@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-class ErrorPresenceCheck implements CanDecideToContinue
+class ErrorPresenceCheck implements CanDecideToContinueToolUse
 {
     public function canContinue(ToolUseState $state): bool {
         $hasErrors = $state->currentStep()?->hasErrors() ?? false;

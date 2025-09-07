@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-class RetryLimit implements CanDecideToContinue
+class RetryLimit implements CanDecideToContinueToolUse
 {
     private int $maxRetries;
 

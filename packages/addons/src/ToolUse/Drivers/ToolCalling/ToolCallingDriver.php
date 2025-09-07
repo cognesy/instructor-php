@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Drivers\ToolCalling;
 
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
-use Cognesy\Addons\ToolUse\Data\ToolExecutions;
+use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Formatters\ToolExecutionFormatter;

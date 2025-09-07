@@ -24,8 +24,8 @@ class ToolUse {
     use HandlesStepProcessors;
 
     private CanUseTools $driver;
-    private Data\StepProcessors $processors;
-    private Data\ContinuationCriteria $continuationCriteria;
+    private Data\Collections\StepProcessors $processors;
+    private Data\Collections\ContinuationCriteria $continuationCriteria;
 
     private ToolUseState $state;
     private ?ToolUseObserver $observer = null;
@@ -40,12 +40,12 @@ class ToolUse {
         $this->events = EventBusResolver::using($events);
         $this->state = $state ?? new ToolUseState;
         $this->driver = $driver ?? new ToolCallingDriver;
-        $this->processors = new Data\StepProcessors();
+        $this->processors = new Data\Collections\StepProcessors();
         if (!empty($processors)) {
             // accept legacy arrays of processors
             foreach ($processors as $p) { $this->withProcessors($p); }
         } else { $this->withDefaultProcessors(); }
-        $this->continuationCriteria = new Data\ContinuationCriteria();
+        $this->continuationCriteria = new Data\Collections\ContinuationCriteria();
         if (!empty($continuationCriteria)) {
             foreach ($continuationCriteria as $c) { $this->withContinuationCriteria($c); }
         } else { $this->withDefaultContinuationCriteria(); }

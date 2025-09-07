@@ -13,14 +13,14 @@ docname: 'chat_with_many_participants'
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\Chat;
-use Cognesy\Addons\Chat\Participants\HumanParticipant;
+use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Script\Script;
 
 // Human participant with callable for dynamic input
-$human = new HumanParticipant(id: 'user', messageProvider: function($state) {
+$human = new ExternalParticipant(name: 'user', messageProvider: function($state) {
     static $counter = 0;
     $inputs = [
         'Hello Dr. Chen and Marcus! I\'d love to hear both academic and industry perspectives on AI ethics.',
@@ -33,8 +33,8 @@ $human = new HumanParticipant(id: 'user', messageProvider: function($state) {
 });
 
 // Two assistants; Chat will normalize roles so the active one is "assistant"
-$assistantA = new LLMParticipant(id: 'assistantA', model: 'gpt-4o-mini');
-$assistantB = new LLMParticipant(id: 'assistantB', model: 'gpt-4o-mini');
+$assistantA = new LLMParticipant(name: 'assistantA', model: 'gpt-4o-mini');
+$assistantB = new LLMParticipant(name: 'assistantB', model: 'gpt-4o-mini');
 
 $chat = new Chat(selector: new RoundRobinSelector());
 $chat->withParticipants([$human, $assistantA, $assistantB]);
@@ -57,17 +57,17 @@ $chat->withState($state);
 // Run conversation with human input from callable
 foreach (range(1, 10) as $turn) {
     $step = $chat->nextTurn();
-    $participantId = $step->participantId();
+    $participantName = $step->participantName();
     $content = $step->messages()->toString();
     
-    if ($participantId === 'user') {
+    if ($participantName === 'user') {
         echo "Human: $content\n";
-    } elseif ($participantId === 'assistantA') {
+    } elseif ($participantName === 'assistantA') {
         echo "Dr. Sarah Chen (AI Ethics Researcher): $content\n";
-    } elseif ($participantId === 'assistantB') {
+    } elseif ($participantName === 'assistantB') {
         echo "Marcus Thompson (AI Product Manager): $content\n";
     } else {
-        echo "AI ($participantId): $content\n";
+        echo "AI ($participantName): $content\n";
     }
     
     if ($content === 'No more input') {
