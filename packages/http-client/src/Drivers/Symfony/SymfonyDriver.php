@@ -11,12 +11,14 @@ use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class SymfonyDriver implements CanHandleHttpRequest
 {
@@ -39,92 +41,109 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     public function handle(HttpRequest $request) : HttpResponse {
         $startTime = microtime(true);
-        $url = $request->url();
-        $headers = $request->headers();
-        $body = $request->body()->toArray();
-        $method = $request->method();
-        $streaming = $request->isStreamed();
-
-        $this->events->dispatch(new HttpRequestSent([
-            'url' => $url,
-            'method' => $method,
-            'headers' => $headers,
-            'body' => $body,
-        ]));
-
+        $this->dispatchRequestSent($request);
         try {
-            $response = $this->client->request(
-                method: $method,
-                url: $url,
-                options: [
-                    'headers' => $headers,
-                    'body' => is_array($body) ? json_encode($body) : $body,
-                    'timeout' => $this->config->idleTimeout,
-                    'max_duration' => $this->config->requestTimeout,
-                    'buffer' => !$streaming,
-                ]
-            );
+            $response = $this->performHttpCall($request);
         } catch (TransportExceptionInterface $e) {
-            $duration = microtime(true) - $startTime;
-            $message = $e->getMessage();
-
-            if (str_contains($message, 'timeout') || str_contains($message, 'timed out')) {
-                $httpException = new TimeoutException($message, $request, $duration, $e);
-            } elseif (str_contains($message, 'Failed to connect') || str_contains($message, 'Could not resolve host')) {
-                $httpException = new ConnectionException($message, $request, $duration, $e);
-            } else {
-                $httpException = new NetworkException($message, $request, null, $duration, $e);
-            }
-
-            $this->events->dispatch(new HttpRequestFailed([
-                'url' => $url,
-                'method' => $method,
-                'headers' => $headers,
-                'body' => $body,
-                'errors' => $httpException->getMessage(),
-                'duration' => $duration,
-            ]));
-
-            throw $httpException;
+            $this->handleTransportException($e, $request, $startTime);
         }
+        $this->validateStatusCodeOrFail($response, $request, $startTime);
+        $this->dispatchResponseReceived($response);
+        return $this->buildHttpResponse($response, $request);
+    }
 
-        // Check for HTTP status errors (if failOnError is enabled)
+    // INTERNAL /////////////////////////////////////////////
+
+    private function dispatchRequestSent(HttpRequest $request): void {
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+        ]));
+    }
+
+    private function performHttpCall(HttpRequest $request): ResponseInterface {
+        return $this->client->request(
+            method: $request->method(),
+            url: $request->url(),
+            options: [
+                'headers' => $request->headers(),
+                'body' => is_array($request->body()->toArray()) ? json_encode($request->body()->toArray()) : $request->body()->toArray(),
+                'timeout' => $this->config->idleTimeout,
+                'max_duration' => $this->config->requestTimeout,
+                'buffer' => !$request->isStreamed(),
+            ]
+        );
+    }
+
+    private function handleTransportException(TransportExceptionInterface $e, HttpRequest $request, float $startTime): never {
         $duration = microtime(true) - $startTime;
-        if ($this->config->failOnError && $response->getStatusCode() >= 400) {
-            $httpResponse = new SymfonyHttpResponse(
-                client: $this->client,
-                response: $response,
-                events: $this->events,
-                isStreamed: $streaming,
-                connectTimeout: $this->config->connectTimeout,
-            );
-            
-            $httpException = HttpExceptionFactory::fromStatusCode(
-                $response->getStatusCode(),
-                $request,
-                $httpResponse,
-                $duration
-            );
-            
-            $this->events->dispatch(new HttpRequestFailed([
-                'url' => $url,
-                'method' => $method,
-                'statusCode' => $response->getStatusCode(),
-                'duration' => $duration,
-            ]));
-            
-            throw $httpException;
+        $message = $e->getMessage();
+
+        $httpException = match (true) {
+            str_contains($message, 'timeout') || str_contains($message, 'timed out') 
+                => new TimeoutException($message, $request, $duration, $e),
+            str_contains($message, 'Failed to connect') || str_contains($message, 'Could not resolve host') 
+                => new ConnectionException($message, $request, $duration, $e),
+            default => new NetworkException($message, $request, null, $duration, $e),
+        };
+
+        $this->dispatchRequestFailed($httpException, $request, $duration);
+        throw $httpException;
+    }
+
+    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request, float $duration): void {
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+            'errors' => $exception->getMessage(),
+            'duration' => $duration,
+        ]));
+    }
+
+    private function validateStatusCodeOrFail(ResponseInterface $response, HttpRequest $request, float $startTime): void {
+        if (!$this->config->failOnError || $response->getStatusCode() < 400) {
+            return;
         }
 
+        $duration = microtime(true) - $startTime;
+        $httpResponse = $this->buildHttpResponse($response, $request);
+
+        $httpException = HttpExceptionFactory::fromStatusCode(
+            $response->getStatusCode(),
+            $request,
+            $httpResponse,
+            $duration
+        );
+
+        $this->dispatchStatusCodeFailed($response->getStatusCode(), $request, $duration);
+        throw $httpException;
+    }
+
+    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request, float $duration): void {
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'statusCode' => $statusCode,
+            'duration' => $duration,
+        ]));
+    }
+
+    private function dispatchResponseReceived(ResponseInterface $response): void {
         $this->events->dispatch(new HttpResponseReceived([
             'statusCode' => $response->getStatusCode()
         ]));
+    }
 
+    private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): SymfonyHttpResponse {
         return new SymfonyHttpResponse(
             client: $this->client,
             response: $response,
             events: $this->events,
-            isStreamed: $streaming,
+            isStreamed: $request->isStreamed(),
             connectTimeout: $this->config->connectTimeout,
         );
     }

@@ -4,9 +4,18 @@ use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Inference;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 it('llm participant prepares messages with role mapping', function () {
-    $participant = new LLMParticipant(name: 'assistant-a', systemPrompt: 'You are assistant A');
+    // Create fake driver to avoid live API calls
+    $driver = new FakeInferenceDriver([
+        new InferenceResponse(content: 'mocked response'),
+    ]);
+    $inference = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
+    
+    $participant = new LLMParticipant(name: 'assistant-a', systemPrompt: 'You are assistant A', inference: $inference);
     
     // Create messages with mixed roles and participant names
     $m1 = new Message('assistant', 'Hi from A', name: 'assistant-a');

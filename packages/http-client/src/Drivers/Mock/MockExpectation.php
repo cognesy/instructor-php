@@ -28,18 +28,34 @@ class MockExpectation
         return $this;
     }
 
-    public function get(string|callable|null $url = null): self { return $this->method('GET')->url($url); }
-    public function post(string|callable|null $url = null): self { return $this->method('POST')->url($url); }
-    public function put(string|callable|null $url = null): self { return $this->method('PUT')->url($url); }
-    public function patch(string|callable|null $url = null): self { return $this->method('PATCH')->url($url); }
-    public function delete(string|callable|null $url = null): self { return $this->method('DELETE')->url($url); }
+    public function get(string|callable|null $url = null): self {
+        return $this->method('GET')->url($url);
+    }
+
+    public function post(string|callable|null $url = null): self {
+        return $this->method('POST')->url($url);
+    }
+
+    public function put(string|callable|null $url = null): self {
+        return $this->method('PUT')->url($url);
+    }
+
+    public function patch(string|callable|null $url = null): self {
+        return $this->method('PATCH')->url($url);
+    }
+
+    public function delete(string|callable|null $url = null): self {
+        return $this->method('DELETE')->url($url);
+    }
 
     public function url(string|callable|null $matcher): self {
-        if ($matcher === null) { return $this; }
+        if ($matcher === null) {
+            return $this;
+        }
         if (is_string($matcher)) {
             $this->matchers[] = fn(HttpRequest $r): bool => $r->url() === $matcher;
         } elseif (is_callable($matcher)) {
-            $this->matchers[] = fn(HttpRequest $r): bool => (bool) $matcher($r->url());
+            $this->matchers[] = fn(HttpRequest $r): bool => (bool)$matcher($r->url());
         }
         return $this;
     }
@@ -70,7 +86,7 @@ class MockExpectation
                 return false;
             }
             $v = $headers[$lname];
-            return is_callable($value) ? (bool) $value($v) : $v === $value;
+            return is_callable($value) ? (bool)$value($v) : $v === $value;
         };
         return $this;
     }
@@ -107,14 +123,16 @@ class MockExpectation
         $this->matchers[] = function (HttpRequest $r) use ($subset): bool {
             $raw = $r->body()->toString();
             $decoded = json_decode($raw, true);
-            if (!is_array($decoded)) { return false; }
+            if (!is_array($decoded)) {
+                return false;
+            }
             return self::isAssocSubset($subset, $decoded);
         };
         return $this;
     }
 
     public function body(callable $predicate): self {
-        $this->matchers[] = fn(HttpRequest $r): bool => (bool) $predicate($r->body()->toString());
+        $this->matchers[] = fn(HttpRequest $r): bool => (bool)$predicate($r->body()->toString());
         return $this;
     }
 
@@ -154,13 +172,17 @@ class MockExpectation
 
     private static function isAssocSubset(array $subset, array $target): bool {
         foreach ($subset as $k => $v) {
-            if (!array_key_exists($k, $target)) { return false; }
+            if (!array_key_exists($k, $target)) {
+                return false;
+            }
             if (is_array($v)) {
                 if (!is_array($target[$k]) || !self::isAssocSubset($v, $target[$k])) {
                     return false;
                 }
             } else {
-                if ($target[$k] !== $v) { return false; }
+                if ($target[$k] !== $v) {
+                    return false;
+                }
             }
         }
         return true;
