@@ -9,9 +9,11 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
-use Cognesy\Http\Exceptions\HttpRequestException;
-use Exception;
+use Cognesy\Http\Exceptions\NetworkException;
+use Cognesy\Http\Exceptions\TimeoutException;
+use Illuminate\Http\Client\ConnectionException as LaravelConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -64,10 +66,16 @@ class LaravelDriver implements CanHandleHttpRequest
         try {
             // Send the request based on the method
             $response = $this->sendRequest($pendingRequest, $method, $url, $body);
-        } catch (Exception $e) {
+        } catch (LaravelConnectionException $e) {
             $duration = microtime(true) - $startTime;
-            $httpException = HttpExceptionFactory::fromDriverException($e, $request, $duration);
-            
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'timed out') || str_contains($message, 'cURL error 28')) {
+                $httpException = new TimeoutException($message, $request, $duration, $e);
+            } else {
+                $httpException = new ConnectionException($message, $request, $duration, $e);
+            }
+
             $this->events->dispatch(new HttpRequestFailed([
                 'url' => $url,
                 'method' => $method,
@@ -76,7 +84,21 @@ class LaravelDriver implements CanHandleHttpRequest
                 'errors' => $httpException->getMessage(),
                 'duration' => $duration,
             ]));
-            
+
+            throw $httpException;
+        } catch (\Exception $e) {
+            $duration = microtime(true) - $startTime;
+            $httpException = new NetworkException($e->getMessage(), $request, null, $duration, $e);
+
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'body' => $body,
+                'errors' => $httpException->getMessage(),
+                'duration' => $duration,
+            ]));
+
             throw $httpException;
         }
         

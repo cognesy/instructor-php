@@ -26,7 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
-// @doctest id="6fe6"
+// @doctest id="a8e3"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -50,7 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="5a31"
+// @doctest id="5293"
 ```
 
 
@@ -70,7 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
-// @doctest id="91f3"
+// @doctest id="2197"
 ```
 
 
@@ -95,7 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="2e28"
+// @doctest id="316b"
 ```
 
 
@@ -119,7 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
-// @doctest id="0a82"
+// @doctest id="0c7c"
 ```
 
 
@@ -145,7 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="27eb"
+// @doctest id="76eb"
 ```
 
 
@@ -172,7 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
-// @doctest id="ac1f"
+// @doctest id="f9c5"
 ```
 
 
@@ -215,7 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
-// @doctest id="252e"
+// @doctest id="d0e5"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -234,7 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
-// @doctest id="1c5a"
+// @doctest id="38b8"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -294,7 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
-// @doctest id="8337"
+// @doctest id="f638"
 ```
 
 
@@ -330,5 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
-// @doctest id="3b9f"
+// @doctest id="48f4"
 ```

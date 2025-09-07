@@ -51,7 +51,7 @@ return [
         ],
     ],
 ];
-// @doctest id="bbad"
+// @doctest id="34fa"
 ```
 
 ### Debug Configuration: config/debug.php
@@ -72,7 +72,7 @@ return [
         'responseStreamByLine' => true, // dump stream as full lines or raw chunks
     ],
 ];
-// @doctest id="f662"
+// @doctest id="6826"
 ```
 
 ### Loading Configuration Files
@@ -83,7 +83,7 @@ For Laravel, you might publish these configurations as Laravel config files:
 
 ```bash
 php artisan vendor:publish --tag=polyglot-config
-# @doctest id="8ae1"
+# @doctest id="b1fb"
 ```
 
 For Symfony, you might define these as service parameters in your service configuration.
@@ -157,7 +157,7 @@ $client->withClient('guzzle-long-timeout');
 
 // Switch to a client optimized for streaming
 $client->withClient('guzzle-streaming');
-// @doctest id="f3a8"
+// @doctest id="b177"
 ```
 
 ### Using withConfig
@@ -180,7 +180,7 @@ $config = new HttpClientConfig(
 
 // Use the custom configuration
 $client->withConfig($config);
-// @doctest id="7ddb"
+// @doctest id="3a3e"
 ```
 
 This method gives you complete control over the configuration at runtime.
@@ -202,7 +202,7 @@ $configArray = [
 
 $config = HttpClientConfig::fromArray($configArray);
 $client->withConfig($config);
-// @doctest id="959f"
+// @doctest id="507d"
 ```
 
 This approach is useful when loading configuration from external sources like environment variables or configuration files.
@@ -220,7 +220,7 @@ $response = $client->withRequest($request)->get();
 
 // Disable debug mode when done
 $client->withDebugPreset('off');
-// @doctest id="27b0"
+// @doctest id="2abb"
 ```
 
 When debug mode is enabled, detailed information about requests and responses is output to the console or log.
@@ -273,7 +273,7 @@ $client = configureClientForRequest($client, $request);
 
 // Send the request
 $response = $client->withRequest($request)->get();
-// @doctest id="c0d9"
+// @doctest id="89dd"
 ```
 
 This approach allows for highly dynamic and contextual configuration adjustments.
@@ -356,7 +356,7 @@ function configureHttpClient() {
 
 // Get a properly configured client
 $client = configureHttpClient();
-// @doctest id="c7d2"
+// @doctest id="713d"
 ```
 
 This approach allows you to adapt your HTTP client configuration to different environments while maintaining a consistent API.

@@ -1,6 +1,4 @@
-<?php declare(strict_types=1);
-
-namespace Tests\Unit;
+<?php
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\ClientErrorException;
@@ -9,135 +7,134 @@ use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\ServerErrorException;
 use Cognesy\Http\Exceptions\TimeoutException;
-use Exception;
-use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
 
-class HttpExceptionFactoryTest extends TestCase
-{
-    public function test_factory_creates_client_error_exception_for_4xx_status()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        
-        $exception = HttpExceptionFactory::fromStatusCode(404, $request);
-        
-        expect($exception)->toBeInstanceOf(ClientErrorException::class);
-        expect($exception->getStatusCode())->toBe(404);
-        expect($exception->getRequest())->toBe($request);
-    }
+it('creates client error exception for 4xx status', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    
+    $exception = HttpExceptionFactory::fromStatusCode(404, $request);
+    
+    expect($exception)->toBeInstanceOf(ClientErrorException::class);
+    expect($exception->getStatusCode())->toBe(404);
+    expect($exception->getRequest())->toBe($request);
+});
 
-    public function test_factory_creates_server_error_exception_for_5xx_status()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        
-        $exception = HttpExceptionFactory::fromStatusCode(500, $request, null, 1.5);
-        
-        expect($exception)->toBeInstanceOf(ServerErrorException::class);
-        expect($exception->getStatusCode())->toBe(500);
-        expect($exception->getDuration())->toBe(1.5);
-    }
+it('creates server error exception for 5xx status', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    
+    $exception = HttpExceptionFactory::fromStatusCode(500, $request, null, 1.5);
+    
+    expect($exception)->toBeInstanceOf(ServerErrorException::class);
+    expect($exception->getStatusCode())->toBe(500);
+    expect($exception->getDuration())->toBe(1.5);
+});
 
-    public function test_factory_throws_for_invalid_status_code()
-    {
-        expect(fn() => HttpExceptionFactory::fromStatusCode(200))
-            ->toThrow(InvalidArgumentException::class, 'Invalid HTTP status code: 200');
-            
-        expect(fn() => HttpExceptionFactory::fromStatusCode(399))
-            ->toThrow(InvalidArgumentException::class, 'Invalid HTTP status code: 399');
-    }
-
-    public function test_factory_detects_connection_errors()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        $driverException = new Exception('Could not resolve host: api.example.com');
+it('throws for invalid status code', function () {
+    expect(fn() => HttpExceptionFactory::fromStatusCode(200))
+        ->toThrow(InvalidArgumentException::class, 'Invalid HTTP status code: 200');
         
-        $exception = HttpExceptionFactory::fromDriverException($driverException, $request);
+    expect(fn() => HttpExceptionFactory::fromStatusCode(399))
+        ->toThrow(InvalidArgumentException::class, 'Invalid HTTP status code: 399');
+});
+
+it('demonstrates driver-specific exception mapping for connection errors', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    $originalException = new Exception('Could not resolve host: api.example.com');
+    
+    // This shows how drivers would create connection exceptions
+    $exception = new ConnectionException('Could not resolve host: api.example.com', $request, null, $originalException);
+    
+    expect($exception)->toBeInstanceOf(ConnectionException::class);
+    expect($exception->getMessage())->toContain('Could not resolve host');
+    expect($exception->getPrevious())->toBe($originalException);
+    expect($exception->isRetriable())->toBeTrue();
+});
+
+it('demonstrates driver-specific exception mapping for timeout errors', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    $originalException = new Exception('Operation timed out after 30 seconds');
+    
+    // This shows how drivers would create timeout exceptions
+    $exception = new TimeoutException('Operation timed out after 30 seconds', $request, 30.1, $originalException);
+    
+    expect($exception)->toBeInstanceOf(TimeoutException::class);
+    expect($exception->getDuration())->toBe(30.1);
+    expect($exception->getPrevious())->toBe($originalException);
+    expect($exception->isRetriable())->toBeTrue();
+});
+
+it('demonstrates connection error patterns handled by drivers', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    
+    $patterns = [
+        'connect() failed: Connection refused',
+        'Could not resolve host: bad-domain.com',
+        'getaddrinfo failed: Name or service not known',
+        'Connection refused by server',
+    ];
+    
+    foreach ($patterns as $message) {
+        $originalException = new Exception($message);
+        // Simulating how drivers would map these patterns
+        $exception = new ConnectionException($message, $request, null, $originalException);
         
         expect($exception)->toBeInstanceOf(ConnectionException::class);
-        expect($exception->getMessage())->toContain('Could not resolve host');
-        expect($exception->getPrevious())->toBe($driverException);
+        expect($exception->getMessage())->toContain($message);
+        expect($exception->isRetriable())->toBeTrue();
     }
+});
 
-    public function test_factory_detects_timeout_errors()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        $driverException = new Exception('Operation timed out after 30 seconds');
-        
-        $exception = HttpExceptionFactory::fromDriverException($driverException, $request, 30.1);
+it('demonstrates timeout error patterns handled by drivers', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    
+    $patterns = [
+        'timeout was reached',
+        'Operation timed out',
+        'Request timed out after 30 seconds', 
+        'Connection timeout after 5 seconds',
+    ];
+    
+    foreach ($patterns as $message) {
+        $originalException = new Exception($message);
+        // Simulating how drivers would map these patterns
+        $exception = new TimeoutException($message, $request, 15.0, $originalException);
         
         expect($exception)->toBeInstanceOf(TimeoutException::class);
-        expect($exception->getDuration())->toBe(30.1);
-        expect($exception->getPrevious())->toBe($driverException);
+        expect($exception->getMessage())->toContain($message);
+        expect($exception->isRetriable())->toBeTrue();
     }
+});
 
-    public function test_factory_connection_error_patterns()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        
-        $patterns = [
-            'connect() failed: Connection refused',
-            'Could not resolve host: bad-domain.com',
-            'getaddrinfo failed: Name or service not known',
-            'Connection refused by server',
-        ];
-        
-        foreach ($patterns as $message) {
-            $driverException = new Exception($message);
-            $exception = HttpExceptionFactory::fromDriverException($driverException, $request);
-            
-            expect($exception)->toBeInstanceOf(ConnectionException::class, 
-                "Pattern '{$message}' should create ConnectionException");
-        }
-    }
+it('demonstrates fallback to generic network exception', function () {
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    $originalException = new Exception('Some unknown network error');
+    
+    // This shows how drivers would create generic network exceptions
+    $exception = new NetworkException('Some unknown network error', $request, null, 2.5, $originalException);
+    
+    expect($exception)->toBeInstanceOf(NetworkException::class);
+    expect($exception->getMessage())->toContain('Some unknown network error');
+    expect($exception->getDuration())->toBe(2.5);
+    expect($exception->getPrevious())->toBe($originalException);
+    expect($exception->isRetriable())->toBeTrue();
+});
 
-    public function test_factory_timeout_error_patterns()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        
-        $patterns = [
-            'timeout was reached',
-            'Operation timed out',
-            'Request timed out after 30 seconds',
-            'Connection timeout after 5 seconds',
-        ];
-        
-        foreach ($patterns as $message) {
-            $driverException = new Exception($message);
-            $exception = HttpExceptionFactory::fromDriverException($driverException, $request);
-            
-            expect($exception)->toBeInstanceOf(TimeoutException::class,
-                "Pattern '{$message}' should create TimeoutException");
-        }
-    }
-
-    public function test_factory_fallback_to_generic_network_exception()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        $driverException = new Exception('Some unknown network error');
-        
-        $exception = HttpExceptionFactory::fromDriverException($driverException, $request, 2.5);
-        
-        expect($exception)->toBeInstanceOf(NetworkException::class);
-        expect($exception->getMessage())->toContain('Some unknown network error');
-        expect($exception->getDuration())->toBe(2.5);
-        expect($exception->getPrevious())->toBe($driverException);
-    }
-
-    public function test_factory_handles_guzzle_specific_exceptions()
-    {
-        $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
-        
-        // Test with mock Guzzle ConnectException (if available)
-        if (class_exists('\\GuzzleHttp\\Exception\\ConnectException')) {
-            // We'll test the class name detection since we can't easily create Guzzle exceptions
-            $driverException = new Exception('GuzzleHttp\\Exception\\ConnectException: Connection refused');
-            $exception = HttpExceptionFactory::fromDriverException($driverException, $request);
-            expect($exception)->toBeInstanceOf(NetworkException::class); // Falls back to generic
-        } else {
-            // Test string-based detection
-            $driverException = new Exception('connect() failed');
-            $exception = HttpExceptionFactory::fromDriverException($driverException, $request);
-            expect($exception)->toBeInstanceOf(ConnectionException::class);
-        }
-    }
-}
+it('shows that factory only handles status codes while drivers handle their own exceptions', function () {
+    // HttpExceptionFactory is simplified to only handle HTTP status codes
+    // Each driver is responsible for mapping its specific exceptions to our hierarchy
+    
+    $request = new HttpRequest('https://api.example.com', 'GET', [], '', []);
+    
+    // Factory handles status codes
+    $clientError = HttpExceptionFactory::fromStatusCode(404, $request);
+    expect($clientError)->toBeInstanceOf(ClientErrorException::class);
+    expect($clientError->isRetriable())->toBeFalse(); // 404 is not retriable
+    
+    $serverError = HttpExceptionFactory::fromStatusCode(500, $request);
+    expect($serverError)->toBeInstanceOf(ServerErrorException::class);
+    expect($serverError->isRetriable())->toBeTrue(); // 500 is retriable
+    
+    // Special case: 429 Too Many Requests is retriable
+    $rateLimitError = HttpExceptionFactory::fromStatusCode(429, $request);
+    expect($rateLimitError)->toBeInstanceOf(ClientErrorException::class);
+    expect($rateLimitError->isRetriable())->toBeTrue(); // 429 is retriable
+});

@@ -9,12 +9,14 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
-use Cognesy\Http\Exceptions\HttpRequestException;
-use Exception;
+use Cognesy\Http\Exceptions\NetworkException;
+use Cognesy\Http\Exceptions\TimeoutException;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
+use GuzzleHttp\Exception\ConnectException as GuzzleConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class GuzzleDriver implements CanHandleHttpRequest
@@ -60,12 +62,16 @@ class GuzzleDriver implements CanHandleHttpRequest
                 'stream' => $streaming,
                 'http_errors' => false, // Disable Guzzle's automatic HTTP error handling
             ]);
-        } catch (GuzzleRequestException $e) {
+        } catch (GuzzleConnectException $e) {
             $duration = microtime(true) - $startTime;
-            
-            // Enhanced exception creation
-            $httpException = HttpExceptionFactory::fromDriverException($e, $request, $duration);
-            
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'timeout') || str_contains($message, 'timed out')) {
+                $httpException = new TimeoutException($message, $request, $duration, $e);
+            } else {
+                $httpException = new ConnectionException($message, $request, $duration, $e);
+            }
+
             $this->events->dispatch(new HttpRequestFailed([
                 'url' => $url,
                 'method' => $method,
@@ -74,12 +80,12 @@ class GuzzleDriver implements CanHandleHttpRequest
                 'errors' => $httpException->getMessage(),
                 'duration' => $duration,
             ]));
-            
+
             throw $httpException;
-        } catch (Exception $e) {
+        } catch (GuzzleException $e) {
             $duration = microtime(true) - $startTime;
-            $httpException = HttpExceptionFactory::fromDriverException($e, $request, $duration);
-            
+            $httpException = new NetworkException($e->getMessage(), $request, null, $duration, $e);
+
             $this->events->dispatch(new HttpRequestFailed([
                 'url' => $url,
                 'method' => $method,
@@ -88,7 +94,7 @@ class GuzzleDriver implements CanHandleHttpRequest
                 'errors' => $httpException->getMessage(),
                 'duration' => $duration,
             ]));
-            
+
             throw $httpException;
         }
         

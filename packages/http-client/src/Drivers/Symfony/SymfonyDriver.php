@@ -9,11 +9,13 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
-use Cognesy\Http\Exceptions\HttpRequestException;
-use Exception;
+use Cognesy\Http\Exceptions\NetworkException;
+use Cognesy\Http\Exceptions\TimeoutException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SymfonyDriver implements CanHandleHttpRequest
@@ -62,10 +64,18 @@ class SymfonyDriver implements CanHandleHttpRequest
                     'buffer' => !$streaming,
                 ]
             );
-        } catch (Exception $e) {
+        } catch (TransportExceptionInterface $e) {
             $duration = microtime(true) - $startTime;
-            $httpException = HttpExceptionFactory::fromDriverException($e, $request, $duration);
-            
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'timeout') || str_contains($message, 'timed out')) {
+                $httpException = new TimeoutException($message, $request, $duration, $e);
+            } elseif (str_contains($message, 'Failed to connect') || str_contains($message, 'Could not resolve host')) {
+                $httpException = new ConnectionException($message, $request, $duration, $e);
+            } else {
+                $httpException = new NetworkException($message, $request, null, $duration, $e);
+            }
+
             $this->events->dispatch(new HttpRequestFailed([
                 'url' => $url,
                 'method' => $method,
@@ -74,7 +84,7 @@ class SymfonyDriver implements CanHandleHttpRequest
                 'errors' => $httpException->getMessage(),
                 'duration' => $duration,
             ]));
-            
+
             throw $httpException;
         }
 

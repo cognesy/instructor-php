@@ -26,34 +26,4 @@ class HttpExceptionFactory
             default => throw new InvalidArgumentException("Invalid HTTP status code: {$statusCode}"),
         };
     }
-    
-    public static function fromDriverException(
-        Throwable $driverException,
-        ?HttpRequest $request = null,
-        ?float $duration = null,
-    ): NetworkException {
-        $message = $driverException->getMessage();
-        
-        return match(true) {
-            // Connection errors - DNS resolution, refused connections, etc.
-            str_contains($message, 'connect') ||
-            str_contains($message, 'resolve') ||
-            str_contains($message, 'refused') ||
-            str_contains($message, 'Could not resolve host') ||
-            str_contains($message, 'getaddrinfo failed') ||
-            str_contains($message, 'Name or service not known') ||
-            $driverException instanceof \GuzzleHttp\Exception\ConnectException
-                => new ConnectionException($message, $request, $driverException),
-            
-            // Timeout errors - any kind of timeout
-            str_contains($message, 'timeout') ||
-            str_contains($message, 'timed out') ||
-            str_contains($message, 'Operation timed out') ||
-            $driverException instanceof \GuzzleHttp\Exception\TimeoutException
-                => new TimeoutException($message, $request, $duration, $driverException),
-                
-            // Generic network error fallback
-            default => new NetworkException($message, $request, null, $duration, $driverException),
-        };
-    }
 }

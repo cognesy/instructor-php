@@ -44,7 +44,7 @@ $streamingRequest = $request->withStreaming(true);
 // Create a client and send the request
 $client = new HttpClient();
 $response = $client->withRequest($streamingRequest)->get();
-// @doctest id="b62f"
+// @doctest id="23f2"
 ```
 
 The `stream` option tells the HTTP client to treat the response as a stream, which means:
@@ -69,7 +69,7 @@ foreach ($response->stream() as $chunk) {
     // If this is a streaming JSON response, you might need to buffer until
     // you have complete JSON objects
 }
-// @doctest id="186e"
+// @doctest id="85d4"
 ```
 
 By default, the `stream()` method reads the response in small chunks. You can control the chunk size by passing a parameter:
@@ -80,7 +80,7 @@ foreach ($response->stream(1024) as $chunk) {
     // Process larger chunks of data
     echo "Received chunk of approximately 1KB: $chunk\n";
 }
-// @doctest id="a1d2"
+// @doctest id="681e"
 ```
 
 ### Example: Downloading a Large File
@@ -140,7 +140,7 @@ try {
         unlink('downloaded-file.zip');
     }
 }
-// @doctest id="7474"
+// @doctest id="5f1e"
 ```
 
 This approach allows downloading very large files without loading the entire file into memory.
@@ -203,7 +203,7 @@ foreach ($response->stream() as $chunk) {
         }
     }
 }
-// @doctest id="d4f2"
+// @doctest id="c3b5"
 ```
 
 While this works, processing streaming responses line by line is common enough that the library provides a dedicated middleware for it, as we'll see in the next section.
@@ -244,7 +244,7 @@ foreach ($response->stream() as $line) {
         echo "Event type: {$event['type']}\n";
     }
 }
-// @doctest id="2673"
+// @doctest id="930b"
 ```
 
 ### Customizing Line Processing
@@ -262,7 +262,7 @@ $lineParser = function (string $line) {
 };
 
 $client->withMiddleware(new StreamByLineMiddleware($lineParser));
-// @doctest id="186c"
+// @doctest id="a0e4"
 ```
 
 If your parser returns `null`, that line will be skipped in the stream.
@@ -346,7 +346,7 @@ try {
 } catch (Exception $e) {
     echo "Error: {$e->getMessage()}\n";
 }
-// @doctest id="b9a4"
+// @doctest id="bb97"
 ```
 
 This approach allows you to display the AI-generated content to the user in real-time as it's being generated, providing a more responsive user experience.

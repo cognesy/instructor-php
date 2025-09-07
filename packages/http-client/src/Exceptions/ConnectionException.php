@@ -10,8 +10,9 @@ class ConnectionException extends NetworkException
     public function __construct(
         string $message,
         ?HttpRequest $request = null,
+        ?float $duration = null,
         ?Throwable $previous = null,
     ) {
-        parent::__construct($message, $request, null, null, $previous);
+        parent::__construct($message, $request, null, $duration, $previous);
     }
 }
