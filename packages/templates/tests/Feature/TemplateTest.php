@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Enums\TemplateEngineType;
 use Cognesy\Template\Template;
@@ -92,11 +92,11 @@ it('can convert template with chat markup to script', function () {
     $prompt = Template::blade()
         ->withTemplateContent('<chat><section name="system"/><message role="system">You are helpful assistant.</message><section name="messages"/><message role="user">Hello, {{ $name }}</message></chat>')
         ->withValues(['name' => 'assistant']);
-    $script = $prompt->toScript();
-    expect($script)->toBeInstanceOf(Script::class)
-        ->and($script->toString())->toContain('Hello, assistant')
-        ->and($script->hasSection('system'))->toBeTrue()
-        ->and($script->hasSection('messages'))->toBeTrue();
+    $store = $prompt->toMessageStore();
+    expect($store)->toBeInstanceOf(MessageStore::class)
+        ->and($store->toString())->toContain('Hello, assistant')
+        ->and($store->hasSection('system'))->toBeTrue()
+        ->and($store->hasSection('messages'))->toBeTrue();
 });
 
 it('can load a template by name - Twig', function () {

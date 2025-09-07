@@ -39,11 +39,11 @@ $chat = BuildChatWithSummary::create(
 );
 
 // Add system + persistent context once
-$script = $chat->state()->script()
+$store = $chat->state()->script()
     ->withSectionMessages('system', Messages::fromString($system, 'system'))
     ->withSectionMessages('context', Messages::fromString($context, 'system'));
 $state = $chat->state();
-$state->withScript($script);
+$state->withMessageStore($store);
 $chat->withState($state);
 
 $userPrompts = [

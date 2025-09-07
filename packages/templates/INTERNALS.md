@@ -16,9 +16,9 @@ The Templates package provides a flexible templating system for the Instructor-P
 - Template variable extraction and validation
 - DSN-based template loading (`engine:template_name`)
 
-### Message & Script Generation
+### Message & MessageStore Generation
 - Convert templates to `Messages` objects for LLM interaction
-- Generate structured `Script` objects with multiple sections
+- Generate structured `MessageStore` objects with multiple sections
 - Support for XML-based chat markup with roles (system, user, assistant)
 - Multi-modal content support (text, images, audio)
 
@@ -39,7 +39,7 @@ Main template class providing fluent interface for template operations.
 - `Template::using(string $preset)` - Use configuration preset
 - `withTemplate(string $path)` / `withTemplateContent(string $content)` - Set template source
 - `withValues(array $values)` - Set template variables
-- `toText()` / `toMessages()` / `toScript()` - Output conversions
+- `toText()` / `toMessages()` / `toMessageStore()` - Output conversions
 
 **Static Shortcuts:**
 - `Template::text(string $pathOrDsn, array $variables)` - Direct text rendering
@@ -53,7 +53,7 @@ Manages template engine configuration and provides rendering services.
 - `renderString(string $content, array $variables)` - Render with variables
 - `getVariableNames(string $content)` - Extract variable names
 
-### Script
+### MessageStore
 Advanced message sequence management for complex LLM interactions.
 
 **Features:**
@@ -100,28 +100,28 @@ $messages = Template::blade()
     ->toMessages();
 ```
 
-### Script-Based Organization
+### MessageStore-Based Organization
 ```php
 
-$script = new Script(
+$store = new MessageStore(
     new Section('system'),
     new Section('conversation')
 );
 
-$script = $script->withSection('system')
+$store = $store->withSection('system')
     ->appendMessageToSection('system', [
         'role' => 'system', 
         'content' => 'You are helpful'
     ]);
 
-$script = $script->withSection('conversation')
+$store = $store->withSection('conversation')
     ->appendMessageToSection('conversation', [
         'role' => 'user', 
         'content' => 'Hello <|name|>'
     ]);
 
-$script->withParams(['name' => 'World']);
-$messages = $script->toArray();
+$store->withParams(['name' => 'World']);
+$messages = $store->toArray();
 ```
 
 ### Configuration & Engine Selection

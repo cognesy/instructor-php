@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
-use Cognesy\Messages\Script\ScriptParameters;
-use Cognesy\Messages\Script\Section;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\MessageStoreParameters;
+use Cognesy\Messages\MessageStore\Section;
+use Cognesy\Messages\MessageStore\Sections;
 use Exception;
 
 trait HandlesMutation
@@ -15,8 +16,8 @@ trait HandlesMutation
         if ($this->hasSection($name)) {
             throw new Exception("Section with name '{$name}' already exists - use mergeSection() instead.");
         }
-        // Note: This creates the section but doesn't add it to the script
-        // Use appendSection() separately to add it to the script
+        // Note: This creates the section but doesn't add it to the store
+        // Use appendSection() separately to add it to the store
         return new Section($name);
     }
 
@@ -36,8 +37,7 @@ trait HandlesMutation
     }
 
     protected function forceAppendSection(Section $section) : static {
-        $newSections = $this->sections;
-        $newSections[] = $section;
+        $newSections = $this->sections->add($section);
         return new static(
             sections: $newSections,
             parameters: $this->parameters,
@@ -54,26 +54,26 @@ trait HandlesMutation
         }
     }
 
-    public function overrideScript(Script $script) : static {
+    public function overrideMessageStore(MessageStore $store) : static {
         $result = $this;
-        foreach($script->sections as $section) {
+        foreach($store->sections->each() as $section) {
             if ($result->hasSection($section->name)) {
                 $result = $result->removeSection($section->name);
             }
             $result = $result->appendSection($section);
         }
-        return $result->mergeParameters($script->parameters);
+        return $result->mergeParameters($store->parameters);
     }
 
-    public function mergeScript(Script $script) : static {
+    public function mergeMessageStore(MessageStore $store) : static {
         $result = $this;
-        foreach($script->sections as $section) {
+        foreach($store->sections->each() as $section) {
             $result = $result->mergeSection($section);
         }
-        return $result->mergeParameters($script->parameters);
+        return $result->mergeParameters($store->parameters);
     }
 
-    public function mergeParameters(array|ScriptParameters $parameters) : static {
+    public function mergeParameters(array|MessageStoreParameters $parameters) : static {
         return new static(
             sections: $this->sections,
             parameters: $this->parameters->merge($parameters),
@@ -81,22 +81,17 @@ trait HandlesMutation
     }
 
     public function removeSection(string $name) : static {
-        $newSections = array_filter($this->sections, fn($section) => $section->name !== $name);
+        $newSections = $this->sections->filter(fn($section) => $section->name !== $name);
         return new static(
-            sections: array_values($newSections), // Re-index array
+            sections: $newSections,
             parameters: $this->parameters,
         );
     }
 
     public function replaceSection(string $name, Section $newSection) : static {
-        $newSections = [];
-        foreach ($this->sections as $section) {
-            if ($section->name === $name) {
-                $newSections[] = $newSection;
-            } else {
-                $newSections[] = $section;
-            }
-        }
+        $newSections = new Sections(...$this->sections->map(fn($section) =>
+            $section->name === $name ? $newSection : $section
+        ));
         return new static(
             sections: $newSections,
             parameters: $this->parameters,
@@ -104,9 +99,9 @@ trait HandlesMutation
     }
 
     public function withSectionMessages(string $sectionName, Messages $messages) : static {
-        $script = $this->withSection($sectionName);
+        $store = $this->withSection($sectionName);
         $newSection = new Section($sectionName, messages: $messages);
-        return $script->replaceSection($sectionName, $newSection);
+        return $store->replaceSection($sectionName, $newSection);
     }
 
     public function withSectionMessage(string $sectionName, array|Message $message) : static {
@@ -118,19 +113,19 @@ trait HandlesMutation
     }
 
     public function withSectionMessageIfEmpty(string $sectionName, array|Message $message) : static {
-        $script = $this->withSection($sectionName);
-        if ($script->getSection($sectionName)->isEmpty()) {
-            return $script->appendMessageToSection($sectionName, $message);
+        $store = $this->withSection($sectionName);
+        if ($store->getSection($sectionName)->isEmpty()) {
+            return $store->appendMessageToSection($sectionName, $message);
         }
-        return $script;
+        return $store;
     }
 
     public function withConditionalSectionMessage(string $sectionName, array|Message $message, string $conditionSectionName) : static {
-        $script = $this->withSection($sectionName)->withSection($conditionSectionName);
-        if ($script->getSection($conditionSectionName)->notEmpty()) {
-            return $script->withSectionMessageIfEmpty($sectionName, $message);
+        $store = $this->withSection($sectionName)->withSection($conditionSectionName);
+        if ($store->getSection($conditionSectionName)->notEmpty()) {
+            return $store->withSectionMessageIfEmpty($sectionName, $message);
         }
-        return $script;
+        return $store;
     }
 
     public function appendMessageToSection(string $sectionName, array|Message $message) : static {
@@ -145,21 +140,4 @@ trait HandlesMutation
         return $this->replaceSection($sectionName, $updatedSection);
     }
 
-    // INTERNAL ////////////////////////////////////////////////////
-
-    private function insert(array $array, int $index, array $new) : array {
-        return array_merge(
-            array_slice($array, 0, $index),
-            $new,
-            array_slice($array, $index)
-        );
-    }
-
-    private function appendSections(array $array) : array {
-        return array_merge($this->sections, $array);
-    }
-
-    private function prependSections(array $array) {
-        return array_merge($array, $this->sections);
-    }
 }

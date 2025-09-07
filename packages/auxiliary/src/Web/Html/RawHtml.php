@@ -111,10 +111,10 @@ class RawHtml
             return $content;
         }
 
-        $scripts = $this->dom->getElementsByTagName('script');
-        while ($scripts->length > 0) {
-            $script = $scripts->item(0);
-            $script?->parentNode->removeChild($script);
+        $stores = $this->dom->getElementsByTagName('script');
+        while ($stores->length > 0) {
+            $store = $stores->item(0);
+            $store?->parentNode->removeChild($store);
         }
 
         // Also remove onclick and other script attributes

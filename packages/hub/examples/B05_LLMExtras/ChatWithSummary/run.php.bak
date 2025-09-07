@@ -34,12 +34,12 @@ $chat = ChatWithSummary::create(
 $chat = $chat->appendMessage($startMessage);
 
 for($i = 0; $i < $maxSteps; $i++) {
-    $script = $chat->script()
+    $store = $chat->script()
         ->withSection('system')
         ->withSection('context')
         ->withSectionMessages('system', Messages::fromString($sys[$i % 2], 'system'))
         ->withSectionMessages('context', Messages::fromString($context, 'system'));
-    $chat = $chat->withScript($script);
+    $chat = $chat->withMessageStore($store);
 
     $messages = $chat->script()
         ->select(['system', 'context', 'summary', 'buffer', 'main'])

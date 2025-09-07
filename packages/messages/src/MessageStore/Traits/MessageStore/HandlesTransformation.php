@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
+
+use Cognesy\Messages\MessageStore\Sections;
 
 trait HandlesTransformation
 {
@@ -9,7 +11,7 @@ trait HandlesTransformation
      */
     public function select(string|array $sections = []) : static {
         $names = match (true) {
-            empty($sections) => array_map(fn($section) => $section->name, $this->sections),
+            empty($sections) => $this->sections->map(fn($section) => $section->name),
             is_string($sections) => [$sections],
             is_array($sections) => $sections,
         };
@@ -20,28 +22,28 @@ trait HandlesTransformation
             }
         }
         return new static(
-            sections: $selectedSections,
+            sections: new Sections(...$selectedSections),
             parameters: $this->parameters,
         );
     }
 
     public function toMergedPerRole() : static {
         $mergedSections = [];
-        foreach ($this->sections as $item) {
+        foreach ($this->sections->each() as $item) {
             if ($item->isEmpty()) {
                 continue;
             }
             $mergedSections[] = $item->toMergedPerRole();
         }
         return new static(
-            sections: $mergedSections,
+            sections: new Sections(...$mergedSections),
             parameters: $this->parameters,
         );
     }
 
     public function trimmed() : static {
         $trimmedSections = [];
-        foreach ($this->sections as $section) {
+        foreach ($this->sections->each() as $section) {
             $trimmed = $section->trimmed();
             if ($trimmed->isEmpty()) {
                 continue;
@@ -49,7 +51,7 @@ trait HandlesTransformation
             $trimmedSections[] = $trimmed;
         }
         return new static(
-            sections: $trimmedSections,
+            sections: new Sections(...$trimmedSections),
             parameters: $this->parameters,
         );
     }

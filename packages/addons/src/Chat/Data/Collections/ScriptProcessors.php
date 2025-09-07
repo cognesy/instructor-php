@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Chat\Data\Collections;
 
 use Cognesy\Addons\Chat\Contracts\CanProcessScript;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\MessageStore\MessageStore;
 
 final class ScriptProcessors
 {
@@ -22,8 +22,8 @@ final class ScriptProcessors
         return $this->processors === [];
     }
 
-    public function apply(Script $script, ChatState $state): Script {
-        $currentScript = $script;
+    public function apply(MessageStore $store, ChatState $state): MessageStore {
+        $currentScript = $store;
         foreach ($this->processors as $processor) {
             if (!$processor->shouldProcess($currentScript, $state)) {
                 continue;

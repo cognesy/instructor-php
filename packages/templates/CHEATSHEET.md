@@ -45,7 +45,7 @@ variables(): array                         // Get template variable names
 ```php
 toText(): string                           // Render as string
 toMessages(): Messages                     // Convert to Messages
-toScript(): Script                         // Convert to Script
+toMessageStore(): MessageStore             // Convert to MessageStore
 toArray(): array                           // Convert to array
 ```
 

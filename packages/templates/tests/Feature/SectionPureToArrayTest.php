@@ -2,7 +2,7 @@
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Section;
+use Cognesy\Messages\MessageStore\Section;
 
 it('Section::toArray is pure and does not render templates', function () {
     $section = new Section(

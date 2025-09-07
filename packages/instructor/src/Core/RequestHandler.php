@@ -160,7 +160,7 @@ class RequestHandler
         }
 
         $value = $processingResult->unwrap();
-        $request->setResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $value); // TODO: tx messages to Scripts
+        $request->setResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $value); // TODO: tx messages to MessageStores
 
         return $value;
     }
@@ -175,7 +175,7 @@ class RequestHandler
         $this->errors = is_array($error) ? $error : [$error];
 
         // store failed response
-        $request->addFailedResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
+        $request->addFailedResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $this->errors); // TODO: tx messages to MessageStores
         $this->retries++;
         if (!$this->maxRetriesReached($request)) {
             $this->events->dispatch(new NewValidationRecoveryAttempt(['retries' => $this->retries, 'errors' => $this->errors]));

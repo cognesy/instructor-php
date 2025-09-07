@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
 use Cognesy\Messages\Messages;
 use Exception;
@@ -8,16 +8,7 @@ use Exception;
 trait HandlesConversion
 {
     public function toMessages() : Messages {
-        $messages = Messages::empty();
-        foreach ($this->sections as $section) {
-            foreach($section->messages()->each() as $message) {
-                if ($message->isEmpty()) {
-                    continue;
-                }
-                $messages = $messages->appendMessage($message->clone());
-            }
-        }
-        return $messages;
+        return $this->sections->toMessages();
     }
 
     /**

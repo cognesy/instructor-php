@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Section;
+namespace Cognesy\Messages\MessageStore\Traits\Section;
 
 trait HandlesMetadata
 {

@@ -187,7 +187,7 @@ Parameters:
 - `messages: array` - Array of message strings to cycle through
 
 ```php
-$scripted = new ScriptedParticipant(
+$storeed = new ScriptedParticipant(
     name: 'demo',
     messages: ['Hello!', 'How are you?', 'Goodbye!']
 );
@@ -413,7 +413,7 @@ For deterministic testing, use `ScriptedParticipant`:
 ```php
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
 
-$scripted = new ScriptedParticipant(
+$storeed = new ScriptedParticipant(
     name: 'assistant',
     messages: ['Hello!', 'How can I help?', 'Goodbye!']
 );
@@ -430,7 +430,7 @@ use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Messages\Messages;
 
 // Create test configuration
-$participants = new Participants($scriptedAssistant);
+$participants = new Participants($storeedAssistant);
 $config = ChatConfig::default($participants)
     ->withContinuationCriteria(new ContinuationCriteria(new StepsLimit(2)));
 

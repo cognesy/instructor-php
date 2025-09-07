@@ -1,51 +1,50 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
-use Cognesy\Messages\Script\Section;
+use Cognesy\Messages\MessageStore\Section;
+use Cognesy\Messages\MessageStore\Sections;
 use Exception;
 
 trait HandlesAccess
 {
-    /** @return Section[] */
-    public function sections() : array {
+    public function sections() : Sections {
         return $this->sections;
     }
 
     public function section(string $name) : Section {
-        if (!$this->hasSection($name)) {
+        if (!$this->sections->has($name)) {
             return new Section($name); // Return empty section for checking purposes
         }
-        return $this->sections[$this->sectionIndex($name)];
+        return $this->sections->get($name);
     }
 
     public function getSection(string $name) : Section {
-        $index = $this->sectionIndex($name);
-        if ($index === -1) {
+        if (!$this->sections->has($name)) {
             throw new Exception("Section '{$name}' does not exist. Use withSection() to add it first.");
         }
-        return $this->sections[$index];
+        return $this->sections->get($name);
     }
 
     public function sectionNames() : array {
-        return $this->map(fn(Section $section) => $section->name);
+        return $this->sections->map(fn(Section $section) => $section->name);
     }
 
     public function hasSection(string $name) : bool {
-        return $this->sectionIndex($name) !== -1;
+        return $this->sections->has($name);
     }
 
     public function reduce(callable $callback, mixed $initial = null) : mixed {
-        return array_reduce($this->sections, $callback, $initial);
+        return $this->sections->reduce($callback, $initial);
     }
 
     public function map(callable $callback) : array {
-        return array_map($callback, $this->sections);
+        return $this->sections->map($callback);
     }
 
     public function isEmpty() : bool {
         return match (true) {
-            empty($this->sections) => true,
+            $this->sections->count() === 0 => true,
             default => $this->reduce(fn(mixed $carry, Section $section) => $carry && $section->isEmpty(), true),
         };
     }
@@ -58,16 +57,4 @@ trait HandlesAccess
         return $this->reduce(fn(bool $carry, Section $section) => $carry || $section->hasComposites(), false);
     }
 
-    // INTERNAL ////////////////////////////////////////////////////
-
-    private function sectionIndex(string $name) : int {
-        $index = -1;
-        foreach ($this->sections as $i => $section) {
-            if ($section->name === $name) {
-                $index = $i;
-                break;
-            }
-        }
-        return $index;
-    }
 }

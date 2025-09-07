@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
-use Cognesy\Messages\Script\Section;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
+use Cognesy\Messages\MessageStore\Sections;
 
 trait HandlesCreation
 {
@@ -12,7 +13,7 @@ trait HandlesCreation
      * @param array<string, string|array> $sections
      * @return static
      */
-    static public function fromArray(array $sections) : Script {
+    static public function fromArray(array $sections) : MessageStore {
         $sectionList = [];
         foreach ($sections as $name => $content) {
             $sectionList[] = (new Section($name))->appendMessages(
@@ -25,12 +26,13 @@ trait HandlesCreation
         return new self($sectionList);
     }
 
-    public static function fromMessages(Messages $messages, string $section = 'messages') : Script {
-        return new self([ (new Section($section))->appendMessages($messages) ]);
+    public static function fromMessages(Messages $messages, string $section = 'messages') : MessageStore {
+        $sections = new Sections((new Section($section))->appendMessages($messages));
+        return new self($sections);
     }
 
     public function clone() : self {
-        return (new Script($this->sections))
+        return (new MessageStore($this->sections))
             ->withParams($this->parameters());
     }
 }

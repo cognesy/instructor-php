@@ -5,8 +5,8 @@ namespace Cognesy\Template;
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
-use Cognesy\Messages\Script\Section;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Data\TemplateInfo;
@@ -132,8 +132,8 @@ class Template
         return $this->makeMessages($this->rendered());
     }
 
-    public function toScript() : Script {
-        return $this->makeScript($this->rendered());
+    public function toMessageStore() : MessageStore {
+        return $this->makeMessageStore($this->rendered());
     }
 
     public function toArray() : array {
@@ -213,7 +213,7 @@ class Template
         };
     }
 
-    private function makeScript(string $text) : Script {
+    private function makeMessageStore(string $text) : MessageStore {
         return match(true) {
             $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeScriptFromXml($text),
             default => Messages::fromString($text),
@@ -234,21 +234,21 @@ class Template
         return preg_match('/<[^>]+>/', $text) === 1;
     }
 
-    private function makeScriptFromXml(string $text) : Script {
+    private function makeScriptFromXml(string $text) : MessageStore {
         $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
-        $script = new Script();
+        $store = new MessageStore();
         $currentSectionName = 'messages';
         
         // Ensure default section exists
-        if (!$script->hasSection($currentSectionName)) {
-            $script = $script->appendSection(new Section($currentSectionName));
+        if (!$store->hasSection($currentSectionName)) {
+            $store = $store->appendSection(new Section($currentSectionName));
         }
         
         foreach ($xml->children() as $element) {
             if ($element->tag() === 'section') {
                 $currentSectionName = $element->attribute('name') ?? 'messages';
-                if (!$script->hasSection($currentSectionName)) {
-                    $script = $script->appendSection(new Section($currentSectionName));
+                if (!$store->hasSection($currentSectionName)) {
+                    $store = $store->appendSection(new Section($currentSectionName));
                 }
                 continue;
             }
@@ -264,9 +264,9 @@ class Template
                 }
             );
             
-            $script = $script->appendMessageToSection($currentSectionName, $message);
+            $store = $store->appendMessageToSection($currentSectionName, $message);
         }
-        return $script;
+        return $store;
     }
 
     private function makeMessagesFromXml(string $text) : Messages {

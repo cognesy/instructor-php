@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\ScriptParameters;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStoreParameters;
 
 trait HandlesConversion
 {

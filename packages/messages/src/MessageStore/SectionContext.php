@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script;
+namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -11,23 +11,23 @@ use Cognesy\Messages\Messages;
 class SectionContext
 {
     public function __construct(
-        private Script $script,
+        private MessageStore $store,
         private string $sectionName,
     ) {}
 
-    public function appendMessage(array|Message $message): Script {
+    public function appendMessage(array|Message $message): MessageStore {
         return $this->script->appendMessageToSection($this->sectionName, $message);
     }
 
-    public function appendMessages(Messages $messages): Script {
-        $script = $this->script;
+    public function appendMessages(Messages $messages): MessageStore {
+        $store = $this->script;
         foreach ($messages->each() as $message) {
-            $script = $script->appendMessageToSection($this->sectionName, $message);
+            $store = $store->appendMessageToSection($this->sectionName, $message);
         }
-        return $script;
+        return $store;
     }
 
-    public function prependMessage(array|Message $message): Script {
+    public function prependMessage(array|Message $message): MessageStore {
         return $this->script->prependMessageToSection($this->sectionName, $message);
     }
 
@@ -35,7 +35,7 @@ class SectionContext
         return new SectionContext($this->script, $name);
     }
 
-    public function script(): Script {
+    public function script(): MessageStore {
         return $this->script;
     }
 }

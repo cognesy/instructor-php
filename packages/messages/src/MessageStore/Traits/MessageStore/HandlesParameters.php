@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\Script\Traits\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
-use Cognesy\Messages\Script\ScriptParameters;
+use Cognesy\Messages\MessageStore\MessageStoreParameters;
 
 trait HandlesParameters
 {
-    public function parameters() : ScriptParameters {
+    public function parameters() : MessageStoreParameters {
         return $this->parameters;
     }
 
-    public function withParams(array|ScriptParameters $parameters) : static {
+    public function withParams(array|MessageStoreParameters $parameters) : static {
         $newParameters = match(true) {
-            $parameters instanceof ScriptParameters => $parameters,
-            default => new ScriptParameters($parameters),
+            $parameters instanceof MessageStoreParameters => $parameters,
+            default => new MessageStoreParameters($parameters),
         };
         return new static(
             sections: $this->sections,

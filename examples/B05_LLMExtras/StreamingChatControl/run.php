@@ -30,7 +30,7 @@ use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\Chat\Processors\AddCurrentStep;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Addons\Chat\TransparentChat;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\PendingInference;
 
 echo "🔄 STREAMING CHAT WITH FINE-GRAINED CONTROL\n";
@@ -116,13 +116,13 @@ $assistant = new LLMParticipant(
 );
 
 // Set up chat state with transparency
-$script = (new Script())
+$store = (new MessageStore())
     ->withSection('system')
     ->withSection('summary')
     ->withSection('buffer')
     ->withSection('main');
 
-$state = (new ChatState($script))
+$state = (new ChatState($store))
     ->withParticipants($user, $assistant)
     ->withNextParticipantSelector(new RoundRobinSelector())
     ->withContinuationCriteria((new ContinuationCriteria())->add(new StepsLimit(6)))

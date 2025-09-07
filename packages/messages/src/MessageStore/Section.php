@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Messages\Script;
+namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Traits\Section\HandlesAccess;
-use Cognesy\Messages\Script\Traits\Section\HandlesConversion;
-use Cognesy\Messages\Script\Traits\Section\HandlesHeaderFooter;
-use Cognesy\Messages\Script\Traits\Section\HandlesMetadata;
-use Cognesy\Messages\Script\Traits\Section\HandlesMutation;
-use Cognesy\Messages\Script\Traits\Section\HandlesTransformation;
+use Cognesy\Messages\MessageStore\Traits\Section\HandlesAccess;
+use Cognesy\Messages\MessageStore\Traits\Section\HandlesConversion;
+use Cognesy\Messages\MessageStore\Traits\Section\HandlesHeaderFooter;
+use Cognesy\Messages\MessageStore\Traits\Section\HandlesMetadata;
+use Cognesy\Messages\MessageStore\Traits\Section\HandlesMutation;
+use Cognesy\Messages\MessageStore\Traits\Section\HandlesTransformation;
 
 /**
- * Represents a distinct named section of message sequence (script).
+ * Represents a distinct named section of message sequence.
  * It can be used to manage related groups of messages, e.g.
  * system section, prompt section, actual chat, summarized entries
  * pruned from the chat, etc.

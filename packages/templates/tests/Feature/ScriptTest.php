@@ -1,28 +1,27 @@
 <?php
 
-use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
-use Cognesy\Messages\Script\Section;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
 
 it('creates messages from script', function () {
-    $script = Script::fromSections(
+    $store = MessageStore::fromSections(
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script = $script->withParams([
+    $store = $store->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
 
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6 <|key-2|>']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
-    $messages = $script->toArray();
+    $messages = $store->toArray();
 
     expect(count($messages))->toBe(6);
     expect($messages[0]['role'])->toBe('user');
@@ -41,29 +40,29 @@ it('creates messages from script', function () {
 
 
 it('selects sections from script', function () {
-    $script = Script::fromSections(
+    $store = MessageStore::fromSections(
         new Section('section-1'),
         new Section('section-2'),
         new Section('section-3'),
     );
-    $script = $script->withParams([
+    $store = $store->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
 
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6']);
 
-    $script = $script->appendMessageToSection('section-3', ['role' => 'user', 'content' => 'content-7']);
-    $script = $script->appendMessageToSection('section-3', ['role' => 'assistant', 'content' => 'content-8']);
-    $script = $script->appendMessageToSection('section-3', ['role' => 'user', 'content' => 'content-9 <|key-2|>']);
+    $store = $store->appendMessageToSection('section-3', ['role' => 'user', 'content' => 'content-7']);
+    $store = $store->appendMessageToSection('section-3', ['role' => 'assistant', 'content' => 'content-8']);
+    $store = $store->appendMessageToSection('section-3', ['role' => 'user', 'content' => 'content-9 <|key-2|>']);
 
-    $messages = $script->select(['section-3', 'section-1'])->toArray();
+    $messages = $store->select(['section-3', 'section-1'])->toArray();
 
     expect(count($messages))->toBe(6);
     expect($messages[0]['role'])->toBe('user');
@@ -83,26 +82,26 @@ it('selects sections from script', function () {
 
 
 it('translates messages to string', function () {
-    $script = Script::fromSections(
+    $store = MessageStore::fromSections(
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script = $script->withParams([
+    $store = $store->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
-    $script = $script->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-1']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'assistant', 'content' => 'content-2']);
+    $store = $store->appendMessageToSection('section-1', ['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
-    $script = $script->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6 <|key-2|>']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-4']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'assistant', 'content' => 'content-5']);
+    $store = $store->appendMessageToSection('section-2', ['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
-    $text = $script->select(['section-2', 'section-1'])->toString();
+    $text = $store->select(['section-2', 'section-1'])->toString();
     expect($text)->toBe("content-4\ncontent-5\ncontent-6 <|key-2|>\ncontent-1\ncontent-2\ncontent-3 <|key-1|>\n");
 
-    $text = $script->select('section-1')->toString();
+    $text = $store->select('section-1')->toString();
     expect($text)->toBe("content-1\ncontent-2\ncontent-3 <|key-1|>\n");
 });
 

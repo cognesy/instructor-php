@@ -17,7 +17,7 @@ use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Script\Script;
+use Cognesy\Messages\MessageStore\MessageStore;
 
 // Human participant with callable for dynamic input
 $human = new ExternalParticipant(name: 'user', messageProvider: function($state) {
@@ -41,8 +41,8 @@ $chat->withParticipants([$human, $assistantA, $assistantB]);
 
 // Initialize the script sections that LLM participants expect
 
-$script = new Script();
-$script = $script->withSectionMessages('system', Messages::fromArray([
+$store = new MessageStore();
+$store = $store->withSectionMessages('system', Messages::fromArray([
          ['role' => 'system', 'content' => 'You are participating in a multi-participant discussion about AI ethics.'],
          ['role' => 'assistant', 'name' => '', 'content' => 'AssistantA: You are Dr. Sarah Chen, an AI ethics researcher from MIT. You approach topics with academic rigor, cite research, and focus on policy implications. You tend to be cautious about AI deployment and emphasize the need for robust governance frameworks.'],
          ['role' => 'assistant', 'name' => '', 'content' => 'AssistantB: You are Marcus Thompson, a tech industry veteran and AI product manager. You bring practical experience from deploying AI systems at scale. You focus on real-world implementation challenges and business considerations while maintaining ethical standards.'],
@@ -51,7 +51,7 @@ $script = $script->withSectionMessages('system', Messages::fromArray([
      ->withSection('buffer')
      ->withSection('main');
 
-$state = $chat->state()->withScript($script);
+$state = $chat->state()->withMessageStore($store);
 $chat->withState($state);
 
 // Run conversation with human input from callable

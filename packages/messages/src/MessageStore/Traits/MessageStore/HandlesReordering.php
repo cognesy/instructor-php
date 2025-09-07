@@ -1,43 +1,45 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Messages\Script\Traits\Script;
 
-use Cognesy\Messages\Script\Script;
+namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
+
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
 
 trait HandlesReordering
 {
-    public function reorder(array $order) : Script {
+    public function reorder(array $order) : MessageStore {
         $sections = $this->listInOrder($order);
 
-        $script = new Script();
-        $script->parameters = $this->parameters();
+        $store = new MessageStore();
+        $store->parameters = $this->parameters();
         foreach ($sections as $section) {
-            $script->appendSection($section);
+            $store->appendSection($section);
         }
-        return $script;
+        return $store;
     }
 
-    public function reverse() : Script {
-        $script = new Script();
-        $script->parameters = $this->parameters();
+    public function reverse() : MessageStore {
+        $store = new MessageStore();
+        $store->parameters = $this->parameters();
         foreach ($this->listReverse() as $section) {
-            $script->appendSection($section);
+            $store->appendSection($section);
         }
-        return $script;
+        return $store;
     }
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    /** @return \Cognesy\Messages\Script\Section[] */
+    /** @return Section[] */
     private function listAsIs() : array {
         return $this->sections;
     }
 
-    /** @return \Cognesy\Messages\Script\Section[] */
+    /** @return Section[] */
     private function listReverse() : array {
         return array_reverse($this->sections);
     }
 
-    /** @return \Cognesy\Messages\Script\Section[] */
+    /** @return Section[] */
     private function listInOrder(array $order) : array {
         $ordered = [];
         foreach ($order as $name) {
