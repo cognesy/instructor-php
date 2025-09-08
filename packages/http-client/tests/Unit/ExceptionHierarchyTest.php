@@ -3,8 +3,8 @@
 namespace Tests\Unit;
 
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Exceptions\ClientErrorException;
 use Cognesy\Http\Exceptions\ConnectionException;
+use Cognesy\Http\Exceptions\HttpClientErrorException;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\ServerErrorException;
@@ -63,16 +63,16 @@ class ExceptionHierarchyTest extends TestCase
     public function test_client_error_exception_retry_logic()
     {
         // 429 Too Many Requests should be retriable
-        $exception429 = new ClientErrorException(429);
+        $exception429 = new HttpClientErrorException(429);
         expect($exception429->isRetriable())->toBeTrue();
         expect($exception429->getStatusCode())->toBe(429);
         
         // Other 4xx errors should not be retriable
-        $exception404 = new ClientErrorException(404);
+        $exception404 = new HttpClientErrorException(404);
         expect($exception404->isRetriable())->toBeFalse();
         expect($exception404->getStatusCode())->toBe(404);
         
-        $exception401 = new ClientErrorException(401);
+        $exception401 = new HttpClientErrorException(401);
         expect($exception401->isRetriable())->toBeFalse();
     }
 
@@ -93,7 +93,7 @@ class ExceptionHierarchyTest extends TestCase
             new NetworkException('Network error'),
             new ConnectionException('Connection error'),
             new TimeoutException('Timeout error'),
-            new ClientErrorException(404),
+            new HttpClientErrorException(404),
             new ServerErrorException(500),
         ];
 

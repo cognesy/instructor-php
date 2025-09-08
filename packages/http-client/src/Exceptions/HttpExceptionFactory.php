@@ -17,7 +17,7 @@ class HttpExceptionFactory
         ?Throwable $previous = null,
     ): HttpRequestException {
         return match(true) {
-            $statusCode >= 400 && $statusCode < 500 => new ClientErrorException(
+            $statusCode >= 400 && $statusCode < 500 => new HttpClientErrorException(
                 $statusCode, $request, $response, $duration, $previous
             ),
             $statusCode >= 500 => new ServerErrorException(

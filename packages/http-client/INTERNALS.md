@@ -50,7 +50,7 @@ HttpRequestException (Enhanced base - backward compatible)
 ├── NetworkException (Connection/transport issues - retriable)
 │   ├── ConnectionException (DNS, refused connections)
 │   └── TimeoutException (Request/connection timeouts)
-├── ClientErrorException (4xx errors - only 429 is retriable)
+├── HttpClientErrorException (4xx errors - only 429 is retriable)
 └── ServerErrorException (5xx errors - all retriable)
 ```
 

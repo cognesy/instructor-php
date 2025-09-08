@@ -1,8 +1,8 @@
 <?php
 
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Exceptions\ClientErrorException;
 use Cognesy\Http\Exceptions\ConnectionException;
+use Cognesy\Http\Exceptions\HttpClientErrorException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\ServerErrorException;
@@ -13,7 +13,7 @@ it('creates client error exception for 4xx status', function () {
     
     $exception = HttpExceptionFactory::fromStatusCode(404, $request);
     
-    expect($exception)->toBeInstanceOf(ClientErrorException::class);
+    expect($exception)->toBeInstanceOf(HttpClientErrorException::class);
     expect($exception->getStatusCode())->toBe(404);
     expect($exception->getRequest())->toBe($request);
 });
@@ -126,7 +126,7 @@ it('shows that factory only handles status codes while drivers handle their own 
     
     // Factory handles status codes
     $clientError = HttpExceptionFactory::fromStatusCode(404, $request);
-    expect($clientError)->toBeInstanceOf(ClientErrorException::class);
+    expect($clientError)->toBeInstanceOf(HttpClientErrorException::class);
     expect($clientError->isRetriable())->toBeFalse(); // 404 is not retriable
     
     $serverError = HttpExceptionFactory::fromStatusCode(500, $request);
@@ -135,6 +135,6 @@ it('shows that factory only handles status codes while drivers handle their own 
     
     // Special case: 429 Too Many Requests is retriable
     $rateLimitError = HttpExceptionFactory::fromStatusCode(429, $request);
-    expect($rateLimitError)->toBeInstanceOf(ClientErrorException::class);
+    expect($rateLimitError)->toBeInstanceOf(HttpClientErrorException::class);
     expect($rateLimitError->isRetriable())->toBeTrue(); // 429 is retriable
 });

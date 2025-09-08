@@ -6,7 +6,7 @@ use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
 use Throwable;
 
-class ClientErrorException extends HttpRequestException
+class HttpClientErrorException extends HttpRequestException
 {
     private int $statusCode;
 

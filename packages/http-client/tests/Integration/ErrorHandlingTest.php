@@ -2,18 +2,18 @@
 
 namespace Tests\Integration;
 
-use Cognesy\Http\HttpClient;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
-use Cognesy\Http\Exceptions\ClientErrorException;
+use Cognesy\Http\Exceptions\HttpClientErrorException;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\ServerErrorException;
-use PHPUnit\Framework\TestCase;
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
+use PHPUnit\Framework\TestCase;
 
 class ErrorHandlingTest extends TestCase
 {
@@ -64,7 +64,7 @@ class ErrorHandlingTest extends TestCase
         try {
             $driver->handle($request);
             $this->fail('Expected exception to be thrown');
-        } catch (ClientErrorException $e) {
+        } catch (HttpClientErrorException $e) {
             expect($e->getStatusCode())->toBe(404);
             expect($e->isRetriable())->toBeFalse();
             expect($e->getRequest())->toBe($request);
@@ -102,7 +102,7 @@ class ErrorHandlingTest extends TestCase
         try {
             $driver->handle($request);
             $this->fail('Expected exception to be thrown');
-        } catch (ClientErrorException $e) {
+        } catch (HttpClientErrorException $e) {
             expect($e->getStatusCode())->toBe(429);
             expect($e->isRetriable())->toBeTrue(); // 429 is the only retriable 4xx
         }
@@ -169,7 +169,7 @@ class ErrorHandlingTest extends TestCase
         try {
             $response = $client->withRequest(new HttpRequest($this->baseUrl . '/status/422', 'GET', [], '', []))->get();
             $this->fail('Expected exception to be thrown');
-        } catch (ClientErrorException $e) {
+        } catch (HttpClientErrorException $e) {
             expect($e->getStatusCode())->toBe(422);
             expect($e->isRetriable())->toBeFalse();
         }
@@ -182,7 +182,7 @@ class ErrorHandlingTest extends TestCase
         
         try {
             $driver->handle($request);
-        } catch (ClientErrorException $e) {
+        } catch (HttpClientErrorException $e) {
             $message = $e->getMessage();
             expect($message)->toContain('HTTP 404 Client Error');
             expect($message)->toContain('GET ' . $this->baseUrl . '/status/404');
