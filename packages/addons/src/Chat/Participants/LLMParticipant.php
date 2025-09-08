@@ -5,6 +5,10 @@ namespace Cognesy\Addons\Chat\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Chat\Events\ChatInferenceRequested;
+use Cognesy\Addons\Chat\Events\ChatInferenceResponseReceived;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -14,12 +18,17 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 
 final readonly class LLMParticipant implements CanParticipateInChat
 {
+    private CanHandleEvents $events;
+
     public function __construct(
         private string $name = 'assistant',
         private ?Inference $inference = null,
         private ?LLMProvider $llmProvider = null,
         private ?string $systemPrompt = null,
-    ) {}
+        ?CanHandleEvents $events = null,
+    ) {
+        $this->events = $events ?? EventBusResolver::using($events);
+    }
 
     public function name(): string {
         return $this->name;
@@ -32,6 +41,9 @@ final readonly class LLMParticipant implements CanParticipateInChat
         }
 
         $messages = $this->prepareMessages($state);
+
+        $this->events->dispatch(new ChatInferenceRequested(['participant' => $this->name, 'messages' => $messages->toArray()]));
+
         $response = $inference->with(
             messages: $messages->toArray(),
             mode: OutputMode::Text,
@@ -42,6 +54,8 @@ final readonly class LLMParticipant implements CanParticipateInChat
             content: $response->content(),
             name: $this->name,
         );
+
+        $this->events->dispatch(new ChatInferenceResponseReceived(['participant' => $this->name, 'response' => $response->toArray()]));
 
         return new ChatStep(
             participantName: $this->name,

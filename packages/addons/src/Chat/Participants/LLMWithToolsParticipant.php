@@ -5,7 +5,11 @@ namespace Cognesy\Addons\Chat\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Chat\Events\ChatToolUseCompleted;
+use Cognesy\Addons\Chat\Events\ChatToolUseStarted;
 use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
@@ -15,11 +19,16 @@ use Cognesy\Messages\Messages;
  */
 final readonly class LLMWithToolsParticipant implements CanParticipateInChat
 {
+    private CanHandleEvents $events;
+
     public function __construct(
         private string $name = 'assistant-with-tools',
         private ToolUse $toolUse,
         private ?string $systemPrompt = null,
-    ) {}
+        ?CanHandleEvents $events = null,
+    ) {
+        $this->events = $events ?? EventBusResolver::using($events);
+    }
 
     public function name(): string {
         return $this->name;
@@ -28,12 +37,18 @@ final readonly class LLMWithToolsParticipant implements CanParticipateInChat
     public function act(ChatState $state): ChatStep {
         $messages = $this->prepareMessages($state);
         $toolUse = $this->toolUse->withMessages($messages);
+
+        $this->events->dispatch(new ChatToolUseStarted(['participant' => $this->name, 'messages' => $messages->toArray(), 'tools' => $toolUse->tools()->toToolSchema()]));
+
         $toolStep = $toolUse->finalStep();
+
         $outputMessage = new Message(
             role: 'assistant',
             content: $toolStep->response(),
             name: $this->name,
         );
+
+        $this->events->dispatch(new ChatToolUseCompleted(['participant' => $this->name, 'response' => $toolStep->toArray()]));
 
         return new ChatStep(
             participantName: $this->name,

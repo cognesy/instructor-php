@@ -98,4 +98,15 @@ class ToolUseStep
             default => new ToolExecutions($this->toolExecutions->withErrors()),
         };
     }
+
+    public function toArray() : array {
+        return [
+            'response' => $this->response,
+            'toolCalls' => $this->toolCalls?->toArray() ?? [],
+            'toolExecutions' => $this->toolExecutions?->toArray() ?? [],
+            'messages' => $this->messages?->toArray() ?? [],
+            'usage' => $this->usage?->toArray() ?? [],
+            'inferenceResponse' => $this->inferenceResponse?->toArray() ?? null,
+        ];
+    }
 }

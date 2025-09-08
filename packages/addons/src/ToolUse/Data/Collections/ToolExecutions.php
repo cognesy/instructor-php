@@ -56,4 +56,11 @@ class ToolExecutions
         }
         return $errors;
     }
+
+    public function toArray(): array {
+        return array_map(
+            fn(ToolExecution $toolExecution) => $toolExecution->toArray(),
+            $this->toolExecutions
+        );
+    }
 }

@@ -10,12 +10,23 @@ final class FinishReasonCheck implements CanDecideToContinueChat
     /** @var string[] */
     private array $reasons;
 
-    public function __construct(array $reasons = []) { $this->reasons = $reasons; }
+    public function __construct(
+        array $reasons = []
+    ) {
+        $this->reasons = $reasons;
+    }
 
     public function canContinue(ChatState $state): bool {
         $reason = $state->currentStep()?->finishReason();
-        if ($reason === null) { return true; }
-        if ($this->reasons === []) { return true; }
+
+        if ($reason === null) {
+            return true;
+        }
+        
+        if ($this->reasons === []) {
+            return true;
+        }
+
         return !in_array($reason, $this->reasons, true);
     }
 }

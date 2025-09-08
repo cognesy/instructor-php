@@ -2,26 +2,19 @@
 
 namespace Cognesy\Addons\Chat;
 
-use Cognesy\Addons\Chat\ContinuationCriteria\FinishReasonCheck;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\Chat\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Data\Collections\StepProcessors;
 use Cognesy\Addons\Chat\Events\ChatBeforeSend;
 use Cognesy\Addons\Chat\Events\ChatCompleted;
 use Cognesy\Addons\Chat\Events\ChatParticipantSelected;
 use Cognesy\Addons\Chat\Events\ChatStateUpdated;
 use Cognesy\Addons\Chat\Events\ChatTurnCompleted;
 use Cognesy\Addons\Chat\Events\ChatTurnStarting;
-use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\Chat\Processors\AddCurrentStep;
-use Cognesy\Addons\Chat\Processors\AppendStepMessages;
-use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
@@ -33,34 +26,11 @@ class Chat
     public function __construct(
         public readonly Participants $participants,
         public readonly CanChooseNextParticipant $nextParticipantSelector,
-        public readonly StepProcessors $stepProcessors,
+        public readonly ChatStateProcessors $stepProcessors,
         public readonly ContinuationCriteria $continuationCriteria,
         ?CanHandleEvents $events = null,
     ) {
         $this->events = EventBusResolver::using($events);
-    }
-
-    public static function default(
-        Participants $participants,
-        ?ContinuationCriteria $continuationCriteria = null,
-        ?StepProcessors $stepProcessors = null,
-        ?CanHandleEvents $events = null,
-    ): self {
-        return new self(
-            participants: $participants,
-            nextParticipantSelector: new RoundRobinSelector(),
-            stepProcessors: $stepProcessors ?? new StepProcessors(
-                new AppendStepMessages(),
-                new AddCurrentStep(),
-                new AccumulateTokenUsage(),
-            ),
-            continuationCriteria: $continuationCriteria ?? new ContinuationCriteria(
-                new FinishReasonCheck(),
-                new StepsLimit(16),
-                new TokenUsageLimit(4096),
-            ),
-            events: $events,
-        );
     }
 
     public function nextTurn(ChatState $state): ChatState {
@@ -89,14 +59,13 @@ class Chat
         $this->events->dispatch(new ChatParticipantSelected([
             'participantName' => $participant?->name(),
             'participantClass' => $participant ? get_class($participant) : null,
-            'participant' => $participant,
-            'state' => $state,
+            'state' => $state->toArray(),
         ]));
         return $participant;
     }
 
     private function executeParticipantAction(CanParticipateInChat $participant, ChatState $state): ChatStep {
-        $this->events->dispatch(new ChatBeforeSend(['state' => $state]));
+        $this->events->dispatch(new ChatBeforeSend(['participant' => $participant, 'state' => $state->toArray()]));
         return $participant->act($state);
     }
 
@@ -109,4 +78,5 @@ class Chat
         ]));
         return $newState;
     }
+
 }

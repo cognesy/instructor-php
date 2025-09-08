@@ -4,6 +4,7 @@ use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Tests\Addons\Support\FakeInferenceDriver;
@@ -23,7 +24,7 @@ it('llm participant prepares messages with role mapping', function () {
     $userMessage = new Message('user', 'Hello');
     $messages = new Messages($userMessage, $m1, $m2);
     
-    $state = new ChatState(messages: $messages);
+    $state = new ChatState(store: MessageStore::fromMessages($messages));
     
     // Test the participant's prepareMessages method (protected, so we test via act)
     $step = $participant->act($state);

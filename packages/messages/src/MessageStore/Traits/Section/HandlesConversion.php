@@ -6,7 +6,6 @@ use Cognesy\Messages\Messages;
 
 trait HandlesConversion
 {
-
     public function toMessages() : Messages {
         return $this->messages();
     }

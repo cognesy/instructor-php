@@ -73,6 +73,10 @@ class ToolUse {
         return $this->state;
     }
 
+    public function tools() : Tools {
+        return $this->state->tools();
+    }
+
     public function withObserver(ToolUseObserver $observer) : self {
         $this->observer = $observer;
         return $this;

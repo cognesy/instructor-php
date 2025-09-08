@@ -34,10 +34,6 @@ trait HandlesAccess
         return $this->messages->hasComposites();
     }
 
-    public function isTemplate() : bool {
-        return $this->isTemplate;
-    }
-
     public function messages() : Messages {
         return match(true) {
             $this->isEmpty() => $this->messages,

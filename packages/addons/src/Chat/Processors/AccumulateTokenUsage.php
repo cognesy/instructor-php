@@ -2,13 +2,17 @@
 
 namespace Cognesy\Addons\Chat\Processors;
 
-use Cognesy\Addons\Chat\Contracts\CanProcessChatStep;
+use Cognesy\Addons\Chat\Contracts\CanProcessChatState;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
-final class AccumulateTokenUsage implements CanProcessChatStep
+final class AccumulateTokenUsage implements CanProcessChatState
 {
-    public function process(ChatStep $step, ChatState $state): ChatState {
-        return $state->accumulateUsage($step->usage());
+    public function process(ChatState $state, ?callable $next = null): ChatState {
+        $newState = $state->accumulateUsage(
+            $state->currentStep()?->usage() ?? Usage::none()
+        );
+
+        return $next ? $next($newState) : $newState;
     }
 }

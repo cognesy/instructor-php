@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\ChatFactory;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
@@ -28,7 +27,7 @@ it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     $participants = new Participants($human, $assistant);
     $continuationCriteria = new ContinuationCriteria(new StepsLimit(2));
     
-    $chat = Chat::default(
+    $chat = ChatFactory::default(
         participants: $participants,
         continuationCriteria: $continuationCriteria
     );

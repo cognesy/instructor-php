@@ -4,6 +4,7 @@ namespace Cognesy\Addons\Chat\Participants;
 
 use Closure;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
+use Cognesy\Addons\Chat\Contracts\CanRespondWithMessage;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Messages\Contracts\CanProvideMessage;
@@ -11,11 +12,11 @@ use Cognesy\Messages\Message;
 
 final class ExternalParticipant implements CanParticipateInChat
 {
-    private CanProvideMessage $provider;
+    private CanRespondWithMessage $provider;
 
     public function __construct(
         private readonly string $name = 'external',
-        CanProvideMessage|callable|null $provider = null,
+        CanRespondWithMessage|callable|null $provider = null,
     ) {
         $this->provider = $this->makeProvider($provider);
     }
@@ -25,25 +26,25 @@ final class ExternalParticipant implements CanParticipateInChat
     public function act(ChatState $state) : ChatStep {
         return new ChatStep(
             participantName: $this->name,
-            inputMessages: $state->messages(),
-            outputMessage: $this->provider->toMessage(),
+            inputMessages: $state->compiledMessages(),
+            outputMessage: $this->provider->respond($state),
             usage: null,
             inferenceResponse: null,
             finishReason: 'external',
         );
     }
 
-    private function makeProvider(callable|CanProvideMessage|null $provider) : CanProvideMessage {
+    private function makeProvider(callable|CanProvideMessage|null $provider) : CanRespondWithMessage {
         return match(true) {
-            $provider instanceof CanProvideMessage => $provider,
-            is_callable($provider) => new class($provider) implements CanProvideMessage {
+            $provider instanceof CanRespondWithMessage => $provider,
+            is_callable($provider) => new class($provider) implements CanRespondWithMessage {
                 public function __construct(private readonly Closure $provider) {}
-                public function toMessage() : Message {
-                    return ($this->provider)();
+                public function respond(ChatState $state) : Message {
+                    return ($this->provider)($state);
                 }
             },
-            default => new class implements CanProvideMessage {
-                public function toMessage() : Message {
+            default => new class implements CanRespondWithMessage {
+                public function respond(ChatState $state) : Message {
                     return new Message(role: 'user', content: '');
                 }
             },

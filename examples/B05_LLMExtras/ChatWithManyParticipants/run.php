@@ -19,7 +19,8 @@ This example demonstrates a sophisticated multi-participant chat system featurin
 
 require 'examples/boot.php';
 
-use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\ChatFactory;
+use Cognesy\Addons\Chat\ContinuationCriteria\ResponseContentCheck;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
@@ -41,6 +42,7 @@ $moderator = new ScriptedParticipant(
         "How do you balance rapid innovation with responsible deployment?",
         "What role should public funding play in AI research and development?",
         "Any final thoughts for our audience about the future of AI?",
+        "", // Empty string to signal end of discussion
     ],
 );
 
@@ -57,10 +59,11 @@ $engineer = new LLMParticipant(
 );
 
 // Run the panel discussion
-$chat = Chat::default(
+$chat = ChatFactory::default(
     participants: new Participants($moderator, $engineer, $researcher),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(5),
+        new StepsLimit(15),
+        new ResponseContentCheck(fn($lastResponse) => $lastResponse !== ''),
     ),
 ); //->wiretap(fn(Event $e) => $e->print());
 

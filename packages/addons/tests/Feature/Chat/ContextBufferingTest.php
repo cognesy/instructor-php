@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\ChatFactory;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
@@ -17,7 +17,7 @@ it('processes messages with context processors', function () {
     $participants = new Participants($human);
     $continuationCriteria = new ContinuationCriteria(new StepsLimit(1));
     
-    $chat = Chat::default(
+    $chat = ChatFactory::default(
         participants: $participants,
         continuationCriteria: $continuationCriteria
     );

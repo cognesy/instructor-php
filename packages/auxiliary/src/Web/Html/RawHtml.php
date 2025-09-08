@@ -2,7 +2,9 @@
 
 namespace Cognesy\Auxiliary\Web\Html;
 
+use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\ProcessingState;
 use DOMDocument;
 use DOMXPath;
 use League\HTMLToMarkdown\HtmlConverter;
@@ -21,7 +23,7 @@ class RawHtml
     }
 
     public function asCleanHtml(): string {
-        return Pipeline::empty()
+        return Pipeline::builder(ErrorStrategy::FailFast)
             ->throughAll([
                 $this->normalizeEncoding(...),
                 $this->cleanupWhitespace(...),
@@ -40,8 +42,8 @@ class RawHtml
 //                $this->extractMainContent(...),
             ])
             ->create()
-            ->for($this->content)
-            ->valueOr();
+            ->executeWith(ProcessingState::with($this->content))
+            ->valueOr('');
     }
 
     public function asText(): string {

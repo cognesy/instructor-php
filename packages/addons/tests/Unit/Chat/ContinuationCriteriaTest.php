@@ -4,7 +4,6 @@ use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 it('stops when steps limit reached', function () {

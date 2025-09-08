@@ -334,9 +334,9 @@ class MyCustomProcessor implements CanProcessChatStep
 Configure step processors in ChatConfig:
 
 ```php
-use Cognesy\Addons\Chat\Data\Collections\StepProcessors;
+use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
 
-$processors = new StepProcessors(
+$processors = new ChatStateProcessors(
     new AccumulateTokenUsage(),
     new AddCurrentStep(),
     new AppendStepMessages(),

@@ -4,7 +4,6 @@ namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
 use Cognesy\Messages\MessageStore\Section;
 use Cognesy\Messages\MessageStore\Sections;
-use Exception;
 
 trait HandlesAccess
 {
@@ -13,15 +12,12 @@ trait HandlesAccess
     }
 
     public function section(string $name) : Section {
-        if (!$this->sections->has($name)) {
-            return new Section($name); // Return empty section for checking purposes
-        }
-        return $this->sections->get($name);
+        return $this->getSection($name);
     }
 
     public function getSection(string $name) : Section {
         if (!$this->sections->has($name)) {
-            throw new Exception("Section '{$name}' does not exist. Use withSection() to add it first.");
+            return Section::empty($name);
         }
         return $this->sections->get($name);
     }

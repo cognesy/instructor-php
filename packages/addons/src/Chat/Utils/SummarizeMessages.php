@@ -20,19 +20,17 @@ class SummarizeMessages implements CanSummarizeMessages
         string $prompt = '',
         ?LLMProvider $llm = null,
         string $model = '',
-        int $tokenLimit = 1024
     ) {
         $this->prompt = $prompt ?: $this->prompt;
         $this->llm = $llm ?? LLMProvider::new();
         $this->model = $model;
-        $this->tokenLimit = $tokenLimit;
     }
 
-    public function summarize(Messages $messages, ?int $tokenLimit = null): string {
+    public function summarize(Messages $messages, int $tokenLimit): string {
         return (new Inference)->withLLMProvider($this->llm)->with(
             messages: $messages->prependMessage(new Message(content: $this->prompt))->toArray(),
             model: $this->model,
-            options: ['max_tokens' => $tokenLimit ?? $this->tokenLimit],
+            options: ['max_tokens' => $tokenLimit],
             mode: OutputMode::Text,
         )->get();
     }

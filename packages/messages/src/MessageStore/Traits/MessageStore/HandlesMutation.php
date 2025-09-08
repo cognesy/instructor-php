@@ -12,15 +12,6 @@ use Exception;
 
 trait HandlesMutation
 {
-    public function createSection(string $name) : Section {
-        if ($this->hasSection($name)) {
-            throw new Exception("Section with name '{$name}' already exists - use mergeSection() instead.");
-        }
-        // Note: This creates the section but doesn't add it to the store
-        // Use appendSection() separately to add it to the store
-        return new Section($name);
-    }
-
     public function withSection(string $name) : static {
         if ($this->hasSection($name)) {
             return $this;

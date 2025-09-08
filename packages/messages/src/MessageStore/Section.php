@@ -28,8 +28,6 @@ final readonly class Section {
     use HandlesMutation;
     use HandlesTransformation;
 
-    public const MARKER = '@';
-    
     public string $name;
     public string $description;
     public array $metadata;
@@ -53,7 +51,7 @@ final readonly class Section {
         $this->footer = $footer ?? Messages::empty();
     }
 
-    public function isTemplate(): bool {
-        return str_starts_with($this->name, self::MARKER);
+    public static function empty(string $name) : static {
+        return new static(name: $name);
     }
 }

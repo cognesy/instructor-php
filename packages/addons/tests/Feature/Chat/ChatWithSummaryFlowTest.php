@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\ChatFactory;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Messages\Messages;
-use Cognesy\Messages\Message;
 
 it('builds up a conversation with multiple turns', function () {
     // Use scripted participants for deterministic behavior
@@ -30,7 +27,7 @@ it('builds up a conversation with multiple turns', function () {
     $participants = new Participants($user, $assistant);
     $continuationCriteria = new ContinuationCriteria(new StepsLimit(6)); // 3 user + 3 assistant
     
-    $chat = Chat::default(
+    $chat = ChatFactory::default(
         participants: $participants,
         continuationCriteria: $continuationCriteria
     );

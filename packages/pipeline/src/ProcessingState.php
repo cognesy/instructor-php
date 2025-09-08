@@ -136,12 +136,12 @@ final readonly class ProcessingState implements CanCarryState
 
     // QUERY AND TRANSFORMATION APIs
 
-    public function tags(): TagQuery {
-        return $this->tagMap()->query();
-    }
-
     public function transform() : TransformState {
         return new TransformState($this);
+    }
+
+    public function tags(): TagQuery {
+        return $this->tagMap()->query();
     }
 
     // PRIVATE

@@ -61,4 +61,15 @@ class ToolExecution
     public function hasError() : bool {
         return $this->result->isFailure();
     }
+
+    public function toArray() : array {
+        return [
+            'tool' => $this->toolCall->name(),
+            'args' => $this->toolCall->args(),
+            'result' => $this->result->isSuccess() ? $this->result->unwrap() : null,
+            'error' => $this->result->isFailure() ? $this->result->error()->getMessage() : null,
+            'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
+            'endedAt' => $this->endedAt->format(DateTimeImmutable::ATOM),
+        ];
+    }
 }
