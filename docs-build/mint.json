@@ -244,6 +244,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v1.7.0",
                 "release-notes/v1.6.0",
                 "release-notes/v1.5.0",
                 "release-notes/v1.4.2",
@@ -505,13 +506,62 @@
         {
             "group": "Cookbook \\ Prompting \\ Few-Shot Prompting",
             "pages": [
-                "cookbook/prompting/few_shot/in_context_examples"
+                "cookbook/prompting/few_shot/consistency_based_examples",
+                "cookbook/prompting/few_shot/example_ordering",
+                "cookbook/prompting/few_shot/in_context_examples",
+                "cookbook/prompting/few_shot/select_effective_samples"
             ]
         },
         {
             "group": "Cookbook \\ Prompting \\ Thought Generation",
             "pages": [
-                "cookbook/prompting/thought_gen/analogical_prompting"
+                "cookbook/prompting/thought_gen/analogical_prompting",
+                "cookbook/prompting/thought_gen/automate_selection",
+                "cookbook/prompting/thought_gen/complex_examples",
+                "cookbook/prompting/thought_gen/examine_context",
+                "cookbook/prompting/thought_gen/higher_level_context",
+                "cookbook/prompting/thought_gen/incorrect_examples",
+                "cookbook/prompting/thought_gen/majority_voting",
+                "cookbook/prompting/thought_gen/prompt_variations",
+                "cookbook/prompting/thought_gen/structure_reasoning",
+                "cookbook/prompting/thought_gen/uncertain_examples"
+            ]
+        },
+        {
+            "group": "Cookbook \\ Prompting \\ Ensembling",
+            "pages": [
+                "cookbook/prompting/ensembling/combine_reasoning_chains",
+                "cookbook/prompting/ensembling/combine_responses",
+                "cookbook/prompting/ensembling/combine_specialized_llms",
+                "cookbook/prompting/ensembling/consistent_examples",
+                "cookbook/prompting/ensembling/distinct_examples",
+                "cookbook/prompting/ensembling/ensemble_test_prompts",
+                "cookbook/prompting/ensembling/multiple_candidates",
+                "cookbook/prompting/ensembling/task_specific_evals",
+                "cookbook/prompting/ensembling/translation_paraphrasing",
+                "cookbook/prompting/ensembling/verify_majority_voting"
+            ]
+        },
+        {
+            "group": "Cookbook \\ Prompting \\ Self-Criticism",
+            "pages": [
+                "cookbook/prompting/self_criticism/break_down_reasoning",
+                "cookbook/prompting/self_criticism/determine_uncertainty",
+                "cookbook/prompting/self_criticism/improve_with_feedback",
+                "cookbook/prompting/self_criticism/reconstruct_prompt",
+                "cookbook/prompting/self_criticism/self_verify",
+                "cookbook/prompting/self_criticism/verify_independently"
+            ]
+        },
+        {
+            "group": "Cookbook \\ Prompting \\ Decomposition",
+            "pages": [
+                "cookbook/prompting/decomposition/break_down_complexity",
+                "cookbook/prompting/decomposition/ditch_vanilla_cot",
+                "cookbook/prompting/decomposition/generate_code",
+                "cookbook/prompting/decomposition/generate_in_parallel",
+                "cookbook/prompting/decomposition/solve_simpler_subtasks",
+                "cookbook/prompting/decomposition/task_specific_systems"
             ]
         },
         {

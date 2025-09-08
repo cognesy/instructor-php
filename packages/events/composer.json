@@ -25,7 +25,7 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^1.6",
+    "cognesy/instructor-utils": "^1.7",
     "psr/event-dispatcher": "^1.0"
   },
   "require-dev": {
