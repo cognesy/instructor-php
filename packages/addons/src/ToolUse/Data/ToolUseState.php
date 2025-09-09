@@ -5,13 +5,16 @@ namespace Cognesy\Addons\ToolUse\Data;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
 
 final readonly class ToolUseState
 {
+    const DEFAULT_SECTION = 'messages';
+
     private ToolUseStatus $status;
-    private Messages $messages;
+    private MessageStore $store;
     private array $variables;
 
     private ToolUseSteps $steps;
@@ -19,139 +22,118 @@ final readonly class ToolUseState
 
     private Usage $usage;
     private DateTimeImmutable $startedAt;
-    private ToolUseOptions $options;
 
     public function __construct(
         ?ToolUseStatus $status = null,
-        ?Messages $messages = null,
+        ?MessageStore $store = null,
         ?array $variables = null,
         ?ToolUseSteps $steps = null,
         ?ToolUseStep $currentStep = null,
         ?Usage $usage = null,
         ?DateTimeImmutable $startedAt = null,
-        ?ToolUseOptions $options = null,
     ) {
         $this->status = $status ?? ToolUseStatus::InProgress;
-        $this->messages = $messages ?? new Messages();
+        $this->store = $store ?? new MessageStore();
         $this->variables = $variables ?? [];
         $this->steps = $steps ?? new ToolUseSteps();
         $this->currentStep = $currentStep ?? null;
         $this->usage = $usage ?? new Usage();
         $this->startedAt = $startedAt ?? new DateTimeImmutable();
-        $this->options = $options ?? new ToolUseOptions();
     }
 
-    // HANDLE MUTATIONS ////////////////////////////////////////////
+    // MUTATORS ////////////////////////////////////////////////
 
     public function withCurrentStep(ToolUseStep $step) : self {
         return new self(
             status: $this->status,
-            messages: $this->messages,
+            store: $this->store,
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $step,
             usage: $this->usage,
             startedAt: $this->startedAt,
-            options: $this->options,
         );
     }
 
     public function withMessages(Messages $messages) : self {
         return new self(
             status: $this->status,
-            messages: $messages,
+            store: $this->store->withSectionMessages(self::DEFAULT_SECTION, $messages),
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $this->currentStep,
             usage: $this->usage,
             startedAt: $this->startedAt,
-            options: $this->options,
         );
     }
-
-    // withTools removed - tools now managed by ToolUse class
 
     public function withVariable(int|string $name, mixed $value) : self {
         $newVariables = $this->variables;
         $newVariables[$name] = $value;
         return new self(
             status: $this->status,
-            messages: $this->messages,
+            store: $this->store,
             variables: $newVariables,
             steps: $this->steps,
             currentStep: $this->currentStep,
             usage: $this->usage,
             startedAt: $this->startedAt,
-            options: $this->options,
         );
     }
 
     public function withStatus(ToolUseStatus $status) : self {
         return new self(
             status: $status,
-            messages: $this->messages,
+            store: $this->store,
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $this->currentStep,
             usage: $this->usage,
             startedAt: $this->startedAt,
-            options: $this->options,
-        );
-    }
-
-    public function withOptions(ToolUseOptions $options) : self {
-        return new self(
-            status: $this->status,
-            messages: $this->messages,
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-            options: $options,
         );
     }
 
     public function withAddedStep(ToolUseStep $step) : self {
         return new self(
             status: $this->status,
-            messages: $this->messages,
+            store: $this->store,
             variables: $this->variables,
             steps: $this->steps->withAddedStep($step),
             currentStep: $step,
             usage: $this->usage,
             startedAt: $this->startedAt,
-            options: $this->options,
         );
     }
 
     public function appendMessages(Messages $messages) : self {
+        // Get the current messages from the default section and append new ones
+        $currentMessages = $this->messages();
+        $combinedMessages = $currentMessages->appendMessages($messages);
+        
         return new self(
             status: $this->status,
-            messages: $this->messages->appendMessages($messages),
+            store: $this->store->withSectionMessages(self::DEFAULT_SECTION, $combinedMessages),
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $this->currentStep,
             usage: $this->usage,
             startedAt: $this->startedAt,
-            options: $this->options,
         );
     }
 
     public function accumulateUsage(Usage $usage) : self {
         return new self(
             status: $this->status,
-            messages: $this->messages,
+            store: $this->store,
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $this->currentStep,
             usage: Usage::copy($this->usage)->accumulate($usage),
             startedAt: $this->startedAt,
-            options: $this->options,
         );
     }
 
-    // HANDLE ACCESS ////////////////////////////////////////////////
+    // ACCESSORS ////////////////////////////////////////////////
 
     public function currentStep() : ?ToolUseStep {
         return $this->currentStep;
@@ -166,10 +148,8 @@ final readonly class ToolUseState
     }
 
     public function messages() : Messages {
-        return $this->messages;
+        return $this->store->toMessages();
     }
-
-    // Tools moved to ToolUse class
 
     public function usage() : Usage {
         return $this->usage;
@@ -177,10 +157,6 @@ final readonly class ToolUseState
 
     public function startedAt() : DateTimeImmutable {
         return $this->startedAt;
-    }
-
-    public function options() : ToolUseOptions {
-        return $this->options;
     }
 
     public function status() : ToolUseStatus {

@@ -2,8 +2,6 @@
 
 namespace Cognesy\Addons\Chat\Data;
 
-use Cognesy\Addons\Chat\Compilers\AllSections;
-use Cognesy\Addons\Chat\Contracts\CanCompileMessages;
 use Cognesy\Addons\Chat\Data\Collections\ChatSteps;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
@@ -14,23 +12,32 @@ final readonly class ChatState
 {
     private const DEFAULT_SECTION = 'messages';
 
+    private MessageStore $store;
+    private array $variables;
+    private ChatSteps $steps;
+    private ?ChatStep $currentStep;
+    private Usage $usage;
+    private DateTimeImmutable $startedAt;
+
     public function __construct(
-        private MessageStore $store = new MessageStore(),
-        private array $variables = [],
-        private ChatSteps $steps = new ChatSteps(),
-        private ?ChatStep $currentStep = null,
-        private Usage $usage = new Usage(),
-        private DateTimeImmutable $startedAt = new DateTimeImmutable(),
-        private CanCompileMessages $compiler = new AllSections(),
-    ) {}
+        ?MessageStore $store = null,
+        ?array $variables = null,
+        ?ChatSteps $steps = null,
+        ?ChatStep $currentStep = null,
+        ?Usage $usage = null,
+        ?DateTimeImmutable $startedAt = null,
+    ) {
+        $this->store = $store ?? new MessageStore();
+        $this->variables = $variables ?? [];
+        $this->steps = $steps ?? new ChatSteps();
+        $this->currentStep = $currentStep;
+        $this->usage = $usage ?? new Usage();
+        $this->startedAt = $startedAt ?? new DateTimeImmutable();
+    }
 
     public function messages(): Messages {
         return $this->store->getSection(self::DEFAULT_SECTION)?->messages()
             ?? Messages::empty();
-    }
-
-    public function compiledMessages(): Messages {
-        return $this->compiler->compile($this);
     }
 
     public function store(): MessageStore {

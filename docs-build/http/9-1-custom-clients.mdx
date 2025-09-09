@@ -24,7 +24,7 @@ interface CanHandleHttpRequest
 {
     public function handle(HttpClientRequest $request): HttpResponse;
 }
-// @doctest id="41eb"
+// @doctest id="9c61"
 ```
 
 Here's a template for creating a custom HTTP client driver:
@@ -130,7 +130,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
         ]);
     }
 }
-// @doctest id="8b74"
+// @doctest id="29f2"
 ```
 
 ### Creating a Response Adapter
@@ -196,7 +196,7 @@ class YourHttpResponse implements HttpResponse
         }
     }
 }
-// @doctest id="742b"
+// @doctest id="2d07"
 ```
 
 ### Using Your Custom HTTP Client Driver
@@ -227,7 +227,7 @@ $client = (new HttpClientBuilder())->withDriver($customDriver)->create();
 
 // Use the client as usual
 $response = $client->withRequest(new HttpRequest(/* ... */))->get();
-// @doctest id="15d4"
+// @doctest id="f8be"
 ```
 
 ### Real-World Example: Creating a cURL Driver
@@ -450,7 +450,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
         }
     }
 }
-// @doctest id="ce27"
+// @doctest id="38d8"
 ```
 
 And here's the corresponding response adapter:
@@ -547,7 +547,7 @@ class CurlHttpResponse implements HttpResponse
         }
     }
 }
-// @doctest id="0cb1"
+// @doctest id="6a57"
 ```
 
 ## Registering Custom HTTP Client Drivers
@@ -563,7 +563,7 @@ $customDriver = new CustomHttpDriver($config);
 $client = (new HttpClientBuilder())
     ->withDriver($customDriver)
     ->create();
-// @doctest id="d349"
+// @doctest id="f71f"
 ```
 
 ## Adding Custom HTTP Client to Configuration
@@ -588,7 +588,7 @@ Use your custom driver in the HTTP client configuration file (`config/http-clien
         ],
     ],
 // ...
-// @doctest id="08e3"
+// @doctest id="40a2"
 ```
 
 ## Using Your Custom HTTP Client
@@ -600,7 +600,7 @@ use Cognesy\Http\HttpClient;
 
 // Create a client with your custom driver
 $client = HttpClient::using('my-custom-client');
-// @doctest id="7c69"
+// @doctest id="bf14"
 ```
 
 ## Using Custom HTTP Clients in Configuration Files
@@ -623,5 +623,5 @@ Or you can refer to it in your LLM connections configuration:
             // Select your HTTP configuration via HttpClientBuilder
         ],
     // ...
-// @doctest id="ae25"
+// @doctest id="4a5f"
 ```

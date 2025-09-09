@@ -13,9 +13,7 @@ use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Data\Collections\StepProcessors;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
@@ -26,7 +24,6 @@ use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesMutation;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
-use Cognesy\Messages\Messages;
 use Generator;
 
 class ToolUse {

@@ -2,6 +2,8 @@
 
 namespace Cognesy\Addons\Chat\Participants;
 
+use Cognesy\Addons\Chat\Compilers\AllSections;
+use Cognesy\Addons\Chat\Contracts\CanCompileMessages;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
@@ -12,6 +14,7 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -19,14 +22,17 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 final readonly class LLMParticipant implements CanParticipateInChat
 {
     private CanHandleEvents $events;
+    private CanCompileMessages $compiler;
 
     public function __construct(
         private string $name = 'assistant',
+        private ?string $systemPrompt = null,
         private ?Inference $inference = null,
         private ?LLMProvider $llmProvider = null,
-        private ?string $systemPrompt = null,
+        ?CanCompileMessages $compiler = null,
         ?CanHandleEvents $events = null,
     ) {
+        $this->compiler = $compiler ?? new AllSections();
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
@@ -41,21 +47,19 @@ final readonly class LLMParticipant implements CanParticipateInChat
         }
 
         $messages = $this->prepareMessages($state);
-
-        $this->events->dispatch(new ChatInferenceRequested(['participant' => $this->name, 'messages' => $messages->toArray()]));
+        $this->emitChatInferenceRequested($messages);
 
         $response = $inference->with(
             messages: $messages->toArray(),
             mode: OutputMode::Text,
         )->response();
+        $this->emitChatInferenceResponseReceived($response);
 
         $outputMessage = new Message(
             role: 'assistant',
             content: $response->content(),
             name: $this->name,
         );
-
-        $this->events->dispatch(new ChatInferenceResponseReceived(['participant' => $this->name, 'response' => $response->toArray()]));
 
         return new ChatStep(
             participantName: $this->name,
@@ -68,7 +72,8 @@ final readonly class LLMParticipant implements CanParticipateInChat
     }
 
     protected function prepareMessages(ChatState $state): Messages {
-        $newMessages = new Messages(...$state->messages()->map(fn(Message $m) => $this->mapRole($m)));
+        $compiledMessages = $this->compiler->compile($state);
+        $newMessages = new Messages(...$compiledMessages->map(fn(Message $m) => $this->mapRole($m)));
         if (!$this->systemPrompt) {
             return $newMessages;
         }
@@ -81,8 +86,25 @@ final readonly class LLMParticipant implements CanParticipateInChat
     protected function mapRole(Message $message): Message {
         return match (true) {
             $message->name() === $this->name => $message->withRole(MessageRole::Assistant),
-            $message->role()->is(MessageRole::Assistant) && ($message->name() !== $this->name) => $message->withRole(MessageRole::User),
+            $message->role()->is(MessageRole::Assistant)
+                && ($message->name() !== $this->name) => $message->withRole(MessageRole::User),
             default => $message,
         };
+    }
+
+    // EVENTS ////////////////////////////////////////////////////////
+
+    private function emitChatInferenceRequested(Messages $messages) : void {
+        $this->events->dispatch(new ChatInferenceRequested([
+            'participant' => $this->name,
+            'messages' => $messages->toArray()
+        ]));
+    }
+
+    private function emitChatInferenceResponseReceived(InferenceResponse $response) : void {
+        $this->events->dispatch(new ChatInferenceResponseReceived([
+            'participant' => $this->name,
+            'response' => $response->toArray()
+        ]));
     }
 }

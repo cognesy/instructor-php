@@ -26,7 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
-// @doctest id="deb3"
+// @doctest id="e45c"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -50,7 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="2433"
+// @doctest id="c228"
 ```
 
 
@@ -70,7 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
-// @doctest id="b002"
+// @doctest id="bccd"
 ```
 
 
@@ -95,7 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="9346"
+// @doctest id="fd81"
 ```
 
 
@@ -119,7 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
-// @doctest id="dc49"
+// @doctest id="7962"
 ```
 
 
@@ -145,7 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="c555"
+// @doctest id="8393"
 ```
 
 
@@ -172,7 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
-// @doctest id="ebbe"
+// @doctest id="7fc3"
 ```
 
 
@@ -215,7 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
-// @doctest id="140c"
+// @doctest id="aece"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -234,7 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
-// @doctest id="bdcf"
+// @doctest id="1151"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -294,7 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
-// @doctest id="4c5f"
+// @doctest id="f7b3"
 ```
 
 
@@ -330,5 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
-// @doctest id="9404"
+// @doctest id="a701"
 ```

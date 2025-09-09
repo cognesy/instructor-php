@@ -36,15 +36,6 @@ trait HandlesAccess
         return $this->reduce(fn(bool $carry, Message $message) => $carry || $message->isComposite(), false);
     }
 
-    public function middle() : Messages {
-        $messageCount = count($this->messages);
-        if ($messageCount < 3) {
-            return Messages::empty();
-        }
-        $slice = array_slice($this->messages, 1, $messageCount - 2);
-        return Messages::fromMessages($slice);
-    }
-
     public function head() : array {
         if (empty($this->messages)) {
             return [];

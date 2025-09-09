@@ -35,36 +35,51 @@ The LLM is expected to call the functions in the correct order to get the final 
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Addons\ToolUse\ContinuationCriteria\ExecutionTimeLimit;
+use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
+use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
+use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Messages\Messages;
 
-function add_numbers(int $a, int $b) : int {
-    return $a + $b;
-}
+function add_numbers(int $a, int $b) : int { return $a + $b; }
+function subtract_numbers(int $a, int $b) : int { return $a - $b; }
 
-function subtract_numbers(int $a, int $b) : int {
-    return $a - $b;
-}
+$toolUse = new ToolUse(
+    tools: (new Tools)->withTools(
+        FunctionTool::fromCallable(add_numbers(...)),
+        FunctionTool::fromCallable(subtract_numbers(...))
+    ),
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(6),
+        new TokenUsageLimit(8192),
+        new ExecutionTimeLimit(60),
+        new RetryLimit(2),
+        new StopOnFinalDecision(),
+    ),
+);
 
 //
 // PATTERN #1 - manual control
 //
 echo "\nPATTERN #1 - manual control\n";
-$toolUse = (new ToolUse)
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
-    ]);
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
 
 // iterate until no more steps
-while ($toolUse->hasNextStep()) {
-    $step = $toolUse->nextStep();
-    print("STEP - tokens used: " . $step->usage()->total() . "\n");
+while ($toolUse->hasNextStep($state)) {
+    $state = $toolUse->nextStep($state);
+    $step = $state->currentStep();
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
 }
 
 // print final response
-$result = $step->response();
+$result = $state->currentStep()->response();
 print("RESULT: " . $result . "\n");
 
 
@@ -72,20 +87,18 @@ print("RESULT: " . $result . "\n");
 // PATTERN #2 - using iterator
 //
 echo "\nPATTERN #2 - using iterator\n";
-$toolUse = (new ToolUse)
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
-    ]);
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
 
 // iterate until no more steps
-foreach ($toolUse->iterator() as $step) {
-    print("STEP - tokens used: " . $step->usage()->total() . "\n");
+foreach ($toolUse->iterator($state) as $currentState) {
+    $step = $currentState->currentStep();
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
+    $state = $currentState; // keep the latest state
 }
 
 // print final response
-$result = $toolUse->state()->currentStep()->response();
+$result = $state->currentStep()->response();
 print("RESULT: " . $result . "\n");
 
 
@@ -94,13 +107,12 @@ print("RESULT: " . $result . "\n");
 // PATTERN #3 - just get final step (fast forward to it)
 //
 echo "\nPATTERN #3 - get only final result\n";
-$toolUse = (new ToolUse)
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
-    ]);
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
 
 // print final response
-$result = $toolUse->finalStep()->response();
+$finalState = $toolUse->finalStep($state);
+$result = $finalState->currentStep()->response();
 print("RESULT: " . $result . "\n");
+?>
+```
