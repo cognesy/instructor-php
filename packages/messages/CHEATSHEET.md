@@ -384,7 +384,7 @@ $messages->reduce($callback, $initial);    // Reduce to single value
 // Partitioning
 $messages->head();                         // First message as array
 $messages->tail();                         // Last message as array
-$messages->middle();                       // All except first/last as Messages
+
 
 // State checking
 $messages->isEmpty();                      // All messages empty

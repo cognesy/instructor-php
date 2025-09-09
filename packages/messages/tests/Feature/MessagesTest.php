@@ -118,11 +118,6 @@ test('can get middle messages', function () {
         ['role' => 'assistant', 'content' => 'Middle'],
         ['role' => 'user', 'content' => 'Last']
     ]);
-
-    $middle = $messages->middle();
-    expect($middle)->toBeInstanceOf(Messages::class)
-        ->and($middle->all())->toHaveCount(1)
-        ->and($middle->first()->content()->toString())->toBe('Middle');
 });
 
 test('can check if messages collection is empty', function () {

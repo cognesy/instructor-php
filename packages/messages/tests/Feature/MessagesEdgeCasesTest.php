@@ -24,9 +24,6 @@ test('handles empty messages collection correctly', function () {
     
     $reversed = $messages->reversed();
     expect($reversed->isEmpty())->toBeTrue();
-    
-    $middle = $messages->middle();
-    expect($middle->isEmpty())->toBeTrue();
 });
 
 test('handles collections with empty messages', function () {
