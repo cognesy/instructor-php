@@ -20,7 +20,7 @@ class ToolCall
     ) {
         $this->id = $id;
         $this->name = $name;
-        $this->withArgs($args);
+        $this->arguments = $this->makeArgs($args);
     }
 
     public static function fromArray(array $toolCall) : ?ToolCall {
@@ -41,22 +41,15 @@ class ToolCall
     }
 
     public function withId(string $id) : self {
-        $this->id = $id;
-        return $this;
+        return new self($this->name, $this->arguments, $id);
     }
 
     public function withName(string $name) : self {
-        $this->name = $name;
-        return $this;
+        return new self($name, $this->arguments, $this->id);
     }
 
     public function withArgs(string|array $args) : self {
-        $this->arguments = match(true) {
-            is_array($args) => $args,
-            is_string($args) => Json::fromString($args)->toArray(),
-            default => []
-        };
-        return $this;
+        return new self($this->name, $this->makeArgs($args), $this->id);
     }
 
     public function hasArgs() : bool {
@@ -135,5 +128,28 @@ class ToolCall
             args: $this->arguments,
             id: $this->id
         );
+    }
+
+    public function toString() : string {
+        if (empty($this->arguments)) {
+            return $this->name . "()";
+        }
+        
+        $argStrings = [];
+        foreach ($this->arguments as $key => $value) {
+            $argStrings[] = $key . '=' . (is_string($value) ? $value : json_encode($value));
+        }
+        
+        return $this->name . "(" . implode(', ', $argStrings) . ")";
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////
+
+    private function makeArgs(array|string $args) : array {
+        return match(true) {
+            is_array($args) => $args,
+            is_string($args) => Json::fromString($args)->toArray(),
+            default => []
+        };
     }
 }

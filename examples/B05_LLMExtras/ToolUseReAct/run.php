@@ -71,7 +71,6 @@ $state = (new ToolUseState)
 
 foreach ($toolUse->iterator($state) as $currentState) {
     $step = $currentState->currentStep();
-    dump($step);
     print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
     $state = $currentState; // keep the latest state
 }

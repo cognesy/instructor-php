@@ -124,12 +124,69 @@ class ToolCalls
         return $this->updateLast($responseJson, $defaultName);
     }
 
+    // IMMUTABLE METHODS (new) ////////////////////////////////////////////////
+
+    /**
+     * Returns a new ToolCalls instance with all tool calls removed.
+     */
+    public function withReset() : self {
+        return new self([]);
+    }
+
+    /**
+     * Returns a new ToolCalls instance with an additional tool call.
+     */
+    public function withAdded(string $name, string|array $args = '') : self {
+        $newCall = new ToolCall($name, $args);
+        return new self([...$this->toolCalls, $newCall]);
+    }
+
+    /**
+     * Returns a new ToolCalls instance with the last tool call updated.
+     * If no tool calls exist, adds a new one with the provided name and args.
+     */
+    public function withLastUpdated(string $responseJson, string $defaultName) : self {
+        if (empty($this->toolCalls)) {
+            return $this->withAdded($defaultName, $responseJson);
+        }
+        
+        $calls = [...$this->toolCalls];
+        $lastIndex = count($calls) - 1;
+        $lastCall = $calls[$lastIndex];
+        
+        // Update args first, then name if needed
+        $updatedCall = $lastCall->withArgs($responseJson);
+        if (empty($lastCall->name())) {
+            $updatedCall = $updatedCall->withName($defaultName);
+        }
+        
+        $calls[$lastIndex] = $updatedCall;
+        
+        return new self($calls);
+    }
+
+    /**
+     * Returns a new ToolCalls instance with the last tool call finalized.
+     * Alias for withLastUpdated for backward compatibility.
+     */
+    public function withLastFinalized(string $responseJson, string $defaultName) : self {
+        return $this->withLastUpdated($responseJson, $defaultName);
+    }
+
     public function toArray() : array {
         $list = [];
         foreach ($this->toolCalls as $toolCall) {
             $list[] = $toolCall->toArray();
         }
         return $list;
+    }
+
+    public function toString() : string {
+        $parts = [];
+        foreach ($this->toolCalls as $toolCall) {
+            $parts[] = $toolCall->toString();
+        }
+        return implode(" | ", $parts);
     }
 
     public function clone() : self {

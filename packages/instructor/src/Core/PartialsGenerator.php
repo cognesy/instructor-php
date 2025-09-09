@@ -65,7 +65,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->responseText = '';
         $this->responseJson = '';
         $this->sequenceableHandler->reset();
-        $this->toolCalls->reset();
+        $this->toolCalls = $this->toolCalls->withReset();
     }
 
     /**
@@ -227,19 +227,22 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     protected function newToolCall(string $name) : ToolCall {
-        $newToolCall = $this->toolCalls->add($name);
+        $this->toolCalls = $this->toolCalls->withAdded($name);
+        $newToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallStarted(['toolCall' => $newToolCall->toArray()]));
         return $newToolCall;
     }
 
     protected function updateToolCall(string $responseJson, string $defaultName) : ToolCall {
-        $updatedToolCall = $this->toolCalls->updateLast($responseJson, $defaultName);
+        $this->toolCalls = $this->toolCalls->withLastUpdated($responseJson, $defaultName);
+        $updatedToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallUpdated(['toolCall' => $updatedToolCall->toArray()]));
         return $updatedToolCall;
     }
 
     protected function finalizeToolCall(string $responseJson, string $defaultName) : ToolCall {
-        $finalizedToolCall = $this->toolCalls->finalizeLast($responseJson, $defaultName);
+        $this->toolCalls = $this->toolCalls->withLastFinalized($responseJson, $defaultName);
+        $finalizedToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallCompleted(['toolCall' => $finalizedToolCall->toArray()]));
         return $finalizedToolCall;
     }

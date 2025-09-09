@@ -75,7 +75,7 @@ $state = (new ToolUseState)
 while ($toolUse->hasNextStep($state)) {
     $state = $toolUse->nextStep($state);
     $step = $state->currentStep();
-    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0) . "\n");
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
 }
 
 // print final response
@@ -93,7 +93,7 @@ $state = (new ToolUseState)
 // iterate until no more steps
 foreach ($toolUse->iterator($state) as $currentState) {
     $step = $currentState->currentStep();
-    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0) . "\n");
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
     $state = $currentState; // keep the latest state
 }
 
