@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 
-class ToolCalls
+final readonly class ToolCalls
 {
     /** @var ToolCall[] */
     private array $toolCalls;

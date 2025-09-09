@@ -64,7 +64,7 @@ try {
 } catch (HttpRequestException $e) {
     echo "All retry attempts failed: " . $e->getMessage() . "\n";
 }
-// @doctest id="03fb"
+// @doctest id="c9b7"
 ```
 
 2. **Request Throttling**: Limit the rate of requests from your application
@@ -104,7 +104,7 @@ for ($i = 0; $i < 10; $i++) {
     )->toText();
     echo "Response $i: $response\n";
 }
-// @doctest id="8f65"
+// @doctest id="5a77"
 ```
 
 3. **Request Batching**: Combine multiple requests into batches when possible
@@ -126,7 +126,7 @@ foreach ($questions as $i => $question) {
 
 $batchResponse = $inference->with(messages: $batchedQuestions)->get();
 // Then parse the batch response into individual answers
-// @doctest id="c849"
+// @doctest id="bf64"
 ```
 
 4. **Upgrade API Plan**: Consider upgrading to a higher tier with increased rate limits
