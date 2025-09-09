@@ -7,5 +7,5 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
 interface CanProcessToolState
 {
-    public function processStep(ToolUseStep $step, ToolUseState $state): ToolUseState;
+    public function process(ToolUseState $state, ?callable $next = null): ToolUseState;
 }

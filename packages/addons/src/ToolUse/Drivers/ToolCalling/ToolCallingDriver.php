@@ -64,8 +64,8 @@ class ToolCallingDriver implements CanUseTools
         $pending = $this->buildPendingInference($state->messages(), $state->tools());
         $response = $pending->response();
         $executions = $state->tools()->useTools($response->toolCalls(), $state);
-        $followUps = $this->formatter->followUpMessages($executions);
-        return $this->buildStepFromResponse($response, $executions, $followUps);
+        $messages = $this->formatter->makeExecutionMessages($executions);
+        return $this->buildStepFromResponse($response, $executions, $messages);
     }
 
     // INTERNAL /////////////////////////////////////////////////

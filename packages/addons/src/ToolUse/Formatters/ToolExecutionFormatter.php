@@ -14,7 +14,7 @@ use Cognesy\Utils\Result\Success;
 
 class ToolExecutionFormatter
 {
-    public function followUpMessages(ToolExecutions $toolExecutions) : Messages {
+    public function makeExecutionMessages(ToolExecutions $toolExecutions) : Messages {
         $messages = Messages::empty();
         foreach ($toolExecutions->all() as $toolExecution) {
             $messages = $messages->appendMessages($this->toolExecutionMessages($toolExecution));
@@ -22,14 +22,14 @@ class ToolExecutionFormatter
         return $messages;
     }
 
-    public function toolExecutionMessages(ToolExecution $toolExecution) : Messages {
+    protected function toolExecutionMessages(ToolExecution $toolExecution) : Messages {
         $messages = Messages::empty();
         $messages = $messages->appendMessage($this->toolInvocationMessage($toolExecution->toolCall()));
         $messages = $messages->appendMessage($this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));
         return $messages;
     }
 
-    public function toolInvocationMessage(ToolCall $toolCall) : Message {
+    protected function toolInvocationMessage(ToolCall $toolCall) : Message {
         return new Message(
             role: 'assistant',
             content: '',
@@ -39,7 +39,7 @@ class ToolExecutionFormatter
         );
     }
 
-    public function toolExecutionResultMessage(ToolCall $toolCall, Result $result) : Message {
+    protected function toolExecutionResultMessage(ToolCall $toolCall, Result $result) : Message {
         return match(true) {
             $result instanceof Success => $this->toolExecutionSuccessMessage($toolCall, $result),
             $result instanceof Failure => $this->toolExecutionErrorMessage($toolCall, $result),

@@ -4,7 +4,6 @@ namespace Cognesy\Addons\Chat\Data\Collections;
 
 use Cognesy\Addons\Chat\Contracts\CanProcessChatState;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ChatStep;
 
 final class ChatStateProcessors
 {
@@ -26,29 +25,37 @@ final class ChatStateProcessors
         return $this->processors === [];
     }
 
-    public function apply(ChatStep $step, ChatState $state): ChatState {
-        $initialState = $state->withAddedStep($step)->withCurrentStep($step);
-        $chain = $this->buildMiddlewareChain($initialState);
-        return $chain ? $chain($initialState) : $initialState;
+    public function apply(ChatState $state): ChatState {
+        $chain = $this->buildMiddlewareChain($state);
+        return $chain ? $chain($state) : $state;
     }
 
     private function buildMiddlewareChain(ChatState $initialState): ?callable {
         if ($this->isEmpty()) {
             return null;
         }
-
         $next = fn(ChatState $state) => $state;
-        
-        foreach (array_reverse($this->processors) as $processor) {
+        foreach ($this->reversed() as $processor) {
             $currentNext = $next;
-            $next = fn(ChatState $state) => $processor->process($state, $currentNext);
+            $next = static fn(ChatState $state) => $processor->process($state, $currentNext);
         }
-        
         return $next;
     }
 
     /** @return CanProcessChatState[] */
     public function all(): array {
         return $this->processors;
+    }
+
+    public function each(): iterable {
+        foreach ($this->processors as $processor) {
+            yield $processor;
+        }
+    }
+
+    public function reversed(): iterable {
+        foreach (array_reverse($this->processors) as $processor) {
+            yield $processor;
+        }
     }
 }

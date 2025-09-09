@@ -22,7 +22,6 @@ use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
 use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\ToolUse\Processors\AppendContextVariables;
 use Cognesy\Addons\ToolUse\Processors\AppendToolStateMessages;
-use Cognesy\Addons\ToolUse\Processors\UpdateToolState;
 use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesMutation;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -78,24 +77,11 @@ class ToolUse {
     // HANDLE TOOL USE /////////////////////////////////////////////
 
     public function nextStep() : ToolUseStep {
-        $this->dispatch(new ToolUseStepStarted([
-            'step' => $this->state->stepCount() + 1,
-            'messages' => $this->state->messages()->count(),
-            'tools' => count($this->state->tools()->nameList()),
-        ]));
-
+        $this->emitToolUseStepStarted($this->state);
         $step = $this->driver->useTools($this->state);
-        $this->state = $this->processors->apply($step, $this->state);
-        $step = $this->state->currentStep();
-
-        $this->dispatch(new ToolUseStepCompleted([
-            'step' => $this->state->stepCount(),
-            'hasToolCalls' => $step->hasToolCalls(),
-            'errors' => count($step->errors()),
-            'usage' => $step->usage()->toArray(),
-            'finishReason' => $step->finishReason()?->value,
-        ]));
-
+        $this->state = $this->state->withAddedStep($step)->withCurrentStep($step);
+        $this->state = $this->processors->apply($this->state);
+        $this->emitToolUseStepCompleted($this->state);
         return $step;
     }
 
@@ -129,13 +115,7 @@ class ToolUse {
                 $state->currentStep()?->hasErrors() => ToolUseStatus::Failed,
                 default => ToolUseStatus::Completed,
             });
-            // emit finished event with status and summary
-            $this->dispatch(new ToolUseFinished([
-                'status' => $state->status()->value,
-                'steps' => $state->stepCount(),
-                'usage' => $state->usage()->toArray(),
-                'errors' => $state->currentStep()?->errorsAsString(),
-            ]));
+            $this->emitToolUseFinished($state);
         }
         return $can;
     }
@@ -143,7 +123,6 @@ class ToolUse {
     protected function defaultProcessors(): StepProcessors {
         return new StepProcessors(
             new AccumulateTokenUsage(),
-            new UpdateToolState(),
             new AppendContextVariables(),
             new AppendToolStateMessages(),
         );
@@ -165,5 +144,32 @@ class ToolUse {
             new ToolCallPresenceCheck(),
             new FinishReasonCheck($finishReasons),
         );
+    }
+
+    private function emitToolUseFinished(ToolUseState $state) : void {
+        $this->dispatch(new ToolUseFinished([
+            'status' => $state->status()->value,
+            'steps' => $state->stepCount(),
+            'usage' => $state->usage()->toArray(),
+            'errors' => $state->currentStep()?->errorsAsString(),
+        ]));
+    }
+
+    private function emitToolUseStepStarted(ToolUseState $state) : void {
+        $this->dispatch(new ToolUseStepStarted([
+            'step' => $state->stepCount() + 1,
+            'messages' => $state->messages()->count(),
+            'tools' => count($state->tools()->nameList()),
+        ]));
+    }
+
+    private function emitToolUseStepCompleted(ToolUseState $state) : void {
+        $this->dispatch(new ToolUseStepCompleted([
+            'step' => $state->stepCount(),
+            'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
+            'errors' => count($state->currentStep()?->errors() ?? []),
+            'usage' => $state->currentStep()?->usage()->toArray() ?? [],
+            'finishReason' => $state->currentStep()?->finishReason()?->value ?? null,
+        ]));
     }
 }

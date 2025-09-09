@@ -3,7 +3,6 @@
 namespace Cognesy\Addons\ToolUse\Data\Collections;
 
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
-use Iterator;
 
 final readonly class ToolUseSteps
 {
@@ -14,33 +13,33 @@ final readonly class ToolUseSteps
         $this->steps = $steps;
     }
 
-    public function withSteps(ToolUseStep ...$steps) : self {
+    public function withSteps(ToolUseStep ...$steps): self {
         return new self(...$steps);
     }
 
-    public function withAddedStep(ToolUseStep $step) : self {
+    public function withAddedStep(ToolUseStep $step): self {
         return new self(...[...$this->steps, $step]);
     }
 
-    public function all() : array {
+    public function all(): array {
         return $this->steps;
     }
 
-    public function each() : Iterator {
+    public function each(): iterable {
         foreach ($this->steps as $step) {
             yield $step;
         }
     }
 
-    public function count() : int {
+    public function count(): int {
         return count($this->steps);
     }
 
-    public function isEmpty() : bool {
+    public function isEmpty(): bool {
         return empty($this->steps);
     }
 
-    public function reversed() : Iterator {
+    public function reversed(): iterable {
         foreach (array_reverse($this->steps) as $step) {
             yield $step;
         }

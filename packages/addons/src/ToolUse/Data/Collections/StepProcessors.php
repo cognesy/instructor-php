@@ -23,11 +23,24 @@ final readonly class StepProcessors
         return $this->processors === [];
     }
 
-    public function apply(ToolUseStep $step, ToolUseState $state) : ToolUseState {
-        foreach ($this->processors as $processor) {
-            $state = $processor->processStep($step, $state);
+    public function apply(ToolUseState $state) : ToolUseState {
+        $chain = $this->buildMiddlewareChain($state);
+        return $chain ? $chain($state) : $state;
+    }
+
+    private function buildMiddlewareChain(ToolUseState $initialState): ?callable {
+        if ($this->isEmpty()) {
+            return null;
         }
-        return $state;
+
+        $next = fn(ToolUseState $state) => $state;
+        
+        foreach (array_reverse($this->processors) as $processor) {
+            $currentNext = $next;
+            $next = static fn(ToolUseState $state) => $processor->process($state, $currentNext);
+        }
+        
+        return $next;
     }
 }
 

@@ -4,11 +4,16 @@ namespace Cognesy\Addons\ToolUse\Processors;
 
 use Cognesy\Addons\ToolUse\Contracts\CanProcessToolState;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Messages\Messages;
 
 class AppendToolStateMessages implements CanProcessToolState
 {
-    public function processStep(ToolUseStep $step, ToolUseState $state): ToolUseState {
-        return $state->appendMessages($step->messages());
+    public function process(ToolUseState $state, ?callable $next = null): ToolUseState {
+        $newMessages = $state->currentStep()?->messages() ?? Messages::empty();
+        $newState = match(true) {
+            $newMessages->isEmpty() => $state,
+            default => $state->appendMessages($newMessages)
+        };
+        return $next ? $next($newState) : $newState;
     }
 }

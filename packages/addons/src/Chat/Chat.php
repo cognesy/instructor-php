@@ -35,17 +35,19 @@ class Chat
 
     public function nextTurn(ChatState $state): ChatState {
         if (!$this->hasNextTurn($state)) {
-            $this->events->dispatch(new ChatCompleted(['state' => $state->toArray(), 'reason' => 'has no next turn']));
+            $this->emitChatCompleted($state);
             return $state;
         }
 
-        $this->events->dispatch(new ChatTurnStarting(['turn' => $state->stepCount() + 1, 'state' => $state->toArray()]));
+        $this->emitChatTurnStarting($state);
         $participant = $this->selectParticipant($state);
-        $nextStep = $this->executeParticipantAction($participant, $state);
-        $updatedState = $this->updateState($nextStep, $state);
-        $this->events->dispatch(new ChatTurnCompleted(['state' => $updatedState->toArray(), 'step' => $nextStep->toArray()]));
+        $this->emitChatBeforeSend($participant, $state);
 
-        return $updatedState;
+        $nextStep = $participant->act($state);
+        $newState = $this->updateState($nextStep, $state);
+        $this->emitChatTurnCompleted($newState);
+
+        return $newState;
     }
 
     public function hasNextTurn(ChatState $state): bool {
@@ -56,27 +58,60 @@ class Chat
 
     private function selectParticipant(ChatState $state): CanParticipateInChat {
         $participant = $this->nextParticipantSelector->nextParticipant($state, $this->participants);
+        $this->emitChatParticipantSelected($participant, $state);
+        return $participant;
+    }
+
+    private function updateState(ChatStep $step, ChatState $state) : ChatState {
+        $newState = $state->withAddedStep($step)->withCurrentStep($step);
+        $newState = $this->stepProcessors->apply($newState);
+        $this->emitChatStateUpdated($newState, $state);
+        return $newState;
+    }
+
+    // EVENTS ////////////////////////////////////////////
+
+    private function emitChatStateUpdated(ChatState $newState, ChatState $state): void {
+        $this->events->dispatch(new ChatStateUpdated([
+            'newState' => $newState->toArray(),
+            'oldState' => $state->toArray(),
+            'step' => $newState->currentStep()?->toArray() ?? [],
+        ]));
+    }
+
+    private function emitChatParticipantSelected(CanParticipateInChat $participant, ChatState $state) : void {
         $this->events->dispatch(new ChatParticipantSelected([
             'participantName' => $participant?->name(),
             'participantClass' => $participant ? get_class($participant) : null,
             'state' => $state->toArray(),
         ]));
-        return $participant;
     }
 
-    private function executeParticipantAction(CanParticipateInChat $participant, ChatState $state): ChatStep {
-        $this->events->dispatch(new ChatBeforeSend(['participant' => $participant, 'state' => $state->toArray()]));
-        return $participant->act($state);
-    }
-
-    private function updateState(ChatStep $step, ChatState $state) : ChatState {
-        $newState = $this->stepProcessors->apply($step, $state);
-        $this->events->dispatch(new ChatStateUpdated([
-            'newState' => $newState->toArray(),
-            'oldState' => $state->toArray(),
-            'step' => $step->toArray(),
+    private function emitChatBeforeSend(CanParticipateInChat $participant, ChatState $state) : void {
+        $this->events->dispatch(new ChatBeforeSend([
+            'participant' => $participant,
+            'state' => $state->toArray()
         ]));
-        return $newState;
     }
 
+    private function emitChatCompleted(ChatState $state) : void {
+        $this->events->dispatch(new ChatCompleted([
+            'state' => $state->toArray(),
+            'reason' => 'has no next turn'
+        ]));
+    }
+
+    private function emitChatTurnStarting(ChatState $state) {
+        $this->events->dispatch(new ChatTurnStarting([
+            'turn' => $state->stepCount() + 1,
+            'state' => $state->toArray()
+        ]));
+    }
+
+    private function emitChatTurnCompleted(ChatState $updatedState) : void {
+        $this->events->dispatch(new ChatTurnCompleted([
+            'state' => $updatedState->toArray(),
+            'step' => $updatedState->currentStep()?->toArray() ?? []
+        ]));
+    }
 }
