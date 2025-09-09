@@ -154,6 +154,7 @@ class TransformState {
 
     /**
      * Combines this state with another state, merging tags and optionally combining results.
+     *
      * @param callable(Result, Result): Result|null $resultCombinator Optional function to combine results
      */
     public function combine(CanCarryState $other, ?callable $resultCombinator = null): self {

@@ -2,6 +2,7 @@
 require 'examples/boot.php';
 
 use Cognesy\Addons\ToolUse\ContinuationCriteria\{ExecutionTimeLimit, RetryLimit, StepsLimit, TokenUsageLimit};
+use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
@@ -11,13 +12,13 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 function add_numbers(int $a, int $b) : int { return $a + $b; }
 function subtract_numbers(int $a, int $b) : int { return $a - $b; }
 
-$criteria = [
+$criteria = new ContinuationCriteria(
     new StepsLimit(6),
     new TokenUsageLimit(8192),
     new ExecutionTimeLimit(60),
     new RetryLimit(2),
     new StopOnFinalDecision(),
-];
+);
 
 $driver = new ReActDriver(
     llm: LLMProvider::using('openai'),

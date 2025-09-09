@@ -334,7 +334,7 @@ describe('Pipeline Edge Cases - Result and State Interaction', function () {
         
         $processor = Call::withState(fn($state) => $state->withResult(
             $state->result()->isSuccess() 
-                ? Result::success($state->value() . '_processed') 
+                ? Result::success($state->value() . '_processed')
                 : $state->result()
         ));
         

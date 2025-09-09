@@ -9,6 +9,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
@@ -99,7 +100,7 @@ class GuzzlePool implements CanHandleRequestPool
         ));
     }
 
-    private function handleRejectedResponse($reason): Result {
+    private function handleRejectedResponse($reason): Failure {
         if ($this->config->failOnError) {
             $errorMessage = is_string($reason) ? $reason : 'Unknown error';
             throw new HttpRequestException($errorMessage);

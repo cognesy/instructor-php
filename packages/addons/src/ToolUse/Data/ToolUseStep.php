@@ -3,6 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Data;
 
 use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
@@ -10,14 +11,15 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Throwable;
 
-class ToolUseStep
+final readonly class ToolUseStep
 {
     private string $response;
-    private ?ToolCalls $toolCalls;
-    private ?ToolExecutions $toolExecutions;
-    private ?Messages $messages;
-    private ?Usage $usage;
-    private ?InferenceResponse $inferenceResponse;
+    private ToolCalls $toolCalls;
+    private ToolExecutions $toolExecutions;
+    private Messages $messages;
+    private Usage $usage;
+    private InferenceResponse $inferenceResponse;
+    private StepType $stepType;
 
     public function __construct(
         string             $response = '',
@@ -26,13 +28,18 @@ class ToolUseStep
         ?Messages          $messages = null,
         ?Usage             $usage = null,
         ?InferenceResponse $inferenceResponse = null,
+        ?StepType          $stepType = null,
     ) {
-        $this->response = $response;
-        $this->toolCalls = $toolCalls;
-        $this->toolExecutions = $toolExecutions;
-        $this->messages = $messages;
-        $this->usage = $usage;
-        $this->inferenceResponse = $inferenceResponse;
+        $this->response = $response ?? '';
+        $this->toolCalls = $toolCalls ?? new ToolCalls();
+        $this->toolExecutions = $toolExecutions ?? new ToolExecutions();
+        $this->messages = $messages ?? Messages::empty();
+        $this->usage = $usage ?? Usage::none();
+        $this->inferenceResponse = $inferenceResponse ?? new InferenceResponse();
+        $this->stepType = $stepType ?? self::inferStepType(
+            $this->inferenceResponse,
+            $this->toolExecutions,
+        );
     }
 
     public function response() : string {
@@ -57,6 +64,10 @@ class ToolUseStep
 
     public function inferenceResponse() : ?InferenceResponse {
         return $this->inferenceResponse;
+    }
+
+    public function stepType() : StepType {
+        return $this->stepType;
     }
 
     // HANDLE TOOL CALLS ////////////////////////////////////////////
@@ -107,6 +118,15 @@ class ToolUseStep
             'messages' => $this->messages?->toArray() ?? [],
             'usage' => $this->usage?->toArray() ?? [],
             'inferenceResponse' => $this->inferenceResponse?->toArray() ?? null,
+            'stepType' => $this->stepType->value,
         ];
+    }
+
+    private static function inferStepType(InferenceResponse $response, ToolExecutions $executions) : StepType {
+        return match(true) {
+            $executions->hasErrors() => StepType::Error,
+            $response->hasToolCalls() => StepType::ToolExecution,
+            default => StepType::FinalResponse,
+        };
     }
 }

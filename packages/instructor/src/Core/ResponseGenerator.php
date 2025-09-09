@@ -16,6 +16,7 @@ use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -53,7 +54,7 @@ class ResponseGenerator implements CanGenerateResponse
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    protected function extractErrors(CanCarryState|Result|Exception|ValidationResult $output) : array {
+    protected function extractErrors(CanCarryState|Failure|Exception|ValidationResult $output) : array {
         return match(true) {
             $output instanceof Throwable => [$output->getMessage()],
             $output instanceof CanCarryState && $output->isSuccess() => [],

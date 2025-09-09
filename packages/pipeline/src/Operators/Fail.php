@@ -5,8 +5,8 @@ namespace Cognesy\Pipeline\Operators;
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Utils\Result\Result;
 use RuntimeException;
+use Cognesy\Utils\Result\Result;
 use Throwable;
 
 readonly final class Fail implements CanProcessState {

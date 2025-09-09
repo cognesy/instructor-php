@@ -2,130 +2,222 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
+use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
 
-class ToolUseState
+final readonly class ToolUseState
 {
-    private ToolUseStatus $status = ToolUseStatus::InProgress;
+    private ToolUseStatus $status;
     private Tools $tools;
     private Messages $messages;
-    private array $variables = [];
+    private array $variables;
 
-    /** @var ToolUseStep[] */
-    private array $steps = [];
-    private ?ToolUseStep $currentStep = null;
+    private ToolUseSteps $steps;
+    private ?ToolUseStep $currentStep;
 
     private Usage $usage;
     private DateTimeImmutable $startedAt;
-    private ?ToolUseOptions $options = null;
+    private ToolUseOptions $options;
 
     public function __construct(
         ?Tools $tools = null,
+        ?ToolUseStatus $status = null,
+        ?Messages $messages = null,
+        ?array $variables = null,
+        ?ToolUseSteps $steps = null,
+        ?ToolUseStep $currentStep = null,
+        ?Usage $usage = null,
+        ?DateTimeImmutable $startedAt = null,
+        ?ToolUseOptions $options = null,
     ) {
+        $this->status = $status ?? ToolUseStatus::InProgress;
         $this->tools = $tools ?? new Tools();
-        $this->messages = Messages::empty();
-        $this->usage = new Usage();
-        $this->startedAt = new DateTimeImmutable();
+        $this->messages = $messages ?? new Messages();
+        $this->variables = $variables ?? [];
+        $this->steps = $steps ?? new ToolUseSteps();
+        $this->currentStep = $currentStep ?? null;
+        $this->usage = $usage ?? new Usage();
+        $this->startedAt = $startedAt ?? new DateTimeImmutable();
+        $this->options = $options ?? new ToolUseOptions();
     }
 
-    // HANDLE STEPS ////////////////////////////////////////////////
+    // HANDLE MUTATIONS ////////////////////////////////////////////
+
+    public function withCurrentStep(ToolUseStep $step) : self {
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $this->messages,
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $step,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function withMessages(Messages $messages) : self {
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $messages,
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function withTools(Tools $tools) : self {
+        return new self(
+            tools: $tools,
+            status: $this->status,
+            messages: $this->messages,
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function withVariable(int|string $name, mixed $value) : self {
+        $newVariables = $this->variables;
+        $newVariables[$name] = $value;
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $this->messages,
+            variables: $newVariables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function withStatus(ToolUseStatus $status) : self {
+        return new self(
+            tools: $this->tools,
+            status: $status,
+            messages: $this->messages,
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function withOptions(ToolUseOptions $options) : self {
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $this->messages,
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $options,
+        );
+    }
+
+    public function withAddedStep(ToolUseStep $step) : self {
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $this->messages,
+            variables: $this->variables,
+            steps: $this->steps->withAddedStep($step),
+            currentStep: $step,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function appendMessages(Messages $messages) : self {
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $this->messages->appendMessages($messages),
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: $this->usage,
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    public function accumulateUsage(Usage $usage) : self {
+        return new self(
+            tools: $this->tools,
+            status: $this->status,
+            messages: $this->messages,
+            variables: $this->variables,
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            usage: Usage::copy($this->usage)->accumulate($usage),
+            startedAt: $this->startedAt,
+            options: $this->options,
+        );
+    }
+
+    // HANDLE ACCESS ////////////////////////////////////////////////
 
     public function currentStep() : ?ToolUseStep {
         return $this->currentStep;
     }
 
-    /** @var ToolUseStep[] */
-    public function steps() : array {
+    public function steps() : ToolUseSteps {
         return $this->steps;
     }
 
     public function stepCount() : int {
-        return count($this->steps);
+        return $this->steps->count();
     }
-
-    public function addStep(ToolUseStep $step) {
-        $this->steps[] = $step;
-    }
-
-    public function setCurrentStep(ToolUseStep $step) {
-        $this->currentStep = $step;
-    }
-
-    // HANDLE MESSAGES /////////////////////////////////////////////
 
     public function messages() : Messages {
         return $this->messages;
     }
 
-    public function withMessages(Messages $messages) {
-        $this->messages = $messages;
-    }
-
-    public function appendMessages(Messages $messages) {
-        $this->messages = $this->messages->appendMessages($messages);
-    }
-
-    // HANDLE TOOLS ////////////////////////////////////////////////
-
     public function tools() : Tools {
         return $this->tools;
     }
-
-    public function withTools(Tools $tools) {
-        $this->tools = $tools;
-    }
-
-    // HANDLE USAGE ////////////////////////////////////////////////
 
     public function usage() : Usage {
         return $this->usage;
     }
 
-    public function accumulateUsage(Usage $usage) {
-        $this->usage->accumulate($usage);
-    }
-
-    // HANDLE TIMING //////////////////////////////////////////////
-
     public function startedAt() : DateTimeImmutable {
         return $this->startedAt;
     }
 
-    // HANDLE OPTIONS /////////////////////////////////////////////
-
-    public function withOptions(?ToolUseOptions $options) : void {
-        $this->options = $options;
-    }
-
-    public function options() : ?ToolUseOptions {
+    public function options() : ToolUseOptions {
         return $this->options;
     }
 
-    // HANDLE VARIABLES ////////////////////////////////////////////
-
-    public function withVariable(int|string $name, mixed $value) : void {
-        $this->variables[$name] = $value;
-    }
-
-    public function variable(string $name, mixed $default = null) : mixed {
-        return $this->variables[$name] ?? $default;
+    public function status() : ToolUseStatus {
+        return $this->status;
     }
 
     public function variables() : array {
         return $this->variables;
     }
 
-    // HANDLE STATUS ///////////////////////////////////////////////
-
-    public function status() : ToolUseStatus {
-        return $this->status;
-    }
-
-    public function withStatus(ToolUseStatus $status) {
-        $this->status = $status;
+    public function variable(string $name, mixed $default = null) : mixed {
+        return $this->variables[$name] ?? $default;
     }
 }

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
+use Cognesy\Addons\ToolUse\Tools;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 
@@ -12,8 +12,8 @@ function _boom(): int { throw new Exception('fail'); }
 
 it('throws on tool failure when configured', function () {
     $tools = (new Tools())
-        ->withThrowOnToolFailure(true);
-    $tools->addTool(FunctionTool::fromCallable(_boom(...)));
+        ->withThrowOnToolFailure(true)
+        ->withTool(FunctionTool::fromCallable(_boom(...)));
 
     $state = new ToolUseState();
     $call = new ToolCall('_boom', []);

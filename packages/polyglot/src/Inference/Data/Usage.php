@@ -58,12 +58,13 @@ class Usage
             + $this->cacheReadTokens;
     }
 
-    public function accumulate(Usage $usage) : void {
+    public function accumulate(Usage $usage) : self {
         $this->inputTokens += $usage->inputTokens;
         $this->outputTokens += $usage->outputTokens;
         $this->cacheWriteTokens += $usage->cacheWriteTokens;
         $this->cacheReadTokens += $usage->cacheReadTokens;
         $this->reasoningTokens += $usage->reasoningTokens;
+        return $this;
     }
 
     public function toString() : string {

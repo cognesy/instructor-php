@@ -6,9 +6,9 @@ use Cognesy\Addons\ToolUse\Contracts\CanProcessToolState;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
-class AccumulateTokenUsage implements CanProcessToolState
+class AppendToolStateMessages implements CanProcessToolState
 {
     public function processStep(ToolUseStep $step, ToolUseState $state): ToolUseState {
-        return $state->accumulateUsage($step->usage());
+        return $state->appendMessages($step->messages());
     }
 }

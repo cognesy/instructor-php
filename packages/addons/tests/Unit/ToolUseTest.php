@@ -6,6 +6,7 @@ use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
@@ -21,13 +22,17 @@ it('executes a tool call and builds follow-up messages', function () {
         ),
     ]);
 
-    $toolUse = (new ToolUse)
-        ->withDriver(new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver)))
-        ->withMessages('Add numbers')
-        ->withTools([
-            FunctionTool::fromCallable(add_numbers(...)),
-            FunctionTool::fromCallable(subtract_numbers(...)),
-        ]);
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+        ->withTool(FunctionTool::fromCallable(add_numbers(...)))
+        ->withTool(FunctionTool::fromCallable(subtract_numbers(...)));
+        
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Add numbers'));
+        
+    $toolUse = new ToolUse(
+        state: $state,
+        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+    );
 
     $step = $toolUse->nextStep();
 
@@ -45,12 +50,16 @@ it('iterates until no more tool calls and returns final response', function () {
         new InferenceResponse(content: '5'),
     ]);
 
-    $toolUse = (new ToolUse)
-        ->withDriver(new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver)))
-        ->withMessages('Add then report the result')
-        ->withTools([
-            FunctionTool::fromCallable(add_numbers(...)),
-        ]);
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+        ->withTool(FunctionTool::fromCallable(add_numbers(...)));
+        
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Add then report the result'));
+        
+    $toolUse = new ToolUse(
+        state: $state,
+        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+    );
 
     $final = $toolUse->finalStep();
     expect($final->response())->toBe('5');

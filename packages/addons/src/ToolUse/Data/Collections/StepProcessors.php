@@ -2,31 +2,32 @@
 
 namespace Cognesy\Addons\ToolUse\Data\Collections;
 
-use Cognesy\Addons\ToolUse\Contracts\CanProcessToolStep;
+use Cognesy\Addons\ToolUse\Contracts\CanProcessToolState;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
-final class StepProcessors
+final readonly class StepProcessors
 {
-    /** @var CanProcessToolStep[] */
-    private array $items = [];
+    /** @var CanProcessToolState[] */
+    private array $processors;
 
-    public function add(CanProcessToolStep ...$processors) : self {
-        foreach ($processors as $processor) {
-            $this->items[] = $processor;
-        }
-        return $this;
+    public function __construct(CanProcessToolState ...$processors) {
+        $this->processors = $processors;
+    }
+
+    public function withProcessors(CanProcessToolState ...$processors) : self {
+        return new self(...$processors);
     }
 
     public function isEmpty() : bool {
-        return $this->items === [];
+        return $this->processors === [];
     }
 
-    public function apply(ToolUseStep $step, ToolUseState $state) : ToolUseStep {
-        foreach ($this->items as $processor) {
-            $step = $processor->processStep($step, $state);
+    public function apply(ToolUseStep $step, ToolUseState $state) : ToolUseState {
+        foreach ($this->processors as $processor) {
+            $state = $processor->processStep($step, $state);
         }
-        return $step;
+        return $state;
     }
 }
 

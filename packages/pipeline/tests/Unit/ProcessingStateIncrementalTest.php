@@ -3,6 +3,8 @@
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Success;
 
 class StateTag implements TagInterface {
     public function __construct(public readonly string $label) {}
@@ -211,7 +213,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
                 
                 $result = $state->result();
                 
-                expect($result)->toBeInstanceOf(Result::class);
+                expect($result)->toBeInstanceOf(Success::class);
                 expect($result->unwrap())->toBe(42);
             });
         });

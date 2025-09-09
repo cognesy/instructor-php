@@ -37,13 +37,17 @@ it('executes two tool calls returned by HTTP mocked response', function () {
         model: 'gpt-4o-mini'
     );
 
-    $toolUse = (new ToolUse)
-        ->withDriver($driver)
-        ->withMessages('Two calls')
-        ->withTools([
-            FunctionTool::fromCallable(_inc_http(...)),
-            FunctionTool::fromCallable(_dbl_http(...)),
-        ]);
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+        ->withTool(FunctionTool::fromCallable(_inc_http(...)))
+        ->withTool(FunctionTool::fromCallable(_dbl_http(...)));
+        
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Two calls'));
+        
+    $toolUse = new ToolUse(
+        state: $state,
+        driver: $driver
+    );
 
     $step = $toolUse->nextStep();
     expect(count($step->toolExecutions()->all()))->toBe(2);

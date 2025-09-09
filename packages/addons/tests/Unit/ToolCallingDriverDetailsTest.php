@@ -26,13 +26,17 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     );
     $driver = new FakeInferenceDriver([$resp]);
 
-    $toolUse = (new ToolUse)
-        ->withDriver(new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver)))
-        ->withMessages('run multiple')
-        ->withTools([
-            FunctionTool::fromCallable(_inc(...)),
-            FunctionTool::fromCallable(_dbl(...)),
-        ]);
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+        ->withTool(FunctionTool::fromCallable(_inc(...)))
+        ->withTool(FunctionTool::fromCallable(_dbl(...)));
+        
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+        ->withMessages(\Cognesy\Messages\Messages::fromString('run multiple'));
+        
+    $toolUse = new ToolUse(
+        state: $state,
+        driver: new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver))
+    );
 
     $step = $toolUse->nextStep();
 

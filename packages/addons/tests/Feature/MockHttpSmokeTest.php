@@ -41,12 +41,16 @@ it('threads HttpClient through ToolUse -> Inference (OpenAI)', function () {
         model: 'gpt-4o-mini'
     );
 
-    $toolUse = (new ToolUse)
-        ->withDriver($driver)
-        ->withMessages('Add two numbers and return the result')
-        ->withTools([
-            FunctionTool::fromCallable(add_numbers_smoke(...)),
-        ]);
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+        ->withTool(FunctionTool::fromCallable(add_numbers_smoke(...)));
+        
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+        ->withMessages(\Cognesy\Messages\Messages::fromString('Add two numbers and return the result'));
+        
+    $toolUse = new ToolUse(
+        state: $state,
+        driver: $driver
+    );
 
     $step = $toolUse->nextStep();
     expect($step->hasToolCalls())->toBeTrue();

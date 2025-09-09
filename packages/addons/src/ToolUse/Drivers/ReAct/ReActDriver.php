@@ -7,6 +7,7 @@ use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
@@ -130,6 +131,7 @@ final class ReActDriver implements CanUseTools
             messages: $messagesErr,
             usage: null,
             inferenceResponse: null,
+            stepType: StepType::Error,
         );
     }
 
@@ -140,7 +142,6 @@ final class ReActDriver implements CanUseTools
         ?InferenceResponse $inferenceResponse,
         ToolUseState $state
     ) : ToolUseStep {
-        $state->withVariable('react_last_decision_type', 'call_tool');
         $call = new ToolCall($decision->tool() ?? '', $decision->args());
         $execution = $state->tools()->useTool($call, $state);
         $executions = (new ToolExecutions())->add($execution);
@@ -157,6 +158,7 @@ final class ReActDriver implements CanUseTools
             messages: $followUps,
             usage: $usage,
             inferenceResponse: $inferenceResponse,
+            stepType: StepType::ToolExecution,
         );
     }
 
@@ -168,7 +170,6 @@ final class ReActDriver implements CanUseTools
         ToolUseState $state,
         Messages $messages
     ) : ToolUseStep {
-        $state->withVariable('react_last_decision_type', 'final_answer');
         $finalText = $decision->answer();
         if ($this->finalViaInference) {
             $pending = $this->finalizeAnswerViaInference($messages);
@@ -183,6 +184,7 @@ final class ReActDriver implements CanUseTools
             messages: Messages::empty(),
             usage: $usage,
             inferenceResponse: $inferenceResponse,
+            stepType: StepType::FinalResponse,
         );
     }
 

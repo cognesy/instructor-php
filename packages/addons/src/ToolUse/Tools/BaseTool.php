@@ -14,16 +14,24 @@ abstract class BaseTool implements ToolInterface
 {
     protected string $name;
     protected string $description;
-    protected array $jsonSchema;
+    protected array $cachedParamsJsonSchema; // cached
+
+    public function __construct(
+        ?string $name = null,
+        ?string $description = null,
+    ) {
+        $this->name = $name ?? static::class;
+        $this->description = $description ?? '';
+    }
 
     // Intentionally rely on subclass __invoke signature.
 
     public function name(): string {
-        return $this->name ?? static::class;
+        return $this->name;
     }
 
     public function description(): string {
-        return $this->description ?? '';
+        return $this->description;
     }
 
     public function use(mixed ...$args): Result {
@@ -41,19 +49,19 @@ abstract class BaseTool implements ToolInterface
             'function' => [
                 'name' => $this->name(),
                 'description' => $this->description(),
-                'parameters' => $this->toJsonSchema(),
+                'parameters' => $this->paramsJsonSchema(),
             ],
         ];
     }
 
     // INTERNAL ////////////////////////////////////////////////
 
-    protected function toJsonSchema(): array {
-        if (!isset($this->jsonSchema)) {
-            $this->jsonSchema = StructureFactory::fromMethodName(static::class, '__invoke')
+    protected function paramsJsonSchema(): array {
+        if (!isset($this->cachedParamsJsonSchema)) {
+            $this->cachedParamsJsonSchema = StructureFactory::fromMethodName(static::class, '__invoke')
                 ->toSchema()
                 ->toJsonSchema();
         }
-        return $this->jsonSchema;
+        return $this->cachedParamsJsonSchema;
     }
 }

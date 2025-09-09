@@ -3,6 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -11,7 +12,6 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Utils\Result\Result;
 
 // Lightweight fakes for pipeline dependencies

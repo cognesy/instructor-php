@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
+use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -19,9 +20,16 @@ it('stops due to token usage limit being reached', function () {
         new InferenceResponse(content: 'final', usage: new Usage(2, 0)),
     ]);
 
-    $toolUse = (new ToolUse(continuationCriteria: [ new TokenUsageLimit(10) ]))
-        ->withDriver(new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver)))
-        ->withTools([ \Cognesy\Addons\ToolUse\Tools\FunctionTool::fromCallable(_noop_feat(...)) ]);
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+        ->withTool(\Cognesy\Addons\ToolUse\Tools\FunctionTool::fromCallable(_noop_feat(...)));
+        
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools);
+        
+    $toolUse = new ToolUse(
+        state: $state,
+        continuationCriteria: new ContinuationCriteria(new TokenUsageLimit(10)),
+        driver: new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver))
+    );
 
     // first step accumulates to 9 -> can continue; after second step accumulates to 11 -> stop
     $toolUse->nextStep();

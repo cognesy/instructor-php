@@ -28,9 +28,7 @@ $driver = new ToolCallingDriver(llm: LLMProvider::new());
 $toolUse = (new ToolUse)
     ->withDriver($driver)
     ->withMessages('Add numbers 2 and 3')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-    ]);
+    ->withTools(FunctionTool::fromCallable(add_numbers(...)));
 
 $final = $toolUse->finalStep();
 echo $final->response();
@@ -55,7 +53,7 @@ Option B: Custom tool class
 
 ```php
 use Cognesy\Addons\ToolUse\Tools\BaseTool;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\Result\Failure;
 
 final class GetTime extends BaseTool {
     protected string $name = 'get_time';
@@ -147,32 +145,7 @@ $toolUse->withProcessors(new MyCustomProcessor());
 
 ## Observability
 
-Step-level hooks:
-
-```php
-use Cognesy\Addons\ToolUse\Contracts\ToolUseObserver;
-
-final class MyObserver implements ToolUseObserver {
-    public function onStepStart(ToolUseState $state): void {}
-    public function onStepEnd(ToolUseState $state, ToolUseStep $step): void {}
-}
-
-$toolUse->withObserver(new MyObserver());
-```
-
-Tool-level hooks:
-
-```php
-use Cognesy\Addons\ToolUse\Contracts\ToolsObserver;
-
-final class MyToolsObserver implements ToolsObserver {
-    public function onToolStart(ToolUseState $state, \Cognesy\Polyglot\Inference\Data\ToolCall $call): void {}
-    public function onToolEnd(ToolUseState $state, \Cognesy\Addons\ToolUse\Data\ToolExecution $exec): void {}
-}
-
-$state = $toolUse->state();
-$state->tools()->withObserver(new MyToolsObserver());
-```
+Use the events.
 
 ## Argument Validation
 

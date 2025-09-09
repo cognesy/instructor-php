@@ -5,24 +5,25 @@ namespace Cognesy\Addons\ToolUse\Data\Collections;
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-final class ContinuationCriteria
+final readonly class ContinuationCriteria
 {
     /** @var CanDecideToContinueToolUse[] */
-    private array $items = [];
+    private array $criteria;
 
-    public function add(CanDecideToContinueToolUse ...$criteria) : self {
-        foreach ($criteria as $criterion) {
-            $this->items[] = $criterion;
-        }
-        return $this;
+    public function __construct(CanDecideToContinueToolUse ...$criteria) {
+        $this->criteria = $criteria;
+    }
+
+    public function withCriteria(CanDecideToContinueToolUse ...$criteria) : self {
+        return new self(...$criteria);
     }
 
     public function isEmpty() : bool {
-        return $this->items === [];
+        return $this->criteria === [];
     }
 
     public function canContinue(ToolUseState $state) : bool {
-        foreach ($this->items as $criterion) {
+        foreach ($this->criteria as $criterion) {
             if (!$criterion->canContinue($state)) {
                 return false;
             }

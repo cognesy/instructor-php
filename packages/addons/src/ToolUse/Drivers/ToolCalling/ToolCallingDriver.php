@@ -6,6 +6,7 @@ use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Addons\ToolUse\Formatters\ToolExecutionFormatter;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Http\HttpClient;
@@ -102,6 +103,15 @@ class ToolCallingDriver implements CanUseTools
             messages: $followUps,
             usage: $response->usage(),
             inferenceResponse: $response,
+            stepType: $this->inferStepType($response, $executions)
         );
+    }
+
+    private function inferStepType(InferenceResponse $response, ToolExecutions $executions) : StepType {
+        return match(true) {
+            $executions->hasErrors() => StepType::Error,
+            $response->hasToolCalls() > 0 => StepType::ToolExecution,
+            default => StepType::FinalResponse,
+        };
     }
 }

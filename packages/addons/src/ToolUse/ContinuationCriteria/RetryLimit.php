@@ -16,7 +16,7 @@ class RetryLimit implements CanDecideToContinueToolUse
     public function canContinue(ToolUseState $state): bool {
         // Count consecutive failed steps from the end
         $failedTail = 0;
-        foreach (array_reverse($state->steps()) as $step) {
+        foreach ($state->steps()->reversed() as $step) {
             if ($step->hasErrors()) {
                 $failedTail++;
                 continue;

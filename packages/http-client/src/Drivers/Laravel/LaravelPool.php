@@ -8,6 +8,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Illuminate\Http\Client\Factory as HttpFactory;
@@ -124,7 +125,7 @@ class LaravelPool implements CanHandleRequestPool
         ));
     }
 
-    private function handleFailedResponse(Response $response): Result {
+    private function handleFailedResponse(Response $response): Failure {
         $errorMessage = sprintf('HTTP %d: %s', $response->status(), $response->body());
         return match($this->config->failOnError) {
             true => throw new HttpRequestException($errorMessage),
@@ -132,7 +133,7 @@ class LaravelPool implements CanHandleRequestPool
         };
     }
 
-    private function handleException(Exception $exception): Result {
+    private function handleException(Exception $exception): Failure {
         if ($this->config->failOnError) {
             throw $exception;
         }
