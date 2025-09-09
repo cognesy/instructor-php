@@ -4,7 +4,6 @@ namespace Cognesy\Addons\ToolUse\Data;
 
 use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
@@ -12,7 +11,6 @@ use DateTimeImmutable;
 final readonly class ToolUseState
 {
     private ToolUseStatus $status;
-    private Tools $tools;
     private Messages $messages;
     private array $variables;
 
@@ -24,7 +22,6 @@ final readonly class ToolUseState
     private ToolUseOptions $options;
 
     public function __construct(
-        ?Tools $tools = null,
         ?ToolUseStatus $status = null,
         ?Messages $messages = null,
         ?array $variables = null,
@@ -35,7 +32,6 @@ final readonly class ToolUseState
         ?ToolUseOptions $options = null,
     ) {
         $this->status = $status ?? ToolUseStatus::InProgress;
-        $this->tools = $tools ?? new Tools();
         $this->messages = $messages ?? new Messages();
         $this->variables = $variables ?? [];
         $this->steps = $steps ?? new ToolUseSteps();
@@ -49,7 +45,6 @@ final readonly class ToolUseState
 
     public function withCurrentStep(ToolUseStep $step) : self {
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $this->messages,
             variables: $this->variables,
@@ -63,7 +58,6 @@ final readonly class ToolUseState
 
     public function withMessages(Messages $messages) : self {
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $messages,
             variables: $this->variables,
@@ -75,25 +69,12 @@ final readonly class ToolUseState
         );
     }
 
-    public function withTools(Tools $tools) : self {
-        return new self(
-            tools: $tools,
-            status: $this->status,
-            messages: $this->messages,
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-            options: $this->options,
-        );
-    }
+    // withTools removed - tools now managed by ToolUse class
 
     public function withVariable(int|string $name, mixed $value) : self {
         $newVariables = $this->variables;
         $newVariables[$name] = $value;
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $this->messages,
             variables: $newVariables,
@@ -107,7 +88,6 @@ final readonly class ToolUseState
 
     public function withStatus(ToolUseStatus $status) : self {
         return new self(
-            tools: $this->tools,
             status: $status,
             messages: $this->messages,
             variables: $this->variables,
@@ -121,7 +101,6 @@ final readonly class ToolUseState
 
     public function withOptions(ToolUseOptions $options) : self {
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $this->messages,
             variables: $this->variables,
@@ -135,7 +114,6 @@ final readonly class ToolUseState
 
     public function withAddedStep(ToolUseStep $step) : self {
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $this->messages,
             variables: $this->variables,
@@ -149,7 +127,6 @@ final readonly class ToolUseState
 
     public function appendMessages(Messages $messages) : self {
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $this->messages->appendMessages($messages),
             variables: $this->variables,
@@ -163,7 +140,6 @@ final readonly class ToolUseState
 
     public function accumulateUsage(Usage $usage) : self {
         return new self(
-            tools: $this->tools,
             status: $this->status,
             messages: $this->messages,
             variables: $this->variables,
@@ -193,9 +169,7 @@ final readonly class ToolUseState
         return $this->messages;
     }
 
-    public function tools() : Tools {
-        return $this->tools;
-    }
+    // Tools moved to ToolUse class
 
     public function usage() : Usage {
         return $this->usage;

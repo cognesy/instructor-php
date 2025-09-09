@@ -23,17 +23,17 @@ it('stops due to token usage limit being reached', function () {
     $tools = (new \Cognesy\Addons\ToolUse\Tools())
         ->withTool(\Cognesy\Addons\ToolUse\Tools\FunctionTool::fromCallable(_noop_feat(...)));
         
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools);
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
         
     $toolUse = new ToolUse(
-        state: $state,
+        tools: $tools,
         continuationCriteria: new ContinuationCriteria(new TokenUsageLimit(10)),
         driver: new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver))
     );
 
     // first step accumulates to 9 -> can continue; after second step accumulates to 11 -> stop
-    $toolUse->nextStep();
-    expect($toolUse->hasNextStep())->toBeTrue();
-    $toolUse->nextStep();
-    expect($toolUse->hasNextStep())->toBeFalse();
+    $state = $toolUse->nextStep($state);
+    expect($toolUse->hasNextStep($state))->toBeTrue();
+    $state = $toolUse->nextStep($state);
+    expect($toolUse->hasNextStep($state))->toBeFalse();
 });

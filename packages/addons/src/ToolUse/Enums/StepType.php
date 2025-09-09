@@ -7,5 +7,8 @@ enum StepType : string
     case ToolExecution = 'tool_execution';
     case FinalResponse = 'final_response';
     case Error = 'error';
-    case Undefined = 'undefined';
+
+    public function is(?StepType $type) : bool {
+        return $this === $type;
+    }
 }

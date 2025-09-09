@@ -41,15 +41,15 @@ it('executes two tool calls returned by HTTP mocked response', function () {
         ->withTool(FunctionTool::fromCallable(_inc_http(...)))
         ->withTool(FunctionTool::fromCallable(_dbl_http(...)));
         
-    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState())
         ->withMessages(\Cognesy\Messages\Messages::fromString('Two calls'));
         
     $toolUse = new ToolUse(
-        state: $state,
+        tools: $tools,
         driver: $driver
     );
 
-    $step = $toolUse->nextStep();
-    expect(count($step->toolExecutions()->all()))->toBe(2);
+    $state = $toolUse->nextStep($state);
+    expect(count($state->currentStep()->toolExecutions()->all()))->toBe(2);
 });
 

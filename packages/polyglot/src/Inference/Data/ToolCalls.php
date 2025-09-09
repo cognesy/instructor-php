@@ -6,14 +6,10 @@ use InvalidArgumentException;
 
 class ToolCalls
 {
-    /**
-     * @var ToolCall[]
-     */
+    /** @var ToolCall[] */
     private array $toolCalls;
 
-    /**
-     * @param ToolCall[] $toolCalls
-     */
+    /** @param ToolCall[] $toolCalls */
     public function __construct(array $toolCalls = []) {
         $this->toolCalls = $toolCalls;
     }
@@ -77,11 +73,28 @@ class ToolCalls
         return empty($this->toolCalls);
     }
 
-    /**
-     * @return ToolCall[]
-     */
+    /** @return ToolCall[] */
     public function all() : array {
         return $this->toolCalls;
+    }
+
+    /** @return iterable<ToolCall> */
+    public function each() : iterable {
+        foreach ($this->toolCalls as $toolCall) {
+            yield $toolCall;
+        }
+    }
+
+    public function map(callable $callback) : array {
+        return array_map($callback, $this->toolCalls);
+    }
+
+    public function filter(callable $callback) : ToolCalls {
+        return new ToolCalls(array_filter($this->toolCalls, $callback));
+    }
+
+    public function reduce(callable $callback, mixed $initial = null) : mixed {
+        return array_reduce($this->toolCalls, $callback, $initial);
     }
 
     public function reset() : void {

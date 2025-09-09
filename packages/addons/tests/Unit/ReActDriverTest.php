@@ -34,13 +34,13 @@ it('runs a ReAct call then final answer', function () {
     
     $tools = new \Cognesy\Addons\ToolUse\Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState(tools: $tools);
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
     $state = $state->withMessages(\Cognesy\Messages\Messages::fromString('Add 2 and 3, then report the result'));
     
-    $toolUse = new ToolUse(state: $state, continuationCriteria: $criteria, driver: $react);
+    $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
-    $final = $toolUse->finalStep();
-    expect($final->response())->toBe('5');
+    $state = $toolUse->finalStep($state);
+    expect($state->currentStep()->response())->toBe('5');
 });
 
 it('surfaces tool arg validation errors as observation', function () {
@@ -63,14 +63,14 @@ it('surfaces tool arg validation errors as observation', function () {
     
     $tools = new \Cognesy\Addons\ToolUse\Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState(tools: $tools);
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
     $state = $state->withMessages(\Cognesy\Messages\Messages::fromString('Add 2 and missing arg b'));
     
-    $toolUse = new ToolUse(state: $state, continuationCriteria: $criteria, driver: $react);
+    $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
-    $step1 = $toolUse->nextStep();
-    expect($step1->toolExecutions()->hasErrors())->toBeTrue();
-    $all = $toolUse->state()->messages()->toArray();
+    $state = $toolUse->nextStep($state);
+    expect($state->currentStep()->toolExecutions()->hasErrors())->toBeTrue();
+    $all = $state->messages()->toArray();
     $joined = json_encode($all);
     expect($joined)->toContain('Observation');
     expect($joined)->toContain('ERROR');
@@ -90,11 +90,12 @@ it('can finalize via Inference when configured', function () {
     $react = new ReActDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver), finalViaInference: true);
     $criteria = new ContinuationCriteria(new StepsLimit(1), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(0));
     
+    $tools = new \Cognesy\Addons\ToolUse\Tools();
     $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
     $state = $state->withMessages(\Cognesy\Messages\Messages::fromString('Give me the final answer 42'));
     
-    $toolUse = new ToolUse(state: $state, continuationCriteria: $criteria, driver: $react);
+    $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
-    $final = $toolUse->finalStep();
-    expect($final->response())->toContain('42');
+    $state = $toolUse->finalStep($state);
+    expect($state->currentStep()->response())->toContain('42');
 });

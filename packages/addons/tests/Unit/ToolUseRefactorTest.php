@@ -28,18 +28,19 @@ it('continues loop on tool failure and formats error message', function () {
     $tools = (new \Cognesy\Addons\ToolUse\Tools())
         ->withTool(FunctionTool::fromCallable(_sum(...)));
         
-    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState())
         ->withMessages(\Cognesy\Messages\Messages::fromString('Test failure handling'));
         
     $toolUse = new ToolUse(
-        state: $state,
+        tools: $tools,
         driver: new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver))
     );
 
-    $step = $toolUse->nextStep();
+    $state = $toolUse->nextStep($state);
+    $step = $state->currentStep();
 
     expect($step->toolExecutions()->hasErrors())->toBeTrue();
-    $msgs = $step->messages()->toArray();
+    $msgs = $state->messages()->toArray();
     $invocationNames = [];
     foreach ($msgs as $m) {
         $invocationNames[] = $m['_metadata']['tool_calls'][0]['function']['name'] ?? null;

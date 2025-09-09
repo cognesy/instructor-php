@@ -44,16 +44,16 @@ it('threads HttpClient through ToolUse -> Inference (OpenAI)', function () {
     $tools = (new \Cognesy\Addons\ToolUse\Tools())
         ->withTool(FunctionTool::fromCallable(add_numbers_smoke(...)));
         
-    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools))
+    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState())
         ->withMessages(\Cognesy\Messages\Messages::fromString('Add two numbers and return the result'));
         
     $toolUse = new ToolUse(
-        state: $state,
+        tools: $tools,
         driver: $driver
     );
 
-    $step = $toolUse->nextStep();
-    expect($step->hasToolCalls())->toBeTrue();
-    expect(count($step->toolExecutions()->all()))->toBe(1);
+    $state = $toolUse->nextStep($state);
+    expect($state->currentStep()->hasToolCalls())->toBeTrue();
+    expect(count($state->currentStep()->toolExecutions()->all()))->toBe(1);
 });
 

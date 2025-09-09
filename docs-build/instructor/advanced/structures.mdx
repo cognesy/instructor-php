@@ -40,7 +40,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 ?>
-// @doctest id="7336"
+// @doctest id="e1ef"
 ```
 
 Following types of fields are currently supported:
@@ -66,7 +66,7 @@ $structure = Structure::define('person', [
     //...
 ]);
 ?>
-// @doctest id="2eb3"
+// @doctest id="7cb4"
 ```
 
 
@@ -85,7 +85,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="de81"
+// @doctest id="fa1c"
 ```
 
 ## Nesting structures
@@ -108,7 +108,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="e574"
+// @doctest id="fa1c"
 ```
 
 ## Validation of structure data
@@ -132,7 +132,7 @@ $structure = Structure::define('person', [
     // ...
 ], 'A person object');
 ?>
-// @doctest id="7d8f"
+// @doctest id="0981"
 ```
 
 ## Extracting data
@@ -163,7 +163,7 @@ dump($person->toArray());
 //   "role" => "line"
 // ]
 ?>
-// @doctest id="cb73"
+// @doctest id="efbd"
 ```
 
 
@@ -207,5 +207,5 @@ $age = $person->age;
 $role = $person->role->name;
 $level = $person->role->level;
 ?>
-// @doctest id="0317"
+// @doctest id="0e69"
 ```

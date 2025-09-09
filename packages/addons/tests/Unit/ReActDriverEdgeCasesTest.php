@@ -29,17 +29,17 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
     
     $tools = new \Cognesy\Addons\ToolUse\Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_noop(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState(tools: $tools);
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
     $state = $state->withMessages(Messages::empty());
     
-    $toolUse = new ToolUse(state: $state, continuationCriteria: new ContinuationCriteria(new StepsLimit(2)), driver: $react);
+    $toolUse = new ToolUse(tools: $tools, continuationCriteria: new ContinuationCriteria(new StepsLimit(2)), driver: $react);
 
-    $first = $toolUse->nextStep();
-    expect($first->stepType())->toBe(StepType::ToolExecution);
+    $state = $toolUse->nextStep($state);
+    expect($state->currentStep()->stepType())->toBe(StepType::ToolExecution);
 
-    $final = $toolUse->finalStep();
-    expect($final->stepType())->toBe(StepType::FinalResponse);
-    expect($final->response())->toBe('done');
+    $state = $toolUse->finalStep($state);
+    expect($state->currentStep()->stepType())->toBe(StepType::FinalResponse);
+    expect($state->currentStep()->response())->toBe('done');
 });
 
 it('surfaces extraction failure as validation exception (deterministic)', function () {
@@ -49,10 +49,10 @@ it('surfaces extraction failure as validation exception (deterministic)', functi
     ]);
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
-    $toolUse = (new ToolUse)
-        ->withDriver($react)
-        ->withTools(FunctionTool::fromCallable(_noop(...)));
+    $tools = (new \Cognesy\Addons\ToolUse\Tools())->withTool(FunctionTool::fromCallable(_noop(...)));
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
+    $toolUse = new ToolUse(tools: $tools, driver: $react);
 
-    expect(fn() => $toolUse->nextStep())
+    expect(fn() => $toolUse->nextStep($state))
         ->toThrow(\Cognesy\Instructor\Validation\Exceptions\ValidationException::class);
 });

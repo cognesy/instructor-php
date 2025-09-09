@@ -122,6 +122,19 @@ final readonly class ToolUseStep
         ];
     }
 
+    public function toString() : string {
+        $toolNames = $this->hasToolCalls() 
+            ? implode(', ', $this->toolCalls()->map(fn($call) => $call->name()))
+            : '-';
+        
+        return implode(' | ', [
+            'response:',
+            $this->response ?: '-',
+            'tools called:',
+            $toolNames,
+        ]);
+    }
+
     private static function inferStepType(InferenceResponse $response, ToolExecutions $executions) : StepType {
         return match(true) {
             $executions->hasErrors() => StepType::Error,

@@ -17,8 +17,10 @@ require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
 function _inc_lb(int $x): int { return $x + 1; }
 
 it('hasNextStep is true when no current step', function () {
-    $tu = new ToolUse();
-    expect($tu->hasNextStep())->toBeTrue();
+    $tools = new \Cognesy\Addons\ToolUse\Tools();
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
+    $tu = new ToolUse(tools: $tools);
+    expect($tu->hasNextStep($state))->toBeTrue();
 });
 
 it('finalStep respects StepsLimit(1)', function () {
@@ -28,16 +30,16 @@ it('finalStep respects StepsLimit(1)', function () {
     $tools = (new \Cognesy\Addons\ToolUse\Tools())
         ->withTool(FunctionTool::fromCallable(_inc_lb(...)));
         
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools);
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
         
     $toolUse = new ToolUse(
-        state: $state,
+        tools: $tools,
         continuationCriteria: new ContinuationCriteria(new StepsLimit(1)),
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );
 
-    $toolUse->finalStep();
-    expect($toolUse->state()->stepCount())->toBe(1);
+    $state = $toolUse->finalStep($state);
+    expect($state->stepCount())->toBe(1);
 });
 
 it('accumulates usage across steps', function () {
@@ -49,16 +51,16 @@ it('accumulates usage across steps', function () {
     $tools = (new \Cognesy\Addons\ToolUse\Tools())
         ->withTool(FunctionTool::fromCallable(_inc_lb(...)));
         
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState($tools);
+    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
         
     $toolUse = new ToolUse(
-        state: $state,
+        tools: $tools,
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );
 
-    $toolUse->nextStep();
-    $toolUse->finalStep();
+    $state = $toolUse->nextStep($state);
+    $state = $toolUse->finalStep($state);
 
-    expect($toolUse->state()->usage()->toArray())->toMatchArray(['input' => 6, 'output' => 8]);
+    expect($state->usage()->toArray())->toMatchArray(['input' => 6, 'output' => 8]);
 });
 

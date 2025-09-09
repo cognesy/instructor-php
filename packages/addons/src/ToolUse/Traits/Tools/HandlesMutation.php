@@ -35,15 +35,21 @@ trait HandlesMutation
         );
     }
 
-    public function withTool(ToolInterface $tool): self {
+    public function withTools(ToolInterface ...$tools): self {
         $newTools = $this->tools;
-        $newTools[$tool->name()] = $tool;
+        foreach ($tools as $tool) {
+            $newTools[$tool->name()] = $tool;
+        }
         return new self(
             tools: $newTools,
             parallelToolCalls: $this->parallelToolCalls,
             throwOnToolFailure: $this->throwOnToolFailure,
             events: $this->events,
         );
+    }
+
+    public function withTool(ToolInterface $tool): self {
+        return $this->withTools($tool);
     }
 
     public function withToolRemoved(string $name): self {

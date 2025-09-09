@@ -29,20 +29,26 @@ $driver = new ReActDriver(
 // PATTERN #1 - manual control
 //
 echo "\nReAct PATTERN #1 - manual control\n";
-$toolUse = (new ToolUse(continuationCriteria: $criteria))
-    ->withDriver($driver)
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
-    ]);
+$tools = (new \Cognesy\Addons\ToolUse\Tools)
+    ->withTool(FunctionTool::fromCallable(add_numbers(...)))
+    ->withTool(FunctionTool::fromCallable(subtract_numbers(...)));
 
-while ($toolUse->hasNextStep()) {
-    $step = $toolUse->nextStep();
-    print("STEP - tokens used: " . $step->usage()->total() . "\n");
+$state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState)
+    ->withMessages(\Cognesy\Messages\Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+$toolUse = new ToolUse(
+    tools: $tools,
+    continuationCriteria: $criteria,
+    driver: $driver
+);
+
+while ($toolUse->hasNextStep($state)) {
+    $state = $toolUse->nextStep($state);
+    $step = $state->currentStep();
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0) . "\n");
 }
 
-$result = $step->response();
+$result = $state->currentStep()->response();
 print("RESULT: " . $result . "\n");
 
 
@@ -50,19 +56,26 @@ print("RESULT: " . $result . "\n");
 // PATTERN #2 - using iterator
 //
 echo "\nReAct PATTERN #2 - using iterator\n";
-$toolUse = (new ToolUse(continuationCriteria: $criteria))
-    ->withDriver($driver)
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
-    ]);
+$tools = (new \Cognesy\Addons\ToolUse\Tools)
+    ->withTool(FunctionTool::fromCallable(add_numbers(...)))
+    ->withTool(FunctionTool::fromCallable(subtract_numbers(...)));
 
-foreach ($toolUse->iterator() as $step) {
-    print("STEP - tokens used: " . $step->usage()->total() . "\n");
+$state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState)
+    ->withMessages(\Cognesy\Messages\Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+$toolUse = new ToolUse(
+    tools: $tools,
+    continuationCriteria: $criteria,
+    driver: $driver
+);
+
+foreach ($toolUse->iterator($state) as $currentState) {
+    $step = $currentState->currentStep();
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0) . "\n");
+    $state = $currentState; // keep the latest state
 }
 
-$result = $toolUse->state()->currentStep()->response();
+$result = $state->currentStep()->response();
 print("RESULT: " . $result . "\n");
 
 
@@ -70,13 +83,19 @@ print("RESULT: " . $result . "\n");
 // PATTERN #3 - just get final step (fast forward to it)
 //
 echo "\nReAct PATTERN #3 - final via Inference (optional)\n";
-$toolUse = (new ToolUse(continuationCriteria: $criteria))
-    ->withDriver($driver)
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
-    ]);
+$tools = (new \Cognesy\Addons\ToolUse\Tools)
+    ->withTool(FunctionTool::fromCallable(add_numbers(...)))
+    ->withTool(FunctionTool::fromCallable(subtract_numbers(...)));
 
-$result = $toolUse->finalStep()->response();
+$state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState)
+    ->withMessages(\Cognesy\Messages\Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+$toolUse = new ToolUse(
+    tools: $tools,
+    continuationCriteria: $criteria,
+    driver: $driver
+);
+
+$finalState = $toolUse->finalStep($state);
+$result = $finalState->currentStep()->response();
 print("RESULT: " . $result . "\n");

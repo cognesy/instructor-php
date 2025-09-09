@@ -60,10 +60,10 @@ class ToolCallingDriver implements CanUseTools
      * @param ToolUseState $state The context containing messages, tools, and other related information required for tool usage.
      * @return ToolUseStep Returns an instance of ToolUseStep containing the response, executed tools, follow-up messages, and additional usage data.
      */
-    public function useTools(ToolUseState $state) : ToolUseStep {
-        $pending = $this->buildPendingInference($state->messages(), $state->tools());
+    public function useTools(ToolUseState $state, Tools $tools) : ToolUseStep {
+        $pending = $this->buildPendingInference($state->messages(), $tools);
         $response = $pending->response();
-        $executions = $state->tools()->useTools($response->toolCalls(), $state);
+        $executions = $tools->useTools($response->toolCalls(), $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
         return $this->buildStepFromResponse($response, $executions, $messages);
     }

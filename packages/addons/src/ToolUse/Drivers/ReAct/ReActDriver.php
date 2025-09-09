@@ -8,6 +8,7 @@ use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\StepType;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
@@ -55,9 +56,9 @@ final class ReActDriver implements CanUseTools
         $this->mode = $mode;
     }
 
-    public function useTools(ToolUseState $state) : ToolUseStep {
+    public function useTools(ToolUseState $state, Tools $tools) : ToolUseStep {
         $messages = $state->messages();
-        $system = ReActPrompt::buildSystemPrompt($state->tools());
+        $system = ReActPrompt::buildSystemPrompt($tools);
 
         $extraction = Result::try(fn () => $this->extractDecisionWithUsage($messages, $system));
         if ($extraction->isFailure()) {
@@ -87,7 +88,7 @@ final class ReActDriver implements CanUseTools
         $usage = $inferenceResponse->usage();
 
         return match (true) {
-            $decision->isCall() => $this->buildToolCallStep($decision, $usage, $inferenceResponse, $state),
+            $decision->isCall() => $this->buildToolCallStep($decision, $usage, $inferenceResponse, $state, $tools),
             default => $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $state, $messages),
         };
     }
@@ -140,10 +141,11 @@ final class ReActDriver implements CanUseTools
         ReActDecision $decision,
         ?Usage $usage,
         ?InferenceResponse $inferenceResponse,
-        ToolUseState $state
+        ToolUseState $state,
+        Tools $tools
     ) : ToolUseStep {
         $call = new ToolCall($decision->tool() ?? '', $decision->args());
-        $execution = $state->tools()->useTool($call, $state);
+        $execution = $tools->useTool($call, $state);
         $executions = (new ToolExecutions())->add($execution);
 
         $formatter = new ReActFormatter();
@@ -153,7 +155,7 @@ final class ReActDriver implements CanUseTools
 
         return new ToolUseStep(
             response: '',
-            toolCalls: null,
+            toolCalls: new \Cognesy\Polyglot\Inference\Data\ToolCalls([$call]),
             toolExecutions: $executions,
             messages: $followUps,
             usage: $usage,

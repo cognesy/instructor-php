@@ -33,27 +33,26 @@ class ToolUse {
     use HandlesEvents;
     use HandlesMutation;
 
+    public readonly Tools $tools;
     private CanUseTools $driver;
     private Data\Collections\StepProcessors $processors;
     private Data\Collections\ContinuationCriteria $continuationCriteria;
 
-    private ToolUseState $state;
-
     public function __construct(
-        ?ToolUseState $state = null,
+        ?Tools $tools = null,
         ?StepProcessors $processors = null,
         ?ContinuationCriteria $continuationCriteria = null,
         ?CanUseTools $driver = null,
         ?CanHandleEvents $events = null,
     ) {
         $this->events = EventBusResolver::using($events);
-        $this->state = $state ?? new ToolUseState;
+        $this->tools = $tools ?? new Tools();
         $this->driver = $driver ?? new ToolCallingDriver;
-
+        
         $this->processors = $processors ?? $this->defaultProcessors();
         $this->continuationCriteria = $continuationCriteria ?? $this->defaultContinuationCriteria();
-
-        $this->state->tools()->withEventHandler($this->events);
+        
+        $this->tools->withEventHandler($this->events);
     }
 
     // HANDLE PARAMETRIZATION //////////////////////////////////////
@@ -62,62 +61,50 @@ class ToolUse {
         return $this->driver;
     }
 
-    public function state() : ToolUseState {
-        return $this->state;
-    }
-
-    public function tools() : Tools {
-        return $this->state->tools();
-    }
-
-    public function messages() : Messages {
-        return $this->state->messages();
-    }
+    // Stateless - no internal state accessors
 
     // HANDLE TOOL USE /////////////////////////////////////////////
 
-    public function nextStep() : ToolUseStep {
-        $this->emitToolUseStepStarted($this->state);
-        $step = $this->driver->useTools($this->state);
-        $this->state = $this->state->withAddedStep($step)->withCurrentStep($step);
-        $this->state = $this->processors->apply($this->state);
-        $this->emitToolUseStepCompleted($this->state);
-        return $step;
+    public function nextStep(ToolUseState $state): ToolUseState {
+        if (!$this->hasNextStep($state)) {
+            $this->emitToolUseFinished($state);
+            return $state;
+        }
+        
+        $this->emitToolUseStepStarted($state);
+        $step = $this->driver->useTools($state, $this->tools);
+        $newState = $state->withAddedStep($step)->withCurrentStep($step);
+        $newState = $this->processors->apply($newState);
+        $this->emitToolUseStepCompleted($newState);
+        return $newState;
     }
 
-    public function hasNextStep() : bool {
-        if ($this->state->currentStep() === null) {
+    public function hasNextStep(ToolUseState $state): bool {
+        if ($state->currentStep() === null) {
             return true;
         }
-        return $this->canContinue($this->state);
+        return $this->canContinue($state);
     }
 
-    public function finalStep() : ToolUseStep {
-        while ($this->hasNextStep()) {
-            $this->nextStep();
+    public function finalStep(ToolUseState $state): ToolUseState {
+        while ($this->hasNextStep($state)) {
+            $state = $this->nextStep($state);
         }
-        return $this->state->currentStep();
+        return $state;
     }
 
-    /** @return Generator<ToolUseStep> */
-    public function iterator() : iterable {
-        while ($this->hasNextStep()) {
-            yield $this->nextStep();
+    /** @return Generator<ToolUseState> */
+    public function iterator(ToolUseState $state): iterable {
+        while ($this->hasNextStep($state)) {
+            $state = $this->nextStep($state);
+            yield $state;
         }
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function canContinue(ToolUseState $state) : bool {
-        $can = $this->continuationCriteria->canContinue($state);
-        if (!$can) {
-            $state->withStatus(match(true) {
-                $state->currentStep()?->hasErrors() => ToolUseStatus::Failed,
-                default => ToolUseStatus::Completed,
-            });
-            $this->emitToolUseFinished($state);
-        }
-        return $can;
+    protected function canContinue(ToolUseState $state): bool {
+        return $this->continuationCriteria->canContinue($state);
     }
 
     protected function defaultProcessors(): StepProcessors {
@@ -159,7 +146,7 @@ class ToolUse {
         $this->dispatch(new ToolUseStepStarted([
             'step' => $state->stepCount() + 1,
             'messages' => $state->messages()->count(),
-            'tools' => count($state->tools()->nameList()),
+            'tools' => count($this->tools->nameList()),
         ]));
     }
 
