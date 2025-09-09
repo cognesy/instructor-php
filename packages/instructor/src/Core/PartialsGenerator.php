@@ -65,7 +65,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->responseText = '';
         $this->responseJson = '';
         $this->sequenceableHandler->reset();
-        $this->toolCalls = $this->toolCalls->withReset();
+        $this->toolCalls = ToolCalls::empty();
     }
 
     /**
@@ -101,7 +101,7 @@ class PartialsGenerator implements CanGeneratePartials
             if (empty($this->responseJson)) {
                 continue;
             }
-            if ($this->toolCalls->empty()) {
+            if ($this->toolCalls->isEmpty()) {
                 $this->newToolCall($responseModel->toolName());
             }
             $result = $this->handleDelta($this->responseJson, $responseModel);
@@ -123,7 +123,10 @@ class PartialsGenerator implements CanGeneratePartials
         }
         // finalize last function call
         if ($this->toolCalls->count() > 0) {
-            $this->finalizeToolCall(Json::fromString($this->responseText)->toString(), $responseModel->toolName());
+            $this->finalizeToolCall(
+                $responseModel->toolName(),
+                Json::fromString($this->responseText)->toString()
+            );
         }
         // finalize sequenceable
         $this->sequenceableHandler->finalize();
@@ -162,7 +165,7 @@ class PartialsGenerator implements CanGeneratePartials
 
         // If we have buffered args, finalize the previous tool call first
         if ($hasBuffer) {
-            $this->finalizeToolCall($this->responseJson, $responseModel->toolName());
+            $this->finalizeToolCall($responseModel->toolName(), $this->responseJson);
             $this->responseJson = '';
         }
 
@@ -177,7 +180,7 @@ class PartialsGenerator implements CanGeneratePartials
         $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($json) => $this->validatePartialResponse($json, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
             ->tap(fn($json) => $this->events->dispatch(new PartialJsonReceived(['partialJson' => $json])))
-            ->tap(fn($json) => $this->updateToolCall($json, $responseModel->toolName()))
+            ->tap(fn($json) => $this->updateToolCall($responseModel->toolName(), $json))
             ->through(fn($json) => $this->tryGetPartialObject($json, $responseModel))
             ->onFailure(fn($result) => $this->events->dispatch(
                 new PartialResponseGenerationFailed(Arrays::asArray($result->exception()))
@@ -227,23 +230,23 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     protected function newToolCall(string $name) : ToolCall {
-        $this->toolCalls = $this->toolCalls->withAdded($name);
+        $this->toolCalls = $this->toolCalls->withAddedToolCall($name);
         $newToolCall = $this->toolCalls->last();
-        $this->events->dispatch(new StreamedToolCallStarted(['toolCall' => $newToolCall->toArray()]));
+        $this->events->dispatch(new StreamedToolCallStarted(['toolCall' => $newToolCall?->toArray()]));
         return $newToolCall;
     }
 
-    protected function updateToolCall(string $responseJson, string $defaultName) : ToolCall {
-        $this->toolCalls = $this->toolCalls->withLastUpdated($responseJson, $defaultName);
+    protected function updateToolCall(string $name, string $responseJson) : ToolCall {
+        $this->toolCalls = $this->toolCalls->withLastToolCallUpdated($name, $responseJson);
         $updatedToolCall = $this->toolCalls->last();
-        $this->events->dispatch(new StreamedToolCallUpdated(['toolCall' => $updatedToolCall->toArray()]));
+        $this->events->dispatch(new StreamedToolCallUpdated(['toolCall' => $updatedToolCall?->toArray()]));
         return $updatedToolCall;
     }
 
-    protected function finalizeToolCall(string $responseJson, string $defaultName) : ToolCall {
-        $this->toolCalls = $this->toolCalls->withLastFinalized($responseJson, $defaultName);
+    protected function finalizeToolCall(string $name, string $responseJson) : ToolCall {
+        $this->toolCalls = $this->toolCalls->withLastToolCallUpdated($name, $responseJson);
         $finalizedToolCall = $this->toolCalls->last();
-        $this->events->dispatch(new StreamedToolCallCompleted(['toolCall' => $finalizedToolCall->toArray()]));
+        $this->events->dispatch(new StreamedToolCallCompleted(['toolCall' => $finalizedToolCall?->toArray()]));
         return $finalizedToolCall;
     }
 }

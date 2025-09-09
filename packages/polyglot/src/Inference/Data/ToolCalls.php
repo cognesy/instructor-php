@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
+use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 
 class ToolCalls
@@ -14,13 +15,19 @@ class ToolCalls
         $this->toolCalls = $toolCalls;
     }
 
+    // CONSTRUCTORS ////////////////////////////////////////////////
+
+    public static function empty() : ToolCalls {
+        return new self();
+    }
+
     public static function fromArray(array $toolCalls) : ToolCalls {
         $list = [];
         foreach ($toolCalls as $key => $toolCall) {
             $list[] = match(true) {
                 is_array($toolCall) => ToolCall::fromArray($toolCall),
                 is_object($toolCall) && $toolCall instanceof ToolCall => $toolCall,
-                is_string($toolCall) => new ToolCall($key, $toolCall),
+                is_string($toolCall) => new ToolCall($key, self::makeArgs($toolCall)),
                 default => throw new InvalidArgumentException('Cannot create ToolCall from provided data: ' . print_r($toolCall, true))
             };
         }
@@ -37,6 +44,39 @@ class ToolCalls
         }
         return new ToolCalls($list);
     }
+
+    // MUTATORS /////////////////////////////////////////////////////
+
+    public function withAddedToolCall(string $name, array $args = []) : self {
+        $newToolCall = new ToolCall(
+            name: $name,
+            args: $args,
+        );
+        return new self([...$this->toolCalls, $newToolCall]);
+    }
+
+    public function withLastToolCallUpdated(string $name, string $jsonString) : self {
+        $argsArray = self::makeArgs($jsonString);
+        if (empty($this->toolCalls)) {
+            return $this->withAddedToolCall($name, $argsArray);
+        }
+
+        $calls = [...$this->toolCalls];
+        $lastIndex = count($calls) - 1;
+        $lastCall = $calls[$lastIndex];
+
+        // Update args first, then name if needed
+        $updatedCall = $lastCall->withArgs($argsArray);
+        if (empty($lastCall->name())) {
+            $updatedCall = $updatedCall->withName($name);
+        }
+
+        $calls[$lastIndex] = $updatedCall;
+
+        return new self($calls);
+    }
+
+    // ACCESSORS ////////////////////////////////////////////////////
 
     public function count() : int {
         return count($this->toolCalls);
@@ -69,7 +109,7 @@ class ToolCalls
         return !empty($this->toolCalls);
     }
 
-    public function empty() : bool {
+    public function isEmpty() : bool {
         return empty($this->toolCalls);
     }
 
@@ -85,6 +125,8 @@ class ToolCalls
         }
     }
 
+    // TRANSFORMERS ////////////////////////////////////////////////
+
     public function map(callable $callback) : array {
         return array_map($callback, $this->toolCalls);
     }
@@ -95,82 +137,6 @@ class ToolCalls
 
     public function reduce(callable $callback, mixed $initial = null) : mixed {
         return array_reduce($this->toolCalls, $callback, $initial);
-    }
-
-    public function reset() : void {
-        $this->toolCalls = [];
-    }
-
-    public function add(string $toolName, string $args = '') : ToolCall {
-        $newToolCall = new ToolCall(
-            name: $toolName,
-            args: $args
-        );
-        $this->toolCalls[] = $newToolCall;
-        return $newToolCall;
-    }
-
-    public function updateLast(string $responseJson, string $defaultName) : ToolCall {
-        $last = $this->last();
-        if (empty($last)) {
-            return $this->add($defaultName, $responseJson);
-        }
-        $last->withName($last->name() ?? $defaultName);
-        $last->withArgs($responseJson);
-        return $this->last();
-    }
-
-    public function finalizeLast(string $responseJson, string $defaultName) : ToolCall {
-        return $this->updateLast($responseJson, $defaultName);
-    }
-
-    // IMMUTABLE METHODS (new) ////////////////////////////////////////////////
-
-    /**
-     * Returns a new ToolCalls instance with all tool calls removed.
-     */
-    public function withReset() : self {
-        return new self([]);
-    }
-
-    /**
-     * Returns a new ToolCalls instance with an additional tool call.
-     */
-    public function withAdded(string $name, string|array $args = '') : self {
-        $newCall = new ToolCall($name, $args);
-        return new self([...$this->toolCalls, $newCall]);
-    }
-
-    /**
-     * Returns a new ToolCalls instance with the last tool call updated.
-     * If no tool calls exist, adds a new one with the provided name and args.
-     */
-    public function withLastUpdated(string $responseJson, string $defaultName) : self {
-        if (empty($this->toolCalls)) {
-            return $this->withAdded($defaultName, $responseJson);
-        }
-        
-        $calls = [...$this->toolCalls];
-        $lastIndex = count($calls) - 1;
-        $lastCall = $calls[$lastIndex];
-        
-        // Update args first, then name if needed
-        $updatedCall = $lastCall->withArgs($responseJson);
-        if (empty($lastCall->name())) {
-            $updatedCall = $updatedCall->withName($defaultName);
-        }
-        
-        $calls[$lastIndex] = $updatedCall;
-        
-        return new self($calls);
-    }
-
-    /**
-     * Returns a new ToolCalls instance with the last tool call finalized.
-     * Alias for withLastUpdated for backward compatibility.
-     */
-    public function withLastFinalized(string $responseJson, string $defaultName) : self {
-        return $this->withLastUpdated($responseJson, $defaultName);
     }
 
     public function toArray() : array {
@@ -195,5 +161,17 @@ class ToolCalls
             $clonedToolCalls[] = $toolCall->clone();
         }
         return new ToolCalls($clonedToolCalls);
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////
+
+    private static function makeArgs(string|array $args): array {
+        return match(true) {
+            is_array($args) => $args,
+            is_string($args) => empty($args)
+                ? []
+                : Json::fromString($args)->toArray(),
+            default => []
+        };
     }
 }
