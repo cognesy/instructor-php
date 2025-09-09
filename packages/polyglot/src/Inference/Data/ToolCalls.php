@@ -61,19 +61,17 @@ final readonly class ToolCalls
             return $this->withAddedToolCall($name, $argsArray);
         }
 
-        $calls = [...$this->toolCalls];
-        $lastIndex = count($calls) - 1;
-        $lastCall = $calls[$lastIndex];
+        $updatedCalls = $this->toolCalls;
+        $lastIndex = count($updatedCalls) - 1;
+        $lastCall = $updatedCalls[$lastIndex];
 
-        // Update args first, then name if needed
         $updatedCall = $lastCall->withArgs($argsArray);
         if (empty($lastCall->name())) {
             $updatedCall = $updatedCall->withName($name);
         }
 
-        $calls[$lastIndex] = $updatedCall;
-
-        return new self($calls);
+        $updatedCalls[$lastIndex] = $updatedCall;
+        return new self($updatedCalls);
     }
 
     // ACCESSORS ////////////////////////////////////////////////////
