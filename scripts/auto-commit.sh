@@ -78,7 +78,7 @@ generate_commit_message() {
     
     if [ -z "$package_changes" ]; then
         # No package source changes - use fallback analysis
-        print_status "No package source changes detected, using basic analysis..."
+        print_status "No package source changes detected, using basic analysis..." >&2
         generate_fallback_commit_message
         return
     fi
@@ -87,7 +87,7 @@ generate_commit_message() {
     local top_packages=$(echo "$package_changes" | head -3 | awk '{print $2}')
     local analysis_scope=""
     
-    print_status "Analyzing changes in packages: $(echo $top_packages | tr '\n' ' ')"
+    print_status "Analyzing changes in packages: $(echo $top_packages | tr '\n' ' ')" >&2
     
     # Build analysis scope
     for package in $top_packages; do
@@ -95,7 +95,7 @@ generate_commit_message() {
         
         if [ "$package_line_count" -gt 100 ]; then
             # Too many changes, focus on top 3 files
-            print_status "Package $package has $package_line_count lines changed, focusing on top files..."
+            print_status "Package $package has $package_line_count lines changed, focusing on top files..." >&2
             local top_files=$(get_top_files_in_package "$package")
             for file in $top_files; do
                 analysis_scope="$analysis_scope $file"
@@ -124,7 +124,7 @@ generate_commit_message() {
     git diff --cached --name-status >> "$temp_file"
     
     # Use Claude to analyze and generate commit message
-    print_status "Using Claude CLI to analyze changes and generate commit message..."
+    print_status "Using Claude CLI to analyze changes and generate commit message..." >&2
     
     local claude_prompt="Analyze the following git diff and staged files to generate a conventional commit message.
 
@@ -152,7 +152,7 @@ Respond with ONLY the commit message, no explanation."
     if [[ "$commit_message" =~ ^[a-z]+(\([a-z0-9-]+\))?:\ .+ ]]; then
         echo "$commit_message"
     else
-        print_warning "Claude generated invalid format, using fallback..."
+        print_warning "Claude generated invalid format, using fallback..." >&2
         generate_fallback_commit_message
     fi
 }
@@ -209,7 +209,7 @@ generate_fallback_commit_message() {
 }
 
 # Generate commit message
-commit_message=$(generate_commit_message)
+commit_message=$(generate_commit_message 2>/dev/null)
 print_status "Generated commit message: $commit_message"
 
 # Show what will be committed
