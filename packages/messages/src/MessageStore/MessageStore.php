@@ -5,8 +5,6 @@ namespace Cognesy\Messages\MessageStore;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesAccess;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesConversion;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesCreation;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesMutation;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesTransformation;
@@ -24,10 +22,7 @@ final readonly class MessageStore
 {
     use HandlesAccess;
     use HandlesParameters;
-    use HandlesConversion;
-    use HandlesCreation;
     use HandlesMutation;
-    //use HandlesReordering;
     use HandlesTransformation;
 
     public Sections $sections;
@@ -41,6 +36,8 @@ final readonly class MessageStore
         $this->parameters = $parameters ?? new MessageStoreParameters();
     }
 
+    // CONSTRUCTORS
+
     public static function fromSections(Section ...$sections): static {
         return new static(new Sections(...$sections));
     }
@@ -50,8 +47,42 @@ final readonly class MessageStore
         return new self($sections);
     }
 
-    public function clone() : self {
-        return (new MessageStore($this->sections))
-            ->withParams($this->parameters());
+    // CONVERSIONS
+
+    public function toMessages() : Messages {
+        return $this->sections->toMessages();
+    }
+
+    /**
+     * @param array<string> $order
+     * @return array<string,string|array>
+     */
+    public function toArray() : array {
+        return $this->toMessages()->toArray();
+    }
+
+    /**
+     * @param array<string> $order
+     */
+    public function toString() : string {
+        return $this->toMessages()->toString();
+    }
+
+    // FLUENT API
+
+    /**
+     * Get a fluent section operator for the given section
+     * 
+     * Usage:
+     * $store->applyTo('system')->appendMessages($messages)
+     * $store->applyTo('prompt')->replaceMessages($messages)
+     * $store->applyTo('examples')->remove()
+     */
+    public function applyTo(string $sectionName): SectionMutator {
+        return new SectionMutator($this, $sectionName);
+    }
+
+    public function section(string $name) : SectionAccessor {
+        return new SectionAccessor($this, $name);
     }
 }

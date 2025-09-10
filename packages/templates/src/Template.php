@@ -241,14 +241,14 @@ class Template
         
         // Ensure default section exists
         if (!$store->hasSection($currentSectionName)) {
-            $store = $store->appendSection(new Section($currentSectionName));
+            $store = $store->withSectionAdded(new Section($currentSectionName));
         }
         
         foreach ($xml->children() as $element) {
             if ($element->tag() === 'section') {
                 $currentSectionName = $element->attribute('name') ?? 'messages';
                 if (!$store->hasSection($currentSectionName)) {
-                    $store = $store->appendSection(new Section($currentSectionName));
+                    $store = $store->withSectionAdded(new Section($currentSectionName));
                 }
                 continue;
             }
@@ -264,7 +264,7 @@ class Template
                 }
             );
             
-            $store = $store->appendMessageToSection($currentSectionName, $message);
+            $store = $store->applyTo($currentSectionName)->appendMessages($message);
         }
         return $store;
     }

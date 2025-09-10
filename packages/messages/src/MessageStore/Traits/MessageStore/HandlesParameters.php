@@ -34,4 +34,11 @@ trait HandlesParameters
             parameters: $this->parameters->unset($name),
         );
     }
+
+    public function mergeParameters(array|MessageStoreParameters $parameters) : static {
+        return new static(
+            sections: $this->sections,
+            parameters: $this->parameters->merge($parameters),
+        );
+    }
 }

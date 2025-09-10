@@ -11,10 +11,6 @@ trait HandlesAccess
         return $this->sections;
     }
 
-    public function section(string $name) : Section {
-        return $this->getSection($name);
-    }
-
     public function getSection(string $name) : Section {
         if (!$this->sections->has($name)) {
             return Section::empty($name);

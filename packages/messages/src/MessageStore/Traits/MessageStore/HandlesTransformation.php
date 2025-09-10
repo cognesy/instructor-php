@@ -18,7 +18,7 @@ trait HandlesTransformation
         $selectedSections = [];
         foreach ($names as $sectionName) {
             if ($this->hasSection($sectionName)) {
-                $selectedSections[] = $this->section($sectionName);
+                $selectedSections[] = $this->getSection($sectionName);
             }
         }
         return new static(
@@ -27,21 +27,7 @@ trait HandlesTransformation
         );
     }
 
-//    public function toMergedPerRole() : static {
-//        $mergedSections = [];
-//        foreach ($this->sections->each() as $item) {
-//            if ($item->isEmpty()) {
-//                continue;
-//            }
-//            $mergedSections[] = $item->toMergedPerRole();
-//        }
-//        return new static(
-//            sections: new Sections(...$mergedSections),
-//            parameters: $this->parameters,
-//        );
-//    }
-
-    public function trimmed() : static {
+    public function withoutEmptyMessages() : static {
         $trimmedSections = [];
         foreach ($this->sections->each() as $section) {
             $trimmed = $section->trimmed();

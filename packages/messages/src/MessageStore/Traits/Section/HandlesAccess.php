@@ -26,7 +26,7 @@ trait HandlesAccess
         return $this->messages->isEmpty();
     }
 
-    public function notEmpty() : bool {
+    public function isNotEmpty() : bool {
         return !$this->isEmpty();
     }
 
