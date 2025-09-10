@@ -9,9 +9,9 @@ use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Exception;
 
 /**

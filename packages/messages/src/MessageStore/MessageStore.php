@@ -2,12 +2,13 @@
 
 namespace Cognesy\Messages\MessageStore;
 
+use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesAccess;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesConversion;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesCreation;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesMutation;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesReordering;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesTransformation;
 
 /**
@@ -26,7 +27,7 @@ final readonly class MessageStore
     use HandlesConversion;
     use HandlesCreation;
     use HandlesMutation;
-    use HandlesReordering;
+    //use HandlesReordering;
     use HandlesTransformation;
 
     public Sections $sections;
@@ -42,5 +43,15 @@ final readonly class MessageStore
 
     public static function fromSections(Section ...$sections): static {
         return new static(new Sections(...$sections));
+    }
+
+    public static function fromMessages(Messages $messages, string $section = 'messages') : MessageStore {
+        $sections = new Sections((new Section($section))->appendMessages($messages));
+        return new self($sections);
+    }
+
+    public function clone() : self {
+        return (new MessageStore($this->sections))
+            ->withParams($this->parameters());
     }
 }

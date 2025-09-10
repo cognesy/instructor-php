@@ -5,7 +5,7 @@ namespace Cognesy\Addons\Chat\Compilers;
 use Cognesy\Addons\Chat\Contracts\CanCompileMessages;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\MessageStore\Sections;
+use Cognesy\Messages\MessageStore\Collections\Sections;
 
 class SelectedSections implements CanCompileMessages {
     public function __construct(

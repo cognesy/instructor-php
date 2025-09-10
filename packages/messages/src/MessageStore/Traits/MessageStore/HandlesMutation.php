@@ -4,10 +4,10 @@ namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\MessageStoreParameters;
 use Cognesy\Messages\MessageStore\Section;
-use Cognesy\Messages\MessageStore\Sections;
 use Exception;
 
 trait HandlesMutation
@@ -24,10 +24,7 @@ trait HandlesMutation
         if ($this->hasSection($name)) {
             throw new Exception("Section with name '{$name}' already exists - use mergeSection() instead.");
         }
-        return $this->forceAppendSection($section);
-    }
 
-    protected function forceAppendSection(Section $section) : static {
         $newSections = $this->sections->add($section);
         return new static(
             sections: $newSections,
@@ -39,21 +36,10 @@ trait HandlesMutation
         if ($this->hasSection($section->name)) {
             $existingSection = $this->section($section->name);
             $mergedSection = $existingSection->mergeSection($section);
-            return $this->replaceSection($section->name, $mergedSection);
-        } else {
-            return $this->appendSection($section);
+            return $this->withSectionReplaced($section->name, $mergedSection);
         }
-    }
 
-    public function overrideMessageStore(MessageStore $store) : static {
-        $result = $this;
-        foreach($store->sections->each() as $section) {
-            if ($result->hasSection($section->name)) {
-                $result = $result->removeSection($section->name);
-            }
-            $result = $result->appendSection($section);
-        }
-        return $result->mergeParameters($store->parameters);
+        return $this->appendSection($section);
     }
 
     public function mergeMessageStore(MessageStore $store) : static {
@@ -71,7 +57,7 @@ trait HandlesMutation
         );
     }
 
-    public function removeSection(string $name) : static {
+    public function withSectionRemoved(string $name) : static {
         $newSections = $this->sections->filter(fn($section) => $section->name !== $name);
         return new static(
             sections: $newSections,
@@ -79,7 +65,7 @@ trait HandlesMutation
         );
     }
 
-    public function replaceSection(string $name, Section $newSection) : static {
+    public function withSectionReplaced(string $name, Section $newSection) : static {
         $newSections = new Sections(...$this->sections->map(fn($section) =>
             $section->name === $name ? $newSection : $section
         ));
@@ -92,7 +78,7 @@ trait HandlesMutation
     public function withSectionMessages(string $sectionName, Messages $messages) : static {
         $store = $this->withSection($sectionName);
         $newSection = new Section($sectionName, messages: $messages);
-        return $store->replaceSection($sectionName, $newSection);
+        return $store->withSectionReplaced($sectionName, $newSection);
     }
 
     public function withSectionMessage(string $sectionName, array|Message $message) : static {
@@ -111,24 +97,9 @@ trait HandlesMutation
         return $store;
     }
 
-    public function withConditionalSectionMessage(string $sectionName, array|Message $message, string $conditionSectionName) : static {
-        $store = $this->withSection($sectionName)->withSection($conditionSectionName);
-        if ($store->getSection($conditionSectionName)->notEmpty()) {
-            return $store->withSectionMessageIfEmpty($sectionName, $message);
-        }
-        return $store;
-    }
-
     public function appendMessageToSection(string $sectionName, array|Message $message) : static {
         $section = $this->section($sectionName);
         $updatedSection = $section->appendMessage($message);
-        return $this->replaceSection($sectionName, $updatedSection);
+        return $this->withSectionReplaced($sectionName, $updatedSection);
     }
-
-    public function prependMessageToSection(string $sectionName, array|Message $message) : static {
-        $section = $this->section($sectionName);
-        $updatedSection = $section->prependMessage($message);
-        return $this->replaceSection($sectionName, $updatedSection);
-    }
-
 }

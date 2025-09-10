@@ -72,28 +72,28 @@ class RequestMaterializer implements CanMaterializeRequest
         $store = $store->withSectionMessages('system', $this->makeSystem($cachedContext->messages(), $cachedContext->system()));
         if ($store->getSection('system')->notEmpty()) {
             $updated = $store->getSection('system')->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->replaceSection('system', $updated);
+            $store = $store->withSectionReplaced('system', $updated);
         }
 
         // cached chat messages
         $store = $store->withSectionMessages('cached-messages', $this->makeMessages($cachedContext->messages()));
         if ($store->getSection('cached-messages')->notEmpty()) {
             $updated = $store->getSection('cached-messages')->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->replaceSection('cached-messages', $updated);
+            $store = $store->withSectionReplaced('cached-messages', $updated);
         }
 
         // cached prompt
         if ($cachedContext->prompt() !== '') {
             $store = $store->withSectionMessage('cached-prompt', Message::fromString($cachedContext->prompt()));
             $updated = $store->getSection('cached-prompt')->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->replaceSection('cached-prompt', $updated);
+            $store = $store->withSectionReplaced('cached-prompt', $updated);
         }
 
         // cached examples
         $store = $store->withSectionMessages('cached-examples', $this->makeExamples($cachedContext->examples()));
         if ($store->getSection('cached-examples')->notEmpty()) {
             $updated = $store->getSection('cached-examples')->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->replaceSection('cached-examples', $updated);
+            $store = $store->withSectionReplaced('cached-examples', $updated);
         }
 
         return $store->trimmed();
@@ -105,7 +105,7 @@ class RequestMaterializer implements CanMaterializeRequest
         }
 
         if ($store->section('cached-prompt')->notEmpty()) {
-            $store = $store->removeSection('prompt');
+            $store = $store->withSectionRemoved('prompt');
             $store = $store->withSectionMessageIfEmpty('pre-cached-prompt', [
                 'role' => 'user',
                 'content' => [[
@@ -142,7 +142,6 @@ class RequestMaterializer implements CanMaterializeRequest
             return $store;
         }
 
-        $newMessageStore = $store->clone();
         $messages = [];
         foreach($request->attempts() as $attempt) {
             $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
@@ -150,7 +149,7 @@ class RequestMaterializer implements CanMaterializeRequest
                 . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
-        $newMessageStore = $newMessageStore->withSectionMessages('retries', Messages::fromArray($messages));
+        $newMessageStore = $store->withSectionMessages('retries', Messages::fromArray($messages));
         return $newMessageStore;
     }
 

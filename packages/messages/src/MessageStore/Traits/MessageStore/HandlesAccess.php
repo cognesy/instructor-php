@@ -2,8 +2,8 @@
 
 namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
+use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\Section;
-use Cognesy\Messages\MessageStore\Sections;
 
 trait HandlesAccess
 {

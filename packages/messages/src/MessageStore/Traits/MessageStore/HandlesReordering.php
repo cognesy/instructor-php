@@ -5,6 +5,7 @@ namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
 
+/** @deprecated */
 trait HandlesReordering
 {
     public function reorder(array $order) : MessageStore {

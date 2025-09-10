@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\MessageStore;
+namespace Cognesy\Messages\MessageStore\Collections;
 
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageStore\Section;
 use InvalidArgumentException;
 
 final readonly class Sections

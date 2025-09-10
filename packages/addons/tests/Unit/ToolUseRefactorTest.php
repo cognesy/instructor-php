@@ -2,15 +2,21 @@
 
 use Cognesy\Addons\ToolUse\ContinuationCriteria\FinishReasonCheck;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
+use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Utils\Result\Result;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
@@ -25,15 +31,15 @@ it('continues loop on tool failure and formats error message', function () {
         ),
     ]);
 
-    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+    $tools = (new Tools())
         ->withTool(FunctionTool::fromCallable(_sum(...)));
         
-    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState())
-        ->withMessages(\Cognesy\Messages\Messages::fromString('Test failure handling'));
+    $state = (new ToolUseState())
+        ->withMessages(Messages::fromString('Test failure handling'));
         
     $toolUse = new ToolUse(
         tools: $tools,
-        driver: new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );
 
     $state = $toolUse->nextStep($state);
@@ -70,10 +76,10 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
     // success step (no errors): empty tool executions
     $state = $state->withAddedStep(new ToolUseStep());
     // failed steps: emulate by creating ToolUseStep with error executions
-    $failedExecs = new \Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions([
-        new \Cognesy\Addons\ToolUse\Data\ToolExecution(
+    $failedExecs = new ToolExecutions([
+        new ToolExecution(
             new ToolCall('noop', []),
-            \Cognesy\Utils\Result\Result::failure(new Exception('x')),
+            Result::failure(new Exception('x')),
             new DateTimeImmutable(),
             new DateTimeImmutable()
         )

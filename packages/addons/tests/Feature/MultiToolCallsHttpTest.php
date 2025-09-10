@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 function _inc_http(int $x): int { return $x + 1; }
@@ -37,12 +40,12 @@ it('executes two tool calls returned by HTTP mocked response', function () {
         model: 'gpt-4o-mini'
     );
 
-    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+    $tools = (new Tools())
         ->withTool(FunctionTool::fromCallable(_inc_http(...)))
         ->withTool(FunctionTool::fromCallable(_dbl_http(...)));
         
-    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState())
-        ->withMessages(\Cognesy\Messages\Messages::fromString('Two calls'));
+    $state = (new ToolUseState())
+        ->withMessages(Messages::fromString('Two calls'));
         
     $toolUse = new ToolUse(
         tools: $tools,

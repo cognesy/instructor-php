@@ -134,7 +134,8 @@ it('compiles input messages using compiler', function () {
     
     $step = $participant->act($state);
     
-    expect($step->inputMessages())->toBeInstanceOf(\Cognesy\Messages\Messages::class);
-    expect($step->inputMessages()->count())->toBe(1);
-    expect($step->inputMessages()->first()->content()->toString())->toBe('Input message');
+    expect($step->inputMessages())
+        ->toBeInstanceOf(Messages::class)
+        ->and($step->inputMessages()->count())->toBe(1)
+        ->and($step->inputMessages()->first()->content()->toString())->toBe('Input message');
 });

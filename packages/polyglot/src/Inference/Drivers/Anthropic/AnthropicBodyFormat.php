@@ -2,12 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Anthropic;
 
+use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Messages\Enums\MessageRole;
-use Cognesy\Messages\Messages;
 
 class AnthropicBodyFormat implements CanMapRequestBody
 {

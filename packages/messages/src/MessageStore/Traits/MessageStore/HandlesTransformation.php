@@ -2,7 +2,7 @@
 
 namespace Cognesy\Messages\MessageStore\Traits\MessageStore;
 
-use Cognesy\Messages\MessageStore\Sections;
+use Cognesy\Messages\MessageStore\Collections\Sections;
 
 trait HandlesTransformation
 {
@@ -27,19 +27,19 @@ trait HandlesTransformation
         );
     }
 
-    public function toMergedPerRole() : static {
-        $mergedSections = [];
-        foreach ($this->sections->each() as $item) {
-            if ($item->isEmpty()) {
-                continue;
-            }
-            $mergedSections[] = $item->toMergedPerRole();
-        }
-        return new static(
-            sections: new Sections(...$mergedSections),
-            parameters: $this->parameters,
-        );
-    }
+//    public function toMergedPerRole() : static {
+//        $mergedSections = [];
+//        foreach ($this->sections->each() as $item) {
+//            if ($item->isEmpty()) {
+//                continue;
+//            }
+//            $mergedSections[] = $item->toMergedPerRole();
+//        }
+//        return new static(
+//            sections: new Sections(...$mergedSections),
+//            parameters: $this->parameters,
+//        );
+//    }
 
     public function trimmed() : static {
         $trimmedSections = [];

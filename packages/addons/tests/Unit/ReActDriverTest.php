@@ -1,11 +1,15 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\ContinuationCriteria\{ExecutionTimeLimit, RetryLimit, StepsLimit, TokenUsageLimit};
+use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\{StepsLimit,TokenUsageLimit,ExecutionTimeLimit,RetryLimit};
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
@@ -29,13 +33,13 @@ it('runs a ReAct call then final answer', function () {
         ])),
     ]);
 
-    $react = new ReActDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
+    $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
     $criteria = new ContinuationCriteria(new StepsLimit(2), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(1));
     
-    $tools = new \Cognesy\Addons\ToolUse\Tools();
+    $tools = new Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
-    $state = $state->withMessages(\Cognesy\Messages\Messages::fromString('Add 2 and 3, then report the result'));
+    $state = new ToolUseState();
+    $state = $state->withMessages(Messages::fromString('Add 2 and 3, then report the result'));
     
     $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
@@ -58,13 +62,13 @@ it('surfaces tool arg validation errors as observation', function () {
         ])),
     ]);
 
-    $react = new ReActDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
+    $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
     $criteria = new ContinuationCriteria(new StepsLimit(2), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(0));
     
-    $tools = new \Cognesy\Addons\ToolUse\Tools();
+    $tools = new Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
-    $state = $state->withMessages(\Cognesy\Messages\Messages::fromString('Add 2 and missing arg b'));
+    $state = new ToolUseState();
+    $state = $state->withMessages(Messages::fromString('Add 2 and missing arg b'));
     
     $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
@@ -87,12 +91,12 @@ it('can finalize via Inference when configured', function () {
         new InferenceResponse(content: 'The final answer is 42'),
     ]);
 
-    $react = new ReActDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver), finalViaInference: true);
+    $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver), finalViaInference: true);
     $criteria = new ContinuationCriteria(new StepsLimit(1), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(0));
     
-    $tools = new \Cognesy\Addons\ToolUse\Tools();
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
-    $state = $state->withMessages(\Cognesy\Messages\Messages::fromString('Give me the final answer 42'));
+    $tools = new Tools();
+    $state = new ToolUseState();
+    $state = $state->withMessages(Messages::fromString('Give me the final answer 42'));
     
     $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
 

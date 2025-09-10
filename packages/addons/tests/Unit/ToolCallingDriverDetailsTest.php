@@ -1,13 +1,16 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
-use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
@@ -26,16 +29,16 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     );
     $driver = new FakeInferenceDriver([$resp]);
 
-    $tools = (new \Cognesy\Addons\ToolUse\Tools())
+    $tools = (new Tools())
         ->withTool(FunctionTool::fromCallable(_inc(...)))
         ->withTool(FunctionTool::fromCallable(_dbl(...)));
         
-    $state = (new \Cognesy\Addons\ToolUse\Data\ToolUseState())
-        ->withMessages(\Cognesy\Messages\Messages::fromString('run multiple'));
+    $state = (new ToolUseState())
+        ->withMessages(Messages::fromString('run multiple'));
         
     $toolUse = new ToolUse(
         tools: $tools,
-        driver: new ToolCallingDriver(llm: \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );
 
     $state = $toolUse->nextStep($state);
