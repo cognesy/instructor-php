@@ -1,21 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Messages\MessageStore;
+namespace Cognesy\Messages\MessageStore\Operators;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
 
-/**
- * Fluent API for MessageStore section operations
- * 
- * Usage:
- * $store->applyTo('system')->appendMessages($messages)
- * $store->applyTo('prompt')->replaceMessages($messages) 
- * $store->applyTo('examples')->remove()
- */
-final readonly class SectionMutator
-{
+class SectionOperator {
     private MessageStore $store;
     private string $sectionName;
 
@@ -23,13 +16,41 @@ final readonly class SectionMutator
         MessageStore $store,
         string $sectionName,
     ) {
-        $this->sectionName = $sectionName;
         $this->store = $store;
+        $this->sectionName = $sectionName;
     }
 
-    /**
-     * Append messages to the section
-     */
+    // ACCESSORS
+
+    public function name(): string {
+        return $this->sectionName;
+    }
+
+    public function get(): Section {
+        if (!$this->store->sections()->has($this->sectionName)) {
+            return Section::empty($this->sectionName);
+        }
+        return $this->store->sections()->get($this->sectionName);
+    }
+
+    public function exists(): bool {
+        return $this->store->sections()->has($this->sectionName);
+    }
+
+    public function isEmpty(): bool {
+        return $this->get()->isEmpty();
+    }
+
+    public function isNotEmpty(): bool {
+        return !$this->isEmpty();
+    }
+
+    public function messages(): Messages {
+        return $this->get()->messages();
+    }
+
+    // MUTATORS
+
     public function appendMessages(array|Message|Messages $messages): MessageStore {
         $messages = Messages::fromAny($messages);
         if ($messages->isEmpty()) {
@@ -55,7 +76,7 @@ final readonly class SectionMutator
         ));
         return new MessageStore(
             sections: $newSections,
-            parameters: $this->store->parameters(),
+            parameters: $this->store->parameters,
         );
     }
 
@@ -66,9 +87,6 @@ final readonly class SectionMutator
         return $this->withStore($storeWithSection)->setSection($section);
     }
 
-    /**
-     * Remove the section entirely
-     */
     public function remove(): MessageStore {
         if (!$this->store->section($this->sectionName)->exists()) {
             return $this->store;
@@ -76,7 +94,7 @@ final readonly class SectionMutator
         $newSections = $this->store->sections()->filter(fn($section) => $section->name !== $this->sectionName);
         return new MessageStore(
             sections: $newSections,
-            parameters: $this->store->parameters(),
+            parameters: $this->store->parameters,
         );
     }
 

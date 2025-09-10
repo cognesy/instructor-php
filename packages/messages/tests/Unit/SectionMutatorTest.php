@@ -11,7 +11,7 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $systemMessage = new Message(role: 'system', content: 'You are helpful.');
             
-            $result = $store->applyTo('system')->appendMessages($systemMessage);
+            $result = $store->section('system')->appendMessages($systemMessage);
             
             expect($result->sections()->names())->toBe(['system']);
             expect($result->section('system')->messages()->count())->toBe(1);
@@ -23,8 +23,8 @@ describe('SectionMutator', function () {
             $userMessage = new Message(role: 'user', content: 'Hello');
             $assistantMessage = new Message(role: 'assistant', content: 'Hi there!');
             
-            $store = $store->applyTo('chat')->appendMessages($userMessage);
-            $result = $store->applyTo('chat')->appendMessages($assistantMessage);
+            $store = $store->section('chat')->appendMessages($userMessage);
+            $result = $store->section('chat')->appendMessages($assistantMessage);
             
             expect($result->section('chat')->messages()->count())->toBe(2);
             expect($result->section('chat')->messages()->first()->content()->toString())->toBe('Hello');
@@ -38,7 +38,7 @@ describe('SectionMutator', function () {
                 ['role' => 'assistant', 'content' => 'Second'],
             ]);
             
-            $result = $store->applyTo('conversation')->appendMessages($messages);
+            $result = $store->section('conversation')->appendMessages($messages);
             
             expect($result->section('conversation')->messages()->count())->toBe(2);
         });
@@ -47,7 +47,7 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $messageArray = ['role' => 'user', 'content' => 'Test message'];
             
-            $result = $store->applyTo('test')->appendMessages($messageArray);
+            $result = $store->section('test')->appendMessages($messageArray);
             
             expect($result->section('test')->messages()->count())->toBe(1);
             expect($result->section('test')->messages()->first()->content()->toString())->toBe('Test message');
@@ -57,7 +57,7 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $emptyMessages = Messages::empty();
             
-            $result = $store->applyTo('empty')->appendMessages($emptyMessages);
+            $result = $store->section('empty')->appendMessages($emptyMessages);
             
             expect($result->sections()->names())->toBe([]);
             expect($result)->toBe($store); // Should return same instance
@@ -70,8 +70,8 @@ describe('SectionMutator', function () {
             $userMessage = new Message(role: 'user', content: 'Hello');
             $assistantMessage = new Message(role: 'assistant', content: 'Hi there!');
             
-            $store = $store->applyTo('chat')->appendMessages($userMessage);
-            $result = $store->applyTo('chat')->setMessages($assistantMessage);
+            $store = $store->section('chat')->appendMessages($userMessage);
+            $result = $store->section('chat')->setMessages($assistantMessage);
             
             expect($result->section('chat')->messages()->count())->toBe(1);
             expect($result->section('chat')->messages()->first()->role()->value)->toBe('assistant');
@@ -82,7 +82,7 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $systemMessage = new Message(role: 'system', content: 'You are helpful.');
             
-            $result = $store->applyTo('new-section')->setMessages($systemMessage);
+            $result = $store->section('new-section')->setMessages($systemMessage);
             
             expect($result->sections()->names())->toBe(['new-section']);
             expect($result->section('new-section')->messages()->count())->toBe(1);
@@ -94,10 +94,10 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $userMessage = new Message(role: 'user', content: 'Hello');
             
-            $store = $store->applyTo('temp')->appendMessages($userMessage);
+            $store = $store->section('temp')->appendMessages($userMessage);
             expect($store->sections()->names())->toBe(['temp']);
             
-            $result = $store->applyTo('temp')->remove();
+            $result = $store->section('temp')->remove();
             
             expect($result->sections()->names())->toBe([]);
         });
@@ -105,7 +105,7 @@ describe('SectionMutator', function () {
         it('returns same store when removing non-existent section', function () {
             $store = new MessageStore();
             
-            $result = $store->applyTo('nonexistent')->remove();
+            $result = $store->section('nonexistent')->remove();
             
             expect($result)->toBe($store);
             expect($result->sections()->names())->toBe([]);
@@ -117,12 +117,12 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $userMessage = new Message(role: 'user', content: 'Hello');
             
-            $store = $store->applyTo('original')->appendMessages($userMessage);
+            $store = $store->section('original')->appendMessages($userMessage);
             $newSection = new Section('original', messages: Messages::fromArray([
                 ['role' => 'assistant', 'content' => 'Replaced content']
             ]));
             
-            $result = $store->applyTo('original')->setSection($newSection);
+            $result = $store->section('original')->setSection($newSection);
             
             expect($result->section('original')->messages()->count())->toBe(1);
             expect($result->section('original')->messages()->first()->role()->value)->toBe('assistant');
@@ -135,10 +135,10 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $userMessage = new Message(role: 'user', content: 'Hello');
             
-            $store = $store->applyTo('toClear')->appendMessages($userMessage);
+            $store = $store->section('toClear')->appendMessages($userMessage);
             expect($store->section('toClear')->messages()->count())->toBe(1);
             
-            $result = $store->applyTo('toClear')->clear();
+            $result = $store->section('toClear')->clear();
             
             expect($result->sections()->names())->toBe(['toClear']);
             expect($result->section('toClear')->messages()->count())->toBe(0);
@@ -154,10 +154,10 @@ describe('SectionMutator', function () {
             $assistantMessage = new Message(role: 'assistant', content: 'Hi there!');
             
             $result = $store
-                ->applyTo('system')->appendMessages($systemMessage)
-                ->applyTo('chat')->appendMessages($userMessage)
-                ->applyTo('chat')->appendMessages($assistantMessage)
-                ->applyTo('system')->clear();
+                ->section('system')->appendMessages($systemMessage)
+                ->section('chat')->appendMessages($userMessage)
+                ->section('chat')->appendMessages($assistantMessage)
+                ->section('system')->clear();
                 
             expect($result->sections()->names())->toBe(['system', 'chat']);
             expect($result->section('system')->messages()->count())->toBe(0);
@@ -170,7 +170,7 @@ describe('SectionMutator', function () {
             $store = new MessageStore();
             $systemMessage = new Message(role: 'system', content: 'You are helpful.');
             $originalSectionCount = count($store->sections()->names());
-            $store->applyTo('test')->appendMessages($systemMessage);
+            $store->section('test')->appendMessages($systemMessage);
             expect(count($store->sections()->names()))->toBe($originalSectionCount);
         });
 
@@ -179,8 +179,8 @@ describe('SectionMutator', function () {
             $systemMessage = new Message(role: 'system', content: 'You are helpful.');
             $userMessage = new Message(role: 'user', content: 'Hello');
             
-            $result1 = $store->applyTo('test1')->appendMessages($systemMessage);
-            $result2 = $result1->applyTo('test2')->appendMessages($userMessage);
+            $result1 = $store->section('test1')->appendMessages($systemMessage);
+            $result2 = $result1->section('test2')->appendMessages($userMessage);
             
             expect($result1)->not->toBe($store);
             expect($result2)->not->toBe($result1);

@@ -10,7 +10,7 @@ describe('MessageStore', function () {
             $store = new MessageStore();
             $message = new Message(role: 'system', content: 'You are helpful.');
             
-            $result = $store->applyTo('system')->appendMessages($message);
+            $result = $store->section('system')->appendMessages($message);
             
             expect($result->sections()->names())->toBe(['system']);
             expect($result->section('system')->messages()->count())->toBe(1);
@@ -20,10 +20,10 @@ describe('MessageStore', function () {
         
         it('appends messages to existing section', function () {
             $existingMessage = new Message(role: 'user', content: 'Hello');
-            $store = (new MessageStore())->applyTo('chat')->appendMessages($existingMessage);
+            $store = (new MessageStore())->section('chat')->appendMessages($existingMessage);
             
             $newMessage = new Message(role: 'assistant', content: 'Hi there!');
-            $result = $store->applyTo('chat')->appendMessages($newMessage);
+            $result = $store->section('chat')->appendMessages($newMessage);
             
             expect($result->sections()->names())->toBe(['chat']);
             expect($result->section('chat')->messages()->count())->toBe(2);
@@ -38,7 +38,7 @@ describe('MessageStore', function () {
                 ['role' => 'user', 'content' => 'User message'],
             ]);
             
-            $result = $store->applyTo('conversation')->appendMessages($messages);
+            $result = $store->section('conversation')->appendMessages($messages);
             
             expect($result->sections()->names())->toBe(['conversation']);
             expect($result->section('conversation')->messages()->count())->toBe(2);
@@ -50,7 +50,7 @@ describe('MessageStore', function () {
             $store = new MessageStore();
             $emptyMessages = Messages::empty();
             
-            $result = $store->applyTo('empty')->appendMessages($emptyMessages);
+            $result = $store->section('empty')->appendMessages($emptyMessages);
             
             expect($result->sections()->names())->toBe([]);
             expect($result)->toBe($store); // Should return same instance
@@ -60,7 +60,7 @@ describe('MessageStore', function () {
             $store = new MessageStore();
             $messageArray = ['role' => 'user', 'content' => 'Test message'];
             
-            $result = $store->applyTo('test')->appendMessages($messageArray);
+            $result = $store->section('test')->appendMessages($messageArray);
             
             expect($result->sections()->names())->toBe(['test']);
             expect($result->section('test')->messages()->count())->toBe(1);
@@ -97,8 +97,8 @@ describe('MessageStore', function () {
             $promptMessage = new Message(role: 'user', content: 'Say hi.');
             
             // This should work even when starting with completely empty store
-            $withSystem = $store->applyTo('system')->appendMessages($systemMessage);
-            $withPrompt = $withSystem->applyTo('prompt')->appendMessages($promptMessage);
+            $withSystem = $store->section('system')->appendMessages($systemMessage);
+            $withPrompt = $withSystem->section('prompt')->appendMessages($promptMessage);
             
             expect($withPrompt->sections()->names())->toContain('system');
             expect($withPrompt->sections()->names())->toContain('prompt');

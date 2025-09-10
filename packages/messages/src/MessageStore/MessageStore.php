@@ -4,7 +4,8 @@ namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
+use Cognesy\Messages\MessageStore\Operators\ParameterOperator;
+use Cognesy\Messages\MessageStore\Operators\SectionOperator;
 
 /**
  * MessageStore represents a library of message sequences with multiple sections and messages.
@@ -17,8 +18,6 @@ use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
  */
 final readonly class MessageStore
 {
-    use HandlesParameters;
-
     public Sections $sections;
     public MessageStoreParameters $parameters;
 
@@ -99,25 +98,20 @@ final readonly class MessageStore
     }
 
     /**
-     * Get a fluent section operator for the given section
-     * 
-     * Usage:
-     * $store->applyTo('system')->appendMessages($messages)
-     * $store->applyTo('prompt')->replaceMessages($messages)
-     * $store->applyTo('examples')->remove()
-     */
-    public function applyTo(string $sectionName): SectionMutator {
-        return new SectionMutator($this, $sectionName);
-    }
-
-    /**
      * Get a fluent section accessor for the given section
      * Usage:
      * $store->section('system')->get()
      * $store->section('prompt')->exists()
      * $store->section('examples')->isEmpty()
+     * $store->section('system')->appendMessages($messages)
+     * $store->section('prompt')->replaceMessages($messages)
+     * $store->section('examples')->remove()
      */
-    public function section(string $name) : SectionAccessor {
-        return new SectionAccessor($this, $name);
+    public function section(string $name) : SectionOperator {
+        return new SectionOperator($this, $name);
+    }
+
+    public function parameters(): ParameterOperator {
+        return new ParameterOperator($this);
     }
 }

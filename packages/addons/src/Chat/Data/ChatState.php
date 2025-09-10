@@ -127,7 +127,7 @@ final readonly class ChatState
 
     public function withMessages(Messages $messages) : self {
         return new self(
-            store: $this->store->applyTo(self::DEFAULT_SECTION)->setMessages($messages),
+            store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $this->currentStep,
@@ -138,7 +138,7 @@ final readonly class ChatState
 
     public function withSectionMessages(string $section, Messages $messages) : self {
         return new self(
-            store: $this->store->applyTo($section)->setMessages($messages),
+            store: $this->store->section($section)->setMessages($messages),
             variables: $this->variables,
             steps: $this->steps,
             currentStep: $this->currentStep,

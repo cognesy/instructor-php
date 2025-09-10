@@ -33,7 +33,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessChatState
             'keep' => $keep->toArray(),
         ]));
         $newState = $state
-            ->withMessages($keep)->applyTo($this->bufferSection)->replaceMessages($overflow);
+            ->withMessages($keep)->section($this->bufferSection)->replaceMessages($overflow);
 
         return $next ? $next($newState) : $newState;
     }

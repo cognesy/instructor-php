@@ -6,7 +6,6 @@ use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Messages\MessageStore\Section;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Data\TemplateInfo;
@@ -241,14 +240,14 @@ class Template
         
         // Ensure default section exists
         if (!$store->section($currentSectionName)->exists()) {
-            $store = $store->applyTo($currentSectionName)->setMessages(Messages::empty());
+            $store = $store->section($currentSectionName)->setMessages(Messages::empty());
         }
         
         foreach ($xml->children() as $element) {
             if ($element->tag() === 'section') {
                 $currentSectionName = $element->attribute('name') ?? 'messages';
                 if (!$store->section($currentSectionName)->exists()) {
-                    $store = $store->applyTo($currentSectionName)->setMessages(Messages::empty());
+                    $store = $store->section($currentSectionName)->setMessages(Messages::empty());
                 }
                 continue;
             }
@@ -264,7 +263,7 @@ class Template
                 }
             );
             
-            $store = $store->applyTo($currentSectionName)->appendMessages($message);
+            $store = $store->section($currentSectionName)->appendMessages($message);
         }
         return $store;
     }
