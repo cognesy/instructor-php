@@ -8,7 +8,18 @@ use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
 
-class SectionOperator {
+/**
+ * Get a fluent section accessor for the given section
+ * Usage:
+ * $store->section('system')->get()
+ * $store->section('prompt')->exists()
+ * $store->section('examples')->isEmpty()
+ * $store->section('system')->appendMessages($messages)
+ * $store->section('prompt')->replaceMessages($messages)
+ * $store->section('examples')->remove()
+ */
+class SectionOperator
+{
     private MessageStore $store;
     private string $sectionName;
 

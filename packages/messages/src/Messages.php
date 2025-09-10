@@ -8,7 +8,8 @@ use Cognesy\Messages\Traits\Messages\HandlesCreation;
 use Cognesy\Messages\Traits\Messages\HandlesMutation;
 use Cognesy\Messages\Traits\Messages\HandlesTransformation;
 
-final readonly class Messages {
+final readonly class Messages
+{
     use HandlesAccess;
     use HandlesConversion;
     use HandlesCreation;

@@ -31,25 +31,25 @@ final readonly class MessageStore
 
     // CONSTRUCTORS
 
-    public static function fromSections(Section ...$sections): static {
-        return new static(new Sections(...$sections));
+    public static function fromSections(Section ...$sections): MessageStore {
+        return new MessageStore(new Sections(...$sections));
     }
 
     public static function fromMessages(Messages $messages, string $section = 'messages') : MessageStore {
         $sections = new Sections((new Section($section))->appendMessages($messages));
-        return new self($sections);
+        return new MessageStore($sections);
     }
 
     // MUTATORS
 
-    public function withSection(string $name): static {
+    public function withSection(string $name): MessageStore {
         if ($this->section($name)->exists()) {
             return $this;
         }
 
         $newSection = new Section($name);
         $newSections = $this->sections->add($newSection);
-        return new static(
+        return new MessageStore(
             sections: $newSections,
             parameters: $this->parameters,
         );
@@ -64,7 +64,7 @@ final readonly class MessageStore
     /**
      * @param string|string[] $sections
      */
-    public function select(string|array $sections = []) : static {
+    public function select(string|array $sections = []) : MessageStore {
         $names = match (true) {
             empty($sections) => $this->sections->map(fn($section) => $section->name),
             is_string($sections) => [$sections],
@@ -76,7 +76,7 @@ final readonly class MessageStore
                 $selectedSections[] = $this->section($sectionName)->get();
             }
         }
-        return new static(
+        return new MessageStore(
             sections: new Sections(...$selectedSections),
             parameters: $this->parameters,
         );
@@ -97,16 +97,6 @@ final readonly class MessageStore
         return $this->toMessages()->toString();
     }
 
-    /**
-     * Get a fluent section accessor for the given section
-     * Usage:
-     * $store->section('system')->get()
-     * $store->section('prompt')->exists()
-     * $store->section('examples')->isEmpty()
-     * $store->section('system')->appendMessages($messages)
-     * $store->section('prompt')->replaceMessages($messages)
-     * $store->section('examples')->remove()
-     */
     public function section(string $name) : SectionOperator {
         return new SectionOperator($this, $name);
     }
