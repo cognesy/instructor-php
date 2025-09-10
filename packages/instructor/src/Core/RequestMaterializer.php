@@ -25,9 +25,10 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     public function toMessages(StructuredOutputRequest $request) : array {
-        $store = $this
-            ->makeMessageStore($request)
-            ->mergedWith($this->makeCachedMessageStore($request->cachedContext()));
+        $store = $this->mergeMessageStores(
+            $this->makeMessageStore($request),
+            $this->makeCachedMessageStore($request->cachedContext())
+        );
 
         // Add retry messages if needed
         $store = $this->addRetryMessages($request, $store);
@@ -58,8 +59,8 @@ class RequestMaterializer implements CanMaterializeRequest
                 ?: $this->config->prompt($request->mode())
                 ?? ''
             ))
-            ->applyTo('examples')->replaceMessages($this->makeExamples($request->examples()));
-        return $store->withoutEmptyMessages();
+            ->applyTo('examples')->setMessages($this->makeExamples($request->examples()));
+        return $this->removeEmptyMessages($store);
     }
 
     protected function makeCachedMessageStore(CachedContext $cachedContext) : MessageStore {
@@ -69,34 +70,34 @@ class RequestMaterializer implements CanMaterializeRequest
         $store = new MessageStore();
 
         // system (cached)
-        $store = $store->applyTo('system')->replaceMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()));
+        $store = $store->applyTo('system')->setMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()));
         if ($store->section('system')->isNotEmpty()) {
             $updated = $store->section('system')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->applyTo('system')->replaceSection($updated);
+            $store = $store->applyTo('system')->setSection($updated);
         }
 
         // cached chat messages
-        $store = $store->applyTo('cached-messages')->replaceMessages($this->makeMessages($cachedContext->messages()));
+        $store = $store->applyTo('cached-messages')->setMessages($this->makeMessages($cachedContext->messages()));
         if ($store->section('cached-messages')->isNotEmpty()) {
             $updated = $store->section('cached-messages')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->applyTo('cached-messages')->replaceSection($updated);
+            $store = $store->applyTo('cached-messages')->setSection($updated);
         }
 
         // cached prompt
         if ($cachedContext->prompt() !== '') {
-            $store = $store->applyTo('cached-prompt')->replaceMessages(Messages::fromString($cachedContext->prompt()));
+            $store = $store->applyTo('cached-prompt')->setMessages(Messages::fromString($cachedContext->prompt()));
             $updated = $store->section('cached-prompt')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->applyTo('cached-prompt')->replaceSection($updated);
+            $store = $store->applyTo('cached-prompt')->setSection($updated);
         }
 
         // cached examples
-        $store = $store->applyTo('cached-examples')->replaceMessages($this->makeExamples($cachedContext->examples()));
+        $store = $store->applyTo('cached-examples')->setMessages($this->makeExamples($cachedContext->examples()));
         if ($store->section('cached-examples')->isNotEmpty()) {
             $updated = $store->section('cached-examples')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
-            $store = $store->applyTo('cached-examples')->replaceSection($updated);
+            $store = $store->applyTo('cached-examples')->setSection($updated);
         }
 
-        return $store->withoutEmptyMessages();
+        return $this->removeEmptyMessages($store);
     }
 
     protected function withCacheMetaSections(CachedContext $cachedContext, MessageStore $store) : MessageStore {
@@ -155,7 +156,7 @@ class RequestMaterializer implements CanMaterializeRequest
                 . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
-        $newMessageStore = $store->applyTo('retries')->replaceMessages(Messages::fromArray($messages));
+        $newMessageStore = $store->applyTo('retries')->setMessages(Messages::fromArray($messages));
         return $newMessageStore;
     }
 
@@ -283,5 +284,31 @@ class RequestMaterializer implements CanMaterializeRequest
         }
 
         return $fallback;
+    }
+
+    private function mergeMessageStores(MessageStore $baseStore, MessageStore $sourceStore): MessageStore {
+        $mergedStore = $baseStore;
+        
+        // Append messages from each section of the source store to the base store
+        foreach ($sourceStore->sections()->each() as $section) {
+            $mergedStore = $mergedStore->applyTo($section->name)->appendMessages($section->messages());
+        }
+        
+        // Merge parameters
+        return $mergedStore->mergeParameters($sourceStore->parameters());
+    }
+
+    private function removeEmptyMessages(MessageStore $store): MessageStore {
+        $cleanStore = new MessageStore();
+        
+        foreach ($store->sections()->each() as $section) {
+            $trimmedMessages = $section->messages()->trimmed();
+            if (!$trimmedMessages->isEmpty()) {
+                $cleanStore = $cleanStore->applyTo($section->name)->setMessages($trimmedMessages);
+            }
+        }
+        
+        // Preserve parameters
+        return $cleanStore->mergeParameters($store->parameters());
     }
 }

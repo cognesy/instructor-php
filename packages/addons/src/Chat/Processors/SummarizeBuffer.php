@@ -37,9 +37,10 @@ final readonly class SummarizeBuffer implements CanProcessChatState
             'summary' => $summary,
             'buffer' => $buffer->toArray(),
         ]));
-        $newState = $state
-            ->withSectionMessages($this->bufferSection, Messages::empty())
-            ->withSectionMessages($this->summarySection, Messages::fromString($summary));
+        $newStore = $state->store()
+            ->applyTo($this->bufferSection)->setMessages(Messages::empty())
+            ->applyTo($this->summarySection)->setMessages(Messages::fromString($summary));
+        $newState = $state->withMessageStore($newStore);
 
         return $next ? $next($newState) : $newState;
     }

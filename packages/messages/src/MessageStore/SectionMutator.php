@@ -40,10 +40,10 @@ final readonly class SectionMutator
             ->section($this->sectionName)
             ->get()
             ->appendMessages($messages);
-        return $this->withStore($storeWithSection)->replaceSection($section);
+        return $this->withStore($storeWithSection)->setSection($section);
     }
 
-    public function replaceSection(Section $section) : MessageStore {
+    public function setSection(Section $section) : MessageStore {
         // rename section if needed
         $newSection = match(true) {
             ($section->name !== $this->sectionName) => new Section($this->sectionName, messages: $section->messages()),
@@ -59,11 +59,11 @@ final readonly class SectionMutator
         );
     }
 
-    public function replaceMessages(array|Message|Messages $messages): MessageStore {
+    public function setMessages(array|Message|Messages $messages): MessageStore {
         $messages = Messages::fromAny($messages);
         $section = new Section($this->sectionName, messages: $messages);
         $storeWithSection = $this->store->withSection($this->sectionName);
-        return $this->withStore($storeWithSection)->replaceSection($section);
+        return $this->withStore($storeWithSection)->setSection($section);
     }
 
     /**
@@ -81,7 +81,7 @@ final readonly class SectionMutator
     }
 
     public function clear(): MessageStore {
-        return $this->replaceMessages(Messages::empty());
+        return $this->setMessages(Messages::empty());
     }
 
     // INTERNAL ////////////////////////////////////////////////////

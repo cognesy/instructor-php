@@ -16,7 +16,7 @@ You can install it separately via Composer:
 
 ```bash
 composer require cognesy/instructor-http-client
-# @doctest id="37b1"
+# @doctest id="b6e6"
 ```
 
 ### Dependencies
@@ -26,13 +26,13 @@ The Instructor HTTP client API requires at least one of the supported HTTP clien
 **For Guzzle:**
 ```bash
 composer require guzzlehttp/guzzle
-# @doctest id="799e"
+# @doctest id="0577"
 ```
 
 **For Symfony HTTP Client:**
 ```bash
 composer require symfony/http-client
-# @doctest id="45ee"
+# @doctest id="397c"
 ```
 
 **For Laravel HTTP Client:**
@@ -82,7 +82,7 @@ $body = $response->body();
 
 echo "Status: $statusCode\n";
 echo "Body: $body\n";
-// @doctest id="d391"
+// @doctest id="7d88"
 ```
 
 ### Error Handling
@@ -99,7 +99,7 @@ try {
     echo "Request failed: {$e->getMessage()}\n";
     // Handle the error
 }
-// @doctest id="b170"
+// @doctest id="bb67"
 ```
 
 ## Configuration
@@ -162,7 +162,7 @@ return [
         'responseStreamByLine' => true, // dump stream as full lines or raw chunks
     ],
 ];
-// @doctest id="ac6f"
+// @doctest id="37e6"
 ```
 
 ### Runtime Configuration
@@ -181,7 +181,7 @@ $client = (new HttpClientBuilder())
     ->withPreset('guzzle')
     ->withDebugPreset('on')
     ->create();
-// @doctest id="9029"
+// @doctest id="c0ee"
 ```
 
 ## Simple Request Example
@@ -234,7 +234,7 @@ try {
 
     // You might want to log the error or retry the request
 }
-// @doctest id="9af0"
+// @doctest id="58ae"
 ```
 
 ### Example: Fetching Data
@@ -282,7 +282,7 @@ try {
 } catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
 }
-// @doctest id="b0df"
+// @doctest id="d9e4"
 ```
 
 These examples demonstrate the basic usage of the Instructor HTTP client API for common HTTP operations. In the following chapters, we'll explore more advanced features and customization options.

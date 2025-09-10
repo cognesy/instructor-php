@@ -241,14 +241,14 @@ class Template
         
         // Ensure default section exists
         if (!$store->section($currentSectionName)->exists()) {
-            $store = $store->withSectionAdded(new Section($currentSectionName));
+            $store = $store->applyTo($currentSectionName)->setMessages(Messages::empty());
         }
         
         foreach ($xml->children() as $element) {
             if ($element->tag() === 'section') {
                 $currentSectionName = $element->attribute('name') ?? 'messages';
                 if (!$store->section($currentSectionName)->exists()) {
-                    $store = $store->withSectionAdded(new Section($currentSectionName));
+                    $store = $store->applyTo($currentSectionName)->setMessages(Messages::empty());
                 }
                 continue;
             }

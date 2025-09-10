@@ -4,7 +4,6 @@ namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesMutation;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
 
 /**
@@ -19,7 +18,6 @@ use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
 final readonly class MessageStore
 {
     use HandlesParameters;
-    use HandlesMutation;
 
     public Sections $sections;
     public MessageStoreParameters $parameters;
@@ -43,13 +41,26 @@ final readonly class MessageStore
         return new self($sections);
     }
 
-    // ACCESSORS
+    // MUTATORS
+
+    public function withSection(string $name): static {
+        if ($this->section($name)->exists()) {
+            return $this;
+        }
+
+        $newSection = new Section($name);
+        $newSections = $this->sections->add($newSection);
+        return new static(
+            sections: $newSections,
+            parameters: $this->parameters,
+        );
+    }
+
+    // ACCESSORS / CONVERSIONS
 
     public function sections() : Sections {
         return $this->sections;
     }
-
-    // CONVERSIONS
 
     /**
      * @param string|string[] $sections
@@ -87,8 +98,6 @@ final readonly class MessageStore
         return $this->toMessages()->toString();
     }
 
-    // FLUENT API
-
     /**
      * Get a fluent section operator for the given section
      * 
@@ -101,6 +110,13 @@ final readonly class MessageStore
         return new SectionMutator($this, $sectionName);
     }
 
+    /**
+     * Get a fluent section accessor for the given section
+     * Usage:
+     * $store->section('system')->get()
+     * $store->section('prompt')->exists()
+     * $store->section('examples')->isEmpty()
+     */
     public function section(string $name) : SectionAccessor {
         return new SectionAccessor($this, $name);
     }
