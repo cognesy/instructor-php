@@ -4,10 +4,8 @@ namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesAccess;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesMutation;
 use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesParameters;
-use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesTransformation;
 
 /**
  * MessageStore represents a library of message sequences with multiple sections and messages.
@@ -20,10 +18,8 @@ use Cognesy\Messages\MessageStore\Traits\MessageStore\HandlesTransformation;
  */
 final readonly class MessageStore
 {
-    use HandlesAccess;
     use HandlesParameters;
     use HandlesMutation;
-    use HandlesTransformation;
 
     public Sections $sections;
     public MessageStoreParameters $parameters;
@@ -47,23 +43,46 @@ final readonly class MessageStore
         return new self($sections);
     }
 
+    // ACCESSORS
+
+    public function sections() : Sections {
+        return $this->sections;
+    }
+
     // CONVERSIONS
+
+    /**
+     * @param string|string[] $sections
+     */
+    public function select(string|array $sections = []) : static {
+        $names = match (true) {
+            empty($sections) => $this->sections->map(fn($section) => $section->name),
+            is_string($sections) => [$sections],
+            is_array($sections) => $sections,
+        };
+        $selectedSections = [];
+        foreach ($names as $sectionName) {
+            if ($this->section($sectionName)->exists()) {
+                $selectedSections[] = $this->section($sectionName)->get();
+            }
+        }
+        return new static(
+            sections: new Sections(...$selectedSections),
+            parameters: $this->parameters,
+        );
+    }
 
     public function toMessages() : Messages {
         return $this->sections->toMessages();
     }
 
     /**
-     * @param array<string> $order
-     * @return array<string,string|array>
+     * @return array<string,array>
      */
     public function toArray() : array {
         return $this->toMessages()->toArray();
     }
 
-    /**
-     * @param array<string> $order
-     */
     public function toString() : string {
         return $this->toMessages()->toString();
     }

@@ -71,28 +71,28 @@ class RequestMaterializer implements CanMaterializeRequest
         // system (cached)
         $store = $store->applyTo('system')->replaceMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()));
         if ($store->section('system')->isNotEmpty()) {
-            $updated = $store->getSection('system')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $updated = $store->section('system')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
             $store = $store->applyTo('system')->replaceSection($updated);
         }
 
         // cached chat messages
         $store = $store->applyTo('cached-messages')->replaceMessages($this->makeMessages($cachedContext->messages()));
         if ($store->section('cached-messages')->isNotEmpty()) {
-            $updated = $store->getSection('cached-messages')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $updated = $store->section('cached-messages')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
             $store = $store->applyTo('cached-messages')->replaceSection($updated);
         }
 
         // cached prompt
         if ($cachedContext->prompt() !== '') {
             $store = $store->applyTo('cached-prompt')->replaceMessages(Messages::fromString($cachedContext->prompt()));
-            $updated = $store->getSection('cached-prompt')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $updated = $store->section('cached-prompt')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
             $store = $store->applyTo('cached-prompt')->replaceSection($updated);
         }
 
         // cached examples
         $store = $store->applyTo('cached-examples')->replaceMessages($this->makeExamples($cachedContext->examples()));
         if ($store->section('cached-examples')->isNotEmpty()) {
-            $updated = $store->getSection('cached-examples')->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $updated = $store->section('cached-examples')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
             $store = $store->applyTo('cached-examples')->replaceSection($updated);
         }
 

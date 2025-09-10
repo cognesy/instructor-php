@@ -36,7 +36,10 @@ final readonly class SectionMutator
             return $this->store;
         }
         $storeWithSection = $this->store->withSection($this->sectionName);
-        $section = $storeWithSection->getSection($this->sectionName)->appendMessages($messages);
+        $section = $storeWithSection
+            ->section($this->sectionName)
+            ->get()
+            ->appendMessages($messages);
         return $this->withStore($storeWithSection)->replaceSection($section);
     }
 
@@ -67,7 +70,7 @@ final readonly class SectionMutator
      * Remove the section entirely
      */
     public function remove(): MessageStore {
-        if (!$this->store->hasSection($this->sectionName)) {
+        if (!$this->store->section($this->sectionName)->exists()) {
             return $this->store;
         }
         $newSections = $this->store->sections()->filter(fn($section) => $section->name !== $this->sectionName);

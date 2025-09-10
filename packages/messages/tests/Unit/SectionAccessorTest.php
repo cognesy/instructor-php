@@ -187,7 +187,7 @@ describe('SectionAccessor', function () {
             $store = $store->applyTo('chat')->appendMessages($message);
             
             $accessor = new SectionAccessor($store, 'chat');
-            $originalSectionCount = count($store->sectionNames());
+            $originalSectionCount = count($store->sections()->names());
             
             // Calling accessor methods should not modify the store
             $accessor->exists();
@@ -196,7 +196,7 @@ describe('SectionAccessor', function () {
             $accessor->get();
             $accessor->messages();
             
-            expect(count($store->sectionNames()))->toBe($originalSectionCount);
+            expect(count($store->sections()->names()))->toBe($originalSectionCount);
             expect($store->section('chat')->messages()->count())->toBe(1);
         });
 

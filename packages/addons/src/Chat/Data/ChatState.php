@@ -36,7 +36,7 @@ final readonly class ChatState
     }
 
     public function messages(): Messages {
-        return $this->store->getSection(self::DEFAULT_SECTION)?->messages()
+        return $this->store->section(self::DEFAULT_SECTION)->get()?->messages()
             ?? Messages::empty();
     }
 

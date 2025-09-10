@@ -27,7 +27,7 @@ final readonly class SummarizeBuffer implements CanProcessChatState
     }
 
     public function process(ChatState $state, ?callable $next = null): ChatState {
-        $buffer = $state->store()->getSection($this->bufferSection)?->messages() ?? Messages::empty();
+        $buffer = $state->store()->section($this->bufferSection)->get()?->messages() ?? Messages::empty();
         if (!$this->shouldProcess($buffer->toString())) {
             return $next ? $next($state) : $state;
         }

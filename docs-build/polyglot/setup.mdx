@@ -16,7 +16,7 @@ You can install it using Composer:
 
 ```bash
 composer require cognesy/instructor-polyglot
-# @doctest id="41e9"
+# @doctest id="f933"
 ```
 
 This will install Polyglot along with its dependencies.
@@ -53,7 +53,7 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
 MISTRAL_API_KEY=your-mistral-key
 GEMINI_API_KEY=your-gemini-key
 # etc.
-# @doctest id="3b54"
+# @doctest id="440e"
 ```
 
 ### Configuration Files
@@ -71,7 +71,7 @@ mkdir -p config
 
 # Copy configuration files
 cp vendor/cognesy/instructor-polyglot/config/* config/
-# @doctest id="fdab"
+# @doctest id="8e21"
 ```
 
 3. Customize the configuration files as needed
@@ -115,7 +115,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="6083"
+// @doctest id="c3d2"
 ```
 
 #### Embeddings Configuration
@@ -145,7 +145,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="dacd"
+// @doctest id="719b"
 ```
 
 ### Custom Configuration Location
@@ -154,7 +154,7 @@ By default, Polyglot looks for custom configuration files in the `config` direct
 
 ```shell
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
-# @doctest id="0d0e"
+# @doctest id="2fe4"
 ```
 
 ### Overriding Configuration Location
@@ -165,7 +165,7 @@ You can use `Settings` class static `setPath()` method to override the value of 
 use Cognesy\Config\Settings;
 
 Settings::setPath('/your/path/to/config');
-// @doctest id="3ed4"
+// @doctest id="985e"
 ```
 
 
@@ -191,7 +191,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $result = (new Inference)
     ->withMessages('Say hello.')
     ->get();
-// @doctest id="288e"
+// @doctest id="d0be"
 ```
 
 If you see a friendly greeting, your installation is working correctly!

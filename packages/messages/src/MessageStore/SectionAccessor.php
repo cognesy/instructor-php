@@ -21,11 +21,14 @@ class SectionAccessor {
     }
 
     public function get(): Section {
-        return $this->store->getSection($this->sectionName);
+        if (!$this->store->sections()->has($this->sectionName)) {
+            return Section::empty($this->sectionName);
+        }
+        return $this->store->sections()->get($this->sectionName);
     }
 
     public function exists(): bool {
-        return $this->store->hasSection($this->sectionName);
+        return $this->store->sections()->has($this->sectionName);
     }
 
     public function isEmpty(): bool {

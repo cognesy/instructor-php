@@ -19,7 +19,7 @@ trait HandlesMutation
     }
 
     public function withSection(string $name) : static {
-        if ($this->hasSection($name)) {
+        if ($this->section($name)->exists()) {
             return $this;
         }
         return $this->withSectionAdded(new Section($name));
@@ -27,7 +27,7 @@ trait HandlesMutation
 
     public function withSectionAdded(Section $section) : static {
         $name = $section->name;
-        if ($this->hasSection($name)) {
+        if ($this->section($name)->exists()) {
             throw new Exception("Section with name '{$name}' already exists - use mergeSection() instead.");
         }
 
@@ -54,11 +54,26 @@ trait HandlesMutation
         return $store->withSectionReplaced($sectionName, $newSection);
     }
 
+    public function withoutEmptyMessages() : static {
+        $trimmedSections = [];
+        foreach ($this->sections->each() as $section) {
+            $trimmed = $section->trimmed();
+            if ($trimmed->isEmpty()) {
+                continue;
+            }
+            $trimmedSections[] = $trimmed;
+        }
+        return new static(
+            sections: new Sections(...$trimmedSections),
+            parameters: $this->parameters,
+        );
+    }
+
     // INTERNAL ////////////////////////////////////////////////////
 
     protected function mergeSection(Section $section) : static {
-        if ($this->hasSection($section->name)) {
-            $existingSection = $this->getSection($section->name);
+        if ($this->section($section->name)->exists()) {
+            $existingSection = $this->section($section->name)->get();
             $mergedSection = $existingSection->mergeSection($section);
             return $this->withSectionReplaced($section->name, $mergedSection);
         }

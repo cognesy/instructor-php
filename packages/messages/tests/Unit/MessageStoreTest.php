@@ -12,7 +12,7 @@ describe('MessageStore', function () {
             
             $result = $store->applyTo('system')->appendMessages($message);
             
-            expect($result->sectionNames())->toBe(['system']);
+            expect($result->sections()->names())->toBe(['system']);
             expect($result->section('system')->messages()->count())->toBe(1);
             expect($result->section('system')->messages()->first()->role()->value)->toBe('system');
             expect($result->section('system')->messages()->first()->content()->toString())->toBe('You are helpful.');
@@ -25,7 +25,7 @@ describe('MessageStore', function () {
             $newMessage = new Message(role: 'assistant', content: 'Hi there!');
             $result = $store->applyTo('chat')->appendMessages($newMessage);
             
-            expect($result->sectionNames())->toBe(['chat']);
+            expect($result->sections()->names())->toBe(['chat']);
             expect($result->section('chat')->messages()->count())->toBe(2);
             expect($result->section('chat')->messages()->first()->content()->toString())->toBe('Hello');
             expect($result->section('chat')->messages()->last()->content()->toString())->toBe('Hi there!');
@@ -40,7 +40,7 @@ describe('MessageStore', function () {
             
             $result = $store->applyTo('conversation')->appendMessages($messages);
             
-            expect($result->sectionNames())->toBe(['conversation']);
+            expect($result->sections()->names())->toBe(['conversation']);
             expect($result->section('conversation')->messages()->count())->toBe(2);
             expect($result->section('conversation')->messages()->first()->role()->value)->toBe('system');
             expect($result->section('conversation')->messages()->last()->role()->value)->toBe('user');
@@ -52,7 +52,7 @@ describe('MessageStore', function () {
             
             $result = $store->applyTo('empty')->appendMessages($emptyMessages);
             
-            expect($result->sectionNames())->toBe([]);
+            expect($result->sections()->names())->toBe([]);
             expect($result)->toBe($store); // Should return same instance
         });
         
@@ -62,7 +62,7 @@ describe('MessageStore', function () {
             
             $result = $store->applyTo('test')->appendMessages($messageArray);
             
-            expect($result->sectionNames())->toBe(['test']);
+            expect($result->sections()->names())->toBe(['test']);
             expect($result->section('test')->messages()->count())->toBe(1);
             expect($result->section('test')->messages()->first()->content()->toString())->toBe('Test message');
         });
@@ -72,7 +72,7 @@ describe('MessageStore', function () {
         it('returns empty section for non-existent section', function () {
             $store = new MessageStore();
             
-            $section = $store->getSection('nonexistent');
+            $section = $store->section('nonexistent')->get();
             
             expect($section->isEmpty())->toBeTrue();
             expect($section->name)->toBe('nonexistent');
@@ -83,7 +83,7 @@ describe('MessageStore', function () {
             
             $result = $store->withSection('newsection');
             
-            expect($result->sectionNames())->toBe(['newsection']);
+            expect($result->sections()->names())->toBe(['newsection']);
             expect($result->section('newsection')->isEmpty())->toBeTrue();
         });
     });
@@ -100,14 +100,14 @@ describe('MessageStore', function () {
             $withSystem = $store->applyTo('system')->appendMessages($systemMessage);
             $withPrompt = $withSystem->applyTo('prompt')->appendMessages($promptMessage);
             
-            expect($withPrompt->sectionNames())->toContain('system');
-            expect($withPrompt->sectionNames())->toContain('prompt');
+            expect($withPrompt->sections()->names())->toContain('system');
+            expect($withPrompt->sections()->names())->toContain('prompt');
             expect($withPrompt->section('system')->messages()->count())->toBe(1);
             expect($withPrompt->section('prompt')->messages()->count())->toBe(1);
             
             // Verify content is preserved correctly
-            $systemSection = $withPrompt->getSection('system');
-            $promptSection = $withPrompt->getSection('prompt');
+            $systemSection = $withPrompt->section('system')->get();
+            $promptSection = $withPrompt->section('prompt')->get();
             
             expect($systemSection->messages()->first()->content()->toString())->toBe('You are helpful.');
             expect($promptSection->messages()->first()->content()->toString())->toBe('Say hi.');

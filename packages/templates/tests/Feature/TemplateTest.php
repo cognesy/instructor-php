@@ -95,8 +95,8 @@ it('can convert template with chat markup to script', function () {
     $store = $prompt->toMessageStore();
     expect($store)->toBeInstanceOf(MessageStore::class)
         ->and($store->toString())->toContain('Hello, assistant')
-        ->and($store->hasSection('system'))->toBeTrue()
-        ->and($store->hasSection('messages'))->toBeTrue();
+        ->and($store->section('system')->exists())->toBeTrue()
+        ->and($store->section('messages')->exists())->toBeTrue();
 });
 
 it('can load a template by name - Twig', function () {

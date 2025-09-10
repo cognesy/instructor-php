@@ -71,6 +71,10 @@ final readonly class Sections
         return count($this->sections);
     }
 
+    public function names(): array {
+        return $this->map(fn(Section $section) => $section->name);
+    }
+
     public function toMessages(): Messages {
         $messages = Messages::empty();
         foreach ($this->sections as $section) {
