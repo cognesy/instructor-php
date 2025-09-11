@@ -93,13 +93,6 @@ test('fromInput handles objects implementing CanProvideMessages', function () {
         ->and($messages->first()->content()->toString())->toBe('From messages provider');
 });
 
-test('asPerRoleArray handles empty arrays', function () {
-    $result = Messages::asPerRoleArray([]);
-    
-    expect($result)->toBeArray()
-        ->and($result)->toBe(['role' => 'user', 'content' => '']);
-});
-
 test('asString handles empty arrays', function () {
     $result = Messages::asString([]);
     

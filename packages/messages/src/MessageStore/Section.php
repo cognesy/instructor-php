@@ -66,7 +66,7 @@ final readonly class Section
 
     public function trimmed() : Section {
         $section = new Section($this->name());
-        $section = $section->withMessages($this->messages()->trimmed());
+        $section = $section->withMessages($this->messages()->withoutEmptyMessages());
         return $section;
     }
 

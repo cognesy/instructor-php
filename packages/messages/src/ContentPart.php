@@ -65,7 +65,20 @@ final readonly class ContentPart
         };
     }
 
-    // PUBLIC API ///////////////////////////////////////////
+    // MUTATORS /////////////////////////////////////////////
+
+    /** @param array<string, mixed> $fields */
+    public function withFields(array $fields): self {
+        return new self($this->type, $fields);
+    }
+
+    public function withField(string $key, mixed $value): self {
+        $fields = $this->fields;
+        $fields[$key] = $value;
+        return new self($this->type, $fields);
+    }
+
+    // ACCESSORS ////////////////////////////////////////////
 
     public function type(): string {
         return $this->type;
@@ -76,23 +89,12 @@ final readonly class ContentPart
         return $this->fields;
     }
 
-    /** @param array<string, mixed> $fields */
-    public function withFields(array $fields): self {
-        return new self($this->type, $fields);
-    }
-
     public function isTextPart(): bool {
         return $this->type === 'text';
     }
 
     public function hasText(): bool {
         return isset($this->fields['text']) && is_string($this->fields['text']);
-    }
-
-    public function withField(string $key, mixed $value): self {
-        $fields = $this->fields;
-        $fields[$key] = $value;
-        return new self($this->type, $fields);
     }
 
     public function get(string $key, mixed $default = null): mixed {
@@ -116,6 +118,8 @@ final readonly class ContentPart
         // is equivalent to [role = '', content = '']
         return count($this->fields) === 1 && isset($this->fields['text']);
     }
+
+    // CONVERSIONS and TRANSFORMERS /////////////////////////
 
     public function toArray(): array {
         $data = [

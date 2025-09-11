@@ -397,6 +397,7 @@ $messages->lastRole();                     // MessageRole of last message
 ```
 
 ### Messages Transformation API
+
 ```php
 // Role-based operations
 $messages->forRoles($roles);               // Filter by roles
@@ -411,7 +412,7 @@ $messages->toMergedPerRole();              // Merge consecutive same-role messag
 
 // Collection operations
 $messages->reversed();                     // Reverse message order
-$messages->trimmed();                      // Remove empty messages
+$messages->withoutEmptyMessages();                      // Remove empty messages
 $messages->clone();                        // Deep clone all messages
 ```
 

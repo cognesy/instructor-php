@@ -170,7 +170,7 @@ class Template
         $newMessage = new Message(
             role: $message->role(),
             name: $message->name(),
-            metadata: $message->metadata()
+            metadata: $message->metadata()->toArray()
         );
         $parts = [];
         foreach($message->contentParts() as $part) {

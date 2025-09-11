@@ -14,6 +14,8 @@ final readonly class Content
         $this->parts = $parts;
     }
 
+    // CONSTRUCTORS /////////////////////////////////////////////
+
     public static function empty(): self {
         return new self();
     }
@@ -39,17 +41,33 @@ final readonly class Content
         };
     }
 
+    // MUTATORS /////////////////////////////////////////////////
+
     public function addContentPart(ContentPart $part) : static {
         $parts = $this->parts;
         $parts[] = $part;
         return new self(...$parts);
     }
 
+    public function appendContentField(string $key, mixed $value): static {
+        if (empty($this->parts)) {
+            return new self(ContentPart::text('')->withField($key, $value));
+        }
+
+        $lastPart = $this->lastContentPart();
+        return new self(...[
+            ...array_slice($this->parts, 0, -1),
+            $lastPart->withField($key, $value),
+        ]);
+    }
+
+    // ACCESSORS ////////////////////////////////////////////////
+
     public function isComposite(): bool {
         return match(true) {
             $this->isNull() => false,
             (count($this->parts) > 1) => true,
-            (count($this->parts) === 1) && ($this->firstContentPart()?->isTextPart() ?? true) && ($this->firstContentPart()?->isSimple() ?? true) => false,
+            $this->hasSingleTextContentPart() => false,
             default => true,
         };
     }
@@ -62,27 +80,17 @@ final readonly class Content
         };
     }
 
-    public function isNull(): bool {
-        return empty($this->parts);
-    }
-
     /** @return ContentPart[] */
     public function parts(): array {
         return $this->parts;
     }
 
+    // TRANSFORMATIONS / CONVERSIONS ////////////////////////////
+
     public function toArray(): array {
         return match(true) {
             $this->isNull() => [],
             default => array_map(fn($part) => $part->toArray(), $this->parts)
-        };
-    }
-
-    public function isSimple(): bool {
-        return match(true) {
-            $this->isNull() => true,
-            (count($this->parts) === 1) && $this->firstContentPart()?->isSimple() ?? false => true,
-            default => false,
         };
     }
 
@@ -105,42 +113,34 @@ final readonly class Content
         return new self(...$this->parts);
     }
 
-    public function firstContentPart(): ?ContentPart {
+    // UTILS /////////////////////////////////////////////////
+
+    private function isNull(): bool {
+        return empty($this->parts);
+    }
+
+    private function isSimple(): bool {
+        return match(true) {
+            $this->isNull() => true,
+            (count($this->parts) === 1) && $this->firstContentPart()?->isSimple() ?? false => true,
+            default => false,
+        };
+    }
+
+    private function firstContentPart(): ?ContentPart {
         return $this->parts[0] ?? null;
     }
 
-    public function lastContentPart(): ContentPart {
+    private function lastContentPart(): ContentPart {
         if (empty($this->parts)) {
             return new ContentPart('text', ['text' => '']);
         }
         return $this->parts[array_key_last($this->parts)];
     }
 
-    public function appendContentFields(array $fields) : static {
-        if (empty($fields)) {
-            return $this;
-        }
-
-        if (empty($this->parts)) {
-            return new self(new ContentPart(type: 'text', fields: ['text' => '', ...$fields]));
-        }
-
-        $lastPart = $this->lastContentPart();
-        return new self(...[
-            ...array_slice($this->parts, 0, -1),
-            $lastPart->withFields([...$lastPart->fields(), ...$fields]),
-        ]);
-    }
-
-    public function appendContentField(string $key, mixed $value): static {
-        if (empty($this->parts)) {
-            return new self(ContentPart::text('')->withField($key, $value));
-        }
-
-        $lastPart = $this->lastContentPart();
-        return new self(...[
-            ...array_slice($this->parts, 0, -1),
-            $lastPart->withField($key, $value),
-        ]);
+    private function hasSingleTextContentPart() : bool {
+        return (count($this->parts) === 1)
+            && ($this->firstContentPart()?->isTextPart() ?? true)
+            && ($this->firstContentPart()?->isSimple() ?? true);
     }
 }

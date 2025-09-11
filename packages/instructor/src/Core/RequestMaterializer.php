@@ -301,7 +301,7 @@ class RequestMaterializer implements CanMaterializeRequest
         $cleanStore = new MessageStore();
         
         foreach ($store->sections()->each() as $section) {
-            $trimmedMessages = $section->messages()->trimmed();
+            $trimmedMessages = $section->messages()->withoutEmptyMessages();
             if (!$trimmedMessages->isEmpty()) {
                 $cleanStore = $cleanStore->section($section->name)->setMessages($trimmedMessages);
             }

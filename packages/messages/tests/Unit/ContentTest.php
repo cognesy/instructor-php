@@ -7,13 +7,11 @@ describe('Content', function () {
     describe('construction', function () {
         it('creates empty content with null', function () {
             $content = Content::fromAny(null);
-            expect($content->isNull())->toBeTrue();
             expect($content->isEmpty())->toBeTrue();
         });
 
         it('creates content with string', function () {
             $content = Content::text('Hello world');
-            expect($content->isNull())->toBeFalse();
             expect($content->isEmpty())->toBeFalse();
             expect($content->toString())->toBe('Hello world');
         });
@@ -43,11 +41,6 @@ describe('Content', function () {
     });
 
     describe('fromAny static method', function () {
-        it('creates content from null', function () {
-            $content = Content::fromAny(null);
-            expect($content->isNull())->toBeTrue();
-        });
-
         it('creates content from string', function () {
             $content = Content::fromAny('Hello');
             expect($content->toString())->toBe('Hello');
@@ -86,43 +79,12 @@ describe('Content', function () {
             expect($content->parts())->toHaveCount(1);
             expect($content->toString())->toBe('Hello');
         });
-
-        it('returns first content part', function () {
-            $content = Content::texts(...['Hello', 'world']);
-            $firstPart = $content->firstContentPart();
-            expect($firstPart)->toBeInstanceOf(ContentPart::class);
-            expect($firstPart->toString())->toBe('Hello');
-        });
-
-        it('returns last content part', function () {
-            $content = Content::texts(...['Hello', 'world']);
-            $lastPart = $content->lastContentPart();
-            expect($lastPart)->toBeInstanceOf(ContentPart::class);
-            expect($lastPart->toString())->toBe('world');
-        });
-
-        it('returns null for first part when empty, default part for last part', function () {
-            $content = Content::empty();
-            expect($content->firstContentPart())->toBeNull();
-            expect($content->lastContentPart())->toBeInstanceOf(ContentPart::class);
-            expect($content->lastContentPart()->get('text'))->toBe('');
-        });
     });
 
     describe('state checking', function () {
-        it('detects null content', function () {
-            $content = Content::empty();
-            expect($content->isNull())->toBeTrue();
-        });
-
         it('detects empty content', function () {
             $content = Content::text('');
             expect($content->isEmpty())->toBeTrue();
-        });
-
-        it('detects simple content', function () {
-            $content = Content::text('Hello');
-            expect($content->isSimple())->toBeTrue();
         });
 
         it('detects composite content', function () {
@@ -203,24 +165,160 @@ describe('Content', function () {
         it('appends content field to last part', function () {
             $content = Content::text('Hello');
             $content = $content->appendContentField('custom', 'value');
-            $lastPart = $content->lastContentPart();
-            expect($lastPart->get('custom'))->toBe('value');
+            expect($content->toArray())->toBe([
+                ['type' => 'text', 'text' => 'Hello', 'custom' => 'value']
+            ]);
         });
 
-        it('appends multiple content fields', function () {
-            $content = Content::text('Hello');
-            $content = $content->appendContentFields(['field1' => 'value1', 'field2' => 'value2']);
-            $lastPart = $content->lastContentPart();
-            expect($lastPart->get('field1'))->toBe('value1');
-            expect($lastPart->get('field2'))->toBe('value2');
-        });
-
-        it('does not append to empty content', function () {
+        it('appends field to empty content', function () {
             $content = Content::empty();
             $result = $content->appendContentField('custom', 'value');
-            expect($result)->not->toBe($content);
-            expect($result->isNull())->toBeFalse();
-            expect($content->isNull())->toBeTrue();
+            expect($result->toArray())->toBe([
+                ['type' => 'text', 'custom' => 'value']
+            ]);
+        });
+
+        it('appends to text content part', function () {
+            $content = Content::text('Hello');
+            $result = $content->appendContentField('custom', 'world');
+            expect($result->toArray())->toBe([
+                ['type' => 'text', 'text' => 'Hello', 'custom' => 'world']
+            ]);
+        });
+
+        it('appends to image_url content part with url field', function () {
+            $content = new Content(ContentPart::imageUrl('https://example.com/image.jpg'));
+            $result = $content->appendContentField('detail', 'high');
+            expect($result->toArray())->toBe([
+                ['type' => 'image_url', 'url' => 'https://example.com/image.jpg', 'detail' => 'high']
+            ]);
+        });
+
+        it('handles nested image_url structure like OpenAI API', function () {
+            $part = new ContentPart('image_url', [
+                'image_url' => [
+                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                    'detail' => 'auto'
+                ]
+            ]);
+            $content = new Content($part);
+            $result = $content->appendContentField('alt_text', 'Nature boardwalk');
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                        'detail' => 'auto'
+                    ],
+                    'alt_text' => 'Nature boardwalk'
+                ]
+            ]);
+        });
+
+        it('handles audio content parts like OpenAI input_audio type', function () {
+            $audioPart = new ContentPart('input_audio', [
+                'input_audio' => [
+                    'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                    'format' => 'wav'
+                ]
+            ]);
+            $content = new Content($audioPart);
+            $result = $content->appendContentField('transcription', 'Hello world');
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'input_audio',
+                    'input_audio' => [
+                        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                        'format' => 'wav'
+                    ],
+                    'transcription' => 'Hello world'
+                ]
+            ]);
+        });
+
+        it('handles file content parts with file_data', function () {
+            $filePart = new ContentPart('file', [
+                'file' => [
+                    'file_data' => 'base64encodedfiledata',
+                    'filename' => 'report.pdf'
+                ]
+            ]);
+            $content = new Content($filePart);
+            $result = $content->appendContentField('page_count', 42);
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'file',
+                    'file' => [
+                        'file_data' => 'base64encodedfiledata',
+                        'filename' => 'report.pdf'
+                    ],
+                    'page_count' => 42
+                ]
+            ]);
+        });
+
+        it('handles file content parts with file_id', function () {
+            $filePart = new ContentPart('file', [
+                'file' => [
+                    'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
+                    'filename' => 'document.pdf'
+                ]
+            ]);
+            $content = new Content($filePart);
+            $result = $content->appendContentField('processing_status', 'completed');
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'file',
+                    'file' => [
+                        'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
+                        'filename' => 'document.pdf'
+                    ],
+                    'processing_status' => 'completed'
+                ]
+            ]);
+        });
+
+        it('handles complex multipart content with mixed OpenAI types', function () {
+            $content = new Content(
+                ContentPart::text('What is in this image?'),
+                new ContentPart('image_url', [
+                    'image_url' => [
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                        'detail' => 'high'
+                    ]
+                ]),
+                new ContentPart('input_audio', [
+                    'input_audio' => [
+                        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                        'format' => 'wav'
+                    ]
+                ])
+            );
+            $result = $content->appendContentField('analysis_complete', true);
+            
+            $expected = [
+                ['type' => 'text', 'text' => 'What is in this image?'],
+                [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                        'detail' => 'high'
+                    ]
+                ],
+                [
+                    'type' => 'input_audio',
+                    'input_audio' => [
+                        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                        'format' => 'wav'
+                    ],
+                    'analysis_complete' => true
+                ]
+            ];
+            expect($result->toArray())->toBe($expected);
         });
     });
 });

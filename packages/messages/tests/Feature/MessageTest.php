@@ -17,7 +17,7 @@ test('creates a message with default values', function () {
     expect($message->role())->toBe(MessageRole::User)
         ->and($message->content()->toString())->toBe('')
         ->and($message->name())->toBe('')
-        ->and($message->meta())->toBe([]);
+        ->and($message->metadata()->toArray())->toBe([]);
 });
 
 test('creates a message with specified values', function () {
@@ -31,7 +31,7 @@ test('creates a message with specified values', function () {
     expect($message->role())->toBe(MessageRole::Assistant)
         ->and($message->content()->toString())->toBe('Hello, world!')
         ->and($message->name())->toBe('Claude')
-        ->and($message->meta())->toBe(['source' => 'test']);
+        ->and($message->metadata()->toArray())->toBe(['source' => 'test']);
 });
 
 test('creates a message with MessageRole enum', function () {
@@ -55,13 +55,13 @@ test('checks if message is empty', function () {
         ->and($metadataMessage->isEmpty())->toBeFalse();
 });
 
-test('checks if message is null', function () {
-    $nullMessage = new Message(role: '', content: '');
-    $nonNullMessage = new Message(role: 'user', content: '');
-
-    expect($nullMessage->isNull())->toBeTrue()
-        ->and($nonNullMessage->isNull())->toBeFalse();
-})->skip('Currently empty role is always set to user');
+//test('checks if message is null', function () {
+//    $nullMessage = new Message(role: '', content: '');
+//    $nonNullMessage = new Message(role: 'user', content: '');
+//
+//    expect($nullMessage->isNull())->toBeTrue()
+//        ->and($nonNullMessage->isNull())->toBeFalse();
+//})->skip('Currently empty role is always set to user');
 
 test('checks if message is composite', function () {
     $simpleMessage = new Message(content: 'Simple text');
@@ -80,20 +80,20 @@ test('accesses metadata values', function () {
         'source' => 'user input'
     ]);
 
-    expect($message->hasMeta())->toBeTrue()
-        ->and($message->hasMeta('temperature'))->toBeTrue()
-        ->and($message->hasMeta('nonexistent'))->toBeFalse()
-        ->and($message->meta())->toBe(['temperature' => 0.7, 'source' => 'user input'])
-        ->and($message->meta('temperature'))->toBe(0.7)
-        ->and($message->meta('nonexistent'))->toBeNull()
-        ->and($message->metaKeys())->toBe(['temperature', 'source']);
+    expect(!$message->metadata()->isEmpty())->toBeTrue()
+        ->and($message->metadata()->hasKey('temperature'))->toBeTrue()
+        ->and($message->metadata()->hasKey('nonexistent'))->toBeFalse()
+        ->and($message->metadata()->toArray())->toBe(['temperature' => 0.7, 'source' => 'user input'])
+        ->and($message->metadata()->get('temperature'))->toBe(0.7)
+        ->and($message->metadata()->get('nonexistent'))->toBeNull()
+        ->and($message->metadata()->keys())->toBe(['temperature', 'source']);
 });
 
 test('manages metadata through fluent interface', function () {
     $message = new Message();
-    $message = $message->withMeta('key1', 'value1');
-    $message = $message->withMeta('key2', 'value2');
-    expect($message->meta())->toBe(['key1' => 'value1', 'key2' => 'value2']);
+    $message = $message->withMetadata('key1', 'value1');
+    $message = $message->withMetadata('key2', 'value2');
+    expect($message->metadata()->toArray())->toBe(['key1' => 'value1', 'key2' => 'value2']);
 });
 
 // HandlesCreation Tests
@@ -131,7 +131,7 @@ test('creates a message from array', function () {
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::Assistant)
         ->and($message->content()->toString())->toBe('Hello from array')
-        ->and($message->meta())->toBe(['source' => 'test array']);
+        ->and($message->metadata()->toArray())->toBe(['source' => 'test array']);
 });
 
 test('creates a message from content with role', function () {
