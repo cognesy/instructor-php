@@ -10,7 +10,7 @@ The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI c
 
 ## Package Responsibilities & Capabilities
 
-### **Instructor** - Main Orchestration Layer
+### **Instructor** - Structured Outputs Extraction
 **Role**: Primary facade and structured output engine  
 **Responsibility**: End-to-end LLM interaction with strict type safety
 
@@ -48,15 +48,18 @@ The Instructor PHP monorepo provides a complete toolkit for integrating LLM/AI c
 **Responsibility**: Standardize message formats across all providers
 
 **Core Capabilities**:
-- **Message System**: Structured message handling with role-based typing (system, user, assistant, tool, developer)
-- **Content Management**: Multi-part content support including text, images, files, and audio with automatic complexity detection
-- **Format Conversion**: Seamless conversion between string, array, and object representations
-- **Media Integration**: Built-in Image, File, and Audio utilities with base64 and URL support
-- **Collection Operations**: Advanced message collection operations including filtering, merging, and role-based partitioning
-- **Script System**: Multi-section chat sequence management with section selection
-- **Provider Compatibility**: OpenAI-compatible message format with extensibility for other providers
+- **Message System**: Structured message handling with role-based typing (system, user, assistant, tool, developer) using MessageRole enum
+- **MessageStore Architecture**: Multi-section chat sequence management with fluent API for complex conversational scenarios including section-based operations, parameter handling, and selective message compilation
+- **Content Management**: Multi-part content support with automatic complexity detection and OpenAI API compliance
+- **OpenAI Content Types**: Full support for text, image_url, input_audio, and file content parts with proper nested structures
+- **Media Utilities**: Built-in Image, File, Audio, and Metadata classes for multimodal content creation with immutable operations
+- **Format Conversion**: Seamless conversion between string, array, and object representations with export filtering
+- **Collection Operations**: Advanced message collection operations including filtering, merging, role-based partitioning, transformation, and immutable manipulations
+- **Section Management**: Named section system with Sections collection, Section operators for fluent manipulation, and parameter management through MessageStoreParameters
+- **Content Enhancement**: Field appending and metadata management for content parts with immutable operations
+- **Provider Compatibility**: OpenAI Chat Completions API compatible with extensibility for other multimodal providers
 
-**Key Integration Points**: Used by Instructor and Polyglot for all LLM communication; integrates with Templates for message generation and Utils for data transformation.
+**Key Integration Points**: Core dependency for Instructor and Polyglot LLM communication; provides OpenAI-compliant message structures, integrates with Templates for prompt generation, and uses Utils for data transformation and validation.
 
 ---
 

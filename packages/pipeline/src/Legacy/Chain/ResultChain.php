@@ -76,7 +76,7 @@ class ResultChain
      *
      * @return ResultChain
      */
-    static public function make() : static {
+    static public function make(): static {
         return new ResultChain();
     }
 
@@ -130,7 +130,7 @@ class ResultChain
         }
         // add processors to the chain
         foreach ($processors as $processor) {
-            $this->processors[] = function($value) use ($processor, $onNull) {
+            $this->processors[] = function ($value) use ($processor, $onNull) {
                 return $this->asResult($this->processValue($processor, $value), $onNull);
             };
         }
@@ -153,7 +153,7 @@ class ResultChain
      * @return ResultChain
      */
     public function when(callable $condition, callable $callback): static {
-        $this->processors[] = function($value) use ($condition, $callback) {
+        $this->processors[] = function ($value) use ($condition, $callback) {
             if ($condition($value, $this->context)) {
                 return $this->asResult($this->processValue($callback, $value));
             }
@@ -172,7 +172,7 @@ class ResultChain
      * @return ResultChain
      */
     public function tap(callable $processor): static {
-        $this->processors[] = function($value) use ($processor) {
+        $this->processors[] = function ($value) use ($processor) {
             // ignore $result - tap() is transparent to the chain
             $this->processValue($processor, $value);
             return $value;
@@ -185,10 +185,10 @@ class ResultChain
      *
      * The handler is executed when a processor returns a failure result.
      *
-     * @param callable $handler<Failure>
+     * @param callable $handler <Failure>
      * @return ResultChain
      */
-    public function onFailure(callable $handler) : static {
+    public function onFailure(callable $handler): static {
         $this->onFailure[] = $handler;
         return $this;
     }
@@ -198,7 +198,7 @@ class ResultChain
      *
      * The finalizer is executed after all processors have been applied.
      *
-     * @param callable|null $callback<Result>
+     * @param callable|null $callback <Result>
      * @return ResultChain
      */
     public function then(?callable $callback = null): static {
@@ -215,7 +215,7 @@ class ResultChain
      * @param bool $unwrap - whether to unwrap the result to raw value
      * @return mixed - the result of the processing
      */
-    public function process(mixed $input = null, bool $unwrap = true) : mixed {
+    public function process(mixed $input = null, bool $unwrap = true): mixed {
         $carry = $input ?? $this->getCarry();
         $chainResult = $this->applyProcessors($carry);
         $thenResult = $this->applyThen($this->finalizer, $chainResult);
@@ -264,8 +264,8 @@ class ResultChain
      *
      * @return mixed
      */
-    private function getCarry() : mixed {
-        return match(true) {
+    private function getCarry(): mixed {
+        return match (true) {
             $this->source !== null => ($this->source)(),
             default => $this->carry,
         };
@@ -279,7 +279,7 @@ class ResultChain
      * @return mixed
      */
     private function processValue(callable $processor, mixed $value): mixed {
-        return match(true) {
+        return match (true) {
             $value instanceof Result => $processor($value->unwrap()),
             ($value === null) => $processor(),
             default => $processor($value),
@@ -293,10 +293,10 @@ class ResultChain
      * @param string $onNull
      * @return Result|null
      */
-    private function asResult(mixed $value, string $onNull = self::FAIL_ON_NULL) : ?Result {
-        return match(true) {
+    private function asResult(mixed $value, string $onNull = self::FAIL_ON_NULL): ?Result {
+        return match (true) {
             $value instanceof Result => $value,
-            ($value === null) => match($onNull) {
+            ($value === null) => match ($onNull) {
                 self::BREAK_ON_NULL => null,
                 self::FAIL_ON_NULL => Result::failure("Processor returned null value"),
                 self::CONTINUE_ON_NULL => Result::success(null),
@@ -313,7 +313,7 @@ class ResultChain
      * @return mixed
      */
     private function wrapOrUnwrap(mixed $any, bool $wrapped = true): mixed {
-        return match(true) {
+        return match (true) {
             $wrapped => $this->asResult($any, self::CONTINUE_ON_NULL),
             default => $this->unwrapIfResult($any),
         };
@@ -326,7 +326,7 @@ class ResultChain
      * @return mixed
      */
     private function unwrapIfResult(mixed $any): mixed {
-        return match(true) {
+        return match (true) {
             $any instanceof Success => $any->unwrap(),
             $any instanceof Failure => null,
             default => $any,
@@ -339,7 +339,7 @@ class ResultChain
      * @param mixed $input
      * @return mixed
      */
-    private function applyProcessors(mixed $input) : mixed {
+    private function applyProcessors(mixed $input): mixed {
         foreach ($this->processors as $processor) {
             $output = $this->tryProcess($processor, $input);
             // if processor has returned null - break the chain
@@ -364,7 +364,7 @@ class ResultChain
      * @param mixed $input
      * @return mixed
      */
-    private function tryProcess(mixed $processor, mixed $input) : mixed {
+    private function tryProcess(mixed $processor, mixed $input): mixed {
         try {
             $result = $processor($input);
         } catch (Exception $e) {
@@ -381,7 +381,7 @@ class ResultChain
      * @return mixed
      */
     private function applyThen(?callable $callback, Result $result): mixed {
-        return match(true) {
+        return match (true) {
             ($callback !== null) => $callback($result),
             default => $result,
         };
@@ -393,7 +393,7 @@ class ResultChain
      * @param Failure $failure
      * @return void
      */
-    private function applyFailureHandlers(Failure $failure) : void {
+    private function applyFailureHandlers(Failure $failure): void {
         foreach ($this->onFailure as $handler) {
             $handler($failure);
         }

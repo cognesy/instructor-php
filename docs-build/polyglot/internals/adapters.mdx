@@ -32,7 +32,7 @@ class OpenAIRequestAdapter implements ProviderRequestAdapter {
     protected function toHeaders(): array { ... }
     protected function toUrl(string $model = '', bool $stream = false): string { ... }
 }
-// @doctest id="7e0e"
+// @doctest id="c896"
 ```
 
 ### Message Formatters
@@ -49,7 +49,7 @@ class OpenAIMessageFormat implements CanMapMessages {
     protected function toNativeToolCall(array $message): array { ... }
     protected function toNativeToolResult(array $message): array { ... }
 }
-// @doctest id="1e8d"
+// @doctest id="42a2"
 ```
 
 
@@ -84,7 +84,7 @@ class OpenAIBodyFormat implements CanMapRequestBody {
         array $responseFormat
     ): array { ... }
 }
-// @doctest id="e7d8"
+// @doctest id="b019"
 ```
 
 
@@ -111,7 +111,7 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter {
     protected function makeToolNameDelta(array $data): string { ... }
     protected function makeToolArgsDelta(array $data): string { ... }
 }
-// @doctest id="21d5"
+// @doctest id="19f0"
 ```
 
 
@@ -126,7 +126,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 class OpenAIUsageFormat implements CanMapUsage {
     public function fromData(array $data): Usage { ... }
 }
-// @doctest id="c558"
+// @doctest id="e438"
 ```
 
 

@@ -2,6 +2,27 @@
 
 ## Core Architecture
 
+### MessageStore System
+
+The MessageStore system provides multi-section message management for complex conversational scenarios:
+
+```php
+class MessageStore {
+    public Sections $sections;
+    public MessageStoreParameters $parameters;
+}
+
+// Usage patterns
+MessageStore::fromSections($section1, $section2);
+MessageStore::fromMessages($messages, 'section_name');
+
+// Fluent API
+$store->section('system')->appendMessages($messages);
+$store->section('prompt')->setMessages($messages);
+$store->section('examples')->remove();
+$store->parameters()->setParameter('model', 'gpt-4');
+```
+
 ### Message System Contracts
 ```php
 interface CanProvideMessage {
@@ -50,7 +71,7 @@ final readonly class Message {
     protected string $role;
     protected string $name;
     protected Content $content;
-    protected array $metadata;
+    protected Metadata $metadata;
     
     public const DEFAULT_ROLE = 'user';
 }
@@ -197,14 +218,14 @@ final readonly class ContentPart {
 ```php
 // Basic types
 ContentPart::text($text);                  // Text content part
-ContentPart::imageUrl($url);              // Image from URL
-ContentPart::image($image);               // From Image object
-ContentPart::file($file);                 // From File object  
-ContentPart::audio($audio);               // From Audio object
+ContentPart::imageUrl($url);               // Image from URL (simple format)
+ContentPart::image($image);                // From Image object (nested OpenAI format)
+ContentPart::file($file);                  // From File object  
+ContentPart::audio($audio);                // From Audio object
 
 // Array construction
-ContentPart::fromArray($array);           // Extract type and fields
-ContentPart::fromAny($item);              // Universal constructor
+ContentPart::fromArray($array);            // Extract type and fields
+ContentPart::fromAny($item);               // Universal constructor
 
 // fromAny resolution
 match(true) {
@@ -214,6 +235,7 @@ match(true) {
     is_object($item) && $item instanceof Image => self::image($item),
     is_object($item) && $item instanceof File => self::file($item),
     is_object($item) && $item instanceof Audio => self::audio($item),
+    default => throw new InvalidArgumentException('Unsupported content type'),
 }
 ```
 
@@ -266,7 +288,7 @@ Image::fromBase64($base64string, $mimeType); // From base64 string
 Image::fromUrl($imageUrl, $mimeType);      // From HTTP URL
 
 // Content integration
-$image->toContentPart();                   // ContentPart with image_url type
+$image->toContentPart();                   // ContentPart with OpenAI image_url structure
 $image->toContent();                       // Content with single image part
 $image->toMessage();                       // Message with user role
 $image->toMessages();                      // Messages collection
@@ -277,6 +299,14 @@ $image->getBase64Bytes();                  // Base64 data
 $image->getMimeType();                     // MIME type
 
 // OpenAI format
+$image->toContentPart()->toArray() produces:
+[
+    'type' => 'image_url',
+    'image_url' => [
+        'url' => $this->url ?: $this->base64bytes
+    ]
+]
+
 $image->toArray() produces:
 [
     'role' => 'user',
@@ -302,15 +332,18 @@ class File implements CanProvideMessages {
 File::fromFile($filePath);                 // Load from file system
 File::fromBase64($base64string, $mimeType); // From base64 string
 
-// ContentPart integration
+// ContentPart integration  
 $file->toContentPart() produces:
 new ContentPart('file', [
     'file' => [
-        'file_data' => $this->base64bytes,
-        'file_name' => $this->fileName,
-        'file_id' => $this->fileId,
+        'file_data' => $this->base64bytes,  // Base64 data if available
+        'file_name' => $this->fileName,     // Original filename
+        'file_id' => $this->fileId,         // File ID for uploaded files
     ]
 ])
+
+// Supports both uploaded files (file_id) and inline files (file_data)
+// OpenAI API compatible structure
 ```
 
 ### Audio Utility Class
@@ -321,10 +354,232 @@ class Audio {
 
     // ContentPart integration
     $audio->toContentPart() produces:
-    new ContentPart('input_audio', ['input_audio' => [
-        'format' => $this->format,
-        'data' => $this->base64bytes,
-    ]]);
+    new ContentPart('input_audio', [
+        'input_audio' => [
+            'format' => $this->format,  // 'wav', 'mp3', etc.
+            'data' => $this->base64bytes,  // Base64 encoded audio data
+        ]
+    ]);
+    
+    // OpenAI API compatible input_audio structure
+    // Supports wav, mp3, and other audio formats
+}
+```
+
+### Metadata Utility Class
+```php
+final readonly class Metadata {
+    private array $metadata;
+    
+    // Construction
+    Metadata::empty();                         // Empty metadata
+    Metadata::fromArray($array);               // From array
+    new Metadata($array);                      // Direct construction
+    
+    // Immutable operations
+    $metadata->withKeyValue($key, $value);     // Add/update key-value pair
+    $metadata->withoutKey($key);               // Remove key
+    
+    // Data access
+    $metadata->get($key, $default);            // Get value with default
+    $metadata->hasKey($key);                   // Check key existence
+    $metadata->keys();                         // All keys array
+    $metadata->isEmpty();                      // Check if empty
+    $metadata->toArray();                      // Convert to array
+    
+    // Usage patterns for OpenAI content enhancement
+    $imageMetadata = Metadata::empty()
+        ->withKeyValue('detail', 'high')
+        ->withKeyValue('alt_text', 'Description');
+        
+    $audioMetadata = Metadata::fromArray([
+        'transcription' => 'Hello world',
+        'confidence' => 0.95,
+        'language' => 'en'
+    ]);
+    
+    $fileMetadata = $metadata->withKeyValue('page_count', 42);
+}
+```
+
+## OpenAI API Content Part Compliance
+
+### Supported Content Part Types
+```php
+// Text content part
+[
+    'type' => 'text',
+    'text' => 'Hello world'
+]
+
+// Image content part (URL format)
+[
+    'type' => 'image_url',
+    'image_url' => [
+        'url' => 'https://example.com/image.jpg',
+        'detail' => 'high'  // Optional: auto, low, high
+    ]
+]
+
+// Image content part (base64 format)
+[
+    'type' => 'image_url',
+    'image_url' => [
+        'url' => 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...'
+    ]
+]
+
+// Audio input content part
+[
+    'type' => 'input_audio',
+    'input_audio' => [
+        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAI...', // Base64
+        'format' => 'wav'  // wav, mp3
+    ]
+]
+
+// File content part (inline)
+[
+    'type' => 'file',
+    'file' => [
+        'file_data' => 'data:application/pdf;base64,JVBERi0xLjQ...',
+        'filename' => 'document.pdf'
+    ]
+]
+
+// File content part (uploaded)
+[
+    'type' => 'file',
+    'file' => [
+        'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
+        'filename' => 'uploaded_document.pdf'
+    ]
+]
+```
+
+### Multimodal Message Examples
+```php
+// Complete multimodal message structure
+$message = [
+    'role' => 'user',
+    'content' => [
+        [
+            'type' => 'text',
+            'text' => 'What is in this image and analyze the audio file?'
+        ],
+        [
+            'type' => 'image_url',
+            'image_url' => [
+                'url' => 'https://example.com/chart.png',
+                'detail' => 'high'
+            ]
+        ],
+        [
+            'type' => 'input_audio',
+            'input_audio' => [
+                'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAI...',
+                'format' => 'wav'
+            ]
+        ],
+        [
+            'type' => 'file',
+            'file' => [
+                'file_id' => 'file-abc123',
+                'filename' => 'report.pdf'
+            ]
+        ]
+    ]
+];
+
+// Using utility classes to build content
+$content = new Content(
+    ContentPart::text('Analyze this content:'),
+    ContentPart::image(Image::fromUrl('https://example.com/image.jpg', 'image/jpeg')),
+    ContentPart::audio(new Audio('wav', $base64AudioData)),
+    ContentPart::file(File::fromFile('/path/to/document.pdf'))
+);
+
+// Enhanced with metadata
+$content = $content->appendContentField('analysis_type', 'comprehensive');
+```
+
+## MessageStore System Architecture
+
+### MessageStore Structure
+```php
+final readonly class MessageStore {
+    public Sections $sections;                // Collection of named sections
+    public MessageStoreParameters $parameters; // Key-value parameters
+}
+
+// Construction
+MessageStore::fromSections(Section ...$sections);
+MessageStore::fromMessages(Messages $messages, string $section = 'messages');
+
+// Section management
+$store->withSection(string $name);            // Ensure section exists
+$store->select(string|array $sections);      // Select specific sections
+$store->toMessages();                         // Flatten to Messages
+$store->toArray();                           // Export messages array
+$store->toString();                          // Text representation
+```
+
+### Section Operator API
+```php
+// Section access and queries
+$store->section('system')->exists();         // Check if section exists
+$store->section('system')->isEmpty();        // Check if section empty
+$store->section('system')->get();            // Get Section object
+$store->section('system')->messages();       // Get section messages
+
+// Section mutations (immutable)
+$store->section('system')->appendMessages($messages);
+$store->section('system')->setMessages($messages);
+$store->section('system')->remove();         // Remove entire section
+$store->section('system')->clear();          // Clear section messages
+```
+
+### Parameter Operator API
+```php
+// Parameter access and management
+$store->parameters()->get();                 // Get all parameters
+$store->parameters()->setParameter('key', 'value');
+$store->parameters()->unsetParameter('key');
+$store->parameters()->mergeParameters($params);
+$store->parameters()->withParams($newParams);
+```
+
+### Section Class Structure
+```php
+final readonly class Section {
+    public string $name;
+    public Messages $messages;
+}
+
+// Usage
+Section::empty('section_name');
+$section->appendMessages($messages);
+$section->withMessages($messages);
+$section->appendContentField($key, $value);
+$section->toMergedPerRole();
+$section->withoutEmptyMessages();
+```
+
+### Sections Collection
+```php
+final readonly class Sections {
+    // Collection management
+    public function add(Section ...$sections): Sections;
+    public function has(string $name): bool;
+    public function get(string $name): ?Section;
+    public function filter(callable $callback): Sections;
+    public function toMessages(): Messages;
+    
+    // Iteration and access
+    public function all(): array;
+    public function each(): iterable;
+    public function count(): int;
+    public function names(): array;
 }
 ```
 
@@ -442,21 +697,14 @@ $message->role();                          // MessageRole enum
 $message->name();                          // Name string
 $message->content();                       // Content object
 $message->contentParts();                  // ContentPart[] array
-$message->lastContentPart();               // Last part (never null)
-$message->firstContentPart();              // First part or null
 
 // State checking
 $message->isEmpty();                       // Content empty and no metadata
-$message->isNull();                        // Empty role, content, and metadata
 $message->isComposite();                   // Complex content structure
 
 // Metadata operations
-$message->hasMeta($key = null);            // Check metadata existence
-$message->meta($key = null);               // Get metadata value(s)
-$message->metadata($key = null);           // Alias for meta()
-$message->metaKeys();                      // Metadata keys array
-$message->withMeta($key, $value);          // Add metadata (immutable)
-$message->withMetadata($key, $value);      // Alias for withMeta()
+$message->metadata();                      // Get Metadata object
+$message->withMetadata($key, $value);      // Add metadata (immutable)
 ```
 
 ### Message Mutation (Immutable)
@@ -496,6 +744,12 @@ $message->toString();                      // Content as string
 ```php
 // Message format validation
 Message::isMessage($array): bool {
+    return isset($array['role']) && (
+        isset($array['content']) || isset($array['_metadata'])
+    );
+}
+
+Message::hasRoleAndContent($array): bool {
     return isset($array['role']) && (
         isset($array['content']) || isset($array['_metadata'])
     );
