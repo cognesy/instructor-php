@@ -29,7 +29,7 @@ final readonly class MessageStore
         $this->parameters = $parameters ?? new MessageStoreParameters();
     }
 
-    // CONSTRUCTORS
+    // CONSTRUCTORS ///////////////////////////////////////////
 
     public static function fromSections(Section ...$sections): MessageStore {
         return new MessageStore(new Sections(...$sections));
@@ -40,7 +40,7 @@ final readonly class MessageStore
         return new MessageStore($sections);
     }
 
-    // MUTATORS
+    // MUTATORS ///////////////////////////////////////////////
 
     public function withSection(string $name): MessageStore {
         if ($this->section($name)->exists()) {
@@ -55,11 +55,13 @@ final readonly class MessageStore
         );
     }
 
-    // ACCESSORS / CONVERSIONS
+    // ACCESSORS ////////////////////////////////////////////////
 
     public function sections() : Sections {
         return $this->sections;
     }
+
+    // CONVERSIONS and TRANSFORMATIONS //////////////////////////
 
     /**
      * @param string|string[] $sections

@@ -28,13 +28,13 @@ final readonly class Section
         $this->messages = $messages ?? Messages::empty();
     }
 
-    // CONSTRUCTORS
+    // CONSTRUCTORS ///////////////////////////////////////////
 
     public static function empty(string $name) : Section {
         return new static(name: $name);
     }
 
-    // ACCESSORS
+    // ACCESSORS //////////////////////////////////////////////
 
     public function name() : string {
         return $this->name;
@@ -48,29 +48,7 @@ final readonly class Section
         return $this->messages;
     }
 
-    // TRANSFORMATIONS / CONVERSIONS
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function toArray() : array {
-        return $this->messages()->toArray();
-    }
-
-    public function toMergedPerRole() : Section {
-        return (new Section($this->name()))
-            ->appendMessages(
-                $this->messages()->toMergedPerRole()
-            );
-    }
-
-    public function trimmed() : Section {
-        $section = new Section($this->name());
-        $section = $section->withMessages($this->messages()->withoutEmptyMessages());
-        return $section;
-    }
-
-    // MUTATORS
+    // MUTATORS /////////////////////////////////////////////
 
         public function withMessages(Messages $messages) : Section {
         return new static(
@@ -94,5 +72,27 @@ final readonly class Section
             name: $this->name,
             messages: $this->messages->removeTail()->appendMessage($newMessage),
         );
+    }
+
+    // TRANSFORMATIONS / CONVERSIONS //////////////////////////
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function toArray() : array {
+        return $this->messages()->toArray();
+    }
+
+    public function toMergedPerRole() : Section {
+        return (new Section($this->name()))
+            ->appendMessages(
+                $this->messages()->toMergedPerRole()
+            );
+    }
+
+    public function withoutEmptyMessages() : Section {
+        $section = new Section($this->name());
+        $section = $section->withMessages($this->messages()->withoutEmptyMessages());
+        return $section;
     }
 }

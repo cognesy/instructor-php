@@ -5,17 +5,19 @@ namespace Cognesy\Messages\MessageStore\Operators;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\MessageStoreParameters;
 
-class ParameterOperator
+final readonly class ParameterOperator
 {
     public function __construct(
         protected MessageStore $store,
     ) {}
 
-    // ACCESSORS
+    // ACCESSORS ////////////////////////////////////////////////
 
     public function get() : MessageStoreParameters {
         return $this->store->parameters;
     }
+
+    // MUTATORS /////////////////////////////////////////////////
 
     public function withParams(array|MessageStoreParameters $parameters) : MessageStore {
         $newParameters = match(true) {

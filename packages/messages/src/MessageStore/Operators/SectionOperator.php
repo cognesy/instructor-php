@@ -18,7 +18,7 @@ use Cognesy\Messages\MessageStore\Section;
  * $store->section('prompt')->replaceMessages($messages)
  * $store->section('examples')->remove()
  */
-class SectionOperator
+final readonly class SectionOperator
 {
     private MessageStore $store;
     private string $sectionName;
@@ -31,7 +31,7 @@ class SectionOperator
         $this->sectionName = $sectionName;
     }
 
-    // ACCESSORS
+    // ACCESSORS //////////////////////////////////////////////////
 
     public function name(): string {
         return $this->sectionName;
@@ -60,7 +60,7 @@ class SectionOperator
         return $this->get()->messages();
     }
 
-    // MUTATORS
+    // MUTATORS //////////////////////////////////////////////////
 
     public function appendMessages(array|Message|Messages $messages): MessageStore {
         $messages = Messages::fromAny($messages);

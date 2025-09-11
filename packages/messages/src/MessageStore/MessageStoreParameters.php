@@ -10,6 +10,10 @@ final readonly class MessageStoreParameters
         private array $parameters = [],
     ) {}
 
+    // CONSTRUCTORS /////////////////////////////////////////////
+
+    // ACCESSORS ////////////////////////////////////////////////
+
     public function has(string $name) : bool {
         return isset($this->parameters[$name]);
     }
@@ -26,10 +30,6 @@ final readonly class MessageStoreParameters
         return !$this->isEmpty();
     }
 
-    public function toArray() : array {
-        return $this->parameters;
-    }
-
     public function keys() : array {
         return array_keys($this->parameters);
     }
@@ -37,6 +37,8 @@ final readonly class MessageStoreParameters
     public function values() : array {
         return array_values($this->parameters);
     }
+
+    // MUTATORS /////////////////////////////////////////////////
 
     public function set(string $name, mixed $value) : MessageStoreParameters {
         $newParameters = $this->parameters;
@@ -48,6 +50,12 @@ final readonly class MessageStoreParameters
         $newParameters = $this->parameters;
         unset($newParameters[$name]);
         return new static($newParameters);
+    }
+
+    // CONVERSIONS and TRANSFORMATIONS //////////////////////////
+
+    public function toArray() : array {
+        return $this->parameters;
     }
 
     public function filter(array $names, callable $condition) : MessageStoreParameters {
