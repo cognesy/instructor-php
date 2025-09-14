@@ -4,9 +4,10 @@ namespace Cognesy\Polyglot\Inference\Traits;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 trait HandlesLLMProvider
@@ -51,7 +52,7 @@ trait HandlesLLMProvider
 
     public function withHttpClientPreset(string $string) : static {
         // Build a client using the HTTP config preset at the facade level
-        $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+        $builder = new HttpClientBuilder(events: $this->events);
         $this->httpClient = $builder->withPreset($string)->create();
         return $this;
     }

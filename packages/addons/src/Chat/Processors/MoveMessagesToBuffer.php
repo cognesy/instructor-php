@@ -2,15 +2,15 @@
 
 namespace Cognesy\Addons\Chat\Processors;
 
-use Cognesy\Addons\Chat\Contracts\CanProcessChatState;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\MessagesMovedToBuffer;
 use Cognesy\Addons\Chat\Utils\SplitMessages;
+use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Utils\Tokenizer;
 
-final readonly class MoveMessagesToBuffer implements CanProcessChatState
+final readonly class MoveMessagesToBuffer implements CanProcessAnyState
 {
     private CanHandleEvents $events;
 
@@ -22,10 +22,15 @@ final readonly class MoveMessagesToBuffer implements CanProcessChatState
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
-    public function process(ChatState $state, ?callable $next = null): ChatState {
-        if (!$this->shouldProcess($state->messages()->toString())) {
-            return $next ? $next($state) : $state;
-        }
+    public function canProcess(object $state): bool {
+        return $state instanceof ChatState
+            && $this->shouldProcess($state->messages()->toString());
+    }
+
+    public function process(object $state, ?callable $next = null): ChatState {
+//        if (!$this->shouldProcess($state->messages()->toString())) {
+//            return $next ? $next($state) : $state;
+//        }
 
         [$keep, $overflow] = (new SplitMessages)->split($state->messages(), $this->maxTokens);
         $this->events->dispatch(new MessagesMovedToBuffer([

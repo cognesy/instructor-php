@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tag;
+namespace Cognesy\Utils\TagMap\Tags;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 use Throwable;
 
 /**

@@ -132,7 +132,7 @@ ReAct-specific:
 Processors post‑process each step (accumulate usage, update step list, append follow‑up messages). Defaults:
 - `AccumulateTokenUsage`
 - `UpdateStep`
-- `AppendContextVariables` (current behavior retained)
+- `AppendContextMetadata` (current behavior retained)
 - `AppendStepMessages`
 
 Add or override:
@@ -165,7 +165,7 @@ Before invoking a tool, `Tools` performs a pragmatic check against the tool’s 
 ## Known Limitations / Deferred Work
 
 - Parallel tool execution: currently left as-is; future investigation required.
-- Context variables: current `AppendContextVariables` remains; alternatives will be considered in a future major version.
+- Context metadata: current `AppendContextMetadata` remains; alternatives will be considered in a future major version.
 - Tool schema value objects: kept as arrays at the boundary to avoid breaking `polyglot`; wrappers may be added later.
 
 ## State & Reuse

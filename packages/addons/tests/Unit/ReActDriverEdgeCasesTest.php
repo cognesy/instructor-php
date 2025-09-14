@@ -2,10 +2,13 @@
 
 use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Enums\StepType;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Instructor\Validation\Exceptions\ValidationException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -27,12 +30,16 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
     
-    $tools = new \Cognesy\Addons\ToolUse\Tools();
+    $tools = new Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_noop(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
+    $state = new ToolUseState();
     $state = $state->withMessages(Messages::empty());
     
-    $toolUse = new ToolUse(tools: $tools, continuationCriteria: new ContinuationCriteria(new StepsLimit(2)), driver: $react);
+    $toolUse = ToolUseFactory::default(
+        tools: $tools,
+        continuationCriteria: new ContinuationCriteria(new StepsLimit(2)),
+        driver: $react
+    );
 
     $state = $toolUse->nextStep($state);
     expect($state->currentStep()->stepType())->toBe(StepType::ToolExecution);
@@ -49,10 +56,10 @@ it('surfaces extraction failure as validation exception (deterministic)', functi
     ]);
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
-    $tools = (new \Cognesy\Addons\ToolUse\Tools())->withTool(FunctionTool::fromCallable(_noop(...)));
-    $state = new \Cognesy\Addons\ToolUse\Data\ToolUseState();
-    $toolUse = new ToolUse(tools: $tools, driver: $react);
+    $tools = (new Tools())->withTool(FunctionTool::fromCallable(_noop(...)));
+    $state = new ToolUseState();
+    $toolUse = ToolUseFactory::default(tools: $tools, driver: $react);
 
     expect(fn() => $toolUse->nextStep($state))
-        ->toThrow(\Cognesy\Instructor\Validation\Exceptions\ValidationException::class);
+        ->toThrow(ValidationException::class);
 });

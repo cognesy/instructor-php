@@ -7,10 +7,10 @@ use Cognesy\Pipeline\Operators\Observation\TrackMemory;
 use Cognesy\Pipeline\Operators\Observation\TrackTime;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\Observation\MemoryTag;
-use Cognesy\Pipeline\Tag\Observation\StepMemoryTag;
-use Cognesy\Pipeline\Tag\Observation\StepTimingTag;
-use Cognesy\Pipeline\Tag\Observation\TimingTag;
+use Cognesy\Pipeline\Tag\StepMemoryTag;
+use Cognesy\Pipeline\Tag\StepTimingTag;
+use Cognesy\Utils\TagMap\Tags\MemoryProfilerTag;
+use Cognesy\Utils\TagMap\Tags\TimeProfilerTag;
 
 describe('TrackTime and Memory Tracking Integration', function () {
     
@@ -22,7 +22,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->executeWith(ProcessingState::with(5))
             ->state();
 
-        $timings = $result->allTags(TimingTag::class);
+        $timings = $result->allTags(TimeProfilerTag::class);
         
         expect($timings)->toHaveCount(1);
         
@@ -47,7 +47,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->executeWith(ProcessingState::with(10))
             ->state();
 
-        $memoryTags = $result->allTags(MemoryTag::class);
+        $memoryTags = $result->allTags(MemoryProfilerTag::class);
         
         expect($memoryTags)->toHaveCount(1);
         
@@ -115,8 +115,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->state();
 
         // Check we have all expected tags
-        expect($result->allTags(TimingTag::class))->toHaveCount(1);
-        expect($result->allTags(MemoryTag::class))->toHaveCount(1);
+        expect($result->allTags(TimeProfilerTag::class))->toHaveCount(1);
+        expect($result->allTags(MemoryProfilerTag::class))->toHaveCount(1);
         expect($result->allTags(StepTimingTag::class))->toHaveCount(1);
         expect($result->allTags(StepMemoryTag::class))->toHaveCount(1);
 
@@ -136,7 +136,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->executeWith(ProcessingState::with(5))
             ->state();
 
-        $timing = $result->allTags(TimingTag::class)[0];
+        $timing = $result->allTags(TimeProfilerTag::class)[0];
         $stepTiming = $result->allTags(StepTimingTag::class)[0];
         
         expect($timing->success)->toBeFalse();
@@ -157,7 +157,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->executeWith(ProcessingState::with(1))
             ->state();
 
-        $timing = $result->allTags(TimingTag::class)[0];
+        $timing = $result->allTags(TimeProfilerTag::class)[0];
         
         expect($timing->durationFormatted())->toBeString();
         expect($timing->durationMs())->toBeGreaterThan(0.5); // At least 0.5ms

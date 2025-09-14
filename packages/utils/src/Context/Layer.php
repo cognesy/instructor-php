@@ -13,15 +13,51 @@ final class Layer
         $this->builder = $builder;
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @param T $service
+     */
     public static function provides(string $class, object $service): self {
         return new self(
             static fn(Context $ctx) => $ctx->with($class, $service),
         );
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @param callable(Context):T $factory
+     */
     public static function providesFrom(string $class, callable $factory): self {
         return new self(
             static fn(Context $ctx) => $ctx->with($class, $factory($ctx)),
+        );
+    }
+
+    /**
+     * Provide a qualified service via a typed key.
+     *
+     * @template T of object
+     * @param Key<T> $key
+     * @param T $service
+     */
+    public static function providesKey(Key $key, object $service): self {
+        return new self(
+            static fn(Context $ctx) => $ctx->withKey($key, $service),
+        );
+    }
+
+    /**
+     * Provide a qualified service via a factory and typed key.
+     *
+     * @template T of object
+     * @param Key<T> $key
+     * @param callable(Context):T $factory
+     */
+    public static function providesFromKey(Key $key, callable $factory): self {
+        return new self(
+            static fn(Context $ctx) => $ctx->withKey($key, $factory($ctx)),
         );
     }
 
@@ -43,7 +79,7 @@ final class Layer
         });
     }
 
-    /** Parallel merge (right‑bias). Both layers see the *same* incoming Context. */
+    /** Parallel merge (right‑bias). Both layers see the same incoming Context. */
     public function merge(self $other): self {
         return new self(function (Context $ctx) use ($other) {
             $ctxLeft = $this->applyTo($ctx);

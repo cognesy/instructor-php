@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Contracts;
+namespace Cognesy\Utils\TagMap\Contracts;
 
-use Cognesy\Pipeline\Tag\TagQuery;
+use Cognesy\Utils\TagMap\TagQuery;
 
 /**
  * Universal interface for tag storage implementations.

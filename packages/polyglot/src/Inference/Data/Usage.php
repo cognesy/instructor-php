@@ -12,6 +12,8 @@ class Usage
         public int $reasoningTokens = 0,
     ) {}
 
+    // CONSTRUCTORS ///////////////////////////////////////////////////////
+
     public static function none() : Usage {
         return new self();
     }
@@ -36,6 +38,8 @@ class Usage
         );
     }
 
+    // ACCESSORS /////////////////////////////////////////////////////////
+
     public function total() : int {
         return $this->inputTokens
             + $this->outputTokens
@@ -58,6 +62,8 @@ class Usage
             + $this->cacheReadTokens;
     }
 
+    // MUTATORS ///////////////////////////////////////////////////////////
+
     public function accumulate(Usage $usage) : self {
         $this->inputTokens += $usage->inputTokens;
         $this->outputTokens += $usage->outputTokens;
@@ -66,6 +72,8 @@ class Usage
         $this->reasoningTokens += $usage->reasoningTokens;
         return $this;
     }
+
+    // TRANSFORMERS ////////////////////////////////////////////////////////
 
     public function toString() : string {
         return "Tokens: {$this->total()} (i:{$this->inputTokens} o:{$this->outputTokens} c:{$this->cache()} r:{$this->reasoningTokens})";
@@ -82,12 +90,6 @@ class Usage
     }
 
     public function clone() : self {
-        return new static(
-            inputTokens: $this->inputTokens,
-            outputTokens: $this->outputTokens,
-            cacheWriteTokens: $this->cacheWriteTokens,
-            cacheReadTokens: $this->cacheReadTokens,
-            reasoningTokens: $this->reasoningTokens,
-        );
+        return self::copy($this);
     }
 }

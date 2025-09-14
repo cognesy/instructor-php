@@ -15,6 +15,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
@@ -155,7 +156,7 @@ final class ReActDriver implements CanUseTools
 
         return new ToolUseStep(
             response: '',
-            toolCalls: new \Cognesy\Polyglot\Inference\Data\ToolCalls([$call]),
+            toolCalls: new ToolCalls([$call]),
             toolExecutions: $executions,
             messages: $followUps,
             usage: $usage,

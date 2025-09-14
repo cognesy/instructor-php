@@ -4,7 +4,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -36,7 +36,7 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('run multiple'));
         
-    $toolUse = new ToolUse(
+    $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );

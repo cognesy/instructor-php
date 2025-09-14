@@ -6,7 +6,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -41,7 +41,7 @@ it('runs a ReAct call then final answer', function () {
     $state = new ToolUseState();
     $state = $state->withMessages(Messages::fromString('Add 2 and 3, then report the result'));
     
-    $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
+    $toolUse = ToolUseFactory::default(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
     $state = $toolUse->finalStep($state);
     expect($state->currentStep()->response())->toBe('5');
@@ -70,7 +70,7 @@ it('surfaces tool arg validation errors as observation', function () {
     $state = new ToolUseState();
     $state = $state->withMessages(Messages::fromString('Add 2 and missing arg b'));
     
-    $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
+    $toolUse = ToolUseFactory::default(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
     $state = $toolUse->nextStep($state);
     expect($state->currentStep()->toolExecutions()->hasErrors())->toBeTrue();
@@ -98,7 +98,7 @@ it('can finalize via Inference when configured', function () {
     $state = new ToolUseState();
     $state = $state->withMessages(Messages::fromString('Give me the final answer 42'));
     
-    $toolUse = new ToolUse(tools: $tools, continuationCriteria: $criteria, driver: $react);
+    $toolUse = ToolUseFactory::default(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
     $state = $toolUse->finalStep($state);
     expect($state->currentStep()->response())->toContain('42');

@@ -4,58 +4,26 @@ namespace Cognesy\Addons\Chat\Data\Collections;
 
 use Cognesy\Addons\Chat\Contracts\CanProcessChatState;
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Core\StateProcessors;
 
-final class ChatStateProcessors
+/**
+ * @deprecated
+ */
+final readonly class ChatStateProcessors extends StateProcessors
 {
-    /** @var CanProcessChatState[] */
-    private array $processors = [];
-
     public function __construct(CanProcessChatState ...$processors) {
-        $this->processors = $processors;
+        parent::__construct(...$processors);
     }
 
-    public function add(CanProcessChatState ...$processors): self {
-        foreach ($processors as $processor) {
-            $this->processors[] = $processor;
-        }
-        return $this;
-    }
+//    public function withProcessors(CanProcessChatState ...$processors): static {
+//        return new static(...$processors);
+//    }
 
-    public function isEmpty(): bool {
-        return $this->processors === [];
-    }
-
-    public function apply(ChatState $state): ChatState {
-        $chain = $this->buildMiddlewareChain($state);
-        return $chain ? $chain($state) : $state;
-    }
-
-    private function buildMiddlewareChain(ChatState $initialState): ?callable {
-        if ($this->isEmpty()) {
-            return null;
-        }
-        $next = fn(ChatState $state) => $state;
-        foreach ($this->reversed() as $processor) {
-            $currentNext = $next;
-            $next = static fn(ChatState $state) => $processor->process($state, $currentNext);
-        }
-        return $next;
-    }
-
-    /** @return CanProcessChatState[] */
-    public function all(): array {
-        return $this->processors;
-    }
-
-    public function each(): iterable {
-        foreach ($this->processors as $processor) {
-            yield $processor;
-        }
-    }
-
-    public function reversed(): iterable {
-        foreach (array_reverse($this->processors) as $processor) {
-            yield $processor;
-        }
+    protected function doProcess(object $processor, object $state, callable $next): object {
+        assert($processor instanceof CanProcessChatState);
+        assert($state instanceof ChatState);
+        /** @var CanProcessChatState $processor */
+        /** @var ChatState $state */
+        return $processor->process($state, $next);
     }
 }

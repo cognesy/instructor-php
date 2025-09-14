@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\NewModule\Tags;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
  * ModelTag - Information about the model used for prediction

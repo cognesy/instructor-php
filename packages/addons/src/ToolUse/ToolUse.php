@@ -2,54 +2,40 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ErrorPresenceCheck;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ExecutionTimeLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\FinishReasonCheck;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
+use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
+use Cognesy\Addons\ToolUse\Contracts\CanProcessToolState;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
+use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
-use Cognesy\Addons\ToolUse\Data\Collections\StepProcessors;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
-use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\ToolUse\Processors\AppendContextVariables;
-use Cognesy\Addons\ToolUse\Processors\AppendToolStateMessages;
-use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesMutation;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Cognesy\Events\Traits\HandlesEvents;
 use Generator;
 
-class ToolUse {
-    use HandlesEvents;
-    use HandlesMutation;
-
-    public readonly Tools $tools;
+final readonly class ToolUse {
+    private Tools $tools;
     private CanUseTools $driver;
-    private Data\Collections\StepProcessors $processors;
-    private Data\Collections\ContinuationCriteria $continuationCriteria;
+    private CanApplyProcessors $processors;
+    private ContinuationCriteria $continuationCriteria;
+    private CanHandleEvents $events;
 
     public function __construct(
-        ?Tools $tools = null,
-        ?StepProcessors $processors = null,
-        ?ContinuationCriteria $continuationCriteria = null,
-        ?CanUseTools $driver = null,
-        ?CanHandleEvents $events = null,
+        Tools $tools,
+        CanApplyProcessors $processors,
+        ContinuationCriteria $continuationCriteria,
+        CanUseTools $driver,
+        ?CanHandleEvents $events,
     ) {
+        $this->processors = $processors;
+        $this->continuationCriteria = $continuationCriteria;
+        $this->driver = $driver;
         $this->events = EventBusResolver::using($events);
-        $this->tools = $tools ?? new Tools();
-        $this->driver = $driver ?? new ToolCallingDriver;
-        
-        $this->processors = $processors ?? $this->defaultProcessors();
-        $this->continuationCriteria = $continuationCriteria ?? $this->defaultContinuationCriteria();
-        
-        $this->tools->withEventHandler($this->events);
+        $this->tools = $tools->withEventHandler($this->events);
     }
 
     // HANDLE PARAMETRIZATION //////////////////////////////////////
@@ -57,8 +43,6 @@ class ToolUse {
     public function driver() : CanUseTools {
         return $this->driver;
     }
-
-    // Stateless - no internal state accessors
 
     // HANDLE TOOL USE /////////////////////////////////////////////
 
@@ -98,40 +82,79 @@ class ToolUse {
         }
     }
 
+    public function tools() : Tools {
+        return $this->tools;
+    }
+
+    // MUTATORS /////////////////////////////////////////////
+
+    public function withProcessors(CanProcessToolState ...$processors): self {
+        return new self(
+            tools: $this->tools,
+            processors: new StateProcessors(...$processors),
+            continuationCriteria: $this->continuationCriteria,
+            driver: $this->driver,
+            events: $this->events,
+        );
+    }
+
+    public function withDriver(CanUseTools $driver) : self {
+        return new self(
+            tools: $this->tools,
+            processors: $this->processors,
+            continuationCriteria: $this->continuationCriteria,
+            driver: $this->driver,
+            events: $this->events,
+        );
+    }
+
+    public function withContinuationCriteria(CanDecideToContinueToolUse ...$continuationCriteria) : self {
+        return new self(
+            tools: $this->tools,
+            processors: $this->processors,
+            continuationCriteria: new ContinuationCriteria(...$continuationCriteria),
+            driver: $this->driver,
+            events: $this->events,
+        );
+    }
+
+    public function withState(ToolUseState $state) : self {
+        return new self(
+            tools: $this->tools,
+            processors: $this->processors,
+            continuationCriteria: $this->continuationCriteria,
+            driver: $this->driver,
+            events: $this->events,
+        );
+    }
+
+    public function withTools(array|ToolInterface|Tools $tools) : self {
+        $tools = match(true) {
+            is_array($tools) => new Tools($tools),
+            $tools instanceof ToolInterface => new Tools([$tools]),
+            $tools instanceof Tools => $tools,
+            default => new Tools(),
+        };
+
+        return new self(
+            tools: $tools,
+            processors: $this->processors,
+            continuationCriteria: $this->continuationCriteria,
+            driver: $this->driver,
+            events: $this->events,
+        );
+    }
+
     // INTERNAL /////////////////////////////////////////////
 
     protected function canContinue(ToolUseState $state): bool {
         return $this->continuationCriteria->canContinue($state);
     }
 
-    protected function defaultProcessors(): StepProcessors {
-        return new StepProcessors(
-            new AccumulateTokenUsage(),
-            new AppendContextVariables(),
-            new AppendToolStateMessages(),
-        );
-    }
-
-    protected function defaultContinuationCriteria(
-        int $maxSteps = 3,
-        int $maxTokens = 8192,
-        int $maxExecutionTime = 30,
-        int $maxRetries = 3,
-        array $finishReasons = [],
-    ) : ContinuationCriteria {
-        return new ContinuationCriteria(
-            new StepsLimit($maxSteps),
-            new TokenUsageLimit($maxTokens),
-            new ExecutionTimeLimit($maxExecutionTime),
-            new RetryLimit($maxRetries),
-            new ErrorPresenceCheck(),
-            new ToolCallPresenceCheck(),
-            new FinishReasonCheck($finishReasons),
-        );
-    }
+    // EVENTS ////////////////////////////////////////////
 
     private function emitToolUseFinished(ToolUseState $state) : void {
-        $this->dispatch(new ToolUseFinished([
+        $this->events->dispatch(new ToolUseFinished([
             'status' => $state->status()->value,
             'steps' => $state->stepCount(),
             'usage' => $state->usage()->toArray(),
@@ -140,7 +163,7 @@ class ToolUse {
     }
 
     private function emitToolUseStepStarted(ToolUseState $state) : void {
-        $this->dispatch(new ToolUseStepStarted([
+        $this->events->dispatch(new ToolUseStepStarted([
             'step' => $state->stepCount() + 1,
             'messages' => $state->messages()->count(),
             'tools' => count($this->tools->nameList()),
@@ -148,7 +171,7 @@ class ToolUse {
     }
 
     private function emitToolUseStepCompleted(ToolUseState $state) : void {
-        $this->dispatch(new ToolUseStepCompleted([
+        $this->events->dispatch(new ToolUseStepCompleted([
             'step' => $state->stepCount(),
             'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
             'errors' => count($state->currentStep()?->errors() ?? []),

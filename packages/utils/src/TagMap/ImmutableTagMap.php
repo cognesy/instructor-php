@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Internal;
+namespace Cognesy\Utils\TagMap;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
-use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Tag\TagQuery;
 use Cognesy\Utils\Arrays;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
 
 /**
  * Immutable collection for managing tags indexed by class name.
@@ -40,7 +39,7 @@ use Cognesy\Utils\Arrays;
  * $lastTiming = $newTags->last(TimingTag::class);
  * ```
  */
-final readonly class SimpleTagMap implements TagMapInterface
+final readonly class ImmutableTagMap implements TagMapInterface
 {
     /**
      * @param TagInterface[] $tags Tags indexed by class name

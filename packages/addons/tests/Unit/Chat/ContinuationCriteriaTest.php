@@ -18,7 +18,7 @@ it('stops when steps limit reached', function () {
 
 it('stops when token usage exceeds limit', function () {
     $state = new ChatState();
-    $state = $state->accumulateUsage(new Usage(inputTokens: 100, outputTokens: 50));
+    $state = $state->withAccumulatedUsage(new Usage(inputTokens: 100, outputTokens: 50));
     $crit = new TokenUsageLimit(120);
     expect($crit->canContinue($state))->toBeFalse();
 });

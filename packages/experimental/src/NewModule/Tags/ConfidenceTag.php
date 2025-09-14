@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\NewModule\Tags;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
  * ConfidenceTag - Confidence score for prediction (0.0 to 1.0)

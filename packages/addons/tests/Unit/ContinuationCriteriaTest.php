@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Tests\Support\FrozenClock;
-use Cognesy\Utils\Result\Result;
 use Cognesy\Addons\ToolUse\ContinuationCriteria\{ErrorPresenceCheck,
     ExecutionTimeLimit,
     StepsLimit,
@@ -14,6 +13,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Result\Result;
 
 it('steps limit boundary works', function () {
     $state = new ToolUseState();
@@ -26,7 +26,7 @@ it('steps limit boundary works', function () {
 
 it('token usage limit boundary works', function () {
     $state = new ToolUseState();
-    $state = $state->accumulateUsage(new Usage(10, 0));
+    $state = $state->withAccumulatedUsage(new Usage(10, 0));
     $limit = new TokenUsageLimit(10);
     expect($limit->canContinue($state))->toBeFalse();
 });

@@ -44,4 +44,9 @@ final readonly class ToolUseSteps
             yield $step;
         }
     }
+
+    public static function fromArray(array $data): self {
+        $steps = array_map(fn($stepData) => ToolUseStep::fromArray($stepData), $data);
+        return new self(...$steps);
+    }
 }

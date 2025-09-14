@@ -44,13 +44,13 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 
 function add_numbers(int $a, int $b) : int { return $a + $b; }
 function subtract_numbers(int $a, int $b) : int { return $a - $b; }
 
-$toolUse = new ToolUse(
+$toolUse = ToolUseFactory::default(
     tools: (new Tools)->withTools(
         FunctionTool::fromCallable(add_numbers(...)),
         FunctionTool::fromCallable(subtract_numbers(...))

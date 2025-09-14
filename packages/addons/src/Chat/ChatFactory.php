@@ -5,25 +5,27 @@ namespace Cognesy\Addons\Chat;
 use Cognesy\Addons\Chat\ContinuationCriteria\FinishReasonCheck;
 use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\ContinuationCriteria\TokenUsageLimit;
-use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\Chat\Processors\AppendStateMessages;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
+use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 
-class ChatFactory {
+class ChatFactory
+{
     public static function default(
         Participants $participants,
         ?ContinuationCriteria $continuationCriteria = null,
-        ?ChatStateProcessors $stepProcessors = null,
+        ?CanApplyProcessors $stepProcessors = null,
         ?CanHandleEvents $events = null,
     ): Chat {
         return new Chat(
             participants: $participants,
             nextParticipantSelector: new RoundRobinSelector(),
-            stepProcessors: $stepProcessors ?? new ChatStateProcessors(
+            stepProcessors: $stepProcessors ?? new StateProcessors(
                 new AppendStateMessages(),
                 new AccumulateTokenUsage(),
             ),

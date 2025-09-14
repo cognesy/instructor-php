@@ -64,7 +64,7 @@ it('detects differences in values', function () {
         'age' => 30,
     ];
 
-    $comparer = new \Cognesy\Evals\Utils\CompareNestedArrays();
+    $comparer = new CompareNestedArrays();
     $differences = $comparer->compare($expected, $actual);
 
     expect($differences)->toHaveCount(1);
@@ -122,7 +122,7 @@ it('ignores specified keys during comparison', function () {
         'timestamp' => '2024-04-01T10:05:00Z',
     ];
 
-    $comparer = new \Cognesy\Evals\Utils\CompareNestedArrays(['timestamp']);
+    $comparer = new CompareNestedArrays(['timestamp']);
     $differences = $comparer->compare($expected, $actual);
 
     expect($differences)->toHaveCount(1);
@@ -330,7 +330,7 @@ it('identifies keys missing in actual from expected', function () {
         ],
     ];
 
-    $comparer = new \Cognesy\Evals\Utils\CompareNestedArrays();
+    $comparer = new CompareNestedArrays();
     $differences = $comparer->compare($expected, $actual);
 
     expect($differences)->toHaveKey('user.roles.1');

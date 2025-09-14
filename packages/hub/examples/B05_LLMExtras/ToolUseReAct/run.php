@@ -17,7 +17,7 @@ use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -29,7 +29,7 @@ $driver = new ReActDriver(
     finalViaInference: true,
 );
 
-$toolUse = new ToolUse(
+$toolUse = ToolUseFactory::default(
     tools: (new Tools)->withTools(
         FunctionTool::fromCallable(add_numbers(...)),
         FunctionTool::fromCallable(subtract_numbers(...))

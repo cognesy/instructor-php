@@ -42,6 +42,22 @@ final readonly class ToolUseStep
         );
     }
 
+    // CONSTRUCTORS ////////////////////////////////////////////
+
+    public static function fromArray(array $data) : ToolUseStep {
+        return new ToolUseStep(
+            response: $data['response'] ?? '',
+            toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
+            toolExecutions: isset($data['toolExecutions']) ? ToolExecutions::fromArray($data['toolExecutions']) : null,
+            messages: isset($data['messages']) ? Messages::fromArray($data['messages']) : null,
+            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            inferenceResponse: isset($data['inferenceResponse']) ? InferenceResponse::fromArray($data['inferenceResponse']) : null,
+            stepType: isset($data['stepType']) ? StepType::from($data['stepType']) : null,
+        );
+    }
+
+    // ACCESSORS ///////////////////////////////////////////////
+
     public function response() : string {
         return $this->response ?? '';
     }
@@ -106,7 +122,7 @@ final readonly class ToolUseStep
     public function errorExecutions() : ToolExecutions {
         return match($this->toolExecutions) {
             null => new ToolExecutions(),
-            default => new ToolExecutions($this->toolExecutions->withErrors()),
+            default => new ToolExecutions($this->toolExecutions->havingErrors()),
         };
     }
 

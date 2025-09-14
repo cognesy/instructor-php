@@ -2,12 +2,12 @@
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 class ExecutionTestTag implements TagInterface {
     public function __construct(public readonly string $operation) {}

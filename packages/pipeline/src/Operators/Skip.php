@@ -4,8 +4,7 @@ namespace Cognesy\Pipeline\Operators;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use RuntimeException;
 
 /**

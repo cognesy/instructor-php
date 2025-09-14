@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Messages\Utils\Metadata;
+use Cognesy\Utils\Metadata;
 
 describe('Metadata', function () {
     describe('construction', function () {

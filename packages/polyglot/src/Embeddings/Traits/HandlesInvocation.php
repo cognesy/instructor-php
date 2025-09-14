@@ -2,17 +2,20 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
+use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 
 trait HandlesInvocation
 {
-    /** @var \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory|null */
-    private ?\Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory $embeddingsFactory = null;
+    /** @var EmbeddingsDriverFactory|null */
+    private ?EmbeddingsDriverFactory $embeddingsFactory = null;
 
-    private function getEmbeddingsFactory(): \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory {
-        return $this->embeddingsFactory ??= new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($this->events);
+    private function getEmbeddingsFactory(): EmbeddingsDriverFactory {
+        return $this->embeddingsFactory ??= new EmbeddingsDriverFactory($this->events);
     }
     public function withRequest(EmbeddingsRequest $request) : static {
         $this->with(
@@ -56,7 +59,7 @@ trait HandlesInvocation
         if ($this->httpClient !== null) {
             $client = $this->httpClient;
         } else {
-            $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+            $builder = new HttpClientBuilder(events: $this->events);
             if ($this->httpDebugPreset !== null) {
                 $builder = $builder->withDebugPreset($this->httpDebugPreset);
             }
@@ -65,7 +68,7 @@ trait HandlesInvocation
 
         // Prefer explicit driver if resolver/provider exposes it
         $resolver = $this->embeddingsResolver ?? $this->embeddingsProvider;
-        if ($resolver instanceof \Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver) {
+        if ($resolver instanceof HasExplicitEmbeddingsDriver) {
             $explicit = $resolver->explicitEmbeddingsDriver();
             if ($explicit !== null) {
                 $driver = $explicit;

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Traits;
 
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
@@ -124,7 +125,7 @@ trait HandlesInvocation
         if ($this->httpClient !== null) {
             $client = $this->httpClient;
         } else {
-            $builder = new \Cognesy\Http\HttpClientBuilder(events: $this->events);
+            $builder = new HttpClientBuilder(events: $this->events);
             if ($this->httpDebugPreset !== null) {
                 $builder = $builder->withDebugPreset($this->httpDebugPreset);
             }

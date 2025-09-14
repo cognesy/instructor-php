@@ -10,6 +10,7 @@ use Cognesy\Addons\Chat\Events\ChatToolUseStarted;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Message;
@@ -23,14 +24,20 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 final readonly class LLMParticipantWithTools implements CanParticipateInChat
 {
     private CanHandleEvents $events;
+    private string $name;
+    private string $systemPrompt;
+    private ToolUse $toolUse;
 
     public function __construct(
-        private string $name = 'assistant-with-tools',
-        private ?string $systemPrompt = null,
-        private ToolUse $toolUse = new ToolUse(),
+        string $name = 'assistant-with-tools',
+        ?string $systemPrompt = null,
+        ?ToolUse $toolUse = null,
         ?CanHandleEvents $events = null,
     ) {
+        $this->name = $name;
+        $this->systemPrompt = $systemPrompt ?? '';
         $this->events = $events ?? EventBusResolver::using($events);
+        $this->toolUse = $toolUse ?? ToolUseFactory::default(events: $this->events);
     }
 
     public function name(): string {
@@ -85,7 +92,7 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
         $this->events->dispatch(new ChatToolUseStarted([
             'participant' => $this->name,
             'messages' => $messages->toArray(),
-            'tools' => $this->toolUse->tools->toToolSchema()
+            'tools' => $this->toolUse->tools()->toToolSchema()
         ]));
     }
 

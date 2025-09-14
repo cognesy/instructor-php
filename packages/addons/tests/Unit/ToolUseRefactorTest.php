@@ -9,7 +9,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -37,7 +37,7 @@ it('continues loop on tool failure and formats error message', function () {
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Test failure handling'));
         
-    $toolUse = new ToolUse(
+    $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );

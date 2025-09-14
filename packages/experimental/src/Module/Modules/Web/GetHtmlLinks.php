@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Experimental\Module\Modules\Web;
 
+use Cognesy\Auxiliary\Web\Link;
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleSignature;
@@ -29,7 +30,7 @@ class GetHtmlLinks extends Module
     }
 
     /**
-     * @return \Cognesy\Auxiliary\Web\Link[]
+     * @return Link[]
      */
     protected function forward(mixed ...$callArgs): array {
         $html = $callArgs['html'];
@@ -43,7 +44,7 @@ class GetHtmlLinks extends Module
         $links = [];
         preg_match_all('/<a[^>]+href\s*=\s*([\'"])(?<href>.+?)\1[^>]*>(?<text>.*?)<\/a>/i', $page, $matches);
         foreach ($matches['href'] as $key => $href) {
-            $link = new \Cognesy\Auxiliary\Web\Link(
+            $link = new Link(
                 url: $href,
                 title: strip_tags($matches['text'][$key]),
             );
@@ -69,7 +70,7 @@ class GetHtmlLinks extends Module
         return false;
     }
 
-    private function skip(\Cognesy\Auxiliary\Web\Link $link, array $links = []) : bool {
+    private function skip(Link $link, array $links = []) : bool {
         return match(true) {
             empty($link->url) => true,
             Str::startsWith($link->url, '#') => true,

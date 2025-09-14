@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Messages\Utils;
+namespace Cognesy\Utils;
 
 final readonly class Metadata
 {

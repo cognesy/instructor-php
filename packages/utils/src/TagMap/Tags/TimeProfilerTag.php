@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tag\Observation;
+namespace Cognesy\Utils\TagMap\Tags;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
  * Pure timing tag - captures essential timing data only.
@@ -18,7 +18,7 @@ use Cognesy\Pipeline\Contracts\TagInterface;
  * }
  * ```
  */
-readonly class TimingTag implements TagInterface
+readonly class TimeProfilerTag implements TagInterface
 {
     public function __construct(
         public float $startTime,

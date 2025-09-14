@@ -2,13 +2,13 @@
 
 namespace Cognesy\Addons\Chat\Processors;
 
-use Cognesy\Addons\Chat\Contracts\CanProcessChatState;
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
 use Cognesy\Messages\Message;
 
-class AppendStateMessages implements CanProcessChatState
+class AppendStateMessages implements CanProcessAnyState
 {
-    public function process(ChatState $state, ?callable $next = null): ChatState {
+    public function process(object $state, ?callable $next = null): ChatState {
         $withOutputMessage = $state
             ->messages()
             ->appendMessage(
@@ -17,5 +17,9 @@ class AppendStateMessages implements CanProcessChatState
         $newState = $state->withMessages($withOutputMessage);
 
         return $next ? $next($newState) : $newState;
+    }
+
+    public function canProcess(object $state): bool {
+        return $state instanceof ChatState;
     }
 }

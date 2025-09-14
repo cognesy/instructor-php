@@ -12,6 +12,7 @@ use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
@@ -89,7 +90,7 @@ final class HttpClientBuilder
      * Convenience: attach a MockHttpDriver and optionally configure expectations.
      */
     public function withMock(?callable $configure = null): self {
-        $mock = new \Cognesy\Http\Drivers\Mock\MockHttpDriver($this->events);
+        $mock = new MockHttpDriver($this->events);
         if ($configure) {
             $configure($mock);
         }

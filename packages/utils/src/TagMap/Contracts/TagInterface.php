@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Contracts;
+namespace Cognesy\Utils\TagMap\Contracts;
 
 /**
  * Represents a tag that can be attached to a CanCarryState implementers.
@@ -12,4 +12,5 @@ namespace Cognesy\Pipeline\Contracts;
  * data relevant to its specific concern.
  */
 interface TagInterface {}
+
 // Marker interface - tags are identified by their type

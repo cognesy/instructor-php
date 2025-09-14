@@ -3,7 +3,7 @@
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\ToolUse\Processors\AppendContextVariables;
+use Cognesy\Addons\ToolUse\Processors\AppendContextMetadata;
 use Cognesy\Addons\ToolUse\Processors\AppendToolStateMessages;
 use Cognesy\Addons\ToolUse\Processors\UpdateToolState;
 use Cognesy\Messages\Message;
@@ -12,7 +12,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 
 it('accumulates usage from step into state', function () {
     $state = new ToolUseState();
-    $state = $state->accumulateUsage(new Usage(1,2));
+    $state = $state->withAccumulatedUsage(new Usage(1,2));
     $step = new ToolUseStep(usage: new Usage(3,4));
     $state = $state->withCurrentStep($step)->withAddedStep($step);
 
@@ -29,7 +29,7 @@ it('appends context variables message when variables present', function () {
 
     $step = new ToolUseStep();
     $state = $state->withCurrentStep($step)->withAddedStep($step);
-    $state = (new AppendContextVariables())->process($state);
+    $state = (new AppendContextMetadata())->process($state);
 
     expect($state->messages()->count())->toBe($before + 1);
 });
@@ -40,7 +40,7 @@ it('does not append context variables when none present', function () {
     $step = new ToolUseStep();
     $state = $state->withCurrentStep($step)->withAddedStep($step);
 
-    $state = (new AppendContextVariables())->process($state);
+    $state = (new AppendContextMetadata())->process($state);
     expect($state->messages()->count())->toBe($before);
 });
 

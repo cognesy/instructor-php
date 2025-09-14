@@ -4,7 +4,7 @@ namespace Cognesy\Pipeline\Operators\Observation;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Tag\Observation\StepTimingTag;
+use Cognesy\Pipeline\Tag\StepTimingTag;
 
 /**
  * Pure step timing hook - captures step-level timing data only.

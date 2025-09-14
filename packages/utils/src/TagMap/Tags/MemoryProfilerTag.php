@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tag\Observation;
+namespace Cognesy\Utils\TagMap\Tags;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
  * Pure memory tracking tag for pipeline operations.
@@ -10,7 +10,7 @@ use Cognesy\Pipeline\Contracts\TagInterface;
  * Captures memory usage data without any analysis logic.
  * Consumer components handle leak detection, capacity planning, etc.
  */
-readonly class MemoryTag implements TagInterface
+readonly class MemoryProfilerTag implements TagInterface
 {
     public function __construct(
         public int $startMemory,

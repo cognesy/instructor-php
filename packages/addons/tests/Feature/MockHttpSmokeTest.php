@@ -4,7 +4,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -50,7 +50,7 @@ it('threads HttpClient through ToolUse -> Inference (OpenAI)', function () {
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Add two numbers and return the result'));
         
-    $toolUse = new ToolUse(
+    $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: $driver
     );

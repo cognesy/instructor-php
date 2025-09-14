@@ -2,6 +2,7 @@
 
 namespace Cognesy\Doctor\Markdown\Internal;
 
+use Cognesy\Doctor\Markdown\Exceptions\MetadataConflictException;
 use Cognesy\Utils\ProgrammingLanguage;
 
 final class CodeBlockMetadataParser
@@ -64,7 +65,7 @@ final class CodeBlockMetadataParser
         $conflicts = array_intersect_key($fenceMetadata, $doctestMetadata);
         if (!empty($conflicts)) {
             $conflictKey = array_key_first($conflicts);
-            throw new \Cognesy\Doctor\Markdown\Exceptions\MetadataConflictException(
+            throw new MetadataConflictException(
                 $conflictKey,
                 $fenceMetadata[$conflictKey],
                 $doctestMetadata[$conflictKey]

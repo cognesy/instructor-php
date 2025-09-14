@@ -5,7 +5,9 @@ use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Selectors\LLMBasedCoordinator;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 it('LLMBasedCoordinator selects participant by LLM response', function () {
@@ -24,8 +26,8 @@ it('LLMBasedCoordinator selects participant by LLM response', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"participantName": "assistant", "reason": "Assistant should respond"}'),
     ]);
-    $structuredOutput = (new \Cognesy\Instructor\StructuredOutput())
-        ->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
+    $structuredOutput = (new StructuredOutput())
+        ->withLLMProvider(LLMProvider::new()->withDriver($driver));
     
     $selector = new LLMBasedCoordinator(structuredOutput: $structuredOutput);
     $choice = $selector->nextParticipant($state, $participants);

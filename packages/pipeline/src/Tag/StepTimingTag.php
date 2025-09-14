@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tag\Observation;
+namespace Cognesy\Pipeline\Tag;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
  * Pure step-level timing tag for granular performance measurement.

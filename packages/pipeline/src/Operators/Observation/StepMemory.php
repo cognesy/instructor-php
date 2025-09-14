@@ -4,7 +4,7 @@ namespace Cognesy\Pipeline\Operators\Observation;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Tag\Observation\StepMemoryTag;
+use Cognesy\Pipeline\Tag\StepMemoryTag;
 
 /**
  * Pure step memory hook - captures step-level memory usage data only.

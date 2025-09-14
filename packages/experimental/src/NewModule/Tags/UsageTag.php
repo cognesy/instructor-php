@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\NewModule\Tags;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
  * UsageTag - Token usage and cost information for LLM calls

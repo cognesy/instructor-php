@@ -3,54 +3,157 @@
 namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Data\Collections\ChatSteps;
+use Cognesy\Addons\Shared\MessageExchangeState;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
 
-final readonly class ChatState
+final readonly class ChatState extends MessageExchangeState
 {
-    private const DEFAULT_SECTION = 'messages';
-
-    private MessageStore $store;
-    private array $variables;
     private ChatSteps $steps;
     private ?ChatStep $currentStep;
-    private Usage $usage;
-    private DateTimeImmutable $startedAt;
-
+    
     public function __construct(
-        ?MessageStore $store = null,
-        ?array $variables = null,
         ?ChatSteps $steps = null,
         ?ChatStep $currentStep = null,
+
+        Metadata|array|null $variables = null,
         ?Usage $usage = null,
+        ?MessageStore $store = null,
+        ?string $id = null,
         ?DateTimeImmutable $startedAt = null,
+        ?DateTimeImmutable $updatedAt = null,
     ) {
-        $this->store = $store ?? new MessageStore();
-        $this->variables = $variables ?? [];
+        parent::__construct(
+            variables: $variables,
+            usage: $usage,
+            store: $store,
+            id: $id,
+            startedAt: $startedAt,
+            updatedAt: $updatedAt,
+        );
         $this->steps = $steps ?? new ChatSteps();
         $this->currentStep = $currentStep;
-        $this->usage = $usage ?? new Usage();
-        $this->startedAt = $startedAt ?? new DateTimeImmutable();
     }
 
-    public function messages(): Messages {
-        return $this->store->section(self::DEFAULT_SECTION)->get()?->messages()
-            ?? Messages::empty();
+    // CONSTRUCTORS /////////////////////////////////////////////
+
+    public static function fromArray(array $data) : self {
+        return new self(
+            steps: isset($data['steps']) ? new ChatSteps(...array_map(fn(array $s) => ChatStep::fromArray($s), $data['steps'])) : null,
+            currentStep: isset($data['currentStep']) ? ChatStep::fromArray($data['currentStep']) : null,
+            variables: isset($data['metadata']) ? new Metadata($data['metadata']) : null,
+            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : null,
+            id: $data['id'] ?? null,
+            startedAt: isset($data['startedAt']) ? new DateTimeImmutable($data['startedAt']) : null,
+            updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
+        );
     }
 
-    public function store(): MessageStore {
-        return $this->store;
+    // MUTATORS /////////////////////////////////////////////////
+
+    public function withVariable(int|string $name, mixed $value): self {
+        return new self(
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            variables: $this->metadata->withKeyValue($name, $value),
+            usage: $this->usage,
+            store: $this->store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
     }
 
-    public function variable(string $name, mixed $default = null): mixed {
-        return $this->variables[$name] ?? $default;
+    public function withAddedStep(ChatStep $step): self {
+        $newSteps = $this->steps->add($step);
+        return new self(
+            steps: $newSteps,
+            currentStep: $this->currentStep,
+            variables: $this->metadata,
+            usage: $this->usage,
+            store: $this->store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
     }
 
-    public function variables(): array {
-        return $this->variables;
+    public function withCurrentStep(ChatStep $step): self {
+        return new self(
+            steps: $this->steps,
+            currentStep: $step,
+            variables: $this->metadata,
+            usage: $this->usage,
+            store: $this->store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
     }
+
+    public function withUsage(Usage $usage): static {
+        return new self(
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            variables: $this->metadata,
+            usage: $usage,
+            store: $this->store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
+    }
+
+    public function withMessages(Messages $messages) : self {
+        return new self(
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            variables: $this->metadata,
+            usage: $this->usage,
+            store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
+    }
+
+    public function withSectionMessages(string $section, Messages $messages) : self {
+        return new self(
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            variables: $this->metadata,
+            usage: $this->usage,
+            store: $this->store->section($section)->setMessages($messages),
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
+    }
+
+    public function withMessageStore(MessageStore $store) : self {
+        return new self(
+            steps: $this->steps,
+            currentStep: $this->currentStep,
+            variables: $this->metadata,
+            usage: $this->usage,
+            store: $store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: $this->updatedAt,
+        );
+    }
+
+    public function withAccumulatedUsage(Usage $usage): self {
+        $u = $this->usage->clone();
+        $u->accumulate($usage);
+        return $this->withUsage($u);
+    }
+
+    // ACCESSORS ////////////////////////////////////////////////
 
     public function currentStep(): ?ChatStep {
         return $this->currentStep;
@@ -64,108 +167,15 @@ final readonly class ChatState
         return $this->steps->count();
     }
 
-    public function usage(): Usage {
-        return $this->usage;
-    }
-
-    public function startedAt(): DateTimeImmutable {
-        return $this->startedAt;
-    }
-
-    public function accumulateUsage(Usage $usage): self {
-        $u = $this->usage->clone();
-        $u->accumulate($usage);
-        return $this->withUsage($u);
-    }
-
-    public function withVariable(int|string $name, mixed $value): self {
-        $vars = $this->variables;
-        $vars[$name] = $value;
-        return new self(
-            store: $this->store,
-            variables: $vars,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-        );
-    }
-
-    public function withAddedStep(ChatStep $step): self {
-        $newSteps = $this->steps->add($step);
-        return new self(
-            store: $this->store,
-            variables: $this->variables,
-            steps: $newSteps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-        );
-    }
-
-    public function withCurrentStep(ChatStep $step): self {
-        return new self(
-            store: $this->store,
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $step,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-        );
-    }
-
-    public function withUsage(Usage $usage): self {
-        return new self(
-            store: $this->store,
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $usage,
-            startedAt: $this->startedAt,
-        );
-    }
-
-    public function withMessages(Messages $messages) : self {
-        return new self(
-            store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-        );
-    }
-
-    public function withSectionMessages(string $section, Messages $messages) : self {
-        return new self(
-            store: $this->store->section($section)->setMessages($messages),
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-        );
-    }
-
-    public function withMessageStore(MessageStore $store) : self {
-        return new self(
-            store: $store,
-            variables: $this->variables,
-            steps: $this->steps,
-            currentStep: $this->currentStep,
-            usage: $this->usage,
-            startedAt: $this->startedAt,
-        );
-    }
+    // TRANSFORMATIONS / CONVERSIONS ////////////////////////////
 
     public function toArray() : array {
-        return [
-            'messages' => $this->store->toArray(),
-            'variables' => $this->variables,
-            'steps' => array_map(fn(ChatStep $s) => $s->toArray(), $this->steps->all()),
-            'currentStep' => $this->currentStep?->toArray(),
-            'usage' => $this->usage->toArray(),
-            'startedAt' => $this->startedAt->format(DATE_ATOM),
-        ];
+        return array_merge(
+            parent::toArray(),
+            [
+                'steps' => array_map(fn(ChatStep $s) => $s->toArray(), $this->steps->all()),
+                'currentStep' => $this->currentStep?->toArray(),
+            ]
+        );
     }
 }

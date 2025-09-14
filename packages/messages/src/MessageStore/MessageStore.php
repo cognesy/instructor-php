@@ -31,6 +31,10 @@ final readonly class MessageStore
 
     // CONSTRUCTORS ///////////////////////////////////////////
 
+    public static function empty() : MessageStore {
+        return new MessageStore();
+    }
+
     public static function fromSections(Section ...$sections): MessageStore {
         return new MessageStore(new Sections(...$sections));
     }
@@ -38,6 +42,15 @@ final readonly class MessageStore
     public static function fromMessages(Messages $messages, string $section = 'messages') : MessageStore {
         $sections = new Sections((new Section($section))->appendMessages($messages));
         return new MessageStore($sections);
+    }
+
+    public static function fromArray(array $data) : MessageStore {
+        $sections = isset($data['sections']) ? Sections::fromArray($data['sections']) : new Sections();
+        $parameters = isset($data['parameters']) ? MessageStoreParameters::fromArray($data['parameters']) : new MessageStoreParameters();
+        return new MessageStore(
+            sections: $sections,
+            parameters: $parameters,
+        );
     }
 
     // MUTATORS ///////////////////////////////////////////////

@@ -3,12 +3,12 @@
 namespace Cognesy\Pipeline;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
-use Cognesy\Pipeline\Contracts\TagInterface;
-use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Internal\IndexedTagMap;
-use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Pipeline\Tag\TagQuery;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
+use Cognesy\Utils\TagMap\IndexedTagMap;
+use Cognesy\Utils\TagMap\TagQuery;
+use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use RuntimeException;
 use Throwable;
 
@@ -34,7 +34,7 @@ final readonly class ProcessingState implements CanCarryState
 
     // CONSTRUCTORS
 
-    public static function empty(): self {
+    public static function empty(): static {
         return new self(
             result: Result::success(null),
             tags: self::defaultTagMap(),
@@ -45,26 +45,18 @@ final readonly class ProcessingState implements CanCarryState
      * @param mixed $value The value to wrap in a ProcessingState
      * @param array<TagInterface> $tags Optional tags to associate with this state
      */
-    public static function with(mixed $value, array $tags = []): self {
+    public static function with(mixed $value, array $tags = []): static {
         return new self(
             result: Result::from($value),
             tags: self::defaultTagMap($tags),
         );
     }
 
-    public function withResult(Result $result): self {
+    public function withResult(Result $result): static {
         return new self($result, $this->tags);
     }
 
-    public function addTags(TagInterface ...$tags): self {
-        return new self($this->result, $this->tags->add(...$tags));
-    }
-
-    public function replaceTags(TagInterface ...$tags): self {
-        return new self($this->result, $this->tags->replace(...$tags));
-    }
-
-    public function failWith(string|Throwable $cause): self {
+    public function failWith(string|Throwable $cause): static {
         $message = $cause instanceof Throwable ? $cause->getMessage() : $cause;
         $exception = match (true) {
             is_string($cause) => new RuntimeException($cause),
@@ -73,6 +65,14 @@ final readonly class ProcessingState implements CanCarryState
         return $this
             ->withResult(Result::failure($exception))
             ->addTags(new ErrorTag(error: $message));
+    }
+
+    public function addTags(TagInterface ...$tags): static {
+        return new self($this->result, $this->tags->add(...$tags));
+    }
+
+    public function replaceTags(TagInterface ...$tags): static {
+        return new self($this->result, $this->tags->replace(...$tags));
     }
 
     // ACCESSORS - RESULT

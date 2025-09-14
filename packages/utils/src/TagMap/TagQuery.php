@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tag;
+namespace Cognesy\Utils\TagMap;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
-use Cognesy\Pipeline\Contracts\TagMapInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
 
 /**
  * Fluent query interface for tag maps.
@@ -35,7 +35,7 @@ final readonly class TagQuery
     }
 
     /**
-     * @param class-string $tagClass Class of the tag to map
+     * @param TagInterface $tagClass Class of the tag to map
      * @param callable(TagInterface):TagInterface $callback Function to apply to each tag
      * */
     public function map(callable $callback): self {
@@ -46,7 +46,7 @@ final readonly class TagQuery
         return new self($this->tagMap->newInstance($tags));
     }
 
-    /** @param class-string $class */
+    /** @param TagInterface $class */
     public function ofType(string $class): self {
         $filtered = array_filter(
             $this->tags,
@@ -55,7 +55,7 @@ final readonly class TagQuery
         return new self($this->tagMap->newInstance(array_values($filtered)));
     }
 
-    /** @param class-string ...$tagClasses Classes of tags to include */
+    /** @param TagInterface ...$tagClasses Classes of tags to include */
     public function only(string ...$tagClasses): self {
         $filtered = array_filter(
             $this->tags,
@@ -76,7 +76,7 @@ final readonly class TagQuery
         return $this->only($class);
     }
 
-    /** @param class-string ...$tagClasses Classes of tags to remove */
+    /** @param TagInterface ...$tagClasses Classes of tags to remove */
     public function without(string ...$tagClasses): self {
         $filtered = array_filter(
             $this->tags,
@@ -105,7 +105,7 @@ final readonly class TagQuery
         return false;
     }
 
-    /** @return class-string[] Array of tag class names */
+    /** @return TagInterface Array of tag class names */
     public function classes(): array {
         return array_unique(
             array_map(
@@ -132,7 +132,7 @@ final readonly class TagQuery
         return $this->tags[0] ?? null;
     }
 
-    /** @param class-string $tag Class of the tag to check */
+    /** @param TagInterface $tag Class of the tag to check */
     public function has(string|TagInterface $tag): bool {
         return match(true) {
             $tag instanceof TagInterface => in_array(get_class($tag), $this->classes(), true),
@@ -141,7 +141,7 @@ final readonly class TagQuery
         };
     }
 
-    /** @param array<class-string|TagInterface> $tags Array of tags to check */
+    /** @param TagInterface $tags Array of tags to check */
     public function hasAll(string|TagInterface ...$tags) : bool {
         foreach ($tags as $tag) {
             if (!$this->has($tag)) {
@@ -151,7 +151,7 @@ final readonly class TagQuery
         return true;
     }
 
-    /** @param array<class-string|TagInterface> $tags Array of tags to check */
+    /** @param TagInterface $tags Array of tags to check */
     public function hasAny(string|TagInterface ...$tags): bool {
         foreach ($tags as $tag) {
             if ($this->has($tag)) {

@@ -6,7 +6,6 @@ use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Events\ChatBeforeSend;
@@ -15,21 +14,32 @@ use Cognesy\Addons\Chat\Events\ChatParticipantSelected;
 use Cognesy\Addons\Chat\Events\ChatStateUpdated;
 use Cognesy\Addons\Chat\Events\ChatTurnCompleted;
 use Cognesy\Addons\Chat\Events\ChatTurnStarting;
+use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Cognesy\Events\Traits\HandlesEvents;
 
-class Chat
+final readonly class Chat
 {
-    use HandlesEvents;
+    private Participants $participants;
+    private CanChooseNextParticipant $nextParticipantSelector;
+    private CanApplyProcessors $stepProcessors;
+    private ContinuationCriteria $continuationCriteria;
+    private CanHandleEvents $events;
 
+    /**
+     * @param CanApplyProcessors<ChatState> $stepProcessors
+     */
     public function __construct(
-        public readonly Participants $participants,
-        public readonly CanChooseNextParticipant $nextParticipantSelector,
-        public readonly ChatStateProcessors $stepProcessors,
-        public readonly ContinuationCriteria $continuationCriteria,
+        Participants $participants,
+        CanChooseNextParticipant $nextParticipantSelector,
+        CanApplyProcessors $stepProcessors,
+        ContinuationCriteria $continuationCriteria,
         ?CanHandleEvents $events = null,
     ) {
+        $this->participants = $participants;
+        $this->nextParticipantSelector = $nextParticipantSelector;
+        $this->stepProcessors = $stepProcessors;
+        $this->continuationCriteria = $continuationCriteria;
         $this->events = EventBusResolver::using($events);
     }
 

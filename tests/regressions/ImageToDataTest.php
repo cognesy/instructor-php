@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Addons\Image\Image;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 it('should properly use toData() method on Image', function () {
@@ -66,7 +67,7 @@ it('reproduces the missing messages parameter issue', function () {
     expect($messagesArray)->not->toBeEmpty();
     
     // Create StructuredOutput like toData() does
-    $structuredOutput = new \Cognesy\Instructor\StructuredOutput();
+    $structuredOutput = new StructuredOutput();
     
     // This is what toData() calls - verify it doesn't lose messages
     $pending = $structuredOutput->with(
@@ -79,5 +80,5 @@ it('reproduces the missing messages parameter issue', function () {
     );
     
     // Messages should still be present
-    expect($pending)->toBeInstanceOf(\Cognesy\Instructor\StructuredOutput::class);
+    expect($pending)->toBeInstanceOf(StructuredOutput::class);
 });

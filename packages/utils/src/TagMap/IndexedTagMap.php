@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Internal;
+namespace Cognesy\Utils\TagMap;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
-use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Tag\TagQuery;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
 
 /**
  * Minimal tag map implementation with sequential IDs and efficient storage.
@@ -15,8 +14,8 @@ use Cognesy\Pipeline\Tag\TagQuery;
  */
 final class IndexedTagMap implements TagMapInterface
 {
-    private array $tagsById = [];           // string => TagInterface
-    private array $insertionOrder = [];     // array<string>
+    private array $tagsById;           // string => TagInterface
+    private array $insertionOrder;     // array<string>
     private static int $nextId = 1;
 
     private function __construct(

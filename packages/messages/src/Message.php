@@ -5,7 +5,7 @@ namespace Cognesy\Messages;
 use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Utils\Image;
-use Cognesy\Messages\Utils\Metadata;
+use Cognesy\Utils\Metadata;
 use Cognesy\Utils\TextRepresentation;
 
 /**

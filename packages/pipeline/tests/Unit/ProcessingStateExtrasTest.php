@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 class TestTag implements TagInterface {
     public function __construct(public readonly string $name) {}

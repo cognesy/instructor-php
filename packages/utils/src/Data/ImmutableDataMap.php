@@ -2,7 +2,8 @@
 
 namespace Cognesy\Utils\Data;
 
-readonly class ImmutableDataMap {
+readonly class ImmutableDataMap
+{
     private DataMap $dataMap;
 
     public function __construct(array $data = []) {
@@ -22,7 +23,7 @@ readonly class ImmutableDataMap {
 //    public function set(string $key, mixed $value): self {
 //        return $this->with([$key => $value]);
 //    }
-//
+
     public function get(string $key, mixed $default = null): mixed {
         return $this->dataMap->get($key, $default);
     }

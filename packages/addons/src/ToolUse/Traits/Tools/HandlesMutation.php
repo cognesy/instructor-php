@@ -3,12 +3,13 @@
 namespace Cognesy\Addons\ToolUse\Traits\Tools;
 
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
+use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 
 trait HandlesMutation
 {
-    public function withThrowOnToolFailure(bool $throw): self {
+    public function withThrowOnToolFailure(bool $throw): Tools {
         return new self(
             tools: $this->tools,
             parallelToolCalls: $this->parallelToolCalls,
@@ -17,7 +18,7 @@ trait HandlesMutation
         );
     }
 
-    public function withParallelCalls(bool $parallelToolCalls = true): self {
+    public function withParallelCalls(bool $parallelToolCalls = true): Tools {
         return new self(
             tools: $this->tools,
             parallelToolCalls: $parallelToolCalls,
@@ -26,7 +27,7 @@ trait HandlesMutation
         );
     }
 
-    public function withEventHandler(CanHandleEvents $events): self {
+    public function withEventHandler(CanHandleEvents $events): Tools {
         return new self(
             tools: $this->tools,
             parallelToolCalls: $this->parallelToolCalls,
@@ -35,7 +36,7 @@ trait HandlesMutation
         );
     }
 
-    public function withTools(ToolInterface ...$tools): self {
+    public function withTools(ToolInterface ...$tools): Tools {
         $newTools = $this->tools;
         foreach ($tools as $tool) {
             $newTools[$tool->name()] = $tool;
@@ -48,11 +49,11 @@ trait HandlesMutation
         );
     }
 
-    public function withTool(ToolInterface $tool): self {
+    public function withTool(ToolInterface $tool): Tools {
         return $this->withTools($tool);
     }
 
-    public function withToolRemoved(string $name): self {
+    public function withToolRemoved(string $name): Tools {
         $newTools = $this->tools;
         unset($newTools[$name]);
         return new self(
