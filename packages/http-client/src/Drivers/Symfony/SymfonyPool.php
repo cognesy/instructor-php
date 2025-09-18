@@ -9,6 +9,7 @@ use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use InvalidArgumentException;
@@ -196,7 +197,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
         }
     }
 
-    private function handleError(Exception $error): Result {
+    private function handleError(Exception $error): Failure {
         return match($this->config->failOnError) {
             true => throw new HttpRequestException($error->getMessage()),
             default => Result::failure($error),

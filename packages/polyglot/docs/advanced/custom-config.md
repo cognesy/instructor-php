@@ -270,7 +270,7 @@ return [
             'maxTokens' => 2048,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,
-            'httpClientPreset' => 'guzzle-custom', // Custom HTTP client configuration
+            // HTTP client configuration is defined via HttpClientBuilder or facade-level methods
         ],
 
         // Other connections...
@@ -348,7 +348,7 @@ return [
             'endpoint' => '/chat/completions',
             'model' => 'llama2',
             'maxTokens' => 1024,
-            'httpClientPreset' => 'http-ollama',
+            // Select appropriate HTTP client preset via HttpClientBuilder if needed
         ],
 
         // Other connections...

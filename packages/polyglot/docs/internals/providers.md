@@ -5,7 +5,7 @@ description: 'Learn about the provider abstraction layer in Polyglot.'
 
 The provider abstraction layer is where Polyglot handles the differences between LLM and embedding providers. This layer includes:
 
-1. **Provider Classes**: `LLMProvider` and `EmbeddingsProvider` - Builder classes for configuring and creating drivers
+1. **Provider Classes**: `LLMProvider` and `EmbeddingsProvider` - Builder classes for configuring and resolving driver configurations
 2. **Drivers**: Classes that implement provider-specific logic for inference and embeddings
 3. **Adapters**: Classes that convert between unified and provider-specific formats
 4. **Factories**: Classes that create appropriate drivers based on configuration
@@ -15,7 +15,7 @@ The provider abstraction layer is where Polyglot handles the differences between
 
 ### LLMProvider
 
-The `LLMProvider` class is a builder that configures and creates inference drivers. It provides a fluent interface for setting up LLM configurations:
+The `LLMProvider` class is a builder that configures inference settings and resolves configuration from various sources. It provides a fluent interface for setting up LLM configurations:
 
 ```php
 <?php
@@ -30,12 +30,13 @@ $provider = LLMProvider::dsn('openai://model=gpt-4&temperature=0.7');
 // Fluent configuration
 $provider = LLMProvider::new()
     ->withLLMPreset('openai')
-    ->withConfig($customConfig)
-    ->withHttpClient($httpClient)
-    ->withDebugPreset('verbose');
+    ->withConfig($customConfig);
 
-// Create the final driver
-$driver = $provider->createDriver();
+// Create the final driver using a factory and injected HTTP client
+$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$config = $provider->resolveConfig();
+$driver = (new \Cognesy\Polyglot\Inference\InferenceDriverFactory($events))
+    ->makeDriver($config, $httpClient);
 ```
 
 Key methods:
@@ -43,13 +44,12 @@ Key methods:
 - `withConfig(LLMConfig $config)`: Set explicit configuration
 - `withConfigOverrides(array $overrides)`: Override specific config values
 - `withDsn(string $dsn)`: Configure via DSN string
-- `withHttpClient(HttpClient $client)`: Set custom HTTP client
 - `withDriver(CanHandleInference $driver)`: Set explicit driver
-- `createDriver()`: Build and return the configured driver
+- Use `resolveConfig()` + `InferenceDriverFactory::makeDriver()` to create drivers
 
 ### EmbeddingsProvider
 
-The `EmbeddingsProvider` class builds and configures embeddings drivers:
+The `EmbeddingsProvider` class builds and configures embeddings settings, resolving configuration from various sources:
 
 ```php
 <?php
@@ -64,21 +64,21 @@ $provider = EmbeddingsProvider::dsn('openai://model=text-embedding-3-large');
 // Fluent configuration
 $provider = EmbeddingsProvider::new()
     ->withPreset('openai')
-    ->withConfig($customConfig)
-    ->withHttpClient($httpClient)
-    ->withDebugPreset('verbose');
+    ->withConfig($customConfig);
 
-// Create the final driver
-$driver = $provider->createDriver();
+// Create the final driver using a factory and injected HTTP client
+$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$config = $provider->resolveConfig();
+$driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
+    ->makeDriver($config, $httpClient);
 ```
 
 Key methods:
 - `withPreset(string $preset)`: Set configuration preset
 - `withConfig(EmbeddingsConfig $config)`: Set explicit configuration
 - `withDsn(string $dsn)`: Configure via DSN string
-- `withHttpClient(HttpClient $client)`: Set custom HTTP client
 - `withDriver(CanHandleVectorization $driver)`: Set explicit driver
-- `createDriver()`: Build and return the configured driver
+- Use `resolveConfig()` + `EmbeddingsDriverFactory::makeDriver()` to create drivers
 
 
 ## Key Interfaces for LLM

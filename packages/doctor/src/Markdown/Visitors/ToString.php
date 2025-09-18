@@ -52,10 +52,10 @@ final class ToString implements NodeVisitor
         $content = $this->prepareCodeBlockContent($node);
         $content = $this->removeExistingDoctestLines($content, $node->language);
         
-        // Add ID as @doctest comment only if there's an ID in metadata
+        // Add ID as @doctest comment only if there's an ID in metadata - placed before closing fence
         if (isset($node->metadata['id'])) {
             $commentSyntax = ProgrammingLanguage::commentSyntax($node->language);
-            $content = "{$commentSyntax} @doctest id=\"{$node->metadata['id']}\"\n{$content}";
+            $content = "{$content}\n{$commentSyntax} @doctest id=\"{$node->metadata['id']}\"";
         }
         
         return "```{$fenceLine}\n{$content}\n```";
@@ -70,15 +70,15 @@ final class ToString implements NodeVisitor
         
         $commentSyntax = ProgrammingLanguage::commentSyntax($node->language);
         
-        // Add all metadata as @doctest comment
+        // Add all metadata as @doctest comment - placed before closing fence
         if (!empty($node->metadata)) {
             $metadataString = $this->formatMetadataForComment($node->metadata);
-            $content = "{$commentSyntax} @doctest {$metadataString}\n{$content}";
+            $content = "{$content}\n{$commentSyntax} @doctest {$metadataString}";
         } else {
-            // Add just ID if no other metadata
+            // Add just ID if no other metadata - placed before closing fence
             $id = CodeBlockIdentifier::extractRawId($node->id);
             if ($id !== '') {
-                $content = "{$commentSyntax} @doctest id=\"{$id}\"\n{$content}";
+                $content = "{$content}\n{$commentSyntax} @doctest id=\"{$id}\"";
             }
         }
         

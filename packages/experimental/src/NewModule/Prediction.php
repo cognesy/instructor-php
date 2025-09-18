@@ -3,13 +3,13 @@
 namespace Cognesy\Experimental\NewModule;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
-use Cognesy\Pipeline\Contracts\TagInterface;
-use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Internal\IndexedTagMap;
-use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Pipeline\Tag\TagQuery;
 use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
+use Cognesy\Utils\TagMap\IndexedTagMap;
+use Cognesy\Utils\TagMap\TagQuery;
+use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use RuntimeException;
 use Throwable;
 
@@ -80,22 +80,22 @@ final readonly class Prediction implements CanCarryState
 
     // CORE STATE OPERATIONS (CanCarryState implementation)
 
-    public function withResult(Result $result): self
+    public function withResult(Result $result): static
     {
         return new self($result, $this->tags);
     }
 
-    public function addTags(TagInterface ...$tags): self
+    public function addTags(TagInterface ...$tags): static
     {
         return new self($this->result, $this->tags->add(...$tags));
     }
 
-    public function replaceTags(TagInterface ...$tags): self
+    public function replaceTags(TagInterface ...$tags): static
     {
         return new self($this->result, $this->tags->replace(...$tags));
     }
 
-    public function failWith(string|Throwable $cause): self
+    public function failWith(string|Throwable $cause): static
     {
         $message = $cause instanceof Throwable ? $cause->getMessage() : $cause;
         $exception = match (true) {

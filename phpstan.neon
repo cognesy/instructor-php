@@ -1,10 +1,32 @@
+includes:
+  - vendor/phpstan/phpstan-strict-rules/rules.neon
+
 parameters:
-  level: 1
+  level: 8
   paths:
-    - src
-    - tests
+    - packages/*/src
+    - packages/*/tests
     - src-hub
     - config
+    - examples
+  excludePaths:
+    - packages/*/tests/Fixtures/*
+    - packages/*/tests/Support/*
+    - examples/*/vendor/*
   reportUnmatchedIgnoredErrors: false
-  checkGenericClassInNonGenericObjectType: false
+  checkMissingCallableSignature: true
+  checkUninitializedProperties: true
+  checkDynamicProperties: true
+  checkAlwaysTrueInstanceof: true
+  checkAlwaysTrueStrictComparison: true
+  checkPhpDocMethodSignatures: true
+  treatPhpDocTypesAsCertain: false
   tmpDir: /tmp
+  ignoreErrors:
+    # Allow mixed types in specific contexts where needed
+    - '#Parameter .* of .* has invalid type mixed#'
+    # Allow array access on mixed - common in dynamic contexts
+    - '#Cannot access offset .* on mixed#'
+    # Ignore missing generic typehints
+    -
+      identifier: missingType.generics

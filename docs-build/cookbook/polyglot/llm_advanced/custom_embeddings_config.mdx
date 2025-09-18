@@ -35,7 +35,6 @@ $config = new EmbeddingsConfig(
     model     : 'embed-multilingual-v3.0',
     dimensions: 1024,
     maxInputs : 96,
-    httpClientPreset: 'guzzle',
     driver: 'cohere',
 );
 

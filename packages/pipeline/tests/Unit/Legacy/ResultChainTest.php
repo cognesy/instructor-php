@@ -126,7 +126,7 @@ test('on error callback - exception', function () {
             fn($payload) => throw new Exception('Something went wrong'),
             fn($payload) => $payload * 2,
         ])
-        ->onFailure(function(Result $result) use (&$exception) {
+        ->onFailure(function(Failure $result) use (&$exception) {
             $exception = $result->error();
         })
         ->then(function (Result $result) {

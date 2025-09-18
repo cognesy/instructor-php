@@ -3,60 +3,54 @@
 namespace Cognesy\Addons\Chat\Processors;
 
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
-use Cognesy\Addons\Chat\Contracts\ScriptProcessor;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Events\MessageBufferSummarized;
+use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Tokenizer;
 
-class SummarizeBuffer implements ScriptProcessor
+final readonly class SummarizeBuffer implements CanProcessAnyState
 {
-    private string $sourceSection;
-    private string $targetSection;
-    private int $maxBufferTokens;
-    private int $maxSummaryTokens;
-    private CanSummarizeMessages $summarizer;
+    private CanHandleEvents $events;
 
     public function __construct(
-        string               $sourceSection,
-        string               $targetSection,
-        int                  $maxBufferTokens,
-        int                  $maxSummaryTokens,
-        CanSummarizeMessages $summarizer
+        private int $maxBufferTokens,
+        private int $maxSummaryTokens,
+        private string $bufferSection,
+        private string $summarySection,
+        private CanSummarizeMessages $summarizer,
+        ?CanHandleEvents $events = null,
     ) {
-        $this->sourceSection = $sourceSection;
-        $this->targetSection = $targetSection;
-        $this->maxBufferTokens = $maxBufferTokens;
-        $this->maxSummaryTokens = $maxSummaryTokens;
-        $this->summarizer = $summarizer;
+        $this->events = $events ?? EventBusResolver::using($events);
     }
 
-    public function shouldProcess(Script $script): bool {
-        $tokens = Tokenizer::tokenCount(
-            $script->section($this->sourceSection)->toMessages()->toString()
-        );
+    public function canProcess(object $state): bool {
+        return $state instanceof ChatState;
+    }
+
+    public function process(object $state, ?callable $next = null): ChatState {
+        $buffer = $state->store()->section($this->bufferSection)->get()?->messages() ?? Messages::empty();
+        if (!$this->shouldProcess($buffer->toString())) {
+            return $next ? $next($state) : $state;
+        }
+
+        $summary = $this->summarizer->summarize($buffer, $this->maxSummaryTokens);
+        $this->events->dispatch(new MessageBufferSummarized([
+            'summary' => $summary,
+            'buffer' => $buffer->toArray(),
+        ]));
+        $newStore = $state->store()
+            ->section($this->bufferSection)->setMessages(Messages::empty())
+            ->section($this->summarySection)->setMessages(Messages::fromString($summary));
+        $newState = $state->withMessageStore($newStore);
+
+        return $next ? $next($newState) : $newState;
+    }
+
+    private function shouldProcess(string $buffer): bool {
+        $tokens = Tokenizer::tokenCount($buffer);
         return $tokens > $this->maxBufferTokens;
-    }
-
-    public function process(Script $script): Script {
-        if (!$this->shouldProcess($script)) {
-            return $script;
-        }
-
-        $messages = $script->section($this->sourceSection)->toMessages();
-        $summary = $this->summarizer->summarize($messages, $this->maxSummaryTokens);
-
-        $newScript = new Script();
-        foreach ($script->sections() as $section) {
-            $sectionName = $section->name();
-            if ($sectionName === $this->sourceSection) {
-                $newScript->section($sectionName)->clear();
-            } elseif ($sectionName === $this->targetSection) {
-                $newScript->section($sectionName)->withMessages(Messages::fromString($summary));
-            } else {
-                $newScript->section($sectionName)->copyFrom($script->section($sectionName));
-            }
-        }
-
-        return $newScript;
     }
 }

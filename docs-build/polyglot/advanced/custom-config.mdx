@@ -29,7 +29,6 @@ Let's focus on the structure of these configuration files.
 The `llm.php` configuration file has the following structure:
 
 ```php
-// @doctest id="c97a"
 <?php
 use Cognesy\Config\Env;
 
@@ -74,6 +73,7 @@ return [
         // Additional connections...
     ],
 ];
+// @doctest id="1261"
 ```
 
 #### Embedding Configuration Structure
@@ -81,7 +81,6 @@ return [
 The `embed.php` configuration file follows a similar pattern:
 
 ```php
-// @doctest id="6fd9"
 <?php
 use Cognesy\Config\Env;
 
@@ -105,6 +104,7 @@ return [
         // Additional embedding connections...
     ],
 ];
+// @doctest id="1cd1"
 ```
 
 ### Connection Parameters
@@ -161,7 +161,6 @@ for API keys.
 Create a `.env` file in your project root:
 
 ```bash
-# @doctest id="4898"
 # OpenAI
 OPENAI_API_KEY=sk-your-key-here
 
@@ -173,16 +172,17 @@ GEMINI_API_KEY=your-key-here
 MISTRAL_API_KEY=your-key-here
 COHERE_API_KEY=your-key-here
 # etc.
+# @doctest id="4da2"
 ```
 
 Then load these environment variables using a package like `vlucas/phpdotenv`:
 
 ```php
-// @doctest id="820d"
 require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
+// @doctest id="3103"
 ```
 
 Or in frameworks like Laravel, environment variables are automatically loaded.
@@ -204,7 +204,6 @@ Different providers may support unique parameters and features. You can pass the
 ### OpenAI-Specific Parameters
 
 ```php
-// @doctest id="f227"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -224,12 +223,12 @@ $response = $inference->with(
         ],
     ]
 )->get();
+// @doctest id="6dbd"
 ```
 
 ### Anthropic-Specific Parameters
 
 ```php
-// @doctest id="a71d"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -246,6 +245,7 @@ $response = $inference->with(
         'system' => 'You are a creative storyteller who specializes in magical realism.',
     ]
 )->get();
+// @doctest id="0653"
 ```
 
 
@@ -262,7 +262,6 @@ or to modify existing ones.
 You can edit the `config/llm.php` and `config/embed.php` files directly:
 
 ```php
-// @doctest id="74f6"
 // In config/llm.php
 return [
     'defaultPreset' => 'custom_openai',
@@ -277,12 +276,13 @@ return [
             'maxTokens' => 2048,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,
-            'httpClientPreset' => 'guzzle-custom', // Custom HTTP client configuration
+            // HTTP client configuration is defined via HttpClientBuilder or facade-level methods
         ],
 
         // Other connections...
     ],
 ];
+// @doctest id="3ca0"
 ```
 
 ### Runtime Configuration
@@ -290,7 +290,6 @@ return [
 You can also create custom configurations at runtime using the `LLMConfig` class:
 
 ```php
-// @doctest id="da15"
 <?php
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
@@ -314,6 +313,7 @@ $response = $inference->with(
 )->get();
 
 echo $response;
+// @doctest id="072d"
 ```
 
 
@@ -329,7 +329,6 @@ echo $response;
 You might want to use different providers in different environments:
 
 ```php
-// @doctest id="d994"
 <?php
 // config/llm.php
 
@@ -357,12 +356,13 @@ return [
             'endpoint' => '/chat/completions',
             'model' => 'llama2',
             'maxTokens' => 1024,
-            'httpClientPreset' => 'http-ollama',
+            // Select appropriate HTTP client preset via HttpClientBuilder if needed
         ],
 
         // Other connections...
     ],
 ];
+// @doctest id="4ebc"
 ```
 
 
@@ -376,7 +376,6 @@ for our custom driver.
 The driver can be any class that implements `CanHandleInference` interface.
 
 ```php
-// @doctest id="71e6"
 // we register new provider type - 'custom-driver'
 LLM::registerDriver(
     'custom-driver',
@@ -408,11 +407,12 @@ $answer = (new Inference)
         options: ['max_tokens' => 64]
     )
     ->toText();
+// @doctest id="d099"
 ```
 
 An alternative way of providing driver definition is via class-string:
 
 ```php
-// @doctest id="4faf"
 LLM::registerDriver('another-driver', AnotherDriver::class);
+// @doctest id="d91b"
 ```

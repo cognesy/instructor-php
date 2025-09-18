@@ -202,7 +202,7 @@ the client connection.
             'endpoint' => '/chat/completions',
             'model' => 'qwen2.5:0.5b',
             'maxTokens' => 1024,
-            'httpClientPreset' => 'guzzle-ollama', // use custom HTTP client configuration
+            // select HTTP behavior via HttpClientBuilder or facade-level methods
         ],
         'openai' => [ ... ],
         'openrouter' => [ ... ],

@@ -4,7 +4,7 @@ namespace Cognesy\Pipeline\Operators\Observation;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Tag\Observation\MemoryTag;
+use Cognesy\Utils\TagMap\Tags\MemoryProfilerTag;
 
 /**
  * Pure memory tracking middleware - captures memory usage data only.
@@ -34,7 +34,7 @@ readonly class TrackMemory implements CanProcessState
         $endMemory = memory_get_usage(true);
         $endPeakMemory = memory_get_peak_usage(true);
 
-        $memoryTag = new MemoryTag(
+        $memoryTag = new MemoryProfilerTag(
             startMemory: $startMemory,
             endMemory: $endMemory,
             memoryUsed: $endMemory - $startMemory,

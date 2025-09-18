@@ -2,57 +2,49 @@
 
 namespace Cognesy\Addons\Chat\Processors;
 
-use Cognesy\Addons\Chat\Contracts\ScriptProcessor;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Events\MessagesMovedToBuffer;
 use Cognesy\Addons\Chat\Utils\SplitMessages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Utils\Tokenizer;
 
-class MoveMessagesToBuffer implements ScriptProcessor
+final readonly class MoveMessagesToBuffer implements CanProcessAnyState
 {
-    private string $sourceSection;
-    private string $targetSection;
-    private int $maxTokens;
+    private CanHandleEvents $events;
 
     public function __construct(
-        string $sourceSection,
-        string $targetSection,
-        int $maxTokens
+        private int $maxTokens,
+        private string $bufferSection,
+        ?CanHandleEvents $events = null,
     ) {
-        $this->sourceSection = $sourceSection;
-        $this->targetSection = $targetSection;
-        $this->maxTokens = $maxTokens;
+        $this->events = $events ?? EventBusResolver::using($events);
     }
 
-    public function shouldProcess(Script $script): bool {
-        $tokens = Tokenizer::tokenCount(
-            $script->section($this->sourceSection)->toMessages()->toString()
-        );
+    public function canProcess(object $state): bool {
+        return $state instanceof ChatState
+            && $this->shouldProcess($state->messages()->toString());
+    }
+
+    public function process(object $state, ?callable $next = null): ChatState {
+//        if (!$this->shouldProcess($state->messages()->toString())) {
+//            return $next ? $next($state) : $state;
+//        }
+
+        [$keep, $overflow] = (new SplitMessages)->split($state->messages(), $this->maxTokens);
+        $this->events->dispatch(new MessagesMovedToBuffer([
+            'overflow' => $overflow->toArray(),
+            'keep' => $keep->toArray(),
+        ]));
+        $newState = $state
+            ->withMessages($keep)->section($this->bufferSection)->replaceMessages($overflow);
+
+        return $next ? $next($newState) : $newState;
+    }
+
+    private function shouldProcess(string $text): bool {
+        $tokens = Tokenizer::tokenCount($text);
         return $tokens > $this->maxTokens;
-    }
-
-    public function process(Script $script): Script {
-        if (!$this->shouldProcess($script)) {
-            return $script;
-        }
-
-        $messages = $script->section($this->sourceSection)->toMessages();
-        [$keep, $overflow] = (new SplitMessages)->split($messages, $this->maxTokens);
-
-        $newScript = new Script();
-        foreach ($script->sections() as $section) {
-            $sectionName = $section->name();
-            if ($sectionName === $this->sourceSection) {
-                $newScript->section($sectionName)->appendMessages($keep);
-            } elseif ($sectionName === $this->targetSection) {
-                $existingMessages = $script->section($sectionName)->toMessages();
-                $newScript->section($sectionName)
-                    ->appendMessages($existingMessages)
-                    ->appendMessages($overflow);
-            } else {
-                $newScript->section($sectionName)->copyFrom($script->section($sectionName));
-            }
-        }
-
-        return $newScript;
     }
 }

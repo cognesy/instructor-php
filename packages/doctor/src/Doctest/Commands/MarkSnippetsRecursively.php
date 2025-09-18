@@ -2,18 +2,19 @@
 
 namespace Cognesy\Doctor\Doctest\Commands;
 
-use Cognesy\Doctor\Doctest\Data\BatchProcessingResult;
-use Cognesy\Doctor\Doctest\Data\FileDiscoveryResult;
-use Cognesy\Doctor\Doctest\Services\BatchProcessingService;
-use Cognesy\Doctor\Doctest\Services\FileDiscoveryService;
+use Cognesy\Doctor\Doctest\Services\DocRepository;
+use Cognesy\Doctor\Markdown\MarkdownFile;
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Path;
 
 #[AsCommand(
     name: 'mark-dir',
@@ -22,8 +23,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class MarkSnippetsRecursively extends Command
 {
     public function __construct(
-        private FileDiscoveryService $fileDiscoveryService,
-        private BatchProcessingService $batchProcessingService,
+        private DocRepository $docRepository,
     ) {
         parent::__construct();
     }
@@ -68,14 +68,14 @@ class MarkSnippetsRecursively extends Command
 
             // Discover files
             $io->section('Discovering files...');
-            $discoveryResult = $this->fileDiscoveryService->discoverFiles($sourceDir, $extensions);
+            $files = $this->discoverFiles($sourceDir, $extensions);
 
-            if (!$discoveryResult->hasFiles()) {
+            if (empty($files)) {
                 $io->warning("No files found with extensions [" . implode(', ', $extensions) . "] in: {$sourceDir}");
                 return Command::SUCCESS;
             }
 
-            $this->displayDiscoveryResults($discoveryResult, $io);
+            $this->displayDiscoveryResultsSimple($files, $extensions, $sourceDir, $io);
 
             if ($isDryRun) {
                 $io->success('Dry run completed. No files were processed.');
@@ -84,11 +84,22 @@ class MarkSnippetsRecursively extends Command
 
             // Process files
             $io->section('Processing files...');
-            $batchResult = $this->batchProcessingService->processFiles($discoveryResult, $targetDir);
+            [$ok, $failed, $snippetsTotal] = $this->processFiles($files, $sourceDir, $targetDir, $io);
 
-            $this->displayProcessingResults($batchResult, $io);
+            if ($failed === 0) {
+                $io->success([
+                    "Successfully processed all {$ok} files.",
+                    "Total code snippets processed: {$snippetsTotal}",
+                ]);
+                return Command::SUCCESS;
+            }
 
-            return $batchResult->isCompletelySuccessful() ? Command::SUCCESS : Command::FAILURE;
+            $io->warning([
+                "Processed {$ok} files successfully.",
+                "Failed to process {$failed} files.",
+                "Total code snippets processed: {$snippetsTotal}",
+            ]);
+            return Command::FAILURE;
 
         } catch (InvalidArgumentException $e) {
             $io->error($e->getMessage());
@@ -118,60 +129,76 @@ class MarkSnippetsRecursively extends Command
         return $extensions;
     }
 
-    private function displayDiscoveryResults(FileDiscoveryResult $result, SymfonyStyle $io): void {
-        $io->success("Found {$result->getCount()} files to process:");
-
-        $filesByExtension = $result->getFilesByExtension();
-        foreach ($filesByExtension as $extension => $files) {
-            $io->writeln("  <info>.{$extension}</info>: " . count($files) . " files");
+    private function displayDiscoveryResultsSimple(array $files, array $extensions, string $sourceDir, SymfonyStyle $io): void {
+        $io->success('Found ' . count($files) . ' files to process:');
+        $byExt = [];
+        foreach ($files as $path) {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $byExt[$ext] = ($byExt[$ext] ?? 0) + 1;
         }
-
+        foreach ($byExt as $ext => $count) {
+            $io->writeln("  <info>.{$ext}</info>: {$count} files");
+        }
         if ($io->isVerbose()) {
             $io->writeln('');
             $io->writeln('Files to process:');
-            foreach ($result->getFiles() as $file) {
-                $io->writeln("  • {$file->relativePath}");
+            foreach ($files as $file) {
+                $relative = Path::makeRelative($file, $sourceDir);
+                $io->writeln("  • {$relative}");
             }
         }
     }
 
-    private function displayProcessingResults(BatchProcessingResult $result, SymfonyStyle $io): void {
-        $successCount = $result->getSuccessfulFilesCount();
-        $failureCount = $result->getFailedFilesCount();
-        $totalFiles = $result->getTotalFilesProcessed();
-
-        if ($result->isCompletelySuccessful()) {
-            $io->success([
-                "Successfully processed all {$totalFiles} files.",
-                "Total code snippets processed: {$result->totalSnippetsProcessed}",
-            ]);
-        } else {
-            $io->warning([
-                "Processed {$successCount} of {$totalFiles} files successfully.",
-                "Failed to process {$failureCount} files.",
-                "Total code snippets processed: {$result->totalSnippetsProcessed}",
-            ]);
+    private function discoverFiles(string $sourceDir, array $extensions): array
+    {
+        $finder = new Finder();
+        $finder->files()->in($sourceDir)->name($this->buildNamePatterns($extensions))->sortByName();
+        $files = [];
+        foreach ($finder as $file) {
+            $files[] = $file->getRealPath();
         }
+        sort($files);
+        return $files;
+    }
 
-        // Show successful files in verbose mode
-        if ($io->isVerbose() && $result->hasAnySuccess()) {
-            $io->writeln('');
-            $io->writeln('<info>Successfully processed files:</info>');
-            foreach ($result->getSuccessfulResults() as $fileResult) {
-                $snippetInfo = $fileResult->snippetsProcessed > 0
-                    ? " ({$fileResult->snippetsProcessed} snippets)"
-                    : " (no snippets)";
-                $io->writeln("  ✓ {$fileResult->getSourceRelativePath()}{$snippetInfo}");
+    private function buildNamePatterns(array $extensions): array
+    {
+        return array_map(fn($ext) => "*.{$ext}", $extensions);
+    }
+
+    private function processFiles(array $files, string $sourceDir, string $targetDir, SymfonyStyle $io): array
+    {
+        $ok = 0; $failed = 0; $snippets = 0;
+        foreach ($files as $filePath) {
+            $relativePath = Path::makeRelative($filePath, $sourceDir);
+            try {
+                $content = $this->docRepository->readFile($filePath);
+                $markdown = MarkdownFile::fromString($content, $filePath);
+                $snippets += iterator_count($markdown->codeBlocks());
+
+                $targetPath = Path::join($targetDir, $relativePath);
+                $this->docRepository->ensureDirectoryExists(dirname($targetPath));
+                $this->docRepository->writeFile($targetPath, $markdown->toString());
+
+                if ($io->isVerbose()) {
+                    $io->writeln("  ✓ {$relativePath}");
+                }
+                $ok++;
+            } catch (FileNotFoundException $e) {
+                $io->writeln("  ✗ {$relativePath}: file not found");
+                $failed++;
+            } catch (InvalidArgumentException $e) {
+                $io->writeln("  ✗ {$relativePath}: invalid argument – " . $e->getMessage());
+                $failed++;
+            } catch (RuntimeException $e) {
+                $io->writeln("  ✗ {$relativePath}: I/O error – " . $e->getMessage());
+                $failed++;
+            } catch (\Throwable $e) {
+                $class = (new \ReflectionClass($e))->getShortName();
+                $io->writeln("  ✗ {$relativePath}: {$class} – " . $e->getMessage());
+                $failed++;
             }
         }
-
-        // Always show failed files
-        if ($failureCount > 0) {
-            $io->writeln('');
-            $io->writeln('<error>Failed to process files:</error>');
-            foreach ($result->getFailedResults() as $fileResult) {
-                $io->writeln("  ✗ {$fileResult->getSourceRelativePath()}: {$fileResult->error}");
-            }
-        }
+        return [$ok, $failed, $snippets];
     }
 }

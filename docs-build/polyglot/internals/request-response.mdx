@@ -8,7 +8,6 @@ description: 'Learn about the request and response objects used in Polyglot.'
 The `InferenceRequest` class encapsulates all the parameters needed for an LLM request:
 
 ```php
-// @doctest id="705b"
 namespace Cognesy\Polyglot\LLM;
 
 class InferenceRequest {
@@ -49,6 +48,7 @@ class InferenceRequest {
     public function toArray(): array { ... }
     public function withCacheApplied(): self { ... }
 }
+// @doctest id="e5ca"
 ```
 
 
@@ -58,7 +58,6 @@ class InferenceRequest {
 The `PendingInference` class handles the response from an LLM API:
 
 ```php
-// @doctest id="a4a9"
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
@@ -75,12 +74,12 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
     public function stream(): InferenceStream { ... }
     public function response(): InferenceResponse { ... }
 }
+// @doctest id="b7fb"
 ```
 
 For streaming responses, the `InferenceStream` class provides methods to process the stream:
 
 ```php
-// @doctest id="957a"
 namespace Cognesy\Polyglot\LLM;
 
 class InferenceStream {
@@ -96,6 +95,7 @@ class InferenceStream {
     public function final(): ?InferenceResponse { ... }
     public function onPartialResponse(callable $callback): self { ... }
 }
+// @doctest id="2857"
 ```
 
 
@@ -105,7 +105,6 @@ class InferenceStream {
 The `EmbeddingsResponse` class encapsulates the result of an embeddings request:
 
 ```php
-// @doctest id="edb5"
 namespace Cognesy\Polyglot\Embeddings;
 
 class EmbeddingsResponse {
@@ -123,4 +122,5 @@ class EmbeddingsResponse {
     public function totalTokens(): int { ... }
     public function split(int $index): array { ... }
 }
+// @doctest id="a049"
 ```

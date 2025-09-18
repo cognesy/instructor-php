@@ -25,7 +25,6 @@ Let's first define the structure, which is a shape of the data we want to
 extract from the message.
 
 ```php
-// @doctest id="c984"
 <?php
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
@@ -41,6 +40,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 ?>
+// @doctest id="12f7"
 ```
 
 Following types of fields are currently supported:
@@ -59,7 +59,6 @@ Fields can be marked as optional with `$field->optional()`.  By default, all
 defined fields are required.
 
 ```php
-// @doctest id="546d"
 <?php
 $structure = Structure::define('person', [
     //...
@@ -67,6 +66,7 @@ $structure = Structure::define('person', [
     //...
 ]);
 ?>
+// @doctest id="01dc"
 ```
 
 
@@ -78,7 +78,6 @@ can use them to provide explanations, detailed specifications or requirements fo
 You can also provide extra inference instructions for LLM at the structure level with `$structure->description(string $description)`
 
 ```php
-// @doctest id="dfcb"
 <?php
 $structure = Structure::define('person', [
     Field::string('name', 'Name of the person'),
@@ -86,6 +85,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
+// @doctest id="b579"
 ```
 
 ## Nesting structures
@@ -94,7 +94,6 @@ You can use `Field::structure()` to nest structures in case you want to define
 more complex data shapes.
 
 ```php
-// @doctest id="b1d3"
 <?php
 $structure = Structure::define('person', [
     Field::string('name','Name of the person'),
@@ -109,6 +108,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
+// @doctest id="241a"
 ```
 
 ## Validation of structure data
@@ -123,7 +123,6 @@ You can define field validator with:
 Let's add a simple field validation to the example above: 
 
 ```php
-// @doctest id="37b3"
 <?php
 $structure = Structure::define('person', [
     // ...
@@ -133,6 +132,7 @@ $structure = Structure::define('person', [
     // ...
 ], 'A person object');
 ?>
+// @doctest id="202c"
 ```
 
 ## Extracting data
@@ -140,7 +140,6 @@ $structure = Structure::define('person', [
 Now, let's extract the data from the message.
 
 ```php
-// @doctest id="3041"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -164,6 +163,7 @@ dump($person->toArray());
 //   "role" => "line"
 // ]
 ?>
+// @doctest id="c32d"
 ```
 
 
@@ -173,7 +173,6 @@ Structure object properties can be accessed using `get()` and `set()` methods,
 but also directly as properties.
 
 ```php
-// @doctest id="3601"
 <?php
 $person = Structure::define('person', [
     Field::string('name'),
@@ -208,4 +207,5 @@ $age = $person->age;
 $role = $person->role->name;
 $level = $person->role->level;
 ?>
+// @doctest id="8bef"
 ```

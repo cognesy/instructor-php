@@ -195,7 +195,7 @@ return [
             'endpoint' => '/chat/completions',
             'model' => 'gemma3:1b', // 'qwen2.5-coder:3b', //'gemma2:2b',
             'maxTokens' => 1024,
-            'httpClientPreset' => 'http-ollama',
+            // select HTTP behavior via HttpClientBuilder or facade-level methods
             'contextLength' => 128_000,
             'maxOutputLength' => 8192,
         ],

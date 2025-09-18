@@ -27,8 +27,7 @@ class MiddlewareStack
      * @param string|null $name Optional name for the middleware
      * @return self
      */
-    public function append(HttpMiddleware $middleware, ?string $name = null): self
-    {
+    public function append(HttpMiddleware $middleware, ?string $name = null): self {
         if ($name !== null) {
             $this->stack[$name] = $middleware;
         } else {
@@ -43,8 +42,7 @@ class MiddlewareStack
      * @param HttpMiddleware[] $middlewares Array of middleware to add
      * @return self
      */
-    public function appendMany(array $middlewares): self
-    {
+    public function appendMany(array $middlewares): self {
         foreach ($middlewares as $key => $middleware) {
             if (is_string($key)) {
                 $this->append($middleware, $key);
@@ -62,8 +60,7 @@ class MiddlewareStack
      * @param string|null $name Optional name for the middleware
      * @return self
      */
-    public function prepend(HttpMiddleware $middleware, ?string $name = null): self
-    {
+    public function prepend(HttpMiddleware $middleware, ?string $name = null): self {
         if ($name !== null) {
             $this->stack = [$name => $middleware] + $this->stack; // Preserve associative keys
         } else {
@@ -78,8 +75,7 @@ class MiddlewareStack
      * @param HttpMiddleware[] $middlewares Array of middleware to prepend
      * @return self
      */
-    public function prependMany(array $middlewares): self
-    {
+    public function prependMany(array $middlewares): self {
         foreach (array_reverse($middlewares) as $key => $middleware) {
             if (is_string($key)) {
                 $this->prepend($middleware, $key);
@@ -96,8 +92,7 @@ class MiddlewareStack
      * @param string $name The name of the middleware to remove
      * @return self
      */
-    public function remove(string $name): self
-    {
+    public function remove(string $name): self {
         if (isset($this->stack[$name])) {
             unset($this->stack[$name]);
         }
@@ -108,11 +103,10 @@ class MiddlewareStack
      * Replace a middleware with a new one
      *
      * @param string $name The name of the middleware to replace
-     * @param \Cognesy\Http\Contracts\HttpMiddleware $middleware The new middleware
+     * @param HttpMiddleware $middleware The new middleware
      * @return self
      */
-    public function replace(string $name, HttpMiddleware $middleware): self
-    {
+    public function replace(string $name, HttpMiddleware $middleware): self {
         $this->stack[$name] = $middleware;
         return $this;
     }
@@ -122,8 +116,7 @@ class MiddlewareStack
      *
      * @return self
      */
-    public function clear(): self
-    {
+    public function clear(): self {
         $this->stack = [];
         return $this;
     }
@@ -133,8 +126,7 @@ class MiddlewareStack
      *
      * @return HttpMiddleware[]
      */
-    public function all(): array
-    {
+    public function all(): array {
         return $this->stack;
     }
 
@@ -144,8 +136,7 @@ class MiddlewareStack
      * @param string $name The name to check
      * @return bool
      */
-    public function has(string $name): bool
-    {
+    public function has(string $name): bool {
         return isset($this->stack[$name]);
     }
 
@@ -153,10 +144,9 @@ class MiddlewareStack
      * Get a middleware by name or index
      *
      * @param string|int $key The name or index of the middleware
-     * @return \Cognesy\Http\Contracts\HttpMiddleware|null
+     * @return HttpMiddleware|null
      */
-    public function get(string|int $key): ?HttpMiddleware
-    {
+    public function get(string|int $key): ?HttpMiddleware {
         return $this->stack[$key] ?? null;
     }
 
@@ -166,8 +156,7 @@ class MiddlewareStack
      * @param callable $callback Function that takes HttpMiddleware and returns bool
      * @return self
      */
-    public function filter(callable $callback): self
-    {
+    public function filter(callable $callback): self {
         $this->stack = array_filter($this->stack, $callback, ARRAY_FILTER_USE_BOTH);
         return $this;
     }
@@ -178,8 +167,7 @@ class MiddlewareStack
      * @param CanHandleHttpRequest $driver The HTTP driver to decorate
      * @return CanHandleHttpRequest The decorated driver
      */
-    public function decorate(CanHandleHttpRequest $driver): CanHandleHttpRequest
-    {
+    public function decorate(CanHandleHttpRequest $driver): CanHandleHttpRequest {
         if (empty($this->stack)) {
             return $driver;
         }
@@ -196,7 +184,7 @@ class MiddlewareStack
                 ];
             },
             $this->stack,
-            array_keys($this->stack)
+            array_keys($this->stack),
         );
     }
 }

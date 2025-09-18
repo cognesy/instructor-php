@@ -610,7 +610,7 @@ Or you can refer to it in your LLM connections configuration:
             'contextLength' => 256_000,
             'maxOutputLength' => 4096,
             // Our custom HTTP client
-            'httpClientPreset' => 'my-custom-client',
+            // Select your HTTP configuration via HttpClientBuilder
         ],
     // ...
 ```

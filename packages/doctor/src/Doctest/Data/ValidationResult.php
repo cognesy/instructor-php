@@ -4,6 +4,10 @@ namespace Cognesy\Doctor\Doctest\Data;
 
 final readonly class ValidationResult
 {
+    /**
+     * @param array<int, BlockValidation> $validBlocks
+     * @param array<int, BlockValidation> $missingBlocks
+     */
     public function __construct(
         public string $filePath,
         public int $totalBlocks,

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Http\HttpClient;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
@@ -20,6 +21,9 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use Generator;
 
+/**
+ * @template TResponse
+ */
 class PendingStructuredOutput
 {
     use HandlesResultTypecasting;
@@ -34,6 +38,7 @@ class PendingStructuredOutput
     private readonly StructuredOutputConfig $config;
     private readonly LLMProvider $llmProvider;
     private readonly bool $cacheProcessedResponse;
+    private readonly ?HttpClient $httpClient;
 
     private InferenceResponse $cachedResponse;
     private array $cachedResponseStream;
@@ -46,6 +51,7 @@ class PendingStructuredOutput
         LLMProvider              $llmProvider,
         StructuredOutputConfig   $config,
         CanHandleEvents          $events,
+        ?HttpClient              $httpClient = null,
     ) {
         $this->cacheProcessedResponse = true;
         $this->request = $request;
@@ -55,11 +61,14 @@ class PendingStructuredOutput
         $this->responseTransformer = $responseTransformer;
         $this->llmProvider = $llmProvider;
         $this->config = $config;
+        $this->httpClient = $httpClient;
         $this->requestHandler = $this->makeRequestHandler();
     }
 
     /**
-     * Executes the request and returns the response
+     * Executes the request and returns the parsed value
+     *
+     * @return TResponse
      */
     public function get() : mixed {
         return match(true) {
@@ -92,6 +101,8 @@ class PendingStructuredOutput
 
     /**
      * Executes the request and returns the response stream
+     *
+     * @return StructuredOutputStream<TResponse>
      */
     public function stream() : StructuredOutputStream {
         $stream = $this->getStream($this->request->withStreamed());
@@ -156,6 +167,7 @@ class PendingStructuredOutput
             ),
             requestMaterializer: new RequestMaterializer($this->config),
             llmProvider: $this->llmProvider,
+            httpClient: $this->httpClient,
             events: $this->events,
         );
     }

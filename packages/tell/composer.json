@@ -25,8 +25,8 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-config": "^1.4",
-    "cognesy/instructor-polyglot": "^1.4"
+    "cognesy/instructor-config": "^1.8",
+    "cognesy/instructor-polyglot": "^1.8"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

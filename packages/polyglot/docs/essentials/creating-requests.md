@@ -76,7 +76,6 @@ You can also use the `Messages` class to create message sequences more convenien
 ```php
 <?php
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Utils\Image;
 use Cognesy\Polyglot\Inference\Inference;
 
 $messages = (new Messages)

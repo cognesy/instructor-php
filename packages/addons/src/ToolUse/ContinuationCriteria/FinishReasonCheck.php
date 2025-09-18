@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseState;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-class FinishReasonCheck implements CanDecideToContinue
+class FinishReasonCheck implements CanDecideToContinueToolUse
 {
     private array $finishOnReasons;
 
@@ -17,6 +17,7 @@ class FinishReasonCheck implements CanDecideToContinue
         if (empty($this->finishOnReasons)) {
             return true;
         }
-        return in_array($state->currentStep()?->finishReason(), $this->finishOnReasons);
+        // Stop when finish reason is one of the configured reasons
+        return !in_array($state->currentStep()?->finishReason(), $this->finishOnReasons, true);
     }
 }

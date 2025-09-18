@@ -43,20 +43,21 @@ echo "Step 1: Updating package versions..."
 ./scripts/sync-ver.sh "$VERSION"
 
 # 2. Distribute release notes to all packages
-echo "Step 2: Distributing release notes to all packages..."
-for dir in "${!PACKAGES[@]}"; do
-    if [ -d "$dir" ]; then
-        # Create release_notes directory if it doesn't exist
-        mkdir -p "$dir/release_notes"
-
-        # Copy the release notes file to the package (convert from .mdx to .md)
-        cp "$NOTES_FILE" "$dir/release_notes/v$VERSION.md"
-
-        echo "✅ Copied release notes to $dir/release_notes/"
-    else
-        echo "⚠️ Warning: Directory $dir does not exist, skipping..."
-    fi
-done
+# echo "Step 2: Distributing release notes to all packages..."
+# for dir in "${!PACKAGES[@]}"; do
+#     if [ -d "$dir" ]; then
+#         # Create release_notes directory if it doesn't exist
+#         mkdir -p "$dir/release_notes"
+# 
+#         # Copy the release notes file to the package (convert from .mdx to .md)
+#         cp "$NOTES_FILE" "$dir/release_notes/v$VERSION.md"
+# 
+#         echo "✅ Copied release notes to $dir/release_notes/"
+#     else
+#         echo "⚠️ Warning: Directory $dir does not exist, skipping..."
+#     fi
+# done
+echo "Step 2: Skipping release notes distribution (now centralized in docs-build)"
 
 # 3. Check for uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then

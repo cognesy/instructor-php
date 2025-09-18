@@ -2,14 +2,21 @@
 
 namespace Cognesy\Addons\ToolUse\Processors;
 
-use Cognesy\Addons\ToolUse\Contracts\CanProcessStep;
-use Cognesy\Addons\ToolUse\ToolUseState;
-use Cognesy\Addons\ToolUse\ToolUseStep;
+use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
-class AccumulateTokenUsage implements CanProcessStep
+class AccumulateTokenUsage implements CanProcessAnyState
 {
-    public function processStep(ToolUseStep $step, ToolUseState $state): ToolUseStep {
-        $state->accumulateUsage($step->usage());
-        return $step;
+    public function process(object $state, ?callable $next = null): ToolUseState {
+        $newState = $state->withAccumulatedUsage(
+            $state->currentStep()?->usage() ?? Usage::none()
+        );
+
+        return $next ? $next($newState) : $newState;
+    }
+
+    public function canProcess(object $state): bool {
+        return $state instanceof ToolUseState;
     }
 }

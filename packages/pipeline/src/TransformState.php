@@ -3,14 +3,15 @@
 namespace Cognesy\Pipeline;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
-use Cognesy\Pipeline\Contracts\TagInterface;
-use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Pipeline\Tag\TagQuery;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
+use Cognesy\Utils\TagMap\TagQuery;
+use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use Throwable;
 
-class TransformState {
+class TransformState
+{
     public function __construct(private CanCarryState $state) {}
 
     public static function with(CanCarryState $state): self {
@@ -22,6 +23,8 @@ class TransformState {
     public function state(): CanCarryState {
         return $this->state;
     }
+
+    // TERMINAL METHODS - RESULT
 
     public function result(): Result {
         return $this->state->result();
@@ -50,6 +53,8 @@ class TransformState {
     public function isFailure(): bool {
         return $this->state->isFailure();
     }
+
+    // TERMINAL METHODS - TAGS
 
     public function tagMap(): TagMapInterface {
         return $this->state->tagMap();
@@ -154,6 +159,7 @@ class TransformState {
 
     /**
      * Combines this state with another state, merging tags and optionally combining results.
+     *
      * @param callable(Result, Result): Result|null $resultCombinator Optional function to combine results
      */
     public function combine(CanCarryState $other, ?callable $resultCombinator = null): self {

@@ -2,12 +2,13 @@
 
 namespace Cognesy\Template;
 
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Data\TemplateInfo;
-use Cognesy\Template\Script\Script;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
 use Cognesy\Utils\Str;
 use Cognesy\Utils\Xml\Xml;
 use Cognesy\Utils\Xml\XmlElement;
@@ -130,8 +131,8 @@ class Template
         return $this->makeMessages($this->rendered());
     }
 
-    public function toScript() : Script {
-        return $this->makeScript($this->rendered());
+    public function toMessageStore() : MessageStore {
+        return $this->makeMessageStore($this->rendered());
     }
 
     public function toArray() : array {
@@ -166,23 +167,30 @@ class Template
     }
 
     public function renderMessage(Message $message) : Message {
-        $newMessage = $message->clone();
-        $newMessage->removeContent();
+        $newMessage = new Message(
+            role: $message->role(),
+            name: $message->name(),
+            metadata: $message->metadata()->toArray()
+        );
+        $parts = [];
         foreach($message->contentParts() as $part) {
-            $newPart = $part->clone();
+            $newPart = new ContentPart(
+                type: $part->type(),
+                fields: $part->fields()
+            );
             if ($part->isTextPart()) {
                 $renderedValue = $this->provider->renderString($part->toString(), $this->variableValues);
-                $newPart->set('text', $renderedValue);
+                $newPart = $newPart->withField('text', $renderedValue);
             }
-            $newMessage->addContentPart($newPart);
+            $newMessage = $newMessage->addContentPart($newPart);
         }
         return $newMessage;
     }
 
     public function renderMessages(Messages $messages) : Messages {
-        $newMessages = new Messages();
+        $newMessages = Messages::empty();
         foreach ($messages->each() as $message) {
-            $newMessages->appendMessage($this->renderMessage($message));
+            $newMessages = $newMessages->appendMessage($this->renderMessage($message));
         }
         return $newMessages;
     }
@@ -204,7 +212,7 @@ class Template
         };
     }
 
-    private function makeScript(string $text) : Script {
+    private function makeMessageStore(string $text) : MessageStore {
         return match(true) {
             $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeScriptFromXml($text),
             default => Messages::fromString($text),
@@ -225,37 +233,49 @@ class Template
         return preg_match('/<[^>]+>/', $text) === 1;
     }
 
-    private function makeScriptFromXml(string $text) : Script {
+    private function makeScriptFromXml(string $text) : MessageStore {
         $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
-        $script = new Script();
-        $section = $script->section('messages');
+        $store = new MessageStore();
+        $currentSectionName = 'messages';
+        
+        // Ensure default section exists
+        if (!$store->section($currentSectionName)->exists()) {
+            $store = $store->section($currentSectionName)->setMessages(Messages::empty());
+        }
+        
         foreach ($xml->children() as $element) {
             if ($element->tag() === 'section') {
-                $section = $script->section($element->attribute('name') ?? 'messages');
+                $currentSectionName = $element->attribute('name') ?? 'messages';
+                if (!$store->section($currentSectionName)->exists()) {
+                    $store = $store->section($currentSectionName)->setMessages(Messages::empty());
+                }
                 continue;
             }
             if ($element->tag() !== 'message') {
                 continue;
             }
-            $section->appendMessage(Message::make(
+            
+            $message = Message::make(
                 role: $element->attribute('role', 'user'),
                 content: match(true) {
                     $element->hasChildren() => $this->getMessageContent($element),
                     default => $element->content(),
                 }
-            ));
+            );
+            
+            $store = $store->section($currentSectionName)->appendMessages($message);
         }
-        return $script;
+        return $store;
     }
 
     private function makeMessagesFromXml(string $text) : Messages {
         $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
-        $messages = new Messages();
+        $messages = Messages::empty();
         foreach ($xml->children() as $element) {
             if ($element->tag() !== 'message') {
                 continue;
             }
-            $messages->appendMessage(Message::make(
+            $messages = $messages->appendMessage(Message::make(
                 role: $element->attribute('role', 'user'),
                 content: match(true) {
                     $element->hasChildren() => $this->getMessageContent($element),

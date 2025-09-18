@@ -14,8 +14,7 @@ final class ProcessorChain
     /**
      * @param list<callable> $processors
      */
-    public function __construct(array $processors)
-    {
+    public function __construct(array $processors) {
         if ($processors === []) {
             throw new \InvalidArgumentException('Pipeline requires at least one processor.');
         }
@@ -26,8 +25,7 @@ final class ProcessorChain
      * @param mixed $payload
      * @return mixed|null  Returns the final payload or null if any step returned null.
      */
-    public function process(mixed $payload): mixed
-    {
+    public function process(mixed $payload): mixed {
         $carry = $payload;
         foreach ($this->processors as $processor) {
             $carry = $processor($carry);
@@ -43,7 +41,7 @@ final class ProcessorChain
      *
      * @return list<callable>
      */
-    public function processors() : array {
+    public function processors(): array {
         return $this->processors;
     }
 }

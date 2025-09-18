@@ -1,0 +1,55 @@
+[formatter]
+# Line width configuration
+print-width = 120
+
+# Indentation - use 4 spaces (not tabs)
+use-tabs = false
+
+# Quote preferences
+single-quote = true
+
+# Trailing comma in multi-line structures
+trailing-comma = true
+
+# Line endings
+end-of-line = "lf"
+
+# Brace positioning - keep opening braces on same line
+method-brace-style = "SameLine"
+function-brace-style = "SameLine"
+control-brace-style = "SameLine"
+
+# Parameter formatting - preserve existing multi-line formatting
+preserve-breaking-parameter-list = true
+
+# Array formatting - preserve existing multi-line formatting
+preserve-breaking-array-like = true
+
+# Method chaining - preserve existing multi-line formatting
+preserve-breaking-member-access-chain = true
+
+# Method call arguments - preserve existing multi-line formatting
+preserve-breaking-argument-list = true
+
+# Blank line spacing - single empty lines between sections
+empty-line-after-opening-tag = true
+empty-line-after-declare = true
+empty-line-after-namespace = true
+empty-line-after-use = true
+
+[source]
+# Exclude directories from formatting
+excludes = [
+    "**/vendor/**",
+    "storage/**",
+    "bootstrap/cache/**", 
+    "node_modules/**",
+    ".git/**",
+    "tests/Fixtures/**",
+    "packages/*/tests/Examples/**",
+    "tmp/**"
+]
+
+[linter.rules]
+# Enforce declare(strict_types=1) at the beginning of files
+strict-types = { enabled = true, level = "Error" }

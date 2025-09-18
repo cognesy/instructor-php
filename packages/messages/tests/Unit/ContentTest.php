@@ -2,25 +2,22 @@
 
 use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
-use Cognesy\Messages\Message;
 
 describe('Content', function () {
     describe('construction', function () {
         it('creates empty content with null', function () {
-            $content = new Content(null);
-            expect($content->isNull())->toBeTrue();
+            $content = Content::fromAny(null);
             expect($content->isEmpty())->toBeTrue();
         });
 
         it('creates content with string', function () {
-            $content = new Content('Hello world');
-            expect($content->isNull())->toBeFalse();
+            $content = Content::text('Hello world');
             expect($content->isEmpty())->toBeFalse();
             expect($content->toString())->toBe('Hello world');
         });
 
         it('creates content with array of strings', function () {
-            $content = new Content(['Hello', 'world']);
+            $content = Content::texts(...['Hello', 'world']);
             expect($content->parts())->toHaveCount(2);
             expect($content->toString())->toBe("Hello\nworld");
         });
@@ -30,7 +27,7 @@ describe('Content', function () {
                 ContentPart::text('Hello'),
                 ContentPart::text('world')
             ];
-            $content = new Content($parts);
+            $content = Content::fromAny($parts);
             expect($content->parts())->toHaveCount(2);
             expect($content->toString())->toBe("Hello\nworld");
         });
@@ -44,11 +41,6 @@ describe('Content', function () {
     });
 
     describe('fromAny static method', function () {
-        it('creates content from null', function () {
-            $content = Content::fromAny(null);
-            expect($content->isNull())->toBeTrue();
-        });
-
         it('creates content from string', function () {
             $content = Content::fromAny('Hello');
             expect($content->toString())->toBe('Hello');
@@ -60,7 +52,7 @@ describe('Content', function () {
         });
 
         it('creates content from Content instance', function () {
-            $original = new Content('Hello');
+            $original = Content::text('Hello');
             $content = Content::fromAny($original);
             expect($content->toString())->toBe('Hello');
         });
@@ -81,64 +73,34 @@ describe('Content', function () {
 
     describe('content part management', function () {
         it('adds content part', function () {
-            $content = new Content();
+            $content = Content::empty();
             $part = ContentPart::text('Hello');
-            $content->addContentPart($part);
+            $content = $content->addContentPart($part);
             expect($content->parts())->toHaveCount(1);
             expect($content->toString())->toBe('Hello');
-        });
-
-        it('returns first content part', function () {
-            $content = new Content(['Hello', 'world']);
-            $firstPart = $content->firstContentPart();
-            expect($firstPart)->toBeInstanceOf(ContentPart::class);
-            expect($firstPart->toString())->toBe('Hello');
-        });
-
-        it('returns last content part', function () {
-            $content = new Content(['Hello', 'world']);
-            $lastPart = $content->lastContentPart();
-            expect($lastPart)->toBeInstanceOf(ContentPart::class);
-            expect($lastPart->toString())->toBe('world');
-        });
-
-        it('returns null for first/last part when empty', function () {
-            $content = new Content();
-            expect($content->firstContentPart())->toBeNull();
-            expect($content->lastContentPart())->toBeNull();
         });
     });
 
     describe('state checking', function () {
-        it('detects null content', function () {
-            $content = new Content();
-            expect($content->isNull())->toBeTrue();
-        });
-
         it('detects empty content', function () {
-            $content = new Content('');
+            $content = Content::text('');
             expect($content->isEmpty())->toBeTrue();
         });
 
-        it('detects simple content', function () {
-            $content = new Content('Hello');
-            expect($content->isSimple())->toBeTrue();
-        });
-
         it('detects composite content', function () {
-            $content = new Content(['Hello', 'world']);
+            $content = Content::texts(...['Hello', 'world']);
             expect($content->isComposite())->toBeTrue();
         });
 
         it('detects non-composite single text part', function () {
-            $content = new Content('Hello');
+            $content = Content::text('Hello');
             expect($content->isComposite())->toBeFalse();
         });
     });
 
     describe('conversion methods', function () {
         it('converts to array', function () {
-            $content = new Content(['Hello', 'world']);
+            $content = Content::texts(...['Hello', 'world']);
             $array = $content->toArray();
             expect($array)->toHaveCount(2);
             expect($array[0])->toHaveKey('type', 'text');
@@ -146,53 +108,53 @@ describe('Content', function () {
         });
 
         it('converts empty content to empty array', function () {
-            $content = new Content();
+            $content = Content::empty();
             expect($content->toArray())->toBe([]);
         });
 
         it('normalizes simple content to string', function () {
-            $content = new Content('Hello');
+            $content = Content::text('Hello');
             expect($content->normalized())->toBe('Hello');
         });
 
         it('normalizes composite content to array', function () {
-            $content = new Content(['Hello', 'world']);
+            $content = Content::texts(...['Hello', 'world']);
             $normalized = $content->normalized();
             expect($normalized)->toBeArray();
             expect($normalized)->toHaveCount(2);
         });
 
         it('normalizes null content to empty string', function () {
-            $content = new Content();
+            $content = Content::empty();
             expect($content->normalized())->toBe('');
         });
 
         it('filters out empty parts in toString', function () {
-            $content = new Content('Hello');
+            $content = Content::text('Hello');
             $content->addContentPart(ContentPart::text(''));
             expect($content->toString())->toBe('Hello');
         });
 
         it('handles mixed empty and non-empty parts in toString', function () {
-            $content = new Content();
-            $content->addContentPart(ContentPart::text('Hello'));
-            $content->addContentPart(ContentPart::text(''));
-            $content->addContentPart(ContentPart::text('World'));
-            $content->addContentPart(ContentPart::text(''));
+            $content = Content::empty();
+            $content = $content->addContentPart(ContentPart::text('Hello'));
+            $content = $content->addContentPart(ContentPart::text(''));
+            $content = $content->addContentPart(ContentPart::text('World'));
+            $content = $content->addContentPart(ContentPart::text(''));
             expect($content->toString())->toBe("Hello\nWorld");
         });
     });
 
     describe('cloning', function () {
         it('creates deep clone', function () {
-            $content = new Content('Hello');
+            $content = Content::text('Hello');
             $clone = $content->clone();
             expect($clone)->not->toBe($content);
             expect($clone->toString())->toBe('Hello');
         });
 
         it('clones with multiple parts', function () {
-            $content = new Content(['Hello', 'world']);
+            $content = Content::texts(...['Hello', 'world']);
             $clone = $content->clone();
             expect($clone->parts())->toHaveCount(2);
             expect($clone->toString())->toBe("Hello\nworld");
@@ -201,25 +163,162 @@ describe('Content', function () {
 
     describe('content field manipulation', function () {
         it('appends content field to last part', function () {
-            $content = new Content('Hello');
-            $content->appendContentField('custom', 'value');
-            $lastPart = $content->lastContentPart();
-            expect($lastPart->get('custom'))->toBe('value');
+            $content = Content::text('Hello');
+            $content = $content->appendContentField('custom', 'value');
+            expect($content->toArray())->toBe([
+                ['type' => 'text', 'text' => 'Hello', 'custom' => 'value']
+            ]);
         });
 
-        it('appends multiple content fields', function () {
-            $content = new Content('Hello');
-            $content->appendContentFields(['field1' => 'value1', 'field2' => 'value2']);
-            $lastPart = $content->lastContentPart();
-            expect($lastPart->get('field1'))->toBe('value1');
-            expect($lastPart->get('field2'))->toBe('value2');
-        });
-
-        it('does not append to empty content', function () {
-            $content = new Content();
+        it('appends field to empty content', function () {
+            $content = Content::empty();
             $result = $content->appendContentField('custom', 'value');
-            expect($result)->toBe($content);
-            expect($content->isNull())->toBeTrue();
+            expect($result->toArray())->toBe([
+                ['type' => 'text', 'custom' => 'value']
+            ]);
+        });
+
+        it('appends to text content part', function () {
+            $content = Content::text('Hello');
+            $result = $content->appendContentField('custom', 'world');
+            expect($result->toArray())->toBe([
+                ['type' => 'text', 'text' => 'Hello', 'custom' => 'world']
+            ]);
+        });
+
+        it('appends to image_url content part with url field', function () {
+            $content = new Content(ContentPart::imageUrl('https://example.com/image.jpg'));
+            $result = $content->appendContentField('detail', 'high');
+            expect($result->toArray())->toBe([
+                ['type' => 'image_url', 'url' => 'https://example.com/image.jpg', 'detail' => 'high']
+            ]);
+        });
+
+        it('handles nested image_url structure like OpenAI API', function () {
+            $part = new ContentPart('image_url', [
+                'image_url' => [
+                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                    'detail' => 'auto'
+                ]
+            ]);
+            $content = new Content($part);
+            $result = $content->appendContentField('alt_text', 'Nature boardwalk');
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                        'detail' => 'auto'
+                    ],
+                    'alt_text' => 'Nature boardwalk'
+                ]
+            ]);
+        });
+
+        it('handles audio content parts like OpenAI input_audio type', function () {
+            $audioPart = new ContentPart('input_audio', [
+                'input_audio' => [
+                    'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                    'format' => 'wav'
+                ]
+            ]);
+            $content = new Content($audioPart);
+            $result = $content->appendContentField('transcription', 'Hello world');
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'input_audio',
+                    'input_audio' => [
+                        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                        'format' => 'wav'
+                    ],
+                    'transcription' => 'Hello world'
+                ]
+            ]);
+        });
+
+        it('handles file content parts with file_data', function () {
+            $filePart = new ContentPart('file', [
+                'file' => [
+                    'file_data' => 'base64encodedfiledata',
+                    'filename' => 'report.pdf'
+                ]
+            ]);
+            $content = new Content($filePart);
+            $result = $content->appendContentField('page_count', 42);
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'file',
+                    'file' => [
+                        'file_data' => 'base64encodedfiledata',
+                        'filename' => 'report.pdf'
+                    ],
+                    'page_count' => 42
+                ]
+            ]);
+        });
+
+        it('handles file content parts with file_id', function () {
+            $filePart = new ContentPart('file', [
+                'file' => [
+                    'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
+                    'filename' => 'document.pdf'
+                ]
+            ]);
+            $content = new Content($filePart);
+            $result = $content->appendContentField('processing_status', 'completed');
+            
+            expect($result->toArray())->toBe([
+                [
+                    'type' => 'file',
+                    'file' => [
+                        'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
+                        'filename' => 'document.pdf'
+                    ],
+                    'processing_status' => 'completed'
+                ]
+            ]);
+        });
+
+        it('handles complex multipart content with mixed OpenAI types', function () {
+            $content = new Content(
+                ContentPart::text('What is in this image?'),
+                new ContentPart('image_url', [
+                    'image_url' => [
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                        'detail' => 'high'
+                    ]
+                ]),
+                new ContentPart('input_audio', [
+                    'input_audio' => [
+                        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                        'format' => 'wav'
+                    ]
+                ])
+            );
+            $result = $content->appendContentField('analysis_complete', true);
+            
+            $expected = [
+                ['type' => 'text', 'text' => 'What is in this image?'],
+                [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg',
+                        'detail' => 'high'
+                    ]
+                ],
+                [
+                    'type' => 'input_audio',
+                    'input_audio' => [
+                        'data' => 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
+                        'format' => 'wav'
+                    ],
+                    'analysis_complete' => true
+                ]
+            ];
+            expect($result->toArray())->toBe($expected);
         });
     });
 });

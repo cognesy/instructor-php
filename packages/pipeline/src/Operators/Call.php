@@ -6,11 +6,11 @@ use Closure;
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
-use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
+use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use RuntimeException;
 
 readonly final class Call implements CanProcessState {
@@ -76,7 +76,7 @@ readonly final class Call implements CanProcessState {
     }
 
     /**
-     * @param callable(CanCarryState):CanCarryState $next
+     * @param null|callable(CanCarryState):CanCarryState $next
      */
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $outputState = ($this->normalizedCall)($state);

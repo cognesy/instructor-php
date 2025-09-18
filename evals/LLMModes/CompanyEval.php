@@ -57,8 +57,8 @@ class CompanyEval implements CanGenerateObservations
             return false;
         }
         return 'store_company' === $toolCall->name()
-            && 'ACME' === $toolCall->stringValue('company_name')
-            && 2020 === $toolCall->intValue('founding_year');
+            && 'ACME' === $toolCall->value('company_name')
+            && 2020 === $toolCall->value('founding_year');
     }
 
     private function validateDefault(Execution $execution) : bool {
@@ -70,7 +70,7 @@ class CompanyEval implements CanGenerateObservations
     private function validateText(Execution $execution) : bool {
         $content = $execution->get('response')?->content();
         return Str::containsAll(
-            $content,
+            $content ?? '',
             [
                 $this->expectations['company_name'],
                 (string) $this->expectations['founding_year']

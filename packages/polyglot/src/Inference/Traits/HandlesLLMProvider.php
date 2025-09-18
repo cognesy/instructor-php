@@ -4,8 +4,10 @@ namespace Cognesy\Polyglot\Inference\Traits;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 trait HandlesLLMProvider
@@ -14,6 +16,12 @@ trait HandlesLLMProvider
 
     public function withLLMProvider(LLMProvider $llm) : static {
         $this->llmProvider = $llm;
+        return $this;
+    }
+
+    public function withLLMResolver(CanResolveLLMConfig $resolver) : static {
+        // Allow custom config resolver injection alongside provider
+        $this->llmResolver = $resolver;
         return $this;
     }
 
@@ -38,12 +46,14 @@ trait HandlesLLMProvider
     }
 
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->llmProvider->withHttpClient($httpClient);
+        $this->httpClient = $httpClient;
         return $this;
     }
 
     public function withHttpClientPreset(string $string) : static {
-        $this->llmProvider->withHttpPreset($string);
+        // Build a client using the HTTP config preset at the facade level
+        $builder = new HttpClientBuilder(events: $this->events);
+        $this->httpClient = $builder->withPreset($string)->create();
         return $this;
     }
 
@@ -58,7 +68,7 @@ trait HandlesLLMProvider
     }
 
     public function withDebugPreset(?string $preset) : static {
-        $this->llmProvider->withDebugPreset($preset);
+        $this->httpDebugPreset = $preset;
         return $this;
     }
 }

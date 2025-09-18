@@ -63,6 +63,7 @@ Instructor offers out-of-the-box support for the following LLM providers:
 - Fireworks
 - Google Gemini (native and OpenAI compatible)
 - Groq
+- HuggingFace
 - Minimaxi
 - Mistral
 - Moonshot / Kimi

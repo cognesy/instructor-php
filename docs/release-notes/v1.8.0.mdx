@@ -1,0 +1,46 @@
+
+## Major Changes
+
+### Immutable ToolUse System
+- `ToolUseState` and `ToolUseStep` are now immutable readonly classes
+- State transitions create new instances instead of modifying existing ones
+- Functional composition replaces method chaining
+
+### Enhanced Chat Events
+- Added `ChatResponseRequested` event for tracking participant responses
+- Improved event dispatching with dedicated methods per event type
+- Better participant selection and state update event handling
+
+### Improved Message Compilation
+- Chat participants now handle their own message compilation
+- `CanCompileMessages` interface used consistently across participants
+- Default compiler (`AllSections`) applied where not specified
+
+
+## Internal Improvements
+
+### Processing Pipeline
+- `StepProcessors` rewritten using middleware pattern
+- State processors use functional composition for better predictability
+- Continuation criteria refactored as immutable collections
+
+### Code Organization
+- Event emission extracted to private methods for better maintainability (selected locations so far)
+- Consistent error handling across participant implementations
+- Reduced coupling between chat state and compilation logic
+
+### Performance
+- Immutable structures reduce side effects and improve memory safety
+- Functional approach enables better optimization opportunities
+- Cleaner separation of concerns reduces object graph complexity
+
+
+## Breaking Changes
+
+- **Removed**: `ToolUseOptions` class - configuration now handled directly in `ToolUse` constructor
+- **Changed**: `CanUseTools::useTools()` signature now requires `Tools` parameter
+- **Removed**: Observer interfaces (`ToolUseObserver`, `ToolsObserver`) - replaced with event system
+- `CanProcessToolStep::processStep()` → `CanProcessToolState::process()`
+- `ToolUse` methods (`withOptions()`, `withTools()`, `withMessages()`) removed
+- `ChatState::compiledMessages()` removed - compilation moved to participants
+

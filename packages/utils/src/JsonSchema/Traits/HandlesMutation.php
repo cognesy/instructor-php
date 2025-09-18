@@ -41,7 +41,7 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withItemSchema(JsonSchema $itemSchema = null) : JsonSchema {
+    public function withItemSchema(?JsonSchema $itemSchema = null) : JsonSchema {
         $this->itemSchema = $itemSchema;
         return $this;
     }

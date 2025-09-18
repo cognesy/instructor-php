@@ -5,15 +5,23 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\PendingHttpPool;
 use Cognesy\Utils\Result\Success;
 use Cognesy\Utils\Result\Failure;
+use Cognesy\Http\Tests\Support\IntegrationTestServer;
 
 beforeEach(function() {
+    // Start local test server for real HTTP integration testing
+    $this->baseUrl = IntegrationTestServer::start();
     $this->client = HttpClient::default();
+});
+
+afterEach(function() {
+    // Server stays running across tests for performance
+    // Will be stopped in shutdown function
 });
 
 test('PendingHttpPool can be created with requests', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -23,9 +31,9 @@ test('PendingHttpPool can be created with requests', function() {
 
 test('PendingHttpPool all() executes all requests', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=3', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -39,9 +47,9 @@ test('PendingHttpPool all() executes all requests', function() {
 
 test('PendingHttpPool all() respects maxConcurrent parameter', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=3', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -57,8 +65,8 @@ test('PendingHttpPool all() respects maxConcurrent parameter', function() {
 
 test('PendingHttpPool all() with no maxConcurrent uses default', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -71,7 +79,7 @@ test('PendingHttpPool all() with no maxConcurrent uses default', function() {
 
 test('PendingHttpPool can be reused multiple times', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=reuse', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=reuse', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -97,8 +105,8 @@ test('PendingHttpPool handles empty requests array', function() {
 
 test('PendingHttpPool handles mixed success and failure results', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get', 'GET', [], [], []),
-        new HttpRequest('https://non-existent-domain.invalid', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/status/500', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -106,13 +114,13 @@ test('PendingHttpPool handles mixed success and failure results', function() {
 
     expect($results)->toHaveCount(2);
     expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Failure::class); // Invalid domain should fail
+    expect($results[1])->toBeInstanceOf(Failure::class); // 500 status should fail
 });
 
 test('PendingHttpPool with POST requests', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/post', 'POST', [], ['key1' => 'value1'], []),
-        new HttpRequest('https://httpbin.org/post', 'POST', [], ['key2' => 'value2'], []),
+        new HttpRequest($this->baseUrl . '/post', 'POST', [], ['key1' => 'value1'], []),
+        new HttpRequest($this->baseUrl . '/post', 'POST', [], ['key2' => 'value2'], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -125,9 +133,9 @@ test('PendingHttpPool with POST requests', function() {
 
 test('PendingHttpPool concurrent execution performance', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?test=1', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=2', 'GET', [], [], []),
-        new HttpRequest('https://httpbin.org/get?test=3', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
     ];
 
     $pendingPool = $this->client->withPool($requests);
@@ -143,7 +151,7 @@ test('PendingHttpPool concurrent execution performance', function() {
 
 test('PendingHttpPool works with different HTTP client drivers', function() {
     $requests = [
-        new HttpRequest('https://httpbin.org/get?driver=test', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?driver=test', 'GET', [], [], []),
     ];
 
     $guzzleClient = HttpClient::using('guzzle');
@@ -152,4 +160,9 @@ test('PendingHttpPool works with different HTTP client drivers', function() {
 
     expect($results)->toHaveCount(1);
     expect($results[0])->toBeInstanceOf(Success::class);
+});
+
+// Clean up server after all tests complete
+register_shutdown_function(function() {
+    IntegrationTestServer::stop();
 });

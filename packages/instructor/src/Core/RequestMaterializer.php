@@ -9,7 +9,7 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
 use Exception;
@@ -25,124 +25,129 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     public function toMessages(StructuredOutputRequest $request) : array {
-        $script = $this
-            ->makeScript($request)
-            ->mergeScript($this->makeCachedScript($request->cachedContext()));
+        $store = $this->mergeMessageStores(
+            $this->makeMessageStore($request),
+            $this->makeCachedMessageStore($request->cachedContext())
+        );
 
         // Add retry messages if needed
-        $script = $this->addRetryMessages($request, $script);
+        $store = $this->addRetryMessages($request, $store);
 
         // Add meta sections
         $output = $this
-            ->withCacheMetaSections($request->cachedContext(), $this->withSections($script))
+            ->withCacheMetaSections($request->cachedContext(), $this->withSections($store))
             ->select($this->config->chatStructure());
 
         $rendered = Template::arrowpipe()
             ->with(['json_schema' => json_encode($this->makeJsonSchema($request->responseModel()))])
             ->renderMessages($output->toMessages());
 
-        return $rendered->toArray();
+        // Temporary safeguard to keep messages present; isolated for easy removal.
+        return $this->ensureNonEmptyMessages($rendered, $request)->toArray();
     }
 
-    protected function makeScript(StructuredOutputRequest $request) : Script {
+    protected function makeMessageStore(StructuredOutputRequest $request) : MessageStore {
         if ($this->isRequestEmpty($request)) {
             throw new Exception('Request cannot be empty - you have to provide content for processing.');
         }
-
-        $script = new Script();
-
-        // GET DATA
         $messages = $request->messages();
-
-        // SYSTEM SECTION
-        $script->section('system')->appendMessages(
-            $this->makeSystem($messages, $request->system())
-        );
-        $script->section('messages')->appendMessages(
-            $this->makeMessages($messages)
-        );
-        $script->section('prompt')->appendMessage(
-            $this->makePrompt($request->prompt()
+        $store = (new MessageStore())
+            ->section('system')->appendMessages($this->makeSystem($messages, $request->system()))
+            ->section('messages')->appendMessages($this->makeMessages($messages))
+            ->section('prompt')->appendMessages($this->makePrompt($request->prompt()
                 ?: $this->config->prompt($request->mode())
                 ?? ''
-            )
-        );
-        $script->section('examples')->appendMessages(
-            $this->makeExamples($request->examples())
-        );
-        return $script->trimmed();
+            ))
+            ->section('examples')->setMessages($this->makeExamples($request->examples()));
+        return $this->removeEmptyMessages($store);
     }
 
-    protected function makeCachedScript(CachedContext $cachedContext) : Script {
+    protected function makeCachedMessageStore(CachedContext $cachedContext) : MessageStore {
         if ($cachedContext->isEmpty()) {
-            return new Script();
+            return new MessageStore();
+        }
+        $store = new MessageStore();
+
+        // system (cached)
+        $store = $store->section('system')->setMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()));
+        if ($store->section('system')->isNotEmpty()) {
+            $updated = $store->section('system')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $store = $store->section('system')->setSection($updated);
         }
 
-        $script = new Script();
+        // cached chat messages
+        $store = $store->section('cached-messages')->setMessages($this->makeMessages($cachedContext->messages()));
+        if ($store->section('cached-messages')->isNotEmpty()) {
+            $updated = $store->section('cached-messages')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $store = $store->section('cached-messages')->setSection($updated);
+        }
 
-        $script->section('system')
-            ->prependMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+        // cached prompt
+        if ($cachedContext->prompt() !== '') {
+            $store = $store->section('cached-prompt')->setMessages(Messages::fromString($cachedContext->prompt()));
+            $updated = $store->section('cached-prompt')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $store = $store->section('cached-prompt')->setSection($updated);
+        }
 
-        $script->section('cached-messages')
-            ->appendMessages($this->makeMessages($cachedContext->messages()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+        // cached examples
+        $store = $store->section('cached-examples')->setMessages($this->makeExamples($cachedContext->examples()));
+        if ($store->section('cached-examples')->isNotEmpty()) {
+            $updated = $store->section('cached-examples')->get()->appendContentField('cache_control', ['type' => 'ephemeral']);
+            $store = $store->section('cached-examples')->setSection($updated);
+        }
 
-        $script->section('cached-prompt')
-            ->appendMessage(Message::fromString($cachedContext->prompt()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
-
-        $script->section('cached-examples')
-            ->appendMessages($this->makeExamples($cachedContext->examples()))
-            ->appendContentField('cache_control', ['type' => 'ephemeral']);
-
-        return $script->trimmed();
+        return $this->removeEmptyMessages($store);
     }
 
-    protected function withCacheMetaSections(CachedContext $cachedContext, Script $script) : Script {
+    protected function withCacheMetaSections(CachedContext $cachedContext, MessageStore $store) : MessageStore {
         if ($cachedContext->isEmpty()) {
-            return $script;
+            return $store;
         }
 
-        if ($script->section('cached-prompt')->notEmpty()) {
-            $script->removeSection('prompt');
-            $script->section('pre-cached-prompt')->appendMessageIfEmpty([
+        if ($store->section('cached-prompt')->isNotEmpty()) {
+            $store = $store->section('prompt')->remove();
+            if ($store->section('pre-cached-prompt')->isEmpty()) {
+                $store = $store->section('pre-cached-prompt')->appendMessages([
+                    'role' => 'user',
+                    'content' => [[
+                        'type' => 'text',
+                        'text' => "TASK:",
+                    ]],
+                ]);
+            }
+        }
+
+        if ($store->section('cached-examples')->isNotEmpty()) {
+            if ($store->section('pre-cached-examples')->isEmpty()) {
+                $store = $store->section('pre-cached-examples')->appendMessages([
+                    'role' => 'user',
+                    'content' => [[
+                        'type' => 'text',
+                        'text' => "EXAMPLES:",
+                    ]],
+                ]);
+            }
+        }
+
+        if ($store->section('post-cached')->isEmpty()) {
+            $store = $store->section('post-cached')->appendMessages([
                 'role' => 'user',
                 'content' => [[
                     'type' => 'text',
-                    'text' => "TASK:",
+                    'text' => 'INSTRUCTIONS:',
                 ]],
             ]);
         }
 
-        if ($script->section('cached-examples')->notEmpty()) {
-            $script->section('pre-cached-examples')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => [[
-                    'type' => 'text',
-                    'text' => "EXAMPLES:",
-                ]],
-            ]);
-        }
-
-        $script->section('post-cached')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => [[
-                'type' => 'text',
-                'text' => 'INSTRUCTIONS:',
-            ]],
-        ]);
-
-        return $script;
+        return $store;
     }
 
-    protected function addRetryMessages(StructuredOutputRequest $request, Script $script) : Script {
+    protected function addRetryMessages(StructuredOutputRequest $request, MessageStore $store) : MessageStore {
         $failedResponse = $request->lastFailedResponse();
         if (!$failedResponse || !$request->hasLastResponseFailed()) {
-            return $script;
+            return $store;
         }
 
-        $newScript = $script->clone();
         $messages = [];
         foreach($request->attempts() as $attempt) {
             $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
@@ -150,42 +155,52 @@ class RequestMaterializer implements CanMaterializeRequest
                 . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
-        $newScript->section('retries')->appendMessages($messages);
-        return $newScript;
+        $newMessageStore = $store->section('retries')->setMessages(Messages::fromArray($messages));
+        return $newMessageStore;
     }
 
-    protected function withSections(Script $script) : Script {
-        if ($script->section('prompt')->notEmpty()) {
-            $script->section('pre-prompt')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "TASK:",
-            ]);
+    protected function withSections(MessageStore $store) : MessageStore {
+        if ($store->section('prompt')->isNotEmpty()) {
+            if ($store->section('pre-prompt')->isEmpty()) {
+                $store = $store->section('pre-prompt')->appendMessages([
+                    'role' => 'user',
+                    'content' => "TASK:",
+                ]);
+            }
         }
 
-        if ($script->section('examples')->notEmpty()) {
-            $script->section('pre-examples')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "EXAMPLES:",
-            ]);
+        if ($store->section('examples')->isNotEmpty()) {
+            if ($store->section('pre-examples')->isEmpty()) {
+                $store = $store->section('pre-examples')->appendMessages([
+                    'role' => 'user',
+                    'content' => "EXAMPLES:",
+                ]);
+            }
         }
 
-        if ($script->section('retries')->notEmpty()) {
-            $script->section('pre-retries')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "FEEDBACK:",
-            ]);
-            $script->section('post-retries')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "CORRECTED RESPONSE:",
-            ]);
+        if ($store->section('retries')->isNotEmpty()) {
+            if ($store->section('pre-retries')->isEmpty()) {
+                $store = $store->section('pre-retries')->appendMessages([
+                    'role' => 'user',
+                    'content' => "FEEDBACK:",
+                ]);
+            }
+            if ($store->section('post-retries')->isEmpty()) {
+                $store = $store->section('post-retries')->appendMessages([
+                    'role' => 'user',
+                    'content' => "CORRECTED RESPONSE:",
+                ]);
+            }
         } else {
-            $script->section('post-retries')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "RESPONSE:",
-            ]);
+            if ($store->section('post-retries')->isEmpty()) {
+                $store = $store->section('post-retries')->appendMessages([
+                    'role' => 'user',
+                    'content' => "RESPONSE:",
+                ]);
+            }
         }
 
-        return $script;
+        return $store;
     }
 
     protected function isRequestEmpty(StructuredOutputRequest $request) : bool {
@@ -199,26 +214,26 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     protected function makeSystem(Messages $messages, string $system) : Messages {
-        $output = new Messages();
+        $output = Messages::empty();
         if (!empty($system)) {
-            $output->appendMessage(new Message(role: 'system', content: $system));
+            $output = $output->appendMessage(new Message(role: 'system', content: $system));
         }
-        $output->appendMessages(
+        $output = $output->appendMessages(
             $messages->headWithRoles(['system', 'developer'])
         );
         return $output;
     }
 
     protected function makeMessages(Messages $messages) : Messages {
-        $output = new Messages();
-        $output->appendMessages(
+        $output = Messages::empty();
+        $output = $output->appendMessages(
             $messages->tailAfterRoles(['developer', 'system'])
         );
         return $output;
     }
 
     protected function makeExamples(array $examples) : Messages {
-        $output = new Messages();
+        $output = Messages::empty();
         if (empty($examples)) {
             return $output;
         }
@@ -229,7 +244,7 @@ class RequestMaterializer implements CanMaterializeRequest
                 $item instanceof Example => $item,
                 default => throw new Exception('Invalid example type'),
             };
-            $output->appendMessages($example->toMessages());
+            $output = $output->appendMessages($example->toMessages());
         }
         return $output;
     }
@@ -240,5 +255,59 @@ class RequestMaterializer implements CanMaterializeRequest
 
     protected function makeJsonSchema(?ResponseModel $responseModel) : array {
         return $responseModel?->toJsonSchema() ?? [];
+    }
+
+    /**
+     * TEMP: Ensure we always provide a non-empty messages array to the driver.
+     * If rendering unexpectedly results in no messages, fall back to original
+     * request messages or synthesize minimal content from prompt/system.
+     * This helper is isolated for easy removal once the root cause is fixed.
+     */
+    private function ensureNonEmptyMessages(Messages $rendered, StructuredOutputRequest $request) : Messages {
+        if (!$rendered->isEmpty()) {
+            return $rendered;
+        }
+
+        $fallback = Messages::empty();
+
+        if (!$request->messages()->isEmpty()) {
+            $fallback = $fallback->appendMessages($request->messages());
+        }
+
+        if ($fallback->isEmpty() && !empty($request->prompt())) {
+            $fallback = $fallback->appendMessage(new Message(role: 'user', content: $request->prompt()));
+        }
+
+        if ($fallback->isEmpty() && !empty($request->system())) {
+            $fallback = $fallback->appendMessage(new Message(role: 'system', content: $request->system()));
+        }
+
+        return $fallback;
+    }
+
+    private function mergeMessageStores(MessageStore $baseStore, MessageStore $sourceStore): MessageStore {
+        $mergedStore = $baseStore;
+        
+        // Append messages from each section of the source store to the base store
+        foreach ($sourceStore->sections()->each() as $section) {
+            $mergedStore = $mergedStore->section($section->name)->appendMessages($section->messages());
+        }
+        
+        // Merge parameters
+        return $mergedStore->parameters()->mergeParameters($sourceStore->parameters()->get());
+    }
+
+    private function removeEmptyMessages(MessageStore $store): MessageStore {
+        $cleanStore = new MessageStore();
+        
+        foreach ($store->sections()->each() as $section) {
+            $trimmedMessages = $section->messages()->withoutEmptyMessages();
+            if (!$trimmedMessages->isEmpty()) {
+                $cleanStore = $cleanStore->section($section->name)->setMessages($trimmedMessages);
+            }
+        }
+        
+        // Preserve parameters
+        return $cleanStore->parameters()->mergeParameters($store->parameters()->get());
     }
 }

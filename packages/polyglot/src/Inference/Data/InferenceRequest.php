@@ -3,6 +3,8 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Utils\Uuid;
+use DateTimeImmutable;
 
 /**
  * Represents a request for an inference operation, holding configuration parameters
@@ -11,6 +13,9 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
  */
 class InferenceRequest
 {
+    public readonly string $id;
+    public readonly DateTimeImmutable $createdAt;
+
     protected array $messages = [];
     protected array $tools = [];
     protected string|array $toolChoice = [];
@@ -31,7 +36,12 @@ class InferenceRequest
         array          $options = [],
         ?OutputMode    $mode = null,
         ?CachedContext $cachedContext = null,
+        ?string         $id = null, // for deserialization
+        ?DateTimeImmutable $createdAt = null, // for deserialization
     ) {
+        $this->id = $id ?? Uuid::uuid4();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+
         $this->cachedContext = $cachedContext;
 
         $this->model = $model;
@@ -296,6 +306,18 @@ class InferenceRequest
             'options' => $this->options,
             'mode' => $this->mode?->value,
         ];
+    }
+
+    public static function fromArray(array $data) : self {
+        return new self(
+            messages: $data['messages'] ?? [],
+            model: $data['model'] ?? '',
+            tools: $data['tools'] ?? [],
+            toolChoice: $data['tool_choice'] ?? [],
+            responseFormat: $data['response_format'] ?? [],
+            options: $data['options'] ?? [],
+            mode: isset($data['mode']) ? OutputMode::from($data['mode']) : null,
+        );
     }
 
     /**

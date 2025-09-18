@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Tag;
 
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 readonly class SkipProcessingTag implements TagInterface {
     public function __construct(

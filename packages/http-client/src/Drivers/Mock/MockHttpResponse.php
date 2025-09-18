@@ -42,7 +42,7 @@ class MockHttpResponse implements HttpResponse
         array $headers = [],
         string $body = '',
         array $chunks = [],
-        EventDispatcherInterface $events = null
+        ?EventDispatcherInterface $events = null
     ) {
         $this->statusCode = $statusCode;
         $this->headers = $headers;
@@ -71,6 +71,41 @@ class MockHttpResponse implements HttpResponse
      */
     public static function streaming(int $statusCode = 200, array $headers = [], array $chunks = []): self {
         return new self($statusCode, $headers, implode('', $chunks), $chunks);
+    }
+
+    /**
+     * Convenience: return a JSON response.
+     */
+    public static function json(
+        array|string|\JsonSerializable $data,
+        int $statusCode = 200,
+        array $headers = []
+    ): self {
+        $body = is_string($data) ? $data : json_encode($data, JSON_UNESCAPED_SLASHES);
+        $headers = ['content-type' => 'application/json', ...$headers];
+        return new self($statusCode, $headers, $body);
+    }
+
+    /**
+     * Convenience: return a Server-Sent Events (SSE) streaming response from JSON payloads.
+     * Each element in $payloads is encoded as a line: "data: {json}\n\n". Optionally appends DONE.
+     */
+    public static function sse(
+        array $payloads,
+        bool $addDone = true,
+        int $statusCode = 200,
+        array $headers = []
+    ): self {
+        $chunks = [];
+        foreach ($payloads as $item) {
+            $json = is_string($item) ? $item : json_encode($item, JSON_UNESCAPED_SLASHES);
+            $chunks[] = "data: {$json}\n\n";
+        }
+        if ($addDone) {
+            $chunks[] = "data: [DONE]\n\n";
+        }
+        $headers = ['content-type' => 'text/event-stream', ...$headers];
+        return self::streaming($statusCode, $headers, $chunks);
     }
 
     /**

@@ -2,23 +2,27 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseState;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-class RetryLimit implements CanDecideToContinue
+class RetryLimit implements CanDecideToContinueToolUse
 {
     private int $maxRetries;
-    private int $currentRetries = 0;
 
     public function __construct(int $maxRetries) {
         $this->maxRetries = $maxRetries;
     }
 
     public function canContinue(ToolUseState $state): bool {
-        if ($state->currentStep()?->hasErrors() ?? false) {
-            $this->currentRetries++;
-            return ($this->currentRetries < $this->maxRetries);
+        // Count consecutive failed steps from the end
+        $failedTail = 0;
+        foreach ($state->steps()->reversed() as $step) {
+            if ($step->hasErrors()) {
+                $failedTail++;
+                continue;
+            }
+            break;
         }
-        return true;
+        return ($failedTail < $this->maxRetries);
     }
 }

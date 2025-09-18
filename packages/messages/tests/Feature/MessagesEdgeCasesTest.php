@@ -7,7 +7,7 @@ use Cognesy\Messages\Tests\Fixtures\MockMessagesProvider;
 
 // Test edge cases for empty messages
 test('handles empty messages collection correctly', function () {
-    $messages = new Messages();
+    $messages = Messages::empty();
     
     expect($messages->isEmpty())->toBeTrue()
         ->and($messages->all())->toBeArray()
@@ -24,14 +24,11 @@ test('handles empty messages collection correctly', function () {
     
     $reversed = $messages->reversed();
     expect($reversed->isEmpty())->toBeTrue();
-    
-    $middle = $messages->middle();
-    expect($middle->isEmpty())->toBeTrue();
 });
 
 test('handles collections with empty messages', function () {
     $emptyMessage = new Message();
-    $messages = (new Messages())->appendMessage($emptyMessage);
+    $messages = Messages::empty()->appendMessage($emptyMessage);
     
     expect($messages->notEmpty())->toBeFalse() // Should consider collection empty despite having an empty message
         ->and($messages->isEmpty())->toBeTrue()
@@ -96,13 +93,6 @@ test('fromInput handles objects implementing CanProvideMessages', function () {
         ->and($messages->first()->content()->toString())->toBe('From messages provider');
 });
 
-test('asPerRoleArray handles empty arrays', function () {
-    $result = Messages::asPerRoleArray([]);
-    
-    expect($result)->toBeArray()
-        ->and($result)->toBe(['role' => 'user', 'content' => '']);
-});
-
 test('asString handles empty arrays', function () {
     $result = Messages::asString([]);
     
@@ -162,7 +152,7 @@ test('toMergedPerRole handles role changes with empty content', function () {
 
 test('toMergedPerRole handles collections with less than 3 messages correctly', function () {
     // Empty
-    $empty = new Messages();
+    $empty = Messages::empty();
     $mergedEmpty = $empty->toMergedPerRole();
     expect($mergedEmpty->isEmpty())->toBeTrue();
     
@@ -195,7 +185,7 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
 
 // Test map/reduce/filter edge cases
 test('map on empty collection returns empty array', function () {
-    $empty = new Messages();
+    $empty = Messages::empty();
     $result = $empty->map(fn($msg) => $msg->content()->toString());
     
     expect($result)->toBeArray()
@@ -203,16 +193,16 @@ test('map on empty collection returns empty array', function () {
 });
 
 test('reduce on empty collection returns initial value', function () {
-    $empty = new Messages();
+    $empty = Messages::empty();
     $result = $empty->reduce(fn($carry, $msg) => $carry + 1, 0);
     
     expect($result)->toBe(0);
 });
 
 test('filter removes empty messages', function () {
-    $messages = new Messages();
-    $messages->appendMessage(new Message('user', 'Hello'));
-    $messages->appendMessage(new Message()); // Empty message
+    $messages = Messages::empty();
+    $messages = $messages->appendMessage(new Message('user', 'Hello'));
+    $messages = $messages->appendMessage(new Message()); // Empty message
     
     $filtered = $messages->filter(fn($msg) => true); // Accept all, but empty should be filtered
     
@@ -224,7 +214,7 @@ test('filter removes empty messages', function () {
 test('becomesEmpty correctly identifies empty inputs', function () {
     expect(Messages::becomesEmpty([]))->toBeTrue();
     expect(Messages::becomesEmpty(new Message()))->toBeTrue();
-    expect(Messages::becomesEmpty(new Messages()))->toBeTrue();
+    expect(Messages::becomesEmpty(Messages::empty()))->toBeTrue();
     
     expect(Messages::becomesEmpty(['not empty']))->toBeFalse();
     expect(Messages::becomesEmpty(new Message('user', 'content')))->toBeFalse();

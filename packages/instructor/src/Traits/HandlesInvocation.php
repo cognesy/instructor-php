@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Traits;
 
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
@@ -9,13 +10,15 @@ use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Exception;
 
 /**
  * Trait provides invocation handling functionality for the StructuredOutput class.
+ *
+ * @template TResponse
  */
 trait HandlesInvocation
 {
@@ -46,6 +49,11 @@ trait HandlesInvocation
      * @param string $retryPrompt The prompt to be used during retries.
      * @param OutputMode $mode The mode of operation for the request.
      * @throws Exception If the response model is empty or invalid.
+     *
+     * @template T of object
+     * @psalm-param class-string<T>|T|array|null $responseModel
+     * @phpstan-param class-string<T>|T|array|null $responseModel
+     * @return StructuredOutput<TResponse|T>
      */
     public function with(
         string|array|Message|Messages|null $messages = null,
@@ -86,7 +94,7 @@ trait HandlesInvocation
      * This method initializes the request factory, request handler, and response generator,
      * and returns a StructuredOutputResponse object that can be used to handle the request.
      *
-     * @return PendingStructuredOutput A response object providing access to various results retrieval methods.
+     * @return PendingStructuredOutput<TResponse> A response object providing access to various results retrieval methods.
      */
     public function create() : PendingStructuredOutput {
         $config = $this->configBuilder->create();
@@ -113,6 +121,17 @@ trait HandlesInvocation
             config: $config,
         );
 
+        // Ensure HttpClient is available; build default if not provided
+        if ($this->httpClient !== null) {
+            $client = $this->httpClient;
+        } else {
+            $builder = new HttpClientBuilder(events: $this->events);
+            if ($this->httpDebugPreset !== null) {
+                $builder = $builder->withDebugPreset($this->httpDebugPreset);
+            }
+            $client = $builder->create();
+        }
+
         return new PendingStructuredOutput(
             request: $request,
             responseDeserializer: $responseDeserializer,
@@ -121,6 +140,7 @@ trait HandlesInvocation
             llmProvider: $this->llmProvider,
             config: $config,
             events: $this->events,
+            httpClient: $client,
         );
     }
 }

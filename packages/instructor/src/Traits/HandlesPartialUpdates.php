@@ -13,7 +13,7 @@ trait HandlesPartialUpdates
      *
      * @param-later-invoked-callable $listener
      */
-    public function onPartialUpdate(callable $listener) : self {
+    public function onPartialUpdate(callable $listener) : static {
         $this->onPartialResponse = $listener;
         $this->events->addListener(
             PartialResponseGenerated::class,

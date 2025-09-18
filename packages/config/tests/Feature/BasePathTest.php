@@ -201,6 +201,9 @@ describe('BasePath Tests', function () {
 
     test('detects base path from current working directory only', function () {
         $projectDir = createProjectStructure($this->tempDir);
+        // Normalize path for macOS where getcwd() returns resolved symlinks
+        // (/private/var/folders vs /var/folders)
+        $projectDir = realpath($projectDir);
 
         BasePath::withDetectionMethods(['getBasePathFromCwd']);
 

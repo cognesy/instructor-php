@@ -142,7 +142,7 @@ class HttpClientDriverFactory
                 events: $events,
             ),
             'laravel' => fn($config, $events) => new LaravelPool(
-                factory: new \Illuminate\Http\Client\Factory(),
+                clientInstance: new \Illuminate\Http\Client\Factory(),
                 events: $events,
                 config: $config,
             ),

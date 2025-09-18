@@ -95,9 +95,8 @@ class Arrays
     }
 
     /**
-     * Filters an array using a callback.
-     * @param array $array
-     * @param callable $callback
+     * Converts any value to array representation.
+     * @param mixed $anyValue
      * @return array
      */
     static public function fromAny(mixed $anyValue): array {
@@ -108,8 +107,8 @@ class Arrays
                 return array_map($toArray, get_object_vars($x));
             };
             return match(true) {
-                is_scalar($x) || is_null($x) => $x,
-                is_object($x) && isset($visited[$x]) => 'ref-cycle: ' . get_class($x),
+                is_scalar($x) || is_null($x) => [$x],
+                is_object($x) && isset($visited[$x]) => ['ref-cycle: ' . get_class($x)],
                 is_object($x) => $markAndMap($x),
                 default => array_map($toArray, $x),
             };
@@ -220,5 +219,13 @@ class Arrays
         }
         // if we reach here, it means that both arrays have the same values
         return true;
+    }
+
+    public static function hasOnlyStrings(array $content) : bool {
+        return count($content) > 0 && array_reduce(
+            $content,
+            fn(bool $carry, $item) => $carry && is_string($item),
+            true
+        );
     }
 }

@@ -5,6 +5,9 @@ namespace Cognesy\Instructor\Traits;
 use Cognesy\Instructor\StructuredOutputStream;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
+/**
+ * @template TResponse
+ */
 trait HandlesShortcuts
 {
     public function response() : InferenceResponse {
@@ -15,7 +18,7 @@ trait HandlesShortcuts
      * Processes a request using provided input, system configurations,
      * and response specifications and returns a streamed result object.
      *
-     * @return \Cognesy\Instructor\StructuredOutputStream A streamed version of the response
+     * @return StructuredOutputStream<TResponse> A streamed version of the response
      */
     public function stream() : StructuredOutputStream {
         $this->withStreaming();
@@ -28,7 +31,7 @@ trait HandlesShortcuts
      * Processes a request using provided input, system configurations,
      * and response specifications and returns the result directly.
      *
-     * @return mixed A result of processing the request transformed to the target value
+     * @return TResponse A result of processing the request transformed to the target value
      */
     public function get() : mixed {
         return $this->create()->get();

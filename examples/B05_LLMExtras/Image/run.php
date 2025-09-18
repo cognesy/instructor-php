@@ -22,9 +22,9 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Polyglot\Inference\Inference;
 
-$messages = (new Messages)
+$messages = Messages::empty()
     ->asSystem('You are an expert in car damage assessment.')
-    ->asUser((new Content)
+    ->asUser(Content::empty()
         ->addContentPart(ContentPart::text('Describe the car damage in the image.'))
         ->addContentPart(Image::fromFile(__DIR__ . '/car-damage.jpg')->toContentPart())
     );

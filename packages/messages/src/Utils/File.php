@@ -109,9 +109,11 @@ class File implements CanProvideMessages
 
     public function toContentPart() : ContentPart {
         return new ContentPart('file', [
-            'file_data' => $this->base64bytes,
-            'file_name' => $this->fileName,
-            'file_id' => $this->fileId,
+            'file' => [
+                'file_data' => $this->base64bytes,
+                'file_name' => $this->fileName,
+                'file_id' => $this->fileId,
+            ]
         ]);
     }
 }

@@ -21,7 +21,7 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
             method: 'POST',
             headers: $this->toHeaders($request),
             body: $this->bodyFormat->toRequestBody($request),
-            options: ['stream' => $options['stream'] ?? false],
+            options: ['stream' => $request->isStreamed()],
         );
     }
 

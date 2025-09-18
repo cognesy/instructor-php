@@ -4,9 +4,9 @@ use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Operators\Call;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
 use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\TagMap\Tags\ErrorTag;
 
 describe('Pipeline Edge Cases - Null Handling', function () {
     test('null input with Allow strategy passes through', function () {
@@ -334,7 +334,7 @@ describe('Pipeline Edge Cases - Result and State Interaction', function () {
         
         $processor = Call::withState(fn($state) => $state->withResult(
             $state->result()->isSuccess() 
-                ? Result::success($state->value() . '_processed') 
+                ? Result::success($state->value() . '_processed')
                 : $state->result()
         ));
         

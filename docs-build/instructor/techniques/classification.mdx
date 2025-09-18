@@ -16,7 +16,6 @@ This tutorial showcases how to implement text classification tasks—specificall
 For single-label classification, we first define an **`enum`** for possible labels and a PHP class for the output.
 
 ```php
-// @doctest id="4659"
 <?php
 // Enumeration for single-label text classification. 
 enum Label : string {
@@ -28,6 +27,7 @@ enum Label : string {
 class SinglePrediction {
     public Label $classLabel;
 }
+// @doctest id="56dd"
 ```
 
 
@@ -36,7 +36,6 @@ class SinglePrediction {
 The function **`classify`** will perform the single-label classification.
 
 ```php
-// @doctest id="5f6c"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -53,6 +52,7 @@ function classify(string $data) : SinglePrediction {
         model: "gpt-3.5-turbo-0613",
     )->get();
 }
+// @doctest id="876b"
 ```
 
 
@@ -61,12 +61,12 @@ function classify(string $data) : SinglePrediction {
 Let's run an example to see if it correctly identifies a spam message.
 
 ```php
-// @doctest id="8014"
 <?php
 
 // Test single-label classification
 $prediction = classify("Hello there I'm a Nigerian prince and I want to give you money");
 assert($prediction->classLabel == Label::SPAM);
+// @doctest id="a618"
 ```
 
 
@@ -78,7 +78,6 @@ assert($prediction->classLabel == Label::SPAM);
 For multi-label classification, we introduce a new enum class and a different PHP class to handle multiple labels.
 
 ```php
-// @doctest id="03a1"
 <?php
 /** Potential ticket labels */
 enum Label : string {
@@ -94,6 +93,7 @@ class Ticket {
     /** @var Label[] */
     public array $ticketLabels = [];
 }
+// @doctest id="7b73"
 ```
 
 
@@ -102,7 +102,6 @@ class Ticket {
 The function **`multi_classify`** executes multi-label classification using LLM.
 
 ```php
-// @doctest id="3141"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -117,6 +116,7 @@ function multi_classify(string $data) : Ticket {
         model: "gpt-3.5-turbo-0613",
     )->get();
 }
+// @doctest id="0312"
 ```
 
 ### Testing and Evaluation
@@ -124,7 +124,6 @@ function multi_classify(string $data) : Ticket {
 Finally, we test the multi-label classification function using a sample support ticket.
 
 ```php
-// @doctest id="a015"
 <?php
 // Test single-label classification
 $ticket = "My account is locked and I can't access my billing info.";
@@ -132,4 +131,5 @@ $prediction = multi_classify($ticket);
 
 assert(in_array(Label::TECH_ISSUE, $prediction->classLabels));
 assert(in_array(Label::BILLING, $prediction->classLabels));
+// @doctest id="b180"
 ```

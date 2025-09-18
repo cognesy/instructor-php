@@ -14,7 +14,6 @@ For more details see the [Events](events.mdx) section.
 The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.
 
 ```php
-// @doctest id="b731"
 $result = (new StructuredOutput)
     ->withDebugPreset('on')
     ->with(
@@ -22,6 +21,7 @@ $result = (new StructuredOutput)
         responseModel: User:class,
     )
     ->get();
+// @doctest id="a72c"
 ```
 
 It displays detailed information about the request being sent to LLM API and response received from it,

@@ -2,12 +2,21 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
+use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 
 trait HandlesInvocation
 {
+    /** @var EmbeddingsDriverFactory|null */
+    private ?EmbeddingsDriverFactory $embeddingsFactory = null;
+
+    private function getEmbeddingsFactory(): EmbeddingsDriverFactory {
+        return $this->embeddingsFactory ??= new EmbeddingsDriverFactory($this->events);
+    }
     public function withRequest(EmbeddingsRequest $request) : static {
         $this->with(
             input: $request->inputs(),
@@ -46,9 +55,35 @@ trait HandlesInvocation
         );
         $this->events->dispatch(new EmbeddingsRequested([$request->toArray()]));
 
+        // Ensure HttpClient is available; build default if not provided
+        if ($this->httpClient !== null) {
+            $client = $this->httpClient;
+        } else {
+            $builder = new HttpClientBuilder(events: $this->events);
+            if ($this->httpDebugPreset !== null) {
+                $builder = $builder->withDebugPreset($this->httpDebugPreset);
+            }
+            $client = $builder->create();
+        }
+
+        // Prefer explicit driver if resolver/provider exposes it
+        $resolver = $this->embeddingsResolver ?? $this->embeddingsProvider;
+        if ($resolver instanceof HasExplicitEmbeddingsDriver) {
+            $explicit = $resolver->explicitEmbeddingsDriver();
+            if ($explicit !== null) {
+                $driver = $explicit;
+            } else {
+                $config = $resolver->resolveConfig();
+                $driver = $this->getEmbeddingsFactory()->makeDriver($config, $client);
+            }
+        } else {
+            $config = $resolver->resolveConfig();
+            $driver = $this->getEmbeddingsFactory()->makeDriver($config, $client);
+        }
+
         return new PendingEmbeddings(
             request: $request,
-            driver: $this->embeddingsProvider->createDriver(),
+            driver: $driver,
             events: $this->events,
         );
     }

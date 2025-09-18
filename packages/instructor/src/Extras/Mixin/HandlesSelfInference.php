@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Extras\Mixin;
 
+use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -29,6 +30,7 @@ trait HandlesSelfInference {
      * @param string $toolDescription
      * @param string $retryPrompt
      * @param LLMProvider|null $llm
+     * @param HttpClient|null $httpClient
      * @return static
      * @throws \Exception
      */
@@ -45,8 +47,9 @@ trait HandlesSelfInference {
         string       $toolDescription = '',
         string       $retryPrompt = '',
         ?LLMProvider $llm = null,
+        ?HttpClient $httpClient = null,
     ) : static {
-        return (new StructuredOutput)
+        $structured = (new StructuredOutput)
             ->withLLMProvider($llm ?? LLMProvider::new())
             //->wiretap(fn($e) => $e->print())
             ->with(
@@ -62,7 +65,13 @@ trait HandlesSelfInference {
                 toolDescription: $toolDescription,
                 retryPrompt: $retryPrompt,
                 mode: $mode,
-            )
+            );
+
+        if ($httpClient !== null) {
+            $structured = $structured->withHttpClient($httpClient);
+        }
+
+        return $structured
             ->create()
             ->getInstanceOf(self::class);
     }

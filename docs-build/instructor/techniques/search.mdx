@@ -12,7 +12,6 @@ Extracting a list of tasks from text is a common use case for leveraging languag
 The `SearchQuery` class is a PHP class that defines the structure of an individual search query. It has three fields: `title`, `query`, and `type`. The `title` field is the title of the request, the `query` field is the query to search for relevant content, and the `type` field is the type of search. The `execute` method is used to execute the search query.
 
 ```php
-// @doctest id="6c58"
 <?php
 enum SearchType : string {
     case TEXT = "text";
@@ -39,6 +38,7 @@ class SearchQuery
         print("Searching for `{$this->title}` with query `{$this->query}` using `{$this->type->value}`\n");
     }
 }
+// @doctest id="0a0a"
 ```
 
 
@@ -47,7 +47,6 @@ class SearchQuery
 The `segment` function takes a string `data` and segments it into multiple search queries. It uses the `StructuredOutput::create()` method to send a prompt and extract the data into the target object. The `responseModel` parameter specifies `Search::class` as the model to use for extraction.
 
 ```php
-// @doctest id="3ae6"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -65,4 +64,5 @@ foreach (segment("Search for a picture of a cat and a video of a dog")->queries 
     $query->execute();
     // dump($query);
 }
+// @doctest id="6005"
 ```

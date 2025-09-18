@@ -2,11 +2,12 @@
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Success;
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 class ExecutionTestTag implements TagInterface {
     public function __construct(public readonly string $operation) {}
@@ -33,7 +34,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             
             $result = $pending->result();
             
-            expect($result)->toBeInstanceOf(Result::class);
+            expect($result)->toBeInstanceOf(Success::class);
             expect($result->isSuccess())->toBeTrue();
             expect($result->unwrap())->toBe(84);
         });
@@ -46,7 +47,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             
             $result = $pending->result();
             
-            expect($result)->toBeInstanceOf(Result::class);
+            expect($result)->toBeInstanceOf(Failure::class);
             expect($result->isFailure())->toBeTrue();
             expect($result->exception()->getMessage())->toBe('Pipeline error');
         });

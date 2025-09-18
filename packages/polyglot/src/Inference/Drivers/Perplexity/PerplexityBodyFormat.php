@@ -2,10 +2,10 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Perplexity;
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Messages\Messages;
 
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 {

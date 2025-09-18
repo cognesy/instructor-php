@@ -6,20 +6,22 @@ use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\ConfigResolver;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Dsn;
+use Cognesy\Config\Events\ConfigResolutionFailed;
+use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
-use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
+use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Builder for creating fully configured embeddings vectorization drivers.
  * Once create() is called, returns a complete, ready-to-use instance.
  */
-final class EmbeddingsProvider
+final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplicitEmbeddingsDriver
 {
     private readonly CanHandleEvents $events;
     private CanProvideConfig $configProvider;
@@ -27,9 +29,7 @@ final class EmbeddingsProvider
 
     private ?string $preset;
     private ?string $dsn;
-    private ?string $debugPreset;
     private ?EmbeddingsConfig $explicitConfig;
-    private ?HttpClient $explicitHttpClient;
     private ?CanHandleVectorization $explicitDriver;
 
     private function __construct(
@@ -37,20 +37,16 @@ final class EmbeddingsProvider
         ?CanProvideConfig         $configProvider = null,
         ?string                   $preset = null,
         ?string                   $dsn = null,
-        ?string                   $debugPreset = null,
         ?EmbeddingsConfig         $explicitConfig = null,
-        ?HttpClient               $explicitHttpClient = null,
         ?CanHandleVectorization   $explicitDriver = null,
     ) {
         $this->events = EventBusResolver::using($events);
-        $this->configProvider = ConfigResolver::using($configProvider);
-        $this->presets = ConfigPresets::using($configProvider)->for(EmbeddingsConfig::group());
+        $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
+        $this->presets = ConfigPresets::using($this->configProvider)->for(EmbeddingsConfig::group());
 
         $this->preset = $preset;
         $this->dsn = $dsn;
-        $this->debugPreset = $debugPreset;
         $this->explicitConfig = $explicitConfig;
-        $this->explicitHttpClient = $explicitHttpClient;
         $this->explicitDriver = $explicitDriver;
     }
 
@@ -85,13 +81,8 @@ final class EmbeddingsProvider
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider): self {
+        $this->configProvider = $configProvider;
         $this->presets = $this->presets->withConfigProvider($configProvider);
-        $this->configProvider = ConfigResolver::using($configProvider);
-        return $this;
-    }
-
-    public function withHttpClient(HttpClient $httpClient): self {
-        $this->explicitHttpClient = $httpClient;
         return $this;
     }
 
@@ -100,73 +91,60 @@ final class EmbeddingsProvider
         return $this;
     }
 
-    public function withDebugPreset(string $preset): self {
-        $this->debugPreset = $preset;
-        return $this;
+    /**
+     * Resolves and returns the effective embeddings configuration for this provider.
+     */
+    public function resolveConfig(): EmbeddingsConfig {
+        return $this->buildConfig();
     }
 
-    /**
-     * Create the fully configured vectorization driver
-     * This is the terminal operation that builds and returns the final instance
-     */
-    public function createDriver(): CanHandleVectorization {
-        // If explicit driver provided, return it directly
-        if ($this->explicitDriver !== null) {
-            return $this->explicitDriver;
-        }
-
-        // Build all required components
-        $config = $this->buildConfig();
-        $httpClient = $this->buildHttpClient($config);
-
-        // Create and return the vectorization driver
-        return (new EmbeddingsDriverFactory($this->events))
-            ->makeDriver($config, $httpClient);
+    public function explicitEmbeddingsDriver(): ?CanHandleVectorization {
+        return $this->explicitDriver;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////
 
     private function buildConfig(): EmbeddingsConfig {
-        // If explicit config provided, use it
         if ($this->explicitConfig !== null) {
+            $this->events->dispatch(new ConfigResolved([
+                'group' => 'embeddings',
+                'config' => $this->explicitConfig->toArray()
+            ]));
             return $this->explicitConfig;
         }
 
-        // Determine effective preset
         $effectivePreset = $this->determinePreset();
-
-        // Get DSN overrides if any
         $dsnOverrides = $this->getDsnOverrides();
+        
+        $result = Result::try(fn() => $this->presets->getOrDefault($effectivePreset));
 
-        // Build config based on preset
-        $config = $this->presets->getOrDefault($effectivePreset);
+        if ($result->isFailure()) {
+            $this->events->dispatch(new ConfigResolutionFailed([
+                'group' => 'embeddings',
+                'effectivePreset' => $effectivePreset,
+                'preset' => $this->preset,
+                'dsn' => $this->dsn,
+                'error' => $result->errorMessage(),
+            ]));
+            throw $result->exception();
+        }
 
-        // Apply DSN overrides if present
+        $config = $result->unwrap();
         $data = !empty($dsnOverrides) ? array_merge($config, $dsnOverrides) : $config;
+        $final = EmbeddingsConfig::fromArray($data);
 
-        return EmbeddingsConfig::fromArray($data);
+        $this->events->dispatch(new ConfigResolved([
+            'group' => 'embeddings',
+            'effectivePreset' => $effectivePreset,
+            'preset' => $this->preset,
+            'dsn' => $this->dsn,
+            'config' => $final->toArray(),
+        ]));
+
+        return $final;
     }
 
-    private function buildHttpClient(EmbeddingsConfig $config): HttpClient {
-        // If explicit client provided, use it
-        if ($this->explicitHttpClient !== null) {
-            return $this->explicitHttpClient;
-        }
-
-        // Build new client
-        $builder = (new HttpClientBuilder(
-            events: $this->events,
-            configProvider: $this->configProvider
-        ))
-            ->withPreset($config->httpClientPreset);
-
-        // Apply debug setting if specified
-        if ($this->debugPreset !== null) {
-            $builder = $builder->withDebugPreset($this->debugPreset);
-        }
-
-        return $builder->create();
-    }
+    // HTTP client building removed from provider.
 
     private function determinePreset(): ?string {
         return match (true) {

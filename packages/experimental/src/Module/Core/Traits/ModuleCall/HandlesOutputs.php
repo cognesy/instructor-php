@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Experimental\Module\Core\Traits\ModuleCall;
 
-use Cognesy\Utils\Result\Result;
 use InvalidArgumentException;
+use Cognesy\Utils\Result\Result;
 use Throwable;
 
 trait HandlesOutputs

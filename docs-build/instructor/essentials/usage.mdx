@@ -9,7 +9,6 @@ Response model class is a plain PHP class with typehints specifying the types of
 > Instructor instance.
 
 ```php
-// @doctest id="2f4f"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -47,6 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
+// @doctest id="e8e2"
 ```
 
 !!! note
@@ -61,7 +61,6 @@ StructuredOutput provides a comprehensive fluent API for configuring requests:
 
 ### Request Configuration
 ```php
-// @doctest id="2f43"
 $structuredOutput = (new StructuredOutput)
     ->withMessages($messages)           // Set chat messages
     ->withInput($input)                 // Set input (converted to messages)
@@ -71,21 +70,21 @@ $structuredOutput = (new StructuredOutput)
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
     ->withStreaming(true)               // Enable streaming
+// @doctest id="1b80"
 ```
 
 ### Response Model Configuration
 ```php
-// @doctest id="febc"
 $structuredOutput = (new StructuredOutput)
     ->withResponseModel($model)         // Set response model (class/object/array)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
     ->withResponseJsonSchema($schema)   // Set JSON schema directly
+// @doctest id="4fb4"
 ```
 
 ### Configuration and Behavior
 ```php
-// @doctest id="cd6c"
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
@@ -94,11 +93,11 @@ $structuredOutput = (new StructuredOutput)
     ->withRetryPrompt($prompt)          // Set retry prompt
     ->withConfig($config)               // Set configuration object
     ->withConfigPreset($preset)         // Use configuration preset
+// @doctest id="8d31"
 ```
 
 ### LLM Provider Configuration
 ```php
-// @doctest id="af13"
 $structuredOutput = (new StructuredOutput)
     ->using($preset)                    // Use LLM preset (e.g., 'openai')
     ->withDsn($dsn)                     // Set connection DSN
@@ -106,15 +105,16 @@ $structuredOutput = (new StructuredOutput)
     ->withLLMConfig($config)            // Set LLM configuration
     ->withDriver($driver)               // Set inference driver
     ->withHttpClient($client)           // Set HTTP client
+// @doctest id="e888"
 ```
 
 ### Processing Overrides
 ```php
-// @doctest id="a03d"
 $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
+// @doctest id="1e74"
 ```
 
 
@@ -125,7 +125,6 @@ After configuring your `StructuredOutput` instance, you have several ways to exe
 ### Direct Execution Methods
 
 ```php
-// @doctest id="9552"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -143,6 +142,7 @@ $llmResponse = $structuredOutput->response();
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
+// @doctest id="aa58"
 ```
 
 ### Pending Execution with `create()`
@@ -150,7 +150,6 @@ $stream = $structuredOutput->stream();
 The `create()` method returns a `PendingStructuredOutput` instance, which acts as an execution handler that provides the same access methods:
 
 ```php
-// @doctest id="39bc"
 <?php
 $pending = $structuredOutput->create();
 
@@ -168,6 +167,7 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
+// @doctest id="8513"
 ```
 
 ### Response Types Explained
@@ -184,7 +184,6 @@ The `PendingStructuredOutput` class serves as a flexible execution interface tha
 You can provide a string instead of an array of messages. This is useful when you want to extract data from a single block of text and want to keep your code simple.
 
 ```php
-// @doctest id="41be"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -195,6 +194,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
+// @doctest id="a28b"
 ```
 
 
@@ -208,7 +208,6 @@ The `input` field of Instructor's `with()` method
 can be an object, but also an array or just a string.
 
 ```php
-// @doctest id="f49a"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -233,6 +232,7 @@ $translation = (new StructuredOutput)->with(
     )
     ->get();
 ?>
+// @doctest id="260d"
 ```
 
 
@@ -243,7 +243,6 @@ Instructor supports streaming of partial results, allowing you to start
 processing the data as soon as it is available.
 
 ```php
-// @doctest id="918f"
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
@@ -264,6 +263,7 @@ $person = $stream->lastUpdate()
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
+// @doctest id="3278"
 ```
 
 
@@ -287,7 +287,6 @@ See [FunctionCall helper class](/advanced/function_calls) for more information o
 Once configured, you can execute your request using different methods depending on your needs:
 
 ```php
-// @doctest id="7f6b"
 // Direct execution methods
 $result = $structuredOutput->get();       // Get structured result
 $response = $structuredOutput->response(); // Get raw LLM response  
@@ -297,6 +296,7 @@ $stream = $structuredOutput->stream();     // Get streaming interface
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
+// @doctest id="c5b1"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result

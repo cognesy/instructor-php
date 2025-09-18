@@ -15,7 +15,6 @@ The `with()` method is the main way to set the parameters of the requests to LLM
 It accepts several parameters:
 
 ```php
-// @doctest id="fd89"
 public function with(
     string|array $messages = [],    // The messages to send to the LLM
     string $model = '',             // The model to use (overrides default)
@@ -25,6 +24,7 @@ public function with(
     array $options = [],            // Additional request options
     Mode $mode = OutputMode::Text   // Output mode (Text, JSON, etc.)
 ) : self
+// @doctest id="5451"
 ```
 
 
@@ -33,7 +33,6 @@ public function with(
 Here's a simple example of creating a request:
 
 ```php
-// @doctest id="a2e3"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -46,6 +45,7 @@ $response = $inference
     ->get();   // get the data - here it executes the request
 
 echo "Response: $response";
+// @doctest id="73cf"
 ```
 
 
@@ -54,7 +54,6 @@ echo "Response: $response";
 For chat-based interactions, you can pass an array of messages:
 
 ```php
-// @doctest id="a39c"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -69,6 +68,7 @@ $response = $inference
     ->get();
 
 echo "Response: $response";
+// @doctest id="dd4b"
 ```
 
 ## Using `Messages` Class
@@ -76,10 +76,8 @@ echo "Response: $response";
 You can also use the `Messages` class to create message sequences more conveniently:
 
 ```php
-// @doctest id="0ed1"
 <?php
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\Utils\Image;
 use Cognesy\Polyglot\Inference\Inference;
 
 $messages = (new Messages)
@@ -95,6 +93,7 @@ $response = (new Inference)
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
+// @doctest id="80a6"
 ```
 
 ## Message Formats
@@ -108,7 +107,6 @@ Polyglot supports different message formats depending on the provider:
 Example with image (for providers that support it):
 
 ```php
-// @doctest id="8d00"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -136,6 +134,7 @@ $response = (new Inference())
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();
+// @doctest id="8416"
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

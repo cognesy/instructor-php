@@ -14,7 +14,7 @@
 
 2. **Doctest System** (`src/Doctest/`)
    - `DoctestFile`: Extracts code blocks from markdown, converts to testable files
-   - Region-based code extraction using special comments (e.g., `// region:example`)
+   - Region-based code extraction using comment markers (`@doctest-region-start name=example` / `@doctest-region-end`)
    - Language-agnostic code generation with file templates
    - Batch processing for multiple markdown files
    - Filtering based on language, minimum lines, IDs
@@ -32,12 +32,14 @@
 
 ## Key Features
 
-- **Code Block Extraction**: Identifies code blocks with IDs in markdown, extracts to separate files for testing
-- **Region Support**: Extracts specific code regions using comment markers
-- **Multi-language**: Supports PHP, JavaScript, Python, etc. with appropriate file extensions
+- **Code Block Extraction**: Identifies code blocks with IDs (`@doctest id=example`) in markdown, extracts to separate files for testing
+- **Region Support**: Extracts specific code regions using comment markers (`@doctest-region-start name=region`)
+- **Validation**: Ensures extracted code files exist and match markdown blocks
+- **Multi-language**: Supports PHP, JavaScript, Python, etc. with appropriate file extensions and comment styles
 - **Metadata Processing**: YAML frontmatter parsing with doctest configuration
 - **Template System**: Language-specific file templates for generated code
 - **Build Pipeline**: Automated docs generation with file copying, renaming (.md → .mdx)
+- **Event System**: Domain events for tracking extraction and validation progress
 
 ## CLI Commands
 
@@ -45,6 +47,7 @@
 - `mark`: Process single Markdown file and add IDs to code snippets
 - `mark-dir`: Recursively process Markdown files in a directory and add IDs to code snippets
 - `extract`: Extract code blocks from Markdown files to target directory
+- `validate`: Validate extracted code blocks and list missing/wrong paths
 
 ### Documentation Generation Commands
 - `generate-mintlify`: Generate Mintlify-compatible documentation
@@ -59,16 +62,48 @@
 
 ## Configuration
 
-Metadata in markdown frontmatter:
-- `doctest_case_dir`: Output directory for extracted code
-- `doctest_case_prefix`: Filename prefix for generated files
-- `doctest_min_lines`: Minimum lines required for extraction
-- `doctest_included_types`: Array of programming languages to include
+### Metadata in markdown frontmatter:
+- `doctest_case_dir`: Output directory for extracted code (default: `examples`)
+- `doctest_case_prefix`: Filename prefix (default: auto from filename, camelCase + `_`, e.g. `gettingStarted_`)
+- `doctest_min_lines`: Minimum lines required for extraction (default: 0)
+- `doctest_included_types`: Languages to include (default: none; specify e.g. `['php','javascript']`)
+
+### Code Block Annotations:
+- `@doctest id=example`: Assigns unique ID to code block for extraction
+- `@doctest-region-start name=region`: Marks beginning of extractable region
+- `@doctest-region-end`: Marks end of extractable region
+
+You can also provide fence parameters, e.g.:
+
+```markdown
+```php id="example" include="examples/example.php"
+// @doctest id="example"
+echo "...";
+```
+```
+
+### Metadata & ID Resolution
+- Frontmatter controls extraction config (case dir/prefix, filters) — not code block IDs.
+- For IDs/inline metadata inside a block:
+  1) Inline `@doctest` annotation takes precedence when present
+  2) Then fence parameters (e.g., `id=...`, `include=...`)
+  3) If no ID is provided, an auto 4‑char hex ID is generated
+  - A conflict between fence `id` and `@doctest id` raises a metadata conflict error
+
+### Include Metadata
+- `extract --modify-source` replaces extracted code blocks with a short placeholder and adds `include="<relative path>"` to the fence line so other tools can inline external files.
+- A timestamped backup of the original markdown is created before modification.
+
+### Validate Paths
+- `validate` resolves expected paths in this order:
+  1) `include` fence metadata → resolved relative to the markdown file
+  2) legacy inline `@doctest id="relative/path.ext"` → resolved relative to the markdown file
+  3) frontmatter‑derived path (`<case_dir>/<case_prefix><id>.<ext>`) → resolved relative to the markdown file
+- Use `--show-paths` to print resolved paths for each block.
 
 ## Dependencies
 
 - Symfony Console, Filesystem, YAML
-- webuni/front-matter for YAML parsing
 - nikic/iter for functional iteration
 - Custom utilities from `cognesy/instructor-utils`
 

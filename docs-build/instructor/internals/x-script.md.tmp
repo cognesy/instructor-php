@@ -1,15 +1,15 @@
 // TODO: generated - needs revision
 
-## `Script` Class
+## `MessageStore` Class
 
 ### Overview
 
-The Script class serves as a flexible and dynamic container for managing, hydrating, and rendering sets of message sequences before they are translated to the native format of any supported LLM API.
+The MessageStore class serves as a flexible and dynamic container for managing, hydrating, and rendering sets of message sequences before they are translated to the native format of any supported LLM API.
 
 
 ### Key Concepts
 
- - Script: The main container holding one or more Sections.
+ - MessageStore: The main container holding one or more Sections.
  - Section: Contain sets of OpenAI-style messages exchanged between the user and the AI assistant.
  - Message: Represent individual message entries with a role (user or assistant) and content (which can be a string or an object).
 
@@ -18,25 +18,25 @@ The Script class serves as a flexible and dynamic container for managing, hydrat
 
  - Flexibility: Adapt and manage conversation structures for different LLM API providers.
  - Dynamic Reordering: Rearrange sections dynamically as needed.
- - Template Functionality: Use Script as a template for complex, multi-turn prompts with dynamic parameters.
+ - Template Functionality: Use MessageStore as a template for complex, multi-turn prompts with dynamic parameters.
  - Multimodal Support: Include objects like images in chat entries for processing using LLM's multimodal capabilities.
 
 
 ### Basic Usage
 
-#### Creating a Script
+#### Creating a MessageStore
 
 ```php
 <?php
-use Cognesy\Template\Script\Script;
-use Cognesy\Template\Script\Section;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
 
 // Create sections
 $section1 = new Section('introduction');
 $section2 = new Section('qna');
 
-// Initialize Script with sections
-$script = new Script($section1, $section2);
+// Initialize MessageStore with sections
+$store = new MessageStore($section1, $section2);
 ```
 
 #### Accessing and Manipulating Sections
@@ -44,13 +44,13 @@ $script = new Script($section1, $section2);
 ```php
 <?php
 // Check if a section exists
-$hasIntroduction = $script->hasSection('introduction');
+$hasIntroduction = $store->hasSection('introduction');
 
 // Retrieve a section by name
-$introSection = $script->section('introduction');
+$introSection = $store->section('introduction');
 
 // Get all section names
-$sectionNames = $script->sectionNames();
+$sectionNames = $store->sectionNames();
 ```
 
 #### Converting to Messages
@@ -58,8 +58,8 @@ $sectionNames = $script->sectionNames();
 ```php
 <?php
 
-// Convert Script to Messages
-$messages = $script->toMessages();
+// Convert MessageStore to Messages
+$messages = $store->toMessages();
 ```
 
 
@@ -69,17 +69,17 @@ $messages = $script->toMessages();
 
 ```php
 <?php
-use Cognesy\Template\Script\ScriptParameters;
+use Cognesy\Messages\MessageStore\MessageStoreParameters;
 
 // Create and set parameters
-$parameters = new ScriptParameters(['userName' => 'John Doe']);
-$script->withParameters($parameters);
+$parameters = new MessageStoreParameters(['userName' => 'John Doe']);
+$store->withParameters($parameters);
 
 // Set individual parameter
-$script->setParameter('userRole', 'admin');
+$store->setParameter('userRole', 'admin');
 
 // Unset a parameter
-$script->unsetParameter('userRole');
+$store->unsetParameter('userRole');
 ```
 
 
@@ -91,41 +91,41 @@ $script->unsetParameter('userRole');
 $templateSection = new Section('template_section');
 $templateSection->appendMessages(Messages::fromString('Hello, {{userName}}!'));
 
-// Add section to Script and set parameters
-$script->appendSection($templateSection);
-$script->setParameter('userName', 'John Doe');
+// Add section to MessageStore and set parameters
+$store->appendSection($templateSection);
+$store->setParameter('userName', 'John Doe');
 
-// Convert Script to Messages with template rendered
-$messages = $script->toMessages();
+// Convert MessageStore to Messages with template rendered
+$messages = $store->toMessages();
 ?>
 ```
 
 ### Customization
 
-#### Creating Script from an Array
+#### Creating MessageStore from an Array
 
 ```php
 <?php
-use Cognesy\Template\Script\Script;
+use Cognesy\Messages\MessageStore\MessageStore;
 
 $sectionsArray = [
     'introduction' => 'Welcome to the session.',
     'qna' => ['What is your name?', 'My name is AI.']
 ];
 
-// Create Script from array
-$scriptFromArray = (new Script)->fromArray($sectionsArray);
+// Create MessageStore from array
+$storeFromArray = (new MessageStore)->fromArray($sectionsArray);
 ```
 
-#### Merging and Overriding Scripts
+#### Merging and Overriding MessageStores
 
 ```php
 <?php
-// Merge another Script into the current one
-$script->mergeScript($anotherScript);
+// Merge another MessageStore into the current one
+$store->mergeMessageStore($anotherMessageStore);
 
-// Override the current Script with another one
-$script->overrideScript($anotherScript);
+// Override the current MessageStore with another one
+$store->overrideMessageStore($anotherMessageStore);
 ```
 
 #### Reordering Sections
@@ -133,15 +133,15 @@ $script->overrideScript($anotherScript);
 ```php
 <?php
 // Reorder sections
-$orderedScript = $script->reorder(['qna', 'introduction']);
+$orderedMessageStore = $store->reorder(['qna', 'introduction']);
 
 // Reverse the order of sections
-$reversedScript = $script->reverse();
+$reversedMessageStore = $store->reverse();
 ```
 
 ### Internal Mechanics
 
-The Script class uses several internal traits to handle various aspects of its functionality:
+The MessageStore class uses several internal traits to handle various aspects of its functionality:
 
  - HandlesAccess: Methods for accessing and querying sections.
  - HandlesParameters: Methods for managing parameters.
@@ -155,9 +155,9 @@ The Script class uses several internal traits to handle various aspects of its f
 
 ```php
 <?php
-use Cognesy\Template\Script\Script;
-use Cognesy\Template\Script\ScriptParameters;
-use Cognesy\Template\Script\Section;
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\MessageStoreParameters;
+use Cognesy\Messages\MessageStore\Section;
 
 // Define sections
 $intro = (new Section('introduction'))
@@ -167,10 +167,10 @@ $qna = (new Section('qna'))
     ->appendMessages(Messages::fromString('My name is <|userName|>.'));
 
 // Create Script
-$script = new Script($intro, $qna);
+$store = new MessageStore($intro, $qna);
 
 // Set dynamic parameters
-$parameters = new ScriptParameters(['userName' => 'Alice']);
-$script->withParams($parameters);
+$parameters = new MessageStoreParameters(['userName' => 'Alice']);
+$store->withParams($parameters);
 
 ```

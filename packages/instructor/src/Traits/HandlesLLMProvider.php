@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -42,17 +43,18 @@ trait HandlesLLMProvider
     }
 
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->llmProvider->withHttpClient($httpClient);
+        $this->httpClient = $httpClient;
         return $this;
     }
 
     public function withHttpClientPreset(string $string) : static {
-        $this->llmProvider->withHttpPreset($string);
+        $builder = new HttpClientBuilder(events: $this->events);
+        $this->httpClient = $builder->withPreset($string)->create();
         return $this;
     }
 
     public function withDebugPreset(string $preset) : static {
-        $this->llmProvider->withDebugPreset($preset);
+        $this->httpDebugPreset = $preset;
         return $this;
     }
 
@@ -60,7 +62,11 @@ trait HandlesLLMProvider
         string $driverName,
         object $clientInstance
     ) : self {
-        $this->llmProvider->withClientInstance($driverName, $clientInstance);
+        $builder = new HttpClientBuilder(events: $this->events);
+        $this->httpClient = $builder->withClientInstance(
+            driverName: $driverName,
+            clientInstance: $clientInstance,
+        )->create();
         return $this;
     }
 }

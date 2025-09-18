@@ -57,7 +57,6 @@ Provider configurations are managed through the configuration system.
 ## Basic Usage
 
 ```php
-// @doctest id="5832"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -68,6 +67,7 @@ $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get
 // Get the vector values from the first result
 $vector = $result->first()->values();
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
+// @doctest id="0975"
 ```
 
 
@@ -76,7 +76,6 @@ echo "Generated a vector with " . count($vector) . " dimensions.\n";
 Configure the underlying embeddings provider:
 
 ```php
-// @doctest id="f4c2"
 // Provider selection and configuration
 $embeddings->using('openai');                          // Use preset configuration
 $embeddings->withPreset('openai');                     // Alternative preset method
@@ -91,6 +90,7 @@ $embeddings->withDebugPreset('verbose');              // Debug configuration
 // Driver management
 $embeddings->withDriver($customDriver);               // Custom vectorization driver
 $embeddings->withProvider($customProvider);           // Custom provider instance
+// @doctest id="4493"
 ```
 
 
@@ -99,7 +99,6 @@ $embeddings->withProvider($customProvider);           // Custom provider instanc
 Configure the embedding request:
 
 ```php
-// @doctest id="8880"
 // Input configuration
 $embeddings->withInputs('Single text input');         // Single string
 $embeddings->withInputs(['Text 1', 'Text 2']);       // Multiple strings
@@ -115,6 +114,7 @@ $embeddings->with(
     options: ['dimensions' => 1536],
     model: 'text-embedding-3-large'
 );
+// @doctest id="5938"
 ```
 
 
@@ -123,7 +123,6 @@ $embeddings->with(
 Get embeddings in different formats:
 
 ```php
-// @doctest id="074c"
 // Full response object
 $response = $embeddings->get();                       // EmbeddingsResponse object
 
@@ -135,13 +134,13 @@ $values = $embeddings->first()->values();           // Array of floats
 // Advanced response handling
 $pending = $embeddings->create();                    // PendingEmbeddings for custom handling
 $response = $pending->get();                         // Execute and get response
+// @doctest id="9a94"
 ```
 
 
 ## Working with Multiple Providers
 
 ```php
-// @doctest id="ee3b"
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
@@ -161,6 +160,7 @@ $cohereVectors = (new Embeddings())
 
 echo "OpenAI dimensions: " . count($openaiVectors[0]->values()) . "\n";
 echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
+// @doctest id="18f0"
 ```
 
 
@@ -169,7 +169,6 @@ echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
 Create custom configurations for specific use cases:
 
 ```php
-// @doctest id="cbfb"
 <?php
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
@@ -192,6 +191,7 @@ $embeddings = (new Embeddings())
 
 $vector = $embeddings->first()->values();
 echo "Generated embedding with " . count($vector) . " dimensions\n";
+// @doctest id="dcc5"
 ```
 
 
@@ -200,7 +200,6 @@ echo "Generated embedding with " . count($vector) . " dimensions\n";
 Register custom drivers for new providers:
 
 ```php
-// @doctest id="ee3d"
 // Register with class name
 Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
 
@@ -208,4 +207,5 @@ Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
 Embeddings::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomEmbeddingsDriver($config, $httpClient);
 });
+// @doctest id="3ab7"
 ```

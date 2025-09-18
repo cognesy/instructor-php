@@ -3,8 +3,12 @@
 namespace Cognesy\Doctor\Doctest\Services;
 
 use Cognesy\Doctor\Doctest\Data\ValidationResult;
+use Cognesy\Doctor\Doctest\Data\BlockValidation;
+use Cognesy\Doctor\Doctest\Internal\MarkdownInfo;
 use Cognesy\Doctor\Markdown\MarkdownFile;
 use Cognesy\Doctor\Markdown\Nodes\CodeBlockNode;
+use Cognesy\Utils\ProgrammingLanguage;
+use Symfony\Component\Filesystem\Path;
 
 class ValidationService
 {
@@ -18,7 +22,7 @@ class ValidationService
         $validatedCount = 0;
 
         foreach ($markdown->codeBlocks() as $codeBlock) {
-            $expectedPath = $this->extractExpectedPath($codeBlock, $markdownDir);
+            $expectedPath = $this->extractExpectedPath($codeBlock, $markdown, $markdownDir);
 
             if ($expectedPath === null) {
                 continue; // Skip blocks without extraction directives
@@ -26,20 +30,17 @@ class ValidationService
 
             $validatedCount++;
 
-            $validation = [
-                'id' => $codeBlock->id,
-                'language' => $codeBlock->language,
-                'expectedPath' => $expectedPath,
-                'sourcePath' => $filePath,
-                'lineNumber' => $codeBlock->lineNumber,
-                'exists' => file_exists($expectedPath),
-            ];
+            $exists = file_exists($expectedPath);
+            $validation = new BlockValidation(
+                id: $codeBlock->id,
+                language: $codeBlock->language,
+                expectedPath: $expectedPath,
+                sourcePath: $filePath,
+                lineNumber: $codeBlock->lineNumber,
+                exists: $exists,
+            );
 
-            if ($validation['exists']) {
-                $valid[] = $validation;
-            } else {
-                $missing[] = $validation;
-            }
+            if ($exists) { $valid[] = $validation; } else { $missing[] = $validation; }
         }
 
         return new ValidationResult(
@@ -53,25 +54,29 @@ class ValidationService
 
     // INTERNAL /////////////////////////////////////////////////////////
 
-    private function extractExpectedPath(CodeBlockNode $codeBlock, string $markdownDir): ?string {
+    private function extractExpectedPath(CodeBlockNode $codeBlock, MarkdownFile $markdown, string $markdownDir): ?string {
         // Check for newer include= metadata format first
         if ($codeBlock->hasMetadata('include')) {
             $includePath = $codeBlock->metadata('include');
-            $resolvedPath = $markdownDir . '/' . ltrim($includePath, './');
-            return $this->normalizePath($resolvedPath);
+            return Path::join($markdownDir, ltrim($includePath, './'));
         }
 
         // Check for older @doctest id= format in content
         if (preg_match('/\/\/\s*@doctest\s+id=["\']([^"\']+)["\']/', $codeBlock->content, $matches)) {
             $docTestPath = $matches[1];
-            $resolvedPath = $markdownDir . '/' . ltrim($docTestPath, './');
-            return $this->normalizePath($resolvedPath);
+            return Path::join($markdownDir, ltrim($docTestPath, './'));
+        }
+
+        // Derive expected path from current extraction rules (caseDir + casePrefix + id + ext)
+        if (!empty($codeBlock->id) && !empty($codeBlock->language)) {
+            $info = MarkdownInfo::from($markdown);
+            $extension = ProgrammingLanguage::fileExtension($codeBlock->language);
+            $filename = $info->casePrefix . $codeBlock->id . '.' . $extension;
+            $relative = $info->caseDir . '/' . $filename;
+            return Path::join($markdownDir, ltrim($relative, './'));
         }
 
         return null;
     }
 
-    private function normalizePath(string $path): string {
-        return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-    }
 }

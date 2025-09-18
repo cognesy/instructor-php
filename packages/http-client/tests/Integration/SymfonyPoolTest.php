@@ -7,11 +7,15 @@ use Cognesy\Http\Drivers\Symfony\SymfonyPool;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
+use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
 beforeEach(function() {
+    // Start local test server for consistent URL handling
+    $this->baseUrl = IntegrationTestServer::start();
+    
     $this->mockResponses = [];
     $this->responseIndex = 0;
     $this->mockClient = new MockHttpClient(function($method, $url, $options) {
@@ -31,6 +35,11 @@ beforeEach(function() {
     $this->pool = new SymfonyPool($this->mockClient, $this->config, $this->events);
 });
 
+afterEach(function() {
+    // Server stays running across tests for performance
+    // Will be stopped in shutdown function
+});
+
 test('pool with successful requests', function() {
     $this->responseIndex = 0;
     $this->mockResponses = [
@@ -40,9 +49,9 @@ test('pool with successful requests', function() {
     ];
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], []),
-        new HttpRequest('https://example.com/3', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -60,7 +69,7 @@ test('pool with error handling', function() {
     ];
 
     $requests = [
-        new HttpRequest('https://example.com/notfound', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/status/404', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -86,8 +95,8 @@ test('pool with fail on error true', function() {
     $pool = new SymfonyPool($this->mockClient, $config, $this->events);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     expect(fn() => $pool->pool($requests))
@@ -102,8 +111,8 @@ test('pool processes all requests', function() {
     ];
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -123,7 +132,7 @@ test('pool with streamed response', function() {
     ];
 
     $requests = [
-        new HttpRequest('https://example.com/stream', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/stream/5', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -139,7 +148,7 @@ test('pool with post request', function() {
     ];
 
     $requests = [
-        new HttpRequest('https://example.com/api', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
+        new HttpRequest($this->baseUrl . '/post', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -178,7 +187,7 @@ test('pool with timeout handling', function() {
     $pool = new SymfonyPool($this->mockClient, $config, $this->events);
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
     ];
 
     $results = $pool->pool($requests);
@@ -195,8 +204,8 @@ test('pool with client error status code', function() {
     ];
 
     $requests = [
-        new HttpRequest('https://example.com/1', 'GET', [], [], []),
-        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
     ];
 
     $results = $this->pool->pool($requests);
@@ -204,4 +213,9 @@ test('pool with client error status code', function() {
     expect($results)->toHaveCount(2);
     expect($results[0])->toBeInstanceOf(Failure::class);
     expect($results[1])->toBeInstanceOf(Failure::class);
+});
+
+// Clean up server after all tests complete
+register_shutdown_function(function() {
+    IntegrationTestServer::stop();
 });

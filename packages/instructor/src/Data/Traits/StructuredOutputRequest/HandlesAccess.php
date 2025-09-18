@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\CachedContext;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 trait HandlesAccess
 {

@@ -14,7 +14,6 @@ implement fallback strategies or leverage the strengths of different models and 
 ## Switching Providers
 
 ```php
-// @doctest id="1074"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -35,6 +34,7 @@ $anthropicResponse = $inference
     ->get();
 
 echo "Anthropic response: $anthropicResponse\n";
+// @doctest id="b4f1"
 ```
 
 
@@ -44,7 +44,6 @@ echo "Anthropic response: $anthropicResponse\n";
 You can implement a fallback mechanism to try alternative providers if one fails:
 
 ```php
-// @doctest id="72e3"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -80,6 +79,7 @@ try {
 } catch (\Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
+// @doctest id="eef0"
 ```
 
 
@@ -90,7 +90,6 @@ try {
 You might want to select providers based on cost considerations:
 
 ```php
-// @doctest id="6d68"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -144,6 +143,7 @@ echo "Response: " . $costAwareLLM->ask($mediumQuestion, 'medium') . "\n\n";
 $complexQuestion = "Analyze the ethical implications of AI in healthcare.";
 echo "Complex question (high cost): $complexQuestion\n";
 echo "Response: " . $costAwareLLM->ask($complexQuestion, 'high') . "\n\n";
+// @doctest id="82e4"
 ```
 
 
@@ -153,7 +153,6 @@ echo "Response: " . $costAwareLLM->ask($complexQuestion, 'high') . "\n\n";
 You can implement a strategy to select the most appropriate provider for each request:
 
 ```php
-// @doctest id="f591"
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
@@ -197,4 +196,5 @@ foreach ($tasks as $task) {
     echo "Task: $task\n";
     echo "Response: " . $experts->ask($task[0], $task[1]) . "\n\n";
 }
+// @doctest id="48f3"
 ```

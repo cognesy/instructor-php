@@ -2,25 +2,26 @@
 
 namespace Cognesy\Messages;
 
+use Cognesy\Messages\Utils\Audio;
 use Cognesy\Messages\Utils\File;
 use Cognesy\Messages\Utils\Image;
 
-class ContentPart
+final readonly class ContentPart
 {
     protected string $type;
-    protected array $fields = [];
+    /** @var array<string, mixed> */
+    protected array $fields;
 
     public function __construct(
         string $type,
         array $fields = [],
     ) {
         $this->type = $type;
-        foreach ($fields as $key => $value) {
-            if ($value === null || $value === '' || (is_array($value) && empty($value))) {
-                continue;
-            }
-            $this->set($key, $value);
-        }
+        $this->fields = array_filter(
+            $fields, 
+            fn($value, $key) => !is_null($value) && ($value !== []),
+            ARRAY_FILTER_USE_BOTH
+        );
     }
 
     // FACTORY METHODS //////////////////////////////////////
@@ -48,6 +49,10 @@ class ContentPart
         return new self('file', $file->toContentPart()->fields());
     }
 
+    public static function audio(Audio $audio): static {
+        return new self('input_audio', $audio->toContentPart()->fields());
+    }
+
     public static function fromAny(mixed $item): static {
         return match (true) {
             is_string($item) => self::text($item),
@@ -55,25 +60,33 @@ class ContentPart
             is_object($item) && $item instanceof self => $item,
             is_object($item) && $item instanceof Image => self::image($item),
             is_object($item) && $item instanceof File => self::file($item),
+            is_object($item) && $item instanceof Audio => self::audio($item),
             default => throw new \InvalidArgumentException('Unsupported content type: ' . gettype($item)),
         };
     }
 
-    // PUBLIC API ///////////////////////////////////////////
+    // MUTATORS /////////////////////////////////////////////
+
+    /** @param array<string, mixed> $fields */
+    public function withFields(array $fields): self {
+        return new self($this->type, $fields);
+    }
+
+    public function withField(string $key, mixed $value): self {
+        $fields = $this->fields;
+        $fields[$key] = $value;
+        return new self($this->type, $fields);
+    }
+
+    // ACCESSORS ////////////////////////////////////////////
 
     public function type(): string {
         return $this->type;
     }
 
+    /** @return array<string, mixed> */
     public function fields(): array {
         return $this->fields;
-    }
-
-    public function withFields(array $fields): void {
-        $this->fields = [];
-        foreach ($fields as $key => $value) {
-            $this->set($key, $value);
-        }
     }
 
     public function isTextPart(): bool {
@@ -82,10 +95,6 @@ class ContentPart
 
     public function hasText(): bool {
         return isset($this->fields['text']) && is_string($this->fields['text']);
-    }
-
-    public function set(string $key, mixed $value): void {
-        $this->fields[$key] = $value;
     }
 
     public function get(string $key, mixed $default = null): mixed {
@@ -110,6 +119,8 @@ class ContentPart
         return count($this->fields) === 1 && isset($this->fields['text']);
     }
 
+    // CONVERSIONS and TRANSFORMERS /////////////////////////
+
     public function toArray(): array {
         $data = [
             'type' => $this->type,
@@ -128,17 +139,15 @@ class ContentPart
     }
 
     public function clone(): self {
-        $clone = new self($this->type);
-        $clone->fields = $this->fields;
-        return $clone;
+        return new self($this->type, $this->fields);
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function shouldExport(string $key, mixed $value): bool {
+    private function shouldExport(string|int $key, mixed $value): bool {
         return !is_null($value)
             && ($value !== '')
             && ($value !== [])
-            && (str_starts_with($key, '_') === false);
+            && (is_string($key) ? (str_starts_with($key, '_') === false) : true);
     }
 }

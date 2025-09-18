@@ -1,5 +1,8 @@
 #!/usr/bin/env php
 <?php
+
+use Cognesy\InstructorHub\Hub;
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -24,5 +27,5 @@ function findAutoload()
 require findAutoload();
 
 // run the app
-$app = new \Cognesy\InstructorHub\Hub();
+$app = new Hub();
 $app->run();

@@ -2,20 +2,18 @@
 
 namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\ToolUseState;
+use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
 
-class StepsLimit implements CanDecideToContinue
+class StepsLimit implements CanDecideToContinueToolUse
 {
     private int $maxSteps;
-    private int $currentStep = 0;
 
     public function __construct(int $maxSteps) {
         $this->maxSteps = $maxSteps;
     }
 
     public function canContinue(ToolUseState $state): bool {
-        $this->currentStep++;
-        return ($this->currentStep < $this->maxSteps);
+        return ($state->stepCount() < $this->maxSteps);
     }
 }

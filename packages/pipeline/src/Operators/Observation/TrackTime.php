@@ -4,7 +4,7 @@ namespace Cognesy\Pipeline\Operators\Observation;
 
 use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Tag\Observation\TimingTag;
+use Cognesy\Utils\TagMap\Tags\TimeProfilerTag;
 
 /**
  * Pure timing middleware - captures essential timing data only.
@@ -33,7 +33,7 @@ readonly class TrackTime implements CanProcessState
         $endTime = microtime(true);
         $duration = $endTime - $startTime;
 
-        $timingTag = new TimingTag(
+        $timingTag = new TimeProfilerTag(
             startTime: $startTime,
             endTime: $endTime,
             duration: $duration,

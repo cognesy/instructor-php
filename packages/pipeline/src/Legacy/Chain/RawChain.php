@@ -38,9 +38,8 @@ use Throwable;
  *
  * return $chain->process(5);
  */
-class RawChain {
-    use \Cognesy\Pipeline\Legacy\Chain\Traits\HandlesRawChainHooks;
-
+class RawChain
+{
     /**
      * @var callable[] The processors that the payload will be passed through.
      */
@@ -81,7 +80,7 @@ class RawChain {
      * @param callable[] $processors The processors to be used.
      * @return self
      */
-    public function through(mixed $processors) : self {
+    public function through(mixed $processors): self {
         if (is_array($processors)) {
             $this->processors = $processors;
         } else {
@@ -97,7 +96,7 @@ class RawChain {
      * @return mixed The processed payload.
      * @throws Throwable If an error occurs during processing and no error callback is set.
      */
-    public function process(mixed $payload) : mixed {
+    public function process(mixed $payload): mixed {
         $carry = $payload;
         try {
             foreach ($this->processors as $pipe) {
@@ -144,5 +143,60 @@ class RawChain {
             }
         }
         return $carry;
+    }
+
+    /**
+     * Add a callback to be executed before each processor.
+     *
+     * @param callable $callback The callback to be added.
+     * @return self
+     */
+    public function beforeEach(callable $callback): self {
+        $this->beforeCalls[] = $callback;
+        return $this;
+    }
+
+    /**
+     * Add a callback to be executed after each processor.
+     *
+     * @param callable $callback The callback to be added.
+     * @return self
+     */
+    public function afterEach(callable $callback): self {
+        $this->afterCalls[] = $callback;
+        return $this;
+    }
+
+    /**
+     * Add a callback to be executed after each processor.
+     *
+     * @param callable $callback The callback to be added.
+     * @return self
+     */
+    public function onError(callable $callback): self {
+        $this->onErrorCall = $callback;
+        return $this;
+    }
+
+    /**
+     * Add a callback to be executed to determine if processing is done.
+     *
+     * @param callable $callback The callback to be used.
+     * @return self
+     */
+    public function finishWhen(callable $callback): self {
+        $this->isDoneCall[] = $callback;
+        return $this;
+    }
+
+    /**
+     * Set the callback to be executed after all processors have been run.
+     *
+     * @param callable $callback The final callback.
+     * @return self
+     */
+    public function then(callable $callback): self {
+        $this->thenCall = $callback;
+        return $this;
     }
 }

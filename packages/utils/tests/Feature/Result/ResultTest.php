@@ -16,7 +16,7 @@ test('it creates a success result', function () {
 test('it creates a failure result', function () {
     $result = Result::failure('An error occurred');
 
-    expect($result)->toBeInstanceOf(Failure::class)
+    expect($result)->toBeInstanceOf(Result::class)
         ->and($result->isSuccess())->toBeFalse()
         ->and($result->isFailure())->toBeTrue()
         ->and($result->error())->toBe('An error occurred')

@@ -19,12 +19,11 @@ use Cognesy\Doctor\Doctest\Commands\ValidateCodeBlocks;
 use Cognesy\Doctor\Doctest\Services\ValidationService;
 use Cognesy\Doctor\Lesson\Commands\MakeLesson;
 use Cognesy\Doctor\Lesson\Commands\MakeLessonImage;
-use Cognesy\Doctor\Doctest\Services\BatchProcessingService;
 use Cognesy\Doctor\Doctest\Services\DocRepository;
-use Cognesy\Doctor\Doctest\Services\FileDiscoveryService;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Filesystem\Filesystem;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 
 class Docs extends Application
 {
@@ -32,9 +31,8 @@ class Docs extends Application
     private MkDocsDocumentation $mkDocsGen;
     private Filesystem $filesystem;
     private DocRepository $docRepository;
-    private FileDiscoveryService $fileDiscoveryService;
-    private BatchProcessingService $batchProcessingService;
     private ValidationService $validationService;
+    private EventDispatcher $eventDispatcher;
 
     public function __construct() {
         parent::__construct('Instructor Docs // Documentation Automation', '1.0.0');
@@ -122,11 +120,8 @@ class Docs extends Application
 
         $this->filesystem = new Filesystem();
         $this->docRepository = new DocRepository($this->filesystem);
-        $this->fileDiscoveryService = new FileDiscoveryService();
-        $this->batchProcessingService = new BatchProcessingService(
-            $this->docRepository,
-        );
         $this->validationService = new ValidationService();
+        $this->eventDispatcher = new EventDispatcher();
     }
 
     private function registerCommands(): void
@@ -177,13 +172,14 @@ class Docs extends Application
                 $this->docRepository,
             ),
             new MarkSnippetsRecursively(
-                $this->fileDiscoveryService,
-                $this->batchProcessingService,
+                $this->docRepository,
             ),
             new ExtractCodeBlocks(
                 $this->docRepository,
+                $this->eventDispatcher,
+                null,
             ),
-            new ValidateCodeBlocks(),
+            new ValidateCodeBlocks($this->eventDispatcher),
             new MakeLesson($this->examples),
             new MakeLessonImage(),
         ]);

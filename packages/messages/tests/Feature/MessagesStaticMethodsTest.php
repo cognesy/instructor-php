@@ -127,30 +127,6 @@ test('static fromAny handles all supported input types', function () {
     //expect(fn() => Messages::fromAny(123))->toThrow(Exception::class);
 });
 
-// HandlesConversion static methods
-test('static asPerRoleArray merges messages with same role', function () {
-    $messagesArray = [
-        ['role' => 'user', 'content' => 'Message 1'],
-        ['role' => 'user', 'content' => 'Message 2'],
-        ['role' => 'assistant', 'content' => 'Response 1'],
-        ['role' => 'assistant', 'content' => 'Response 2'],
-        ['role' => 'user', 'content' => 'Message 3']
-    ];
-    
-    $merged = Messages::asPerRoleArray($messagesArray);
-    
-    expect($merged)->toBeArray()
-        ->and($merged)->toHaveCount(3)
-        ->and($merged[0]['role'])->toBe('user')
-        ->and($merged[0]['content'])->toContain('Message 1')
-        ->and($merged[0]['content'])->toContain('Message 2')
-        ->and($merged[1]['role'])->toBe('assistant')
-        ->and($merged[1]['content'])->toContain('Response 1')
-        ->and($merged[1]['content'])->toContain('Response 2')
-        ->and($merged[2]['role'])->toBe('user')
-        ->and($merged[2]['content'])->toBe('Message 3');
-});
-
 test('static asString concatenates message content with separator', function () {
     $messagesArray = [
         ['role' => 'user', 'content' => 'Hello'],
@@ -182,7 +158,7 @@ test('static becomesEmpty correctly identifies empty values', function () {
     expect(Messages::becomesEmpty(new Message()))->toBeTrue();
     
     // Empty Messages collection
-    expect(Messages::becomesEmpty(new Messages()))->toBeTrue();
+    expect(Messages::becomesEmpty(Messages::empty()))->toBeTrue();
     
     // Non-empty array
     expect(Messages::becomesEmpty(['not empty']))->toBeFalse();

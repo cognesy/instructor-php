@@ -3,19 +3,21 @@
 namespace Cognesy\Addons\Chat\Utils;
 
 use Cognesy\Messages\Messages;
+use Cognesy\Utils\Tokenizer;
 
 class SplitMessages
 {
     public function split(Messages $messages, int $tokenLimit): array {
-        $limited = new Messages();
-        $overflow = new Messages();
+        $limited = Messages::empty();
+        $overflow = Messages::empty();
+
         $totalTokens = 0;
         foreach ($messages->reversed()->each() as $message) {
-            $messageTokens = \Cognesy\Utils\Tokenizer::tokenCount($message->toString());
+            $messageTokens = Tokenizer::tokenCount($message->toString());
             if ($totalTokens + $messageTokens <= $tokenLimit) {
-                $limited->appendMessage($message);
+                $limited = $limited->appendMessage($message);
             } else {
-                $overflow->appendMessage($message);
+                $overflow = $overflow->appendMessage($message);
             }
             $totalTokens += $messageTokens;
         }
