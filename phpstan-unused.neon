@@ -1,0 +1,52 @@
+includes:
+	- vendor/shipmonk/dead-code-detector/rules.neon
+
+parameters:
+	level: 8
+	paths:
+		- packages/addons/src
+		- packages/auxiliary/src
+		- packages/config/src
+		- packages/doctor/src
+		- packages/dynamic/src
+		- packages/evals/src
+		- packages/events/src
+		- packages/experimental/src
+		- packages/http-client/src
+		- packages/hub/src
+		- packages/instructor/src
+		- packages/messages/src
+		- packages/pipeline/src
+		- packages/polyglot/src
+		- packages/schema/src
+		- packages/setup/src
+		- packages/tell/src
+		- packages/templates/src
+		- packages/utils/src
+		- examples
+	excludePaths:
+		- packages/*/tests/Fixtures/*
+		- packages/*/tests/Support/*
+		- examples/*/vendor/*
+	tmpDir: /tmp
+	shipmonkDeadCode:
+		# Track method calls on mixed types
+		trackCallsOnMixed: true
+
+		# Report transitively dead methods as separate errors
+		reportTransitivelyDeadMethodAsSeparateError: true
+
+		# Configure entrypoint detection for frameworks
+		entrypoints:
+			vendor:
+				enabled: true
+			phpstan:
+				enabled: true
+			phpunit:
+				enabled: true
+			symfony:
+				enabled: false
+			doctrine:
+				enabled: false
+			nette:
+				enabled: false

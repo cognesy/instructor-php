@@ -40,7 +40,7 @@ final readonly class Prediction implements CanCarryState
 
     // FACTORY METHODS (CanCarryState implementation)
 
-    public static function empty(): self
+    public static function empty(): static
     {
         return new self(
             result: Result::success(null),
@@ -52,7 +52,7 @@ final readonly class Prediction implements CanCarryState
      * @param mixed $value The prediction output value
      * @param array<TagInterface> $tags Optional prediction tags
      */
-    public static function with(mixed $value, array $tags = []): self
+    public static function with(mixed $value, array $tags = []): static
     {
         return new self(
             result: Result::from($value),

@@ -151,12 +151,14 @@ final readonly class Tools
     }
 
     private function throwOnFailure(Failure $result) : void {
-        $error = $result->error();
+        $exception = $result->exception();
+        if ($exception instanceof ToolExecutionException) {
+            throw $exception;
+        }
+
         throw new ToolExecutionException(
-            message: is_object($error)
-                ? ($error->getMessage() ?? 'Tool failed')
-                : (string) $error,
-            code: 0,
-            previous: $error instanceof Throwable ? $error : null);
+            message: $result->errorMessage(),
+            previous: $exception,
+        );
     }
 }

@@ -69,7 +69,11 @@ Notes:
 ## Quick Start (ReAct)
 
 ```php
-use Cognesy\Addons\ToolUse\ContinuationCriteria\{ExecutionTimeLimit,RetryLimit,StepsLimit,TokenUsageLimit};use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;use Cognesy\Addons\ToolUse\ToolUse;use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Addons\ToolUse\Continuation\Criteria as ToolUseCriteria;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
+use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 $driver = new ReActDriver(
   llm: LLMProvider::using('openai'),
@@ -77,7 +81,13 @@ $driver = new ReActDriver(
   finalViaInference: true
 );
 
-$criteria = [new StepsLimit(6), new TokenUsageLimit(8192), new ExecutionTimeLimit(60), new RetryLimit(2), new StopOnFinalDecision()];
+$criteria = [
+    ToolUseCriteria::stepsLimit(6),
+    ToolUseCriteria::tokenUsageLimit(8192),
+    ToolUseCriteria::executionTimeLimit(60),
+    ToolUseCriteria::retryLimit(2),
+    new StopOnFinalDecision(),
+];
 
 $toolUse = (new ToolUse(continuationCriteria: $criteria))
   ->withDriver($driver)
@@ -117,11 +127,11 @@ Default criteria include:
 Customize:
 
 ```php
-use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\ToolUse\Continuation\Criteria as ToolUseCriteria;
 
 $toolUse->withDefaultContinuationCriteria(maxSteps: 5);
 // or
-$toolUse->withContinuationCriteria(new StepsLimit(10));
+$toolUse->withContinuationCriteria(ToolUseCriteria::stepsLimit(10));
 ```
 
 ReAct-specific:
@@ -170,9 +180,8 @@ Before invoking a tool, `Tools` performs a pragmatic check against the tool’s 
 
 ## State & Reuse
 
-- `ToolUse` is stateful: it holds a `ToolUseState` that accumulates messages, steps, usage, variables, and status.
-- Preferred: create a fresh `ToolUse` per run.
-- If reusing the same instance, reset state via `withState(new ToolUseState())` and reapply tools/messages.
+- `ToolUse` is not stateful. It takes an initial `ToolUseState` (default empty) and produces new states per step with `nextStep()` or `finalStep()`.
+- `ToolUseState` instances are immutable and can be inspected after each step.
 - Drivers (`ToolCallingDriver`, `ReActDriver`) are stateless (configuration only) and safe to reuse across runs.
 
 ## Troubleshooting

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
@@ -36,7 +36,7 @@ it('handles multi-participant chat with role mapping', function () {
     ));
 
     $participants = new Participants($assistantA, $assistantB);
-    $continuationCriteria = new ContinuationCriteria(new StepsLimit(2));
+    $continuationCriteria = new ContinuationCriteria(new StepsLimit(2, fn(ChatState $state): int => $state->stepCount()));
     
     $chat = ChatFactory::default(
         participants: $participants,
@@ -46,8 +46,8 @@ it('handles multi-participant chat with role mapping', function () {
     $state = new ChatState(store: $store);
 
     // Run two turns
-    $state = $chat->nextTurn($state);
-    $state = $chat->nextTurn($state);
+    $state = $chat->nextStep($state);
+    $state = $chat->nextStep($state);
 
     $finalMessages = $state->messages()->toArray();
     
@@ -58,4 +58,3 @@ it('handles multi-participant chat with role mapping', function () {
     expect($finalMessages[3]['content'])->toBe('Response from A');
     expect($finalMessages[4]['content'])->toBe('Response from B');
 });
-

@@ -2,21 +2,23 @@
 
 namespace Cognesy\Addons\ToolUse;
 
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\ErrorPresenceCheck;
+use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\ToolCallPresenceCheck;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\Processors\ToolUse\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\ToolUse\AppendContextMetadata;
+use Cognesy\Addons\Core\Processors\ToolUse\AppendToolStateMessages;
 use Cognesy\Addons\Core\StateProcessors;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ErrorPresenceCheck;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ExecutionTimeLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\FinishReasonCheck;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\ToolUse\Processors\AppendContextMetadata;
-use Cognesy\Addons\ToolUse\Processors\AppendToolStateMessages;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 
@@ -58,13 +60,17 @@ class ToolUseFactory
         array $finishReasons = [],
     ) : ContinuationCriteria {
         return new ContinuationCriteria(
-            new StepsLimit($maxSteps),
-            new TokenUsageLimit($maxTokens),
-            new ExecutionTimeLimit($maxExecutionTime),
-            new RetryLimit($maxRetries),
-            new ErrorPresenceCheck(),
-            new ToolCallPresenceCheck(),
-            new FinishReasonCheck($finishReasons),
+            new StepsLimit($maxSteps, fn(ToolUseState $state) => $state->stepCount()),
+            new TokenUsageLimit($maxTokens, fn(ToolUseState $state) => $state->usage()->total()),
+            new ExecutionTimeLimit($maxExecutionTime, fn(ToolUseState $state) => $state->startedAt()),
+            new RetryLimit($maxRetries, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
+            new ErrorPresenceCheck(fn(ToolUseState $state) => $state->currentStep()?->hasErrors() ?? false),
+            new ToolCallPresenceCheck(
+                fn(ToolUseState $state) => $state->stepCount() === 0
+                    ? true
+                    : ($state->currentStep()?->hasToolCalls() ?? false)
+            ),
+            new FinishReasonCheck($finishReasons, fn(ToolUseState $state) => $state->currentStep()?->finishReason()),
         );
     }
 }

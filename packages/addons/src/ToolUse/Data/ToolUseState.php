@@ -136,7 +136,7 @@ final readonly class ToolUseState extends MessageExchangeState
         );
     }
 
-    public function appendMessages(Messages $messages) : self {
+    public function withAppendedMessages(Messages $messages) : self {
         // Get the current messages from the default section and append new ones
         $currentMessages = $this->messages();
         $combinedMessages = $currentMessages->appendMessages($messages);

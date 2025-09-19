@@ -61,6 +61,9 @@ composer phpstan
 - `composer tests` - Alias for test
 - `composer phpstan` - Run PHPStan analysis
 - `composer psalm` - Run Psalm analysis
+- `composer psalm-unused` - Find unused code with Psalm
+- `composer unused` - Find unused classes and methods with ShipMonk Dead Code Detector
+- `composer unused-debug` - Find unused code with verbose debugging output
 - `composer hub` - Run Instructor Hub CLI
 - `composer tell` - Run Tell CLI
 - `composer setup` - Run setup wizard
@@ -100,6 +103,53 @@ cd packages/instructor
 composer phpstan
 composer psalm
 ```
+
+### Unused Code Detection
+
+Detect unused classes, methods, and dead code:
+
+```bash
+# Find unused classes and methods using ShipMonk Dead Code Detector
+composer unused
+
+# Get detailed debugging information about specific class/method usage
+composer unused-debug
+
+# Alternative: Find unused code with Psalm
+composer psalm-unused
+```
+
+#### Understanding Unused Code Output
+
+The `composer unused` command will show:
+- **Unused classes**: Classes that are never instantiated or referenced
+- **Unused methods**: Methods that are never called, including transitively unused methods
+- **Dead cycles**: Methods that only call each other but are never called externally
+
+Example output:
+```
+------ ------------------------------------------------------------------------
+Line   src/App/Entity/UnusedClass.php
+------ ------------------------------------------------------------------------
+8      Unused App\Entity\UnusedClass 🪪 shipmonk.deadClass
+
+26     Unused App\Facade\UserFacade::updateUserAddress 🪪 shipmonk.deadMethod
+       💡 Thus App\Entity\User::updateAddress is transitively also unused
+```
+
+#### Debugging Specific Usage
+
+To debug why a specific class or method is considered unused, add it to `phpstan-unused.neon`:
+
+```neon
+parameters:
+    shipmonkDeadCode:
+        debug:
+            usagesOf:
+                - App\YourClass::yourMethod
+```
+
+Then run `composer unused-debug` to see detailed usage analysis.
 
 ## Creating New Packages
 

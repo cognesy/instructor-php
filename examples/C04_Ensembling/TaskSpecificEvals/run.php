@@ -104,48 +104,43 @@ class USPClassification {
 <?php
 require 'examples/boot.php';
 $examples = [
-        """
-        i do feel that running is a divine experience and
+        "i do feel that running is a divine experience and
         that i can expect to have some type of spiritual
-        encounter
-        """,
-        """
-        i get giddy over feeling elegant in a perfectly
-        fitted pencil skirt
-        """,
-        """
+        encounter",
+        "i get giddy over feeling elegant in a perfectly
+        fitted pencil skirt",
+        "
         i plan to share my everyday life stories traveling
         adventures inspirations and handmade creations with
         you and hope you will also feel inspired
-        """,
-        """
+        ",
+        "
         i need to feel the dough to make sure its just
         perfect
-        """,
-        """
+        ",
+        "
         i found myself feeling a little discouraged that
         morning
-        """,
+        ",
         "i didnt really feel that embarrassed",
         "i feel like a miserable piece of garbage",
-        """
+        "
         i feel like throwing away the shitty piece of shit
         paper
-        """,
-        """
+        ",
+        "
         i feel irritated and rejected without anyone doing
         anything or saying anything
-        """,
+        ",
         "i feel angered and firey",
-        """
+        "
         im feeling bitter today my mood has been strange the
         entire day so i guess its that
-        """,
+        ",
         "i just feel really violent right now",
         "i know there are days in which you feel distracted",
-    ]
+    ];
 
-use Cognesy\Instructor\StructuredOutput;
 // Run the selection and final classification
 $usp = new USPClassification();
 $balanced = $usp->balancedSample($examples, 3);

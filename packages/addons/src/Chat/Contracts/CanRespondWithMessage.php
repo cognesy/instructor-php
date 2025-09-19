@@ -5,6 +5,7 @@ namespace Cognesy\Addons\Chat\Contracts;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Messages\Message;
 
-interface CanRespondWithMessage {
+interface CanRespondWithMessage
+{
     public function respond(ChatState $state): Message;
 }

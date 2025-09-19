@@ -6,6 +6,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
@@ -19,7 +20,7 @@ final class ChatStep
     private ?Message $outputMessage;
     private ?Usage $usage;
     private ?InferenceResponse $inferenceResponse;
-    private ?string $finishReason;
+    private ?InferenceFinishReason $finishReason;
     private array $meta;
 
     public function __construct(
@@ -28,7 +29,7 @@ final class ChatStep
         ?Message $outputMessage = null,
         ?Usage $usage = null,
         ?InferenceResponse $inferenceResponse = null,
-        ?string $finishReason = null,
+        ?InferenceFinishReason $finishReason = null,
         array $meta = [],
 
         ?string $id = null, // for deserialization
@@ -53,7 +54,7 @@ final class ChatStep
             outputMessage: isset($stepData['outputMessage']) ? Message::fromArray($stepData['outputMessage']) : null,
             usage: isset($stepData['usage']) ? Usage::fromArray($stepData['usage']) : null,
             inferenceResponse: isset($stepData['inferenceResponse']) ? InferenceResponse::fromArray($stepData['inferenceResponse']) : null,
-            finishReason: $stepData['finishReason'] ?? null,
+            finishReason: InferenceFinishReason::tryFrom($stepData['finishReason'] ?? ''),
             meta: $stepData['meta'] ?? [],
             id: $stepData['id'] ?? null,
             createdAt: isset($stepData['createdAt']) ? new DateTimeImmutable($stepData['createdAt']) : null,
@@ -88,7 +89,7 @@ final class ChatStep
         return $this->inferenceResponse;
     }
 
-    public function finishReason(): ?string {
+    public function finishReason(): ?InferenceFinishReason {
         return $this->finishReason;
     }
 
@@ -103,11 +104,10 @@ final class ChatStep
             'outputMessage' => $this->outputMessage?->toArray(),
             'usage' => $this->usage?->toArray(),
             'inferenceResponse' => $this->inferenceResponse?->toArray(),
-            'finishReason' => $this->finishReason,
+            'finishReason' => $this->finishReason->value ?? null,
             'meta' => $this->meta,
             'id' => $this->id,
             'createdAt' => $this->createdAt->format(DATE_ATOM),
         ];
     }
 }
-

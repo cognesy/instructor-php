@@ -3,18 +3,19 @@
 namespace Cognesy\Addons\Chat\Participants;
 
 use Closure;
-use Cognesy\Addons\Chat\Compilers\AllSections;
-use Cognesy\Addons\Chat\Contracts\CanCompileMessages;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Contracts\CanRespondWithMessage;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Events\ChatResponseRequested;
+use Cognesy\Addons\Core\MessageCompilation\AllSections;
+use Cognesy\Addons\Core\MessageCompilation\CanCompileMessages;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 final class ExternalParticipant implements CanParticipateInChat
 {
@@ -46,7 +47,7 @@ final class ExternalParticipant implements CanParticipateInChat
             outputMessage: $response,
             usage: Usage::none(),
             inferenceResponse: null,
-            finishReason: 'external',
+            finishReason: InferenceFinishReason::Other,
         );
     }
 

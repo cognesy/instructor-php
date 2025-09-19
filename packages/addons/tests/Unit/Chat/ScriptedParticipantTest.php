@@ -8,6 +8,7 @@ use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 it('creates participant with correct name and cycles through messages', function () {
     $participant = new ScriptedParticipant(
@@ -63,7 +64,7 @@ it('returns proper usage and metadata', function () {
     
     expect($step->usage())->toBeInstanceOf(Usage::class);
     expect($step->usage()->total())->toBe(0); // Usage::none()
-    expect($step->finishReason())->toBe('scripted');
+    expect($step->finishReason())->toBe(InferenceFinishReason::Other);
     expect($step->inferenceResponse())->toBeNull();
 });
 

@@ -1,8 +1,13 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\{ExecutionTimeLimit, RetryLimit, StepsLimit, TokenUsageLimit};
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
@@ -34,7 +39,12 @@ it('runs a ReAct call then final answer', function () {
     ]);
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
-    $criteria = new ContinuationCriteria(new StepsLimit(2), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(1));
+    $criteria = new ContinuationCriteria(
+        new StepsLimit(2, fn(ToolUseState $s): int => $s->stepCount()),
+        new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),
+        new ExecutionTimeLimit(30, fn(ToolUseState $s): DateTimeImmutable => $s->startedAt()),
+        new RetryLimit(1, fn(ToolUseState $s): ToolUseSteps => $s->steps(), fn(ToolUseStep $s): bool => $s->hasErrors())
+    );
     
     $tools = new Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
@@ -63,7 +73,12 @@ it('surfaces tool arg validation errors as observation', function () {
     ]);
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
-    $criteria = new ContinuationCriteria(new StepsLimit(2), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(0));
+    $criteria = new ContinuationCriteria(
+        new StepsLimit(2, fn(ToolUseState $s): int => $s->stepCount()),
+        new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),
+        new ExecutionTimeLimit(30, fn(ToolUseState $s): DateTimeImmutable => $s->startedAt()),
+        new RetryLimit(0, fn(ToolUseState $s): ToolUseSteps => $s->steps(), fn(ToolUseStep $s): bool => $s->hasErrors())
+    );
     
     $tools = new Tools();
     $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
@@ -92,7 +107,12 @@ it('can finalize via Inference when configured', function () {
     ]);
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver), finalViaInference: true);
-    $criteria = new ContinuationCriteria(new StepsLimit(1), new TokenUsageLimit(8192), new ExecutionTimeLimit(30), new RetryLimit(0));
+    $criteria = new ContinuationCriteria(
+        new StepsLimit(1, fn(ToolUseState $s): int => $s->stepCount()),
+        new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),
+        new ExecutionTimeLimit(30, fn(ToolUseState $s): DateTimeImmutable => $s->startedAt()),
+        new RetryLimit(0, fn(ToolUseState $s): ToolUseSteps => $s->steps(), fn(ToolUseStep $s): bool => $s->hasErrors())
+    );
     
     $tools = new Tools();
     $state = new ToolUseState();

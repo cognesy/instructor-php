@@ -2,19 +2,20 @@
 
 namespace Cognesy\Addons\Chat\Participants;
 
-use Cognesy\Addons\Chat\Compilers\AllSections;
-use Cognesy\Addons\Chat\Contracts\CanCompileMessages;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Events\ChatInferenceRequested;
 use Cognesy\Addons\Chat\Events\ChatInferenceResponseReceived;
+use Cognesy\Addons\Core\MessageCompilation\AllSections;
+use Cognesy\Addons\Core\MessageCompilation\CanCompileMessages;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -67,7 +68,7 @@ final readonly class LLMParticipant implements CanParticipateInChat
             outputMessage: $outputMessage,
             usage: $response->usage(),
             inferenceResponse: $response,
-            finishReason: $response->finishReason()->value,
+            finishReason: $response->finishReason() ?? InferenceFinishReason::Other,
         );
     }
 

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 
 it('builds up a conversation with multiple turns', function () {
     // Use scripted participants for deterministic behavior
@@ -25,7 +25,7 @@ it('builds up a conversation with multiple turns', function () {
     $assistant = new ScriptedParticipant(name: 'assistant', messages: $assistantResponses);
 
     $participants = new Participants($user, $assistant);
-    $continuationCriteria = new ContinuationCriteria(new StepsLimit(6)); // 3 user + 3 assistant
+    $continuationCriteria = new ContinuationCriteria(new StepsLimit(6, fn(ChatState $state): int => $state->stepCount()));
     
     $chat = ChatFactory::default(
         participants: $participants,
@@ -35,8 +35,8 @@ it('builds up a conversation with multiple turns', function () {
     $state = new ChatState();
 
     // Run the conversation
-    while ($chat->hasNextTurn($state)) {
-        $state = $chat->nextTurn($state);
+    while ($chat->hasNextStep($state)) {
+        $state = $chat->nextStep($state);
     }
 
     $messages = $state->messages()->toArray();
@@ -52,4 +52,3 @@ it('builds up a conversation with multiple turns', function () {
         expect($assistantMsg['content'])->toBe($assistantResponses[$i]);
     }
 });
-

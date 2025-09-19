@@ -4,11 +4,11 @@ namespace Cognesy\Addons\ToolUse;
 
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
 use Cognesy\Addons\Core\StateProcessors;
-use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinueToolUse;
+use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
 use Cognesy\Addons\ToolUse\Contracts\CanProcessToolState;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
@@ -61,9 +61,6 @@ final readonly class ToolUse {
     }
 
     public function hasNextStep(ToolUseState $state): bool {
-        if ($state->currentStep() === null) {
-            return true;
-        }
         return $this->canContinue($state);
     }
 
@@ -103,26 +100,16 @@ final readonly class ToolUse {
             tools: $this->tools,
             processors: $this->processors,
             continuationCriteria: $this->continuationCriteria,
-            driver: $this->driver,
+            driver: $driver,
             events: $this->events,
         );
     }
 
-    public function withContinuationCriteria(CanDecideToContinueToolUse ...$continuationCriteria) : self {
+    public function withContinuationCriteria(CanDecideToContinue ...$continuationCriteria) : self {
         return new self(
             tools: $this->tools,
             processors: $this->processors,
             continuationCriteria: new ContinuationCriteria(...$continuationCriteria),
-            driver: $this->driver,
-            events: $this->events,
-        );
-    }
-
-    public function withState(ToolUseState $state) : self {
-        return new self(
-            tools: $this->tools,
-            processors: $this->processors,
-            continuationCriteria: $this->continuationCriteria,
             driver: $this->driver,
             events: $this->events,
         );

@@ -117,6 +117,7 @@
     "phpstan/phpstan": "^1.11",
     "phpstan/phpstan-strict-rules": "^1.6",
     "psr/http-factory-implementation": "*",
+    "shipmonk/dead-code-detector": "^0.5.1",
     "spatie/browsershot": "^4.1",
     "symfony/css-selector": "^7.0",
     "symfony/dom-crawler": "^7.0",
@@ -163,6 +164,8 @@
     "test": "@php ./vendor/bin/pest --testsuite=Unit,Feature",
     "tests": "@php ./vendor/bin/pest --testsuite=Unit,Feature",
     "test-all": "@php ./vendor/bin/pest",
+    "unused": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
+    "unused-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
     "setup": "bin/instructor-setup",
     "make-package": "scripts/make-package"
   },

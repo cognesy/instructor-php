@@ -16,6 +16,7 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 /**
  * LLM participant with tool-calling capabilities.
@@ -66,11 +67,11 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
             inputMessages: $messages,
             outputMessage: $outputMessage,
             usage: $toolStep?->usage() ?? Usage::none(),
-            finishReason: $toolStep?->finishReason()?->value,
+            finishReason: $toolStep?->finishReason() ?? InferenceFinishReason::Other,
             meta: [
                 'hasToolCalls' => $toolStep?->hasToolCalls() ? true : false,
                 'toolsUsed' => $toolStep?->toolCalls()->toString() ?? '',
-                'toolErrors' => count($toolStep?->errors()) ?? 0,
+                'toolErrors' => count($toolStep?->errors() ?? []),
             ],
         );
     }

@@ -20,8 +20,7 @@ This example demonstrates a sophisticated multi-participant chat system featurin
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\ContinuationCriteria\ResponseContentCheck;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
@@ -62,8 +61,8 @@ $engineer = new LLMParticipant(
 $chat = ChatFactory::default(
     participants: new Participants($moderator, $engineer, $researcher),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(15),
-        new ResponseContentCheck(fn($lastResponse) => $lastResponse !== ''),
+        ChatCriteria::stepsLimit(15),
+        ChatCriteria::responseContentCheck(static fn(Message $lastResponse): bool => $lastResponse->content() !== ''),
     ),
 ); //->wiretap(fn(Event $e) => $e->print());
 

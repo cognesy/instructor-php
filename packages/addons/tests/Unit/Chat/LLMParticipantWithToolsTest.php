@@ -15,6 +15,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
@@ -85,7 +86,7 @@ it('executes tool calls and returns chat step with tool results', function () {
     expect($step->outputMessage()->role()->value)->toBe('assistant');
     expect($step->outputMessage()->name())->toBe('math-assistant');
     expect($step->usage()->total())->toBe(20); // final step usage only
-    expect($step->finishReason())->toBe('stop');
+    expect($step->finishReason())->toBe(InferenceFinishReason::Stop);
     expect($step->meta()['hasToolCalls'])->toBeFalse(); // final step doesn't have tool calls
     expect($step->meta()['toolsUsed'])->toBe(''); // final step doesn't have tool calls
     expect($step->meta()['toolErrors'])->toBe(0);

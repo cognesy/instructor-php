@@ -6,7 +6,6 @@ use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Events\ChatBeforeSend;
 use Cognesy\Addons\Chat\Events\ChatCompleted;
@@ -14,6 +13,7 @@ use Cognesy\Addons\Chat\Events\ChatParticipantSelected;
 use Cognesy\Addons\Chat\Events\ChatStateUpdated;
 use Cognesy\Addons\Chat\Events\ChatTurnCompleted;
 use Cognesy\Addons\Chat\Events\ChatTurnStarting;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -43,8 +43,8 @@ final readonly class Chat
         $this->events = EventBusResolver::using($events);
     }
 
-    public function nextTurn(ChatState $state): ChatState {
-        if (!$this->hasNextTurn($state)) {
+    public function nextStep(ChatState $state): ChatState {
+        if (!$this->hasNextStep($state)) {
             $this->emitChatCompleted($state);
             return $state;
         }
@@ -60,7 +60,7 @@ final readonly class Chat
         return $newState;
     }
 
-    public function hasNextTurn(ChatState $state): bool {
+    public function hasNextStep(ChatState $state): bool {
         return $this->continuationCriteria->canContinue($state) ?? false;
     }
 

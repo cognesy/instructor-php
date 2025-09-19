@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
@@ -25,7 +25,7 @@ it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     $assistant = new LLMParticipant(name: 'assistant', inference: $inference);
 
     $participants = new Participants($human, $assistant);
-    $continuationCriteria = new ContinuationCriteria(new StepsLimit(2));
+    $continuationCriteria = new ContinuationCriteria(new StepsLimit(2, fn(ChatState $state) => $state->stepCount()));
     
     $chat = ChatFactory::default(
         participants: $participants,
@@ -34,8 +34,8 @@ it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     
     $state = new ChatState();
 
-    $state1 = $chat->nextTurn($state);
-    $state2 = $chat->nextTurn($state1);
+    $state1 = $chat->nextStep($state);
+    $state2 = $chat->nextStep($state1);
 
     $final = $state2->messages()->toArray();
     expect(count($final))->toBe(2);

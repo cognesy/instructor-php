@@ -35,12 +35,13 @@ The LLM is expected to call the functions in the correct order to get the final 
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\ExecutionTimeLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
@@ -56,10 +57,10 @@ $toolUse = ToolUseFactory::default(
         FunctionTool::fromCallable(subtract_numbers(...))
     ),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(6),
-        new TokenUsageLimit(8192),
-        new ExecutionTimeLimit(60),
-        new RetryLimit(2),
+        new StepsLimit(6, fn(ToolUseState $state) => $state->stepCount()),
+        new TokenUsageLimit(8192, fn(ToolUseState $state) => $state->usage()->total()),
+        new ExecutionTimeLimit(60, fn(ToolUseState $state) => $state->startedAt()),
+        new RetryLimit(2, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
         new StopOnFinalDecision(),
     ),
 );

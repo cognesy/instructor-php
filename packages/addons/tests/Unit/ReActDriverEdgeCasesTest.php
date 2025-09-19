@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Enums\StepType;
@@ -37,7 +37,7 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
     
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        continuationCriteria: new ContinuationCriteria(new StepsLimit(2)),
+        continuationCriteria: new ContinuationCriteria(new StepsLimit(2, fn(ToolUseState $s) => $s->stepCount())),
         driver: $react
     );
 

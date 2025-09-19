@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\FinishReasonCheck;
-use Cognesy\Addons\ToolUse\ContinuationCriteria\RetryLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
@@ -67,7 +67,7 @@ it('stops on configured finish reasons (FinishReasonCheck)', function () {
     $state = $state->withAddedStep($step);
     $state->withCurrentStep($step);
 
-    $check = new FinishReasonCheck([InferenceFinishReason::Stop]);
+    $check = new FinishReasonCheck([InferenceFinishReason::Stop], static fn(ToolUseState $s) => $s->currentStep()?->finishReason());
     expect($check->canContinue($state))->toBeFalse();
 });
 
@@ -90,6 +90,6 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
     $state = $state->withAddedStep($failedStep2);
     $state = $state->withCurrentStep($failedStep2);
 
-    $limit = new RetryLimit(2);
+    $limit = new RetryLimit(2, static fn(ToolUseState $s) => $s->steps()->all(), static fn(ToolUseStep $step) => $step->hasErrors());
     expect($limit->canContinue($state))->toBeFalse(); // tail failures == maxRetries => stop
 });

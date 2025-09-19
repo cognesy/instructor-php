@@ -15,18 +15,17 @@ docname: 'chat_with_summary'
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\ContinuationCriteria\ResponseContentCheck;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
+use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
 use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\Chat\Processors\AppendStateMessages;
-use Cognesy\Addons\Chat\Processors\MoveMessagesToBuffer;
-use Cognesy\Addons\Chat\Processors\SummarizeBuffer;
+use Cognesy\Addons\Core\Processors\Chat\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\Chat\AppendStateMessages;
+use Cognesy\Addons\Core\Processors\Chat\MoveMessagesToBuffer;
+use Cognesy\Addons\Core\Processors\Chat\SummarizeBuffer;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Event;
@@ -58,8 +57,8 @@ $expert = new LLMParticipant(
 $chat = ChatFactory::default(
     participants: new Participants($student, $expert),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(12),
-        new ResponseContentCheck(fn($lastResponse) => $lastResponse !== ''),
+        ChatCriteria::stepsLimit(12),
+        ChatCriteria::responseContentCheck(static fn(Message $lastResponse): bool => $lastResponse->content() !== ''),
     ),
     stepProcessors: new ChatStateProcessors(
         new AccumulateTokenUsage(),

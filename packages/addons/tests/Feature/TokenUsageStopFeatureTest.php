@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools;
@@ -31,7 +31,7 @@ it('stops due to token usage limit being reached', function () {
         
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        continuationCriteria: new ContinuationCriteria(new TokenUsageLimit(10)),
+        continuationCriteria: new ContinuationCriteria(new TokenUsageLimit(10, static fn(ToolUseState $state): int => $state->usage()->total())),
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );
 

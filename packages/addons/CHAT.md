@@ -20,7 +20,7 @@ This document explains how to use Chat, customize its behavior, and integrate it
   - `Selectors\RoundRobinSelector` — cycles through participants in order
   - `Selectors\LLMBasedCoordinator` — AI-powered participant selection using structured output
 - **Step processors** (`Contracts\CanProcessChatStep`): process steps after participant actions
-- **Continuation criteria** (`Contracts\CanDecideToContinueChat`): determine when chat should continue
+- **Continuation criteria** ( helpers): determine when chat should continue
 - **Collections**: Type-safe collections for participants, steps, processors, and criteria
 - **Observability**: Comprehensive event system for monitoring chat lifecycle
 
@@ -45,7 +45,7 @@ $state = new ChatState(messages: $initialMessages);
 
 // Execute one turn
 $chat = new Chat($config);
-$newState = $chat->nextTurn($state);
+$newState = $chat->nextStep($state);
 
 // Get the assistant's response
 $assistantMessage = $newState->steps()->last()->outputMessage();
@@ -61,7 +61,15 @@ echo $assistantMessage->content();
 ## Multi-Participant Chat Example
 
 ```php
-use Cognesy\Addons\Chat\Chat;use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;use Cognesy\Addons\Chat\Data\ChatConfig;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;use Cognesy\Addons\Chat\Data\Collections\Participants;use Cognesy\Addons\Chat\Participants\ExternalParticipant;use Cognesy\Addons\Chat\Participants\LLMParticipant;use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
+use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
+use Cognesy\Addons\Chat\Data\ChatConfig;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Participants\ExternalParticipant;
+use Cognesy\Addons\Chat\Participants\LLMParticipant;
+use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 
 // Create participants with different roles
 $human = new ExternalParticipant(
@@ -92,15 +100,15 @@ $practitioner = new LLMParticipant(
 $participants = new Participants($human, $researcher, $practitioner);
 $config = ChatConfig::default($participants)
     ->withNextParticipantSelector(new RoundRobinSelector())
-    ->withContinuationCriteria(new ContinuationCriteria(new StepsLimit(9)));
+    ->withContinuationCriteria(new ContinuationCriteria(ChatCriteria::stepsLimit(9)));
 
 // Create initial state
 $state = new ChatState();
 
 // Run conversation
 $chat = new Chat($config);
-while ($chat->hasNextTurn($state)) {
-    $state = $chat->nextTurn($state);
+while ($chat->hasNextStep($state)) {
+    $state = $chat->nextStep($state);
     $step = $state->currentStep();
     if ($step) {
         echo "[{$step->participantName()}]: {$step->outputMessage()->content()}\n\n";
@@ -232,31 +240,30 @@ $stepsLimit = new StepsLimit(maxSteps: 10);
 ### `TokenUsageLimit`
 Stop when total token usage exceeds a limit.
 ```php
-$tokenLimit = new TokenUsageLimit(maxTokens: 4000);
+$tokenLimit = ChatCriteria::tokenUsageLimit(maxTokens: 4000);
 ```
 
 ### `ExecutionTimeLimit`
 Stop after a time limit (in seconds).
 ```php
-$timeLimit = new ExecutionTimeLimit(seconds: 300); // 5 minutes
+$timeLimit = ChatCriteria::executionTimeLimit(seconds: 300); // 5 minutes
 ```
 
 ### `FinishReasonCheck`
 Stop when specific finish reasons are encountered.
 ```php
-$finishCheck = new FinishReasonCheck(['stop', 'length']);
+$finishCheck = ChatCriteria::finishReasonCheck(['stop', 'length']);
 ```
 
 Configure in ChatConfig:
 
 ```php
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\Chat\ContinuationCriteria\TokenUsageLimit;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
 
 $criteria = new ContinuationCriteria(
-    new StepsLimit(10),
-    new TokenUsageLimit(4000)
+    ChatCriteria::stepsLimit(10),
+    ChatCriteria::tokenUsageLimit(4000),
 );
 
 $config = ChatConfig::default($participants)
@@ -407,12 +414,17 @@ $storeed = new ScriptedParticipant(
 ### Feature Test Example
 
 ```php
-use Cognesy\Addons\Chat\Chat;use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;use Cognesy\Addons\Chat\Data\ChatConfig;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Data\Collections\Participants;use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\Chat;
+use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
+use Cognesy\Addons\Chat\Data\ChatConfig;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Messages\Messages;
 
 // Create test configuration
 $participants = new Participants($storeedAssistant);
 $config = ChatConfig::default($participants)
-    ->withContinuationCriteria(new ContinuationCriteria(new StepsLimit(2)));
+    ->withContinuationCriteria(new ContinuationCriteria(ChatCriteria::stepsLimit(2)));
 
 // Create initial state with user message
 $initialMessages = Messages::fromArray([
@@ -422,7 +434,7 @@ $state = new ChatState(messages: $initialMessages);
 
 // Execute chat turn
 $chat = new Chat($config);
-$newState = $chat->nextTurn($state);
+$newState = $chat->nextStep($state);
 
 // Verify results
 expect($newState->steps()->count())->toBe(1);

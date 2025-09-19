@@ -15,21 +15,21 @@ docname: 'chat_with_summary'
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\ContinuationCriteria\ResponseContentCheck;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\Chat\Processors\AppendStateMessages;
-use Cognesy\Addons\Chat\Processors\MoveMessagesToBuffer;
-use Cognesy\Addons\Chat\Processors\SummarizeBuffer;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Processors\AppendStateMessages;
+use Cognesy\Addons\Core\Processors\Chat\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\MoveMessagesToBuffer;
+use Cognesy\Addons\Core\Processors\SummarizeBuffer;
+use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Events\Event;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -58,10 +58,13 @@ $expert = new LLMParticipant(
 $chat = ChatFactory::default(
     participants: new Participants($student, $expert),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(12),
-        new ResponseContentCheck(fn($lastResponse) => $lastResponse !== ''),
+        new StepsLimit(12, static fn(ChatState $state): int => $state->stepCount()),
+        new ResponseContentCheck(
+            fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
+            static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
+        ),
     ),
-    stepProcessors: new ChatStateProcessors(
+    stepProcessors: new StateProcessors(
         new AccumulateTokenUsage(),
         new AppendStateMessages(),
         new MoveMessagesToBuffer(
@@ -79,7 +82,7 @@ $chat = ChatFactory::default(
         ),
     ),
     events: $events,
-)->wiretap(fn(Event $e) => $e->print());
+); //->wiretap(fn(Event $e) => $e->print());
 
 $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
@@ -87,8 +90,8 @@ $state = (new ChatState)->withMessages(
     Messages::fromString(content: $context, role: 'system')
 );
 
-while ($chat->hasNextTurn($state)) {
-    $state = $chat->nextTurn($state);
+while ($chat->hasNextStep($state)) {
+    $state = $chat->nextStep($state);
     $step = $state->currentStep();
 
     $name = $step?->participantName() ?? 'unknown';

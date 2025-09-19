@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\ToolUse\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools;
@@ -25,6 +25,18 @@ it('hasNextStep is true when no current step', function () {
     expect($tu->hasNextStep($state))->toBeTrue();
 });
 
+it('hasNextStep stops when criteria block first step', function () {
+    $tools = new Tools();
+    $state = new ToolUseState();
+    $tu = ToolUseFactory::default(
+        tools: $tools,
+        continuationCriteria: new ContinuationCriteria(new StepsLimit(0, static fn(ToolUseState $state): int => $state->stepCount()))
+    );
+
+    expect($tu->hasNextStep($state))->toBeFalse();
+    expect($tu->finalStep($state))->toBe($state);
+});
+
 it('finalStep respects StepsLimit(1)', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: new ToolCalls([ new ToolCall('_inc_lb', ['x' => 1]) ])),
@@ -36,7 +48,7 @@ it('finalStep respects StepsLimit(1)', function () {
         
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        continuationCriteria: new ContinuationCriteria(new StepsLimit(1)),
+        continuationCriteria: new ContinuationCriteria(new StepsLimit(1, static fn(ToolUseState $state): int => $state->stepCount())),
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
     );
 
@@ -65,4 +77,3 @@ it('accumulates usage across steps', function () {
 
     expect($state->usage()->toArray())->toMatchArray(['input' => 6, 'output' => 8]);
 });
-

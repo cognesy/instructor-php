@@ -108,9 +108,9 @@ class ToolCallingDriver implements CanUseTools
     }
 
     private function inferStepType(InferenceResponse $response, ToolExecutions $executions) : StepType {
-        return match(true) {
+        return match (true) {
             $executions->hasErrors() => StepType::Error,
-            $response->hasToolCalls() > 0 => StepType::ToolExecution,
+            $response->hasToolCalls() => StepType::ToolExecution,
             default => StepType::FinalResponse,
         };
     }

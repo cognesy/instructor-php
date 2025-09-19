@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\Core;
 
+use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Contracts\CanDecideToContinue;
 
 /**
  * Minimal step-by-step process executor for use by Chat/ToolUse

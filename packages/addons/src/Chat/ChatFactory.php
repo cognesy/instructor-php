@@ -2,17 +2,20 @@
 
 namespace Cognesy\Addons\Chat;
 
-use Cognesy\Addons\Chat\ContinuationCriteria\FinishReasonCheck;
-use Cognesy\Addons\Chat\ContinuationCriteria\StepsLimit;
-use Cognesy\Addons\Chat\ContinuationCriteria\TokenUsageLimit;
-use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\Chat\Processors\AppendStateMessages;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\Processors\Chat\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\Chat\AppendStateMessages;
+use Cognesy\Addons\Core\StateContracts\HasSteps;
+use Cognesy\Addons\Core\StateContracts\HasUsage;
 use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 class ChatFactory
 {
@@ -30,9 +33,13 @@ class ChatFactory
                 new AccumulateTokenUsage(),
             ),
             continuationCriteria: $continuationCriteria ?? new ContinuationCriteria(
-                new FinishReasonCheck(),
-                new StepsLimit(16),
-                new TokenUsageLimit(4096),
+                new FinishReasonCheck([
+                    InferenceFinishReason::Stop,
+                    InferenceFinishReason::Length,
+                    InferenceFinishReason::ContentFilter,
+                ], fn(HasSteps $state): ?string => $state->currentStep()?->finishReason()),
+                new StepsLimit(16, fn(HasSteps $state): int => $state->stepCount()),
+                new TokenUsageLimit(4096, fn(HasUsage $state): int => $state->usage()->total()),
             ),
             events: $events,
         );
