@@ -31,6 +31,10 @@ final readonly class ToolUseSteps
         }
     }
 
+    public function stepAt(int $index): ?ToolUseStep {
+        return $this->steps[$index] ?? null;
+    }
+
     public function count(): int {
         return count($this->steps);
     }

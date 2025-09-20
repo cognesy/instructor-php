@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Chat\Participants;
 
 use Closure;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
-use Cognesy\Addons\Chat\Contracts\CanRespondWithMessage;
+use Cognesy\Addons\Chat\Contracts\CanRespondWithMessages;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Events\ChatResponseRequested;
@@ -14,18 +14,19 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 final class ExternalParticipant implements CanParticipateInChat
 {
-    private CanRespondWithMessage $provider;
+    private CanRespondWithMessages $provider;
     private CanCompileMessages $compiler;
     private CanHandleEvents $events;
 
     public function __construct(
         private readonly string $name = 'external',
-        CanRespondWithMessage|callable|null $provider = null,
+        CanRespondWithMessages|callable|null $provider = null,
         ?CanCompileMessages $compiler = null,
         ?CanHandleEvents $events = null,
     ) {
@@ -44,31 +45,31 @@ final class ExternalParticipant implements CanParticipateInChat
         return new ChatStep(
             participantName: $this->name,
             inputMessages: $this->compiler->compile($state),
-            outputMessage: $response,
+            outputMessages: $response,
             usage: Usage::none(),
             inferenceResponse: null,
             finishReason: InferenceFinishReason::Other,
         );
     }
 
-    private function makeProvider(callable|CanProvideMessage|null $provider) : CanRespondWithMessage {
+    private function makeProvider(callable|CanProvideMessage|null $provider) : CanRespondWithMessages {
         return match(true) {
-            $provider instanceof CanRespondWithMessage => $provider,
-            is_callable($provider) => new class($provider) implements CanRespondWithMessage {
+            $provider instanceof CanRespondWithMessages => $provider,
+            is_callable($provider) => new class($provider) implements CanRespondWithMessages {
                 public function __construct(private readonly Closure $provider) {}
-                public function respond(ChatState $state) : Message {
-                    return ($this->provider)($state);
+                public function respond(ChatState $state) : Messages {
+                    return Messages::fromAny(($this->provider)($state));
                 }
             },
-            default => new class implements CanRespondWithMessage {
-                public function respond(ChatState $state) : Message {
-                    return new Message(role: 'user', content: '');
+            default => new class implements CanRespondWithMessages {
+                public function respond(ChatState $state) : Messages {
+                    return new Messages(new Message(role: 'user', content: ''));
                 }
             },
         };
     }
 
-    private function emitChatResponseRequested(CanRespondWithMessage $provider, ChatState $state) : void {
+    private function emitChatResponseRequested(CanRespondWithMessages $provider, ChatState $state) : void {
         $this->events->dispatch(new ChatResponseRequested([
             'participant' => $this->name,
             'provider' => get_class($provider),
@@ -76,10 +77,10 @@ final class ExternalParticipant implements CanParticipateInChat
         ]));
     }
 
-    private function emitChatResponseReceived(Message $outputMessage) : void {
+    private function emitChatResponseReceived(Messages $outputMessages) : void {
         $this->events->dispatch(new ChatResponseRequested([
             'participant' => $this->name,
-            'response' => $outputMessage->toArray(),
+            'outputMessages' => $outputMessages->toArray(),
         ]));
     }
 }

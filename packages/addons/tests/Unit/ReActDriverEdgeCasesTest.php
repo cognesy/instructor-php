@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Enums\StepType;
@@ -46,7 +46,7 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
 
     $state = $toolUse->finalStep($state);
     expect($state->currentStep()->stepType())->toBe(StepType::FinalResponse);
-    expect($state->currentStep()->response())->toBe('done');
+    expect($state->currentStep()->outputMessages()->last()->toString())->toBe('done');
 });
 
 it('surfaces extraction failure as validation exception (deterministic)', function () {

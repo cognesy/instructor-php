@@ -37,6 +37,16 @@ final class ChatSteps
         return $this->steps;
     }
 
+    public function each() : iterable {
+        foreach ($this->steps as $step) {
+            yield $step;
+        }
+    }
+
+    public function stepAt(int $index): ?ChatStep {
+        return $this->steps[$index] ?? null;
+    }
+
     public function toArray(): array {
         return array_map(fn(ChatStep $step) => $step->toArray(), $this->steps);
     }

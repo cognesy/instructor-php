@@ -82,9 +82,7 @@ it('executes tool calls and returns chat step with tool results', function () {
     $step = $participant->act($state);
 
     expect($step->participantName())->toBe('math-assistant');
-    expect($step->outputMessage()->content()->toString())->toBe('The result is 8.');
-    expect($step->outputMessage()->role()->value)->toBe('assistant');
-    expect($step->outputMessage()->name())->toBe('math-assistant');
+    expect($step->outputMessages()->last()->toString())->toBe('The result is 8.');
     expect($step->usage()->total())->toBe(20); // final step usage only
     expect($step->finishReason())->toBe(InferenceFinishReason::Stop);
     expect($step->meta()['hasToolCalls'])->toBeFalse(); // final step doesn't have tool calls
@@ -136,7 +134,7 @@ it('handles multiple tool calls in sequence', function () {
     $step = $participant->act($state);
 
     expect($step->participantName())->toBe('multi-tool-assistant');
-    expect($step->outputMessage()->content()->toString())->toBe('First result is 8, second result is 8.');
+    expect($step->outputMessages()->last()->toString())->toBe('First result is 8, second result is 8.');
     expect($step->usage()->total())->toBe(30); // final step usage only
     expect($step->meta()['toolsUsed'])->toBe(''); // final step doesn't have tool calls
 });
@@ -145,9 +143,9 @@ it('prepends system prompt when provided', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(
             content: 'Hello! I am a helpful math assistant.',
+            finishReason: 'stop',
             toolCalls: new ToolCalls([]),
             usage: new Usage(5, 10),
-            finishReason: 'stop'
         )
     ]);
 

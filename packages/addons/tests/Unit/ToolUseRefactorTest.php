@@ -10,6 +10,7 @@ use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -47,10 +48,18 @@ it('continues loop on tool failure and formats error message', function () {
 
     expect($step->toolExecutions()->hasErrors())->toBeTrue();
     $msgs = $state->messages()->toArray();
+
+    // Debug: Let's see what's actually in the messages
+    dump('Messages:', $msgs);
+
     $invocationNames = [];
     foreach ($msgs as $m) {
         $invocationNames[] = $m['_metadata']['tool_calls'][0]['function']['name'] ?? null;
     }
+
+    // Debug: Let's see what invocation names we found
+    dump('Invocation names:', $invocationNames);
+
     expect($invocationNames)->toContain('_sum');
 
     $resultNames = [];
@@ -63,7 +72,7 @@ it('continues loop on tool failure and formats error message', function () {
 it('stops on configured finish reasons (FinishReasonCheck)', function () {
     $state = new ToolUseState();
     $resp = new InferenceResponse(content: '', finishReason: 'stop');
-    $step = new ToolUseStep('', null, null, null, null, $resp);
+    $step = new ToolUseStep(inferenceResponse: $resp);
     $state = $state->withAddedStep($step);
     $state->withCurrentStep($step);
 
@@ -76,16 +85,17 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
     // success step (no errors): empty tool executions
     $state = $state->withAddedStep(new ToolUseStep());
     // failed steps: emulate by creating ToolUseStep with error executions
-    $failedExecs = new ToolExecutions([
+    $failedExecs = new ToolExecutions(
         new ToolExecution(
-            new ToolCall('noop', []),
-            Result::failure(new Exception('x')),
-            new DateTimeImmutable(),
-            new DateTimeImmutable()
+            toolCall: new ToolCall('noop', []),
+            result: Result::failure(new Exception('x')),
+            startedAt: new DateTimeImmutable(),
+            endedAt: new DateTimeImmutable()
         )
-    ]);
-    $failedStep1 = new ToolUseStep('', null, $failedExecs);
-    $failedStep2 = new ToolUseStep('', null, $failedExecs);
+    );
+    $failedOutput = new Messages(Message::asTool(''));
+    $failedStep1 = new ToolUseStep(outputMessages: $failedOutput, toolCalls: null, toolExecutions: $failedExecs);
+    $failedStep2 = new ToolUseStep(outputMessages: $failedOutput, toolCalls: null, toolExecutions: $failedExecs);
     $state = $state->withAddedStep($failedStep1);
     $state = $state->withAddedStep($failedStep2);
     $state = $state->withCurrentStep($failedStep2);

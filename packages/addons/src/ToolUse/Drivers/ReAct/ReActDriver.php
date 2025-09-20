@@ -9,9 +9,14 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Addons\ToolUse\Tools;
+use Cognesy\Dynamic\Field;
+use Cognesy\Dynamic\Structure;
+use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -57,17 +62,23 @@ final class ReActDriver implements CanUseTools
         $this->mode = $mode;
     }
 
-    public function useTools(ToolUseState $state, Tools $tools) : ToolUseStep {
+    public function useTools(ToolUseState $state, Tools $tools): ToolUseStep {
         $messages = $state->messages();
         $system = ReActPrompt::buildSystemPrompt($tools);
+        [$decisionStructure, $toolArgumentStructures] = $this->buildDecisionStructures($tools);
 
-        $extraction = Result::try(fn () => $this->extractDecisionWithUsage($messages, $system));
+        $extraction = Result::try(fn() => $this->extractDecisionWithUsage(
+            messages: $messages,
+            system: $system,
+            decisionStructure: $decisionStructure,
+        ));
         if ($extraction->isFailure()) {
-            return $this->buildExtractionFailureStep($extraction->error());
+            return $this->buildExtractionFailureStep($extraction->error(), $messages);
         }
 
         /** @var PendingStructuredOutput $pendingDecision */
         $pendingDecision = $extraction->unwrap();
+
         /**
          * NOTE/TODO (design choice):
          * Currently we call `$pendingDecision->get()` directly. If StructuredOutput fails
@@ -83,13 +94,19 @@ final class ReActDriver implements CanUseTools
          * For now, we preserve strict failure semantics to surface invalid decision extraction
          * to the caller explicitly.
          */
-        /** @var ReActDecision $decision */
-        $decision = $pendingDecision->get();
+        /** @var Structure $structuredDecision */
+        $structuredDecision = $pendingDecision->get();
+        $validation = $structuredDecision->validate();
+        if ($validation->isInvalid()) {
+            return $this->buildValidationFailureStep($validation, $messages);
+        }
+
+        $decision = $this->makeDecision($structuredDecision, $toolArgumentStructures);
         $inferenceResponse = $pendingDecision->response();
         $usage = $inferenceResponse->usage();
 
         return match (true) {
-            $decision->isCall() => $this->buildToolCallStep($decision, $usage, $inferenceResponse, $state, $tools),
+            $decision->isCall() => $this->buildToolCallStep($decision, $usage, $inferenceResponse, $state, $tools, $messages),
             default => $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $state, $messages),
         };
     }
@@ -99,11 +116,11 @@ final class ReActDriver implements CanUseTools
     /**
      * Extracts a ReAct decision via StructuredOutput and returns usage data.
      */
-    private function extractDecisionWithUsage(Messages $messages, string $system) : PendingStructuredOutput {
+    private function extractDecisionWithUsage(Messages $messages, string $system, Structure $decisionStructure): PendingStructuredOutput {
         $structured = (new StructuredOutput())
             ->withSystem($system)
             ->withMessages($messages)
-            ->withResponseClass(ReActDecision::class)
+            ->withResponseModel($decisionStructure->clone())
             ->withOutputMode($this->mode)
             ->withModel($this->model)
             ->withOptions($this->options)
@@ -115,23 +132,46 @@ final class ReActDriver implements CanUseTools
         return $structured->create();
     }
 
+    /** Builds a failure step when decision fails validation. */
+    private function buildValidationFailureStep(ValidationResult $validation, Messages $context): ToolUseStep {
+        $formatter = new ReActFormatter();
+        $error = new \RuntimeException($validation->getErrorMessage());
+        $messagesErr = $formatter->decisionExtractionErrorMessages($error);
+        $exec = new ToolExecution(
+            new ToolCall('decision_validation', []),
+            Result::failure($error),
+            new \DateTimeImmutable(),
+            new \DateTimeImmutable(),
+        );
+        $executions = (new ToolExecutions())->add($exec);
+        return new ToolUseStep(
+            inputMessages: $context,
+            outputMessages: $messagesErr,
+            usage: null,
+            toolCalls: null,
+            toolExecutions: $executions,
+            inferenceResponse: null,
+            stepType: StepType::Error,
+        );
+    }
+
     /** Builds a failure step when decision extraction fails. */
-    private function buildExtractionFailureStep(\Throwable $e) : ToolUseStep {
+    private function buildExtractionFailureStep(\Throwable $e, Messages $context): ToolUseStep {
         $formatter = new ReActFormatter();
         $messagesErr = $formatter->decisionExtractionErrorMessages($e);
         $exec = new ToolExecution(
             new ToolCall('decision_extraction', []),
             Result::failure($e),
             new \DateTimeImmutable(),
-            new \DateTimeImmutable()
+            new \DateTimeImmutable(),
         );
         $executions = (new ToolExecutions())->add($exec);
         return new ToolUseStep(
-            response: '',
+            inputMessages: $context,
+            outputMessages: $messagesErr,
+            usage: null,
             toolCalls: null,
             toolExecutions: $executions,
-            messages: $messagesErr,
-            usage: null,
             inferenceResponse: null,
             stepType: StepType::Error,
         );
@@ -143,8 +183,9 @@ final class ReActDriver implements CanUseTools
         ?Usage $usage,
         ?InferenceResponse $inferenceResponse,
         ToolUseState $state,
-        Tools $tools
-    ) : ToolUseStep {
+        Tools $tools,
+        Messages $context,
+    ): ToolUseStep {
         $call = new ToolCall($decision->tool() ?? '', $decision->args());
         $execution = $tools->useTool($call, $state);
         $executions = (new ToolExecutions())->add($execution);
@@ -155,11 +196,11 @@ final class ReActDriver implements CanUseTools
             ->appendMessage($formatter->observationMessage($execution));
 
         return new ToolUseStep(
-            response: '',
+            inputMessages: $context,
+            outputMessages: $followUps,
+            usage: $usage,
             toolCalls: new ToolCalls([$call]),
             toolExecutions: $executions,
-            messages: $followUps,
-            usage: $usage,
             inferenceResponse: $inferenceResponse,
             stepType: StepType::ToolExecution,
         );
@@ -171,8 +212,8 @@ final class ReActDriver implements CanUseTools
         ?Usage $usage,
         ?InferenceResponse $inferenceResponse,
         ToolUseState $state,
-        Messages $messages
-    ) : ToolUseStep {
+        Messages $messages,
+    ): ToolUseStep {
         $finalText = $decision->answer();
         if ($this->finalViaInference) {
             $pending = $this->finalizeAnswerViaInference($messages);
@@ -181,18 +222,184 @@ final class ReActDriver implements CanUseTools
             $usage = $inferenceResponse->usage();
         }
         return new ToolUseStep(
-            response: $finalText,
+            inputMessages: $messages,
+            outputMessages: Messages::empty()->appendMessage(Message::asAssistant($finalText)),
+            usage: $usage,
             toolCalls: null,
             toolExecutions: null,
-            messages: Messages::empty(),
-            usage: $usage,
             inferenceResponse: $inferenceResponse,
             stepType: StepType::FinalResponse,
         );
     }
 
+    /**
+     * Builds decision and tool argument structures using dynamic Structure API.
+     *
+     * @return array{0: Structure, 1: array<string, Structure>}
+     */
+    private function buildDecisionStructures(Tools $tools): array {
+        $toolSchemas = $tools->toToolSchema();
+        $toolArgumentStructures = $this->buildToolArgumentStructures($toolSchemas);
+        $toolNames = array_keys($toolArgumentStructures);
+
+        $thoughtField = Field::string('thought', 'Brief reasoning for the next action.')->required();
+        $typeField = Field::option('type', ['call_tool', 'final_answer'], 'Decision type.')->required();
+        $toolField = match (empty($toolNames)) {
+            true => Field::string('tool', 'Tool name to call when type=call_tool.')->optional(),
+            false => Field::option('tool', $toolNames, 'Tool name to call when type=call_tool.')->optional(),
+        };
+
+        $argsField = Field::structure(
+            'args',
+            fn() => $this->buildArgsFields($toolArgumentStructures),
+            'Arguments for the selected tool.',
+        )->optional();
+        $answerField = Field::string('answer', 'Final answer when type=final_answer.')->optional();
+
+        $decision = Structure::define(
+            'react_decision',
+            [$thoughtField, $typeField, $toolField, $argsField, $answerField],
+            'ReAct decision payload.',
+        );
+        $decision->validator(fn(Structure $structure) => $this->validateDecisionStructure($structure, $toolNames));
+
+        return [$decision, $toolArgumentStructures];
+    }
+
+    /**
+     * Builds per-tool argument structures derived from tool JSON schemas.
+     *
+     * @param array<int, array<string, mixed>> $toolSchemas
+     * @return array<string, Structure>
+     */
+    private function buildToolArgumentStructures(array $toolSchemas): array {
+        $structures = [];
+        foreach ($toolSchemas as $definition) {
+            $name = $definition['function']['name'] ?? '';
+            $parameters = $definition['function']['parameters'] ?? null;
+            if ($name === '' || !is_array($parameters)) {
+                continue;
+            }
+            $structures[$name] = StructureFactory::fromJsonSchema([
+                ...$parameters,
+                'x-title' => $parameters['x-title'] ?? $name . '_arguments',
+                'description' => $parameters['description'] ?? ('Arguments for ' . $name),
+            ]);
+        }
+        return $structures;
+    }
+
+    /**
+     * Flattens tool argument structures into a shared args structure definition.
+     *
+     * @param array<string, Structure> $toolArgumentStructures
+     * @return array<int, Field>
+     */
+    private function buildArgsFields(array $toolArgumentStructures): array {
+        $fields = [];
+        foreach ($toolArgumentStructures as $structure) {
+            foreach ($structure->fields() as $field) {
+                $name = $field->name();
+                if (!isset($fields[$name])) {
+                    $fields[$name] = $field->clone()->optional();
+                }
+            }
+        }
+        return array_values($fields);
+    }
+
+    /** Validates decision structure using Structure validator. */
+    private function validateDecisionStructure(Structure $structure, array $toolNames): ValidationResult {
+        $type = (string)($structure->get('type') ?? '');
+        if ($type === 'call_tool') {
+            return $this->validateCallDecision($structure, $toolNames);
+        }
+        if ($type === 'final_answer') {
+            return $this->validateFinalDecision($structure);
+        }
+        return ValidationResult::fieldError('type', $type, 'Decision type must be call_tool or final_answer.');
+    }
+
+    /** Ensures call_tool decisions reference an available tool and provide args. */
+    private function validateCallDecision(Structure $structure, array $toolNames): ValidationResult {
+        $tool = (string)($structure->get('tool') ?? '');
+        if ($tool === '') {
+            return ValidationResult::fieldError('tool', $tool, 'Tool name is required when type=call_tool.');
+        }
+        if ($toolNames !== [] && !in_array($tool, $toolNames, true)) {
+            return ValidationResult::fieldError('tool', $tool, 'Requested tool is not available.');
+        }
+        $args = $structure->get('args');
+        $hasArgs = match (true) {
+            $args instanceof Structure => $args->toArray() !== [],
+            is_array($args) => $args !== [],
+            default => $args !== null,
+        };
+        if (!$hasArgs) {
+            return ValidationResult::fieldError('args', $args, 'Arguments are required when type=call_tool.');
+        }
+        return ValidationResult::valid();
+    }
+
+    /** Ensures final_answer decisions contain an answer. */
+    private function validateFinalDecision(Structure $structure): ValidationResult {
+        $answer = (string)($structure->get('answer') ?? '');
+        if ($answer === '') {
+            return ValidationResult::fieldError('answer', $answer, 'Answer is required when type=final_answer.');
+        }
+        return ValidationResult::valid();
+    }
+
+    /** Converts structured decision into a ReActDecision value object. */
+    private function makeDecision(Structure $structuredDecision, array $toolArgumentStructures): ReActDecision {
+        $data = $structuredDecision->toArray();
+        $args = $data['args'] ?? [];
+        $normalizedArgs = $this->normalizeArgs($args);
+        $toolName = $data['tool'] ?? '';
+        $data['args'] = $this->normalizeArgsForTool($toolName, $normalizedArgs, $toolArgumentStructures);
+        return ReActDecision::fromArray($data);
+    }
+
+    /** Normalizes arguments emitted by the model into an associative array. */
+    private function normalizeArgs(mixed $args): array {
+        if ($args instanceof Structure) {
+            return $this->normalizeArgs($args->toArray());
+        }
+        if (is_array($args)) {
+            if (array_is_list($args) && count($args) === 1 && is_array($args[0])) {
+                return $this->normalizeArgs($args[0]);
+            }
+            return $args;
+        }
+        if (is_string($args) && $args !== '') {
+            $decoded = json_decode($args, true);
+            if (is_array($decoded)) {
+                return $this->normalizeArgs($decoded);
+            }
+        }
+        return [];
+    }
+
+    /** Applies tool-specific schema to sanitize argument payload. */
+    private function normalizeArgsForTool(string $toolName, array $args, array $toolArgumentStructures): array {
+        if ($toolName === '' || !isset($toolArgumentStructures[$toolName])) {
+            return $args;
+        }
+        $structure = $toolArgumentStructures[$toolName]->clone();
+        foreach ($args as $key => $value) {
+            if ($structure->has($key)) {
+                $structure->set($key, $value);
+            }
+        }
+        $normalized = $structure->toArray();
+        return array_filter(
+            $normalized,
+            static fn($value) => $value !== null,
+        );
+    }
+
     /** Generates a plain-text final answer via Inference and returns PendingInference. */
-    private function finalizeAnswerViaInference(Messages $messages) : PendingInference {
+    private function finalizeAnswerViaInference(Messages $messages): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),
@@ -203,7 +410,9 @@ final class ReActDriver implements CanUseTools
             ->withModel($this->finalModel ?: $this->model)
             ->withOptions($this->finalOptions ?: $this->options)
             ->withOutputMode(OutputMode::Text);
-        if ($this->httpClient !== null) { $inference = $inference->withHttpClient($this->httpClient); }
+        if ($this->httpClient !== null) {
+            $inference = $inference->withHttpClient($this->httpClient);
+        }
         return $inference->create();
     }
 }

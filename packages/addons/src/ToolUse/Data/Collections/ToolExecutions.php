@@ -10,8 +10,7 @@ class ToolExecutions
     /** @var ToolExecution[] */
     private array $toolExecutions;
 
-    /** @param ToolExecution[] $toolExecutions */
-    public function __construct(array $toolExecutions = []) {
+    public function __construct(ToolExecution ...$toolExecutions) {
         $this->toolExecutions = $toolExecutions;
     }
 
@@ -19,7 +18,7 @@ class ToolExecutions
 
     public static function fromArray(array $data): self {
         return new self(
-            array_map(fn($executionData) => ToolExecution::fromArray($executionData), $data)
+            ...array_map(fn($executionData) => ToolExecution::fromArray($executionData), $data)
         );
     }
 

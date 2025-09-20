@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\ToolUse\Formatters;
+namespace Cognesy\Addons\ToolUse\Drivers\ToolCalling;
 
 use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;

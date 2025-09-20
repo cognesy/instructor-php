@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
@@ -54,7 +54,7 @@ it('runs a ReAct call then final answer', function () {
     $toolUse = ToolUseFactory::default(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
     $state = $toolUse->finalStep($state);
-    expect($state->currentStep()->response())->toBe('5');
+    expect($state->currentStep()->outputMessages()->last()->toString())->toBe('5');
 });
 
 it('surfaces tool arg validation errors as observation', function () {
@@ -121,5 +121,5 @@ it('can finalize via Inference when configured', function () {
     $toolUse = ToolUseFactory::default(tools: $tools, continuationCriteria: $criteria, driver: $react);
 
     $state = $toolUse->finalStep($state);
-    expect($state->currentStep()->response())->toContain('42');
+    expect($state->currentStep()->outputMessages()->last()->toString())->toContain('42');
 });

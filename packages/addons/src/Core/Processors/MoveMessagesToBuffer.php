@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core\Processors\Chat;
+namespace Cognesy\Addons\Core\Processors;
 
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\MessagesMovedToBuffer;
@@ -22,14 +22,12 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
-    public function canProcess(object $state): bool
-    {
+    public function canProcess(object $state): bool {
         return $state instanceof ChatState
             && $this->shouldProcess($state->messages()->toString());
     }
 
-    public function process(object $state, ?callable $next = null): ChatState
-    {
+    public function process(object $state, ?callable $next = null): object {
         [$keep, $overflow] = (new SplitMessages)->split($state->messages(), $this->maxTokens);
         $this->events->dispatch(new MessagesMovedToBuffer([
             'overflow' => $overflow->toArray(),
@@ -43,8 +41,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
         return $next ? $next($newState) : $newState;
     }
 
-    private function shouldProcess(string $text): bool
-    {
+    private function shouldProcess(string $text): bool {
         $tokens = Tokenizer::tokenCount($text);
         return $tokens > $this->maxTokens;
     }

@@ -1,5 +1,7 @@
 <?php
 
+use Cognesy\Dynamic\Field;
+use Cognesy\Dynamic\Structure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
@@ -177,4 +179,29 @@ it('can handle raw object', function() {
     expect($responseModel->toJsonSchema()['required'])->toBeArray();
     expect($responseModel->toJsonSchema()['required'][0])->toBe('name');
     expect($responseModel->toJsonSchema()['required'][1])->toBe('email');
+});
+
+it('hydrates dynamic structure from json schema', function() {
+    $events = new EventDispatcher('test');
+    $responseModelFactory = new ResponseModelFactory(
+        new ToolCallBuilder(new SchemaFactory()),
+        new SchemaFactory(),
+        new StructuredOutputConfig(),
+        $events,
+    );
+    $city = Structure::define('city', [
+        Field::string('name')->required(),
+        Field::int('population')->required(),
+    ]);
+    $responseModel = $responseModelFactory->fromAny($city->toJsonSchema());
+    $structure = $responseModel->instance();
+    expect($structure)->toBeInstanceOf(Structure::class);
+    expect($structure->name())->toBe('city');
+    expect($structure->field('name')->isRequired())->toBeTrue();
+    $structure->fromArray([
+        'name' => 'Paris',
+        'population' => 2140526,
+    ]);
+    expect($structure->get('name'))->toBe('Paris');
+    expect($structure->get('population'))->toBe(2140526);
 });

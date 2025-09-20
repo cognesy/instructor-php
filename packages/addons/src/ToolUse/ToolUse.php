@@ -2,13 +2,13 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
-use Cognesy\Addons\ToolUse\Contracts\CanProcessToolState;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
+use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
@@ -85,7 +85,7 @@ final readonly class ToolUse {
 
     // MUTATORS /////////////////////////////////////////////
 
-    public function withProcessors(CanProcessToolState ...$processors): self {
+    public function withProcessors(CanProcessAnyState ...$processors): self {
         return new self(
             tools: $this->tools,
             processors: new StateProcessors(...$processors),

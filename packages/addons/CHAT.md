@@ -48,7 +48,7 @@ $chat = new Chat($config);
 $newState = $chat->nextStep($state);
 
 // Get the assistant's response
-$assistantMessage = $newState->steps()->last()->outputMessage();
+$assistantMessage = $newState->steps()->last()->outputMessages()->last();
 echo $assistantMessage->content();
 ```
 
@@ -111,7 +111,7 @@ while ($chat->hasNextStep($state)) {
     $state = $chat->nextStep($state);
     $step = $state->currentStep();
     if ($step) {
-        echo "[{$step->participantName()}]: {$step->outputMessage()->content()}\n\n";
+        echo "[{$step->participantName()}]: {$step->outputMessages()->last()->content()}\n\n";
     }
 }
 ```

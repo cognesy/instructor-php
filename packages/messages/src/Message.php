@@ -90,8 +90,12 @@ final readonly class Message
         return static::fromAny($message, MessageRole::Developer, $name);
     }
 
+    public static function asTool(string|array|Message $message, string $name = ''): static {
+        return static::fromAny($message, MessageRole::Tool, $name);
+    }
+
     public static function fromAny(
-        string|array|Message|Content|ContentPart $message,
+        string|array|Message|Messages|Content|ContentPart $message,
         string|MessageRole|null $role = null,
         string $name = '',
     ): static {

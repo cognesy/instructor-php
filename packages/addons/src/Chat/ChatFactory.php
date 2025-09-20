@@ -9,8 +9,8 @@ use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Processors\Chat\AccumulateTokenUsage;
-use Cognesy\Addons\Core\Processors\Chat\AppendStateMessages;
+use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\AppendStepMessages;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
 use Cognesy\Addons\Core\StateContracts\HasUsage;
 use Cognesy\Addons\Core\StateProcessors;
@@ -29,7 +29,7 @@ class ChatFactory
             participants: $participants,
             nextParticipantSelector: new RoundRobinSelector(),
             stepProcessors: $stepProcessors ?? new StateProcessors(
-                new AppendStateMessages(),
+                new AppendStepMessages(),
                 new AccumulateTokenUsage(),
             ),
             continuationCriteria: $continuationCriteria ?? new ContinuationCriteria(

@@ -81,7 +81,7 @@ while ($toolUse->hasNextStep($state)) {
 }
 
 // print final response
-$result = $state->currentStep()->response();
+$result = $state->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 
@@ -100,7 +100,7 @@ foreach ($toolUse->iterator($state) as $currentState) {
 }
 
 // print final response
-$result = $state->currentStep()->response();
+$result = $state->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 
@@ -114,7 +114,7 @@ $state = (new ToolUseState)
 
 // print final response
 $finalState = $toolUse->finalStep($state);
-$result = $finalState->currentStep()->response();
+$result = $finalState->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 ?>
 ```

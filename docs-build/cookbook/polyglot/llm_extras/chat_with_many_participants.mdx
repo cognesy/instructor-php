@@ -74,7 +74,7 @@ while ($chat->hasNextTurn($state)) {
 
     if ($step) {
         $participantName = $step->participantName();
-        $content = trim($step->outputMessage()->toString());
+        $content = trim($step->outputMessages()->toString());
         
         // Only display if there's actual content
         if (!empty($content)) {

@@ -22,7 +22,7 @@ use Cognesy\Addons\Chat\Data\Collections\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Addons\Core\Processors\Chat\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\Core\Processors\Chat\AppendStateMessages;
 use Cognesy\Addons\Core\Processors\Chat\MoveMessagesToBuffer;
 use Cognesy\Addons\Core\Processors\Chat\SummarizeBuffer;
@@ -91,7 +91,7 @@ while ($chat->hasNextTurn($state)) {
     $step = $state->currentStep();
 
     $name = $step?->participantName() ?? 'unknown';
-    $content = trim($step?->outputMessage()->toString() ?? '');
+    $content = trim($step?->outputMessages()->toString() ?? '');
     echo "\n--- Step " . ($state->stepCount()) . " ($name) ---\n";
     echo $content . "\n";
 }

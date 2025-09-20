@@ -11,9 +11,9 @@ use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\ToolCallPresenceCheck;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Processors\ToolUse\AccumulateTokenUsage;
-use Cognesy\Addons\Core\Processors\ToolUse\AppendContextMetadata;
-use Cognesy\Addons\Core\Processors\ToolUse\AppendToolStateMessages;
+use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\AppendContextMetadata;
+use Cognesy\Addons\Core\Processors\AppendStepMessages;
 use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
@@ -48,7 +48,7 @@ class ToolUseFactory
         return new StateProcessors(
             new AccumulateTokenUsage(),
             new AppendContextMetadata(),
-            new AppendToolStateMessages(),
+            new AppendStepMessages(),
         );
     }
 

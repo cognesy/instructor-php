@@ -13,6 +13,7 @@ use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -54,18 +55,28 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
         $finalState = $this->toolUse->finalStep($toolUseState);
         $toolStep = $finalState->currentStep();
 
-        $outputMessage = new Message(
-            role: 'assistant',
-            content: $toolStep?->response() ?? '',
-            name: $this->name,
-        );
+        $stepMessages = $toolStep?->outputMessages() ?? Messages::empty();
+        $normalizedMessages = new Messages(...array_map(
+            fn(Message $message): Message => $message->role()->is(MessageRole::Assistant)
+                ? $message->withName($this->name)
+                : $message,
+            $stepMessages->all(),
+        ));
+
+        $outputMessages = $normalizedMessages->notEmpty()
+            ? $normalizedMessages
+            : new Messages(new Message(
+                role: MessageRole::Assistant->value,
+                content: '',
+                name: $this->name,
+            ));
 
         $this->emitChatToolUseCompleted($toolStep);
 
         return new ChatStep(
             participantName: $this->name,
             inputMessages: $messages,
-            outputMessage: $outputMessage,
+            outputMessages: $outputMessages,
             usage: $toolStep?->usage() ?? Usage::none(),
             finishReason: $toolStep?->finishReason() ?? InferenceFinishReason::Other,
             meta: [

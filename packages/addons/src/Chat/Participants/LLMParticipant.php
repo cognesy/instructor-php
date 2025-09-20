@@ -56,16 +56,16 @@ final readonly class LLMParticipant implements CanParticipateInChat
         )->response();
         $this->emitChatInferenceResponseReceived($response);
 
-        $outputMessage = new Message(
+        $outputMessages = new Messages(new Message(
             role: 'assistant',
             content: $response->content(),
             name: $this->name,
-        );
+        ));
 
         return new ChatStep(
             participantName: $this->name,
             inputMessages: $messages,
-            outputMessage: $outputMessage,
+            outputMessages: $outputMessages,
             usage: $response->usage(),
             inferenceResponse: $response,
             finishReason: $response->finishReason() ?? InferenceFinishReason::Other,

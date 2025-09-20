@@ -8,4 +8,5 @@ interface HasUsage
 {
     public function usage(): Usage;
     public function withUsage(Usage $usage): static;
+    public function withAccumulatedUsage(Usage $usage): static;
 }

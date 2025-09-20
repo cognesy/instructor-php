@@ -2,7 +2,8 @@
 
 namespace Cognesy\Addons\Chat\Data;
 
-use Cognesy\Messages\Message;
+use Cognesy\Addons\Core\StepContracts\HasStepMessages;
+use Cognesy\Addons\Core\StepContracts\HasStepUsage;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -10,15 +11,16 @@ use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
-final class ChatStep
+final class ChatStep implements HasStepUsage, HasStepMessages
 {
     public readonly string $id;
     public readonly DateTimeImmutable $createdAt;
 
-    private string $participantName;
     private ?Messages $inputMessages;
-    private ?Message $outputMessage;
+    private ?Messages $outputMessages;
     private ?Usage $usage;
+
+    private string $participantName;
     private ?InferenceResponse $inferenceResponse;
     private ?InferenceFinishReason $finishReason;
     private array $meta;
@@ -26,7 +28,7 @@ final class ChatStep
     public function __construct(
         string $participantName,
         ?Messages $inputMessages = null,
-        ?Message $outputMessage = null,
+        ?Messages $outputMessages = null,
         ?Usage $usage = null,
         ?InferenceResponse $inferenceResponse = null,
         ?InferenceFinishReason $finishReason = null,
@@ -40,7 +42,7 @@ final class ChatStep
 
         $this->participantName = $participantName;
         $this->inputMessages = $inputMessages;
-        $this->outputMessage = $outputMessage;
+        $this->outputMessages = $outputMessages;
         $this->usage = $usage;
         $this->inferenceResponse = $inferenceResponse;
         $this->finishReason = $finishReason;
@@ -51,7 +53,7 @@ final class ChatStep
         return new ChatStep(
             participantName: $stepData['participantName'],
             inputMessages: isset($stepData['inputMessages']) ? Messages::fromArray($stepData['inputMessages']) : null,
-            outputMessage: isset($stepData['outputMessage']) ? Message::fromArray($stepData['outputMessage']) : null,
+            outputMessages: isset($stepData['outputMessages']) ? Messages::fromArray($stepData['outputMessages']) : null,
             usage: isset($stepData['usage']) ? Usage::fromArray($stepData['usage']) : null,
             inferenceResponse: isset($stepData['inferenceResponse']) ? InferenceResponse::fromArray($stepData['inferenceResponse']) : null,
             finishReason: InferenceFinishReason::tryFrom($stepData['finishReason'] ?? ''),
@@ -69,17 +71,17 @@ final class ChatStep
         return $this->inputMessages ?? Messages::empty();
     }
 
-    public function outputMessage(): Message {
-        return $this->outputMessage ?? Message::empty();
+    public function outputMessages(): Messages {
+        return $this->outputMessages ?? Messages::empty();
     }
 
-    public function messages(): Messages {
-        $messages = $this->inputMessages ?? Messages::empty();
-        if ($this->outputMessage) {
-            $messages = $messages->appendMessage($this->outputMessage);
-        }
-        return $messages;
-    }
+//    public function messages(): Messages {
+//        $messages = $this->inputMessages ?? Messages::empty();
+//        if ($this->outputMessage) {
+//            $messages = $messages->appendMessage($this->outputMessage);
+//        }
+//        return $messages;
+//    }
 
     public function usage(): Usage {
         return $this->usage ?? new Usage();
@@ -101,7 +103,7 @@ final class ChatStep
         return [
             'participantName' => $this->participantName,
             'inputMessages' => $this->inputMessages?->toArray(),
-            'outputMessage' => $this->outputMessage?->toArray(),
+            'outputMessages' => $this->outputMessages?->toArray(),
             'usage' => $this->usage?->toArray(),
             'inferenceResponse' => $this->inferenceResponse?->toArray(),
             'finishReason' => $this->finishReason->value ?? null,

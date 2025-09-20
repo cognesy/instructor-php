@@ -2,7 +2,8 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
-use Cognesy\Addons\Shared\MessageExchangeState;
+use Cognesy\Addons\Core\MessageExchangeState;
+use Cognesy\Addons\Core\StateContracts\HasSteps;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Messages\Messages;
@@ -11,7 +12,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
 
-final readonly class ToolUseState extends MessageExchangeState
+final readonly class ToolUseState extends MessageExchangeState implements HasSteps
 {
     private ToolUseStatus $status;
     private ToolUseSteps $steps;
@@ -66,7 +67,7 @@ final readonly class ToolUseState extends MessageExchangeState
 
     // MUTATORS ////////////////////////////////////////////////
 
-    public function withCurrentStep(ToolUseStep $step) : self {
+    public function withCurrentStep(ToolUseStep $step) : static {
         return new self(
             status: $this->status,
             steps: $this->steps,
@@ -80,7 +81,7 @@ final readonly class ToolUseState extends MessageExchangeState
         );
     }
 
-    public function withMessages(Messages $messages) : self {
+    public function withMessages(Messages $messages) : static {
         return new self(
             status: $this->status,
             steps: $this->steps,
@@ -94,7 +95,7 @@ final readonly class ToolUseState extends MessageExchangeState
         );
     }
 
-    public function withVariable(int|string $name, mixed $value) : self {
+    public function withVariable(int|string $name, mixed $value) : static {
         return new self(
             status: $this->status,
             steps: $this->steps,
@@ -108,7 +109,7 @@ final readonly class ToolUseState extends MessageExchangeState
         );
     }
 
-    public function withStatus(ToolUseStatus $status) : self {
+    public function withStatus(ToolUseStatus $status) : static {
         return new self(
             status: $status,
             steps: $this->steps,
@@ -122,7 +123,7 @@ final readonly class ToolUseState extends MessageExchangeState
         );
     }
 
-    public function withAddedStep(ToolUseStep $step) : self {
+    public function withAddedStep(ToolUseStep $step) : static {
         return new self(
             status: $this->status,
             steps: $this->steps->withAddedStep($step),
@@ -136,31 +137,34 @@ final readonly class ToolUseState extends MessageExchangeState
         );
     }
 
-    public function withAppendedMessages(Messages $messages) : self {
-        // Get the current messages from the default section and append new ones
-        $currentMessages = $this->messages();
-        $combinedMessages = $currentMessages->appendMessages($messages);
-        
+    public function withUsage(Usage $usage) : static {
         return new self(
             status: $this->status,
             steps: $this->steps,
             currentStep: $this->currentStep,
             variables: $this->metadata,
-            usage: $this->usage,
-            store: $this->store->section(self::DEFAULT_SECTION)->setMessages($combinedMessages),
+            usage: $usage,
+            store: $this->store,
             id: $this->id,
             startedAt: $this->startedAt,
             updatedAt: $this->updatedAt,
         );
     }
 
-    public function withAccumulatedUsage(Usage $usage) : self {
+    public function withAccumulatedUsage(Usage $usage) : static {
+        $newUsage = $this->usage->clone();
+        $newUsage->accumulate($usage);
+        return $this->withUsage($newUsage);
+    }
+
+    public function withStepAppended(object $step): static {
+        assert($step instanceof ToolUseStep);
         return new self(
             status: $this->status,
-            steps: $this->steps,
+            steps: $this->steps->withAddedStep($step),
             currentStep: $this->currentStep,
             variables: $this->metadata,
-            usage: Usage::copy($this->usage)->accumulate($usage),
+            usage: $this->usage,
             store: $this->store,
             id: $this->id,
             startedAt: $this->startedAt,
@@ -184,6 +188,14 @@ final readonly class ToolUseState extends MessageExchangeState
 
     public function stepCount() : int {
         return $this->steps->count();
+    }
+
+    public function stepAt(int $index): ?object {
+        return $this->steps->stepAt($index);
+    }
+
+    public function eachStep(): iterable {
+        return $this->steps->each();
     }
 
     // TRANSFORMATIONS / CONVERSIONS ////////////////////////////

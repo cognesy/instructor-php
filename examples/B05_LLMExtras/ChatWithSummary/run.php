@@ -23,8 +23,8 @@ use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\Core\Processors\AppendStateMessages;
-use Cognesy\Addons\Core\Processors\Chat\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\Core\Processors\AppendStepMessages;
 use Cognesy\Addons\Core\Processors\MoveMessagesToBuffer;
 use Cognesy\Addons\Core\Processors\SummarizeBuffer;
 use Cognesy\Addons\Core\StateProcessors;
@@ -60,13 +60,13 @@ $chat = ChatFactory::default(
     continuationCriteria: new ContinuationCriteria(
         new StepsLimit(12, fn(ChatState $state): int => $state->stepCount()),
         new ResponseContentCheck(
-            fn(ChatState $state): ?Message => $state->currentStep()?->outputMessage(),
+            fn(ChatState $state): ?Messages => $state->currentStep()?->outputMessages(),
             static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
         ),
     ),
     stepProcessors: new StateProcessors(
         new AccumulateTokenUsage(),
-        new AppendStateMessages(),
+        new AppendStepMessages(),
         new MoveMessagesToBuffer(
             maxTokens: 1024,
             bufferSection: 'buffer',
@@ -95,7 +95,7 @@ while ($chat->hasNextStep($state)) {
     $step = $state->currentStep();
 
     $name = $step?->participantName() ?? 'unknown';
-    $content = trim($step?->outputMessage()->toString() ?? '');
+    $content = trim($step?->outputMessages()->toString() ?? '');
     echo "\n--- Step " . ($state->stepCount()) . " ($name) ---\n";
     echo $content . "\n";
 }

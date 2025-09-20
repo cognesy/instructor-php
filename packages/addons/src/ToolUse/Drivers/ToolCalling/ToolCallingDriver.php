@@ -7,9 +7,9 @@ use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\StepType;
-use Cognesy\Addons\ToolUse\Formatters\ToolExecutionFormatter;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Http\HttpClient;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -65,7 +65,12 @@ class ToolCallingDriver implements CanUseTools
         $response = $pending->response();
         $executions = $tools->useTools($response->toolCalls(), $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
-        return $this->buildStepFromResponse($response, $executions, $messages);
+        return $this->buildStepFromResponse(
+            response: $response,
+            executions: $executions,
+            followUps: $messages,
+            context: $state->messages(),
+        );
     }
 
     // INTERNAL /////////////////////////////////////////////////
@@ -94,14 +99,19 @@ class ToolCallingDriver implements CanUseTools
     private function buildStepFromResponse(
         InferenceResponse $response,
         ToolExecutions $executions,
-        Messages $followUps
+        Messages $followUps,
+        Messages $context,
     ) : ToolUseStep {
+        $outputMessages = $followUps->appendMessage(
+            Message::asAssistant($response->content()),
+        );
+
         return new ToolUseStep(
-            response: $response->content(),
+            inputMessages: $context,
+            outputMessages: $outputMessages,
+            usage: $response->usage(),
             toolCalls: $response->toolCalls(),
             toolExecutions: $executions,
-            messages: $followUps,
-            usage: $response->usage(),
             inferenceResponse: $response,
             stepType: $this->inferStepType($response, $executions)
         );

@@ -62,7 +62,7 @@ while ($toolUse->hasNextStep($state)) {
     print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
 }
 
-$result = $state->currentStep()->response();
+$result = $state->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 
@@ -79,7 +79,7 @@ foreach ($toolUse->iterator($state) as $currentState) {
     $state = $currentState; // keep the latest state
 }
 
-$result = $state->currentStep()->response();
+$result = $state->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 
@@ -91,7 +91,7 @@ $state = (new ToolUseState)
     ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
 
 $finalState = $toolUse->finalStep($state);
-$result = $finalState->currentStep()->response();
+$result = $finalState->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 ?>

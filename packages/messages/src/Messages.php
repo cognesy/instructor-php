@@ -21,7 +21,6 @@ final readonly class Messages
     }
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
-
     public static function empty(): static {
         return new static();
     }
@@ -104,20 +103,39 @@ final readonly class Messages
 
     // MUTATORS /////////////////////////////////////////////////////////////
 
-    public function asSystem(string|array|Message|Content|ContentPart $message) : static {
-        return $this->appendMessage(Message::fromAny($message, MessageRole::System));
+    public function asSystem(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+        return match(true) {
+            $message instanceof Messages => $this->appendMessages($message),
+            default => $this->appendMessage(Message::fromAny($message, MessageRole::System, $name)),
+        };
     }
 
-    public function asDeveloper(string|array|Message|Content|ContentPart $message) : static {
-        return $this->appendMessage(Message::fromAny($message, MessageRole::Developer));
+    public function asDeveloper(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+        return match(true) {
+            $message instanceof Messages => $this->appendMessages($message),
+            default => $this->appendMessage(Message::fromAny($message, MessageRole::Developer, $name)),
+        };
     }
 
-    public function asUser(string|array|Message|Content|ContentPart $message) : static {
-        return $this->appendMessage(Message::fromAny($message, MessageRole::User));
+    public function asUser(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+        return match(true) {
+            $message instanceof Messages => $this->appendMessages($message),
+            default => $this->appendMessage(Message::fromAny($message, MessageRole::User, $name)),
+        };
     }
 
-    public function asAssistant(string|array|Message|Content|ContentPart $message) : static {
-        return $this->appendMessage(Message::fromAny($message, MessageRole::Assistant));
+    public function asAssistant(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+        return match(true) {
+            $message instanceof Messages => $this->appendMessages($message),
+            default => $this->appendMessage(Message::fromAny($message, MessageRole::Assistant, $name)),
+        };
+    }
+
+    public function asTool(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+        return match(true) {
+            $message instanceof Messages => $this->appendMessages($message),
+            default => $this->appendMessage(Message::fromAny($message, MessageRole::Tool, $name)),
+        };
     }
 
     public function withMessage(string|array|Message $message) : static {

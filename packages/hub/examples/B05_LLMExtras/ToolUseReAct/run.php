@@ -10,11 +10,11 @@ docname: 'tool_use'
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
@@ -63,7 +63,7 @@ while ($toolUse->hasNextStep($state)) {
     print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
 }
 
-$result = $state->currentStep()->response();
+$result = $state->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 
@@ -80,7 +80,7 @@ foreach ($toolUse->iterator($state) as $currentState) {
     $state = $currentState; // keep the latest state
 }
 
-$result = $state->currentStep()->response();
+$result = $state->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 
@@ -92,7 +92,7 @@ $state = (new ToolUseState)
     ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
 
 $finalState = $toolUse->finalStep($state);
-$result = $finalState->currentStep()->response();
+$result = $finalState->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 ?>

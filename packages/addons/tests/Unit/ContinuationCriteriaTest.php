@@ -83,9 +83,9 @@ it('error presence check stops on failures', function () {
     $check = new ErrorPresenceCheck(static fn(ToolUseState $state): bool => $state->currentStep()?->hasErrors() ?? false);
     expect($check->canContinue($state))->toBeTrue();
 
-    $execs = new ToolExecutions([
+    $execs = new ToolExecutions(
         new ToolExecution(new ToolCall('no', []), Result::failure(new Exception('x')), new DateTimeImmutable(), new DateTimeImmutable())
-    ]);
+    );
     $state = $state->withCurrentStep(new ToolUseStep(toolExecutions: $execs));
     expect($check->canContinue($state))->toBeFalse();
 });

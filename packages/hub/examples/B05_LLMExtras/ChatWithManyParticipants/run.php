@@ -28,6 +28,7 @@ use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 echo "🎙️ AI PANEL DISCUSSION: The Future of AI Development\n";
@@ -65,7 +66,7 @@ $chat = ChatFactory::default(
     continuationCriteria: new ContinuationCriteria(
         new StepsLimit(15, fn(ChatState $state): int => $state->stepCount()),
         new ResponseContentCheck(
-            fn(ChatState $state): ?Message => $state->currentStep()?->outputMessage(),
+            fn(ChatState $state): ?Messages => $state->currentStep()?->outputMessages(),
             static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
         ),
     ),
@@ -79,7 +80,7 @@ while ($chat->hasNextStep($state)) {
 
     if ($step) {
         $participantName = $step->participantName();
-        $content = trim($step->outputMessage()->toString());
+        $content = trim($step->outputMessages()->toString());
         
         // Only display if there's actual content
         if (!empty($content)) {

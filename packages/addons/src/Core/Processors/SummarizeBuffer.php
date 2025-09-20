@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core\Processors\Chat;
+namespace Cognesy\Addons\Core\Processors;
 
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
 use Cognesy\Addons\Chat\Data\ChatState;

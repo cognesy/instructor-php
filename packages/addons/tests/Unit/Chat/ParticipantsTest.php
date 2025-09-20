@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Messages\Message;
@@ -15,8 +16,7 @@ it('external participant uses provider to generate messages', function () {
     $p = new ExternalParticipant(name: 'user', provider: $provider);
     $step = $p->act(new ChatState());
     expect($step->participantName())->toBe('user');
-    expect($step->outputMessage()->content()->toString())->toBe('hello');
-    expect($step->outputMessage()->role()->value)->toBe('user');
+    expect($step->outputMessages()->last()->toString())->toBe('hello');
 });
 
 it('llm participant uses provided inference driver', function () {
@@ -35,6 +35,26 @@ it('llm participant uses provided inference driver', function () {
     $step = $p->act($state);
     
     expect($step->participantName())->toBe('assistant');
-    expect($step->outputMessage()->content()->toString())->toBe('hi there!');
-    expect($step->outputMessage()->role()->value)->toBe('assistant');
+    expect($step->outputMessages()->last()->toString())->toBe('hi there!');
+});
+
+it('encapsulates compiled context and transcript in ChatStep collections', function () {
+    $input = Messages::fromArray([
+        ['role' => 'system', 'content' => 'You are a friendly assistant.'],
+        ['role' => 'user', 'content' => 'Say hello to the world.'],
+    ]);
+
+    $output = Messages::fromArray([
+        ['role' => 'assistant', 'content' => 'Hello, world!'],
+    ]);
+
+    $step = new ChatStep(
+        participantName: 'assistant',
+        inputMessages: $input,
+        outputMessages: $output,
+    );
+
+    expect($step->inputMessages()->toArray())->toBe($input->toArray());
+    expect($step->outputMessages()->toArray())->toBe($output->toArray());
+    expect($step->outputMessages()->last()->role()->value)->toBe('assistant');
 });

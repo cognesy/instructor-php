@@ -4,9 +4,6 @@ namespace Cognesy\Addons\ToolUse\Drivers\ReAct;
 
 final class ReActDecision
 {
-    /**
-     * Public properties enable direct deserialization by StructuredOutput.
-     */
     public string $thought = '';
     public string $type = '';
     public ?string $tool = null;
@@ -27,7 +24,6 @@ final class ReActDecision
         $this->answer = $answer;
     }
 
-    // Symfony serializer-friendly setters
     public function setThought(string $thought) : void { $this->thought = $thought; }
     public function setType(string $type) : void { $this->type = $type; }
     public function setTool(?string $tool) : void { $this->tool = $tool; }
@@ -45,24 +41,6 @@ final class ReActDecision
                 : ($data['args'] ?? []),
             answer: $data['answer'] ?? null,
         );
-    }
-
-    public static function jsonSchema() : array {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'thought' => ['type' => 'string', 'description' => 'Brief reasoning for the next action.'],
-                'type' => ['type' => 'string', 'enum' => ['call_tool', 'final_answer']],
-                'tool' => ['type' => 'string', 'description' => 'Tool name to call if type=call_tool'],
-                'args' => ['type' => 'string', 'description' => 'JSON string with arguments for the tool.'],
-                'answer' => ['type' => 'string', 'description' => 'Final answer when type=final_answer'],
-            ],
-            'required' => ['thought', 'type'],
-            'allOf' => [
-                [ 'if' => [ 'properties' => ['type' => ['const' => 'call_tool']] ], 'then' => [ 'required' => ['tool', 'args'] ] ],
-                [ 'if' => [ 'properties' => ['type' => ['const' => 'final_answer']] ], 'then' => [ 'required' => ['answer'] ] ],
-            ],
-        ];
     }
 
     public function thought() : string { return $this->thought; }

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Shared;
+namespace Cognesy\Addons\Core;
 
 use Cognesy\Addons\Core\StateContracts\HasMessageStore;
 use Cognesy\Addons\Core\StateContracts\HasMetadata;
@@ -69,11 +69,19 @@ readonly class MessageExchangeState implements HasMetadata, HasMessageStore, Has
 
     public function withUsage(Usage $usage): static {
         return new static(
-            startedAt: $this->startedAt,
             variables: $this->metadata,
             usage: $usage,
             store: $this->store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: new DateTimeImmutable(),
         );
+    }
+
+    public function withAccumulatedUsage(Usage $usage): static {
+        $newUsage = $this->usage->clone();
+        $newUsage->accumulate($usage);
+        return $this->withUsage($usage);
     }
 
     // HasMessageStore ////////////////////////////////////////////////////
@@ -89,10 +97,12 @@ readonly class MessageExchangeState implements HasMetadata, HasMessageStore, Has
 
     public function withStore(MessageStore $store): static {
         return new static(
-            startedAt: $this->startedAt,
             variables: $this->metadata,
             usage: $this->usage,
             store: $store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: new DateTimeImmutable(),
         );
     }
 
@@ -104,10 +114,12 @@ readonly class MessageExchangeState implements HasMetadata, HasMessageStore, Has
 
     public function withMetadata(string $name, mixed $value): static {
         return new static(
-            startedAt: $this->startedAt,
             variables: $this->metadata->withKeyValue($name, $value),
             usage: $this->usage,
             store: $this->store,
+            id: $this->id,
+            startedAt: $this->startedAt,
+            updatedAt: new DateTimeImmutable(),
         );
     }
 

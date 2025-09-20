@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Dynamic\Structure;
+use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
@@ -90,11 +92,21 @@ class ResponseModelFactory
     private function fromJsonSchema(array $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
         $class = $requestedModel['x-php-class'] ?? '\Cognesy\Dynamic\Structure';
-        $instance = $this->makeInstance($class);
         $schema = $this->schemaConverter->fromJsonSchema($requestedModel);
-        $jsonSchema = $requestedModel;
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
+        $schema->withName($schemaName);
+        $schema->withDescription($schemaDescription);
+        $instance = match (true) {
+            $class === Structure::class,
+            is_subclass_of($class, Structure::class) => StructureFactory::fromSchema(
+                $schemaName,
+                $schema,
+                $schemaDescription,
+            ),
+            default => $this->makeInstance($class),
+        };
+        $jsonSchema = $requestedModel;
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
@@ -120,7 +132,7 @@ class ResponseModelFactory
         }
         $jsonSchema = $instance->toJsonSchema();
         $schema = $this->schemaConverter->fromJsonSchema($jsonSchema);
-        $schemaName = $this->schemaName($schema);
+        $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
@@ -182,7 +194,7 @@ class ResponseModelFactory
     private function schemaName(string|array|object $requestedSchema) : string {
         $name = match(true) {
             is_string($requestedSchema) => $requestedSchema,
-            is_array($requestedSchema) => $requestedSchema['name'] ?? null,
+            is_array($requestedSchema) => $requestedSchema['name'] ?? $requestedSchema['x-title'] ?? null,
             is_object($requestedSchema) && method_exists($requestedSchema, 'name') => $requestedSchema->name(),
             is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->name,
             is_object($requestedSchema) => get_class($requestedSchema),

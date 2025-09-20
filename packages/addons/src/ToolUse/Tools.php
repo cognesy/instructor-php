@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\ToolUse\Contracts\CanAccessToolUseState;
+use Cognesy\Addons\ToolUse\Contracts\CanAccessAnyState;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
@@ -20,7 +20,6 @@ use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
-use Throwable;
 
 final readonly class Tools
 {
@@ -108,7 +107,7 @@ final readonly class Tools
             throw new \InvalidArgumentException("Tool '{$name}' not found");
         }
         
-        return match ($this->tools[$name] instanceof CanAccessToolUseState) {
+        return match ($this->tools[$name] instanceof CanAccessAnyState) {
             true => $this->tools[$name]->withState($state),
             false => $this->tools[$name],
         };
