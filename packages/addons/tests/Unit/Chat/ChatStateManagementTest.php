@@ -1,0 +1,170 @@
+<?php declare(strict_types=1);
+
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Core\Processors\AppendStepMessages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
+
+function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $processor): ChatState {
+    $stateWithStep = $state
+        ->withAddedStep($step)
+        ->withCurrentStep($step);
+
+    return $processor->process($stateWithStep);
+}
+
+it('creates empty ChatState correctly', function () {
+    $state = new ChatState();
+
+    expect($state->stepCount())->toBe(0);
+    expect($state->currentStep())->toBeNull();
+    expect($state->messages()->count())->toBe(0);
+    expect($state->steps()->count())->toBe(0);
+});
+
+it('appends steps correctly and maintains step history', function () {
+    $state = new ChatState();
+    $processor = new AppendStepMessages();
+
+    $step1 = new ChatStep(
+        participantName: 'user',
+        outputMessages: new Messages(new Message('user', 'Hello')),
+        meta: []
+    );
+
+    $step2 = new ChatStep(
+        participantName: 'assistant',
+        outputMessages: new Messages(new Message('assistant', 'Hi there!')),
+        meta: []
+    );
+
+    // Add first step
+    $state1 = applyStep($state, $step1, $processor);
+    expect($state1->stepCount())->toBe(1);
+    expect($state1->currentStep())->toBe($step1);
+    expect($state1->steps()->count())->toBe(1);
+    expect($state1->messages()->count())->toBe(1);
+
+    // Add second step
+    $state2 = applyStep($state1, $step2, $processor);
+    expect($state2->stepCount())->toBe(2);
+    expect($state2->currentStep())->toBe($step2);
+    expect($state2->steps()->count())->toBe(2);
+    expect($state2->messages()->count())->toBe(2);
+
+    // Verify step history is preserved
+    $allSteps = $state2->steps()->all();
+    expect($allSteps[0])->toBe($step1);
+    expect($allSteps[1])->toBe($step2);
+
+    // Verify message accumulation
+    $allMessages = $state2->messages()->toArray();
+    expect($allMessages[0]['content'])->toBe('Hello');
+    expect($allMessages[1]['content'])->toBe('Hi there!');
+});
+
+it('maintains immutability when appending steps', function () {
+    $state = new ChatState();
+    $processor = new AppendStepMessages();
+    $step = new ChatStep(
+        participantName: 'user',
+        outputMessages: new Messages(new Message('user', 'Test')),
+        meta: []
+    );
+
+    $newState = applyStep($state, $step, $processor);
+
+    // Original state should remain unchanged
+    expect($state->stepCount())->toBe(0);
+    expect($state->currentStep())->toBeNull();
+
+    // New state should have the step
+    expect($newState->stepCount())->toBe(1);
+    expect($newState->currentStep())->toBe($step);
+    expect($newState)->not()->toBe($state);
+});
+
+it('correctly builds conversation messages from multiple steps', function () {
+    $state = new ChatState();
+    $processor = new AppendStepMessages();
+
+    $userStep = new ChatStep(
+        participantName: 'user',
+        outputMessages: new Messages(
+            new Message('user', 'What is AI?'),
+        ),
+        meta: []
+    );
+
+    $assistantStep = new ChatStep(
+        participantName: 'assistant',
+        outputMessages: new Messages(
+            new Message('assistant', 'AI stands for Artificial Intelligence.'),
+        ),
+        meta: []
+    );
+
+    $followUpStep = new ChatStep(
+        participantName: 'user',
+        outputMessages: new Messages(
+            new Message('user', 'Can you explain more?'),
+        ),
+        meta: []
+    );
+
+    $stateAfterUser = applyStep($state, $userStep, $processor);
+    $stateAfterAssistant = applyStep($stateAfterUser, $assistantStep, $processor);
+    $finalState = applyStep($stateAfterAssistant, $followUpStep, $processor);
+
+    expect($finalState->stepCount())->toBe(3);
+
+    $messages = $finalState->messages()->toArray();
+    expect($messages)->toHaveCount(3);
+    expect($messages[0]['role'])->toBe('user');
+    expect($messages[0]['content'])->toBe('What is AI?');
+    expect($messages[1]['role'])->toBe('assistant');
+    expect($messages[1]['content'])->toBe('AI stands for Artificial Intelligence.');
+    expect($messages[2]['role'])->toBe('user');
+    expect($messages[2]['content'])->toBe('Can you explain more?');
+});
+
+it('handles steps with multiple messages correctly', function () {
+    $state = new ChatState();
+    $processor = new AppendStepMessages();
+
+    $multiMessageStep = new ChatStep(
+        participantName: 'assistant',
+        outputMessages: new Messages(
+            new Message('assistant', 'First response.'),
+            new Message('assistant', 'Second response.'),
+        ),
+        meta: []
+    );
+
+    $finalState = applyStep($state, $multiMessageStep, $processor);
+
+    expect($finalState->stepCount())->toBe(1);
+    expect($finalState->messages()->count())->toBe(2);
+
+    $messages = $finalState->messages()->toArray();
+    expect($messages[0]['content'])->toBe('First response.');
+    expect($messages[1]['content'])->toBe('Second response.');
+});
+
+it('preserves step metadata throughout state transitions', function () {
+    $state = new ChatState();
+
+    $metadata = ['timestamp' => '2024-01-01', 'source' => 'test'];
+    $step = new ChatStep(
+        participantName: 'user',
+        outputMessages: new Messages(new Message('user', 'Test')),
+        meta: $metadata
+    );
+
+    $newState = $state->withAddedStep($step)->withCurrentStep($step);
+    $retrievedStep = $newState->currentStep();
+
+    expect($retrievedStep->meta())->toBe($metadata);
+    expect($newState->steps()->all()[0]->meta())->toBe($metadata);
+});

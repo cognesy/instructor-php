@@ -68,8 +68,8 @@ class JsonSchemaToSchema
      * @returns Schema[]
      */
     private function makeProperties(array $properties) : array {
-        if (empty($properties)) {
-            throw new \Exception('Object must have at least one property');
+        if ($properties === []) {
+            return [];
         }
         /** @var Schema[] $result */
         $result = [];

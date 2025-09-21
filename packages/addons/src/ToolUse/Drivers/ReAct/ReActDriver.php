@@ -8,6 +8,7 @@ use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\StepType;
+use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
@@ -62,7 +63,7 @@ final class ReActDriver implements CanUseTools
         $this->mode = $mode;
     }
 
-    public function useTools(ToolUseState $state, Tools $tools): ToolUseStep {
+    public function useTools(ToolUseState $state, Tools $tools, ToolExecutor $executor): ToolUseStep {
         $messages = $state->messages();
         $system = ReActPrompt::buildSystemPrompt($tools);
         [$decisionStructure, $toolArgumentStructures] = $this->buildDecisionStructures($tools);
@@ -106,7 +107,7 @@ final class ReActDriver implements CanUseTools
         $usage = $inferenceResponse->usage();
 
         return match (true) {
-            $decision->isCall() => $this->buildToolCallStep($decision, $usage, $inferenceResponse, $state, $tools, $messages),
+            $decision->isCall() => $this->buildToolCallStep($decision, $usage, $inferenceResponse, $state, $executor, $messages),
             default => $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $state, $messages),
         };
     }
@@ -183,11 +184,11 @@ final class ReActDriver implements CanUseTools
         ?Usage $usage,
         ?InferenceResponse $inferenceResponse,
         ToolUseState $state,
-        Tools $tools,
+        ToolExecutor $executor,
         Messages $context,
     ): ToolUseStep {
         $call = new ToolCall($decision->tool() ?? '', $decision->args());
-        $execution = $tools->useTool($call, $state);
+        $execution = $executor->useTool($call, $state);
         $executions = (new ToolExecutions())->add($execution);
 
         $formatter = new ReActFormatter();
@@ -261,7 +262,7 @@ final class ReActDriver implements CanUseTools
             [$thoughtField, $typeField, $toolField, $argsField, $answerField],
             'ReAct decision payload.',
         );
-        $decision->validator(fn(Structure $structure) => $this->validateDecisionStructure($structure, $toolNames));
+        $decision->validator(fn(Structure $structure) => $this->validateDecisionStructure($structure, $toolNames, $toolArgumentStructures));
 
         return [$decision, $toolArgumentStructures];
     }
@@ -309,10 +310,10 @@ final class ReActDriver implements CanUseTools
     }
 
     /** Validates decision structure using Structure validator. */
-    private function validateDecisionStructure(Structure $structure, array $toolNames): ValidationResult {
+    private function validateDecisionStructure(Structure $structure, array $toolNames, array $toolArgumentStructures): ValidationResult {
         $type = (string)($structure->get('type') ?? '');
         if ($type === 'call_tool') {
-            return $this->validateCallDecision($structure, $toolNames);
+            return $this->validateCallDecision($structure, $toolNames, $toolArgumentStructures);
         }
         if ($type === 'final_answer') {
             return $this->validateFinalDecision($structure);
@@ -321,7 +322,7 @@ final class ReActDriver implements CanUseTools
     }
 
     /** Ensures call_tool decisions reference an available tool and provide args. */
-    private function validateCallDecision(Structure $structure, array $toolNames): ValidationResult {
+    private function validateCallDecision(Structure $structure, array $toolNames, array $toolArgumentStructures): ValidationResult {
         $tool = (string)($structure->get('tool') ?? '');
         if ($tool === '') {
             return ValidationResult::fieldError('tool', $tool, 'Tool name is required when type=call_tool.');
@@ -335,7 +336,8 @@ final class ReActDriver implements CanUseTools
             is_array($args) => $args !== [],
             default => $args !== null,
         };
-        if (!$hasArgs) {
+        $requiresArgs = $this->toolRequiresArgs($toolArgumentStructures[$tool] ?? null);
+        if ($requiresArgs && !$hasArgs) {
             return ValidationResult::fieldError('args', $args, 'Arguments are required when type=call_tool.');
         }
         return ValidationResult::valid();
@@ -396,6 +398,19 @@ final class ReActDriver implements CanUseTools
             $normalized,
             static fn($value) => $value !== null,
         );
+    }
+
+    private function toolRequiresArgs(?Structure $argsStructure): bool
+    {
+        if ($argsStructure === null) {
+            return true;
+        }
+        foreach ($argsStructure->fields() as $field) {
+            if ($field->isRequired()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Generates a plain-text final answer via Inference and returns PendingInference. */

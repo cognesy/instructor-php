@@ -3,14 +3,12 @@
 namespace Cognesy\Addons\Chat\Data\Collections;
 
 use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Core\Aspects\Steps;
 
-final class ChatSteps
+readonly class ChatSteps extends Steps
 {
-    /** @var ChatStep[] */
-    private array $steps;
-
-    public function __construct(ChatStep ...$steps) {
-        $this->steps = $steps;
+    public function __construct(object ...$steps) {
+        parent::__construct(...$steps);
     }
 
     public function add(ChatStep ...$steps): self {

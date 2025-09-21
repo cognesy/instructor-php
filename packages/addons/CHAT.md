@@ -7,13 +7,13 @@ This document explains how to use Chat, customize its behavior, and integrate it
 
 ## Overview
 
+- **Factory**: `Cognesy\Addons\Chat\ChatFactory` — convenient factory for creating Chat instances with sensible defaults
 - **Orchestrator**: `Cognesy\Addons\Chat\Chat` — stateless service that processes one turn at a time
-- **Configuration**: `Data\ChatConfig` — immutable configuration object containing participants, selectors, and processors
 - **State**: `Data\ChatState` — immutable state object containing messages, variables, steps, and usage
 - **Step**: `Data\ChatStep` — represents one participant's action with input/output messages and metadata
 - **Participants** (`Contracts\CanParticipateInChat`):
   - `Participants\LLMParticipant` — assistant using Polyglot Inference with optional system prompts
-  - `Participants\LLMWithToolsParticipant` — assistant with tool-calling capabilities via ToolUse
+  - `Participants\LLMParticipantWithTools` — assistant with tool-calling capabilities via ToolUse
   - `Participants\ExternalParticipant` — external input (human, API, etc.) via callbacks or providers
   - `Participants\ScriptedParticipant` — pre-scripted responses for testing and demos
 - **Participant selection** (`Contracts\CanChooseNextParticipant`):
@@ -27,15 +27,19 @@ This document explains how to use Chat, customize its behavior, and integrate it
 ## Quick Start (Human → Assistant)
 
 ```php
-use Cognesy\Addons\Chat\Chat;use Cognesy\Addons\Chat\Data\ChatConfig;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Data\Collections\Participants;use Cognesy\Addons\Chat\Participants\LLMParticipant;use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\ChatFactory;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Participants\LLMParticipant;
+use Cognesy\Messages\Messages;
 
 // Create participants
 $participants = new Participants(
     new LLMParticipant(name: 'assistant')
 );
 
-// Create configuration with default settings
-$config = ChatConfig::default($participants);
+// Create chat using factory with default settings
+$chat = ChatFactory::default($participants);
 
 // Create initial state with user message
 $initialMessages = Messages::fromArray([
@@ -44,46 +48,42 @@ $initialMessages = Messages::fromArray([
 $state = new ChatState(messages: $initialMessages);
 
 // Execute one turn
-$chat = new Chat($config);
 $newState = $chat->nextStep($state);
 
 // Get the assistant's response
-$assistantMessage = $newState->steps()->last()->outputMessages()->last();
-echo $assistantMessage->content();
+$assistantMessages = $newState->messages()->toString();
+echo $assistantMessages;
 ```
 
 **Key concepts:**
-- `Chat` requires a `ChatConfig` with participants and configuration
+- `ChatFactory::default()` provides sensible defaults with participants, processors, and continuation criteria
 - `ChatState` holds the conversation state (messages, variables, steps, usage)
-- `nextTurn()` takes a state and returns a new updated state
-- Default configuration includes step processors and continuation criteria
+- `nextStep()` takes a state and returns a new updated state
+- Default configuration includes `AppendStepMessages` and `AccumulateTokenUsage` processors
 
 ## Multi-Participant Chat Example
 
 ```php
-use Cognesy\Addons\Chat\Chat;
-use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
-use Cognesy\Addons\Chat\Data\ChatConfig;
+use Cognesy\Addons\Chat\ChatFactory;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
+use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
+use Cognesy\Messages\Messages;
 
 // Create participants with different roles
-$human = new ExternalParticipant(
-    name: 'user',
-    provider: function() {
-        static $questions = [
-            'What are the key challenges in AI development?',
-            'How do you see the future of AI?',
-            'Thanks for the insights!'
-        ];
-        static $index = 0;
-        $question = $questions[$index++] ?? 'No more questions';
-        return new \Cognesy\Messages\Message(role: 'user', content: $question);
-    }
+$moderator = new ScriptedParticipant(
+    name: 'moderator',
+    messages: [
+        'Welcome! What are the key challenges in AI development?',
+        'How do you see the future of AI?',
+        'Thanks for the insights!',
+        '', // Empty message signals end
+    ]
 );
 
 $researcher = new LLMParticipant(
@@ -96,17 +96,23 @@ $practitioner = new LLMParticipant(
     systemPrompt: 'You are Marcus, an AI engineer. Focus on practical implementation. Be concise.'
 );
 
-// Create configuration
-$participants = new Participants($human, $researcher, $practitioner);
-$config = ChatConfig::default($participants)
-    ->withNextParticipantSelector(new RoundRobinSelector())
-    ->withContinuationCriteria(new ContinuationCriteria(ChatCriteria::stepsLimit(9)));
+// Create chat with custom continuation criteria
+$participants = new Participants($moderator, $researcher, $practitioner);
+$chat = ChatFactory::default(
+    participants: $participants,
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(10, fn($state) => $state->stepCount()),
+        new ResponseContentCheck(
+            fn($state) => $state->currentStep()?->outputMessages(),
+            static fn(Messages $response) => $response->last()->content()->toString() !== ''
+        ),
+    )
+);
 
 // Create initial state
 $state = new ChatState();
 
 // Run conversation
-$chat = new Chat($config);
 while ($chat->hasNextStep($state)) {
     $state = $chat->nextStep($state);
     $step = $state->currentStep();
@@ -135,7 +141,7 @@ $assistant = new LLMParticipant(
 );
 ```
 
-### `LLMWithToolsParticipant`
+### `LLMParticipantWithTools`
 LLM participant with tool-calling capabilities, integrating with the ToolUse system.
 
 Parameters:
@@ -144,7 +150,7 @@ Parameters:
 - `systemPrompt?: string` - System prompt specific to this participant
 
 ```php
-$toolsAssistant = new LLMWithToolsParticipant(
+$toolsAssistant = new LLMParticipantWithTools(
     name: 'assistant-with-tools',
     toolUse: $toolUse,
     systemPrompt: 'You are an assistant with access to tools.'
@@ -255,6 +261,28 @@ Stop when specific finish reasons are encountered.
 $finishCheck = ChatCriteria::finishReasonCheck(['stop', 'length']);
 ```
 
+### `ResponseContentCheck`
+Stop based on response content evaluation. Useful for ending conversations when participants provide empty responses or specific content patterns.
+
+```php
+use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
+use Cognesy\Messages\Messages;
+
+// Stop when response is empty
+$contentCheck = new ResponseContentCheck(
+    fn($state) => $state->currentStep()?->outputMessages(),
+    static fn(Messages $response) => $response->last()->content()->toString() !== ''
+);
+
+// Stop when response contains specific text
+$endCheck = new ResponseContentCheck(
+    fn($state) => $state->currentStep()?->outputMessages(),
+    static fn(Messages $response) => !str_contains($response->last()->content()->toString(), 'goodbye')
+);
+```
+
+**Note**: The predicate receives a `Messages` collection, not a single `Message`. Use `->last()` to get the most recent message.
+
 Configure in ChatConfig:
 
 ```php
@@ -284,17 +312,14 @@ Accumulates token usage from each step into the chat state.
 $processor = new AccumulateTokenUsage();
 ```
 
-#### `AddCurrentStep`
-Adds the current step to the chat state's step history.
-```php
-$processor = new AddCurrentStep();
-```
-
 #### `AppendStepMessages`
-Appends step messages to the chat state's message history.
+Appends step output messages to the chat state's message history. This is a core processor that ensures conversation continuity by adding each participant's response to the shared message context.
+
 ```php
 $processor = new AppendStepMessages();
 ```
+
+**Important**: Only appends the output messages from each step to prevent duplication of input messages already in the state.
 
 #### `MoveMessagesToBuffer`
 Moves messages to a buffer when context window limits are approached.
@@ -323,23 +348,24 @@ class MyCustomProcessor implements CanProcessChatStep
 ```
 
 ### Configuration
-Configure step processors in ChatConfig:
+Configure step processors when creating Chat:
 
 ```php
-use Cognesy\Addons\Chat\Data\Collections\ChatStateProcessors;
+use Cognesy\Addons\Core\StateProcessors;
 
-$processors = new ChatStateProcessors(
+$processors = new StateProcessors(
     new AccumulateTokenUsage(),
-    new AddCurrentStep(),
     new AppendStepMessages(),
     new MyCustomProcessor()
 );
 
-$config = ChatConfig::default($participants)
-    ->withStepProcessors($processors);
+$chat = ChatFactory::default(
+    participants: $participants,
+    stepProcessors: $processors
+);
 ```
 
-**Default processors**: The default configuration includes `AppendStepMessages`, `AddCurrentStep`, and `AccumulateTokenUsage`.
+**Default processors**: The default configuration includes `AppendStepMessages` and `AccumulateTokenUsage`.
 
 ## Observability (Events)
 
@@ -414,31 +440,74 @@ $storeed = new ScriptedParticipant(
 ### Feature Test Example
 
 ```php
-use Cognesy\Addons\Chat\Chat;
-use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
-use Cognesy\Addons\Chat\Data\ChatConfig;
+use Cognesy\Addons\Chat\ChatFactory;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 
-// Create test configuration
-$participants = new Participants($storeedAssistant);
-$config = ChatConfig::default($participants)
-    ->withContinuationCriteria(new ContinuationCriteria(ChatCriteria::stepsLimit(2)));
+// Create test configuration with deterministic participant
+$scriptedAssistant = new ScriptedParticipant(
+    name: 'assistant',
+    messages: ['Hello there!', 'How can I help?']
+);
+$participants = new Participants($scriptedAssistant);
+$chat = ChatFactory::default(
+    participants: $participants,
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(2, fn($state) => $state->stepCount())
+    )
+);
 
-// Create initial state with user message
-$initialMessages = Messages::fromArray([
-    ['role' => 'user', 'content' => 'Hello']
-]);
-$state = new ChatState(messages: $initialMessages);
+// Create initial state
+$state = new ChatState();
 
-// Execute chat turn
-$chat = new Chat($config);
-$newState = $chat->nextStep($state);
+// Execute chat turns
+$state1 = $chat->nextStep($state);
+$state2 = $chat->nextStep($state1);
 
 // Verify results
-expect($newState->steps()->count())->toBe(1);
-expect($newState->messages()->count())->toBe(2); // user + assistant
+expect($state2->steps()->count())->toBe(2);
+expect($state2->messages()->count())->toBe(2); // Two scripted responses
+expect($state2->messages()->toArray()[0]['content'])->toBe('Hello there!');
+expect($state2->messages()->toArray()[1]['content'])->toBe('How can I help?');
+```
+
+### Testing State Management
+
+When testing Chat state management directly, use the `AppendStepMessages` processor:
+
+```php
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Core\Processors\AppendStepMessages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
+
+function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $processor): ChatState {
+    $stateWithStep = $state
+        ->withAddedStep($step)
+        ->withCurrentStep($step);
+
+    return $processor->process($stateWithStep);
+}
+
+// Test step application
+$state = new ChatState();
+$processor = new AppendStepMessages();
+
+$step = new ChatStep(
+    participantName: 'assistant',
+    outputMessages: new Messages(new Message('assistant', 'Hello!')),
+    meta: []
+);
+
+$newState = applyStep($state, $step, $processor);
+
+expect($newState->stepCount())->toBe(1);
+expect($newState->messages()->count())->toBe(1);
+expect($newState->currentStep())->toBe($step);
 ```
 
 ### Key Testing Patterns
@@ -541,5 +610,35 @@ $processors = new StepProcessors(
 ```
 
 ### Tests are non-deterministic
-**Problem**: Tests fail randomly due to real LLM calls  
+**Problem**: Tests fail randomly due to real LLM calls
 **Solution**: Use `ScriptedParticipant` or mocked `LLMParticipant` for predictable responses
+
+### ResponseContentCheck TypeError
+**Problem**: `TypeError: Argument #1 ($lastResponse) must be of type Message, Messages given`
+**Solution**: Update your predicate to expect `Messages` collection, not single `Message`:
+
+```php
+// ❌ Incorrect - expects single Message
+new ResponseContentCheck(
+    fn($state) => $state->currentStep()?->outputMessages(),
+    static fn(Message $response) => $response->content()->toString() !== ''
+);
+
+// ✅ Correct - expects Messages collection
+new ResponseContentCheck(
+    fn($state) => $state->currentStep()?->outputMessages(),
+    static fn(Messages $response) => $response->last()->content()->toString() !== ''
+);
+```
+
+### Testing processors in isolation
+**Problem**: Messages aren't appearing in state during testing
+**Solution**: Use the `AppendStepMessages` processor and helper function:
+
+```php
+function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $processor): ChatState {
+    return $processor->process(
+        $state->withAddedStep($step)->withCurrentStep($step)
+    );
+}
+```

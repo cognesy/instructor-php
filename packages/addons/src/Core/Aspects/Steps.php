@@ -7,13 +7,13 @@ use Cognesy\Addons\Core\StateContracts\HasSteps;
 /**
  * @template TStep of object
  */
-class Steps implements HasSteps
+readonly class Steps implements HasSteps
 {
     /** @var TStep[] $steps */
-    private array $steps;
+    protected array $steps;
 
     public function __construct(
-        array $steps = []
+        ?object ...$steps
     ) {
         $this->steps = $steps;
     }
@@ -45,6 +45,10 @@ class Steps implements HasSteps
         return count($this->steps);
     }
 
+    public function lastStep(): ?object {
+        return $this->currentStep();
+    }
+
     /**
      * Iterate over each step.
      *
@@ -63,6 +67,6 @@ class Steps implements HasSteps
      * @return static
      */
     public function withStepAppended(object $step): static {
-        return new static([...$this->steps, $step]);
+        return new static(...[...$this->steps, $step]);
     }
 }

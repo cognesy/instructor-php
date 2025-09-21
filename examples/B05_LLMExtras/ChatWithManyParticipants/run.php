@@ -67,10 +67,16 @@ $chat = ChatFactory::default(
         new StepsLimit(15, fn(ChatState $state): int => $state->stepCount()),
         new ResponseContentCheck(
             fn(ChatState $state): ?Messages => $state->currentStep()?->outputMessages(),
-            static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
+            static fn(Messages $lastResponse): bool => $lastResponse->last()->content()->toString() !== '',
         ),
     ),
 ); //->wiretap(fn(Event $e) => $e->print());
+
+$participantNames = [
+    'moderator' => '🎙️ Moderator',
+    'dr_chen' => '🔬 Dr. Chen',
+    'marcus' => '⚙️ Marcus',
+];
 
 $state = new ChatState();
 

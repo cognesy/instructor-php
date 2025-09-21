@@ -7,6 +7,7 @@ use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\StepType;
+use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
@@ -60,10 +61,10 @@ class ToolCallingDriver implements CanUseTools
      * @param ToolUseState $state The context containing messages, tools, and other related information required for tool usage.
      * @return ToolUseStep Returns an instance of ToolUseStep containing the response, executed tools, follow-up messages, and additional usage data.
      */
-    public function useTools(ToolUseState $state, Tools $tools) : ToolUseStep {
+    public function useTools(ToolUseState $state, Tools $tools, ToolExecutor $executor) : ToolUseStep {
         $pending = $this->buildPendingInference($state->messages(), $tools);
         $response = $pending->response();
-        $executions = $tools->useTools($response->toolCalls(), $state);
+        $executions = $executor->useTools($response->toolCalls(), $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
         return $this->buildStepFromResponse(
             response: $response,

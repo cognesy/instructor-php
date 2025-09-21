@@ -33,10 +33,20 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
             'overflow' => $overflow->toArray(),
             'keep' => $keep->toArray(),
         ]));
-        $newState = $state
-            ->withMessages($keep)
+
+        assert($state instanceof ChatState);
+
+        $newMessageStore = $state->store()
             ->section($this->bufferSection)
-            ->replaceMessages($overflow);
+            ->appendMessages($overflow)
+            ->section(ChatState::DEFAULT_SECTION)
+            ->setMessages($keep);
+        $newState = $state->withMessageStore($newMessageStore);
+
+//        $newState = $state
+//            ->withMessages($keep)
+//            ->section($this->bufferSection)
+//            ->replaceMessages($overflow);
 
         return $next ? $next($newState) : $newState;
     }

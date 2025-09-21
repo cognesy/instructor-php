@@ -19,6 +19,7 @@ use Generator;
 
 final readonly class ToolUse {
     private Tools $tools;
+    private ToolExecutor $toolExecutor;
     private CanUseTools $driver;
     private CanApplyProcessors $processors;
     private ContinuationCriteria $continuationCriteria;
@@ -35,7 +36,8 @@ final readonly class ToolUse {
         $this->continuationCriteria = $continuationCriteria;
         $this->driver = $driver;
         $this->events = EventBusResolver::using($events);
-        $this->tools = $tools->withEventHandler($this->events);
+        $this->tools = $tools;
+        $this->toolExecutor = (new ToolExecutor($tools))->withEventHandler($this->events);
     }
 
     // HANDLE PARAMETRIZATION //////////////////////////////////////
@@ -53,7 +55,7 @@ final readonly class ToolUse {
         }
         
         $this->emitToolUseStepStarted($state);
-        $step = $this->driver->useTools($state, $this->tools);
+        $step = $this->driver->useTools($state, $this->tools, $this->toolExecutor);
         $newState = $state->withAddedStep($step)->withCurrentStep($step);
         $newState = $this->processors->apply($newState);
         $this->emitToolUseStepCompleted($newState);
@@ -83,6 +85,11 @@ final readonly class ToolUse {
         return $this->tools;
     }
 
+    public function toolExecutor(): ToolExecutor
+    {
+        return $this->toolExecutor;
+    }
+
     // MUTATORS /////////////////////////////////////////////
 
     public function withProcessors(CanProcessAnyState ...$processors): self {
@@ -110,6 +117,18 @@ final readonly class ToolUse {
             tools: $this->tools,
             processors: $this->processors,
             continuationCriteria: new ContinuationCriteria(...$continuationCriteria),
+            driver: $this->driver,
+            events: $this->events,
+        );
+    }
+
+    public function withToolExecutor(ToolExecutor $executor): self
+    {
+        $executorWithEvents = $executor->withEventHandler($this->events);
+        return new self(
+            tools: $executorWithEvents->tools(),
+            processors: $this->processors,
+            continuationCriteria: $this->continuationCriteria,
             driver: $this->driver,
             events: $this->events,
         );

@@ -236,14 +236,15 @@ it('creates Schema object from JSON Schema array - collection props', function (
     expect($schema->properties['collectionEnumProperty']->nestedItemSchema->typeDetails->enumValues)->toBe(['one', 'two', 'three']);
 })->with('schema_converter_json');
 
-it('throws exception when object schema has empty properties array', function () {
+it('creates object schema with empty properties array', function () {
     $jsonSchema = [
         'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [],
     ];
-    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Object must have at least one property');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
+    expect($schema->properties)->toBe([]);
+});
 
 // We should allow this and assume 'mixed' type items
 //it('throws exception when array schema is missing items field', function () {

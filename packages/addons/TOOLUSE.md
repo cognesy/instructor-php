@@ -6,37 +6,47 @@ This document explains how to use ToolUse, customize its behavior, and integrate
 
 ## Overview
 
-- Orchestrator: `Cognesy\Addons\ToolUse\ToolUse`
-- Drivers:
-  - `Drivers\ToolCallingDriver` — Provider tool-calling mode via Polyglot Inference (clean orchestration; pending inference, response, executions, follow‑ups)
-  - `Drivers\ReAct\ReActDriver` — ReAct loop using StructuredOutput (typed decision extraction, optional plain‑text finalization)
-- State: `ToolUseState` (messages, tools, usage, variables, steps, status)
-- Step: `ToolUseStep` (LLM response + tool calls/executions + follow‑up messages + usage)
-- Tools: `Tools` registry of `ToolInterface` implementations (`FunctionTool`, or custom tools)
-- Processors: post‑step processors (accumulate usage, update step, etc.)
-- Continuation criteria: stop/continue logic per step (steps/tokens/time/retries/finish reason)
-- Observers: step‑level (`ToolUseObserver`) and tool‑level (`ToolsObserver`) hooks
+- **Factory**: `Cognesy\Addons\ToolUse\ToolUseFactory` — convenient factory with sensible defaults
+- **Orchestrator**: `Cognesy\Addons\ToolUse\ToolUse` — stateless service that processes steps
+- **Drivers**:
+  - `Drivers\ToolCalling\ToolCallingDriver` — Provider-native tool calling via Polyglot Inference
+  - `Drivers\ReAct\ReActDriver` — ReAct reasoning loop using StructuredOutput
+- **State**: `ToolUseState` — immutable state (messages, usage, variables, steps)
+- **Step**: `ToolUseStep` — single iteration result (response, tool calls/executions, usage)
+- **Tools**: `Tools` — registry managing `ToolInterface` implementations
+  - `FunctionTool::fromCallable()` — wraps PHP functions/closures as tools
+  - `BaseTool` — base class for custom tool implementations
+- **Processors**: `StateProcessors` — post-step processing pipeline
+- **Continuation**: `ContinuationCriteria` — determines when to stop/continue
+- **Events**: Comprehensive event system for observability
 
 ## Quick Start
 
 ```php
-use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUse;use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Addons\ToolUse\Tools;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Messages\Messages;
 
 function add_numbers(int $a, int $b): int { return $a + $b; }
 
-$driver = new ToolCallingDriver(llm: LLMProvider::new());
-$toolUse = (new ToolUse)
-    ->withDriver($driver)
-    ->withMessages('Add numbers 2 and 3')
-    ->withTools(FunctionTool::fromCallable(add_numbers(...)));
+$tools = (new Tools)->withTools(
+    FunctionTool::fromCallable(add_numbers(...))
+);
 
-$final = $toolUse->finalStep();
+$toolUse = ToolUseFactory::default(tools: $tools);
+
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add numbers 2 and 3'));
+
+$final = $toolUse->finalStep($state);
 echo $final->response();
 ```
 
-- `withTools([...])` accepts an array of tool implementations or callables (wrapped via `FunctionTool`).
-- `withMessages('...')` seeds the conversation (string | array | `Messages`).
-- Call `finalStep()` for a full loop; or iterate with `nextStep()` / `iterator()`.
+- `ToolUseFactory::default()` provides sensible defaults with processors and continuation criteria
+- `Tools` registry manages tool implementations (`FunctionTool::fromCallable()` for functions)
+- State-based API: Create initial `ToolUseState` with messages, pass to `finalStep()` or iterate with `nextStep()`
 
 ## Defining Tools
 
@@ -69,32 +79,45 @@ Notes:
 ## Quick Start (ReAct)
 
 ```php
-use Cognesy\Addons\ToolUse\Continuation\Criteria as ToolUseCriteria;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
-use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Addons\ToolUse\Tools;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $driver = new ReActDriver(
-  llm: LLMProvider::using('openai'),
-  maxRetries: 2,
-  finalViaInference: true
+    llm: LLMProvider::using('openai'),
+    maxRetries: 2,
+    finalViaInference: true
 );
 
-$criteria = [
-    ToolUseCriteria::stepsLimit(6),
-    ToolUseCriteria::tokenUsageLimit(8192),
-    ToolUseCriteria::executionTimeLimit(60),
-    ToolUseCriteria::retryLimit(2),
+$continuationCriteria = new ContinuationCriteria(
+    new StepsLimit(6, fn($state) => $state->stepCount()),
+    new TokenUsageLimit(8192, fn($state) => $state->usage()->total()),
     new StopOnFinalDecision(),
-];
+);
 
-$toolUse = (new ToolUse(continuationCriteria: $criteria))
-  ->withDriver($driver)
-  ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-  ->withTools([ /* FunctionTool::fromCallable(...) */ ]);
+$tools = (new Tools)->withTools(
+    FunctionTool::fromCallable(add_numbers(...)),
+    FunctionTool::fromCallable(subtract_numbers(...))
+);
 
-$final = $toolUse->finalStep();
+$toolUse = ToolUseFactory::default(
+    tools: $tools,
+    continuationCriteria: $continuationCriteria,
+    driver: $driver
+);
+
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+$final = $toolUse->finalStep($state);
 echo $final->response();
 ```
 
@@ -115,23 +138,33 @@ $toolUse->withTools($tools);
 
 ## Continuation Criteria
 
-Default criteria include:
-- `StepsLimit($maxSteps)`
-- `TokenUsageLimit($maxTokens)`
-- `ExecutionTimeLimit($seconds)`
-- `RetryLimit($maxRetries)` — based on consecutive failed steps
+Default criteria from `ToolUseFactory::defaultContinuationCriteria()`:
+- `StepsLimit(3)` — maximum number of tool-use steps
+- `TokenUsageLimit(8192)` — maximum total token usage
+- `ExecutionTimeLimit(30)` — maximum execution time in seconds
+- `RetryLimit(3)` — maximum consecutive failed steps
 - `ErrorPresenceCheck()` — stop on any errors
 - `ToolCallPresenceCheck()` — continue only if tool calls present
-- `FinishReasonCheck($finishReasons)` — stop when finish reason is in set
+- `FinishReasonCheck([])` — stop when finish reason matches
 
-Customize:
+Customize with factory or direct instantiation:
 
 ```php
-use Cognesy\Addons\ToolUse\Continuation\Criteria as ToolUseCriteria;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 
-$toolUse->withDefaultContinuationCriteria(maxSteps: 5);
-// or
-$toolUse->withContinuationCriteria(ToolUseCriteria::stepsLimit(10));
+// Via factory with custom defaults
+$toolUse = ToolUseFactory::default(
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(10, fn($state) => $state->stepCount()),
+        // ... other criteria
+    )
+);
+
+// Or modify existing instance
+$toolUse = $toolUse->withContinuationCriteria(
+    new StepsLimit(5, fn($state) => $state->stepCount())
+);
 ```
 
 ReAct-specific:
@@ -139,23 +172,54 @@ ReAct-specific:
 
 ## Step Processors
 
-Processors post‑process each step (accumulate usage, update step list, append follow‑up messages). Defaults:
-- `AccumulateTokenUsage`
-- `UpdateStep`
-- `AppendContextMetadata` (current behavior retained)
-- `AppendStepMessages`
+Default processors from `ToolUseFactory::defaultProcessors()`:
+- `AccumulateTokenUsage` — aggregates token usage per step
+- `AppendContextMetadata` — adds context metadata to messages
+- `AppendStepMessages` — appends step output messages to state
 
-Add or override:
+Add or override processors:
 
 ```php
-$toolUse->withProcessors(new MyCustomProcessor());
-```
+use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
 
-`AccumulateTokenUsage` aggregates per-step usage into state, enabling per-step and total token reporting.
+// Via factory
+$toolUse = ToolUseFactory::default(
+    processors: new StateProcessors(
+        new AccumulateTokenUsage(),
+        new MyCustomProcessor(),
+    )
+);
+
+// Or modify existing instance
+$toolUse = $toolUse->withProcessors(
+    new AccumulateTokenUsage(),
+    new MyCustomProcessor()
+);
+```
 
 ## Observability
 
-Use the events.
+ToolUse emits events throughout the tool-calling lifecycle:
+
+- `ToolUseStepStarted` — when a new step begins
+- `ToolUseStepCompleted` — when a step completes
+- `ToolUseFinished` — when the entire process completes
+- `ToolCallStarted` — before a tool is executed
+- `ToolCallCompleted` — after a tool finishes
+
+Configure event handling via factory or constructor:
+
+```php
+use Cognesy\Events\EventBus;
+
+$events = new EventBus();
+$events->listen(ToolCallCompleted::class, function($event) {
+    echo "Tool {$event->toolName} completed\n";
+});
+
+$toolUse = ToolUseFactory::default(events: $events);
+```
 
 ## Argument Validation
 
@@ -178,11 +242,45 @@ Before invoking a tool, `Tools` performs a pragmatic check against the tool’s 
 - Context metadata: current `AppendContextMetadata` remains; alternatives will be considered in a future major version.
 - Tool schema value objects: kept as arrays at the boundary to avoid breaking `polyglot`; wrappers may be added later.
 
+## Iteration Patterns
+
+ToolUse provides three ways to process tool calls:
+
+### Pattern 1: Manual Control
+```php
+$state = (new ToolUseState)->withMessages(Messages::fromString('Calculate...'));
+
+while ($toolUse->hasNextStep($state)) {
+    $state = $toolUse->nextStep($state);
+    $step = $state->currentStep();
+    echo "Step: " . $step->toString() . "\n";
+}
+echo "Final: " . $state->currentStep()->response() . "\n";
+```
+
+### Pattern 2: Iterator
+```php
+$state = (new ToolUseState)->withMessages(Messages::fromString('Calculate...'));
+
+foreach ($toolUse->iterator($state) as $newState) {
+    $step = $newState->currentStep();
+    echo "Step: " . $step->toString() . "\n";
+}
+```
+
+### Pattern 3: Direct Final Result
+```php
+$state = (new ToolUseState)->withMessages(Messages::fromString('Calculate...'));
+$finalState = $toolUse->finalStep($state);
+echo "Result: " . $finalState->response() . "\n";
+```
+
 ## State & Reuse
 
-- `ToolUse` is not stateful. It takes an initial `ToolUseState` (default empty) and produces new states per step with `nextStep()` or `finalStep()`.
-- `ToolUseState` instances are immutable and can be inspected after each step.
-- Drivers (`ToolCallingDriver`, `ReActDriver`) are stateless (configuration only) and safe to reuse across runs.
+- `ToolUse` is stateless — takes `ToolUseState` and returns new states
+- `ToolUseState` instances are immutable — safe to store/restore
+- `ToolUseFactory` provides sensible defaults for quick setup
+- Drivers are stateless and safe to reuse across conversations
 
 ## Troubleshooting
 

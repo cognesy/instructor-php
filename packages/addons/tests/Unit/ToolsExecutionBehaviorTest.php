@@ -2,6 +2,7 @@
 
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
+use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -12,13 +13,13 @@ function _boom(): int { throw new Exception('fail'); }
 
 it('throws on tool failure when configured', function () {
     $tools = (new Tools())
-        ->withThrowOnToolFailure(true)
         ->withTool(FunctionTool::fromCallable(_boom(...)));
+    $executor = (new ToolExecutor($tools))->withThrowOnToolFailure(true);
 
     $state = new ToolUseState();
     $call = new ToolCall('_boom', []);
 
-    expect(fn() => $tools->useTool($call, $state))->toThrow(ToolExecutionException::class);
+    expect(fn() => $executor->useTool($call, $state))->toThrow(ToolExecutionException::class);
 });
 
 it('reports missing tools and canExecute returns false for unknown tools', function () {
@@ -31,4 +32,3 @@ it('reports missing tools and canExecute returns false for unknown tools', funct
     expect($tools->nameList())->toContain('_ok');
     expect($tools->descriptionList()[0]['name'] ?? null)->toBe('_ok');
 });
-

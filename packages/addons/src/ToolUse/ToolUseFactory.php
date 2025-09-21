@@ -33,7 +33,6 @@ class ToolUseFactory
     ): ToolUse {
         $events = EventBusResolver::using($events);
         $tools = $tools ?? new Tools();
-        $tools = $tools->withEventHandler($events);
 
         return new ToolUse(
             tools: $tools,
