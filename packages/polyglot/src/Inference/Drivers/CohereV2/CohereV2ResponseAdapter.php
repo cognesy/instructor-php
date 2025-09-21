@@ -3,10 +3,10 @@
 namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
 use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class CohereV2ResponseAdapter extends OpenAIResponseAdapter

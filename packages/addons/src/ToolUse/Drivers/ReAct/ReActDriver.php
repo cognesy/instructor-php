@@ -19,9 +19,9 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
@@ -200,7 +200,7 @@ final class ReActDriver implements CanUseTools
             inputMessages: $context,
             outputMessages: $followUps,
             usage: $usage,
-            toolCalls: new ToolCalls([$call]),
+            toolCalls: new ToolCalls($call),
             toolExecutions: $executions,
             inferenceResponse: $inferenceResponse,
             stepType: StepType::ToolExecution,

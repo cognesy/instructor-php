@@ -12,9 +12,9 @@ use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Result\Result;
@@ -28,7 +28,7 @@ it('continues loop on tool failure and formats error message', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(
             content: '',
-            toolCalls: new ToolCalls([ new ToolCall('_sum', ['a' => 2]) ]) // missing required 'b'
+            toolCalls: new ToolCalls(new ToolCall('_sum', ['a' => 2])) // missing required 'b'
         ),
     ]);
 
@@ -45,7 +45,7 @@ it('continues loop on tool failure and formats error message', function () {
     $state = $toolUse->nextStep($state);
     $step = $state->currentStep();
 
-    expect($step->toolExecutions()->hasErrors())->toBeTrue();
+    expect($step?->toolExecutions()->hasErrors())->toBeTrue();
     $msgs = $state->messages()->toArray();
 
     // Debug: Let's see what's actually in the messages

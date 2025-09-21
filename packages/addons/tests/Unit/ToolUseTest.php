@@ -7,9 +7,9 @@ use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
@@ -22,7 +22,7 @@ it('executes a tool call and builds follow-up messages', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(
             content: '',
-            toolCalls: new ToolCalls([ new ToolCall('add_numbers', ['a' => 2, 'b' => 3]) ])
+            toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
         ),
     ]);
 
@@ -51,7 +51,7 @@ it('iterates until no more tool calls and returns final response', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(
             content: '',
-            toolCalls: new ToolCalls([ new ToolCall('add_numbers', ['a' => 2, 'b' => 3]) ])
+            toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
         ),
         new InferenceResponse(content: '5'),
     ]);
@@ -67,7 +67,7 @@ it('iterates until no more tool calls and returns final response', function () {
     );
 
     $finalState = $toolUse->finalStep($state);
-    expect($finalState->currentStep()->outputMessages()->last()->toString())->toBe('5');
+    expect($finalState->currentStep()?->outputMessages()->last()->toString())->toBe('5');
     expect($finalState->stepCount())->toBeGreaterThan(0);
 });
 
@@ -75,7 +75,7 @@ it('separates context and transcript messages between input and output collectio
     $driver = new FakeInferenceDriver([
         new InferenceResponse(
             content: '',
-            toolCalls: new ToolCalls([ new ToolCall('add_numbers', ['a' => 2, 'b' => 3]) ])
+            toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
         ),
         new InferenceResponse(content: '5'),
     ]);

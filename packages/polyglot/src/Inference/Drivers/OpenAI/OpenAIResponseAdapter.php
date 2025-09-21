@@ -3,12 +3,12 @@
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 
 class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 {

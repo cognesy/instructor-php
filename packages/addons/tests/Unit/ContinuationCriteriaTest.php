@@ -12,8 +12,8 @@ use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Result\Result;
 
@@ -73,7 +73,7 @@ it('tool call presence check reflects current step calls', function () {
     $state = $state->withCurrentStep(new ToolUseStep());
     expect($check->canContinue($state))->toBeFalse();
 
-    $calls = new ToolCalls([ new ToolCall('a', []) ]);
+    $calls = new ToolCalls(new ToolCall('a', []));
     $state = $state->withCurrentStep(new ToolUseStep(toolCalls: $calls));
     expect($check->canContinue($state))->toBeTrue();
 });

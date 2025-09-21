@@ -7,9 +7,9 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
@@ -20,7 +20,7 @@ function _noop_feat(): string { return 'ok'; }
 
 it('stops due to token usage limit being reached', function () {
     $driver = new FakeInferenceDriver([
-        new InferenceResponse(content: '', toolCalls: new ToolCalls([ new ToolCall('_noop_feat', []) ]), usage: new Usage(8, 1)),
+        new InferenceResponse(content: '', toolCalls: new ToolCalls(new ToolCall('_noop_feat', [])), usage: new Usage(8, 1)),
         new InferenceResponse(content: 'final', usage: new Usage(2, 0)),
     ]);
 

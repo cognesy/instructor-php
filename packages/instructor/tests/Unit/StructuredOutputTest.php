@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Tests\Instructor\Support\FakeInferenceDriver;
 
@@ -35,9 +35,9 @@ it('deserializes basic JSON into response class', function () {
 });
 
 it('uses tool call args in Tools mode when present', function () {
-    $toolCalls = new ToolCalls([
+    $toolCalls = new ToolCalls(
         new ToolCall('extract', ['name' => 'Jane', 'age' => 22])
-    ]);
+    );
     $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: $toolCalls)
     ]);

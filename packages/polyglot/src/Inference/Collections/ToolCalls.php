@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Polyglot\Inference\Data;
+namespace Cognesy\Polyglot\Inference\Collections;
 
+use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 
@@ -11,7 +12,7 @@ final readonly class ToolCalls
     private array $toolCalls;
 
     /** @param ToolCall[] $toolCalls */
-    public function __construct(array $toolCalls = []) {
+    public function __construct(ToolCall ...$toolCalls) {
         $this->toolCalls = $toolCalls;
     }
 
@@ -31,7 +32,7 @@ final readonly class ToolCalls
                 default => throw new InvalidArgumentException('Cannot create ToolCall from provided data: ' . print_r($toolCall, true))
             };
         }
-        return new ToolCalls($list);
+        return new ToolCalls(...$list);
     }
 
     public static function fromMapper(array $toolCalls, callable $mapper) : ToolCalls {
@@ -42,20 +43,20 @@ final readonly class ToolCalls
                 $list[] = $toolCall;
             }
         }
-        return new ToolCalls($list);
+        return new ToolCalls(...$list);
     }
 
     // MUTATORS /////////////////////////////////////////////////////
 
-    public function withAddedToolCall(string $name, array $args = []) : self {
+    public function withAddedToolCall(string $name, array $args = []) : ToolCalls {
         $newToolCall = new ToolCall(
             name: $name,
             args: $args,
         );
-        return new self([...$this->toolCalls, $newToolCall]);
+        return new self(...[...$this->toolCalls, $newToolCall]);
     }
 
-    public function withLastToolCallUpdated(string $name, string $jsonString) : self {
+    public function withLastToolCallUpdated(string $name, string $jsonString) : ToolCalls {
         $argsArray = self::makeArgs($jsonString);
         if (empty($this->toolCalls)) {
             return $this->withAddedToolCall($name, $argsArray);
@@ -71,7 +72,7 @@ final readonly class ToolCalls
         }
 
         $updatedCalls[$lastIndex] = $updatedCall;
-        return new self($updatedCalls);
+        return new self(...$updatedCalls);
     }
 
     // ACCESSORS ////////////////////////////////////////////////////
@@ -130,7 +131,7 @@ final readonly class ToolCalls
     }
 
     public function filter(callable $callback) : ToolCalls {
-        return new ToolCalls(array_filter($this->toolCalls, $callback));
+        return new ToolCalls(...array_filter($this->toolCalls, $callback));
     }
 
     public function reduce(callable $callback, mixed $initial = null) : mixed {
@@ -158,7 +159,7 @@ final readonly class ToolCalls
         foreach ($this->toolCalls as $toolCall) {
             $clonedToolCalls[] = $toolCall->clone();
         }
-        return new ToolCalls($clonedToolCalls);
+        return new ToolCalls(...$clonedToolCalls);
     }
 
     // INTERNAL ////////////////////////////////////////////////////
