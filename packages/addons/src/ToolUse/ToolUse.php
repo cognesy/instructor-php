@@ -5,6 +5,7 @@ namespace Cognesy\Addons\ToolUse;
 use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\Contracts\CanExecuteIteratively;
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
 use Cognesy\Addons\Core\StateProcessors;
 use Cognesy\Addons\ToolUse\Collections\Tools;
@@ -24,7 +25,18 @@ use Cognesy\Events\EventBusResolver;
 use Generator;
 use Throwable;
 
-final readonly class ToolUse {
+/**
+ * Orchestrates the iterative use of tools based on a given state and continuation criteria.
+ *
+ * This class manages the process of using tools in a sequence of steps, allowing for
+ * dynamic decision-making on whether to continue or stop based on the current state.
+ * It integrates with event handling to provide feedback on the process and supports
+ * state processing to modify the state after each step.
+ *
+ * @implements CanExecuteIteratively<ToolUseState>
+ */
+final readonly class ToolUse implements CanExecuteIteratively
+{
     private Tools $tools;
     private ToolExecutor $toolExecutor;
     private CanUseTools $driver;
@@ -55,7 +67,12 @@ final readonly class ToolUse {
 
     // HANDLE TOOL USE /////////////////////////////////////////////
 
-    public function nextStep(ToolUseState $state): ToolUseState {
+    /**
+     * @param object<ToolUseState> $state
+     * @return object<ToolUseState>
+     */
+    public function nextStep(object $state): object {
+        assert($state instanceof ToolUseState);
         if (!$this->hasNextStep($state)) {
             $this->emitToolUseFinished($state);
             return $state;
@@ -70,19 +87,32 @@ final readonly class ToolUse {
         return $this->updateState($nextStep, $state);
     }
 
-    public function hasNextStep(ToolUseState $state): bool {
+    /**
+     * @param object<ToolUseState> $state
+     */
+    public function hasNextStep(object $state): bool {
+        assert($state instanceof ToolUseState);
         return $this->canContinue($state);
     }
 
-    public function finalStep(ToolUseState $state): ToolUseState {
+    /**
+     * @param object<ToolUseState> $state
+     * @return object<ToolUseState>
+     */
+    public function finalStep(object $state): object {
+        assert($state instanceof ToolUseState);
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
         }
         return $state;
     }
 
-    /** @return Generator<ToolUseState> */
-    public function iterator(ToolUseState $state): iterable {
+    /**
+     * @param object<ToolUseState> $state
+     * @return Generator<ToolUseState>
+     */
+    public function iterator(object $state): iterable {
+        assert($state instanceof ToolUseState);
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
             yield $state;

@@ -17,12 +17,23 @@ use Cognesy\Addons\Chat\Exceptions\ChatException;
 use Cognesy\Addons\Chat\Exceptions\ChatStepFailed;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
+use Cognesy\Addons\Core\Contracts\CanExecuteIteratively;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Generator;
 use Throwable;
 
-final readonly class Chat
+/**
+ * Orchestrates a multi-turn chat between various participants.
+ * 
+ * Participants can be humans, AI models, or other entities capable of contributing to the conversation.
+ * The chat continues until a specified continuation criteria is no longer met.
+ * Each turn involves selecting the next participant, allowing them to contribute,
+ * and updating the chat state accordingly.
+ *
+ * @implements CanExecuteIteratively<ChatState>
+ */
+final readonly class Chat implements CanExecuteIteratively
 {
     private Participants $participants;
     private CanChooseNextParticipant $nextParticipantSelector;
@@ -47,7 +58,12 @@ final readonly class Chat
         $this->events = EventBusResolver::using($events);
     }
 
-    public function nextStep(ChatState $state): ChatState {
+    /**
+     * @param object<ChatState> $state
+     * @return object<ChatState>
+     */
+    public function nextStep(object $state): object {
+        assert($state instanceof ChatState);
         if (!$this->hasNextStep($state)) {
             $this->emitChatCompleted($state);
             return $state;
@@ -62,19 +78,32 @@ final readonly class Chat
         return $this->updateState($nextStep, $state);
     }
 
-    public function hasNextStep(ChatState $state): bool {
+    /**
+     * @param object<ChatState> $state
+     */
+    public function hasNextStep(object $state): bool {
+        assert($state instanceof ChatState);
         return $this->continuationCriteria->canContinue($state) ?? false;
     }
 
-    public function finalStep(ChatState $state): ChatState {
+    /**
+     * @param object<ChatState> $state
+     * @return object<ChatState>
+     */
+    public function finalStep(object $state): object {
+        assert($state instanceof ChatState);
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
         }
         return $state;
     }
 
-    /** @return Generator<ChatState> */
-    public function iterator(ChatState $state): iterable {
+    /**
+     * @param object<ChatState> $state
+     * @return Generator<ChatState>
+     */
+    public function iterator(object $state): iterable {
+        assert($state instanceof ChatState);
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
             yield $state;
