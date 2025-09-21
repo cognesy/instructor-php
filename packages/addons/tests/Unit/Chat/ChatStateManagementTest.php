@@ -30,13 +30,13 @@ it('appends steps correctly and maintains step history', function () {
     $step1 = new ChatStep(
         participantName: 'user',
         outputMessages: new Messages(new Message('user', 'Hello')),
-        meta: []
+        metadata: []
     );
 
     $step2 = new ChatStep(
         participantName: 'assistant',
         outputMessages: new Messages(new Message('assistant', 'Hi there!')),
-        meta: []
+        metadata: []
     );
 
     // Add first step
@@ -70,7 +70,7 @@ it('maintains immutability when appending steps', function () {
     $step = new ChatStep(
         participantName: 'user',
         outputMessages: new Messages(new Message('user', 'Test')),
-        meta: []
+        metadata: []
     );
 
     $newState = applyStep($state, $step, $processor);
@@ -94,7 +94,7 @@ it('correctly builds conversation messages from multiple steps', function () {
         outputMessages: new Messages(
             new Message('user', 'What is AI?'),
         ),
-        meta: []
+        metadata: []
     );
 
     $assistantStep = new ChatStep(
@@ -102,7 +102,7 @@ it('correctly builds conversation messages from multiple steps', function () {
         outputMessages: new Messages(
             new Message('assistant', 'AI stands for Artificial Intelligence.'),
         ),
-        meta: []
+        metadata: []
     );
 
     $followUpStep = new ChatStep(
@@ -110,7 +110,7 @@ it('correctly builds conversation messages from multiple steps', function () {
         outputMessages: new Messages(
             new Message('user', 'Can you explain more?'),
         ),
-        meta: []
+        metadata: []
     );
 
     $stateAfterUser = applyStep($state, $userStep, $processor);
@@ -139,7 +139,7 @@ it('handles steps with multiple messages correctly', function () {
             new Message('assistant', 'First response.'),
             new Message('assistant', 'Second response.'),
         ),
-        meta: []
+        metadata: []
     );
 
     $finalState = applyStep($state, $multiMessageStep, $processor);
@@ -159,14 +159,14 @@ it('preserves step metadata throughout state transitions', function () {
     $step = new ChatStep(
         participantName: 'user',
         outputMessages: new Messages(new Message('user', 'Test')),
-        meta: $metadata
+        metadata: $metadata
     );
 
     $newState = $state->withAddedStep($step)->withCurrentStep($step);
     $retrievedStep = $newState->currentStep();
 
-    expect($retrievedStep->meta())->toBe($metadata);
-    expect($newState->steps()->all()[0]->meta())->toBe($metadata);
+    expect($retrievedStep?->metadata()->toArray())->toBe($metadata);
+    expect($newState->steps()->all()[0]->metadata()->toArray())->toBe($metadata);
 });
 
 it('captures participant errors inside failure steps', function () {

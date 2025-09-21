@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Core\Collections;
 
 use ArrayIterator;
-use Cognesy\Addons\Core\StateContracts\HasSteps;
+use Cognesy\Addons\Core\State\Contracts\HasSteps;
 use Countable;
 use IteratorAggregate;
 use Traversable;

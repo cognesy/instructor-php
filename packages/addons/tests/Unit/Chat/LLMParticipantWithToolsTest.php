@@ -81,9 +81,9 @@ it('executes tool calls and returns chat step with tool results', function () {
     expect($step->outputMessages()->last()->toString())->toBe('The result is 8.');
     expect($step->usage()->total())->toBe(20); // final step usage only
     expect($step->finishReason())->toBe(InferenceFinishReason::Stop);
-    expect($step->meta()['hasToolCalls'])->toBeFalse(); // final step doesn't have tool calls
-    expect($step->meta()['toolsUsed'])->toBe(''); // final step doesn't have tool calls
-    expect($step->meta()['toolErrors'])->toBe(0);
+    expect($step->metadata()->toArray()['hasToolCalls'])->toBeFalse(); // final step doesn't have tool calls
+    expect($step->metadata()->toArray()['toolsUsed'])->toBe(''); // final step doesn't have tool calls
+    expect($step->metadata()->toArray()['toolErrors'])->toBe(0);
 });
 
 it('handles multiple tool calls in sequence', function () {
@@ -132,7 +132,7 @@ it('handles multiple tool calls in sequence', function () {
     expect($step->participantName())->toBe('multi-tool-assistant');
     expect($step->outputMessages()->last()->toString())->toBe('First result is 8, second result is 8.');
     expect($step->usage()->total())->toBe(30); // final step usage only
-    expect($step->meta()['toolsUsed'])->toBe(''); // final step doesn't have tool calls
+    expect($step->metadata()->toArray()['toolsUsed'])->toBe(''); // final step doesn't have tool calls
 });
 
 it('prepends system prompt when provided', function () {

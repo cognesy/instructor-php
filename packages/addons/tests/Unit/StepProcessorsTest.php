@@ -23,7 +23,7 @@ it('accumulates usage from step into state', function () {
 
 it('appends context variables message when variables present', function () {
     $state = new ToolUseState();
-    $state = $state->withVariable('a', 1);
+    $state = $state->withMetadata('a', 1);
     $before = $state->messages()->count();
 
     $step = new ToolUseStep();

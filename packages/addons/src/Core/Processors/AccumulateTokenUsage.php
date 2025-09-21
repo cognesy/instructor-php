@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\Core\Processors;
 
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
-use Cognesy\Addons\Core\StateContracts\HasSteps;
-use Cognesy\Addons\Core\StateContracts\HasUsage;
-use Cognesy\Addons\Core\StepContracts\HasStepUsage;
+use Cognesy\Addons\Core\State\Contracts\HasSteps;
+use Cognesy\Addons\Core\State\Contracts\HasUsage;
+use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 /**

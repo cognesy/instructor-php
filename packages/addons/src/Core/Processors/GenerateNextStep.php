@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Core\Processors;
 
 use Cognesy\Addons\Core\Contracts\CanMakeNextStep;
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
-use Cognesy\Addons\Core\StateContracts\HasSteps;
+use Cognesy\Addons\Core\State\Contracts\HasSteps;
 
 class GenerateNextStep implements CanProcessAnyState
 {
@@ -18,7 +18,7 @@ class GenerateNextStep implements CanProcessAnyState
 
     public function process(object $state, ?callable $next = null): object {
         $nextStep = $this->nextStepGenerator->makeNextStep($state);
-        $newState = $state->withNewStep($nextStep);
+        $newState = $state->withAddedStep($nextStep);
         return $next ? $next($newState) : $newState;
     }
 }

@@ -79,7 +79,7 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
             outputMessages: $outputMessages,
             usage: $toolStep?->usage() ?? Usage::none(),
             finishReason: $toolStep?->finishReason() ?? InferenceFinishReason::Other,
-            meta: [
+            metadata: [
                 'hasToolCalls' => $toolStep?->hasToolCalls() ? true : false,
                 'toolsUsed' => $toolStep?->toolCalls()->toString() ?? '',
                 'toolErrors' => count($toolStep?->errors() ?? []),
@@ -92,7 +92,7 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
         if (!$this->systemPrompt) {
             return $messages;
         }
-        return $messages->prependMessage(new Message(
+        return $messages->prependMessages(new Message(
             role: 'system',
             content: $this->systemPrompt,
         ));

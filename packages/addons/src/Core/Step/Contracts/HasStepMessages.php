@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core\StepContracts;
+namespace Cognesy\Addons\Core\Step\Contracts;
 
 use Cognesy\Messages\Messages;
 

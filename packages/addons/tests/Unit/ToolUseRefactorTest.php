@@ -96,7 +96,7 @@ it('stops on configured finish reasons (FinishReasonCheck)', function () {
     $resp = new InferenceResponse(content: '', finishReason: 'stop');
     $step = new ToolUseStep(inferenceResponse: $resp);
     $state = $state->withAddedStep($step);
-    $state->withCurrentStep($step);
+    $state = $state->withCurrentStep($step);
 
     $check = new FinishReasonCheck([InferenceFinishReason::Stop], static fn(ToolUseState $s) => $s->currentStep()?->finishReason());
     expect($check->canContinue($state))->toBeFalse();

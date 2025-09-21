@@ -26,7 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
-// @doctest id="94b4"
+// @doctest id="f3f5"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -50,7 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="d3ee"
+// @doctest id="3338"
 ```
 
 
@@ -70,7 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
-// @doctest id="e877"
+// @doctest id="cf06"
 ```
 
 
@@ -95,7 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="e539"
+// @doctest id="b6ed"
 ```
 
 
@@ -119,7 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
-// @doctest id="45d6"
+// @doctest id="a03b"
 ```
 
 
@@ -145,7 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="d6af"
+// @doctest id="c7ab"
 ```
 
 
@@ -172,7 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
-// @doctest id="5f23"
+// @doctest id="8625"
 ```
 
 
@@ -215,7 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
-// @doctest id="c6ca"
+// @doctest id="260d"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -234,7 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
-// @doctest id="f3b4"
+// @doctest id="fe50"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -294,7 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
-// @doctest id="a4f7"
+// @doctest id="29df"
 ```
 
 
@@ -330,5 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
-// @doctest id="ab58"
+// @doctest id="c8ce"
 ```

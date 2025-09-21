@@ -3,32 +3,31 @@
 namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Exceptions\ChatException;
-use Cognesy\Addons\Core\StepContracts\HasStepErrors;
-use Cognesy\Addons\Core\StepContracts\HasStepMessages;
-use Cognesy\Addons\Core\StepContracts\HasStepUsage;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
+use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
+use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
+use Cognesy\Addons\Core\Step\StepInfo;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepChatCompletion;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepErrorsChat;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepInfo;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepMessages;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepMetadata;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepUsage;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Utils\Uuid;
-use DateTimeImmutable;
+use Cognesy\Utils\Metadata;
 use Throwable;
 
-final class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
+final readonly class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
 {
-    public readonly string $id;
-    public readonly DateTimeImmutable $createdAt;
-
-    private ?Messages $inputMessages;
-    private ?Messages $outputMessages;
-    private ?Usage $usage;
-
-    private string $participantName;
-    private ?InferenceResponse $inferenceResponse;
-    private ?InferenceFinishReason $finishReason;
-    private array $meta;
-    /** @var Throwable[] */
-    private array $errors;
+    use HandlesStepInfo;
+    use HandlesStepErrorsChat;
+    use HandlesStepMessages;
+    use HandlesStepMetadata;
+    use HandlesStepUsage;
+    use HandlesStepChatCompletion;
 
     public function __construct(
         string $participantName,
@@ -37,120 +36,26 @@ final class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
         ?Usage $usage = null,
         ?InferenceResponse $inferenceResponse = null,
         ?InferenceFinishReason $finishReason = null,
-        array $meta = [],
+        Metadata|array|null $metadata = null,
         array $errors = [],
 
-        ?string $id = null, // for deserialization
-        ?DateTimeImmutable $createdAt = null, // for deserialization
+        ?StepInfo $stepInfo = null, // for deserialization
     ) {
-        $this->id = $id ?? Uuid::uuid4();
-        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->stepInfo = $stepInfo ?? StepInfo::new();
 
         $this->participantName = $participantName;
         $this->inputMessages = $inputMessages;
         $this->outputMessages = $outputMessages;
-        $this->usage = $usage;
+        $this->usage = $usage ?? new Usage();
         $this->inferenceResponse = $inferenceResponse;
         $this->finishReason = $finishReason;
-        $this->meta = $meta;
+        $this->metadata = Metadata::fromArray($metadata ?? []);
         $this->errors = $this->normalizeErrors($errors);
     }
 
-    public static function fromArray(array $stepData) : ChatStep {
-        return new ChatStep(
-            participantName: $stepData['participantName'],
-            inputMessages: isset($stepData['inputMessages']) ? Messages::fromArray($stepData['inputMessages']) : null,
-            outputMessages: isset($stepData['outputMessages']) ? Messages::fromArray($stepData['outputMessages']) : null,
-            usage: isset($stepData['usage']) ? Usage::fromArray($stepData['usage']) : null,
-            inferenceResponse: isset($stepData['inferenceResponse']) ? InferenceResponse::fromArray($stepData['inferenceResponse']) : null,
-            finishReason: InferenceFinishReason::tryFrom($stepData['finishReason'] ?? ''),
-            meta: $stepData['meta'] ?? [],
-            errors: $stepData['errors'] ?? [],
-            id: $stepData['id'] ?? null,
-            createdAt: isset($stepData['createdAt']) ? new DateTimeImmutable($stepData['createdAt']) : null,
-        );
-    }
+    // SERIALIZATION ////////////////////////////////////////
 
-    public static function failure(
-        string $participantName,
-        Messages $inputMessages,
-        Throwable $error,
-        ?Messages $outputMessages = null,
-        ?array $meta = null,
-    ): self {
-        $baseError = $error instanceof ChatException ? $error : ChatException::fromThrowable($error);
-
-        return new self(
-            participantName: $participantName,
-            inputMessages: $inputMessages,
-            outputMessages: $outputMessages,
-            usage: Usage::none(),
-            inferenceResponse: null,
-            finishReason: InferenceFinishReason::Other,
-            meta: ($meta ?? []) + ['errorType' => get_class($baseError)],
-            errors: [$baseError],
-        );
-    }
-
-    public function participantName(): string {
-        return $this->participantName;
-    }
-
-    public function inputMessages(): Messages {
-        return $this->inputMessages ?? Messages::empty();
-    }
-
-    public function outputMessages(): Messages {
-        return $this->outputMessages ?? Messages::empty();
-    }
-
-//    public function messages(): Messages {
-//        $messages = $this->inputMessages ?? Messages::empty();
-//        if ($this->outputMessage) {
-//            $messages = $messages->appendMessage($this->outputMessage);
-//        }
-//        return $messages;
-//    }
-
-    public function usage(): Usage {
-        return $this->usage ?? new Usage();
-    }
-
-    public function inferenceResponse(): ?InferenceResponse {
-        return $this->inferenceResponse;
-    }
-
-    public function finishReason(): ?InferenceFinishReason {
-        return $this->finishReason;
-    }
-
-    public function meta(): array {
-        return $this->meta;
-    }
-
-    public function hasErrors(): bool
-    {
-        return $this->errors !== [];
-    }
-
-    /** @return Throwable[] */
-    public function errors(): array
-    {
-        return $this->errors;
-    }
-
-    public function errorsAsString(): string
-    {
-        if ($this->errors === []) {
-            return '';
-        }
-        return implode("\n", array_map(
-            fn(Throwable $error): string => $error->getMessage(),
-            $this->errors,
-        ));
-    }
-
-    public function toArray() : array {
+    public function toArray(): array {
         return [
             'participantName' => $this->participantName,
             'inputMessages' => $this->inputMessages?->toArray(),
@@ -158,7 +63,7 @@ final class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
             'usage' => $this->usage?->toArray(),
             'inferenceResponse' => $this->inferenceResponse?->toArray(),
             'finishReason' => $this->finishReason->value ?? null,
-            'meta' => $this->meta,
+            'meta' => $this->metadata,
             'errors' => array_map(
                 fn(Throwable $error): array => [
                     'message' => $error->getMessage(),
@@ -166,14 +71,28 @@ final class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
                 ],
                 $this->errors,
             ),
-            'id' => $this->id,
-            'createdAt' => $this->createdAt->format(DATE_ATOM),
+            'stepInfo' => $this->stepInfo->toArray(),
         ];
     }
 
+    public static function fromArray(array $stepData): ChatStep {
+        return new ChatStep(
+            participantName: $stepData['participantName'],
+            inputMessages: isset($stepData['inputMessages']) ? Messages::fromArray($stepData['inputMessages']) : null,
+            outputMessages: isset($stepData['outputMessages']) ? Messages::fromArray($stepData['outputMessages']) : null,
+            usage: isset($stepData['usage']) ? Usage::fromArray($stepData['usage']) : null,
+            inferenceResponse: isset($stepData['inferenceResponse']) ? InferenceResponse::fromArray($stepData['inferenceResponse']) : null,
+            finishReason: InferenceFinishReason::tryFrom($stepData['finishReason'] ?? ''),
+            metadata: $stepData['meta'] ?? [],
+            errors: $stepData['errors'] ?? [],
+            stepInfo: StepInfo::fromArray($stepData['stepInfo'] ?? []),
+        );
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
     /** @param array<int, array{message?:string,class?:string}|Throwable> $errors */
-    private function normalizeErrors(array $errors): array
-    {
+    private function normalizeErrors(array $errors): array {
         $normalized = [];
         foreach ($errors as $error) {
             if ($error instanceof Throwable) {
@@ -196,8 +115,7 @@ final class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
         return $normalized;
     }
 
-    private function rehydrateError(string $class, string $message): Throwable
-    {
+    private function rehydrateError(string $class, string $message): Throwable {
         if (is_a($class, Throwable::class, true)) {
             try {
                 return new $class($message);

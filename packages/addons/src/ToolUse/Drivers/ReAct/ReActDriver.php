@@ -8,7 +8,7 @@ use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
-use Cognesy\Addons\ToolUse\Enums\StepType;
+use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
@@ -152,7 +152,7 @@ final class ReActDriver implements CanUseTools
             toolCalls: null,
             toolExecutions: $executions,
             inferenceResponse: null,
-            stepType: StepType::Error,
+            stepType: ToolUseStepType::Error,
         );
     }
 
@@ -174,7 +174,7 @@ final class ReActDriver implements CanUseTools
             toolCalls: null,
             toolExecutions: $executions,
             inferenceResponse: null,
-            stepType: StepType::Error,
+            stepType: ToolUseStepType::Error,
         );
     }
 
@@ -203,7 +203,7 @@ final class ReActDriver implements CanUseTools
             toolCalls: new ToolCalls($call),
             toolExecutions: $executions,
             inferenceResponse: $inferenceResponse,
-            stepType: StepType::ToolExecution,
+            stepType: ToolUseStepType::ToolExecution,
         );
     }
 
@@ -229,7 +229,7 @@ final class ReActDriver implements CanUseTools
             toolCalls: null,
             toolExecutions: null,
             inferenceResponse: $inferenceResponse,
-            stepType: StepType::FinalResponse,
+            stepType: ToolUseStepType::FinalResponse,
         );
     }
 

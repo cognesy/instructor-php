@@ -2,13 +2,13 @@
 
 namespace Cognesy\Addons\ToolUse\Enums;
 
-enum StepType : string
+enum ToolUseStepType : string
 {
     case ToolExecution = 'tool_execution';
     case FinalResponse = 'final_response';
     case Error = 'error';
 
-    public function is(?StepType $type) : bool {
+    public function is(?ToolUseStepType $type) : bool {
         return $this === $type;
     }
 }

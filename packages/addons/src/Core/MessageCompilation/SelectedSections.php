@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Core\MessageCompilation;
 
-use Cognesy\Addons\Core\StateContracts\HasMessageStore;
+use Cognesy\Addons\Core\State\Contracts\HasMessageStore;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
 

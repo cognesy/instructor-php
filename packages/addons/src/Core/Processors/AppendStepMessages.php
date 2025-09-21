@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\Core\Processors;
 
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
-use Cognesy\Addons\Core\StateContracts\HasMessageStore;
-use Cognesy\Addons\Core\StateContracts\HasSteps;
-use Cognesy\Addons\Core\StepContracts\HasStepMessages;
+use Cognesy\Addons\Core\State\Contracts\HasMessageStore;
+use Cognesy\Addons\Core\State\Contracts\HasSteps;
+use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
 
 /**
  * @implements CanProcessAnyState<HasSteps<HasStepMessages>&HasMessageStore>

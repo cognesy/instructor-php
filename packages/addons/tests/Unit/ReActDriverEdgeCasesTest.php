@@ -5,8 +5,8 @@ use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
-use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
+use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
@@ -41,10 +41,10 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
     );
 
     $state = $toolUse->nextStep($state);
-    expect($state->currentStep()->stepType())->toBe(StepType::ToolExecution);
+    expect($state->currentStep()->stepType())->toBe(ToolUseStepType::ToolExecution);
 
     $state = $toolUse->finalStep($state);
-    expect($state->currentStep()->stepType())->toBe(StepType::FinalResponse);
+    expect($state->currentStep()->stepType())->toBe(ToolUseStepType::FinalResponse);
     expect($state->currentStep()->outputMessages()->last()->toString())->toBe('done');
 });
 

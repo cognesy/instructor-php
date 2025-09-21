@@ -2,53 +2,47 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
-use Cognesy\Addons\Core\StepContracts\HasStepErrors;
-use Cognesy\Addons\Core\StepContracts\HasStepMessages;
-use Cognesy\Addons\Core\StepContracts\HasStepUsage;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
+use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
+use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
+use Cognesy\Addons\Core\Step\StepInfo;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepErrorsToolUse;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepInfo;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepMessages;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepToolCalls;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepToolExecutions;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepUsage;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
-use Cognesy\Addons\ToolUse\Enums\StepType;
+use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Utils\Uuid;
-use DateTimeImmutable;
 use Throwable;
 
 final readonly class ToolUseStep implements HasStepUsage, HasStepMessages, HasStepErrors
 {
-    public string $id;
-    public DateTimeImmutable $createdAt;
-
-    private Messages $inputMessages;
-    private Messages $outputMessages;
-    private Usage $usage;
-
-    private ToolCalls $toolCalls;
-    private ToolExecutions $toolExecutions;
-    private InferenceResponse $inferenceResponse;
-    private StepType $stepType;
-
-    /** @var Throwable[] */
-    private array $errors;
+    use HandlesStepInfo;
+    use HandlesStepMessages;
+    use HandlesStepUsage;
+    use HandlesStepToolCalls;
+    use HandlesStepToolExecutions;
+    use HandlesStepErrorsToolUse;
 
     public function __construct(
-        ?Messages          $inputMessages = null,
-        ?Messages          $outputMessages = null,
-        ?Usage             $usage = null,
-        ?ToolCalls         $toolCalls = null,
-        ?ToolExecutions    $toolExecutions = null,
+        ?Messages $inputMessages = null,
+        ?Messages $outputMessages = null,
+        ?Usage $usage = null,
+        ?ToolCalls $toolCalls = null,
+        ?ToolExecutions $toolExecutions = null,
         ?InferenceResponse $inferenceResponse = null,
-        ?StepType          $stepType = null,
-        array              $errors = [],
+        ?ToolUseStepType $stepType = null,
+        array $errors = [],
 
-        ?string            $id = null, // for deserialization
-        ?DateTimeImmutable $createdAt = null, // for deserialization
+        ?StepInfo $stepInfo = null, // for deserialization
     ) {
-        $this->id = $id ?? Uuid::uuid4();
-        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->stepInfo = $stepInfo ?? StepInfo::new();
 
         $this->inputMessages = $inputMessages ?? Messages::empty();
         $this->outputMessages = $outputMessages ?? Messages::empty();
@@ -68,113 +62,11 @@ final readonly class ToolUseStep implements HasStepUsage, HasStepMessages, HasSt
             : $this->toolExecutions->errors();
     }
 
-    // CONSTRUCTORS ////////////////////////////////////////////
+    // SERIALIZATION ////////////////////////////////////////
 
-    public static function fromArray(array $data) : self {
-        return new self(
-            inputMessages: isset($data['inputMessages']) ? Messages::fromArray($data['inputMessages']) : Messages::empty(),
-            outputMessages: isset($data['outputMessages']) ? Messages::fromArray($data['outputMessages']) : Messages::empty(),
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
-            toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
-            toolExecutions: isset($data['toolExecutions']) ? ToolExecutions::fromArray($data['toolExecutions']) : null,
-            inferenceResponse: isset($data['inferenceResponse']) ? InferenceResponse::fromArray($data['inferenceResponse']) : null,
-            stepType: isset($data['stepType']) ? StepType::from($data['stepType']) : null,
-            errors: $data['errors'] ?? [],
-            id: $data['id'] ?? null,
-            createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
-        );
-    }
-
-    public static function failure(Messages $inputMessages, Throwable $error): self
-    {
-        $normalized = $error instanceof Throwable ? $error : new ToolExecutionException('Unknown tool-use error');
-
-        return new self(
-            inputMessages: $inputMessages,
-            outputMessages: Messages::empty(),
-            usage: Usage::none(),
-            toolCalls: new ToolCalls(),
-            toolExecutions: new ToolExecutions(),
-            inferenceResponse: null,
-            stepType: StepType::Error,
-            errors: [$normalized],
-        );
-    }
-
-    // ACCESSORS ///////////////////////////////////////////////
-
-    public function outputMessages() : Messages {
-        return $this->outputMessages;
-    }
-
-    public function inputMessages() : Messages {
-        return $this->inputMessages;
-    }
-
-    public function toolExecutions() : ToolExecutions {
-        return $this->toolExecutions;
-    }
-
-    public function usage() : Usage {
-        return $this->usage;
-    }
-
-    public function finishReason() : ?InferenceFinishReason {
-        return $this->inferenceResponse?->finishReason();
-    }
-
-    public function inferenceResponse() : ?InferenceResponse {
-        return $this->inferenceResponse;
-    }
-
-    public function stepType() : StepType {
-        return $this->stepType;
-    }
-
-    // HANDLE TOOL CALLS ////////////////////////////////////////////
-
-    public function toolCalls() : ToolCalls {
-        return $this->toolCalls;
-    }
-
-    public function hasToolCalls() : bool {
-        return $this->toolCalls()->count() > 0;
-    }
-
-    // HANDLE ERRORS ////////////////////////////////////////////////
-
-    public function hasErrors() : bool
-    {
-        return $this->errors !== [];
-    }
-
-    /** @return Throwable[] */
-    public function errors() : array
-    {
-        return $this->errors;
-    }
-
-    public function errorsAsString() : string
-    {
-        if ($this->errors === []) {
-            return '';
-        }
-
-        return implode("\n", array_map(
-            fn(Throwable $error): string => $error->getMessage(),
-            $this->errors,
-        ));
-    }
-
-    public function errorExecutions() : ToolExecutions
-    {
-        return new ToolExecutions(...$this->toolExecutions->havingErrors());
-    }
-
-    public function toArray() : array {
+    public function toArray(): array {
         return [
-            'id' => $this->id,
-            'createdAt' => $this->createdAt->format(DATE_ATOM),
+            'stepInfo' => $this->stepInfo->toArray(),
             'inputMessages' => $this->inputMessages->toArray(),
             'outputMessages' => $this->outputMessages->toArray(),
             'toolCalls' => $this->toolCalls->toArray(),
@@ -192,19 +84,37 @@ final readonly class ToolUseStep implements HasStepUsage, HasStepMessages, HasSt
         ];
     }
 
-    public function toString() : string {
+    public static function fromArray(array $data): self {
+        return new self(
+            inputMessages: isset($data['inputMessages']) ? Messages::fromArray($data['inputMessages']) : Messages::empty(),
+            outputMessages: isset($data['outputMessages']) ? Messages::fromArray($data['outputMessages']) : Messages::empty(),
+            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
+            toolExecutions: isset($data['toolExecutions']) ? ToolExecutions::fromArray($data['toolExecutions']) : null,
+            inferenceResponse: isset($data['inferenceResponse']) ? InferenceResponse::fromArray($data['inferenceResponse']) : null,
+            stepType: isset($data['stepType']) ? ToolUseStepType::from($data['stepType']) : null,
+            errors: $data['errors'] ?? [],
+            stepInfo: StepInfo::fromArray($data['stepInfo'] ?? []),
+        );
+    }
+
+    public function toString(): string {
         return ($this->outputMessages->toString() ?: '(no response)')
             . ' ['
             . ($this->hasToolCalls() ? $this->toolCalls->toString() : '(-)')
             . ']';
     }
 
-    private static function inferStepType(InferenceResponse $response, ToolExecutions $executions) : StepType
-    {
-        return match(true) {
-            $executions->hasErrors() => StepType::Error,
-            $response->hasToolCalls() => StepType::ToolExecution,
-            default => StepType::FinalResponse,
+    // INTERNAL /////////////////////////////////////////////////////////
+
+    private static function inferStepType(
+        InferenceResponse $response,
+        ToolExecutions $executions
+    ): ToolUseStepType {
+        return match (true) {
+            $executions->hasErrors() => ToolUseStepType::Error,
+            $response->hasToolCalls() => ToolUseStepType::ToolExecution,
+            default => ToolUseStepType::FinalResponse,
         };
     }
 
@@ -212,8 +122,7 @@ final readonly class ToolUseStep implements HasStepUsage, HasStepMessages, HasSt
      * @param array<int, array{message?:string,class?:string}|Throwable> $errors
      * @return Throwable[]
      */
-    private function normalizeErrors(array $errors): array
-    {
+    private function normalizeErrors(array $errors): array {
         $normalized = [];
         foreach ($errors as $error) {
             if ($error instanceof Throwable) {

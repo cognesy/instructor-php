@@ -78,7 +78,7 @@ final readonly class LLMParticipant implements CanParticipateInChat
         if (!$this->systemPrompt) {
             return $newMessages;
         }
-        return $newMessages->prependMessage(new Message(
+        return $newMessages->prependMessages(new Message(
             role: 'system',
             content: $this->systemPrompt,
         ));

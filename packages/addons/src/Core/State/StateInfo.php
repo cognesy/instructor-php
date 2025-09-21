@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core;
+namespace Cognesy\Addons\Core\State;
 
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;

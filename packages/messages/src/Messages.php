@@ -177,17 +177,14 @@ final readonly class Messages
         return $this->withMessages($newMessages);
     }
 
-    public function prependMessages(array|Messages $messages) : static {
+    public function prependMessages(array|Messages|Message $messages) : static {
         $newMessages = match (true) {
             empty($messages) => $this->messages,
+            $messages instanceof Message => array_merge([$messages], $this->messages),
             $messages instanceof Messages => array_merge($messages->messages, $this->messages),
             default => array_merge(Messages::fromAnyArray($messages)->messages, $this->messages),
         };
         return $this->withMessages($newMessages);
-    }
-
-    public function prependMessage(Message $param) : static {
-        return $this->prependMessages([$param]);
     }
 
     public function removeHead() : static {

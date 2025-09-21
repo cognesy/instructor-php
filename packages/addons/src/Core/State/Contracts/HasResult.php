@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core\StateContracts;
+namespace Cognesy\Addons\Core\State\Contracts;
 
 use Cognesy\Utils\Result\Result;
 

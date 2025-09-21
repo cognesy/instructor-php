@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\Core\Processors;
 
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
-use Cognesy\Addons\Core\StateContracts\HasMessageStore;
-use Cognesy\Addons\Core\StateContracts\HasMetadata;
+use Cognesy\Addons\Core\State\Contracts\HasMessageStore;
+use Cognesy\Addons\Core\State\Contracts\HasMetadata;
 use Cognesy\Messages\Messages;
 
 final class AppendContextMetadata implements CanProcessAnyState

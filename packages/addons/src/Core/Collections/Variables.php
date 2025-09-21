@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Core\Collections;
 
-use Cognesy\Addons\Core\StateContracts\HasVariables;
+use Cognesy\Addons\Core\State\Contracts\HasVariables;
 
 final readonly class Variables implements HasVariables
 {

@@ -216,7 +216,7 @@ test('can append messages', function () {
 
 test('can prepend message', function () {
     $messages = Messages::fromString('Hello');
-    $messages = $messages->prependMessage(new Message('assistant', 'Hi'));
+    $messages = $messages->prependMessages(new Message('assistant', 'Hi'));
     
     expect($messages->all())->toHaveCount(2)
         ->and($messages->first()->content()->toString())->toBe('Hi');
