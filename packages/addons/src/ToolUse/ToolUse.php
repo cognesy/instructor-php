@@ -14,9 +14,11 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
+use Cognesy\Addons\ToolUse\Events\ToolUseStateUpdated;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
 use Cognesy\Addons\ToolUse\Exceptions\ToolUseException;
+use Cognesy\Addons\ToolUse\Exceptions\ToolUseFailed;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Generator;
@@ -59,28 +61,13 @@ final readonly class ToolUse {
             return $state;
         }
         
-        $this->emitToolUseStepStarted($state);
-
         try {
-            $step = $this->driver->useTools($state, $this->tools, $this->toolExecutor);
+            $nextStep = $this->makeNextStep($state);
         } catch (Throwable $error) {
-            $failure = $error instanceof ToolUseException
-                ? $error
-                : ToolUseException::fromThrowable($error);
-            $failureStep = ToolUseStep::failure($state->messages(), $failure);
-            $failedState = $state
-                ->withAddedStep($failureStep)
-                ->withCurrentStep($failureStep)
-                ->withStatus(ToolUseStatus::Failed);
-            $this->emitToolUseStepCompleted($failedState);
-
-            return $failedState;
+            return $this->handleFailure($error, $state);
         }
 
-        $newState = $state->withAddedStep($step)->withCurrentStep($step);
-        $newState = $this->processors->apply($newState);
-        $this->emitToolUseStepCompleted($newState);
-        return $newState;
+        return $this->updateState($nextStep, $state);
     }
 
     public function hasNextStep(ToolUseState $state): bool {
@@ -102,80 +89,101 @@ final readonly class ToolUse {
         }
     }
 
+    // INTERNAL /////////////////////////////////////////////
+
+    protected function canContinue(ToolUseState $state): bool {
+        return $this->continuationCriteria->canContinue($state);
+    }
+
+    private function makeNextStep(ToolUseState $state) : ToolUseStep {
+        $this->emitToolUseStepStarted($state);
+        return $this->driver->useTools(
+            state: $state,
+            tools: $this->tools,
+            executor: $this->toolExecutor
+        );
+    }
+
+    private function updateState(ToolUseStep $step, ToolUseState $state, ?ToolUseStatus $status = null) : ToolUseState {
+        $newState = $state
+            ->withAddedStep($step)
+            ->withCurrentStep($step);
+        if ($status !== null) {
+            $newState = $newState->withStatus($status);
+        }
+        $newState = $this->processors->apply($newState);
+        $this->emitToolUseStateUpdated($newState);
+        assert($newState instanceof ToolUseState);
+        $this->emitToolUseStepCompleted($state);
+        return $newState;
+    }
+
+    private function handleFailure(Throwable $error, ToolUseState $state) : ToolUseState {
+        $failure = $error instanceof ToolUseException
+            ? $error
+            : ToolUseException::fromThrowable($error);
+        $failureStep = ToolUseStep::failure(inputMessages: $state->messages(), error: $failure);
+        $failedState = $this->updateState(
+            step: $failureStep,
+            state: $state,
+            status: ToolUseStatus::Failed,
+        );
+        $this->emitToolUseFailed($failedState, $failure);
+        return $failedState;
+    }
+
+    // ACCESSORS ////////////////////////////////////////////
+
     public function tools() : Tools {
         return $this->tools;
     }
 
-    public function toolExecutor(): ToolExecutor
-    {
+    public function toolExecutor(): ToolExecutor {
         return $this->toolExecutor;
     }
 
     // MUTATORS /////////////////////////////////////////////
 
-    public function withProcessors(CanProcessAnyState ...$processors): self {
+    public function with(
+        ?Tools $tools = null,
+        ?CanApplyProcessors $processors = null,
+        ?ContinuationCriteria $continuationCriteria = null,
+        ?CanUseTools $driver = null,
+        ?CanHandleEvents $events = null,
+    ) : self {
         return new self(
-            tools: $this->tools,
-            processors: new StateProcessors(...$processors),
-            continuationCriteria: $this->continuationCriteria,
-            driver: $this->driver,
-            events: $this->events,
+            tools: $tools ?? $this->tools,
+            processors: $processors ?? $this->processors,
+            continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
+            driver: $driver ?? $this->driver,
+            events: $events ?? $this->events,
         );
+    }
+
+    public function withProcessors(CanProcessAnyState ...$processors): self {
+        return $this->with(processors: new StateProcessors(...$processors));
     }
 
     public function withDriver(CanUseTools $driver) : self {
-        return new self(
-            tools: $this->tools,
-            processors: $this->processors,
-            continuationCriteria: $this->continuationCriteria,
-            driver: $driver,
-            events: $this->events,
-        );
+        return $this->with(driver: $driver);
     }
 
     public function withContinuationCriteria(CanDecideToContinue ...$continuationCriteria) : self {
-        return new self(
-            tools: $this->tools,
-            processors: $this->processors,
-            continuationCriteria: new ContinuationCriteria(...$continuationCriteria),
-            driver: $this->driver,
-            events: $this->events,
-        );
+        return $this->with(continuationCriteria: new ContinuationCriteria(...$continuationCriteria));
     }
 
-    public function withToolExecutor(ToolExecutor $executor): self
-    {
-        $executorWithEvents = $executor->withEventHandler($this->events);
-        return new self(
-            tools: $executorWithEvents->tools(),
-            processors: $this->processors,
-            continuationCriteria: $this->continuationCriteria,
-            driver: $this->driver,
-            events: $this->events,
-        );
+    public function withToolExecutor(ToolExecutor $executor): self {
+        $executor = $executor->withEventHandler($this->events);
+        return $this->with(tools: $executor->tools());
     }
 
     public function withTools(array|ToolInterface|Tools $tools) : self {
-        $tools = match(true) {
+        return $this->with(tools: match(true) {
             is_array($tools) => new Tools(...$tools),
             $tools instanceof ToolInterface => new Tools($tools),
             $tools instanceof Tools => $tools,
             default => new Tools(),
-        };
-
-        return new self(
-            tools: $tools,
-            processors: $this->processors,
-            continuationCriteria: $this->continuationCriteria,
-            driver: $this->driver,
-            events: $this->events,
-        );
-    }
-
-    // INTERNAL /////////////////////////////////////////////
-
-    protected function canContinue(ToolUseState $state): bool {
-        return $this->continuationCriteria->canContinue($state);
+        });
     }
 
     // EVENTS ////////////////////////////////////////////
@@ -205,6 +213,23 @@ final readonly class ToolUse {
             'errorMessages' => $state->currentStep()?->errorsAsString() ?? '',
             'usage' => $state->currentStep()?->usage()->toArray() ?? [],
             'finishReason' => $state->currentStep()?->finishReason()?->value ?? null,
+        ]));
+    }
+
+    private function emitToolUseStateUpdated(ToolUseState $state) : void {
+        $this->events->dispatch(new ToolUseStateUpdated([
+            'state' => $state->toArray(),
+            'step' => $state->currentStep()?->toArray() ?? [],
+        ]));
+    }
+
+    private function emitToolUseFailed(ToolUseState $failedState, ToolUseException $exception) : void {
+        $this->events->dispatch(new ToolUseFailed([
+            'error' => $exception->getMessage(),
+            'status' => $failedState->status()->value,
+            'steps' => $failedState->stepCount(),
+            'usage' => $failedState->usage()->toArray(),
+            'errors' => $failedState->currentStep()?->errorsAsString(),
         ]));
     }
 }

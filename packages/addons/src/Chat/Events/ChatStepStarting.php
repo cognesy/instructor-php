@@ -4,5 +4,5 @@ namespace Cognesy\Addons\Chat\Events;
 
 use Cognesy\Events\Event;
 
-final class ChatTurnStarting extends Event {}
+final class ChatStepStarting extends Event {}
 

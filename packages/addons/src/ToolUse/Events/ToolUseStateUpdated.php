@@ -1,0 +1,7 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Addons\ToolUse\Events;
+
+use Cognesy\Events\Event;
+
+class ToolUseStateUpdated extends Event {}

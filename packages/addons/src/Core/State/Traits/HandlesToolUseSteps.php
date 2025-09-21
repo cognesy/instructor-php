@@ -24,14 +24,14 @@ trait HandlesToolUseSteps
         return $this->with(steps: $this->steps->withAddedSteps($step));
     }
 
-    // ACCESSORS /////////////////////////////////////////////////
-
     /**
      * @param object<ToolUseStep> ...$step
      */
     public function withAddedSteps(object ...$step): static {
         return $this->with(steps: $this->steps->withAddedSteps(...$step));
     }
+
+    // ACCESSORS /////////////////////////////////////////////////
 
     public function currentStep() : ?ToolUseStep {
         return $this->currentStep;
