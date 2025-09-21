@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core\Aspects;
+namespace Cognesy\Addons\Core\Collections;
 
 use ArrayIterator;
-use Countable;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
+use Countable;
 use IteratorAggregate;
 use Traversable;
 

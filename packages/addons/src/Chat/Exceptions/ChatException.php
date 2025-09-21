@@ -2,6 +2,6 @@
 
 namespace Cognesy\Addons\Chat\Exceptions;
 
-use RuntimeException;
+use Cognesy\Addons\Core\Exceptions\ProcessException;
 
-class ChatException extends RuntimeException {}
+class ChatException extends ProcessException {}

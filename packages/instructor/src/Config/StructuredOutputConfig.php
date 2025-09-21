@@ -10,12 +10,9 @@ use Throwable;
 
 final class StructuredOutputConfig
 {
-    use Traits\StructuredOutputConfig\HandlesAccessors;
-    use Traits\StructuredOutputConfig\HandlesMutators;
-
     public const CONFIG_GROUP = 'structured';
 
-    public static function group() : string {
+    public static function group(): string {
         return self::CONFIG_GROUP;
     }
 
@@ -42,32 +39,32 @@ final class StructuredOutputConfig
         // potentially cached - predefined sections used to construct the script
         'system',
         'pre-cached',
-            'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-            'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-            'cached-messages',
+        'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+        'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+        'cached-messages',
         'post-cached',
         // never cached
         'pre-prompt', 'prompt', 'post-prompt',
         'pre-examples', 'examples', 'post-examples',
         'pre-messages', 'messages', 'post-messages',
-        'pre-retries', 'retries', 'post-retries'
+        'pre-retries', 'retries', 'post-retries',
     ];
 
     public function __construct(
         ?OutputMode $outputMode = null,
-        ?string     $outputClass = '',
-        ?bool       $useObjectReferences = false,
-        ?int        $maxRetries = -1,
-        ?string     $schemaName = '',
-        ?string     $schemaDescription = '',
-        ?string     $toolName = '',
-        ?string     $toolDescription = '',
-        ?array      $modePrompts = [],
-        ?string     $retryPrompt = '',
-        ?array      $chatStructure = [],
-        ?bool       $defaultToStdClass = false,
-        ?string     $deserializationErrorPrompt = '',
-        ?bool       $throwOnTransformationFailure = false,
+        ?string $outputClass = '',
+        ?bool $useObjectReferences = false,
+        ?int $maxRetries = -1,
+        ?string $schemaName = '',
+        ?string $schemaDescription = '',
+        ?string $toolName = '',
+        ?string $toolDescription = '',
+        ?array $modePrompts = [],
+        ?string $retryPrompt = '',
+        ?array $chatStructure = [],
+        ?bool $defaultToStdClass = false,
+        ?string $deserializationErrorPrompt = '',
+        ?bool $throwOnTransformationFailure = false,
     ) {
         $this->outputMode = $outputMode ?: $this->outputMode;
         $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
@@ -85,7 +82,7 @@ final class StructuredOutputConfig
         $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? $this->throwOnTransformationFailure;
     }
 
-    public function toArray() : array {
+    public function toArray(): array {
         return [
             'outputMode' => $this->outputMode->value,
             'useObjectReferences' => $this->useObjectReferences,
@@ -104,10 +101,10 @@ final class StructuredOutputConfig
         ];
     }
 
-    public static function fromArray(array $config) : self {
+    public static function fromArray(array $config): self {
         try {
             // Ensure 'outputMode' is set to a valid OutputMode enum value
-            $config['outputMode'] = match(true) {
+            $config['outputMode'] = match (true) {
                 !isset($config['outputMode']) => OutputMode::Tools,
                 is_string($config['outputMode']) => OutputMode::fromText($config['outputMode']),
                 $config['outputMode'] instanceof OutputMode => $config['outputMode'],
@@ -118,58 +115,158 @@ final class StructuredOutputConfig
             $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             throw new ConfigurationException(
                 message: "Failed to create StructuredOutputConfig from array:\n$data\nError: {$e->getMessage()}",
-                previous: $e
+                previous: $e,
             );
         }
         return $instance;
     }
 
-    public static function fromDsn(string $dsn) : self {
+    public static function fromDsn(string $dsn): self {
         $data = Dsn::fromString($dsn)->toArray();
         unset($data['preset']);
         return self::fromArray($data);
     }
 
-    public function withOverrides(array $values) : self {
+    public function withOverrides(array $values): self {
         $config = array_merge($this->toArray(), $values);
         return self::fromArray($config);
     }
 
-//    public function withOverrides(StructuredOutputConfig $overrides) : self {
-//        return new self(
-//            outputMode                  : $overrides->outputMode ?? $this->outputMode,
-//            outputClass                 : $overrides->outputClass ?: $this->outputClass,
-//            useObjectReferences         : $overrides->useObjectReferences ?? $this->useObjectReferences,
-//            maxRetries                  : $overrides->maxRetries >= 0 ? $overrides->maxRetries : $this->maxRetries,
-//            schemaName                  : $overrides->schemaName ?: $this->schemaName,
-//            schemaDescription           : $overrides->schemaDescription ?: $this->schemaDescription,
-//            toolName                    : $overrides->toolName ?: $this->toolName,
-//            toolDescription             : $overrides->toolDescription ?: $this->toolDescription,
-//            modePrompts                 : array_merge($this->modePrompts, $overrides->modePrompts),
-//            retryPrompt                 : $overrides->retryPrompt ?: $this->retryPrompt,
-//            chatStructure               : array_merge($this->chatStructure, $overrides->chatStructure),
-//            defaultToStdClass     : $overrides->defaultToStdClass ?? $this->defaultToStdClass,
-//            deserializationErrorPrompt  : $overrides->deserializationErrorPrompt ?: $this->deserializationErrorPrompt,
-//            throwOnTransformationFailure: $overrides->throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
-//        );
-//    }
-
-    public function clone() : self {
+    public function clone(): self {
         return new self(
-            outputMode                  : $this->outputMode,
-            outputClass                 : $this->outputClass,
-            useObjectReferences         : $this->useObjectReferences,
-            maxRetries                  : $this->maxRetries,
-            schemaName                  : $this->schemaName,
-            schemaDescription           : $this->schemaDescription,
-            toolName                    : $this->toolName,
-            toolDescription             : $this->toolDescription,
-            modePrompts                 : $this->modePrompts,
-            retryPrompt                 : $this->retryPrompt,
-            chatStructure               : $this->chatStructure,
-            defaultToStdClass     : $this->defaultToStdClass,
-            deserializationErrorPrompt  : $this->deserializationErrorPrompt,
+            outputMode: $this->outputMode,
+            outputClass: $this->outputClass,
+            useObjectReferences: $this->useObjectReferences,
+            maxRetries: $this->maxRetries,
+            schemaName: $this->schemaName,
+            schemaDescription: $this->schemaDescription,
+            toolName: $this->toolName,
+            toolDescription: $this->toolDescription,
+            modePrompts: $this->modePrompts,
+            retryPrompt: $this->retryPrompt,
+            chatStructure: $this->chatStructure,
+            defaultToStdClass: $this->defaultToStdClass,
+            deserializationErrorPrompt: $this->deserializationErrorPrompt,
             throwOnTransformationFailure: $this->throwOnTransformationFailure,
         );
+    }
+
+    // ACCESSORS ////////////////////////////////////////////////////
+
+    public function outputMode(): OutputMode {
+        return $this->outputMode;
+    }
+
+    public function prompt(OutputMode $mode): string {
+        return $this->modePrompts[$mode->value] ?? '';
+    }
+
+    public function modePrompts(): array {
+        return $this->modePrompts;
+    }
+
+    public function retryPrompt(): string {
+        return $this->retryPrompt;
+    }
+
+    public function chatStructure(): array {
+        return $this->chatStructure;
+    }
+
+    public function schemaName(): string {
+        return $this->schemaName;
+    }
+
+    public function schemaDescription(): string {
+        return $this->schemaDescription;
+    }
+
+    public function toolName(): string {
+        return $this->toolName;
+    }
+
+    public function toolDescription(): string {
+        return $this->toolDescription;
+    }
+
+    public function useObjectReferences(): bool {
+        return $this->useObjectReferences;
+    }
+
+    public function maxRetries(): int {
+        return $this->maxRetries;
+    }
+
+    public function outputClass(): string {
+        return $this->outputClass;
+    }
+
+    public function deserializationErrorPrompt(): string {
+        return $this->deserializationErrorPrompt;
+    }
+
+    public function defaultToStdClass(): bool {
+        return $this->defaultToStdClass;
+    }
+
+    public function throwOnTransformationFailure(): bool {
+        return $this->throwOnTransformationFailure;
+    }
+
+    // MUTATORS /////////////////////////////////////////////////////
+
+    public function withOutputMode(?OutputMode $outputMode): static {
+        $this->outputMode = $outputMode;
+        return $this;
+    }
+
+    public function withMaxRetries(int $maxRetries): static {
+        $this->maxRetries = $maxRetries;
+        return $this;
+    }
+
+    public function withSchemaName(string $schemaName): static {
+        $this->schemaName = $schemaName;
+        return $this;
+    }
+
+    public function withToolName(string $toolName): static {
+        $this->toolName = $toolName;
+        return $this;
+    }
+
+    public function withToolDescription(string $toolDescription): static {
+        $this->toolDescription = $toolDescription;
+        return $this;
+    }
+
+    public function withUseObjectReferences(bool $useObjectReferences): static {
+        $this->useObjectReferences = $useObjectReferences;
+        return $this;
+    }
+
+    public function withRetryPrompt(string $retryPrompt): static {
+        $this->retryPrompt = $retryPrompt;
+        return $this;
+    }
+
+    public function withModePrompt(OutputMode $mode, string $prompt): static {
+        $this->modePrompts[$mode->value] = $prompt;
+        return $this;
+    }
+
+    public function withModePrompts(array $modePrompts): static {
+        $this->modePrompts = $modePrompts;
+        return $this;
+    }
+
+    public function withChatStructure(array $chatStructure): static {
+        $this->chatStructure = $chatStructure;
+        return $this;
+    }
+
+    public function withDefaultOutputClass(string $defaultOutputClass): static {
+        $this->outputClass = $defaultOutputClass;
+        return $this;
     }
 }

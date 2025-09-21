@@ -168,3 +168,23 @@ it('preserves step metadata throughout state transitions', function () {
     expect($retrievedStep->meta())->toBe($metadata);
     expect($newState->steps()->all()[0]->meta())->toBe($metadata);
 });
+
+it('captures participant errors inside failure steps', function () {
+    $messages = Messages::fromString('hello there');
+    $error = new RuntimeException('participant blew up');
+
+    $failureStep = ChatStep::failure(
+        participantName: 'assistant',
+        inputMessages: $messages,
+        error: $error,
+    );
+
+    expect($failureStep->hasErrors())->toBeTrue();
+    expect($failureStep->errors())->toHaveCount(1);
+    expect($failureStep->errors()[0]->getMessage())->toBe('participant blew up');
+    expect($failureStep->errorsAsString())->toContain('participant blew up');
+
+    $serialized = $failureStep->toArray();
+    expect($serialized['errors'])->toHaveCount(1);
+    expect($serialized['errors'][0]['message'])->toBe('participant blew up');
+});

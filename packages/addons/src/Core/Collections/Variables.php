@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Core\Aspects;
+namespace Cognesy\Addons\Core\Collections;
 
 use Cognesy\Addons\Core\StateContracts\HasVariables;
 

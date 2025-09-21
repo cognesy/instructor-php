@@ -4,11 +4,14 @@ use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -66,6 +69,26 @@ it('continues loop on tool failure and formats error message', function () {
         $resultNames[] = $m['_metadata']['tool_name'] ?? null;
     }
     expect($resultNames)->toContain('_sum');
+});
+
+it('converts driver exceptions into failure steps', function () {
+    $toolUse = ToolUseFactory::default(tools: new Tools());
+
+    $failingDriver = new class implements CanUseTools {
+        public function useTools(ToolUseState $state, Tools $tools, ToolExecutor $executor): ToolUseStep
+        {
+            throw new RuntimeException('driver exception');
+        }
+    };
+
+    $toolUse = $toolUse->withDriver($failingDriver);
+
+    $state = new ToolUseState();
+    $result = $toolUse->nextStep($state);
+
+    expect($result->status())->toBe(ToolUseStatus::Failed);
+    expect($result->currentStep()?->hasErrors())->toBeTrue();
+    expect($result->currentStep()?->errorsAsString())->toContain('driver exception');
 });
 
 it('stops on configured finish reasons (FinishReasonCheck)', function () {

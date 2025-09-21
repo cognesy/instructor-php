@@ -17,6 +17,7 @@ use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Throwable;
 
 final readonly class Chat
 {
@@ -53,7 +54,20 @@ final readonly class Chat
         $participant = $this->selectParticipant($state);
         $this->emitChatBeforeSend($participant, $state);
 
-        $nextStep = $participant->act($state);
+        try {
+            $nextStep = $participant->act($state);
+        } catch (Throwable $error) {
+            $failureStep = ChatStep::failure(
+                participantName: $participant->name(),
+                inputMessages: $state->messages(),
+                error: $error,
+            );
+            $newState = $this->updateState($failureStep, $state);
+            $this->emitChatTurnCompleted($newState);
+
+            return $newState;
+        }
+
         $newState = $this->updateState($nextStep, $state);
         $this->emitChatTurnCompleted($newState);
 

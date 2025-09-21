@@ -11,12 +11,16 @@ use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Events\ToolUseFinished;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepCompleted;
 use Cognesy\Addons\ToolUse\Events\ToolUseStepStarted;
+use Cognesy\Addons\ToolUse\Exceptions\ToolUseException;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Generator;
+use Throwable;
 
 final readonly class ToolUse {
     private Tools $tools;
@@ -56,7 +60,23 @@ final readonly class ToolUse {
         }
         
         $this->emitToolUseStepStarted($state);
-        $step = $this->driver->useTools($state, $this->tools, $this->toolExecutor);
+
+        try {
+            $step = $this->driver->useTools($state, $this->tools, $this->toolExecutor);
+        } catch (Throwable $error) {
+            $failure = $error instanceof ToolUseException
+                ? $error
+                : ToolUseException::fromThrowable($error);
+            $failureStep = ToolUseStep::failure($state->messages(), $failure);
+            $failedState = $state
+                ->withAddedStep($failureStep)
+                ->withCurrentStep($failureStep)
+                ->withStatus(ToolUseStatus::Failed);
+            $this->emitToolUseStepCompleted($failedState);
+
+            return $failedState;
+        }
+
         $newState = $state->withAddedStep($step)->withCurrentStep($step);
         $newState = $this->processors->apply($newState);
         $this->emitToolUseStepCompleted($newState);
@@ -182,6 +202,7 @@ final readonly class ToolUse {
             'step' => $state->stepCount(),
             'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
             'errors' => count($state->currentStep()?->errors() ?? []),
+            'errorMessages' => $state->currentStep()?->errorsAsString() ?? '',
             'usage' => $state->currentStep()?->usage()->toArray() ?? [],
             'finishReason' => $state->currentStep()?->finishReason()?->value ?? null,
         ]));

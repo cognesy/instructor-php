@@ -3,11 +3,15 @@
 namespace Cognesy\Addons\Chat;
 
 use Cognesy\Addons\Chat\Collections\Participants;
+use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\Core\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
 use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\Core\Processors\AppendStepMessages;
@@ -40,6 +44,8 @@ class ChatFactory
                 ], fn(HasSteps $state): ?string => $state->currentStep()?->finishReason()),
                 new StepsLimit(16, fn(HasSteps $state): int => $state->stepCount()),
                 new TokenUsageLimit(4096, fn(HasUsage $state): int => $state->usage()->total()),
+                new ErrorPresenceCheck(fn(ChatState $state): bool => $state->currentStep()?->hasErrors() ?? false),
+                new RetryLimit(2, fn(ChatState $state) => $state->steps(), fn(ChatStep $step): bool => $step->hasErrors()),
             ),
             events: $events,
         );

@@ -2,6 +2,6 @@
 
 namespace Cognesy\Addons\ToolUse\Exceptions;
 
-use RuntimeException;
+use Cognesy\Addons\Core\Exceptions\ProcessException;
 
-class ToolUseException extends RuntimeException {}
+class ToolUseException extends ProcessException {}

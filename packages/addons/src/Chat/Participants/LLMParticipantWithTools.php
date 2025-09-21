@@ -112,6 +112,7 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
         $this->events->dispatch(new ChatToolUseCompleted([
             'participant' => $this->name,
             'response' => $toolStep?->toString() ?? '',
+            'errors' => $toolStep?->errorsAsString() ?? '',
         ]));
     }
 }

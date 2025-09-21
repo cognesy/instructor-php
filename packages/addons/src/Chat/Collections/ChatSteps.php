@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Chat\Collections;
 
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Core\Aspects\Steps;
+use Cognesy\Addons\Core\Collections\Steps;
 
 /** @extends Steps<ChatStep> */
 final readonly class ChatSteps extends Steps
