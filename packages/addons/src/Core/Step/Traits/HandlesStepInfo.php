@@ -9,6 +9,10 @@ trait HandlesStepInfo
 {
     private readonly StepInfo $stepInfo;
 
+    public function stepInfo(): StepInfo {
+        return $this->stepInfo;
+    }
+
     public function id(): string {
         return $this->stepInfo->id();
     }

@@ -28,11 +28,11 @@ trait HandlesStepChatCompletion
     }
 
     public static function failure(
+        Throwable $error,
         string $participantName,
         Messages $inputMessages,
-        Throwable $error,
         ?Messages $outputMessages = null,
-        ?array $meta = null,
+        ?array $metadata = null,
     ): self {
         $baseError = $error instanceof ChatException ? $error : ChatException::fromThrowable($error);
         return new self(
@@ -42,7 +42,7 @@ trait HandlesStepChatCompletion
             usage: Usage::none(),
             inferenceResponse: null,
             finishReason: InferenceFinishReason::Other,
-            metadata: ($meta ?? []) + ['errorType' => get_class($baseError)],
+            metadata: ($metadata ?? []) + ['errorType' => get_class($baseError)],
             errors: [$baseError],
         );
     }

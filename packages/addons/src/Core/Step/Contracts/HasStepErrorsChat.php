@@ -7,7 +7,7 @@ use Throwable;
 /**
  * @template TError of Throwable
  */
-interface HasStepErrors
+interface HasStepErrorsChat
 {
     /**
      * Determine whether the step captured any errors.

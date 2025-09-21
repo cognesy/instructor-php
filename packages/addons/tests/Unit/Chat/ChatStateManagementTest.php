@@ -174,9 +174,9 @@ it('captures participant errors inside failure steps', function () {
     $error = new RuntimeException('participant blew up');
 
     $failureStep = ChatStep::failure(
+        error: $error,
         participantName: 'assistant',
         inputMessages: $messages,
-        error: $error,
     );
 
     expect($failureStep->hasErrors())->toBeTrue();

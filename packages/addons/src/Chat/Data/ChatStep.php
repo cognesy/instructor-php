@@ -3,8 +3,11 @@
 namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Exceptions\ChatException;
-use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
+use Cognesy\Addons\Core\Step\Contracts\HasStepChatCompletion;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrorsChat;
+use Cognesy\Addons\Core\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
+use Cognesy\Addons\Core\Step\Contracts\HasStepMetadata;
 use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
 use Cognesy\Addons\Core\Step\StepInfo;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepChatCompletion;
@@ -20,14 +23,20 @@ use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Metadata;
 use Throwable;
 
-final readonly class ChatStep implements HasStepUsage, HasStepMessages, HasStepErrors
+final readonly class ChatStep implements
+    HasStepChatCompletion,
+    HasStepErrorsChat,
+    HasStepInfo,
+    HasStepMessages,
+    HasStepMetadata,
+    HasStepUsage
 {
-    use HandlesStepInfo;
+    use HandlesStepChatCompletion;
     use HandlesStepErrorsChat;
+    use HandlesStepInfo;
     use HandlesStepMessages;
     use HandlesStepMetadata;
     use HandlesStepUsage;
-    use HandlesStepChatCompletion;
 
     public function __construct(
         string $participantName,
@@ -87,6 +96,10 @@ final readonly class ChatStep implements HasStepUsage, HasStepMessages, HasStepE
             errors: $stepData['errors'] ?? [],
             stepInfo: StepInfo::fromArray($stepData['stepInfo'] ?? []),
         );
+    }
+
+    public function toString() : string {
+        return $this->participantName . ': ' . $this->outputMessages?->last()?->toString();
     }
 
     // INTERNAL /////////////////////////////////////////////////

@@ -2,8 +2,12 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
-use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrorsChat;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrorsToolUse;
+use Cognesy\Addons\Core\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
+use Cognesy\Addons\Core\Step\Contracts\HasStepToolCalls;
+use Cognesy\Addons\Core\Step\Contracts\HasStepToolExecutions;
 use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
 use Cognesy\Addons\Core\Step\StepInfo;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepErrorsToolUse;
@@ -21,14 +25,21 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;
 
-final readonly class ToolUseStep implements HasStepUsage, HasStepMessages, HasStepErrors
+final readonly class ToolUseStep implements
+    HasStepErrorsChat,
+    HasStepInfo,
+    HasStepMessages,
+    HasStepErrorsToolUse,
+    HasStepToolCalls,
+    HasStepToolExecutions,
+    HasStepUsage
 {
+    use HandlesStepErrorsToolUse;
     use HandlesStepInfo;
     use HandlesStepMessages;
-    use HandlesStepUsage;
     use HandlesStepToolCalls;
     use HandlesStepToolExecutions;
-    use HandlesStepErrorsToolUse;
+    use HandlesStepUsage;
 
     public function __construct(
         ?Messages $inputMessages = null,

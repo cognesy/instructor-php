@@ -58,9 +58,9 @@ final readonly class Chat
             $nextStep = $participant->act($state);
         } catch (Throwable $error) {
             $failureStep = ChatStep::failure(
+                error: $error,
                 participantName: $participant->name(),
                 inputMessages: $state->messages(),
-                error: $error,
             );
             $newState = $this->updateState($failureStep, $state);
             $this->emitChatTurnCompleted($newState);
