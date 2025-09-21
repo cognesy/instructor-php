@@ -2,14 +2,14 @@
 
 namespace Cognesy\Addons\ToolUse\Drivers\ReAct;
 
+use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Addons\ToolUse\ToolExecutor;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Dynamic\StructureFactory;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\ToolUse\Data\Collections;
+namespace Cognesy\Addons\ToolUse\Collections;
 
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Throwable;

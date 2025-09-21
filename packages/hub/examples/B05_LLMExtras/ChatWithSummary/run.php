@@ -15,8 +15,8 @@ docname: 'chat_with_summary'
 require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\ChatFactory;
+use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;

@@ -2,10 +2,10 @@
 
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Enums\StepType;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Instructor\Validation\Exceptions\ValidationException;
@@ -30,8 +30,7 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
     
-    $tools = new Tools();
-    $tools = $tools->withTool(FunctionTool::fromCallable(_noop(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_noop(...)));
     $state = new ToolUseState();
     $state = $state->withMessages(Messages::empty());
     
@@ -56,7 +55,7 @@ it('surfaces extraction failure as validation exception (deterministic)', functi
     ]);
 
     $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
-    $tools = (new Tools())->withTool(FunctionTool::fromCallable(_noop(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_noop(...)));
     $state = new ToolUseState();
     $toolUse = ToolUseFactory::default(tools: $tools, driver: $react);
 

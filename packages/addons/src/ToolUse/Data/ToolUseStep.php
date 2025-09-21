@@ -4,7 +4,7 @@ namespace Cognesy\Addons\ToolUse\Data;
 
 use Cognesy\Addons\Core\StepContracts\HasStepMessages;
 use Cognesy\Addons\Core\StepContracts\HasStepUsage;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Enums\StepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

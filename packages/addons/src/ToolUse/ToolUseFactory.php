@@ -15,6 +15,7 @@ use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\Core\Processors\AppendContextMetadata;
 use Cognesy\Addons\Core\Processors\AppendStepMessages;
 use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;

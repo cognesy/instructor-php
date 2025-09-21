@@ -7,6 +7,9 @@ use Cognesy\Addons\Core\StateContracts\HasMessageStore;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
 use Cognesy\Addons\Core\StepContracts\HasStepMessages;
 
+/**
+ * @implements CanProcessAnyState<HasSteps<HasStepMessages>&HasMessageStore>
+ */
 final class AppendStepMessages implements CanProcessAnyState
 {
     public function canProcess(object $state): bool {

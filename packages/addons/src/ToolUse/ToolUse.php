@@ -7,6 +7,7 @@ use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
 use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
@@ -136,8 +137,8 @@ final readonly class ToolUse {
 
     public function withTools(array|ToolInterface|Tools $tools) : self {
         $tools = match(true) {
-            is_array($tools) => new Tools($tools),
-            $tools instanceof ToolInterface => new Tools([$tools]),
+            is_array($tools) => new Tools(...$tools),
+            $tools instanceof ToolInterface => new Tools($tools),
             $tools instanceof Tools => $tools,
             default => new Tools(),
         };
@@ -172,7 +173,7 @@ final readonly class ToolUse {
         $this->events->dispatch(new ToolUseStepStarted([
             'step' => $state->stepCount() + 1,
             'messages' => $state->messages()->count(),
-            'tools' => count($this->tools->nameList()),
+            'tools' => count($this->tools->names()),
         ]));
     }
 

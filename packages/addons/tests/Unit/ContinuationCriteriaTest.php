@@ -8,7 +8,7 @@ use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\ToolCallPresenceCheck;
 use Cognesy\Addons\Tests\Support\FrozenClock;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;

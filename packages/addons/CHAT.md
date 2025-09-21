@@ -27,11 +27,7 @@ This document explains how to use Chat, customize its behavior, and integrate it
 ## Quick Start (Human → Assistant)
 
 ```php
-use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\LLMParticipant;use Cognesy\Messages\Messages;
 
 // Create participants
 $participants = new Participants(
@@ -64,16 +60,7 @@ echo $assistantMessages;
 ## Multi-Participant Chat Example
 
 ```php
-use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Participants\ExternalParticipant;
-use Cognesy\Addons\Chat\Participants\LLMParticipant;
-use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\LLMParticipant;use Cognesy\Addons\Chat\Participants\ScriptedParticipant;use Cognesy\Addons\Core\Continuation\ContinuationCriteria;use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;use Cognesy\Messages\Messages;
 
 // Create participants with different roles
 $moderator = new ScriptedParticipant(
@@ -440,12 +427,7 @@ $storeed = new ScriptedParticipant(
 ### Feature Test Example
 
 ```php
-use Cognesy\Addons\Chat\ChatFactory;
-use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
-use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\ScriptedParticipant;use Cognesy\Addons\Core\Continuation\ContinuationCriteria;use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 
 // Create test configuration with deterministic participant
 $scriptedAssistant = new ScriptedParticipant(
@@ -468,7 +450,7 @@ $state1 = $chat->nextStep($state);
 $state2 = $chat->nextStep($state1);
 
 // Verify results
-expect($state2->steps()->count())->toBe(2);
+expect($state2->steps()->stepCount())->toBe(2);
 expect($state2->messages()->count())->toBe(2); // Two scripted responses
 expect($state2->messages()->toArray()[0]['content'])->toBe('Hello there!');
 expect($state2->messages()->toArray()[1]['content'])->toBe('How can I help?');

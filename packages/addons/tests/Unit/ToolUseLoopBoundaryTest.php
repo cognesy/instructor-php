@@ -2,9 +2,9 @@
 
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -41,8 +41,7 @@ it('finalStep respects StepsLimit(1)', function () {
     $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: new ToolCalls([ new ToolCall('_inc_lb', ['x' => 1]) ])),
     ]);
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(_inc_lb(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_inc_lb(...)));
         
     $state = new ToolUseState();
         
@@ -62,8 +61,7 @@ it('accumulates usage across steps', function () {
         new InferenceResponse(content: 'ok', usage: new Usage(4,5)),
     ]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(_inc_lb(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_inc_lb(...)));
         
     $state = new ToolUseState();
         

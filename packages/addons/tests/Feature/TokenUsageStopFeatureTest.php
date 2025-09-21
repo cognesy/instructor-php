@@ -2,9 +2,9 @@
 
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -24,8 +24,7 @@ it('stops due to token usage limit being reached', function () {
         new InferenceResponse(content: 'final', usage: new Usage(2, 0)),
     ]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(_noop_feat(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_noop_feat(...)));
         
     $state = new ToolUseState();
         

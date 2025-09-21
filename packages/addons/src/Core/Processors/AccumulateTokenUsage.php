@@ -8,6 +8,9 @@ use Cognesy\Addons\Core\StateContracts\HasUsage;
 use Cognesy\Addons\Core\StepContracts\HasStepUsage;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
+/**
+ * @implements CanProcessAnyState<HasSteps<HasStepUsage>&HasUsage>
+ */
 final class AccumulateTokenUsage implements CanProcessAnyState
 {
     public function canProcess(object $state): bool {

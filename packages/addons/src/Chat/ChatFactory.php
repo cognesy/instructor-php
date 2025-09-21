@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Chat;
 
-use Cognesy\Addons\Chat\Data\Collections\Participants;
+use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Selectors\RoundRobinSelector;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;

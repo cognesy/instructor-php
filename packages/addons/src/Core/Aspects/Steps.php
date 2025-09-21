@@ -2,28 +2,44 @@
 
 namespace Cognesy\Addons\Core\Aspects;
 
+use ArrayIterator;
+use Countable;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
+use IteratorAggregate;
+use Traversable;
 
 /**
  * @template TStep of object
+ * @implements HasSteps<TStep>
  */
-readonly class Steps implements HasSteps
+readonly class Steps implements HasSteps, Countable, IteratorAggregate
 {
     /** @var TStep[] $steps */
     protected array $steps;
 
     public function __construct(
-        ?object ...$steps
+        object ...$steps
     ) {
         $this->steps = $steps;
     }
 
-    /**
-     * Get the current step, or null if there are no steps.
-     *
-     * @return ?TStep
-     */
+    // ACCESSORS ///////////////////////////////////////////////////
+
+    /** @return TStep[] */
+    public function all(): array {
+        return $this->steps;
+    }
+
     public function currentStep(): ?object {
+        return $this->lastStep();
+    }
+
+    public function isEmpty(): bool {
+        return $this->steps === [];
+    }
+
+    /** @return ?TStep */
+    public function lastStep(): ?object {
         if ($this->stepCount() === 0) {
             return null;
         }
@@ -31,12 +47,7 @@ readonly class Steps implements HasSteps
         return $this->steps[$lastIndex] ?? null;
     }
 
-    /**
-     * Get the step at the given index, or null if out of bounds.
-     *
-     * @param int $index
-     * @return ?TStep
-     */
+    /** @return ?TStep */
     public function stepAt(int $index): ?object {
         return $this->steps[$index] ?? null;
     }
@@ -45,28 +56,44 @@ readonly class Steps implements HasSteps
         return count($this->steps);
     }
 
-    public function lastStep(): ?object {
-        return $this->currentStep();
-    }
+    // ITERATORS ///////////////////////////////////////////////////
 
-    /**
-     * Iterate over each step.
-     *
-     * @return iterable<TStep>
-     */
+    /** @return iterable<TStep> */
     public function eachStep(): iterable {
         foreach ($this->steps as $step) {
             yield $step;
         }
     }
 
+    /** @return Traversable<int, TStep> */
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->steps);
+    }
+
+    public function count(): int {
+        return $this->stepCount();
+    }
+
+    // MUTATORS ////////////////////////////////////////////////////
+
     /**
-     * Return a new instance with the added step.
-     *
      * @param TStep $step
-     * @return static
      */
-    public function withStepAppended(object $step): static {
-        return new static(...[...$this->steps, $step]);
+    public function withAddedStep(object $step): static {
+        return $this->withAddedSteps($step);
+    }
+
+    /** @param TStep ...$step */
+    public function withAddedSteps(object ...$step): static {
+        return new static(...[...$this->steps, ...$step]);
+    }
+
+    // TRANSFORMERS AND CONVERSIONS ////////////////////////////////
+
+    /** @return iterable<TStep> */
+    public function reversed(): iterable {
+        foreach (array_reverse($this->steps) as $step) {
+            yield $step;
+        }
     }
 }

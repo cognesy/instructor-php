@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\ChatFactory;
+use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;

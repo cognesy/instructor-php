@@ -23,11 +23,7 @@ This document explains how to use ToolUse, customize its behavior, and integrate
 ## Quick Start
 
 ```php
-use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Addons\ToolUse\Tools;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\ToolUse\Collections\Tools;use Cognesy\Addons\ToolUse\Data\ToolUseState;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUseFactory;use Cognesy\Messages\Messages;
 
 function add_numbers(int $a, int $b): int { return $a + $b; }
 
@@ -79,17 +75,7 @@ Notes:
 ## Quick Start (ReAct)
 
 ```php
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
-use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
-use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Addons\ToolUse\Tools;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Addons\Core\Continuation\ContinuationCriteria;use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\ToolUse\Collections\Tools;use Cognesy\Addons\ToolUse\Data\ToolUseState;use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUseFactory;use Cognesy\Messages\Messages;use Cognesy\Polyglot\Inference\LLMProvider;
 
 $driver = new ReActDriver(
     llm: LLMProvider::using('openai'),

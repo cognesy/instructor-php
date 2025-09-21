@@ -5,11 +5,11 @@ use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
+use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
@@ -46,8 +46,7 @@ it('runs a ReAct call then final answer', function () {
         new RetryLimit(1, fn(ToolUseState $s): ToolUseSteps => $s->steps(), fn(ToolUseStep $s): bool => $s->hasErrors())
     );
     
-    $tools = new Tools();
-    $tools = $tools->withTool(FunctionTool::fromCallable(_react_add(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_react_add(...)));
     $state = new ToolUseState();
     $state = $state->withMessages(Messages::fromString('Add 2 and 3, then report the result'));
     

@@ -2,12 +2,12 @@
 
 use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Message;
@@ -32,8 +32,7 @@ it('continues loop on tool failure and formats error message', function () {
         ),
     ]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(_sum(...)));
+    $tools = new Tools(FunctionTool::fromCallable(_sum(...)));
         
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Test failure handling'));

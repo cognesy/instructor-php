@@ -2,9 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse;
 
+use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanAccessAnyState;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Events\ToolCallCompleted;
@@ -35,33 +36,7 @@ final readonly class ToolExecutor
         $this->events = EventBusResolver::using($events);
     }
 
-    public function tools(): Tools {
-        return $this->tools;
-    }
-
-    public function withTools(Tools $tools): self {
-        return new self(
-            tools: $tools,
-            throwOnToolFailure: $this->throwOnToolFailure,
-            events: $this->events,
-        );
-    }
-
-    public function withThrowOnToolFailure(bool $throw): self {
-        return new self(
-            tools: $this->tools,
-            throwOnToolFailure: $throw,
-            events: $this->events,
-        );
-    }
-
-    public function withEventHandler(CanHandleEvents $events): self {
-        return new self(
-            tools: $this->tools,
-            throwOnToolFailure: $this->throwOnToolFailure,
-            events: EventBusResolver::using($events),
-        );
-    }
+    // MAIN API /////////////////////////////////////////////
 
     public function useTool(ToolCall $toolCall, ToolUseState $state): ToolExecution {
         $startedAt = new DateTimeImmutable();
@@ -91,6 +66,40 @@ final readonly class ToolExecutor
         return $executions;
     }
 
+    // ACCESSORS /////////////////////////////////////////////
+
+    public function tools(): Tools {
+        return $this->tools;
+    }
+
+    // MUTATORS //////////////////////////////////////////////
+
+    public function withTools(Tools $tools): self {
+        return new self(
+            tools: $tools,
+            throwOnToolFailure: $this->throwOnToolFailure,
+            events: $this->events,
+        );
+    }
+
+    public function withThrowOnToolFailure(bool $throw): self {
+        return new self(
+            tools: $this->tools,
+            throwOnToolFailure: $throw,
+            events: $this->events,
+        );
+    }
+
+    public function withEventHandler(CanHandleEvents $events): self {
+        return new self(
+            tools: $this->tools,
+            throwOnToolFailure: $this->throwOnToolFailure,
+            events: EventBusResolver::using($events),
+        );
+    }
+
+    // INTERNAL /////////////////////////////////////////////
+
     private function execute(ToolCall $toolCall, ToolUseState $state): Result {
         $tool = $this->prepareTool($toolCall->name(), $state);
         $args = $toolCall->args();
@@ -105,7 +114,6 @@ final readonly class ToolExecutor
 
     private function prepareTool(string $name, ToolUseState $state): ToolInterface {
         $tool = $this->tools->get($name);
-
         return $tool instanceof CanAccessAnyState
             ? $tool->withState($state)
             : $tool;
@@ -135,6 +143,22 @@ final readonly class ToolExecutor
         );
     }
 
+    // ERROR HANDLING ////////////////////////////////////////////
+
+    private function throwOnFailure(Failure $result): void {
+        $exception = $result->exception();
+        if ($exception instanceof ToolExecutionException) {
+            throw $exception;
+        }
+
+        throw new ToolExecutionException(
+            message: $result->errorMessage(),
+            previous: $exception,
+        );
+    }
+
+    // EVENTS ////////////////////////////////////////////////////
+
     private function emitToolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {
         $this->events->dispatch(new ToolCallStarted([
             'tool' => $toolCall->name(),
@@ -151,17 +175,5 @@ final readonly class ToolExecutor
             'startedAt' => $toolExecution->startedAt()->format(DATE_ATOM),
             'endedAt' => $toolExecution->endedAt()->format(DATE_ATOM),
         ]));
-    }
-
-    private function throwOnFailure(Failure $result): void {
-        $exception = $result->exception();
-        if ($exception instanceof ToolExecutionException) {
-            throw $exception;
-        }
-
-        throw new ToolExecutionException(
-            message: $result->errorMessage(),
-            previous: $exception,
-        );
     }
 }

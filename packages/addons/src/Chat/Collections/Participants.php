@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Chat\Data\Collections;
+namespace Cognesy\Addons\Chat\Collections;
 
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 

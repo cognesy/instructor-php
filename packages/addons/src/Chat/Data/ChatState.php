@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Chat\Data;
 
-use Cognesy\Addons\Chat\Data\Collections\ChatSteps;
+use Cognesy\Addons\Chat\Collections\ChatSteps;
 use Cognesy\Addons\Core\MessageExchangeState;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
 use Cognesy\Messages\Messages;
@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
 
+/** @implements HasSteps<ChatStep> */
 final readonly class ChatState extends MessageExchangeState implements HasSteps
 {
     private ChatSteps $steps;
@@ -69,8 +70,12 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
         );
     }
 
-    public function withAddedStep(ChatStep $step): self {
-        $newSteps = $this->steps->add($step);
+    /**
+     * @param ChatStep $step
+     */
+    public function withAddedStep(object $step): static {
+        assert($step instanceof ChatStep);
+        $newSteps = $this->steps->withAddedStep($step);
         return new self(
             steps: $newSteps,
             currentStep: $this->currentStep,
@@ -154,10 +159,18 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
         );
     }
 
-    public function withStepAppended(object $step): static {
-        assert($step instanceof ChatStep);
+    /**
+     * @param ChatStep ...$step
+     */
+    public function withAddedSteps(object ...$step): static {
+        if ($step === []) {
+            return $this;
+        }
+        foreach ($step as $singleStep) {
+            assert($singleStep instanceof ChatStep);
+        }
         return new self(
-            steps: $this->steps->add($step),
+            steps: $this->steps->withAddedSteps(...$step),
             currentStep: $this->currentStep,
             variables: $this->metadata,
             usage: $this->usage,
@@ -179,15 +192,16 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
     }
 
     public function stepCount(): int {
-        return $this->steps->count();
+        return $this->steps->stepCount();
     }
 
-    public function stepAt(int $index): ?object {
+    public function stepAt(int $index): ?ChatStep {
         return $this->steps->stepAt($index);
     }
 
+    /** @return iterable<ChatStep> */
     public function eachStep(): iterable {
-        return $this->steps->each();
+        return $this->steps;
     }
 
     // TRANSFORMATIONS / CONVERSIONS ////////////////////////////

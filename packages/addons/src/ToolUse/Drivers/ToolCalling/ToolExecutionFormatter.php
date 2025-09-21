@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse\Drivers\ToolCalling;
 
-use Cognesy\Addons\ToolUse\Data\Collections\ToolExecutions;
+use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;

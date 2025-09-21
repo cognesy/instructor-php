@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\Chat\Selectors;
 
+use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
 use Cognesy\Addons\Chat\Data\ParticipantChoice;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Result\Result;

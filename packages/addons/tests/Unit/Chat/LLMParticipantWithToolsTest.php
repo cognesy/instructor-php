@@ -4,8 +4,8 @@ use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\ChatToolUseCompleted;
 use Cognesy\Addons\Chat\Events\ChatToolUseStarted;
 use Cognesy\Addons\Chat\Participants\LLMParticipantWithTools;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Events\EventBusResolver;
@@ -58,9 +58,7 @@ it('executes tool calls and returns chat step with tool results', function () {
         )
     ]);
 
-    $tools = (new Tools())->withTool(
-        FunctionTool::fromCallable(test_add(...))
-    );
+    $tools = new Tools(FunctionTool::fromCallable(test_add(...)));
 
     $toolUse = ToolUseFactory::default(
         tools: $tools,
@@ -109,9 +107,9 @@ it('handles multiple tool calls in sequence', function () {
         )
     ]);
 
-    $tools = (new Tools())->withTools(
+    $tools = new Tools(
         FunctionTool::fromCallable(test_add(...)),
-        FunctionTool::fromCallable(test_multiply(...))
+        FunctionTool::fromCallable(test_multiply(...)),
     );
 
     $toolUse = ToolUseFactory::default(

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
@@ -29,9 +29,10 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     );
     $driver = new FakeInferenceDriver([$resp]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(_inc(...)))
-        ->withTool(FunctionTool::fromCallable(_dbl(...)));
+    $tools = new Tools(
+        FunctionTool::fromCallable(_inc(...)),
+        FunctionTool::fromCallable(_dbl(...)),
+    );
         
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('run multiple'));

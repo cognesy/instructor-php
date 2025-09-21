@@ -4,7 +4,7 @@ namespace Cognesy\Addons\ToolUse\Data;
 
 use Cognesy\Addons\Core\MessageExchangeState;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
+use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
@@ -12,6 +12,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
 
+/** @implements HasSteps<ToolUseStep> */
 final readonly class ToolUseState extends MessageExchangeState implements HasSteps
 {
     private ToolUseStatus $status;
@@ -123,7 +124,11 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
         );
     }
 
-    public function withAddedStep(ToolUseStep $step) : static {
+    /**
+     * @param ToolUseStep $step
+     */
+    public function withAddedStep(object $step) : static {
+        assert($step instanceof ToolUseStep);
         return new self(
             status: $this->status,
             steps: $this->steps->withAddedStep($step),
@@ -157,11 +162,19 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
         return $this->withUsage($newUsage);
     }
 
-    public function withStepAppended(object $step): static {
-        assert($step instanceof ToolUseStep);
+    /**
+     * @param ToolUseStep ...$step
+     */
+    public function withAddedSteps(object ...$step): static {
+        if ($step === []) {
+            return $this;
+        }
+        foreach ($step as $singleStep) {
+            assert($singleStep instanceof ToolUseStep);
+        }
         return new self(
             status: $this->status,
-            steps: $this->steps->withAddedStep($step),
+            steps: $this->steps->withAddedSteps(...$step),
             currentStep: $this->currentStep,
             variables: $this->metadata,
             usage: $this->usage,
@@ -187,15 +200,16 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
     }
 
     public function stepCount() : int {
-        return $this->steps->count();
+        return $this->steps->stepCount();
     }
 
-    public function stepAt(int $index): ?object {
+    public function stepAt(int $index): ?ToolUseStep {
         return $this->steps->stepAt($index);
     }
 
+    /** @return iterable<ToolUseStep> */
     public function eachStep(): iterable {
-        return $this->steps->each();
+        return $this->steps;
     }
 
     // TRANSFORMATIONS / CONVERSIONS ////////////////////////////

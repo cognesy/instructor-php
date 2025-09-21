@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\Chat\Contracts;
 
+use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Collections\Participants;
 
 interface CanChooseNextParticipant
 {

@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse\Contracts;
 
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\ToolExecutor;
-use Cognesy\Addons\ToolUse\Tools;
 
 interface CanUseTools
 {

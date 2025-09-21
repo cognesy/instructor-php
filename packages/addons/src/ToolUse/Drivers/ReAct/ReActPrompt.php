@@ -2,14 +2,14 @@
 
 namespace Cognesy\Addons\ToolUse\Drivers\ReAct;
 
-use Cognesy\Addons\ToolUse\Tools;
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Utils\Json\Json;
 
 final class ReActPrompt
 {
     public static function buildSystemPrompt(Tools $tools) : string {
         $toolSchemas = $tools->toToolSchema();
-        $toolList = $tools->descriptionList();
+        $toolList = $tools->descriptions();
         $catalog = [
             'tools' => $toolList,
             'schemas' => array_map(

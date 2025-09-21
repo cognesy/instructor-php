@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
@@ -26,9 +26,10 @@ it('executes a tool call and builds follow-up messages', function () {
         ),
     ]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(add_numbers(...)))
-        ->withTool(FunctionTool::fromCallable(subtract_numbers(...)));
+    $tools = new Tools(
+        FunctionTool::fromCallable(add_numbers(...)),
+        FunctionTool::fromCallable(subtract_numbers(...)),
+    );
         
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Add numbers'));
@@ -55,8 +56,7 @@ it('iterates until no more tool calls and returns final response', function () {
         new InferenceResponse(content: '5'),
     ]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(add_numbers(...)));
+    $tools = new Tools(FunctionTool::fromCallable(add_numbers(...)));
         
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Add then report the result'));
@@ -80,8 +80,7 @@ it('separates context and transcript messages between input and output collectio
         new InferenceResponse(content: '5'),
     ]);
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(add_numbers(...)));
+    $tools = new Tools(FunctionTool::fromCallable(add_numbers(...)));
 
     $initialMessages = Messages::fromArray([
         ['role' => 'system', 'content' => 'Be precise and always explain your reasoning.'],

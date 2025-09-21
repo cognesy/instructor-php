@@ -40,11 +40,11 @@ use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\Data\Collections\ToolUseSteps;
+use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
@@ -53,9 +53,9 @@ function add_numbers(int $a, int $b) : int { return $a + $b; }
 function subtract_numbers(int $a, int $b) : int { return $a - $b; }
 
 $toolUse = ToolUseFactory::default(
-    tools: (new Tools)->withTools(
+    tools: new Tools(
         FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...))
+        FunctionTool::fromCallable(subtract_numbers(...)),
     ),
     continuationCriteria: new ContinuationCriteria(
         new StepsLimit(6, fn(ToolUseState $s): int => $s->stepCount()),

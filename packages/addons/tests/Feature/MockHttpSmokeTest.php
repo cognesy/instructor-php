@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\ToolUse\Tools;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Http\HttpClientBuilder;
@@ -44,8 +44,7 @@ it('threads HttpClient through ToolUse -> Inference (OpenAI)', function () {
         model: 'gpt-4o-mini'
     );
 
-    $tools = (new Tools())
-        ->withTool(FunctionTool::fromCallable(add_numbers_smoke(...)));
+    $tools = new Tools(FunctionTool::fromCallable(add_numbers_smoke(...)));
         
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Add two numbers and return the result'));

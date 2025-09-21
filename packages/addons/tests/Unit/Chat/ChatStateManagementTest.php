@@ -20,7 +20,7 @@ it('creates empty ChatState correctly', function () {
     expect($state->stepCount())->toBe(0);
     expect($state->currentStep())->toBeNull();
     expect($state->messages()->count())->toBe(0);
-    expect($state->steps()->count())->toBe(0);
+    expect($state->steps()->stepCount())->toBe(0);
 });
 
 it('appends steps correctly and maintains step history', function () {
@@ -43,14 +43,14 @@ it('appends steps correctly and maintains step history', function () {
     $state1 = applyStep($state, $step1, $processor);
     expect($state1->stepCount())->toBe(1);
     expect($state1->currentStep())->toBe($step1);
-    expect($state1->steps()->count())->toBe(1);
+    expect($state1->steps()->stepCount())->toBe(1);
     expect($state1->messages()->count())->toBe(1);
 
     // Add second step
     $state2 = applyStep($state1, $step2, $processor);
     expect($state2->stepCount())->toBe(2);
     expect($state2->currentStep())->toBe($step2);
-    expect($state2->steps()->count())->toBe(2);
+    expect($state2->steps()->stepCount())->toBe(2);
     expect($state2->messages()->count())->toBe(2);
 
     // Verify step history is preserved
