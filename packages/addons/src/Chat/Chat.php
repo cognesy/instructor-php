@@ -65,8 +65,7 @@ final readonly class Chat implements CanExecuteIteratively
     public function nextStep(object $state): object {
         assert($state instanceof ChatState);
         if (!$this->hasNextStep($state)) {
-            $this->emitChatCompleted($state);
-            return $state;
+            return $this->handleNoNextStep($state);
         }
 
         try {
@@ -95,7 +94,12 @@ final readonly class Chat implements CanExecuteIteratively
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
         }
-        return $state;
+
+        $finalState = $this->handleNoNextStep($state);
+        return match (true) {
+            $finalState === $state => $state,
+            default => $finalState,
+        };
     }
 
     /**
@@ -108,18 +112,23 @@ final readonly class Chat implements CanExecuteIteratively
             $state = $this->nextStep($state);
             yield $state;
         }
+
+        $finalState = $this->handleNoNextStep($state);
+        if ($finalState !== $state) {
+            yield $finalState;
+        }
     }
 
     // INTERNAL ////////////////////////////////////////////
 
-    private function makeNextStep(ChatState $state) : ChatStep {
+    protected function makeNextStep(ChatState $state) : ChatStep {
         $this->emitChatTurnStarting($state);
         $participant = $this->selectParticipant($state);
         $this->emitChatBeforeSend($participant, $state);
         return $participant->act($state);
     }
 
-    private function updateState(ChatStep $step, ChatState $state) : ChatState {
+    protected function updateState(ChatStep $step, ChatState $state) : ChatState {
         $newState = $state
             ->withAddedStep($step)
             ->withCurrentStep($step);
@@ -129,7 +138,13 @@ final readonly class Chat implements CanExecuteIteratively
         return $newState;
     }
 
-    private function handleFailure(Throwable $error, ChatState $state) : ChatState {
+    protected function handleNoNextStep(object $state) : object {
+        assert($state instanceof ChatState);
+        $this->emitChatCompleted($state);
+        return $state;
+    }
+
+    protected function handleFailure(Throwable $error, ChatState $state) : ChatState {
         $failure = $error instanceof ChatException
             ? $error
             : ChatException::fromThrowable($error);
@@ -146,7 +161,7 @@ final readonly class Chat implements CanExecuteIteratively
         return $newState;
     }
 
-    private function selectParticipant(ChatState $state): CanParticipateInChat {
+    protected function selectParticipant(ChatState $state): CanParticipateInChat {
         $participant = $this->nextParticipantSelector->nextParticipant($state, $this->participants);
         $this->emitChatParticipantSelected($participant, $state);
         return $participant;

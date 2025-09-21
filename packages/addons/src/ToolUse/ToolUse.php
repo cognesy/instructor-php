@@ -74,8 +74,7 @@ final readonly class ToolUse implements CanExecuteIteratively
     public function nextStep(object $state): object {
         assert($state instanceof ToolUseState);
         if (!$this->hasNextStep($state)) {
-            $this->emitToolUseFinished($state);
-            return $state;
+            return $this->handleNoNextStep($state);
         }
         
         try {
@@ -104,7 +103,11 @@ final readonly class ToolUse implements CanExecuteIteratively
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
         }
-        return $state;
+        $finalState = $this->handleNoNextStep($state);
+        return match (true) {
+            $finalState === $state => $state,
+            default => $finalState,
+        };
     }
 
     /**
@@ -117,9 +120,20 @@ final readonly class ToolUse implements CanExecuteIteratively
             $state = $this->nextStep($state);
             yield $state;
         }
+
+        $finalState = $this->handleNoNextStep($state);
+        if ($finalState !== $state) {
+            yield $finalState;
+        }
     }
 
     // INTERNAL /////////////////////////////////////////////
+
+    protected function handleNoNextStep(object $state) : object {
+        assert($state instanceof ToolUseState);
+        $this->emitToolUseFinished($state);
+        return $state;
+    }
 
     protected function canContinue(ToolUseState $state): bool {
         return $this->continuationCriteria->canContinue($state);
@@ -142,9 +156,9 @@ final readonly class ToolUse implements CanExecuteIteratively
             $newState = $newState->withStatus($status);
         }
         $newState = $this->processors->apply($newState);
-        $this->emitToolUseStateUpdated($newState);
         assert($newState instanceof ToolUseState);
-        $this->emitToolUseStepCompleted($state);
+        $this->emitToolUseStateUpdated($newState);
+        $this->emitToolUseStepCompleted($newState);
         return $newState;
     }
 
