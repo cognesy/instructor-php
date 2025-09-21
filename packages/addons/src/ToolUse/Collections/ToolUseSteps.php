@@ -2,11 +2,11 @@
 
 namespace Cognesy\Addons\ToolUse\Collections;
 
-use Cognesy\Addons\Core\Collections\Steps;
+use Cognesy\Addons\Core\Collections\StepList;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
-/** @extends Steps<ToolUseStep> */
-final readonly class ToolUseSteps extends Steps
+/** @extends StepList<ToolUseStep> */
+final class ToolUseSteps extends StepList
 {
     public function __construct(ToolUseStep ...$steps) {
         parent::__construct(...$steps);
@@ -31,8 +31,4 @@ final readonly class ToolUseSteps extends Steps
         return parent::stepAt($index);
     }
 
-    /** @return iterable<ToolUseStep> */
-    public function eachStep(): iterable {
-        return $this;
-    }
 }

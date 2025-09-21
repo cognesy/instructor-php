@@ -5,7 +5,7 @@ namespace Cognesy\Addons\ToolUse\Collections;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Throwable;
 
-class ToolExecutions
+final readonly class ToolExecutions
 {
     /** @var ToolExecution[] */
     private array $toolExecutions;
@@ -24,9 +24,10 @@ class ToolExecutions
 
     // ACCESSORS ///////////////////////////////////////////////
 
-    public function add(ToolExecution $toolExecution): self {
-        $this->toolExecutions[] = $toolExecution;
-        return $this;
+    public function withAddedExecution(ToolExecution $toolExecution): self {
+        $newExecutions = $this->toolExecutions;
+        $newExecutions[] = $toolExecution;
+        return new self(...$newExecutions);
     }
 
     public function hasExecutions() : bool {

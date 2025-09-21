@@ -144,7 +144,7 @@ final class ReActDriver implements CanUseTools
             new \DateTimeImmutable(),
             new \DateTimeImmutable(),
         );
-        $executions = (new ToolExecutions())->add($exec);
+        $executions = (new ToolExecutions())->withAddedExecution($exec);
         return new ToolUseStep(
             inputMessages: $context,
             outputMessages: $messagesErr,
@@ -166,7 +166,7 @@ final class ReActDriver implements CanUseTools
             new \DateTimeImmutable(),
             new \DateTimeImmutable(),
         );
-        $executions = (new ToolExecutions())->add($exec);
+        $executions = (new ToolExecutions())->withAddedExecution($exec);
         return new ToolUseStep(
             inputMessages: $context,
             outputMessages: $messagesErr,
@@ -189,7 +189,7 @@ final class ReActDriver implements CanUseTools
     ): ToolUseStep {
         $call = new ToolCall($decision->tool() ?? '', $decision->args());
         $execution = $executor->useTool($call, $state);
-        $executions = (new ToolExecutions())->add($execution);
+        $executions = (new ToolExecutions())->withAddedExecution($execution);
 
         $formatter = new ReActFormatter();
         $followUps = Messages::empty()

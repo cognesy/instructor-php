@@ -3,10 +3,10 @@
 namespace Cognesy\Addons\Chat\Collections;
 
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Core\Collections\Steps;
+use Cognesy\Addons\Core\Collections\StepList;
 
-/** @extends Steps<ChatStep> */
-final readonly class ChatSteps extends Steps
+/** @extends StepList<ChatStep> */
+final class ChatSteps extends StepList
 {
     public function __construct(ChatStep ...$steps) {
         parent::__construct(...$steps);
@@ -31,8 +31,4 @@ final readonly class ChatSteps extends Steps
         return parent::stepAt($index);
     }
 
-    /** @return iterable<ChatStep> */
-    public function eachStep(): iterable {
-        return $this;
-    }
 }

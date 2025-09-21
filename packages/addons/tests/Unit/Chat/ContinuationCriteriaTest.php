@@ -34,7 +34,7 @@ final class CountingChatCriterion implements CanDecideToContinue
 
 it('stops when steps limit reached', function () {
     $state = new ChatState();
-    $crit = new StepsLimit(2, fn(ChatState $s) => $s->steps()->stepCount());
+    $crit = new StepsLimit(2, fn(ChatState $s) => $s->steps()->count());
     expect($crit->canContinue($state))->toBeTrue();
     // simulate two steps
     $state = $state->withAddedStep(new ChatStep('participant-a'));

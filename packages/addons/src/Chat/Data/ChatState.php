@@ -5,6 +5,7 @@ namespace Cognesy\Addons\Chat\Data;
 use Cognesy\Addons\Chat\Collections\ChatSteps;
 use Cognesy\Addons\Core\MessageExchangeState;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
+use Cognesy\Addons\Core\StateInfo;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -24,17 +25,13 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
         Metadata|array|null $variables = null,
         ?Usage $usage = null,
         ?MessageStore $store = null,
-        ?string $id = null,
-        ?DateTimeImmutable $startedAt = null,
-        ?DateTimeImmutable $updatedAt = null,
+        ?StateInfo $stateInfo = null,
     ) {
         parent::__construct(
             variables: $variables,
             usage: $usage,
             store: $store,
-            id: $id,
-            startedAt: $startedAt,
-            updatedAt: $updatedAt,
+            stateInfo: $stateInfo,
         );
         $this->steps = $steps ?? new ChatSteps();
         $this->currentStep = $currentStep;
@@ -49,9 +46,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: isset($data['metadata']) ? new Metadata($data['metadata']) : null,
             usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : null,
-            id: $data['id'] ?? null,
-            startedAt: isset($data['startedAt']) ? new DateTimeImmutable($data['startedAt']) : null,
-            updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
+            stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
         );
     }
 
@@ -64,9 +59,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata->withKeyValue($name, $value),
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -82,9 +75,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -95,9 +86,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -108,9 +97,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -127,9 +114,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -140,9 +125,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store->section($section)->setMessages($messages),
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -153,9 +136,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $this->usage,
             store: $store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -175,9 +156,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -192,7 +171,7 @@ final readonly class ChatState extends MessageExchangeState implements HasSteps
     }
 
     public function stepCount(): int {
-        return $this->steps->stepCount();
+        return $this->steps->count();
     }
 
     public function stepAt(int $index): ?ChatStep {

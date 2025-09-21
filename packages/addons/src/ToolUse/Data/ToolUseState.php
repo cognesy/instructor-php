@@ -4,6 +4,7 @@ namespace Cognesy\Addons\ToolUse\Data;
 
 use Cognesy\Addons\Core\MessageExchangeState;
 use Cognesy\Addons\Core\StateContracts\HasSteps;
+use Cognesy\Addons\Core\StateInfo;
 use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Messages\Messages;
@@ -27,17 +28,13 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
         Metadata|array|null $variables = null,
         ?Usage $usage = null,
         ?MessageStore $store = null,
-        ?string $id = null,
-        ?DateTimeImmutable $startedAt = null,
-        ?DateTimeImmutable $updatedAt = null,
+        ?StateInfo $stateInfo = null,
     ) {
         parent::__construct(
             variables: $variables,
             usage: $usage,
             store: $store,
-            id: $id,
-            startedAt: $startedAt,
-            updatedAt: $updatedAt,
+            stateInfo: $stateInfo,
         );
 
         $this->status = $status ?? ToolUseStatus::InProgress;
@@ -60,9 +57,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: isset($data['metadata']) ? Metadata::fromArray($data['metadata']) : new Metadata(),
             usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : new Usage(),
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : new MessageStore(),
-            id: $data['id'] ?? null,
-            startedAt: isset($data['startedAt']) ? new DateTimeImmutable($data['startedAt']) : new DateTimeImmutable(),
-            updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : new DateTimeImmutable(),
+            stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
         );
     }
 
@@ -76,9 +71,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -90,9 +83,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -104,9 +95,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata->withKeyValue($name, $value),
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -118,9 +107,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -136,9 +123,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -150,9 +135,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata,
             usage: $usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -179,9 +162,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
             variables: $this->metadata,
             usage: $this->usage,
             store: $this->store,
-            id: $this->id,
-            startedAt: $this->startedAt,
-            updatedAt: $this->updatedAt,
+            stateInfo: $this->stateInfo,
         );
     }
 
@@ -200,7 +181,7 @@ final readonly class ToolUseState extends MessageExchangeState implements HasSte
     }
 
     public function stepCount() : int {
-        return $this->steps->stepCount();
+        return $this->steps->count();
     }
 
     public function stepAt(int $index): ?ToolUseStep {

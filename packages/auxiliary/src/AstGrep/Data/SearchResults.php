@@ -1,11 +1,10 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Cognesy\Auxiliary\AstGrep\Data;
 
+use ArrayIterator;
 use Countable;
 use Iterator;
-use ArrayIterator;
 
 class SearchResults implements Countable, Iterator
 {

@@ -40,10 +40,10 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
 
     /** @return ?TStep */
     public function lastStep(): ?object {
-        if ($this->stepCount() === 0) {
+        if ($this->count() === 0) {
             return null;
         }
-        $lastIndex = $this->stepCount() - 1;
+        $lastIndex = $this->count() - 1;
         return $this->steps[$lastIndex] ?? null;
     }
 
@@ -52,8 +52,11 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
         return $this->steps[$index] ?? null;
     }
 
+    /**
+     * @deprecated Use count() instead
+     */
     public function stepCount(): int {
-        return count($this->steps);
+        return $this->count();
     }
 
     // ITERATORS ///////////////////////////////////////////////////
@@ -71,7 +74,7 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
     }
 
     public function count(): int {
-        return $this->stepCount();
+        return count($this->steps);
     }
 
     // MUTATORS ////////////////////////////////////////////////////

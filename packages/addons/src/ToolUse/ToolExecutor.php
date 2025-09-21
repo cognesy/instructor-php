@@ -61,7 +61,7 @@ final readonly class ToolExecutor
     public function useTools(ToolCalls $toolCalls, ToolUseState $state): ToolExecutions {
         $executions = new ToolExecutions();
         foreach ($toolCalls->all() as $toolCall) {
-            $executions->add($this->useTool($toolCall, $state));
+            $executions = $executions->withAddedExecution($this->useTool($toolCall, $state));
         }
         return $executions;
     }

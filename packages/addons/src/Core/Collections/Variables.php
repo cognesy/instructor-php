@@ -4,13 +4,15 @@ namespace Cognesy\Addons\Core\Collections;
 
 use Cognesy\Addons\Core\StateContracts\HasVariables;
 
-class Variables implements HasVariables
+final readonly class Variables implements HasVariables
 {
-    private array $variables = [];
+    private array $variables;
 
     public function __construct(
         array $variables = [],
-    ) {}
+    ) {
+        $this->variables = $variables;
+    }
 
     public function variables(): array {
         return $this->variables;
@@ -27,6 +29,6 @@ class Variables implements HasVariables
     public function withVariable(string $name, mixed $value): static {
         $newVariables = $this->variables;
         $newVariables[$name] = $value;
-        return new static($newVariables);
+        return new Variables($newVariables);
     }
 }
