@@ -2,11 +2,11 @@
 
 namespace Cognesy\Addons\ToolUse\Collections;
 
-use Cognesy\Addons\Core\Collections\StepList;
+use Cognesy\Addons\Core\Collections\Steps;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
-/** @extends StepList<ToolUseStep> */
-final class ToolUseSteps extends StepList
+/** @extends Steps<ToolUseStep> */
+final readonly class ToolUseSteps extends Steps
 {
     public function __construct(ToolUseStep ...$steps) {
         parent::__construct(...$steps);
