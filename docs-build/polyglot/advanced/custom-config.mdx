@@ -73,7 +73,7 @@ return [
         // Additional connections...
     ],
 ];
-// @doctest id="11df"
+// @doctest id="41e6"
 ```
 
 #### Embedding Configuration Structure
@@ -104,7 +104,7 @@ return [
         // Additional embedding connections...
     ],
 ];
-// @doctest id="7c63"
+// @doctest id="ffa5"
 ```
 
 ### Connection Parameters
@@ -172,7 +172,7 @@ GEMINI_API_KEY=your-key-here
 MISTRAL_API_KEY=your-key-here
 COHERE_API_KEY=your-key-here
 # etc.
-# @doctest id="3a72"
+# @doctest id="0f8a"
 ```
 
 Then load these environment variables using a package like `vlucas/phpdotenv`:
@@ -182,7 +182,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-// @doctest id="f92f"
+// @doctest id="3545"
 ```
 
 Or in frameworks like Laravel, environment variables are automatically loaded.
@@ -223,7 +223,7 @@ $response = $inference->with(
         ],
     ]
 )->get();
-// @doctest id="1696"
+// @doctest id="9ba2"
 ```
 
 ### Anthropic-Specific Parameters
@@ -245,7 +245,7 @@ $response = $inference->with(
         'system' => 'You are a creative storyteller who specializes in magical realism.',
     ]
 )->get();
-// @doctest id="8fe8"
+// @doctest id="582d"
 ```
 
 
@@ -282,7 +282,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="5d12"
+// @doctest id="42d3"
 ```
 
 ### Runtime Configuration
@@ -313,7 +313,7 @@ $response = $inference->with(
 )->get();
 
 echo $response;
-// @doctest id="4bf8"
+// @doctest id="820a"
 ```
 
 
@@ -362,7 +362,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="07db"
+// @doctest id="2d7f"
 ```
 
 
@@ -407,12 +407,12 @@ $answer = (new Inference)
         options: ['max_tokens' => 64]
     )
     ->toText();
-// @doctest id="5691"
+// @doctest id="32b0"
 ```
 
 An alternative way of providing driver definition is via class-string:
 
 ```php
 LLM::registerDriver('another-driver', AnotherDriver::class);
-// @doctest id="988d"
+// @doctest id="8a01"
 ```

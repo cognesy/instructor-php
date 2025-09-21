@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Core\Step\Traits;
 
 use Throwable;
 
-trait HandlesStepErrorsToolUse
+trait HandlesStepErrors
 {
     /** @var Throwable[] */
     private readonly array $errors;

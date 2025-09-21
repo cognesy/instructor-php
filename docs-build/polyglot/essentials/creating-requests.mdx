@@ -24,7 +24,7 @@ public function with(
     array $options = [],            // Additional request options
     Mode $mode = OutputMode::Text   // Output mode (Text, JSON, etc.)
 ) : self
-// @doctest id="7932"
+// @doctest id="0980"
 ```
 
 
@@ -45,7 +45,7 @@ $response = $inference
     ->get();   // get the data - here it executes the request
 
 echo "Response: $response";
-// @doctest id="4c7f"
+// @doctest id="aadb"
 ```
 
 
@@ -68,7 +68,7 @@ $response = $inference
     ->get();
 
 echo "Response: $response";
-// @doctest id="8c5b"
+// @doctest id="d94d"
 ```
 
 ## Using `Messages` Class
@@ -93,7 +93,7 @@ $response = (new Inference)
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
-// @doctest id="5227"
+// @doctest id="7d85"
 ```
 
 ## Message Formats
@@ -134,7 +134,7 @@ $response = (new Inference())
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();
-// @doctest id="91e8"
+// @doctest id="43b7"
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

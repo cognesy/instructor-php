@@ -26,7 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
-// @doctest id="8e1d"
+// @doctest id="a34d"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -50,7 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="fdf0"
+// @doctest id="0343"
 ```
 
 
@@ -70,7 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
-// @doctest id="307b"
+// @doctest id="ba80"
 ```
 
 
@@ -95,7 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="9719"
+// @doctest id="cf61"
 ```
 
 
@@ -119,7 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
-// @doctest id="b65f"
+// @doctest id="bebb"
 ```
 
 
@@ -145,7 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="6ad3"
+// @doctest id="5d9c"
 ```
 
 
@@ -172,7 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
-// @doctest id="f56c"
+// @doctest id="b338"
 ```
 
 
@@ -215,7 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
-// @doctest id="53ca"
+// @doctest id="6c96"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -234,7 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
-// @doctest id="f8ae"
+// @doctest id="a6e8"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -294,7 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
-// @doctest id="9412"
+// @doctest id="403d"
 ```
 
 
@@ -330,5 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
-// @doctest id="974c"
+// @doctest id="5597"
 ```

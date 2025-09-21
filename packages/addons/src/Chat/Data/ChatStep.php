@@ -4,14 +4,14 @@ namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Exceptions\ChatException;
 use Cognesy\Addons\Core\Step\Contracts\HasStepChatCompletion;
-use Cognesy\Addons\Core\Step\Contracts\HasStepErrorsChat;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
 use Cognesy\Addons\Core\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
 use Cognesy\Addons\Core\Step\Contracts\HasStepMetadata;
 use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
 use Cognesy\Addons\Core\Step\StepInfo;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepChatCompletion;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepErrorsChat;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepErrors;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepInfo;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepMessages;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepMetadata;
@@ -25,14 +25,14 @@ use Throwable;
 
 final readonly class ChatStep implements
     HasStepChatCompletion,
-    HasStepErrorsChat,
+    HasStepErrors,
     HasStepInfo,
     HasStepMessages,
     HasStepMetadata,
     HasStepUsage
 {
     use HandlesStepChatCompletion;
-    use HandlesStepErrorsChat;
+    use HandlesStepErrors;
     use HandlesStepInfo;
     use HandlesStepMessages;
     use HandlesStepMetadata;

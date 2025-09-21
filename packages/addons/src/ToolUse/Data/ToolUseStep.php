@@ -2,15 +2,14 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
-use Cognesy\Addons\Core\Step\Contracts\HasStepErrorsChat;
-use Cognesy\Addons\Core\Step\Contracts\HasStepErrorsToolUse;
+use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
 use Cognesy\Addons\Core\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
 use Cognesy\Addons\Core\Step\Contracts\HasStepToolCalls;
 use Cognesy\Addons\Core\Step\Contracts\HasStepToolExecutions;
 use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
 use Cognesy\Addons\Core\Step\StepInfo;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepErrorsToolUse;
+use Cognesy\Addons\Core\Step\Traits\HandlesStepErrors;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepInfo;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepMessages;
 use Cognesy\Addons\Core\Step\Traits\HandlesStepToolCalls;
@@ -26,15 +25,14 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;
 
 final readonly class ToolUseStep implements
-    HasStepErrorsChat,
+    HasStepErrors,
     HasStepInfo,
     HasStepMessages,
-    HasStepErrorsToolUse,
     HasStepToolCalls,
     HasStepToolExecutions,
     HasStepUsage
 {
-    use HandlesStepErrorsToolUse;
+    use HandlesStepErrors;
     use HandlesStepInfo;
     use HandlesStepMessages;
     use HandlesStepToolCalls;
