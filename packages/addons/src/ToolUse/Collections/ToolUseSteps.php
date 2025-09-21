@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse\Collections;
 
-use Cognesy\Addons\Core\Collections\Steps;
+use Cognesy\Addons\StepByStep\Collections\Steps;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 
 /** @extends Steps<ToolUseStep> */

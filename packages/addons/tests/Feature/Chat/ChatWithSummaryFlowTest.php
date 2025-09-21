@@ -4,8 +4,8 @@ use Cognesy\Addons\Chat\ChatFactory;
 use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 
 it('builds up a conversation with multiple turns', function () {
     // Use scripted participants for deterministic behavior

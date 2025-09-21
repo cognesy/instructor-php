@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ResponseContentCheck;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;

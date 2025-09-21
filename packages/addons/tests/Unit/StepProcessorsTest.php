@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\Core\Processors\AppendContextMetadata;
-use Cognesy\Addons\Core\Processors\AppendStepMessages;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Messages\Message;

@@ -2,6 +2,6 @@
 
 namespace Cognesy\Addons\Chat\Exceptions;
 
-use Cognesy\Addons\Core\Exceptions\ProcessException;
+use Cognesy\Addons\StepByStep\Exceptions\StepByStepException;
 
-class ChatException extends ProcessException {}
+class ChatException extends StepByStepException {}

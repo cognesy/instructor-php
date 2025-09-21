@@ -2,6 +2,6 @@
 
 namespace Cognesy\Addons\ToolUse\Exceptions;
 
-use Cognesy\Addons\Core\Exceptions\ProcessException;
+use Cognesy\Addons\StepByStep\Exceptions\StepByStepException;
 
-class ToolUseException extends ProcessException {}
+class ToolUseException extends StepByStepException {}

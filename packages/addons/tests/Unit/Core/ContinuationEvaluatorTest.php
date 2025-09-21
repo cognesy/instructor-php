@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Continuation\ContinuationEvaluator;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluator;
 
 it('returns false when no criteria provided', function () {
     $evaluator = ContinuationEvaluator::with();

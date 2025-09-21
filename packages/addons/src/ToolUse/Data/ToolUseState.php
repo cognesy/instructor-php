@@ -2,17 +2,17 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
-use Cognesy\Addons\Core\State\Contracts\HasMessageStore;
-use Cognesy\Addons\Core\State\Contracts\HasMetadata;
-use Cognesy\Addons\Core\State\Contracts\HasStateInfo;
-use Cognesy\Addons\Core\State\Contracts\HasSteps;
-use Cognesy\Addons\Core\State\Contracts\HasUsage;
-use Cognesy\Addons\Core\State\StateInfo;
-use Cognesy\Addons\Core\State\Traits\HandlesMessageStore;
-use Cognesy\Addons\Core\State\Traits\HandlesMetadata;
-use Cognesy\Addons\Core\State\Traits\HandlesStateInfo;
-use Cognesy\Addons\Core\State\Traits\HandlesToolUseSteps;
-use Cognesy\Addons\Core\State\Traits\HandlesUsage;
+use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
+use Cognesy\Addons\StepByStep\State\Contracts\HasMetadata;
+use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
+use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
+use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
+use Cognesy\Addons\StepByStep\State\StateInfo;
+use Cognesy\Addons\StepByStep\State\Traits\HandlesMessageStore;
+use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
+use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
+use Cognesy\Addons\StepByStep\State\Traits\HandlesToolUseSteps;
+use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
 use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Messages\MessageStore\MessageStore;

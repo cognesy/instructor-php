@@ -2,19 +2,19 @@
 
 namespace Cognesy\Addons\ToolUse\Data;
 
-use Cognesy\Addons\Core\Step\Contracts\HasStepErrors;
-use Cognesy\Addons\Core\Step\Contracts\HasStepInfo;
-use Cognesy\Addons\Core\Step\Contracts\HasStepMessages;
-use Cognesy\Addons\Core\Step\Contracts\HasStepToolCalls;
-use Cognesy\Addons\Core\Step\Contracts\HasStepToolExecutions;
-use Cognesy\Addons\Core\Step\Contracts\HasStepUsage;
-use Cognesy\Addons\Core\Step\StepInfo;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepErrors;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepInfo;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepMessages;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepToolCalls;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepToolExecutions;
-use Cognesy\Addons\Core\Step\Traits\HandlesStepUsage;
+use Cognesy\Addons\StepByStep\Step\Contracts\HasStepErrors;
+use Cognesy\Addons\StepByStep\Step\Contracts\HasStepInfo;
+use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMessages;
+use Cognesy\Addons\StepByStep\Step\Contracts\HasStepToolCalls;
+use Cognesy\Addons\StepByStep\Step\Contracts\HasStepToolExecutions;
+use Cognesy\Addons\StepByStep\Step\Contracts\HasStepUsage;
+use Cognesy\Addons\StepByStep\Step\StepInfo;
+use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepErrors;
+use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepInfo;
+use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepMessages;
+use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepToolCalls;
+use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepToolExecutions;
+use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepUsage;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;

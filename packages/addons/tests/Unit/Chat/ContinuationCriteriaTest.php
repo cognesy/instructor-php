@@ -2,10 +2,10 @@
 
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 final class CriterionCounter

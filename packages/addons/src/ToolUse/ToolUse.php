@@ -2,12 +2,12 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
-use Cognesy\Addons\Core\StateProcessors;
-use Cognesy\Addons\Core\StepByStep;
+use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
+use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
+use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
+use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;

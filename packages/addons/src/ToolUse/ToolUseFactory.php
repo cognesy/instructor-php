@@ -2,19 +2,19 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
-use Cognesy\Addons\Core\Continuation\Criteria\ErrorPresenceCheck;
-use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
-use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\Core\Continuation\Criteria\ToolCallPresenceCheck;
-use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Processors\AccumulateTokenUsage;
-use Cognesy\Addons\Core\Processors\AppendContextMetadata;
-use Cognesy\Addons\Core\Processors\AppendStepMessages;
-use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ToolCallPresenceCheck;
+use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
+use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Continuation\Criteria\ExecutionTimeLimit as CoreExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit as CoreExecutionTimeLimit;
 use Cognesy\Addons\Tests\Support\FrozenClock;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 

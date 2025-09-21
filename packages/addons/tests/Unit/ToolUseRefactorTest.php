@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Core\Continuation\Criteria\FinishReasonCheck;
-use Cognesy\Addons\Core\Continuation\Criteria\RetryLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;

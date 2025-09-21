@@ -2,7 +2,7 @@
 
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Core\Processors\AppendStepMessages;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 

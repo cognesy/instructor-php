@@ -60,7 +60,7 @@ echo $assistantMessages;
 ## Multi-Participant Chat Example
 
 ```php
-use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\LLMParticipant;use Cognesy\Addons\Chat\Participants\ScriptedParticipant;use Cognesy\Addons\Core\Continuation\ContinuationCriteria;use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\LLMParticipant;use Cognesy\Addons\Chat\Participants\ScriptedParticipant;use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\ResponseContentCheck;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Messages\Messages;
 
 // Create participants with different roles
 $moderator = new ScriptedParticipant(
@@ -252,7 +252,7 @@ $finishCheck = ChatCriteria::finishReasonCheck(['stop', 'length']);
 Stop based on response content evaluation. Useful for ending conversations when participants provide empty responses or specific content patterns.
 
 ```php
-use Cognesy\Addons\Core\Continuation\Criteria\ResponseContentCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ResponseContentCheck;
 use Cognesy\Messages\Messages;
 
 // Stop when response is empty
@@ -273,7 +273,7 @@ $endCheck = new ResponseContentCheck(
 Configure in ChatConfig:
 
 ```php
-use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Chat\Continuation\Criteria as ChatCriteria;
 
 $criteria = new ContinuationCriteria(
@@ -338,7 +338,7 @@ class MyCustomProcessor implements CanProcessChatStep
 Configure step processors when creating Chat:
 
 ```php
-use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 
 $processors = new StateProcessors(
     new AccumulateTokenUsage(),
@@ -427,7 +427,7 @@ $storeed = new ScriptedParticipant(
 ### Feature Test Example
 
 ```php
-use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\ScriptedParticipant;use Cognesy\Addons\Core\Continuation\ContinuationCriteria;use Cognesy\Addons\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\Chat\ChatFactory;use Cognesy\Addons\Chat\Collections\Participants;use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Participants\ScriptedParticipant;use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 
 // Create test configuration with deterministic participant
 $scriptedAssistant = new ScriptedParticipant(
@@ -461,11 +461,7 @@ expect($state2->messages()->toArray()[1]['content'])->toBe('How can I help?');
 When testing Chat state management directly, use the `AppendStepMessages` processor:
 
 ```php
-use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Core\Processors\AppendStepMessages;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Data\ChatStep;use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;use Cognesy\Messages\Message;use Cognesy\Messages\Messages;
 
 function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $processor): ChatState {
     $stateWithStep = $state
