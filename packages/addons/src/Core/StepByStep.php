@@ -10,6 +10,7 @@ use Throwable;
  * Minimal step-by-step process executor for use by Chat/ToolUse
  *
  * @template TState of object
+ * @template TStep of object
  * @implements CanExecuteIteratively<TState>
  */
 abstract readonly class StepByStep implements CanExecuteIteratively
@@ -79,10 +80,11 @@ abstract readonly class StepByStep implements CanExecuteIteratively
     abstract protected function canContinue(object $state): bool;
 
     /**
+     * @param TStep $nextStep
      * @param TState $state
      * @return TState
      */
-    abstract protected function updateState($nextStep, object $state) : object;
+    abstract protected function updateState(object $nextStep, object $state) : object;
 
     /**
      * @param TState $state
@@ -92,7 +94,7 @@ abstract readonly class StepByStep implements CanExecuteIteratively
 
     /**
      * @param TState $state
-     * @return TState
+     * @return TStep
      */
     abstract protected function makeNextStep(object $state) : object;
 

@@ -5,9 +5,9 @@ namespace Cognesy\Addons\ToolUse;
 use Cognesy\Addons\Core\Continuation\CanDecideToContinue;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Contracts\CanExecuteIteratively;
 use Cognesy\Addons\Core\Contracts\CanProcessAnyState;
 use Cognesy\Addons\Core\StateProcessors;
+use Cognesy\Addons\Core\StepByStep;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
@@ -22,7 +22,6 @@ use Cognesy\Addons\ToolUse\Exceptions\ToolUseException;
 use Cognesy\Addons\ToolUse\Exceptions\ToolUseFailed;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Generator;
 use Throwable;
 
 /**
@@ -33,9 +32,9 @@ use Throwable;
  * It integrates with event handling to provide feedback on the process and supports
  * state processing to modify the state after each step.
  *
- * @implements CanExecuteIteratively<ToolUseState>
+ * @extends StepByStep<ToolUseState, ToolUseStep>
  */
-final readonly class ToolUse implements CanExecuteIteratively
+final readonly class ToolUse extends StepByStep
 {
     private Tools $tools;
     private ToolExecutor $toolExecutor;
@@ -59,87 +58,21 @@ final readonly class ToolUse implements CanExecuteIteratively
         $this->toolExecutor = (new ToolExecutor($tools))->withEventHandler($this->events);
     }
 
-    // HANDLE PARAMETRIZATION //////////////////////////////////////
-
-    public function driver() : CanUseTools {
-        return $this->driver;
-    }
-
-    // HANDLE TOOL USE /////////////////////////////////////////////
-
-    /**
-     * @param object<ToolUseState> $state
-     * @return object<ToolUseState>
-     */
-    public function nextStep(object $state): object {
-        assert($state instanceof ToolUseState);
-        if (!$this->hasNextStep($state)) {
-            return $this->handleNoNextStep($state);
-        }
-        
-        try {
-            $nextStep = $this->makeNextStep($state);
-        } catch (Throwable $error) {
-            return $this->handleFailure($error, $state);
-        }
-
-        return $this->updateState($nextStep, $state);
-    }
-
-    /**
-     * @param object<ToolUseState> $state
-     */
-    public function hasNextStep(object $state): bool {
-        assert($state instanceof ToolUseState);
-        return $this->canContinue($state);
-    }
-
-    /**
-     * @param object<ToolUseState> $state
-     * @return object<ToolUseState>
-     */
-    public function finalStep(object $state): object {
-        assert($state instanceof ToolUseState);
-        while ($this->hasNextStep($state)) {
-            $state = $this->nextStep($state);
-        }
-        $finalState = $this->handleNoNextStep($state);
-        return match (true) {
-            $finalState === $state => $state,
-            default => $finalState,
-        };
-    }
-
-    /**
-     * @param object<ToolUseState> $state
-     * @return Generator<ToolUseState>
-     */
-    public function iterator(object $state): iterable {
-        assert($state instanceof ToolUseState);
-        while ($this->hasNextStep($state)) {
-            $state = $this->nextStep($state);
-            yield $state;
-        }
-
-        $finalState = $this->handleNoNextStep($state);
-        if ($finalState !== $state) {
-            yield $finalState;
-        }
-    }
-
     // INTERNAL /////////////////////////////////////////////
 
-    protected function handleNoNextStep(object $state) : object {
+    protected function handleNoNextStep(object $state): ToolUseState {
         assert($state instanceof ToolUseState);
         $this->emitToolUseFinished($state);
         return $state;
     }
 
-    protected function canContinue(ToolUseState $state): bool {
+    protected function canContinue(object $state): bool {
+        assert($state instanceof ToolUseState);
         return $this->continuationCriteria->canContinue($state);
     }
 
-    private function makeNextStep(ToolUseState $state) : ToolUseStep {
+    protected function makeNextStep(object $state): ToolUseStep {
+        assert($state instanceof ToolUseState);
         $this->emitToolUseStepStarted($state);
         return $this->driver->useTools(
             state: $state,
@@ -148,30 +81,26 @@ final readonly class ToolUse implements CanExecuteIteratively
         );
     }
 
-    private function updateState(ToolUseStep $step, ToolUseState $state, ?ToolUseStatus $status = null) : ToolUseState {
-        $newState = $state
-            ->withAddedStep($step)
-            ->withCurrentStep($step);
-        if ($status !== null) {
-            $newState = $newState->withStatus($status);
-        }
-        $newState = $this->processors->apply($newState);
-        assert($newState instanceof ToolUseState);
-        $this->emitToolUseStateUpdated($newState);
-        $this->emitToolUseStepCompleted($newState);
-        return $newState;
+    protected function updateState(object $nextStep, object $state): ToolUseState {
+        assert($state instanceof ToolUseState);
+        assert($nextStep instanceof ToolUseStep);
+        $updatedState = $state
+            ->withAddedStep($nextStep)
+            ->withCurrentStep($nextStep);
+        $updatedState = $this->processors->apply($updatedState);
+        assert($updatedState instanceof ToolUseState);
+        $this->emitToolUseStateUpdated($updatedState);
+        $this->emitToolUseStepCompleted($updatedState);
+        return $updatedState;
     }
 
-    private function handleFailure(Throwable $error, ToolUseState $state) : ToolUseState {
+    protected function handleFailure(Throwable $error, object $state): ToolUseState {
+        assert($state instanceof ToolUseState);
         $failure = $error instanceof ToolUseException
             ? $error
             : ToolUseException::fromThrowable($error);
         $failureStep = ToolUseStep::failure(inputMessages: $state->messages(), error: $failure);
-        $failedState = $this->updateState(
-            step: $failureStep,
-            state: $state,
-            status: ToolUseStatus::Failed,
-        );
+        $failedState = $this->updateState($failureStep, $state->withStatus(ToolUseStatus::Failed));
         $this->emitToolUseFailed($failedState, $failure);
         return $failedState;
     }
@@ -184,6 +113,10 @@ final readonly class ToolUse implements CanExecuteIteratively
 
     public function toolExecutor(): ToolExecutor {
         return $this->toolExecutor;
+    }
+
+    public function driver() : CanUseTools {
+        return $this->driver;
     }
 
     // MUTATORS /////////////////////////////////////////////

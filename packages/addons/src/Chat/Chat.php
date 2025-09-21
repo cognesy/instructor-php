@@ -17,10 +17,9 @@ use Cognesy\Addons\Chat\Exceptions\ChatException;
 use Cognesy\Addons\Chat\Exceptions\ChatStepFailed;
 use Cognesy\Addons\Core\Continuation\ContinuationCriteria;
 use Cognesy\Addons\Core\Contracts\CanApplyProcessors;
-use Cognesy\Addons\Core\Contracts\CanExecuteIteratively;
+use Cognesy\Addons\Core\StepByStep;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
-use Generator;
 use Throwable;
 
 /**
@@ -31,9 +30,9 @@ use Throwable;
  * Each turn involves selecting the next participant, allowing them to contribute,
  * and updating the chat state accordingly.
  *
- * @implements CanExecuteIteratively<ChatState>
+ * @extends StepByStep<ChatState, ChatStep>
  */
-final readonly class Chat implements CanExecuteIteratively
+final readonly class Chat extends StepByStep
 {
     private Participants $participants;
     private CanChooseNextParticipant $nextParticipantSelector;
@@ -58,93 +57,37 @@ final readonly class Chat implements CanExecuteIteratively
         $this->events = EventBusResolver::using($events);
     }
 
-    /**
-     * @param object<ChatState> $state
-     * @return object<ChatState>
-     */
-    public function nextStep(object $state): object {
-        assert($state instanceof ChatState);
-        if (!$this->hasNextStep($state)) {
-            return $this->handleNoNextStep($state);
-        }
-
-        try {
-            $nextStep = $this->makeNextStep($state);
-        } catch (Throwable $error) {
-            return $this->handleFailure($error, $state);
-        }
-
-        return $this->updateState($nextStep, $state);
-    }
-
-    /**
-     * @param object<ChatState> $state
-     */
-    public function hasNextStep(object $state): bool {
-        assert($state instanceof ChatState);
-        return $this->continuationCriteria->canContinue($state) ?? false;
-    }
-
-    /**
-     * @param object<ChatState> $state
-     * @return object<ChatState>
-     */
-    public function finalStep(object $state): object {
-        assert($state instanceof ChatState);
-        while ($this->hasNextStep($state)) {
-            $state = $this->nextStep($state);
-        }
-
-        $finalState = $this->handleNoNextStep($state);
-        return match (true) {
-            $finalState === $state => $state,
-            default => $finalState,
-        };
-    }
-
-    /**
-     * @param object<ChatState> $state
-     * @return Generator<ChatState>
-     */
-    public function iterator(object $state): iterable {
-        assert($state instanceof ChatState);
-        while ($this->hasNextStep($state)) {
-            $state = $this->nextStep($state);
-            yield $state;
-        }
-
-        $finalState = $this->handleNoNextStep($state);
-        if ($finalState !== $state) {
-            yield $finalState;
-        }
-    }
-
     // INTERNAL ////////////////////////////////////////////
 
-    protected function makeNextStep(ChatState $state) : ChatStep {
+    protected function makeNextStep(object $state): ChatStep {
+        assert($state instanceof ChatState);
         $this->emitChatTurnStarting($state);
         $participant = $this->selectParticipant($state);
         $this->emitChatBeforeSend($participant, $state);
         return $participant->act($state);
     }
 
-    protected function updateState(ChatStep $step, ChatState $state) : ChatState {
+    protected function updateState($nextStep, object $state): ChatState {
+        assert($state instanceof ChatState);
+        assert($nextStep instanceof ChatStep);
+
         $newState = $state
-            ->withAddedStep($step)
-            ->withCurrentStep($step);
+            ->withAddedStep($nextStep)
+            ->withCurrentStep($nextStep);
         $newState = $this->stepProcessors->apply($newState);
         $this->emitChatStateUpdated($newState, $state);
         $this->emitChatTurnCompleted($newState);
         return $newState;
     }
 
-    protected function handleNoNextStep(object $state) : object {
+    protected function handleNoNextStep(object $state): ChatState {
         assert($state instanceof ChatState);
         $this->emitChatCompleted($state);
         return $state;
     }
 
-    protected function handleFailure(Throwable $error, ChatState $state) : ChatState {
+    protected function handleFailure(Throwable $error, object $state): ChatState {
+        assert($state instanceof ChatState);
         $failure = $error instanceof ChatException
             ? $error
             : ChatException::fromThrowable($error);
@@ -153,12 +96,14 @@ final readonly class Chat implements CanExecuteIteratively
             participantName: $state->currentStep()?->participantName() ?? '?',
             inputMessages: $state->messages(),
         );
-        $newState = $this->updateState(
-            step: $failureStep,
-            state: $state,
-        );
+        $newState = $this->updateState($failureStep, $state);
         $this->emitChatTurnFailed($newState, $failure);
         return $newState;
+    }
+
+    protected function canContinue(object $state): bool {
+        assert($state instanceof ChatState);
+        return $this->continuationCriteria->canContinue($state) ?? false;
     }
 
     protected function selectParticipant(ChatState $state): CanParticipateInChat {
