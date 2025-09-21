@@ -7,6 +7,7 @@ use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ParticipantChoice;
+use Cognesy\Addons\Chat\Exceptions\NoParticipantsException;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Result\Result;
 
@@ -19,7 +20,7 @@ final class LLMBasedCoordinator implements CanChooseNextParticipant
 
     public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat {
         if ($participants->count() === 0) {
-            return throw new \RuntimeException('No participants available to select from.');
+            throw new NoParticipantsException('No participants available to select from.');
         }
         if ($participants->count() === 1) {
             return $participants->at(0);

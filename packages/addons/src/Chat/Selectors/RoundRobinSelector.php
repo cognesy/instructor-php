@@ -6,6 +6,7 @@ use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Exceptions\NoParticipantsException;
 
 final class RoundRobinSelector implements CanChooseNextParticipant
 {
@@ -13,7 +14,7 @@ final class RoundRobinSelector implements CanChooseNextParticipant
 
     public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat {
         if ($participants->count() === 0) {
-            throw new \RuntimeException('No participants available to select from.');
+            throw new NoParticipantsException('No participants available to select from.');
         }
         $participant = $participants->at($this->index);
         $this->index = ($this->index + 1) % $participants->count();
