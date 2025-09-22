@@ -7,8 +7,10 @@ This document explains how to use Chat, customize its behavior, and integrate it
 
 ## Overview
 
+The Chat component extends the StepByStep framework to orchestrate multi-participant conversations:
+
 - **Factory**: `Cognesy\Addons\Chat\ChatFactory` — convenient factory for creating Chat instances with sensible defaults
-- **Orchestrator**: `Cognesy\Addons\Chat\Chat` — stateless service that processes one turn at a time
+- **Orchestrator**: `Cognesy\Addons\Chat\Chat` — extends StepByStep to process conversation turns iteratively
 - **State**: `Data\ChatState` — immutable state object containing messages, variables, steps, and usage
 - **Step**: `Data\ChatStep` — represents one participant's action with input/output messages and metadata
 - **Participants** (`Contracts\CanParticipateInChat`):
@@ -19,8 +21,8 @@ This document explains how to use Chat, customize its behavior, and integrate it
 - **Participant selection** (`Contracts\CanChooseNextParticipant`):
   - `Selectors\RoundRobinSelector` — cycles through participants in order
   - `Selectors\LLMBasedCoordinator` — AI-powered participant selection using structured output
-- **Step processors** (`Contracts\CanProcessChatStep`): process steps after participant actions
-- **Continuation criteria** ( helpers): determine when chat should continue
+- **State processors**: Process and transform state after each step using the StepByStep framework
+- **Continuation criteria**: Determine when chat should continue using the StepByStep framework
 - **Collections**: Type-safe collections for participants, steps, processors, and criteria
 - **Observability**: Comprehensive event system for monitoring chat lifecycle
 
@@ -41,21 +43,21 @@ $chat = ChatFactory::default($participants);
 $initialMessages = Messages::fromArray([
     ['role' => 'user', 'content' => 'Hello, how are you?']
 ]);
-$state = new ChatState(messages: $initialMessages);
+$state = (new ChatState())->withMessages($initialMessages);
 
 // Execute one turn
 $newState = $chat->nextStep($state);
 
 // Get the assistant's response
-$assistantMessages = $newState->messages()->toString();
-echo $assistantMessages;
+echo $newState->messages()->toString();
 ```
 
 **Key concepts:**
 - `ChatFactory::default()` provides sensible defaults with participants, processors, and continuation criteria
-- `ChatState` holds the conversation state (messages, variables, steps, usage)
-- `nextStep()` takes a state and returns a new updated state
+- `ChatState` holds the conversation state (messages, metadata, steps, usage)
+- `nextStep()` takes a state and returns a new updated state (from StepByStep pattern)
 - Default configuration includes `AppendStepMessages` and `AccumulateTokenUsage` processors
+- Chat extends StepByStep providing `nextStep()`, `hasNextStep()`, `finalStep()`, and `iterator()` methods
 
 ## Multi-Participant Chat Example
 
@@ -117,9 +119,11 @@ Basic LLM participant using Polyglot Inference for generating responses.
 
 Parameters:
 - `name: string` - Participant identifier (default: 'assistant')
+- `systemPrompt?: string` - System prompt specific to this participant
 - `inference?: Inference` - Custom Inference instance (useful for testing with mocks)
 - `llmProvider?: LLMProvider` - Custom LLM provider
-- `systemPrompt?: string` - System prompt specific to this participant
+- `compiler?: CanCompileMessages` - Message compiler (default: AllSections)
+- `events?: CanHandleEvents` - Event handler for monitoring
 
 ```php
 $assistant = new LLMParticipant(
@@ -133,8 +137,9 @@ LLM participant with tool-calling capabilities, integrating with the ToolUse sys
 
 Parameters:
 - `name: string` - Participant identifier (default: 'assistant-with-tools')
-- `toolUse: ToolUse` - ToolUse instance with configured tools
 - `systemPrompt?: string` - System prompt specific to this participant
+- `toolUse?: ToolUse` - ToolUse instance with configured tools (uses default if not provided)
+- `events?: CanHandleEvents` - Event handler for monitoring
 
 ```php
 $toolsAssistant = new LLMParticipantWithTools(
@@ -222,30 +227,67 @@ $config = ChatConfig::default($participants)
 
 ## Continuation Criteria
 
-Available criteria determine when the chat should stop:
+Continuation criteria determine when the chat should stop. All criteria are part of the StepByStep framework:
 
 ### `StepsLimit`
 Stop after a maximum number of turns.
 ```php
-$stepsLimit = new StepsLimit(maxSteps: 10);
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
+
+$stepsLimit = new StepsLimit(10, fn(HasSteps $state) => $state->stepCount());
 ```
 
 ### `TokenUsageLimit`
 Stop when total token usage exceeds a limit.
 ```php
-$tokenLimit = ChatCriteria::tokenUsageLimit(maxTokens: 4000);
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
+
+$tokenLimit = new TokenUsageLimit(4000, fn(HasUsage $state) => $state->usage()->total());
 ```
 
 ### `ExecutionTimeLimit`
 Stop after a time limit (in seconds).
 ```php
-$timeLimit = ChatCriteria::executionTimeLimit(seconds: 300); // 5 minutes
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
+
+$timeLimit = new ExecutionTimeLimit(300, fn(HasStateInfo $state) => $state->startedAt()); // 5 minutes
 ```
 
 ### `FinishReasonCheck`
 Stop when specific finish reasons are encountered.
 ```php
-$finishCheck = ChatCriteria::finishReasonCheck(['stop', 'length']);
+use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+
+$finishCheck = new FinishReasonCheck([
+    InferenceFinishReason::Stop,
+    InferenceFinishReason::Length,
+], fn(ChatState $state) => $state->currentStep()?->finishReason());
+```
+
+### `ErrorPresenceCheck`
+Stop when errors are present in the current step.
+```php
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
+
+$errorCheck = new ErrorPresenceCheck(
+    fn(ChatState $state) => $state->currentStep()?->hasErrors() ?? false
+);
+```
+
+### `RetryLimit`
+Stop after a maximum number of retries on errors.
+```php
+use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
+
+$retryLimit = new RetryLimit(
+    2,
+    fn(ChatState $state) => $state->steps(),
+    fn(ChatStep $step) => $step->hasErrors()
+);
 ```
 
 ### `ResponseContentCheck`
@@ -287,15 +329,17 @@ $config = ChatConfig::default($participants)
 
 **Default behavior**: The default configuration includes basic continuation criteria (FinishReasonCheck, StepsLimit of 16, TokenUsageLimit of 4096). All criteria must return `true` for the chat to continue.
 
-## Step Processors
+## State Processors
 
-Step processors (`CanProcessChatStep`) handle chat steps after participant actions. They implement the `process(ChatStep $step, ChatState $state): ChatState` method.
+State processors handle state transformation after each step using the StepByStep framework's middleware pattern. They implement `CanProcessAnyState` interface.
 
-### Built-in Step Processors
+### Built-in State Processors
 
 #### `AccumulateTokenUsage`
 Accumulates token usage from each step into the chat state.
 ```php
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
+
 $processor = new AccumulateTokenUsage();
 ```
 
@@ -303,6 +347,8 @@ $processor = new AccumulateTokenUsage();
 Appends step output messages to the chat state's message history. This is a core processor that ensures conversation continuity by adding each participant's response to the shared message context.
 
 ```php
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
+
 $processor = new AppendStepMessages();
 ```
 
@@ -311,34 +357,57 @@ $processor = new AppendStepMessages();
 #### `MoveMessagesToBuffer`
 Moves messages to a buffer when context window limits are approached.
 ```php
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\MoveMessagesToBuffer;
+
 $processor = new MoveMessagesToBuffer();
 ```
 
 #### `SummarizeBuffer`
 Summarizes buffered messages to preserve context while reducing token usage.
 ```php
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\SummarizeBuffer;
+
 $processor = new SummarizeBuffer();
 ```
 
-### Custom Step Processors
-Create custom processors by implementing `CanProcessChatStep`:
+#### `AppendContextMetadata`
+Appends context metadata to the state.
+```php
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
+
+$processor = new AppendContextMetadata();
+```
+
+### Custom State Processors
+Create custom processors by implementing `CanProcessAnyState`:
 
 ```php
-class MyCustomProcessor implements CanProcessChatStep
+use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
+
+class MyCustomProcessor implements CanProcessAnyState
 {
-    public function process(ChatStep $step, ChatState $state): ChatState
+    public function canProcess(object $state): bool
     {
+        return $state instanceof ChatState;
+    }
+
+    public function process(object $state, ?callable $next = null): object
+    {
+        assert($state instanceof ChatState);
         // Your custom processing logic
-        return $state->withVariable('processed', true);
+        $newState = $state->withMetadata(['processed' => true]);
+        return $next ? $next($newState) : $newState;
     }
 }
 ```
 
 ### Configuration
-Configure step processors when creating Chat:
+Configure state processors when creating Chat:
 
 ```php
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 
 $processors = new StateProcessors(
     new AccumulateTokenUsage(),
@@ -360,25 +429,24 @@ The Chat system provides comprehensive event monitoring throughout the conversat
 
 ### Available Events
 
-- **`ChatStarted`** - Fired when a new chat begins
-- **`ChatTurnStarting`** - Fired at the beginning of each turn with turn number and state
+- **`ChatStepStarting`** - Fired at the beginning of each step with turn number and state
 - **`ChatParticipantSelected`** - Fired when a participant is chosen with participant details
 - **`ChatBeforeSend`** - Fired before sending messages to a participant
 - **`ChatInferenceRequested`** - Fired when inference is requested from LLM participants
 - **`ChatInferenceResponseReceived`** - Fired when inference response is received
-- **`ChatToolUseStarted`** - Fired when tool use begins (for LLMWithToolsParticipant)
+- **`ChatToolUseStarted`** - Fired when tool use begins (for LLMParticipantWithTools)
 - **`ChatToolUseCompleted`** - Fired when tool use completes
-- **`ChatTurnCompleted`** - Fired when a turn is completed with step details
+- **`ChatStepCompleted`** - Fired when a step is completed with step details
 - **`ChatStateUpdated`** - Fired when chat state changes
 - **`ChatCompleted`** - Fired when the chat ends with completion reason
 
 ### Event Data Examples
 ```php
-// ChatTurnStarting
+// ChatStepStarting
 ['turn' => 1, 'state' => $state->toArray()]
 
 // ChatParticipantSelected
-['participantName' => 'assistant', 'participantClass' => 'LLMParticipant', 'participant' => $participant]
+['participantName' => 'assistant', 'participantClass' => 'LLMParticipant', 'state' => $state->toArray()]
 
 // ChatCompleted
 ['state' => $state->toArray(), 'reason' => 'has no next turn']
@@ -388,7 +456,7 @@ The Chat system provides comprehensive event monitoring throughout the conversat
 Configure event handlers when creating the Chat instance:
 ```php
 $eventBus = new MyEventBus();
-$chat = new Chat($config, $eventBus);
+$chat = ChatFactory::default($participants, events: $eventBus);
 ```
 
 ## Testing
@@ -499,16 +567,11 @@ expect($newState->currentStep())->toBe($step);
 ## Architecture & Design
 
 ### Chat Class
-- **Stateless** - processes one turn at a time
-- Configured via immutable `ChatConfig`
+- **Stateless** - extends StepByStep to process one step at a time
+- Configured via constructor parameters with immutable components
 - Safe to reuse across multiple conversations
 - Thread-safe operation
-
-### ChatConfig
-- **Immutable** configuration object
-- Contains participants, selectors, processors, and criteria
-- Can be reused across multiple chat instances
-- Provides sensible defaults via `ChatConfig::default()`
+- Provides `nextStep()`, `hasNextStep()`, `finalStep()`, and `iterator()` methods
 
 ### ChatState
 - **Immutable** - every operation returns a new state instance
@@ -530,15 +593,17 @@ All collections are **immutable** and **type-safe**:
 - `ContinuationCriteria` - Collection of continuation criteria
 
 ### Best Practices
-- Reuse `ChatConfig` across conversations
+- Reuse `Chat` instances across conversations
 - Create new `ChatState` for each conversation
 - Store/restore `ChatState` for conversation persistence
-- Pass updated state between `nextTurn()` calls
+- Pass updated state between `nextStep()` calls
 - Use collections for type safety and immutability
+- Leverage StepByStep pattern with `finalStep()` for complete conversations
+- Use `iterator()` method for streaming conversation updates
 
 ## Design Principles
 
-- **Immutability**: All core objects (`ChatState`, `ChatStep`, `ChatConfig`, collections) are immutable
+- **Immutability**: All core objects (`ChatState`, `ChatStep`, collections) are immutable
 - **Separation of concerns**: 
   - Participants generate content
   - Chat orchestrates conversation flow
@@ -553,15 +618,15 @@ All collections are **immutable** and **type-safe**:
 ## Troubleshooting
 
 ### Chat doesn't progress
-**Problem**: `nextTurn()` returns immediately without any participant action  
+**Problem**: `nextStep()` returns immediately without any participant action
 **Solution**: Ensure your configuration has participants and valid continuation criteria
 
 ### No participants available
-**Problem**: "No participants available to select from" error  
+**Problem**: "No participants available to select from" error
 **Solution**: Add participants to your configuration:
 ```php
 $participants = new Participants(new LLMParticipant(name: 'assistant'));
-$config = ChatConfig::default($participants);
+$chat = ChatFactory::default($participants);
 ```
 
 ### Chat stops unexpectedly
@@ -579,11 +644,11 @@ $config = ChatConfig::default($participants);
 **Problem**: Conversation becomes too long, hitting token limits  
 **Solution**: Use context management processors:
 ```php
-$processors = new StepProcessors(
+$processors = new StateProcessors(
     new MoveMessagesToBuffer(),
     new SummarizeBuffer(),
     new AccumulateTokenUsage(),
-    new AddCurrentStep()
+    new AppendStepMessages()
 );
 ```
 

@@ -1,6 +1,6 @@
 # Exclude unnecessary files from Composer and Git exports
 /.cursorignore    export-ignore
-/.cursorprompt     export-ignore
+/.cursorprompt    export-ignore
 /.github/         export-ignore
 /.gitignore       export-ignore
 /.gitattributes   export-ignore

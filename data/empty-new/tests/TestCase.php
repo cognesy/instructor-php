@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\{{NAMESPACE}}\Tests;
+//namespace Cognesy\{{NAMESPACE}}\Tests; // uncomment and replace {{NAMESPACE}} with the actual namespace
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
 

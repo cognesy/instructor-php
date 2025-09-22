@@ -54,7 +54,7 @@ test('has method checks for key existence', function () {
 test('getType method returns correct types', function () {
     expect($this->dataMap->getType('name'))->toBe('string');
     expect($this->dataMap->getType('age'))->toBe('integer');
-    expect($this->dataMap->getType('address'))->toBe('array');
+    expect($this->dataMap->getType('address'))->toBe('object'); // arrays are wrapped in DataMap objects
 });
 
 test('magic getter and setter work correctly', function () {

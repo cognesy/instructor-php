@@ -4,11 +4,13 @@ namespace Cognesy\Utils\Data;
 
 use Adbar\Dot;
 use Aimeos\Map;
+use Cognesy\Utils\Option\Option;
 use InvalidArgumentException;
 use JsonSerializable;
 
 /**
  * DataMap provides a simple way to work with nested data structures.
+ *
  * @template TKey of array-key
  * @template TValue
  */
@@ -84,7 +86,7 @@ class DataMap implements JsonSerializable
         if (!$this->has($key)) {
             throw new InvalidArgumentException("Key '{$key}' does not exist.");
         }
-        $value = $this->dot->get($key);
+        $value = $this->get($key);
         return gettype($value);
     }
 
@@ -176,13 +178,13 @@ class DataMap implements JsonSerializable
     }
 
     /**
-     * Merge data into the DataMap.
+     * Merge data into the DataMap recursively.
      *
      * @param array<TKey, mixed> $data
      * @return self
      */
     public function merge(array $data): self {
-        $this->dot->merge($data);
+        $this->smartMerge($data);
         return $this;
     }
 
@@ -195,20 +197,9 @@ class DataMap implements JsonSerializable
      * @throws InvalidArgumentException If the path does not lead to an array or DataMap, or if wildcards are used incorrectly.
      */
     public function toMap(?string $path = null): Map {
-        if ($path === null) {
-            // No path provided, return Map for the entire data
-            $data = $this->toArray();
-            return new Map($data);
-        }
-
-        // Check if the path contains any wildcards
-        if (strpos($path, '*') === false) {
-            return $this->collectValues($path);
-        }
-
-        // Wildcard path handling
-        $collectedValues = $this->collectWildcardValues($path);
-        return new Map($collectedValues);
+        return Option::fromNullable($path)
+            ->map(fn(string $p) => $this->processPath($p))
+            ->getOrElse(fn() => new Map($this->toArray()));
     }
 
     /**
@@ -274,27 +265,74 @@ class DataMap implements JsonSerializable
     // INTERNAL /////////////////////////////////////////////////
 
     /**
+     * Smart merge that overwrites scalars but merges arrays recursively.
+     *
+     * @param array<TKey, mixed> $data
+     * @return void
+     */
+    private function smartMerge(array $data): void {
+        foreach ($data as $key => $value) {
+            if (!$this->has($key)) {
+                // Key doesn't exist, just set it
+                $this->set($key, $value);
+            } else {
+                $existing = $this->dot->get($key);
+                if (is_array($existing) && is_array($value)) {
+                    // Both are arrays, merge recursively
+                    $this->dot->mergeRecursive([$key => $value]);
+                } else {
+                    // One or both are scalars, overwrite
+                    $this->set($key, $value);
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper method to get value as Option.
+     *
+     * @param string $path Dot notation path.
+     * @return Option<mixed>
+     */
+    private function getOption(string $path): Option {
+        return Option::fromNullable($this->get($path, null));
+    }
+
+    /**
+     * Process a path and return the corresponding Map.
+     *
+     * @param string $path
+     * @return Map
+     * @throws InvalidArgumentException
+     */
+    private function processPath(string $path): Map {
+        // Check if the path contains any wildcards
+        if (strpos($path, '*') === false) {
+            return $this->collectValues($path);
+        }
+
+        // Wildcard path handling
+        $collectedValues = $this->collectWildcardValues($path);
+        return new Map($collectedValues);
+    }
+
+    /**
      * Collect values from the DataMap based on a path.
      *
      * @param string $path Dot notation path.
-     * @return array<mixed> A single flattened array of all matching values.
+     * @return Map
      */
     private function collectValues(string $path): Map {
-        // No wildcard in path, behave as before
-        $subset = $this->get($path, null);
-        if ($subset === null) {
-            throw new InvalidArgumentException("Path '{$path}' does not exist.");
-        }
-
-        if ($subset instanceof self) {
-            $data = $subset->toArray();
-        } elseif (is_array($subset)) {
-            $data = $subset;
-        } else {
-            throw new InvalidArgumentException("Path '{$path}' does not lead to an array or DataMap.");
-        }
-
-        return new Map($data);
+        return $this->getOption($path)
+            ->flatMap(function($subset) use ($path) {
+                return match(true) {
+                    $subset instanceof self => Option::some(new Map($subset->toArray())),
+                    is_array($subset) => Option::some(new Map($subset)),
+                    $path === '' => Option::some(new Map([$subset])), // Special case for empty string key
+                    default => Option::none()
+                };
+            })
+            ->getOrElse(fn() => throw new InvalidArgumentException("Path '{$path}' does not exist or does not lead to an array or DataMap."));
     }
 
     /**
