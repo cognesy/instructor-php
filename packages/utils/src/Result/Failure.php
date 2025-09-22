@@ -41,16 +41,16 @@ final readonly class Failure extends Result {
         return true;
     }
 
-    // PRIVATE
+    // PRIVATE ///////////////////////////////////////////////////////////////////
 
     private function toMessage(mixed $error): string {
         return match(true) {
             is_string($error) => $error,
             $error instanceof Throwable => $error->getMessage(),
             $error instanceof Stringable => $error->__toString(),
-            method_exists($error, '__toString') => (string) $error,
-            method_exists($error, 'toString') => $error->toString(),
-            method_exists($error, 'toArray') => json_encode($error->toArray()),
+            is_object($error) && method_exists($error, '__toString') => (string) $error,
+            is_object($error) && method_exists($error, 'toString') => $error->toString(),
+            is_object($error) && method_exists($error, 'toArray') => json_encode($error->toArray()),
             default => json_encode($error, JSON_THROW_ON_ERROR),
         };
     }

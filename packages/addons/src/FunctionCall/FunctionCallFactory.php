@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\FunctionCall\Traits;
+namespace Cognesy\Addons\FunctionCall;
 
-use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Schema\Reflection\FunctionInfo;
 
-trait HandlesConstruction
+class FunctionCallFactory
 {
     static public function fromFunctionName(string $function) : FunctionCall {
         $functionInfo = FunctionInfo::fromFunctionName($function);
