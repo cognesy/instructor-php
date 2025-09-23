@@ -2,10 +2,10 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Internal\OperatorStack;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Exception;
 
 /**

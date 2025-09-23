@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Result\Result;
 use Generator;
 use RuntimeException;
@@ -17,9 +17,8 @@ use Throwable;
  */
 class PendingExecution
 {
-    private CanCarryState $initialState;
     private CanProcessState $pipeline;
-
+    private CanCarryState $initialState;
     private ?CanCarryState $cachedOutput = null;
 
     public function __construct(

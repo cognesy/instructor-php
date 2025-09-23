@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;

@@ -2,7 +2,6 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Enums\NullStrategy;
@@ -17,6 +16,7 @@ use Cognesy\Pipeline\Operators\RawCall;
 use Cognesy\Pipeline\Operators\Skip;
 use Cognesy\Pipeline\Operators\Tap;
 use Cognesy\Pipeline\Operators\TapOnFailure;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use InvalidArgumentException;
 
 class PipelineBuilder

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
@@ -65,7 +66,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             $originalState = ProcessingState::with(10, [$tag1]);
             $sourceState = ProcessingState::with(20, [$tag2]);
             
-            $merged = $originalState->transform()->mergeFrom($sourceState);
+            $merged = TransformState::with($originalState)->mergeFrom($sourceState);
             
             expect($merged->value())->toBe(10); // Keeps original result
             expect($merged->hasTag(StateTag::class))->toBeTrue();
@@ -80,7 +81,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             $sourceState = ProcessingState::with(10, [$tag1]);
             $targetState = ProcessingState::with(20, [$tag2]);
             
-            $merged = $sourceState->transform()->mergeInto($targetState);
+            $merged = TransformState::with($sourceState)->mergeInto($targetState);
             
             expect($merged->value())->toBe(10); // Keeps source result
             expect($merged->hasTag(StateTag::class))->toBeTrue();

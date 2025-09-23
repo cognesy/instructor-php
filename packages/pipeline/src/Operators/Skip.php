@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use RuntimeException;
 
@@ -29,7 +29,7 @@ readonly final class Skip implements CanProcessState {
         $tempState = $this->conditionChecker->process($state, fn($s) => $s);
         return match(true) {
             $tempState->isFailure() => $tempState
-                ->transform()->mergeInto($state)->state()
+                ->applyTo($state)
                 ->addTags(new ErrorTag(new RuntimeException('Failure while evaluating skip condition'))),
             $tempState->value() => $state,
             default => $next ? $next($state) : $state,

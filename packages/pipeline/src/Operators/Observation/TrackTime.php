@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators\Observation;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\TagMap\Tags\TimeProfilerTag;
 
 /**

@@ -177,18 +177,7 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJson,
         ResponseModel $responseModel
     ) : Result {
-        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn($json) => $this->validatePartialResponse($json, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
-            ->tap(fn($json) => $this->events->dispatch(new PartialJsonReceived(['partialJson' => $json])))
-            ->tap(fn($json) => $this->updateToolCall($responseModel->toolName(), $json))
-            ->through(fn($json) => $this->tryGetPartialObject($json, $responseModel))
-            ->onFailure(fn($result) => $this->events->dispatch(
-                new PartialResponseGenerationFailed(Arrays::asArray($result->exception()))
-            ))
-            ->finally(fn($state) => $this->getChangedOnly($state->result()))
-            ->create();
-
-        return $pipeline
+        return $this->makeDeltaPipeline($responseModel)
             ->executeWith(ProcessingState::with($partialJson))
             ->result();
     }
@@ -197,11 +186,10 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJsonData,
         ResponseModel $responseModel,
     ) : Result {
-        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
-            ->through(fn($object) => $this->responseTransformer->transform($object))
-            ->create();
-
+        $pipeline = $this->makePartialDeserializationPipeline(
+            responseModel: $responseModel,
+            toolName: $this->toolCalls->last()?->name() ?? ''
+        );
         $json = Json::fromPartial($partialJsonData)->toString();
         return $pipeline->executeWith(ProcessingState::with($json))->result();
     }
@@ -248,5 +236,25 @@ class PartialsGenerator implements CanGeneratePartials
         $finalizedToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallCompleted(['toolCall' => $finalizedToolCall?->toArray()]));
         return $finalizedToolCall;
+    }
+
+    private function makeDeltaPipeline(ResponseModel $responseModel) : Pipeline {
+        return Pipeline::builder(ErrorStrategy::FailFast)
+            ->through(fn($json) => $this->validatePartialResponse($json, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
+            ->tap(fn($json) => $this->events->dispatch(new PartialJsonReceived(['partialJson' => $json])))
+            ->tap(fn($json) => $this->updateToolCall($responseModel->toolName(), $json))
+            ->through(fn($json) => $this->tryGetPartialObject($json, $responseModel))
+            ->onFailure(fn($result) => $this->events->dispatch(
+                new PartialResponseGenerationFailed(Arrays::asArray($result->exception()))
+            ))
+            ->finally(fn($state) => $this->getChangedOnly($state->result()))
+            ->create();
+    }
+
+    private function makePartialDeserializationPipeline(ResponseModel $responseModel, string $toolName) : Pipeline {
+        return Pipeline::builder(ErrorStrategy::FailFast)
+            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $toolName))
+            ->through(fn($object) => $this->responseTransformer->transform($object))
+            ->create();
     }
 }

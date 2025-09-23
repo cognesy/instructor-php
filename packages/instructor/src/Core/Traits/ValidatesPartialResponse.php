@@ -3,10 +3,10 @@
 namespace Cognesy\Instructor\Core\Traits;
 
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
@@ -21,7 +21,25 @@ trait ValidatesPartialResponse
         bool $preventJsonSchema,
         bool $matchToExpectedFields
     ) : Result {
-        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
+        return $this->makePartialValidationPipeline(
+                $partialResponseText,
+                $responseModel,
+                $preventJsonSchema,
+                $matchToExpectedFields
+            )
+            ->executeWith(ProcessingState::with($partialResponseText))
+            ->result();
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////
+
+    public function makePartialValidationPipeline(
+        string $partialResponseText,
+        ResponseModel $responseModel,
+        bool $preventJsonSchema,
+        bool $matchToExpectedFields
+    ) : Pipeline {
+        return Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn(string $text) => $this->preventJsonSchemaResponse($preventJsonSchema, $text))
             ->through(fn(string $text) => $this->detectNonMatchingJson($matchToExpectedFields, $text, $responseModel))
             ->onFailure(fn(CanCarryState $state) => throw new JsonParsingException(
@@ -29,13 +47,7 @@ trait ValidatesPartialResponse
                 json: $partialResponseText,
             ))
             ->create();
-
-        return $pipeline
-            ->executeWith(ProcessingState::with($partialResponseText))
-            ->result();
     }
-
-    // INTERNAL ////////////////////////////////////////////////////////
 
     private function preventJsonSchemaResponse(bool $check, string $partialResponseText) : Result {
         if (!$check) {
@@ -74,7 +86,7 @@ trait ValidatesPartialResponse
     }
 
     private function isMatchingResponseModel(
-        string        $partialResponseText,
+        string $partialResponseText,
         ResponseModel $responseModel
     ) : bool {
         // ...check for response model property names

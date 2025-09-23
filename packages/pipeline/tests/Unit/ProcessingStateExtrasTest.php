@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
@@ -13,7 +14,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('map()', function () {
         it('applies function to successful value', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->map(fn($x) => $x * 2);
+            $result = TransformState::with($state)->map(fn($x) => $x * 2);
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(20);
@@ -22,7 +23,7 @@ describe('ProcessingState Monadic Operations', function () {
         it('preserves tags during transformation', function () {
             $tag = new TestTag('test');
             $state = ProcessingState::with(10, [$tag]);
-            $result = $state->transform()->map(fn($x) => $x * 2);
+            $result = TransformState::with($state)->map(fn($x) => $x * 2);
             
             expect($result->tags()->only(TestTag::class)->first())->toBe($tag);
             expect($result->value())->toBe(20);
@@ -32,8 +33,7 @@ describe('ProcessingState Monadic Operations', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
             $executed = false;
             
-            $result = $state
-                ->transform()
+            $result = TransformState::with($state)
                 ->map(function($x) use (&$executed) {
                     $executed = true;
                     return $x * 2;
@@ -49,7 +49,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('map()', function () {
         it('applies function returning ProcessingState', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->map(fn($x) => ProcessingState::with($x * 2));
+            $result = TransformState::with($state)->map(fn($x) => ProcessingState::with($x * 2));
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(20);
@@ -60,7 +60,7 @@ describe('ProcessingState Monadic Operations', function () {
             $tag2 = new TestTag('new');
             
             $state = ProcessingState::with(10, [$tag1]);
-            $result = $state->transform()->map(fn($x) => ProcessingState::with($x * 2, [$tag2]));
+            $result = TransformState::with($state)->map(fn($x) => ProcessingState::with($x * 2, [$tag2]));
             
             $tags = $result->allTags(TestTag::class);
             expect($tags)->toHaveCount(2);
@@ -72,7 +72,7 @@ describe('ProcessingState Monadic Operations', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
             $executed = false;
             
-            $output = $state->transform()->map(function($x) use (&$executed) {
+            $output = TransformState::with($state)->map(function($x) use (&$executed) {
                 $executed = true;
                 return ProcessingState::with($x * 2);
             });
@@ -83,7 +83,7 @@ describe('ProcessingState Monadic Operations', function () {
 
         it('propagates failure from mapped function', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->map(fn($x) =>
+            $result = TransformState::with($state)->map(fn($x) =>
                 ProcessingState::with(null)->withResult(Result::failure(new \Exception('map failed')))
             );
             
@@ -95,7 +95,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('mapResult()', function () {
         it('applies function to Result directly', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->map(fn($x) => $x * 2);
+            $result = TransformState::with($state)->map(fn($x) => $x * 2);
             
             expect($result->value())->toBe(20);
         });
@@ -103,14 +103,14 @@ describe('ProcessingState Monadic Operations', function () {
         it('preserves tags when mapping Result', function () {
             $tag = new TestTag('test');
             $state = ProcessingState::with(10, [$tag]);
-            $result = $state->transform()->map(fn($x) => $x * 2);
+            $result = TransformState::with($state)->map(fn($x) => $x * 2);
             
             expect($result->tags()->only(TestTag::class)->first())->toBe($tag);
         });
 
         it('handles Result mapping of failures', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
-            $result = $state->transform()->map(fn($x) => $x * 2);
+            $result = TransformState::with($state)->map(fn($x) => $x * 2);
             
             expect($result->isFailure())->toBeTrue();
         });
@@ -119,7 +119,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('filter()', function () {
         it('passes when predicate returns true', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->failWhen(fn($x) => $x > 5);
+            $result = TransformState::with($state)->failWhen(fn($x) => $x > 5);
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(10);
@@ -127,7 +127,7 @@ describe('ProcessingState Monadic Operations', function () {
 
         it('fails when predicate returns false', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->failWhen(fn($x) => $x > 15);
+            $result = TransformState::with($state)->failWhen(fn($x) => $x > 15);
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('Failure condition met');
@@ -135,7 +135,7 @@ describe('ProcessingState Monadic Operations', function () {
 
         it('uses custom error message', function () {
             $state = ProcessingState::with(10);
-            $result = $state->transform()->failWhen(fn($x) => $x > 15, 'Value too small');
+            $result = TransformState::with($state)->failWhen(fn($x) => $x > 15, 'Value too small');
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('Value too small');
@@ -145,7 +145,7 @@ describe('ProcessingState Monadic Operations', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
             $executed = false;
             
-            $result = $state->transform()->failWhen(function($x) use (&$executed) {
+            $result = TransformState::with($state)->failWhen(function($x) use (&$executed) {
                 $executed = true;
                 return true;
             });
@@ -157,7 +157,7 @@ describe('ProcessingState Monadic Operations', function () {
         it('preserves tags', function () {
             $tag = new TestTag('test');
             $state = ProcessingState::with(10, [$tag]);
-            $result = $state->transform()->failWhen(fn($x) => $x > 5);
+            $result = TransformState::with($state)->failWhen(fn($x) => $x > 5);
             
             expect($result->tags()->only(TestTag::class)->first())->toBe($tag);
         });
@@ -165,8 +165,7 @@ describe('ProcessingState Monadic Operations', function () {
 
     describe('monadic composition', function () {
         it('chains multiple operations', function () {
-            $state = ProcessingState::with(10)
-                ->transform()
+            $state = TransformState::with(ProcessingState::with(10))
                 ->map(fn($x) => $x * 2)           // 20
                 ->failWhen(fn($x) => $x > 15)     // passes
                 ->map(fn($x) => $x + 5);          // 25
@@ -178,8 +177,7 @@ describe('ProcessingState Monadic Operations', function () {
         it('short-circuits on first failure', function () {
             $executed = false;
             
-            $state = ProcessingState::with(10)
-                ->transform()
+            $state = TransformState::with(ProcessingState::with(10))
                 ->map(fn($x) => $x * 2)           // 20
                 ->failWhen(fn($x) => $x > 25)       // fails
                 ->map(function($x) use (&$executed) { // should not execute
@@ -195,8 +193,7 @@ describe('ProcessingState Monadic Operations', function () {
             $tag1 = new TestTag('start');
             $tag2 = new TestTag('middle');
             
-            $state = ProcessingState::with(10, [$tag1])
-                ->transform()
+            $state = TransformState::with(ProcessingState::with(10, [$tag1]))
                 ->map(fn($x) => $x * 2)
                 ->map(fn($x) => ProcessingState::with($x + 5, [$tag2]));
             

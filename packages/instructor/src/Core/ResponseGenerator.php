@@ -10,10 +10,10 @@ use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Result\Failure;
@@ -32,22 +32,7 @@ class ResponseGenerator implements CanGenerateResponse
     ) {}
 
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
-        $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn($responseJson) => match(true) {
-                ($responseJson === '') => Result::failure('No JSON found in the response'),
-                default => Result::success($responseJson)
-            })
-            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
-            ->through(fn($object) => $this->responseValidator->validate($object))
-            ->through(fn($object) => $this->responseTransformer->transform($object))
-            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
-            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
-            ->finally(fn(CanCarryState $state) => match(true) {
-                $state->isSuccess() => $state->result(),
-                default => Result::failure(implode('; ', $this->extractErrors($state)))
-            })
-            ->create();
-
+        $pipeline = $this->makeResponsePipeline($responseModel);
         $json = $response->findJsonData($mode)->toString();
         return $pipeline->executeWith(ProcessingState::with($json))->result();
     }
@@ -63,5 +48,23 @@ class ResponseGenerator implements CanGenerateResponse
             $output instanceof Result && $output->isFailure() => [$output->errorMessage()],
             default => []
         };
+    }
+
+    private function makeResponsePipeline(ResponseModel $responseModel) : Pipeline {
+        return Pipeline::builder(ErrorStrategy::FailFast)
+            ->through(fn($responseJson) => match(true) {
+                ($responseJson === '') => Result::failure('No JSON found in the response'),
+                default => Result::success($responseJson)
+            })
+            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
+            ->through(fn($object) => $this->responseValidator->validate($object))
+            ->through(fn($object) => $this->responseTransformer->transform($object))
+            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
+            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
+            ->finally(fn(CanCarryState $state) => match(true) {
+                $state->isSuccess() => $state->result(),
+                default => Result::failure(implode('; ', $this->extractErrors($state)))
+            })
+            ->create();
     }
 }

@@ -97,7 +97,7 @@ The goal: make behavior-first, composable, side-effect-aware code the norm, with
 - Transform a successful value, propagate failures
   - Use `Result::map`/`then` or `TransformState::map`.
   - Example:
-    - `$state->transform()->map(fn($v) => normalize($v))->state()`
+    - `TransformState::with($state)->map(fn($v) => normalize($v))->state()`
     - `$state->result()->then(fn($v) => compute($v))->ifFailure(fn($e) => log($e));`
 
 - Validation with early failure

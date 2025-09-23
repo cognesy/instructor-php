@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
 use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
@@ -205,7 +205,7 @@ class TransformState
     private function mapAnyInput(callable $inputFn, callable $fn): CanCarryState {
         $output = $fn($inputFn());
         return match(true) {
-            $output instanceof CanCarryState => $output->transform()->mergeInto($this->state)->state(),
+            $output instanceof CanCarryState => $output->applyTo($this->state),
             default => $this->state->withResult(Result::from($output)),
         };
     }

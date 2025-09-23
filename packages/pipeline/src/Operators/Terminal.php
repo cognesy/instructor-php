@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 
 readonly final class Terminal implements CanProcessState
 {

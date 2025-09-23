@@ -3,9 +3,9 @@
 namespace Cognesy\Pipeline\Operators;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
@@ -82,22 +82,31 @@ readonly final class Call implements CanProcessState {
         $outputState = ($this->normalizedCall)($state);
 
         if (is_null($outputState)) {
-            $nullState = match($this->onNull) {
-                NullStrategy::Allow => $state
-                    ->withResult(Result::from(null)),
-                NullStrategy::Fail => $state
-                    ->withResult(Result::failure(new RuntimeException('Null value encountered')))
-                    ->addTags(ErrorTag::fromException(new RuntimeException('Null value encountered'))),
-                NullStrategy::Skip => $state
-                    ->withResult(Result::from(null))
-                    ->addTags(new SkipProcessingTag('Null value encountered')),
-            };
+            $nullState = $this->handleNullOutput($state);
             return $next ? $next($nullState) : $nullState;
         }
 
-        $modifiedState = match(true) {
-            $outputState instanceof CanCarryState => $outputState
-                ->transform()->mergeInto($state)->state(),
+        $modifiedState = $this->normalizeToState($state, $outputState);
+
+        return $next ? $next($modifiedState) : $modifiedState;
+    }
+
+    private function handleNullOutput(CanCarryState $state) : CanCarryState {
+        return match($this->onNull) {
+            NullStrategy::Allow => $state
+                ->withResult(Result::from(null)),
+            NullStrategy::Fail => $state
+                ->withResult(Result::failure(new RuntimeException('Null value encountered')))
+                ->addTags(ErrorTag::fromException(new RuntimeException('Null value encountered'))),
+            NullStrategy::Skip => $state
+                ->withResult(Result::from(null))
+                ->addTags(new SkipProcessingTag('Null value encountered')),
+        };
+    }
+
+    private function normalizeToState(CanCarryState $state, mixed $outputState) : CanCarryState {
+        return match(true) {
+            $outputState instanceof CanCarryState => $outputState->applyTo($state),
             $outputState instanceof Failure => $state
                 ->withResult($outputState)
                 ->addTags(ErrorTag::fromException($outputState->exception())),
@@ -106,7 +115,5 @@ readonly final class Call implements CanProcessState {
             default => $state
                 ->withResult(Result::from($outputState)),
         };
-
-        return $next ? $next($modifiedState) : $modifiedState;
     }
 }

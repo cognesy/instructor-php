@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\PipelineBuilder;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
+use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 class BuilderTestTag implements TagInterface {
@@ -181,7 +182,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
             it('adds processor that implements CanProcessState', function () {
                 $processor = new class implements CanProcessState {
                     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
-                        $output = $state->transform()->map(fn($x) => $x . '_processed')->state();
+                        $output = TransformState::with($state)->map(fn($x) => $x . '_processed')->state();
                         return $next ? $next($output) : $output;
                     }
                 };

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 class BuilderTag implements TagInterface {

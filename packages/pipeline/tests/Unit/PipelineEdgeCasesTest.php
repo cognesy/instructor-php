@@ -5,6 +5,7 @@ use Cognesy\Pipeline\Operators\Call;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
+use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\TagMap\Tags\ErrorTag;
 
@@ -208,7 +209,7 @@ describe('Pipeline Edge Cases - State Combination and Tags', function () {
         $state1 = ProcessingState::with('test1', [new SkipProcessingTag()]);
         $state2 = ProcessingState::with('test2', [new ErrorTag('info')]);
         
-        $combined = $state1->transform()->combine($state2);
+        $combined = TransformState::with($state1)->combine($state2);
         
         expect($combined->value())->toBe('test2');
         expect($combined->hasTag(SkipProcessingTag::class))->toBeTrue();

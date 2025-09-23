@@ -2,6 +2,8 @@
 
 namespace Cognesy\Pipeline\Contracts;
 
+use Cognesy\Pipeline\StateContracts\CanCarryState;
+
 /**
  * Interface for state processing components.
  * 

@@ -3,8 +3,8 @@
 namespace Cognesy\Pipeline\Internal;
 
 use ArrayIterator;
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Countable;
 use Iterator;
 use IteratorAggregate;

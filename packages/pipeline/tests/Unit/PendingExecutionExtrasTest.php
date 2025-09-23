@@ -2,6 +2,7 @@
 
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 class ExecutionTag implements TagInterface {
@@ -56,8 +57,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with(10));
             
-            $result = $pending->state()
-                ->transform()
+            $result = TransformState::with($pending->state())
                 ->map(fn($x) => $x + 5)
                 ->failWhen(fn($x) => $x > 15);
             
@@ -72,8 +72,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->executeWith(ProcessingState::with(10, [new ExecutionTag('pipeline')]));
             
             $state = $pending->state();
-            $result = $state
-                ->transform()
+            $result = TransformState::with($state)
                 ->map(fn($x) => $x + 5)
                 ->state()
                 ->addTags(new ExecutionTag('monadic'));
@@ -104,8 +103,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with(10));
             
-            $result = $pending->state()
-                ->transform()
+            $result = TransformState::with($pending->state())
                 ->map(fn($x) => $x + 5)
                 ->failWhen(fn($x) => $x > 100, 'Value too small'); // Will fail
             
@@ -120,8 +118,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with([1, 2, 3]));
             
-            $state = $pending->state()
-                ->transform()
+            $state = TransformState::with($pending->state())
                 ->map(fn($array) => array_map(fn($x) => $x * 2, $array));
             
             $stream = $pending->for($state->value())->stream();
@@ -135,8 +132,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with([1, 2, 3]));
             
-            $state = $pending->state()
-                ->transform()
+            $state = TransformState::with($pending->state())
                 ->failWhen(fn($array) => count($array) > 5); // Will fail
 
             $stream = $pending->for($state->valueOr([]))->stream();
@@ -153,8 +149,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with(10));
             
-            $finalValue = $pending->state()
-                ->transform()
+            $finalValue = TransformState::with($pending->state())
                 ->map(fn($x) => $x + 5)
                 ->value();
             
@@ -167,8 +162,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with(10));
             
-            $finalValue = $pending->state()
-                ->transform()
+            $finalValue = TransformState::with($pending->state())
                 ->failWhen(fn($x) => $x > 100)
                 ->valueOr(42);
             
@@ -181,8 +175,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create()
                 ->executeWith(ProcessingState::with(10));
             
-            $result = $pending->state()
-                ->transform()
+            $result = TransformState::with($pending->state())
                 ->map(fn($x) => $x + 5)
                 ->result();
             
@@ -201,8 +194,7 @@ describe('PendingExecution Enhanced Operations', function () {
             
             $results = [];
             foreach ([1, 2, 3] as $input) {
-                $result = $pipeline->for($input)->state()
-                    ->transform()
+                $result = TransformState::with($pipeline->for($input)->state())
                     ->map(fn($x) => $x * 10)
                     ->value();
                 $results[] = $result;
@@ -219,8 +211,7 @@ describe('PendingExecution Enhanced Operations', function () {
             
             $results = [];
             foreach ([-1, 2, -3, 4] as $input) {
-                $state = $pipeline->for($input)->state()
-                    ->transform()
+                $state = TransformState::with($pipeline->for($input)->state())
                     ->map(fn($x) => $x + 10);
                     
                 $results[] = $state->isSuccess() ? $state->value() : 'error';
@@ -251,7 +242,7 @@ describe('PendingExecution Enhanced Operations', function () {
             expect($pipelineExecuted)->toBeTrue();
             
             // Now apply monadic operations (these are immediate on ProcessingState)
-            $chained = $state->transform()->map(function($x) use (&$monadicExecuted) {
+            $chained = TransformState::with($state)->map(function($x) use (&$monadicExecuted) {
                 $monadicExecuted = true;
                 return $x + 5;
             });

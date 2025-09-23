@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\NewModule;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Pipeline\TransformState;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;

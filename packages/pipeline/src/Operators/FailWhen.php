@@ -3,8 +3,8 @@
 namespace Cognesy\Pipeline\Operators;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 
 /**
  * Middleware that fails the pipeline when a condition is met.

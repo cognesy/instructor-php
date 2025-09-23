@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanCarryState;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Result\Result;
 
 readonly final class ConditionalCall implements CanProcessState {
