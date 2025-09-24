@@ -18,7 +18,9 @@ class GenerateNextStep implements CanProcessAnyState
 
     public function process(object $state, ?callable $next = null): object {
         $nextStep = $this->nextStepGenerator->makeNextStep($state);
-        $newState = $state->withAddedStep($nextStep);
+        $newState = $state
+            ->withAddedStep($nextStep)
+            ->withCurrentStep($nextStep);
         return $next ? $next($newState) : $newState;
     }
 }

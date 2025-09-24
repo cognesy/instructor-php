@@ -417,7 +417,7 @@ $processors = new StateProcessors(
 
 $chat = ChatFactory::default(
     participants: $participants,
-    stepProcessors: $processors
+    processors: $processors
 );
 ```
 
@@ -589,7 +589,7 @@ expect($newState->currentStep())->toBe($step);
 All collections are **immutable** and **type-safe**:
 - `Participants` - Collection of chat participants
 - `ChatSteps` - Collection of conversation steps
-- `StepProcessors` - Collection of step processors
+- `StateProcessors` - Collection of state processors
 - `ContinuationCriteria` - Collection of continuation criteria
 
 ### Best Practices

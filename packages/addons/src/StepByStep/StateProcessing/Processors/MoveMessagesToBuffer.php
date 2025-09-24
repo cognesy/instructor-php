@@ -28,27 +28,27 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
     }
 
     public function process(object $state, ?callable $next = null): object {
-        [$keep, $overflow] = (new SplitMessages)->split($state->messages(), $this->maxTokens);
+        $newState = $next ? $next($state) : $state;
+
+        [$keep, $overflow] = (new SplitMessages)->split(
+            messages: $newState->messages(),
+            tokenLimit: $this->maxTokens,
+        );
+
         $this->events->dispatch(new MessagesMovedToBuffer([
             'overflow' => $overflow->toArray(),
             'keep' => $keep->toArray(),
         ]));
 
-        assert($state instanceof ChatState);
+        assert($newState instanceof ChatState);
 
-        $newMessageStore = $state->store()
+        $newMessageStore = $newState->store()
             ->section($this->bufferSection)
             ->appendMessages($overflow)
             ->section(ChatState::DEFAULT_SECTION)
             ->setMessages($keep);
-        $newState = $state->withMessageStore($newMessageStore);
 
-//        $newState = $state
-//            ->withMessages($keep)
-//            ->section($this->bufferSection)
-//            ->replaceMessages($overflow);
-
-        return $next ? $next($newState) : $newState;
+        return $newState->withMessageStore($newMessageStore);
     }
 
     private function shouldProcess(string $text): bool {

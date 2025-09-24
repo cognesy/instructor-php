@@ -47,15 +47,12 @@ readonly class TimeProfilerTag implements TagInterface
      */
     public function durationFormatted(): string {
         $ms = $this->durationMs();
-
         if ($ms < 1) {
             return number_format($this->durationMicros(), 0) . 'μs';
         }
-
         if ($ms < 1000) {
             return number_format($ms, 2) . 'ms';
         }
-
         return number_format($this->duration, 3) . 's';
     }
 

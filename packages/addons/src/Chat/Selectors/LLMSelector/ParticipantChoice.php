@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Chat\Data;
+namespace Cognesy\Addons\Chat\Selectors\LLMSelector;
 
-readonly class ParticipantChoice
+final readonly class ParticipantChoice
 {
     public function __construct(
         public string $participantName,

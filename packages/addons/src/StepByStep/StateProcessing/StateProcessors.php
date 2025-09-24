@@ -9,23 +9,23 @@ use Closure;
  * 
  * @template TState of object
  */
-readonly class StateProcessors implements CanApplyProcessors
+final readonly class StateProcessors implements CanApplyProcessors
 {
     /** @var CanProcessAnyState[] */
     protected array $processors;
-    private Closure $middlewareChain;
 
-    public function __construct(
-        CanProcessAnyState ...$processors,
-    ) {
+    public function __construct(CanProcessAnyState ...$processors) {
         $this->processors = $processors;
-        $this->middlewareChain = $this->buildMiddlewareChain();
     }
 
     // CONSTRUCTORS /////////////////////////////////////////
 
     public static function empty(): static {
         return new static();
+    }
+
+    public function withProcessors(CanProcessAnyState ...$processors): static {
+        return new static(...$processors);
     }
 
     // API //////////////////////////////////////////////////
@@ -36,14 +36,19 @@ readonly class StateProcessors implements CanApplyProcessors
      * @param TState $state
      * @return TState
      */
-    public function apply(object $state): object {
-        return ($this->middlewareChain)($state);
+    public function apply(object $state, ?callable $terminalFn = null): object {
+        $middlewareChain = $this->buildMiddlewareChain($terminalFn);
+        return ($middlewareChain)($state);
     }
 
     // INTERNALS ////////////////////////////////////////////
 
-    private function buildMiddlewareChain(): Closure {
-        $next = fn(object $state) => $state; // terminal no-op processor
+    private function buildMiddlewareChain(?callable $terminalFn = null): Closure {
+        $next = match(true) {
+            ($terminalFn !== null) => $terminalFn,
+            default => fn(object $state): object => $state,
+        };
+
         foreach ($this->reversed() as $processor) {
             $currentNext = $next;
             $next = function(object $state) use ($processor, $currentNext): object {

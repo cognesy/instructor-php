@@ -64,7 +64,7 @@ $chat = ChatFactory::default(
             static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
         ),
     ),
-    stepProcessors: new StateProcessors(
+    processors: new StateProcessors(
         new AccumulateTokenUsage(),
         new AppendStepMessages(),
         new MoveMessagesToBuffer(

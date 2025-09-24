@@ -16,18 +16,24 @@ final class AppendContextMetadata implements CanProcessAnyState
     }
 
     public function process(object $state, ?callable $next = null): object {
-        assert($state instanceof HasMetadata);
+        $newState = $next ? $next($state) : $state;
+
+        assert($newState instanceof HasMetadata);
         // TODO: this should be done better (e.g. yaml vs json)
-        $metadata = array_filter($state->metadata()->toArray());
+        $metadata = array_filter($newState->metadata()->toArray());
         if ($metadata === []) {
-            return $next ? $next($state) : $state;
+            return $newState;
         }
-        $metadataString = "```json\n" . json_encode($metadata, JSON_PRETTY_PRINT) . "\n```";
 
-        assert($state instanceof HasMessageStore);
-        $newMessages = $state->messages()->appendMessages(Messages::fromString($metadataString));
-        $newState = $state->withMessages($newMessages);
+        $metadataString = "```json\n"
+            . json_encode($metadata, JSON_PRETTY_PRINT)
+            . "\n```";
 
-        return $next ? $next($newState) : $newState;
+        assert($newState instanceof HasMessageStore);
+        $newMessages = $newState
+            ->messages()
+            ->appendMessages(Messages::fromString($metadataString));
+
+        return $newState->withMessages($newMessages);
     }
 }

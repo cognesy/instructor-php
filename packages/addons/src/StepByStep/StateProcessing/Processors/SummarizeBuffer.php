@@ -26,16 +26,19 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
-    public function canProcess(object $state): bool
-    {
+    public function canProcess(object $state): bool {
         return $state instanceof ChatState;
     }
 
-    public function process(object $state, ?callable $next = null): ChatState
-    {
-        $buffer = $state->store()->section($this->bufferSection)->get()?->messages() ?? Messages::empty();
+    public function process(object $state, ?callable $next = null): ChatState {
+        $newState = $next ? $next($state) : $state;
+
+        $buffer = $newState->store()
+            ->section($this->bufferSection)->get()
+            ?->messages() ?? Messages::empty();
+
         if (!$this->shouldProcess($buffer->toString())) {
-            return $next ? $next($state) : $state;
+            return $newState;
         }
 
         $summary = $this->summarizer->summarize($buffer, $this->maxSummaryTokens);
@@ -43,16 +46,15 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
             'summary' => $summary,
             'buffer' => $buffer->toArray(),
         ]));
-        $newStore = $state->store()
+        $newStore = $newState
+            ->store()
             ->section($this->bufferSection)->setMessages(Messages::empty())
             ->section($this->summarySection)->setMessages(Messages::fromString($summary));
-        $newState = $state->withMessageStore($newStore);
 
-        return $next ? $next($newState) : $newState;
+        return $newState->withMessageStore($newStore);
     }
 
-    private function shouldProcess(string $buffer): bool
-    {
+    private function shouldProcess(string $buffer): bool {
         $tokens = Tokenizer::tokenCount($buffer);
         return $tokens > $this->maxBufferTokens;
     }

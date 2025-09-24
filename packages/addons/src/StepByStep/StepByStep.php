@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\StepByStep;
 
 use Cognesy\Addons\StepByStep\Contracts\CanExecuteIteratively;
-use Generator;
+use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Throwable;
 
 /**
@@ -13,24 +13,20 @@ use Throwable;
  * @template TStep of object
  * @implements CanExecuteIteratively<TState>
  */
-abstract readonly class StepByStep implements CanExecuteIteratively
+abstract class StepByStep implements CanExecuteIteratively
 {
-    /**
-     * @param TState $state
-     * @return TState
-     */
+    protected ?CanApplyProcessors $processors;
+
+    public function __construct(?CanApplyProcessors $processors = null) {
+        $this->processors = $processors;
+    }
+
     public function nextStep(object $state): object {
-        if (!$this->hasNextStep($state)) {
-            return $this->handleNoNextStep($state);
-        }
-
-        try {
-            $nextStep = $this->makeNextStep($state);
-        } catch (Throwable $error) {
-            return $this->handleFailure($error, $state);
-        }
-
-        return $this->updateState($nextStep, $state);
+        return match(true) {
+            !$this->hasNextStep($state) => $this->onNoNextStep($state),
+            ($this->hasProcessors()) => $this->performThroughProcessors($state),
+            default => $this->performStep($state),
+        };
     }
 
     /**
@@ -48,17 +44,12 @@ abstract readonly class StepByStep implements CanExecuteIteratively
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
         }
-
-        $finalState = $this->handleNoNextStep($state);
-        return match (true) {
-            $finalState === $state => $state,
-            default => $finalState,
-        };
+        return $this->onNoNextStep($state);
     }
 
     /**
      * @param TState $state
-     * @return Generator<TState>
+     * @return iterable<TState>
      */
     public function iterator(object $state): iterable {
         while ($this->hasNextStep($state)) {
@@ -66,9 +57,55 @@ abstract readonly class StepByStep implements CanExecuteIteratively
             yield $state;
         }
 
-        $finalState = $this->handleNoNextStep($state);
-        if ($finalState !== $state) {
+        $finalState = $this->onNoNextStep($state);
+        if ($this->isStateChanged($state, $finalState)) {
             yield $finalState;
+        }
+    }
+
+    // INTERNAL ////////////////////////////////////////////
+
+    protected function hasProcessors(): bool {
+        return $this->processors !== null;
+    }
+
+    /**
+     * Determine if the state has changed.
+     *
+     * Default implementation assumes state objects are immutable. Override it if not the case.
+     * @param TState $priorState
+     * @param TState $newState
+     */
+    protected function isStateChanged(object $priorState, object $newState): bool {
+        return $priorState !== $newState;
+    }
+
+    /**
+     * @param TState $state
+     * @return TState
+     */
+    protected function performThroughProcessors(object $state): object {
+        try {
+            return $this->processors->apply(
+                $state,
+                fn(object $state) => $this->performStep($state)
+            );
+        } catch (Throwable $error) {
+            return $this->onFailure($error, $state);
+        }
+    }
+
+    /**
+     * @param TState $state
+     * @return TState
+     */
+    protected function performStep(object $state): object {
+        try {
+            $nextStep = $this->makeNextStep($state);
+            $nextState = $this->applyStep(state: $state, nextStep: $nextStep);
+            return $this->onStepCompleted($nextState);
+        } catch (Throwable $error) {
+            return $this->onFailure($error, $state);
         }
     }
 
@@ -80,19 +117,6 @@ abstract readonly class StepByStep implements CanExecuteIteratively
     abstract protected function canContinue(object $state): bool;
 
     /**
-     * @param TStep $nextStep
-     * @param TState $state
-     * @return TState
-     */
-    abstract protected function updateState(object $nextStep, object $state) : object;
-
-    /**
-     * @param TState $state
-     * @return TState
-     */
-    abstract protected function handleFailure(Throwable $error, object $state) : object;
-
-    /**
      * @param TState $state
      * @return TStep
      */
@@ -100,7 +124,26 @@ abstract readonly class StepByStep implements CanExecuteIteratively
 
     /**
      * @param TState $state
+     * @param TStep $nextStep
      * @return TState
      */
-    abstract protected function handleNoNextStep(object $state) : object;
+    abstract protected function applyStep(object $state, object $nextStep): object;
+
+    /**
+     * @param TState $state
+     * @return TState
+     */
+    abstract protected function onNoNextStep(object $state) : object;
+
+    /**
+     * @param TState $state
+     * @return TState
+     */
+    abstract protected function onStepCompleted(object $state): object;
+
+    /**
+     * @param TState $state
+     * @return TState
+     */
+    abstract protected function onFailure(Throwable $error, object $state) : object;
 }

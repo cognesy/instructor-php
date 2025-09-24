@@ -18,29 +18,29 @@ final class AppendStepMessages implements CanProcessAnyState
     }
 
     public function process(object $state, ?callable $next = null): object {
-        assert($state instanceof HasSteps);
-        $currentStep = $state->currentStep();
+        $newState = $next ? $next($state) : $state;
+
+        assert($newState instanceof HasSteps);
+        $currentStep = $newState->currentStep();
 
         if ($currentStep === null) {
-            return $next ? $next($state) : $state;
+            return $newState;
         }
 
-        assert($state instanceof HasMessageStore);
+        assert($newState instanceof HasMessageStore);
 
         // Only append the output message from the step, not all messages
         // This prevents duplication of input messages that are already in the state
         if (!($currentStep instanceof HasStepMessages)) {
-            return $next ? $next($state) : $state;
+            return $newState;
         }
 
         $outputMessages = $currentStep->outputMessages();
         if ($outputMessages->isEmpty()) {
-            return $next ? $next($state) : $state;
+            return $newState;
         }
 
-        $newMessages = $state->messages()->appendMessages($outputMessages);
-        $newState = $state->withMessages($newMessages);
-
-        return $next ? $next($newState) : $newState;
+        $newMessages = $newState->messages()->appendMessages($outputMessages);
+        return $newState->withMessages($newMessages);
     }
 }

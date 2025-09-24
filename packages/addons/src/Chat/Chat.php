@@ -12,9 +12,9 @@ use Cognesy\Addons\Chat\Events\ChatCompleted;
 use Cognesy\Addons\Chat\Events\ChatParticipantSelected;
 use Cognesy\Addons\Chat\Events\ChatStateUpdated;
 use Cognesy\Addons\Chat\Events\ChatStepCompleted;
+use Cognesy\Addons\Chat\Events\ChatStepFailed;
 use Cognesy\Addons\Chat\Events\ChatStepStarting;
 use Cognesy\Addons\Chat\Exceptions\ChatException;
-use Cognesy\Addons\Chat\Exceptions\ChatStepFailed;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\StepByStep;
@@ -32,32 +32,43 @@ use Throwable;
  *
  * @extends StepByStep<ChatState, ChatStep>
  */
-final readonly class Chat extends StepByStep
+final class Chat extends StepByStep
 {
-    private Participants $participants;
-    private CanChooseNextParticipant $nextParticipantSelector;
-    private CanApplyProcessors $stepProcessors;
-    private ContinuationCriteria $continuationCriteria;
-    private CanHandleEvents $events;
+    private readonly Participants $participants;
+    private readonly CanChooseNextParticipant $nextParticipantSelector;
+    private readonly ContinuationCriteria $continuationCriteria;
+    private readonly CanHandleEvents $events;
 
     /**
-     * @param CanApplyProcessors<ChatState> $stepProcessors
+     * @param CanApplyProcessors<ChatState> $processors
      */
     public function __construct(
         Participants $participants,
         CanChooseNextParticipant $nextParticipantSelector,
-        CanApplyProcessors $stepProcessors,
+        CanApplyProcessors $processors,
         ContinuationCriteria $continuationCriteria,
         ?CanHandleEvents $events = null,
     ) {
+        parent::__construct($processors);
+
         $this->participants = $participants;
         $this->nextParticipantSelector = $nextParticipantSelector;
-        $this->stepProcessors = $stepProcessors;
         $this->continuationCriteria = $continuationCriteria;
         $this->events = EventBusResolver::using($events);
     }
 
     // INTERNAL ////////////////////////////////////////////
+
+    protected function selectParticipant(ChatState $state): CanParticipateInChat {
+        $participant = $this->nextParticipantSelector->nextParticipant($state, $this->participants);
+        $this->emitChatParticipantSelected($participant, $state);
+        return $participant;
+    }
+
+    protected function canContinue(object $state): bool {
+        assert($state instanceof ChatState);
+        return $this->continuationCriteria->canContinue($state) ?? false;
+    }
 
     protected function makeNextStep(object $state): ChatStep {
         assert($state instanceof ChatState);
@@ -67,26 +78,29 @@ final readonly class Chat extends StepByStep
         return $participant->act($state);
     }
 
-    protected function updateState($nextStep, object $state): ChatState {
+    protected function applyStep(object $state, object $nextStep): ChatState {
         assert($state instanceof ChatState);
         assert($nextStep instanceof ChatStep);
-
         $newState = $state
             ->withAddedStep($nextStep)
             ->withCurrentStep($nextStep);
-        $newState = $this->stepProcessors->apply($newState);
-        $this->emitChatStateUpdated($newState, $state);
-        $this->emitChatTurnCompleted($newState);
+        $this->emitChatStateUpdated($newState);
         return $newState;
     }
 
-    protected function handleNoNextStep(object $state): ChatState {
+    protected function onNoNextStep(object $state): ChatState {
         assert($state instanceof ChatState);
         $this->emitChatCompleted($state);
         return $state;
     }
 
-    protected function handleFailure(Throwable $error, object $state): ChatState {
+    protected function onStepCompleted(object $state): ChatState {
+        assert($state instanceof ChatState);
+        $this->emitChatTurnCompleted($state);
+        return $state;
+    }
+
+    protected function onFailure(Throwable $error, object $state): ChatState {
         assert($state instanceof ChatState);
         $failure = $error instanceof ChatException
             ? $error
@@ -96,20 +110,12 @@ final readonly class Chat extends StepByStep
             participantName: $state->currentStep()?->participantName() ?? '?',
             inputMessages: $state->messages(),
         );
-        $newState = $this->updateState($failureStep, $state);
-        $this->emitChatTurnFailed($newState, $failure);
-        return $newState;
-    }
-
-    protected function canContinue(object $state): bool {
-        assert($state instanceof ChatState);
-        return $this->continuationCriteria->canContinue($state) ?? false;
-    }
-
-    protected function selectParticipant(ChatState $state): CanParticipateInChat {
-        $participant = $this->nextParticipantSelector->nextParticipant($state, $this->participants);
-        $this->emitChatParticipantSelected($participant, $state);
-        return $participant;
+        $failedState = $this->applyStep(
+            state: $state,
+            nextStep: $failureStep
+        );
+        $this->emitChatTurnFailed($failedState, $failure);
+        return $failedState;
     }
 
     // MUTATORS ///////////////////////////////////////////////////
@@ -117,14 +123,14 @@ final readonly class Chat extends StepByStep
     public function with(
         ?Participants $participants = null,
         ?CanChooseNextParticipant $nextParticipantSelector = null,
-        ?CanApplyProcessors $stepProcessors = null,
+        ?CanApplyProcessors $processors = null,
         ?ContinuationCriteria $continuationCriteria = null,
         ?CanHandleEvents $events = null,
     ): Chat {
         return new Chat(
             participants: $participants ?? $this->participants,
             nextParticipantSelector: $nextParticipantSelector ?? $this->nextParticipantSelector,
-            stepProcessors: $stepProcessors ?? $this->stepProcessors,
+            processors: $processors ?? $this->processors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             events: EventBusResolver::using($events) ?? $this->events,
         );
@@ -138,8 +144,8 @@ final readonly class Chat extends StepByStep
         return $this->with(nextParticipantSelector: $selector);
     }
 
-    public function withStepProcessors(CanApplyProcessors $processors): Chat {
-        return $this->with(stepProcessors: $processors);
+    public function withProcessors(CanApplyProcessors $processors): Chat {
+        return $this->with(processors: $processors);
     }
 
     public function withContinuationCriteria(ContinuationCriteria $criteria): Chat {
@@ -152,11 +158,10 @@ final readonly class Chat extends StepByStep
 
     // EVENTS ////////////////////////////////////////////
 
-    private function emitChatStateUpdated(ChatState $newState, ChatState $state): void {
+    private function emitChatStateUpdated(ChatState $state): void {
         $this->events->dispatch(new ChatStateUpdated([
-            'newState' => $newState->toArray(),
-            'oldState' => $state->toArray(),
-            'step' => $newState->currentStep()?->toArray() ?? [],
+            'state' => $state->toArray(),
+            'step' => $state->currentStep()?->toArray() ?? [],
         ]));
     }
 

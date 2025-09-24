@@ -19,17 +19,17 @@ final class AccumulateTokenUsage implements CanProcessAnyState
     }
 
     public function process(object $state, ?callable $next = null): object {
-        assert($state instanceof HasSteps);
-        $step = $state->currentStep();
+        $newState = $next ? $next($state) : $state;
 
-        assert($state instanceof HasUsage);
+        assert($newState instanceof HasSteps);
+        $step = $newState->currentStep();
+
+        assert($newState instanceof HasUsage);
         $usage = Usage::none();
         if ($step !== null && $step instanceof HasStepUsage) {
             $usage = $step->usage();
         }
 
-        $newState = $state->withAccumulatedUsage($usage);
-
-        return $next ? $next($newState) : $newState;
+        return $newState->withAccumulatedUsage($usage);
     }
 }

@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Chat\Selectors;
+namespace Cognesy\Addons\Chat\Selectors\LLMSelector;
 
 use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ParticipantChoice;
 use Cognesy\Addons\Chat\Exceptions\NoParticipantsException;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Result\Result;

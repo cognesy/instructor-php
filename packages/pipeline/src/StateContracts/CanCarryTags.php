@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Utils\TagMap\Contracts;
+namespace Cognesy\Pipeline\StateContracts;
 
+use Cognesy\Utils\TagMap\Contracts\TagInterface;
+use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
 use Cognesy\Utils\TagMap\TagQuery;
 
 interface CanCarryTags

@@ -52,6 +52,8 @@ final class ExternalParticipant implements CanParticipateInChat
         );
     }
 
+    // INTERNAL //////////////////////////////////////////////////////////
+
     private function makeProvider(callable|CanProvideMessage|null $provider) : CanRespondWithMessages {
         return match(true) {
             $provider instanceof CanRespondWithMessages => $provider,

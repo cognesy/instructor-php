@@ -67,7 +67,7 @@ $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get
 // Get the vector values from the first result
 $vector = $result->first()->values();
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
-// @doctest id="1f06"
+// @doctest id="3b94"
 ```
 
 
@@ -90,7 +90,7 @@ $embeddings->withDebugPreset('verbose');              // Debug configuration
 // Driver management
 $embeddings->withDriver($customDriver);               // Custom vectorization driver
 $embeddings->withProvider($customProvider);           // Custom provider instance
-// @doctest id="f819"
+// @doctest id="1205"
 ```
 
 
@@ -114,7 +114,7 @@ $embeddings->with(
     options: ['dimensions' => 1536],
     model: 'text-embedding-3-large'
 );
-// @doctest id="2894"
+// @doctest id="04af"
 ```
 
 
@@ -134,7 +134,7 @@ $values = $embeddings->first()->values();           // Array of floats
 // Advanced response handling
 $pending = $embeddings->create();                    // PendingEmbeddings for custom handling
 $response = $pending->get();                         // Execute and get response
-// @doctest id="b6b4"
+// @doctest id="99c0"
 ```
 
 
@@ -160,7 +160,7 @@ $cohereVectors = (new Embeddings())
 
 echo "OpenAI dimensions: " . count($openaiVectors[0]->values()) . "\n";
 echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
-// @doctest id="7c6c"
+// @doctest id="4c66"
 ```
 
 
@@ -191,7 +191,7 @@ $embeddings = (new Embeddings())
 
 $vector = $embeddings->first()->values();
 echo "Generated embedding with " . count($vector) . " dimensions\n";
-// @doctest id="99a9"
+// @doctest id="5ecd"
 ```
 
 
@@ -207,5 +207,5 @@ Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
 Embeddings::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomEmbeddingsDriver($config, $httpClient);
 });
-// @doctest id="7f92"
+// @doctest id="6307"
 ```

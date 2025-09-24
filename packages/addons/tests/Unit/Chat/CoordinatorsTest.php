@@ -4,7 +4,7 @@ use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
-use Cognesy\Addons\Chat\Selectors\LLMBasedCoordinator;
+use Cognesy\Addons\Chat\Selectors\LLMSelector\LLMBasedCoordinator;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;

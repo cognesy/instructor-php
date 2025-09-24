@@ -247,7 +247,7 @@ Before invoking a tool, `Tools` performs a pragmatic check against the tool’s 
 ## Advanced
 
 - Options: `ToolUseOptions` is an immutable container for future policy/config parameters.
-- Typed Collections: `StepProcessors` and `ContinuationCriteria` collections keep orchestration readable.
+- Typed Collections: `StateProcessors` and `ContinuationCriteria` collections keep orchestration readable.
 - Observability: `ToolUseObserver` (step-level) and `ToolsObserver` (tool-level).
 - Monadic errors: failures become `Result::failure(...)` in `ToolExecution` and are surfaced as error messages to the LLM.
 

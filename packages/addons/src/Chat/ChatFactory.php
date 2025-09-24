@@ -26,13 +26,13 @@ class ChatFactory
     public static function default(
         Participants $participants,
         ?ContinuationCriteria $continuationCriteria = null,
-        ?CanApplyProcessors $stepProcessors = null,
+        ?CanApplyProcessors $processors = null,
         ?CanHandleEvents $events = null,
     ): Chat {
         return new Chat(
             participants: $participants,
             nextParticipantSelector: new RoundRobinSelector(),
-            stepProcessors: $stepProcessors ?? new StateProcessors(
+            processors: $processors ?? new StateProcessors(
                 new AppendStepMessages(),
                 new AccumulateTokenUsage(),
             ),
