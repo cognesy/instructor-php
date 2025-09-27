@@ -22,6 +22,7 @@ use Cognesy\Addons\ToolUse\Exceptions\ToolUseException;
 use Cognesy\Addons\ToolUse\Exceptions\ToolUseFailed;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Traits\HandlesEvents;
 use Throwable;
 
 /**
@@ -34,13 +35,14 @@ use Throwable;
  *
  * @extends StepByStep<ToolUseState, ToolUseStep>
  */
-final class ToolUse extends StepByStep
+class ToolUse extends StepByStep
 {
+    use HandlesEvents;
+
     private readonly Tools $tools;
     private readonly ToolExecutor $toolExecutor;
     private readonly CanUseTools $driver;
     private readonly ContinuationCriteria $continuationCriteria;
-    private readonly CanHandleEvents $events;
 
     public function __construct(
         Tools $tools,

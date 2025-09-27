@@ -27,7 +27,7 @@ enum Label : string {
 class SinglePrediction {
     public Label $classLabel;
 }
-// @doctest id="4e3a"
+// @doctest id="9257"
 ```
 
 
@@ -52,7 +52,7 @@ function classify(string $data) : SinglePrediction {
         model: "gpt-3.5-turbo-0613",
     )->get();
 }
-// @doctest id="5faf"
+// @doctest id="c525"
 ```
 
 
@@ -66,7 +66,7 @@ Let's run an example to see if it correctly identifies a spam message.
 // Test single-label classification
 $prediction = classify("Hello there I'm a Nigerian prince and I want to give you money");
 assert($prediction->classLabel == Label::SPAM);
-// @doctest id="db1f"
+// @doctest id="0b2d"
 ```
 
 
@@ -93,7 +93,7 @@ class Ticket {
     /** @var Label[] */
     public array $ticketLabels = [];
 }
-// @doctest id="e99d"
+// @doctest id="6e3a"
 ```
 
 
@@ -116,7 +116,7 @@ function multi_classify(string $data) : Ticket {
         model: "gpt-3.5-turbo-0613",
     )->get();
 }
-// @doctest id="73e0"
+// @doctest id="4626"
 ```
 
 ### Testing and Evaluation
@@ -131,5 +131,5 @@ $prediction = multi_classify($ticket);
 
 assert(in_array(Label::TECH_ISSUE, $prediction->classLabels));
 assert(in_array(Label::BILLING, $prediction->classLabels));
-// @doctest id="ea5c"
+// @doctest id="50b3"
 ```

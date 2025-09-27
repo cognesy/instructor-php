@@ -20,7 +20,7 @@ trait HandlesMessageStore
         return $this->store;
     }
 
-    public function withStore(MessageStore $store): static {
+    public function withMessageStore(MessageStore $store): static {
         return $this->with(store: $store);
     }
 

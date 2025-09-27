@@ -9,6 +9,6 @@ interface HasMessageStore
 {
     public function messages(): Messages;
     public function store(): MessageStore;
-    public function withStore(MessageStore $store): static;
+    public function withMessageStore(MessageStore $store): static;
     public function withMessages(Messages $messages): static;
 }

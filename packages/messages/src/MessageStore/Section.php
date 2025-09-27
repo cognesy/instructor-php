@@ -95,4 +95,8 @@ final readonly class Section
         $section = $section->withMessages($this->messages()->withoutEmptyMessages());
         return $section;
     }
+
+    public function toString(string $separator = "\n"): string {
+        return $this->messages()->toString($separator);
+    }
 }

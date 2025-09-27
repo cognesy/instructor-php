@@ -20,6 +20,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Traits\HandlesEvents;
 use Throwable;
 
 /**
@@ -32,12 +33,13 @@ use Throwable;
  *
  * @extends StepByStep<ChatState, ChatStep>
  */
-final class Chat extends StepByStep
+class Chat extends StepByStep
 {
+    use HandlesEvents;
+
     private readonly Participants $participants;
     private readonly CanChooseNextParticipant $nextParticipantSelector;
     private readonly ContinuationCriteria $continuationCriteria;
-    private readonly CanHandleEvents $events;
 
     /**
      * @param CanApplyProcessors<ChatState> $processors
@@ -101,6 +103,7 @@ final class Chat extends StepByStep
     }
 
     protected function onFailure(Throwable $error, object $state): ChatState {
+throw $error;
         assert($state instanceof ChatState);
         $failure = $error instanceof ChatException
             ? $error

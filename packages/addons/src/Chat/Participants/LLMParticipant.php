@@ -8,7 +8,7 @@ use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Events\ChatInferenceRequested;
 use Cognesy\Addons\Chat\Events\ChatInferenceResponseReceived;
 use Cognesy\Addons\StepByStep\MessageCompilation\CanCompileMessages;
-use Cognesy\Addons\StepByStep\MessageCompilation\Compilers\AllSections;
+use Cognesy\Addons\StepByStep\MessageCompilation\Compilers\SelectedSections;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Enums\MessageRole;
@@ -33,7 +33,7 @@ final readonly class LLMParticipant implements CanParticipateInChat
         ?CanCompileMessages $compiler = null,
         ?CanHandleEvents $events = null,
     ) {
-        $this->compiler = $compiler ?? new AllSections();
+        $this->compiler = $compiler ?? new SelectedSections(['summary', 'buffer', 'messages']);
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
