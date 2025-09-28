@@ -250,6 +250,7 @@ class ResponseModelFactory
             toolName: $this->config->toolName(),
             toolDescription: $this->config->toolDescription(),
             useObjectReferences: $this->config->useObjectReferences(),
+            config: $this->config,
         );
     }
 }

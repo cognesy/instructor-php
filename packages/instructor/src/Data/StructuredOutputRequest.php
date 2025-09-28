@@ -5,8 +5,6 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
@@ -14,6 +12,7 @@ class StructuredOutputRequest
 {
     public readonly string $id;
     public readonly DateTimeImmutable $createdAt;
+    public readonly DateTimeImmutable $updatedAt;
 
     protected Messages $messages;
     protected string $model = '';
@@ -24,6 +23,7 @@ class StructuredOutputRequest
     protected array $options = [];
     protected CachedContext $cachedContext;
     protected string|array|object $requestedSchema = [];
+
     protected ?ResponseModel $responseModel = null;
     protected StructuredOutputConfig $config;
 
@@ -37,14 +37,14 @@ class StructuredOutputRequest
         ?string        $model = null,
         ?array         $options = null,
         ?CachedContext $cachedContext = null,
-        ?StructuredOutputConfig $config = null,
 
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
-        ?StructuredOutputAttempts $responseAttempts = null,
+        ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
         $this->id = $id ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->updatedAt = $updatedAt ?? $this->createdAt;
 
         $this->messages = Messages::fromAny($messages);
         $this->requestedSchema = $requestedSchema;
@@ -56,10 +56,7 @@ class StructuredOutputRequest
         $this->system = $system ?: '';
         $this->model = $model ?: '';
 
-        $this->config = $config;
-
         $this->cachedContext = $cachedContext ?: new CachedContext();
-        $this->responseAttempts = $responseAttempts ?: new StructuredOutputAttempts();
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -100,12 +97,8 @@ class StructuredOutputRequest
         return $this->model;
     }
 
-    public function config() : StructuredOutputConfig {
-        return $this->config;
-    }
-
-    public function mode() : OutputMode {
-        return $this->config->outputMode();
+    public function requestedSchema() : string|array|object {
+        return $this->requestedSchema;
     }
 
     // MUTATORS /////////////////////////////////////////////////
@@ -120,7 +113,6 @@ class StructuredOutputRequest
         ?string        $model = null,
         ?array         $options = null,
         ?CachedContext $cachedContext = null,
-        ?StructuredOutputConfig $config = null,
     ) : static {
         return new static(
             messages: $messages ?? $this->messages,
@@ -132,7 +124,9 @@ class StructuredOutputRequest
             model: $model ?? $this->model,
             options: $options ?? $this->options,
             cachedContext: $cachedContext ?? $this->cachedContext,
-            config: $config ?? $this->config,
+            id: $this->id,
+            createdAt: $this->createdAt,
+            updatedAt: new DateTimeImmutable(),
         );
     }
 
@@ -176,150 +170,21 @@ class StructuredOutputRequest
         return $this->with(cachedContext: $cachedContext);
     }
 
-    public function withConfig(StructuredOutputConfig $config) : static {
-        return $this->with(config: $config);
-    }
-
-    // RETRIES //////////////////////////////////////////////////
-
-    private StructuredOutputAttempts $responseAttempts;
-
-    public function maxRetries(): int {
-        return $this->config->maxRetries();
-    }
-
-    public function response(): StructuredOutputAttempt {
-        return $this->responseAttempts->response();
-    }
-
-    public function attempts(): array {
-        return $this->responseAttempts->attempts();
-    }
-
-    public function hasLastResponseFailed(): bool {
-        return $this->responseAttempts->hasLastResponseFailed();
-    }
-
-    public function lastFailedResponse(): ?StructuredOutputAttempt {
-        return $this->responseAttempts->lastFailedResponse();
-    }
-
-    public function hasResponse(): bool {
-        return $this->responseAttempts->hasResponse();
-    }
-
-    public function hasAttempts(): bool {
-        return $this->responseAttempts->hasAttempts();
-    }
-
-    public function hasFailures(): bool {
-        return $this->responseAttempts->hasFailures();
-    }
-
-    public function setResponse(
-        array $messages,
-        InferenceResponse $inferenceResponse,
-        array $partialInferenceResponses = [],
-        mixed $returnedValue = null,
-    ) {
-        $this->responseAttempts->setResponse($messages, $inferenceResponse, $partialInferenceResponses, $returnedValue);
-    }
-
-    public function addFailedResponse(
-        array $messages,
-        InferenceResponse $inferenceResponse,
-        array $partialInferenceResponses = [],
-        array $errors = [],
-    ) {
-        $this->responseAttempts->addFailedResponse($messages, $inferenceResponse, $partialInferenceResponses, $errors);
-    }
-
-    // SCHEMA ///////////////////////////////////////////////////
-
-    public function responseModel() : ?ResponseModel {
-        return $this->responseModel;
-    }
-
-    public function requestedSchema() : string|array|object {
-        return $this->requestedSchema;
-    }
-
-    public function toolName() : string {
-        return $this->responseModel
-            ? $this->responseModel->toolName()
-            : $this->config->toolName();
-    }
-
-    public function toolDescription() : string {
-        return $this->responseModel
-            ? $this->responseModel->toolDescription()
-            : $this->config->toolDescription();
-    }
-
-    public function responseFormat() : array {
-        return match($this->mode()) {
-            OutputMode::Json => [
-                'type' => 'json_object',
-                'schema' => $this->jsonSchema(),
-            ],
-            OutputMode::JsonSchema => [
-                'type' => 'json_schema',
-                'description' => $this->toolDescription(),
-                'json_schema' => [
-                    'name' => $this->schemaName(),
-                    'schema' => $this->jsonSchema(),
-                    'strict' => true,
-                ],
-            ],
-            default => []
-        };
-    }
-
-    public function jsonSchema() : ?array {
-        return $this->responseModel?->toJsonSchema();
-    }
-
-    public function toolCallSchema() : ?array {
-        return match($this->mode()) {
-            OutputMode::Tools => $this->responseModel?->toolCallSchema(),
-            default => [],
-        };
-    }
-
-    public function toolChoice() : string|array {
-        return match($this->mode()) {
-            OutputMode::Tools => [
-                'type' => 'function',
-                'function' => [
-                    'name' => ($this->toolName() ?: 'extract_data'),
-                ]
-            ],
-            default => [],
-        };
-    }
-
-    public function schemaName() : string {
-        return $this->responseModel?->schemaName() ?? $this->config->schemaName() ?? 'default_schema';
-    }
-
     // SERIALIZATION ////////////////////////////////////////////
 
     public function toArray() : array {
         return [
             'id' => $this->id,
             'createdAt' => $this->createdAt->format(DATE_ATOM),
+            'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'messages' => $this->messages->toArray(),
-            'responseModel' => $this->responseModel,
             'system' => $this->system,
             'prompt' => $this->prompt,
             'examples' => $this->examples,
             'model' => $this->model,
             'options' => $this->options,
-            'mode' => $this->mode(),
             'cachedContext' => $this->cachedContext?->toArray() ?? [],
-            'config' => $this->config->toArray(),
             'requestedSchema' => $this->requestedSchema,
-            'responseAttempts' => $this->responseAttempts?->toArray() ?? [],
         ];
     }
 
@@ -327,43 +192,15 @@ class StructuredOutputRequest
         return new self(
             messages: $data['messages'] ?? null,
             requestedSchema: $data['requestedSchema'] ?? null,
-            responseModel: $data['responseModel'] ?? null,
             system: $data['system'] ?? null,
             prompt: $data['prompt'] ?? null,
             examples: $data['examples'] ?? null,
             model: $data['model'] ?? null,
             options: $data['options'] ?? null,
             cachedContext: $data['cachedContext'] ?? null,
-            config: $data['config'] ?? null,
             id: $data['id'] ?? null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
-            responseAttempts: $data['responseAttempts'] ?? null
+            updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );
-    }
-
-    public function clone() : self {
-        return new self(
-            messages: $this->messages->clone(),
-            requestedSchema: is_object($this->requestedSchema)
-                ? clone $this->requestedSchema
-                : $this->requestedSchema,
-            responseModel: $this->responseModel->clone(),
-            system: $this->system,
-            prompt: $this->prompt,
-            examples: $this->cloneExamples(),
-            model: $this->model,
-            options: $this->options,
-            cachedContext: $this->cachedContext->clone(),
-            config: $this->config->clone(),
-            id: $this->id,
-            createdAt: $this->createdAt,
-            responseAttempts: $this->responseAttempts?->clone(),
-        );
-    }
-
-    private function cloneExamples() {
-        return is_array($this->examples)
-            ? array_map(fn($e) => $e instanceof Example ? $e->clone() : $e, $this->examples)
-            : $this->examples;
     }
 }

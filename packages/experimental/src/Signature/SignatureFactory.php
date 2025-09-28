@@ -5,9 +5,7 @@ namespace Cognesy\Experimental\Signature;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Experimental\Signature\Factories\SignatureFromCallable;
 use Cognesy\Experimental\Signature\Factories\SignatureFromClassMetadata;
-use Cognesy\Experimental\Signature\Factories\SignatureFromRequest;
 use Cognesy\Experimental\Signature\Factories\SignatureFromString;
-use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Reflection\ClassInfo;
 
@@ -42,10 +40,6 @@ class SignatureFactory
         string $description = '',
     ): Signature {
         return (new SignatureFromClassMetadata)->make($class, $description);
-    }
-
-    static public function fromRequest(StructuredOutputRequest $request): Signature {
-        return (new SignatureFromRequest)->make($request);
     }
 
     static public function fromStructures(

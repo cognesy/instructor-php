@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
@@ -9,6 +11,8 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
 {
+    private mixed $instance;
+
     private string $class;
     private Schema $schema;
     private array $jsonSchema;
@@ -16,7 +20,9 @@ class ResponseModel implements CanProvideJsonSchema
     private string $toolDescription;
     private string $schemaName;
     private string $schemaDescription;
-    private bool $useObjectReferences = false;
+    private bool $useObjectReferences;
+
+    private StructuredOutputConfig $config;
 
     public function __construct(
         string $class,
@@ -28,6 +34,7 @@ class ResponseModel implements CanProvideJsonSchema
         string $toolName,
         string $toolDescription,
         bool   $useObjectReferences = false,
+        ?StructuredOutputConfig $config = null,
     ) {
         $this->class = $class;
         $this->instance = $instance;
@@ -38,7 +45,10 @@ class ResponseModel implements CanProvideJsonSchema
         $this->toolName = $toolName;
         $this->toolDescription = $toolDescription;
         $this->useObjectReferences = $useObjectReferences;
+        $this->config = $config ?? new StructuredOutputConfig();
     }
+
+    // ACCESSORS ///////////////////////////////////////////////////////
 
     public function instanceClass() : string {
         return $this->class;
@@ -48,48 +58,12 @@ class ResponseModel implements CanProvideJsonSchema
         return $this->schema->typeDetails->class;
     }
 
-    public function toArray() : array {
-        return [
-            'class' => $this->class,
-            'instance' => get_object_vars($this->instance),
-            'schema' => $this->schema->toArray(),
-            'jsonSchema' => $this->jsonSchema,
-            'schemaName' => $this->schemaName,
-            'schemaDescription' => $this->schemaDescription,
-        ];
-    }
-
-    public function clone() : self {
-        return new self(
-            class: $this->class,
-            instance: clone $this->instance,
-            schema: $this->schema->clone(),
-            jsonSchema: $this->jsonSchema,
-            schemaName: $this->schemaName,
-            schemaDescription: $this->schemaDescription,
-            toolName: $this->toolName,
-            toolDescription: $this->toolDescription,
-            useObjectReferences: $this->useObjectReferences,
-        );
-    }
-
-    // HANDLES INSTANCE ////////////////////////////////////////////////
-
-    private mixed $instance;
-
     public function instance() : mixed {
         return $this->instance;
     }
 
-    public function withInstance(mixed $instance) : static {
-        $this->instance = $instance;
-        return $this;
-    }
-
-    // HANDLES SCHEMA ////////////////////////////////////////////////
-
     public function schemaName() : string {
-        return $this->schemaName ?? $this->schema()->name();
+        return $this->schemaName ?? $this->schema()->name()  ?? 'default_schema';
     }
 
     public function schema() : Schema {
@@ -113,6 +87,52 @@ class ResponseModel implements CanProvideJsonSchema
         return $values;
     }
 
+    public function toolName() : string {
+        return $this->toolName ?? $this->config->toolName() ?? 'extract_data';
+    }
+
+    public function toolDescription() : string {
+        return $this->responseModel ?? $this->config->toolDescription() ?? '';
+    }
+
+    // MUTATORS ////////////////////////////////////////////////////////
+
+    public function with(
+        ?OutputMode $mode = null,
+        mixed $instance = null,
+        ?string $toolName = null,
+        ?string $toolDescription = null,
+    ) : static {
+        return (new static(
+            class: $this->class,
+            instance: $instance ?? $this->instance,
+            schema: $this->schema,
+            jsonSchema: $this->jsonSchema,
+            schemaName: $this->schemaName,
+            schemaDescription: $this->schemaDescription,
+            toolName: $toolName ?? $this->toolName,
+            toolDescription: $toolDescription ?? $this->toolDescription,
+            useObjectReferences: $this->useObjectReferences,
+            config: $this->config,
+        ));
+    }
+
+    public function withOutputMode(OutputMode $mode) : static {
+        return $this->with(mode: $mode);
+    }
+
+    public function withInstance(mixed $instance) : static {
+        return $this->with(instance: $instance);
+    }
+
+    public function withToolName(string $toolName) : static {
+        return $this->with(toolName: $toolName);
+    }
+
+    public function withToolDescription(string $toolDescription) : static {
+        return $this->with(toolDescription: $toolDescription);
+    }
+
     /** @param array<string, mixed> $values */
     public function setPropertyValues(array $values) : void {
         foreach ($values as $name => $value) {
@@ -122,32 +142,71 @@ class ResponseModel implements CanProvideJsonSchema
         }
     }
 
+    // CONVERSION //////////////////////////////////////////////////////
+
     public function toJsonSchema() : array {
         // TODO: this can be computed from schema
         return $this->jsonSchema;
     }
 
-    // HANDLES TOOL CALLS ////////////////////////////////////////////////
-
-    public function toolName() : string {
-        return $this->toolName;
+    public function jsonSchema() : ?array {
+        return $this->toJsonSchema();
     }
 
-    public function withToolName(string $toolName) : static {
-        $this->toolName = $toolName;
-        return $this;
+    public function toolCallSchema() : ?array {
+        return match($this->config->outputMode()) {
+            OutputMode::Tools => $this->makeToolCallSchema(),
+            default => [],
+        };
     }
 
-    public function toolDescription() : string {
-        return $this->toolDescription;
+    public function responseFormat() : array {
+        return match($this->config->outputMode()) {
+            OutputMode::Json => [
+                'type' => 'json_object',
+                'schema' => $this->jsonSchema(),
+            ],
+            OutputMode::JsonSchema => [
+                'type' => 'json_schema',
+                'description' => $this->toolDescription(),
+                'json_schema' => [
+                    'name' => $this->schemaName(),
+                    'schema' => $this->jsonSchema(),
+                    'strict' => true,
+                ],
+            ],
+            default => []
+        };
     }
 
-    public function withToolDescription(string $toolDescription) : static {
-        $this->toolDescription = $toolDescription;
-        return $this;
+    public function toolChoice() : string|array {
+        return match($this->config->outputMode()) {
+            OutputMode::Tools => [
+                'type' => 'function',
+                'function' => [
+                    'name' => ($this->toolName() ?: 'extract_data'),
+                ]
+            ],
+            default => [],
+        };
     }
 
-    public function toolCallSchema() : array {
+    // SERIALIZATION ///////////////////////////////////////////////////
+
+    public function toArray() : array {
+        return [
+            'class' => $this->class,
+            'instance' => get_object_vars($this->instance),
+            'schema' => $this->schema->toArray(),
+            'jsonSchema' => $this->jsonSchema,
+            'schemaName' => $this->schemaName,
+            'schemaDescription' => $this->schemaDescription,
+        ];
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////
+
+    private function makeToolCallSchema() : array {
         $schemaFactory = new SchemaFactory(useObjectReferences: $this->useObjectReferences);
         $toolCallBuilder = new ToolCallBuilder($schemaFactory);
 

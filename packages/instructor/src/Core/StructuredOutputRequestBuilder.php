@@ -2,18 +2,12 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\CachedContext;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Exception;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StructuredOutputRequestBuilder
 {
@@ -26,10 +20,8 @@ class StructuredOutputRequestBuilder
     private array $options = [];
     private CachedContext $cachedContext;
     private string|array|object $requestedSchema = [];
-    private ?ResponseModel $responseModel = null;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->messages = Messages::empty();
         $this->cachedContext = new CachedContext();
     }
@@ -136,7 +128,6 @@ class StructuredOutputRequestBuilder
     public function withRequest(StructuredOutputRequest $request): static {
         $this->messages = $request->messages();
         $this->requestedSchema = $request->requestedSchema();
-        $this->responseModel = $request->responseModel();
         $this->system = $request->system();
         $this->prompt = $request->prompt();
         $this->examples = $request->examples();
@@ -146,10 +137,7 @@ class StructuredOutputRequestBuilder
         return $this;
     }
 
-    public function createWith(
-        StructuredOutputConfig $config,
-        EventDispatcherInterface $events,
-    ) : StructuredOutputRequest {
+    public function create() : StructuredOutputRequest {
         if (empty($this->requestedSchema)) {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
@@ -157,41 +145,12 @@ class StructuredOutputRequestBuilder
         return new StructuredOutputRequest(
             messages: $this->messages,
             requestedSchema: $this->requestedSchema ?? [],
-            responseModel: $this->responseModel ?? $this->makeResponseModel(
-                $this->requestedSchema,
-                $config,
-                $events,
-            ),
             system: $this->system ?: null,
             prompt: $this->prompt ?: null,
             examples: $this->examples ?: null,
             model: $this->model ?? null,
             options: $this->options ?? null,
             cachedContext: $this->cachedContext,
-            config: $config,
         );
-    }
-
-    private function makeResponseModel(
-        string|array|object $requestedSchema,
-        StructuredOutputConfig $config,
-        EventDispatcherInterface $events,
-    ): ResponseModel {
-        $schemaFactory = new SchemaFactory(
-            useObjectReferences: $config->useObjectReferences(),
-            schemaConverter: new JsonSchemaToSchema(
-                defaultToolName: $config->toolName(),
-                defaultToolDescription: $config->toolDescription(),
-                defaultOutputClass: $config->outputClass(),
-            )
-        );
-        $toolCallBuilder = new ToolCallBuilder($schemaFactory);
-        $responseModelFactory = new ResponseModelFactory(
-            toolCallBuilder: $toolCallBuilder,
-            schemaFactory: $schemaFactory,
-            config: $config,
-            events: $events,
-        );
-        return $responseModelFactory->fromAny($requestedSchema);
     }
 }

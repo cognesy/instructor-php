@@ -8,6 +8,7 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Core\StructuredOutputExecutionBuilder;
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -26,6 +27,7 @@ class StructuredOutput
     use Traits\HandlesLLMProvider;
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
+    use Traits\HandlesExecutionBuilder;
     use Traits\HandlesRequestBuilder;
     use Traits\HandlesConfigBuilder;
 
@@ -47,6 +49,7 @@ class StructuredOutput
         $this->events = EventBusResolver::using($events);
         $this->configBuilder = new StructuredOutputConfigBuilder(configProvider: $configProvider);
         $this->requestBuilder = new StructuredOutputRequestBuilder();
+        $this->executionBuilder = new StructuredOutputExecutionBuilder($this->events);
         $this->llmProvider = LLMProvider::new(
             events: $this->events,
             configProvider: $configProvider,

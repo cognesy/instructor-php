@@ -7,6 +7,7 @@ use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\PendingStructuredOutput;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
@@ -57,17 +58,17 @@ trait HandlesInvocation
      */
     public function with(
         string|array|Message|Messages|null $messages = null,
-        string|array|object|null           $responseModel = null,
-        ?string                        $system = null,
-        ?string                        $prompt = null,
-        ?array                         $examples = null,
-        ?string                        $model = null,
-        ?int                           $maxRetries = null,
-        ?array                         $options = null,
-        ?string                        $toolName = null,
-        ?string                        $toolDescription = null,
-        ?string                        $retryPrompt = null,
-        ?OutputMode                    $mode = null,
+        string|array|object|null $responseModel = null,
+        ?string $system = null,
+        ?string $prompt = null,
+        ?array $examples = null,
+        ?string $model = null,
+        ?int $maxRetries = null,
+        ?array $options = null,
+        ?string $toolName = null,
+        ?string $toolDescription = null,
+        ?string $retryPrompt = null,
+        ?OutputMode $mode = null,
     ) : static {
         $this->requestBuilder->with(
             messages: $messages,
@@ -98,9 +99,10 @@ trait HandlesInvocation
      */
     public function create() : PendingStructuredOutput {
         $config = $this->configBuilder->create();
-        $request = $this->requestBuilder->createWith(
+        $request = $this->requestBuilder->create();
+        $execution = $this->executionBuilder->createWith(
+            request: $request,
             config: $config,
-            events: $this->events,
         );
 
         $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
@@ -133,7 +135,7 @@ trait HandlesInvocation
         }
 
         return new PendingStructuredOutput(
-            request: $request,
+            execution: $execution,
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,
             responseTransformer: $responseTransformer,

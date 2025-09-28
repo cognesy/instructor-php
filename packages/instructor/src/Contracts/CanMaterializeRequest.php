@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Data\StructuredOutputExecution;
 
 interface CanMaterializeRequest
 {
-    public function toMessages(StructuredOutputRequest $request): array;
+    public function toMessages(StructuredOutputExecution $execution): array;
 }

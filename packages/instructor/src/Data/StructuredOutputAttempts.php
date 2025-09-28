@@ -19,6 +19,8 @@ class StructuredOutputAttempts
         $this->failedResponses = $failedResponses;
     }
 
+    // ACCESSORS ////////////////////////////////////////////////////////////////
+
     public function response(): StructuredOutputAttempt {
         return $this->response;
     }
@@ -54,23 +56,39 @@ class StructuredOutputAttempts
         return count($this->failedResponses) > 0;
     }
 
-    public function setResponse(
-        array $messages,
-        InferenceResponse $inferenceResponse,
-        array $partialInferenceResponses = [],
-        mixed $returnedValue = null,
-    ) {
-        $this->response = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, [], $returnedValue);
+    public function attemptCount(): int {
+        return count($this->failedResponses) + ($this->hasResponse() ? 1 : 0);
     }
 
-    public function addFailedResponse(
+    // MUTATORS /////////////////////////////////////////////////////////////////
+
+    public function withNewFailedAttempt(
         array $messages,
         InferenceResponse $inferenceResponse,
         array $partialInferenceResponses = [],
         array $errors = [],
-    ) {
-        $this->failedResponses[] = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, $errors, null);
+    ) : self {
+        $failedResponses = $this->failedResponses;
+        $failedResponses[] = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, $errors, null);
+        return new self(
+            response: $this->response,
+            failedResponses: $failedResponses,
+        );
     }
+
+    public function withSuccessfulResponse(
+        array $messages,
+        InferenceResponse $inferenceResponse,
+        array $partialInferenceResponses = [],
+        mixed $returnedValue = null,
+    ) : self {
+        return new self(
+            response: new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, [], $returnedValue),
+            failedResponses: $this->failedResponses,
+        );
+    }
+
+    // SERIALIZATION ////////////////////////////////////////////////////////////
 
     public function toArray(): array {
         return [
@@ -87,12 +105,5 @@ class StructuredOutputAttempts
             ? array_map(fn($attemptData) => StructuredOutputAttempt::fromArray($attemptData), $data['failed_responses'])
             : [];
         return new self($response, $failedResponses);
-    }
-
-    public function clone(): self {
-        return new self(
-            $this->response ? $this->response->clone() : null,
-            array_map(fn($attempt) => $attempt->clone(), $this->failedResponses)
-        );
     }
 }

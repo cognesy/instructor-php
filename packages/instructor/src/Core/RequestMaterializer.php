@@ -5,6 +5,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
@@ -24,14 +25,16 @@ class RequestMaterializer implements CanMaterializeRequest
         $this->config = $config;
     }
 
-    public function toMessages(StructuredOutputRequest $request) : array {
+    public function toMessages(StructuredOutputExecution $execution) : array {
+        $request = $execution->request();
+
         $store = $this->mergeMessageStores(
-            $this->makeMessageStore($request),
+            $this->makeMessageStore($execution),
             $this->makeCachedMessageStore($request->cachedContext())
         );
 
         // Add retry messages if needed
-        $store = $this->addRetryMessages($request, $store);
+        $store = $this->addRetryMessages($execution, $store);
 
         // Add meta sections
         $output = $this
@@ -39,14 +42,16 @@ class RequestMaterializer implements CanMaterializeRequest
             ->select($this->config->chatStructure());
 
         $rendered = Template::arrowpipe()
-            ->with(['json_schema' => json_encode($this->makeJsonSchema($request->responseModel()))])
+            ->with(['json_schema' => json_encode($this->makeJsonSchema($execution->responseModel()))])
             ->renderMessages($output->toMessages());
 
         // Temporary safeguard to keep messages present; isolated for easy removal.
         return $this->ensureNonEmptyMessages($rendered, $request)->toArray();
     }
 
-    protected function makeMessageStore(StructuredOutputRequest $request) : MessageStore {
+    protected function makeMessageStore(StructuredOutputExecution $execution) : MessageStore {
+        $request = $execution->request();
+
         if ($this->isRequestEmpty($request)) {
             throw new Exception('Request cannot be empty - you have to provide content for processing.');
         }
@@ -55,7 +60,7 @@ class RequestMaterializer implements CanMaterializeRequest
             ->section('system')->appendMessages($this->makeSystem($messages, $request->system()))
             ->section('messages')->appendMessages($this->makeMessages($messages))
             ->section('prompt')->appendMessages($this->makePrompt($request->prompt()
-                ?: $this->config->prompt($request->mode())
+                ?: $this->config->prompt($execution->outputMode())
                 ?? ''
             ))
             ->section('examples')->setMessages($this->makeExamples($request->examples()));
@@ -142,14 +147,14 @@ class RequestMaterializer implements CanMaterializeRequest
         return $store;
     }
 
-    protected function addRetryMessages(StructuredOutputRequest $request, MessageStore $store) : MessageStore {
-        $failedResponse = $request->lastFailedResponse();
-        if (!$failedResponse || !$request->hasLastResponseFailed()) {
+    protected function addRetryMessages(StructuredOutputExecution $execution, MessageStore $store) : MessageStore {
+        $failedResponse = $execution->lastFailedResponse();
+        if (!$failedResponse || !$execution->hasLastResponseFailed()) {
             return $store;
         }
 
         $messages = [];
-        foreach($request->attempts() as $attempt) {
+        foreach($execution->attempts() as $attempt) {
             $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
             $retryFeedback = $this->config->retryPrompt()
                 . Arrays::flattenToString($attempt->errors(), "; ");

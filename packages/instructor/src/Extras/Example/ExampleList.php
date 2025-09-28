@@ -12,9 +12,17 @@ final readonly class ExampleList
         $this->examples = ArrayList::of(...$examples);
     }
 
+    // ACCESSORS /////////////////////////////////////////////////////
+
+    public function isEmpty() : bool {
+        return $this->examples->isEmpty();
+    }
+
     public function all(): array {
         return $this->examples->toArray();
     }
+
+    // SERIALIZATION /////////////////////////////////////////////////
 
     public function toArray(): array {
         return array_map(fn(Example $e) => $e->toArray(), $this->examples->toArray());
