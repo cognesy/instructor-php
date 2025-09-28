@@ -133,7 +133,7 @@ final class CachedMap implements ArrayAccess, IteratorAggregate, Countable
         return $this->cache;
     }
 
-    /* ---------- ArrayAccess ---------- */
+    // ARRAY ACCESS /////////////////////////////////////////
 
     public function offsetExists(mixed $offset): bool {
         return $this->isResolved($offset);
@@ -151,7 +151,7 @@ final class CachedMap implements ArrayAccess, IteratorAggregate, Countable
         $this->forget($offset);
     }
 
-    /* ---------- IteratorAggregate & Countable ---------- */
+    // ITERATOR AGGREGATE ///////////////////////////////////
 
     public function getIterator(): Traversable {
         yield from $this->cache;

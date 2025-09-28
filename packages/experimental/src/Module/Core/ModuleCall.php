@@ -13,8 +13,8 @@ use Throwable;
 class ModuleCall
 {
     protected array $inputs = [];
-    protected ?array $outputs = null;
     protected Closure $moduleCall;
+    protected ?array $outputs = null;
     protected array $errors = [];
 
     public function __construct(
@@ -91,8 +91,12 @@ class ModuleCall
     }
 
     public function result(): mixed {
+        $fields = $this->outputFields();
+        $outputs = $this->outputs();
+        $firstIndex = $fields[0] ?? null;
         return match(true) {
-            (count($this->outputFields()) == 1) => $this->outputs()[0],
+            is_null($firstIndex) => null,
+            (count($fields) == 1) => $outputs[$firstIndex],
             default => $this->outputs(),
         };
     }

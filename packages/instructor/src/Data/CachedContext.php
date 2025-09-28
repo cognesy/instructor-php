@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Messages;
 
-class CachedContext
+final readonly class CachedContext
 {
     private Messages $messages;
     private string $system;
@@ -28,6 +28,8 @@ class CachedContext
         $this->examples = $examples;
     }
 
+    // ACCESSORS ///////////////////////////////////////////////////////////////////////
+
     public function messages() : Messages {
         return $this->messages;
     }
@@ -44,6 +46,15 @@ class CachedContext
         return $this->examples;
     }
 
+    public function isEmpty() : bool {
+        return $this->messages->isEmpty()
+            && empty($this->system)
+            && empty($this->prompt)
+            && empty($this->examples);
+    }
+
+    // SERIALIZATION ///////////////////////////////////////////////////////////////////
+
     public function toArray() : array {
         return [
             'messages' => $this->messages,
@@ -51,13 +62,6 @@ class CachedContext
             'prompt' => $this->prompt,
             'examples' => $this->examples,
         ];
-    }
-
-    public function isEmpty() : bool {
-        return $this->messages->isEmpty()
-            && empty($this->system)
-            && empty($this->prompt)
-            && empty($this->examples);
     }
 
     public static function fromArray(array $data) : static {

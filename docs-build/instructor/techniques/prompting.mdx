@@ -24,7 +24,7 @@ class UserDetail
     public string $name;
     public ?Role $role = null; 
 }
-// @doctest id="f072"
+// @doctest id="7bbe"
 ```
 
 
@@ -52,7 +52,7 @@ class MaybeUser
         return $this->error ? null : $this->result;
     }
 }
-// @doctest id="f225"
+// @doctest id="d644"
 ```
 
 With the `MaybeUser` class, you can either receive a `UserDetail` object in result or get an error message in 'errorMessage'.
@@ -81,7 +81,7 @@ class UserDetail
     /**  Correctly assign one of the predefined roles to the user. */
     public Role $role;
 }
-// @doctest id="f9d2"
+// @doctest id="02a7"
 ```
 
 If you'd like to improve LLM inference performance, try reiterating the requirements in the field descriptions (in the docstrings).
@@ -108,7 +108,7 @@ class UserDetail
     public string $name;
     public Role $role;
 }
-// @doctest id="718e"
+// @doctest id="3829"
 ```
 
 
@@ -131,7 +131,7 @@ class UserDetail
     /** @var Property[] Extract any other properties that might be relevant */
     public array $properties;
 }
-// @doctest id="db82"
+// @doctest id="e5f7"
 ```
 
 
@@ -156,7 +156,7 @@ class UserDetail
     /** @var Property[] Numbered list of arbitrary extracted properties, should be less than 3 */
     public array $properties;
 }
-// @doctest id="1058"
+// @doctest id="d36e"
 ```
 
 To be 100% certain the list does not exceed the limit add extra validation, e.g. using ValidationMixin (see: Validation).
@@ -180,7 +180,7 @@ class UserDetails
     /** @var UserDetail[] Extract information for multiple users. Use consistent key names for properties across users. */
     public array $users;
 }
-// @doctest id="3596"
+// @doctest id="0b08"
 ```
 
 
@@ -209,7 +209,7 @@ class UserRelationships
     /** @var UserDetail[] Collection of users, correctly capturing the relationships among them. */
     public array $users;
 }
-// @doctest id="b616"
+// @doctest id="f6a8"
 ```
 
 
@@ -235,7 +235,7 @@ class UserDetail
     public string $name;
     public Role $role;
 }
-// @doctest id="d004"
+// @doctest id="4eb7"
 ```
 
 
@@ -262,7 +262,7 @@ class UserDetail
     /** Time range reserved for leisure activities. */
     public TimeRange $leisureTime;
 }
-// @doctest id="356d"
+// @doctest id="f0dc"
 ```
 
 
@@ -283,5 +283,5 @@ class TimeRange
     /** The end time in hours. */
     public int $endTime;
 }
-// @doctest id="8624"
+// @doctest id="231a"
 ```

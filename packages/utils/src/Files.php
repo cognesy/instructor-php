@@ -23,8 +23,7 @@ class Files
      *
      * @return bool Returns true on success or false on failure.
      */
-    public static function removeDirectory(string $directory): bool
-    {
+    public static function removeDirectory(string $directory): bool {
         // If the path is not a directory or doesn't exist, return false.
         if (!is_dir($directory)) {
             return false;
@@ -53,16 +52,15 @@ class Files
     /**
      * Recursively copy a directory from source to destination (including subdirectories).
      *
-     * @param string $source      The path to the source directory.
+     * @param string $source The path to the source directory.
      * @param string $destination The path to the destination directory.
      *
      * @throws InvalidArgumentException If the source directory does not exist.
      * @throws RuntimeException         If any directory creation or file copying fails.
      */
-    public static function copyDirectory(string $source, string $destination): void
-    {
+    public static function copyDirectory(string $source, string $destination): void {
         // Normalize paths to avoid trailing slashes.
-        $source      = rtrim($source, DIRECTORY_SEPARATOR);
+        $source = rtrim($source, DIRECTORY_SEPARATOR);
         $destination = rtrim($destination, DIRECTORY_SEPARATOR);
 
         // Ensure source directory exists.
@@ -89,7 +87,7 @@ class Files
                 continue;
             }
 
-            $srcPath  = $fileinfo->getPathname();
+            $srcPath = $fileinfo->getPathname();
             $destPath = $destination . DIRECTORY_SEPARATOR . $fileinfo->getBasename();
 
             // Recursively copy subdirectories; copy files directly.
@@ -107,13 +105,12 @@ class Files
      * Recursively rename file extensions within a given directory.
      *
      * @param string $directory Absolute path to the directory to process.
-     * @param string $oldExt    Current extension (e.g. "md" or ".md").
-     * @param string $newExt    Desired extension (e.g. "mdx" or ".mdx").
+     * @param string $oldExt Current extension (e.g. "md" or ".md").
+     * @param string $newExt Desired extension (e.g. "mdx" or ".mdx").
      *
      * @return void
      */
-    public static function renameFileExtensions(string $directory, string $oldExt, string $newExt): void
-    {
+    public static function renameFileExtensions(string $directory, string $oldExt, string $newExt): void {
         // Sanitize extension inputs (remove any leading dot).
         $oldExt = ltrim($oldExt, '.');
         $newExt = ltrim($newExt, '.');
@@ -149,15 +146,14 @@ class Files
      * Copy a file from a source path to a target path, ensuring
      * the destination directory exists and throwing exceptions on errors.
      *
-     * @param string $source      Absolute path to the source file.
+     * @param string $source Absolute path to the source file.
      * @param string $destination Absolute path to the destination file.
      *
      * @throws InvalidArgumentException if the source is not a valid file.
      * @throws RuntimeException if the destination directory cannot be created,
      *                          or if copying the file fails for any reason.
      */
-    public static function copyFile(string $source, string $destination): void
-    {
+    public static function copyFile(string $source, string $destination): void {
         // Ensure the source is a valid, readable file
         if (!is_file($source) || !is_readable($source)) {
             throw new \InvalidArgumentException(sprintf('Source file "%s" is not readable or does not exist.', $source));

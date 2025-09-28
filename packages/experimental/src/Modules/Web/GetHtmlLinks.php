@@ -40,7 +40,7 @@ class GetHtmlLinks extends Module
         ];
     }
 
-    private function extractLinks(string $page, string $baseUrl = '') : array {
+    public function extractLinks(string $page, string $baseUrl = '') : array {
         $links = [];
         preg_match_all('/<a[^>]+href\s*=\s*([\'"])(?<href>.+?)\1[^>]*>(?<text>.*?)<\/a>/i', $page, $matches);
         foreach ($matches['href'] as $key => $href) {

@@ -3,8 +3,8 @@
 namespace Cognesy\Utils;
 
 use Closure;
-use RuntimeException;
 use Stringable;
+use WeakMap;
 
 /**
  * A container for a value that is expensive to compute or can only be retrieved once.
@@ -14,15 +14,15 @@ use Stringable;
  */
 final class Cached
 {
-    private ?Closure $producer;
-    /** @var T */
-    private mixed $value;
-    private bool $isResolved = false;
+    private static WeakMap $cache;
 
-    /**
-     * The constructor is private to enforce clarity through named static constructors.
-     */
-    private function __construct() {}
+    private function __construct(
+        private readonly ?Closure $producer,
+        private readonly mixed $value = null,
+        private readonly bool $isResolved = false
+    ) {
+        self::$cache ??= new WeakMap();
+    }
 
     /**
      * Creates a lazy-loaded Cached instance from a producer callable.
@@ -32,9 +32,10 @@ final class Cached
      * @return self<T>
      */
     public static function from(callable $producer): self {
-        $instance = new self();
-        $instance->producer = $producer instanceof Closure ? $producer : Closure::fromCallable($producer);
-        return $instance;
+        return new self(
+            producer: $producer instanceof Closure ? $producer : Closure::fromCallable($producer),
+            isResolved: false
+        );
     }
 
     /**
@@ -44,18 +45,14 @@ final class Cached
      * @return self<T>
      */
     public static function withValue(mixed $value): self {
-        $instance = new self();
-        $instance->value = $value;
-        $instance->isResolved = true;
-        $instance->producer = null;
-        return $instance;
+        return new self(producer: null, value: $value, isResolved: true);
     }
 
     /**
      * Checks if the value has been resolved and is currently cached.
      */
     public function isResolved(): bool {
-        return $this->isResolved;
+        return $this->isResolved || isset(self::$cache[$this]);
     }
 
     /**
@@ -71,28 +68,15 @@ final class Cached
             return $this->value;
         }
 
+        if (isset(self::$cache[$this])) {
+            return self::$cache[$this];
+        }
+
         if ($this->producer === null) {
-            // This state is only reachable if fresh() is called on a value-based instance, which is prevented.
-            throw new RuntimeException('Cached value is not resolved and no producer is available.');
+            throw new \RuntimeException('Cached value is not resolved and no producer is available.');
         }
 
-        $this->value = ($this->producer)(...$args);
-        $this->isResolved = true;
-
-        return $this->value;
-    }
-
-    /**
-     * Resets the cache, forcing re-computation on the next get() call.
-     * This method does nothing if the instance was created from a value, as there is no producer to re-run.
-     */
-    public function fresh(): self {
-        // Cannot make a value "fresh" if it has no producer.
-        if ($this->producer !== null) {
-            $this->isResolved = false;
-            unset($this->value); // Free memory
-        }
-        return $this;
+        return self::$cache[$this] = ($this->producer)(...$args);
     }
 
     /**
@@ -110,11 +94,11 @@ final class Cached
      * Provides a safe string representation for debugging.
      */
     public function __toString(): string {
-        if (!$this->isResolved) {
+        if (!$this->isResolved()) {
             return '(unresolved)';
         }
 
-        $value = $this->value;
+        $value = $this->isResolved ? $this->value : self::$cache[$this];
         return match (true) {
             $value === null => 'NULL',
             is_string($value) => $value,

@@ -29,8 +29,13 @@ class GetUrlContent extends Module
 
     protected function forward(mixed ...$args): array {
         $url = $args['url'];
+        $content = $this->getUrlContent($url);
         return [
-            'content' => ($this->getUrlFn)($url)
+            'content' => $content
         ];
+    }
+
+    public function getUrlContent(string $url): string {
+        return ($this->getUrlFn)($url);
     }
 }

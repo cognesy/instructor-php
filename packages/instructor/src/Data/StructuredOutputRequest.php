@@ -188,10 +188,6 @@ class StructuredOutputRequest
         return $this->config->maxRetries();
     }
 
-//    /** @var StructuredOutputAttempt[] */
-//    private array $failedResponses = [];
-//    private StructuredOutputAttempt $response;
-
     public function response(): StructuredOutputAttempt {
         return $this->responseAttempts->response();
     }

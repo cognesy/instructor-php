@@ -190,14 +190,6 @@ Uuid::uuid4()                        // → "550e8400-e29b-41d4-a716-44665544000
 Uuid::hex(8)                         // → random hex string (16 chars)
 ```
 
-### Instance - Dynamic Instantiation
-```php
-Instance::of(MyClass::class)
-    ->withArgs(['param1', 'param2'])
-    ->make()                         // → MyClass instance
-
-// Supports both indexed and associative arrays for constructor args
-```
 
 ### Profiler - Performance Measurement
 ```php

@@ -29,12 +29,13 @@ class FindSources extends Module
         $urls = $callArgs['sourceUrls'];
         $query = $callArgs['query'];
         $topK = $callArgs['topK'];
+        $sources = $this->retrieveAndRank($urls, $query, $topK);
         return [
-            'sources' => $this->retrieveAndRank($urls, $query, $topK)
+            'sources' => $sources
         ];
     }
 
-    protected function retrieveAndRank(array $urls, string $query, int $topK) : array {
+    public function retrieveAndRank(array $urls, string $query, int $topK) : array {
         $data = [];
         foreach ($urls as $url) {
             $webpage = $this->getWebpageContent->for(url: $url);

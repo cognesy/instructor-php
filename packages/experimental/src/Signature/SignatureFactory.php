@@ -17,6 +17,13 @@ class SignatureFactory
         return (new SignatureFromCallable)->make($callable);
     }
 
+    static public function fromClassMethod(
+        string|object $class,
+        string $method
+    ): Signature {
+        return (new SignatureFromCallable)->make([$class, $method]);
+    }
+
     static public function fromClasses(
         string|object $input,
         string|object $output

@@ -10,20 +10,6 @@ readonly class ImmutableDataMap
         $this->dataMap = new DataMap($data);
     }
 
-//    public static function fromDataMap(DataMap $dataMap): self {
-//        $instance = new self();
-//        $instance->dataMap = $dataMap;
-//        return $instance;
-//    }
-//
-//    public function with(array $data): self {
-//        return new self(array_merge($this->dataMap->toArray(), $data));
-//    }
-//
-//    public function set(string $key, mixed $value): self {
-//        return $this->with([$key => $value]);
-//    }
-
     public function get(string $key, mixed $default = null): mixed {
         return $this->dataMap->get($key, $default);
     }

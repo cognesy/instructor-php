@@ -42,6 +42,13 @@ class RespondToChat extends Module
 
     protected function forward(mixed ...$callArgs) : array {
         $chat = $callArgs['chat'];
+        $finalAnswer = $this->respondToChat(chat: $chat);
+        return [
+            'answer' => $finalAnswer
+        ];
+    }
+
+    public function respondToChat(string|array $chat) : string {
         $language = $this->guessLanguage->for(text: $chat);
         $query = $this->inferQueryFromChat->for(chat: $chat);
         $subqueries = $this->makeSubqueries->for(question: $query, context: $chat);
@@ -56,8 +63,6 @@ class RespondToChat extends Module
             $answerLanguage === $language => $answer,
             default => $this->translate->for(text: $answer, language: $language),
         };
-        return [
-            'answer' => $finalAnswer
-        ];
+        return $finalAnswer;
     }
 }

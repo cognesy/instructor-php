@@ -61,7 +61,10 @@ abstract class Module implements CanInitiateModuleCall
     }
 
     public function call(mixed ...$callArgs): array {
-        return $this($callArgs)->get();
+        $args = (count($callArgs) === 1 && is_array($callArgs[0]))
+            ? $callArgs[0]
+            : $callArgs;
+        return $this->__invoke($args)->outputs();
     }
 
     abstract protected function forward(mixed ...$callArgs): array;

@@ -13,9 +13,14 @@ class GuessProgrammingLanguageFromExt extends Module
 
     protected function forward(...$callArgs): array {
         $filePath = $callArgs['filePath'];
-        $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $language = $this->getLanguage($filePath);
         return [
-            'language' => Language::fromExtension($fileExtension)
+            'language' => $language
         ];
+    }
+
+    public function getLanguage(string $filePath): string {
+        $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+        return Language::fromExtension($fileExtension)->value;
     }
 }

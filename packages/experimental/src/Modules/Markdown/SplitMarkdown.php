@@ -27,7 +27,7 @@ class SplitMarkdown extends Module
         ];
     }
 
-    private function splitIntoSections(string $markdown, string $source = '') : array {
+    public function splitIntoSections(string $markdown, string $source = '') : array {
         $sections = [];
         $split = $this->splitter->splitMarkdownAtLevel($markdown, true, 2);
         foreach ($split as $section) {
