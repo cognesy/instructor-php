@@ -71,4 +71,14 @@ readonly final class StructuredOutputAttempt
             $data['output'] ?? null,
         );
     }
+
+    public function clone() : self {
+        return new self(
+            $this->messages,
+            $this->inferenceResponse,
+            $this->partialInferenceResponses,
+            $this->errors,
+            $this->output,
+        );
+    }
 }

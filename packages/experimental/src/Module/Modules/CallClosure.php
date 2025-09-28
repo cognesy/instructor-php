@@ -3,8 +3,8 @@ namespace Cognesy\Experimental\Module\Modules;
 
 use Closure;
 use Cognesy\Experimental\Module\Core\Module;
-use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Experimental\Module\Signature\SignatureFactory;
+use Cognesy\Experimental\Signature\Signature;
+use Cognesy\Experimental\Signature\SignatureFactory;
 
 class CallClosure extends Module
 {

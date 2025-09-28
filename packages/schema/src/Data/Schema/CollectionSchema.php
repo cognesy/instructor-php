@@ -5,7 +5,7 @@ namespace Cognesy\Schema\Data\Schema;
 use Cognesy\Schema\Contracts\CanVisitSchema;
 use Cognesy\Schema\Data\TypeDetails;
 
-class CollectionSchema extends Schema
+readonly class CollectionSchema extends Schema
 {
     public Schema $nestedItemSchema;
 

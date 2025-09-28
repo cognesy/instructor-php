@@ -1,10 +1,12 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Experimental\Module\Core;
 
 use Cognesy\Experimental\Module\Contracts\CanInitiateModuleCall;
-use Cognesy\Experimental\Module\Core\Traits\Module\HandlesCreation;
-use Cognesy\Experimental\Module\Core\Traits\Module\HandlesTraversal;
 use Cognesy\Instructor\StructuredOutput;
+use Generator;
+use InvalidArgumentException;
+use ReflectionObject;
 
 /**
  * Why Module is designed this way
@@ -28,8 +30,15 @@ use Cognesy\Instructor\StructuredOutput;
  */
 abstract class Module implements CanInitiateModuleCall
 {
-    use HandlesCreation;
-    use HandlesTraversal;
+    public static function factory(string $class, mixed ...$constructorArgs) : static {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Class `$class` not found");
+        }
+        if (!is_subclass_of($class, Module::class)) {
+            throw new InvalidArgumentException("Class `$class` is not a subclass of " . Module::class);
+        }
+        return $class::with(...$constructorArgs);
+    }
 
     public static function with(mixed ...$constructorArgs) : static {
         return new static(...$constructorArgs);
@@ -56,4 +65,46 @@ abstract class Module implements CanInitiateModuleCall
     }
 
     abstract protected function forward(mixed ...$callArgs): array;
+
+    /**
+     * @param string $path
+     * @return Generator<string, Module>
+     */
+    public function submodules(string $path = '') : Generator {
+        foreach ($this->getProperties() as $name => $value) {
+            if ($value instanceof Module) {
+                yield from $value->submodules($this->varPath($path, $name));
+                yield $this->varPath($path, $name) => $value;
+            }
+        }
+    }
+
+    /**
+     * @param string $path
+     * @return Generator<string, Predictor>
+     */
+    public function predictors(string $path = '') : Generator {
+        foreach ($this->submodules() as $modulePath => $module) {
+            yield from $module->predictors($modulePath);
+        }
+        foreach (get_object_vars($this) as $name => $value) {
+            if ($value instanceof Predictor) {
+                yield $path . '.' . $name => $value;
+            }
+        }
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////
+
+    private function varPath(string $path, string $name) : string {
+        return $path . '.' . $name;
+    }
+
+    private function getProperties() : array {
+        $objectReflection = new ReflectionObject($this);
+        $propertyReflection = $objectReflection->getProperties();
+        $properties = array_map(fn($property) => $property->getName(), $propertyReflection);
+        $values = array_map(fn($property) => $this->{$property->getName()}, $propertyReflection);
+        return array_combine($properties, $values);
+    }
 }

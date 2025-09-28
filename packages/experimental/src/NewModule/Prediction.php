@@ -15,10 +15,10 @@ use Throwable;
 
 /**
  * Prediction - DSPy-style immutable prediction result with typed metadata
- * 
+ *
  * Implements CanCarryState to leverage pipeline infrastructure while providing
  * domain-specific conveniences for ML/LLM prediction workflows.
- * 
+ *
  * Key Features:
  * - Result monad for success/failure handling
  * - Typed tag system for prediction metadata (reasoning, confidence, usage)
@@ -40,8 +40,7 @@ final readonly class Prediction implements CanCarryState
 
     // FACTORY METHODS (CanCarryState implementation)
 
-    public static function empty(): static
-    {
+    public static function empty(): static {
         return new self(
             result: Result::success(null),
             tags: self::defaultTagMap(),
@@ -52,8 +51,7 @@ final readonly class Prediction implements CanCarryState
      * @param mixed $value The prediction output value
      * @param array<TagInterface> $tags Optional prediction tags
      */
-    public static function with(mixed $value, array $tags = []): static
-    {
+    public static function with(mixed $value, array $tags = []): static {
         return new self(
             result: Result::from($value),
             tags: self::defaultTagMap($tags),
@@ -65,38 +63,32 @@ final readonly class Prediction implements CanCarryState
     /**
      * Create successful prediction with output
      */
-    public static function success(mixed $output): self
-    {
+    public static function success(mixed $output): self {
         return self::with($output);
     }
 
     /**
      * Create failed prediction
      */
-    public static function failure(string|Throwable $error): self
-    {
+    public static function failure(string|Throwable $error): self {
         return self::empty()->failWith($error);
     }
 
     // CORE STATE OPERATIONS (CanCarryState implementation)
 
-    public function withResult(Result $result): static
-    {
+    public function withResult(Result $result): static {
         return new self($result, $this->tags);
     }
 
-    public function addTags(TagInterface ...$tags): static
-    {
+    public function addTags(TagInterface ...$tags): static {
         return new self($this->result, $this->tags->add(...$tags));
     }
 
-    public function replaceTags(TagInterface ...$tags): static
-    {
+    public function replaceTags(TagInterface ...$tags): static {
         return new self($this->result, $this->tags->replace(...$tags));
     }
 
-    public function failWith(string|Throwable $cause): static
-    {
+    public function failWith(string|Throwable $cause): static {
         $message = $cause instanceof Throwable ? $cause->getMessage() : $cause;
         $exception = match (true) {
             is_string($cause) => new RuntimeException($cause),
@@ -109,51 +101,43 @@ final readonly class Prediction implements CanCarryState
 
     // RESULT ACCESS (CanCarryState implementation)
 
-    public function result(): Result
-    {
+    public function result(): Result {
         return $this->result;
     }
 
-    public function value(): mixed
-    {
+    public function value(): mixed {
         if ($this->result->isFailure()) {
             throw new RuntimeException('Cannot unwrap value from a failed prediction');
         }
         return $this->result->unwrap();
     }
 
-    public function valueOr(mixed $default): mixed
-    {
+    public function valueOr(mixed $default): mixed {
         return $this->result->valueOr($default);
     }
 
-    public function isSuccess(): bool
-    {
+    public function isSuccess(): bool {
         return $this->result->isSuccess();
     }
 
-    public function isFailure(): bool
-    {
+    public function isFailure(): bool {
         return $this->result->isFailure();
     }
 
-    public function exception(): Throwable
-    {
+    public function exception(): Throwable {
         if ($this->result->isSuccess()) {
             throw new RuntimeException('Cannot get exception from a successful prediction');
         }
         return $this->result->exception();
     }
 
-    public function exceptionOr(mixed $default): mixed
-    {
+    public function exceptionOr(mixed $default): mixed {
         return $this->result->exceptionOr($default);
     }
 
     // TAG OPERATIONS (CanCarryState implementation)
 
-    public function tagMap(): TagMapInterface
-    {
+    public function tagMap(): TagMapInterface {
         return $this->tags;
     }
 
@@ -163,28 +147,24 @@ final readonly class Prediction implements CanCarryState
      * @param class-string|null $tagClass Optional class filter
      * @return TagInterface[]
      */
-    public function allTags(?string $tagClass = null): array
-    {
+    public function allTags(?string $tagClass = null): array {
         return $this->tags->query()->only($tagClass)->all();
     }
 
     /**
      * @param class-string $tagClass
      */
-    public function hasTag(string $tagClass): bool
-    {
+    public function hasTag(string $tagClass): bool {
         return $this->tags->has($tagClass);
     }
 
     // ESSENTIAL TRANSFORMATIONS (CanCarryState implementation)
 
-    public function tags(): TagQuery
-    {
+    public function tags(): TagQuery {
         return $this->tagMap()->query();
     }
 
-    public function transform(): TransformState
-    {
+    public function transform(): TransformState {
         return new TransformState($this);
     }
 
@@ -193,64 +173,56 @@ final readonly class Prediction implements CanCarryState
     /**
      * Get reasoning/chain-of-thought from prediction
      */
-    public function reasoning(): ?string
-    {
+    public function reasoning(): ?string {
         return $this->tags()->first(ReasoningTag::class)?->reasoning;
     }
 
     /**
      * Get confidence score from prediction
      */
-    public function confidence(): ?float
-    {
+    public function confidence(): ?float {
         return $this->tags()->first(ConfidenceTag::class)?->confidence;
     }
 
     /**
      * Get token usage information
      */
-    public function usage(): ?UsageTag
-    {
+    public function usage(): ?UsageTag {
         return $this->tags()->first(UsageTag::class);
     }
 
     /**
      * Get model ID used for prediction
      */
-    public function modelId(): ?string
-    {
+    public function modelId(): ?string {
         return $this->tags()->first(ModelTag::class)?->modelId;
     }
 
     /**
      * Add reasoning to prediction
      */
-    public function withReasoning(string $reasoning): self
-    {
+    public function withReasoning(string $reasoning): self {
         return $this->addTags(new ReasoningTag($reasoning));
     }
 
     /**
      * Add confidence score to prediction
      */
-    public function withConfidence(float $confidence): self
-    {
+    public function withConfidence(float $confidence): self {
         return $this->addTags(new ConfidenceTag($confidence));
     }
 
     /**
      * Add usage information to prediction
      */
-    public function withUsage(int $inputTokens, int $outputTokens, float $cost = 0.0): self
-    {
+    public function withUsage(int $inputTokens, int $outputTokens, float $cost = 0.0): self {
         return $this->addTags(new UsageTag($inputTokens, $outputTokens, $cost));
     }
 
     /**
      * Add model information to prediction
      */
-    public function withModel(string $modelId): self
-    {
+    public function withModel(string $modelId): self {
         return $this->addTags(new ModelTag($modelId));
     }
 
@@ -259,8 +231,7 @@ final readonly class Prediction implements CanCarryState
     /**
      * Check if prediction has low confidence
      */
-    public function hasLowConfidence(float $threshold = 0.5): bool
-    {
+    public function hasLowConfidence(float $threshold = 0.5): bool {
         $confidence = $this->confidence();
         return $confidence !== null && $confidence < $threshold;
     }
@@ -268,32 +239,33 @@ final readonly class Prediction implements CanCarryState
     /**
      * Get total token cost from all usage tags
      */
-    public function totalCost(): float
-    {
+    public function totalCost(): float {
         return array_sum(array_map(
             fn(UsageTag $tag) => $tag->cost,
-            $this->allTags(UsageTag::class)
+            $this->allTags(UsageTag::class),
         ));
     }
 
     /**
      * Get total tokens (input + output) from all usage tags
      */
-    public function totalTokens(): int
-    {
+    public function totalTokens(): int {
         return array_sum(array_map(
             fn(UsageTag $tag) => $tag->inputTokens + $tag->outputTokens,
-            $this->allTags(UsageTag::class)
+            $this->allTags(UsageTag::class),
         ));
     }
 
     // PRIVATE HELPERS
 
-    private static function defaultTagMap(?array $tags = []): TagMapInterface
-    {
-        return match(true) {
+    private static function defaultTagMap(?array $tags = []): TagMapInterface {
+        return match (true) {
             $tags === null => IndexedTagMap::empty(),
             default => IndexedTagMap::create($tags),
         };
+    }
+
+    public function applyTo(CanCarryState $priorState): CanCarryState {
+        // TODO: Implement applyTo() method.
     }
 }

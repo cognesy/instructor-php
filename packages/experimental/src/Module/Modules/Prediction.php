@@ -3,10 +3,10 @@ namespace Cognesy\Experimental\Module\Modules;
 
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Core\Predictor;
-use Cognesy\Experimental\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Experimental\Module\Signature\Contracts\HasSignature;
-use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Experimental\Module\Signature\SignatureFactory;
+use Cognesy\Experimental\Signature\Attributes\ModuleSignature;
+use Cognesy\Experimental\Signature\Contracts\HasSignature;
+use Cognesy\Experimental\Signature\Signature;
+use Cognesy\Experimental\Signature\SignatureFactory;
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Utils\AttributeUtils;
 use Cognesy\Utils\Arrays;
@@ -66,7 +66,6 @@ class Prediction extends Module implements HasSignature
         // CREATE PREDICTOR
         $this->predictor = new Predictor(
             signature: $this->signature,
-            //description: Arrays::flatten($instructions),
         );
     }
 

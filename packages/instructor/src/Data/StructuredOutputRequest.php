@@ -41,6 +41,7 @@ class StructuredOutputRequest
 
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
+        ?StructuredOutputAttempts $responseAttempts = null,
     ) {
         $this->id = $id ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
@@ -58,6 +59,7 @@ class StructuredOutputRequest
         $this->config = $config;
 
         $this->cachedContext = $cachedContext ?: new CachedContext();
+        $this->responseAttempts = $responseAttempts ?: new StructuredOutputAttempts();
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -108,55 +110,114 @@ class StructuredOutputRequest
 
     // MUTATORS /////////////////////////////////////////////////
 
+    public function with(
+        string|array|Message|Messages|null $messages = null,
+        string|array|object|null $requestedSchema = null,
+        ?ResponseModel $responseModel = null,
+        ?string        $system = null,
+        ?string        $prompt = null,
+        ?array         $examples = null,
+        ?string        $model = null,
+        ?array         $options = null,
+        ?CachedContext $cachedContext = null,
+        ?StructuredOutputConfig $config = null,
+    ) : static {
+        return new static(
+            messages: $messages ?? $this->messages,
+            requestedSchema: $requestedSchema ?? $this->requestedSchema,
+            responseModel: $responseModel ?? $this->responseModel,
+            system: $system ?? $this->system,
+            prompt: $prompt ?? $this->prompt,
+            examples: $examples ?? $this->examples,
+            model: $model ?? $this->model,
+            options: $options ?? $this->options,
+            cachedContext: $cachedContext ?? $this->cachedContext,
+            config: $config ?? $this->config,
+        );
+    }
+
+    public function withMessages(string|array|Message|Messages $messages) : static {
+        return $this->with(messages: $messages);
+    }
+
+    public function withRequestedSchema(string|array|object $requestedSchema) : static {
+        return $this->with(requestedSchema: $requestedSchema);
+    }
+
+    public function withResponseModel(ResponseModel $responseModel) : static {
+        return $this->with(responseModel: $responseModel);
+    }
+
+    public function withSystem(string $system) : static {
+        return $this->with(system: $system);
+    }
+
+    public function withPrompt(string $prompt) : static {
+        return $this->with(prompt: $prompt);
+    }
+
+    public function withExamples(array $examples) : static {
+        return $this->with(examples: $examples);
+    }
+
+    public function withModel(string $model) : static {
+        return $this->with(model: $model);
+    }
+
+    public function withOptions(array $options) : static {
+        return $this->with(options: array_merge($this->options, $options));
+    }
+
     public function withStreamed(bool $streamed = true) : static {
-        $new = $this->clone();
-        $new->options['stream'] = $streamed;
-        return $new;
+        return $this->withOptions(array_merge($this->options, ['stream' => $streamed]));
+    }
+
+    public function withCachedContext(CachedContext $cachedContext) : static {
+        return $this->with(cachedContext: $cachedContext);
+    }
+
+    public function withConfig(StructuredOutputConfig $config) : static {
+        return $this->with(config: $config);
     }
 
     // RETRIES //////////////////////////////////////////////////
 
-    /** @var StructuredOutputAttempt[] */
-    private array $failedResponses = [];
-    private StructuredOutputAttempt $response;
+    private StructuredOutputAttempts $responseAttempts;
 
     public function maxRetries(): int {
         return $this->config->maxRetries();
     }
 
+//    /** @var StructuredOutputAttempt[] */
+//    private array $failedResponses = [];
+//    private StructuredOutputAttempt $response;
+
     public function response(): StructuredOutputAttempt {
-        return $this->response;
+        return $this->responseAttempts->response();
     }
 
     public function attempts(): array {
-        return match (true) {
-            !$this->hasAttempts() => [],
-            !$this->hasResponse() => $this->failedResponses,
-            default => array_merge(
-                $this->failedResponses,
-                [$this->response],
-            )
-        };
+        return $this->responseAttempts->attempts();
     }
 
     public function hasLastResponseFailed(): bool {
-        return $this->hasFailures() && !$this->hasResponse();
+        return $this->responseAttempts->hasLastResponseFailed();
     }
 
     public function lastFailedResponse(): ?StructuredOutputAttempt {
-        return end($this->failedResponses) ?: null;
+        return $this->responseAttempts->lastFailedResponse();
     }
 
     public function hasResponse(): bool {
-        return isset($this->response) && $this->response !== null;
+        return $this->responseAttempts->hasResponse();
     }
 
     public function hasAttempts(): bool {
-        return $this->hasResponse() || $this->hasFailures();
+        return $this->responseAttempts->hasAttempts();
     }
 
     public function hasFailures(): bool {
-        return count($this->failedResponses) > 0;
+        return $this->responseAttempts->hasFailures();
     }
 
     public function setResponse(
@@ -165,7 +226,7 @@ class StructuredOutputRequest
         array $partialInferenceResponses = [],
         mixed $returnedValue = null,
     ) {
-        $this->response = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, [], $returnedValue);
+        $this->responseAttempts->setResponse($messages, $inferenceResponse, $partialInferenceResponses, $returnedValue);
     }
 
     public function addFailedResponse(
@@ -174,7 +235,7 @@ class StructuredOutputRequest
         array $partialInferenceResponses = [],
         array $errors = [],
     ) {
-        $this->failedResponses[] = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, $errors, null);
+        $this->responseAttempts->addFailedResponse($messages, $inferenceResponse, $partialInferenceResponses, $errors);
     }
 
     // SCHEMA ///////////////////////////////////////////////////
@@ -261,6 +322,8 @@ class StructuredOutputRequest
             'mode' => $this->mode(),
             'cachedContext' => $this->cachedContext?->toArray() ?? [],
             'config' => $this->config->toArray(),
+            'requestedSchema' => $this->requestedSchema,
+            'responseAttempts' => $this->responseAttempts?->toArray() ?? [],
         ];
     }
 
@@ -278,6 +341,7 @@ class StructuredOutputRequest
             config: $data['config'] ?? null,
             id: $data['id'] ?? null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
+            responseAttempts: $data['responseAttempts'] ?? null
         );
     }
 
@@ -295,6 +359,9 @@ class StructuredOutputRequest
             options: $this->options,
             cachedContext: $this->cachedContext->clone(),
             config: $this->config->clone(),
+            id: $this->id,
+            createdAt: $this->createdAt,
+            responseAttempts: $this->responseAttempts?->clone(),
         );
     }
 

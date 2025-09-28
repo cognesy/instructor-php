@@ -3,8 +3,8 @@ namespace Cognesy\Experimental\Module\Modules;
 
 use Closure;
 use Cognesy\Experimental\Module\Core\Module;
-use Cognesy\Experimental\Module\Signature\Attributes\ModuleDescription;
-use Cognesy\Experimental\Module\Signature\Attributes\ModuleSignature;
+use Cognesy\Experimental\Signature\Attributes\ModuleDescription;
+use Cognesy\Experimental\Signature\Attributes\ModuleSignature;
 use InvalidArgumentException;
 
 #[ModuleSignature('arguments:array -> mapped_arguments:array')]
