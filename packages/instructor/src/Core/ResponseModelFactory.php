@@ -165,7 +165,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
-    private function fromToolSelectionProvider(CanHandleToolSelection $requestedModel) {
+    private function fromToolSelectionProvider(CanHandleToolSelection $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromToolSelectionProvider']));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
@@ -176,7 +176,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
-    private function fromOutputSchemaProvider(mixed $requestedModel) {
+    private function fromOutputSchemaProvider(mixed $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromOutputSchemaProvider']));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);

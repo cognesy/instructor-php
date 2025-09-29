@@ -193,7 +193,7 @@ return [
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'model' => 'gemma3:1b', // 'qwen2.5-coder:3b', //'gemma2:2b',
+            'model' => 'phi4', //'gemma3:1b', // 'qwen2.5-coder:3b', //'gemma2:2b',
             'maxTokens' => 1024,
             'contextLength' => 128_000,
             'maxOutputLength' => 8192,

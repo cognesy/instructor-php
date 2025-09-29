@@ -154,6 +154,7 @@ class InferenceResponse
      */
     public function findJsonData(?OutputMode $mode = null): Json {
         return match (true) {
+            is_null($mode) => Json::fromString($this->content),
             OutputMode::Tools->is($mode) && $this->hasToolCalls() => match (true) {
                 $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()?->args()),
                 default => Json::fromArray($this->toolCalls->toArray()),

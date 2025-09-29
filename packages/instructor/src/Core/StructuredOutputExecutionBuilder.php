@@ -23,17 +23,12 @@ class StructuredOutputExecutionBuilder
         StructuredOutputRequest $request,
         StructuredOutputConfig $config,
     ) : StructuredOutputExecution {
-        if (empty($this->requestedSchema)) {
-            throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
-        }
-
         return new StructuredOutputExecution(
             request: $request,
             config: $config,
             responseModel: $this->makeResponseModel(
                 requestedSchema: $request->requestedSchema(),
                 config: $config,
-                outputMode: $config->outputMode(),
                 events: $this->events,
             ),
         );
@@ -42,7 +37,6 @@ class StructuredOutputExecutionBuilder
     private function makeResponseModel(
         string|array|object $requestedSchema,
         StructuredOutputConfig $config,
-        OutputMode $outputMode,
         CanHandleEvents $events,
     ): ResponseModel {
         $schemaFactory = new SchemaFactory(
@@ -60,8 +54,6 @@ class StructuredOutputExecutionBuilder
             config: $config,
             events: $events,
         );
-        return $responseModelFactory
-            ->fromAny($requestedSchema)
-            ->withOutputMode($outputMode);
+        return $responseModelFactory->fromAny($requestedSchema);
     }
 }
