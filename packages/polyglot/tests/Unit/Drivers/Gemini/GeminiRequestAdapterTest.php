@@ -25,7 +25,8 @@ it('maps InferenceRequest to Gemini HttpRequest correctly (non-stream)', functio
 
     expect($http->method())->toBe('POST');
     expect($http->url())->toContain('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent');
-    expect($http->url())->toContain('key=KEY');
+    expect($http->headers())->toHaveKey('x-goog-api-key');
+    expect($http->headers()['x-goog-api-key'])->toBe('KEY');
     expect($http->isStreamed())->toBeFalse();
 });
 

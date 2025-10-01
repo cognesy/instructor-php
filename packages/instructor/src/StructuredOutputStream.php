@@ -111,12 +111,14 @@ class StructuredOutputStream
             // only yield if there's new element in sequence
             if ($update->count() > $lastSequenceCount) {
                 $lastSequenceCount = $update->count();
-                yield $lastSequence;
+                // yield snapshot of the previous state
+                yield is_null($lastSequence) ? null : clone $lastSequence;
             }
-            $lastSequence = $update;
+            // keep a snapshot to avoid later mutations affecting yielded values
+            $lastSequence = clone $update;
         }
         // yield last, fully updated sequence instance
-        yield $lastSequence;
+        yield is_null($lastSequence) ? null : clone $lastSequence;
     }
 
     /**

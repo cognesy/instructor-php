@@ -26,7 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
-// @doctest id="3610"
+// @doctest id="1b5d"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -50,7 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="1a7a"
+// @doctest id="4747"
 ```
 
 
@@ -70,7 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
-// @doctest id="0bf6"
+// @doctest id="6045"
 ```
 
 
@@ -95,7 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="314d"
+// @doctest id="876b"
 ```
 
 
@@ -119,7 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
-// @doctest id="471c"
+// @doctest id="045b"
 ```
 
 
@@ -145,7 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="b652"
+// @doctest id="640f"
 ```
 
 
@@ -172,7 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
-// @doctest id="5d37"
+// @doctest id="35f2"
 ```
 
 
@@ -215,7 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
-// @doctest id="ce22"
+// @doctest id="ef97"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -234,7 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
-// @doctest id="a6f3"
+// @doctest id="6e6d"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -294,7 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
-// @doctest id="da2e"
+// @doctest id="c12c"
 ```
 
 
@@ -330,5 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
-// @doctest id="307c"
+// @doctest id="c7e1"
 ```

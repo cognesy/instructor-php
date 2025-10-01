@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
-use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Utils\Json\Json;
 
 trait HandlesDeserialization
 {
-    private SymfonyDeserializer $deserializer;
+    private CanDeserializeClass $deserializer;
 
     public function fromJson(string $jsonData, ?string $toolName = null): static {
         $deserializer = $this->deserializer;
@@ -23,6 +23,7 @@ trait HandlesDeserialization
             $list[] = $deserializer->fromArray($item, $this->class);
         }
         $this->list = $list;
+
         return $this;
     }
 }

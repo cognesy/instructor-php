@@ -10,4 +10,7 @@ interface Sequenceable extends Countable
     public function push(mixed $item) : void;
     public function pop() : mixed;
     public function isEmpty() : bool;
+
+    // public function withAppended(mixed $item) : static;
+    // public function withoutLast() : static;
 }

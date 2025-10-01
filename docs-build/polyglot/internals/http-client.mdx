@@ -38,7 +38,7 @@ class HttpClient implements CanHandleHttpRequest {
     public function handle(HttpClientRequest $request): HttpResponse { ... }
     public function middleware(): MiddlewareStack { ... }
 }
-// @doctest id="3b1b"
+// @doctest id="d3f9"
 ```
 
 
@@ -76,7 +76,7 @@ interface HttpResponse {
     public function stream(int $chunkSize = 1): Generator;
     public function original(): mixed;
 }
-// @doctest id="ff4d"
+// @doctest id="167a"
 ```
 
 
@@ -139,5 +139,5 @@ class MiddlewareStack {
         CanHandleHttpRequest $handler
     ): HttpResponse { ... }
 }
-// @doctest id="39e8"
+// @doctest id="c4dc"
 ```

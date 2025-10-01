@@ -4,12 +4,6 @@ namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
 trait HandlesSequenceable
 {
-    private string $name;
-    private string $description;
-    private string $class;
-
-    public array $list = [];
-
     public static function of(string $class, string $name = '', string $description = '') : static {
         return new self($class, $name, $description);
     }
@@ -53,4 +47,16 @@ trait HandlesSequenceable
     public function isEmpty() : bool {
         return empty($this->list);
     }
+
+    //    public function withAppended(mixed $item) : static {
+    //        $newList = $this->list;
+    //        $newList[] = $item;
+    //        return new self($this->class, $this->name, $this->description, $newList);
+    //    }
+    //
+    //    public function withoutLast() : static {
+    //        $newList = $this->list;
+    //        array_pop($newList);
+    //        return new self($this->class, $this->name, $this->description, $newList);
+    //    }
 }

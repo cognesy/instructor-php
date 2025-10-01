@@ -2,11 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
+use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesValidation
 {
-    private $validator;
+    private CanValidateObject $validator;
 
     public function validate(): ValidationResult {
         $validationErrors = [];
