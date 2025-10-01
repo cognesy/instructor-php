@@ -64,6 +64,7 @@ $text = <<<TEXT
     TEXT;
 
 $stream = (new StructuredOutput)
+    //->wiretap(fn(Event $e) => $e->print())
     ->withMessages($text)
     ->withResponseClass(UserDetail::class)
     ->withStreaming()

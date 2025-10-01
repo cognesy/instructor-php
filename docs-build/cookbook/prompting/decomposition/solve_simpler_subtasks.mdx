@@ -71,15 +71,17 @@ class LeastToMostSolver {
             messages: [
                 [
                     'role' => 'user',
-                    'content' => "<original_question>
-{$originalQuestion}
-</original_question>
-
-<solved_subquestions>
-{$solvedContext}
-</solved_subquestions>
-
-Solve this next subquestion: {$question}"
+                    'content' => <<<PROMPT
+                        <original_question>
+                        {$originalQuestion}
+                        </original_question>
+                        
+                        <solved_subquestions>
+                        {$solvedContext}
+                        </solved_subquestions>
+                        
+                        Solve this next subquestion: {$question}
+                    PROMPT,
                 ],
             ],
             responseModel: Answer::class,

@@ -244,6 +244,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v1.9.0",
                 "release-notes/v1.8.1",
                 "release-notes/v1.8.0",
                 "release-notes/v1.7.0",
@@ -466,6 +467,7 @@
                 "cookbook/polyglot/llm_api_support/deepseek",
                 "cookbook/polyglot/llm_api_support/fireworks",
                 "cookbook/polyglot/llm_api_support/google_gemini",
+                "cookbook/polyglot/llm_api_support/google_gemini_oai",
                 "cookbook/polyglot/llm_api_support/groq",
                 "cookbook/polyglot/llm_api_support/meta",
                 "cookbook/polyglot/llm_api_support/minimaxi",

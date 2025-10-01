@@ -18,6 +18,7 @@ chatbots or agents.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Addons\FunctionCall\FunctionCallFactory;
 use Cognesy\Instructor\StructuredOutput;
 
 class DataStore

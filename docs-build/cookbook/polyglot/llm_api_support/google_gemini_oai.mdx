@@ -1,6 +1,6 @@
 ---
-title: 'Google Gemini'
-docname: 'google_gemini'
+title: 'Google Gemini (OpenAI-compatible)'
+docname: 'google_gemini_oai'
 ---
 
 ## Overview
@@ -12,7 +12,7 @@ Supported modes:
  - OutputMode::Json - recommended
  - OutputMode::Tools - supported
 
-Here's how you can use Instructor with Gemini API.
+Here's how you can use Instructor with Gemini API in OpenAI-compatible mode.
 
 ```php
 <?php
@@ -23,7 +23,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('gemini')
+    ->using('gemini-oai') // use OpenAI-compatible Gemini preset (v1beta/openai)
     ->wiretap(fn($e) => $e->print()) // optional, for debugging
     ->withDebugPreset('detailed')
     ->with(

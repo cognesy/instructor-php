@@ -16,7 +16,6 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Collections\Tools;
-use Cognesy\Addons\ToolUse\Collections\ToolUseSteps;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
@@ -37,13 +36,13 @@ $driver = new ReActDriver(
 $toolUse = ToolUseFactory::default(
     tools: new Tools(
         FunctionTool::fromCallable(add_numbers(...)),
-        FunctionTool::fromCallable(subtract_numbers(...)),
+        FunctionTool::fromCallable(subtract_numbers(...))
     ),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(6, fn(ToolUseState $s): int => $s->stepCount()),
-        new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),
-        new ExecutionTimeLimit(60, fn(ToolUseState $s): DateTimeImmutable => $s->startedAt()),
-        new RetryLimit(2, fn(ToolUseState $s): ToolUseSteps => $s->steps(), fn(ToolUseStep $s): bool => $s->hasErrors()),
+        new StepsLimit(6, fn(ToolUseState $state) => $state->stepCount()),
+        new TokenUsageLimit(8192, fn(ToolUseState $state) => $state->usage()->total()),
+        new ExecutionTimeLimit(60, fn(ToolUseState $state) => $state->startedAt()),
+        new RetryLimit(2, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
         new StopOnFinalDecision(),
     ),
     driver: $driver

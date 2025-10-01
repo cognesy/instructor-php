@@ -29,7 +29,6 @@ use Cognesy\Addons\StepByStep\StateProcessing\Processors\MoveMessagesToBuffer;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\SummarizeBuffer;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -43,7 +42,15 @@ $student = new ScriptedParticipant(
         'Give me one more actionable tip.',
         'How could I apply this in practice?',
         "What are some common pitfalls to avoid?",
-        'Any final advice?',
+        "Is there a specific mindset I should adopt?",
+        "Can you provide an example of a successful sales interaction using Challenger Sale?",
+        "How can I tailor my approach to different types of clients?",
+        "What questions should I be asking my prospects?",
+        "How do I handle objections effectively?",
+        "What should I focus on to improve my sales approach?",
+        "How can I measure the success of these strategies?",
+        "What resources can I use to learn more about Challenger Sale?",
+        "Any final advice for implementing these techniques effectively?",
         '' // Empty string to signal end of conversation
     ],
 );
@@ -58,17 +65,17 @@ $expert = new LLMParticipant(
 $chat = ChatFactory::default(
     participants: new Participants($student, $expert),
     continuationCriteria: new ContinuationCriteria(
-        new StepsLimit(12, static fn(ChatState $state): int => $state->stepCount()),
+        new StepsLimit(30, fn(ChatState $state): int => $state->stepCount()),
         new ResponseContentCheck(
-            fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
-            static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
+            fn(ChatState $state): ?Messages => $state->currentStep()?->outputMessages(),
+            static fn(Messages $lastResponse): bool => $lastResponse->toString() !== '',
         ),
     ),
     processors: new StateProcessors(
         new AccumulateTokenUsage(),
         new AppendStepMessages(),
         new MoveMessagesToBuffer(
-            maxTokens: 1024,
+            maxTokens: 128,
             bufferSection: 'buffer',
             events: $events
         ),
@@ -82,7 +89,7 @@ $chat = ChatFactory::default(
         ),
     ),
     events: $events,
-); //->wiretap(fn(Event $e) => $e->print());
+);//->wiretap(fn(Event $e) => $e->printDebug());
 
 $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
@@ -97,8 +104,14 @@ while ($chat->hasNextStep($state)) {
     $name = $step?->participantName() ?? 'unknown';
     $content = trim($step?->outputMessages()->toString() ?? '');
     echo "\n--- Step " . ($state->stepCount()) . " ($name) ---\n";
-    echo $content . "\n";
+    echo ($content ?: '[eot]'). "\n";
+//    echo "---------------------\n";
+//    echo "SUMMARY:\n" . $state->store()->section('summary')->get()?->toString();
+//    echo "---------------------\n";
+//    echo "BUFFER:\n" . $state->store()->section('buffer')->get()?->toString();
+//    echo "---------------------\n";
+//    echo "MESSAGES:\n" . $state->store()->section('messages')->get()?->toString();
+//    echo "=====================\n";
 }
-
 ?>
 ```

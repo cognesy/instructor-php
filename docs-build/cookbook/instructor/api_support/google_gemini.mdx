@@ -38,7 +38,10 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)->using('gemini');
+$structuredOutput = (new StructuredOutput)
+    ->using('gemini')
+    ->withDebugPreset('detailed')
+    ->wiretap(fn($e) => $e->printDebug());
 
 $user = $structuredOutput
     ->with(
@@ -48,10 +51,10 @@ $user = $structuredOutput
             'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
             'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
         ]],
-        model: 'gemini-1.5-flash',
         //options: ['stream' => true],
         mode: OutputMode::Json,
-    )->get();
+    )
+    ->get();
 
 print("Completed response model:\n\n");
 dump($user);

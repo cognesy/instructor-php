@@ -23,8 +23,8 @@ require 'examples/boot.php';
 
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Inference;
 
 $city = Structure::define('city', [
     Field::string('name', 'City name')->required(),
@@ -32,28 +32,19 @@ $city = Structure::define('city', [
     Field::int('founded', 'Founding year')->required(),
 ]);
 
-$data = (new Inference)
+$data = (new StructuredOutput)
     ->using('openai')
-    ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of France? \
-        Respond with JSON data.']],
-        responseFormat: [
-            'type' => 'json_schema',
-            'description' => 'City data',
-            'json_schema' => [
-                'name' => 'city_data',
-                'schema' => $city->toJsonSchema(),
-                'strict' => true,
-            ],
-        ],
-        options: ['max_tokens' => 64],
-        mode: OutputMode::JsonSchema,
-    )
-    ->asJsonData();
+    //->withDebugPreset('on')
+    ->withMessages([['role' => 'user', 'content' => 'What is capital of France? \
+        Respond with JSON data.']])
+    ->withResponseJsonSchema($city->toJsonSchema())
+    ->withOptions(['max_tokens' => 64])
+    ->withOutputMode(OutputMode::JsonSchema)
+    ->get();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";
-dump($data);
+dump($data->toArray());
 
 assert(is_array($data), 'Response should be an array');
 assert(isset($data['name']), 'Response should have "name" field');

@@ -27,7 +27,6 @@ use Cognesy\Addons\Chat\Participants\ScriptedParticipant;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ResponseContentCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
-use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -67,10 +66,16 @@ $chat = ChatFactory::default(
         new StepsLimit(15, fn(ChatState $state): int => $state->stepCount()),
         new ResponseContentCheck(
             fn(ChatState $state): ?Messages => $state->currentStep()?->outputMessages(),
-            static fn(Message $lastResponse): bool => $lastResponse->content()->toString() !== '',
+            static fn(Messages $lastResponse): bool => $lastResponse->last()->content()->toString() !== '',
         ),
     ),
 ); //->wiretap(fn(Event $e) => $e->print());
+
+$participantNames = [
+    'moderator' => '🎙️ Moderator',
+    'dr_chen' => '🔬 Dr. Chen',
+    'marcus' => '⚙️ Marcus',
+];
 
 $state = new ChatState();
 
