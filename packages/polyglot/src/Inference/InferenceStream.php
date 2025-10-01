@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Inference;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -19,27 +19,24 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class InferenceStream
 {
-    protected EventDispatcherInterface $events;
-    protected InferenceRequest $request;
-    protected CanHandleInference $driver;
+    protected readonly EventDispatcherInterface $events;
+    protected readonly CanHandleInference $driver;
+    protected ?Closure $onPartialResponse = null;
+
     /** @var iterable<PartialInferenceResponse> */
     protected iterable $stream;
 
-    protected bool $streamReceived = false;
-    protected array $inferenceResponses = [];
-    protected ?InferenceResponse $finalInferenceResponse = null;
-    protected ?PartialInferenceResponse $lastPartialInferenceResponse = null;
-    protected ?Closure $onPartialResponse = null;
+    protected InferenceExecution $execution;
 
     public function __construct(
-        InferenceRequest         $request,
-        CanHandleInference       $driver,
+        InferenceExecution $execution,
+        CanHandleInference $driver,
         EventDispatcherInterface $eventDispatcher,
     ) {
-        $this->request = $request;
+        $this->execution = $execution;
         $this->driver = $driver;
         $this->events = $eventDispatcher;
-        $this->stream = $driver->makeStreamResponsesFor($request);
+        $this->stream = $driver->makeStreamResponsesFor($execution->request());
     }
 
     /**
@@ -47,7 +44,7 @@ class InferenceStream
      *
      * @return Generator<PartialInferenceResponse> A generator yielding partial LLM responses.
      */
-    public function responses() : Generator {
+    public function responses(): Generator {
         foreach ($this->makePartialResponses($this->stream) as $partialInferenceResponse) {
             yield $partialInferenceResponse;
         }
@@ -58,7 +55,7 @@ class InferenceStream
      * @param callable(PartialInferenceResponse):T $mapper
      * @return iterable<T>
      */
-    public function map(callable $mapper) : iterable {
+    public function map(callable $mapper): iterable {
         foreach ($this->responses() as $partialInferenceResponse) {
             yield $mapper($partialInferenceResponse);
         }
@@ -70,7 +67,7 @@ class InferenceStream
      * @param mixed|null $initial
      * @return T
      */
-    public function reduce(callable $reducer, mixed $initial = null) : mixed {
+    public function reduce(callable $reducer, mixed $initial = null): mixed {
         $carry = $initial;
         foreach ($this->responses() as $partialInferenceResponse) {
             $carry = $reducer($carry, $partialInferenceResponse);
@@ -82,7 +79,7 @@ class InferenceStream
      * @param callable(PartialInferenceResponse):bool $filter
      * @return iterable<PartialInferenceResponse>
      */
-    public function filter(callable $filter) : iterable {
+    public function filter(callable $filter): iterable {
         foreach ($this->responses() as $partialInferenceResponse) {
             if ($filter($partialInferenceResponse)) {
                 yield $partialInferenceResponse;
@@ -95,11 +92,13 @@ class InferenceStream
      *
      * @return iterable<PartialInferenceResponse> An array of all partial LLM responses.
      */
-    public function all() : array {
-        if ($this->finalInferenceResponse === null) {
-            foreach ($this->makePartialResponses($this->stream) as $partialResponse) { $tmp = $partialResponse; }
+    public function all(): array {
+        if ($this->execution->response() === null) {
+            foreach ($this->makePartialResponses($this->stream) as $partialResponse) {
+                $tmp = $partialResponse;
+            }
         }
-        return $this->inferenceResponses;
+        return $this->execution->partialResponses()->all();
     }
 
     /**
@@ -108,11 +107,15 @@ class InferenceStream
      *
      * @return ?InferenceResponse
      */
-    public function final() : ?InferenceResponse {
-        if ($this->finalInferenceResponse === null) {
-            foreach ($this->makePartialResponses($this->stream) as $partialResponse) { $tmp = $partialResponse; }
+    public function final(): ?InferenceResponse {
+        if ($this->execution->response() === null) {
+            if (!$this->execution->partialResponses()->isEmpty()) {
+                $this->execution = $this->execution->withFinalizedPartialResponse();
+            } else {
+                foreach ($this->makePartialResponses($this->stream) as $_) {}
+            }
         }
-        return $this->finalInferenceResponse;
+        return $this->execution->response();
     }
 
     /**
@@ -120,9 +123,13 @@ class InferenceStream
      *
      * @param callable $callback
      */
-    public function onPartialResponse(callable $callback) : self {
+    public function onPartialResponse(callable $callback): self {
         $this->onPartialResponse = $callback(...);
         return $this;
+    }
+
+    public function execution(): InferenceExecution {
+        return $this->execution;
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -133,18 +140,16 @@ class InferenceStream
      * @param Generator<PartialInferenceResponse> $stream The stream to be processed to extract and enrich partial LLM responses.
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
-     private function makePartialResponses(iterable $stream) : Generator {
+    private function makePartialResponses(iterable $stream): Generator {
         $content = '';
         $reasoningContent = '';
         $finishReason = '';
-        $this->inferenceResponses = [];
-        $this->lastPartialInferenceResponse = null;
 
+        /** @var PartialInferenceResponse $partialResponse */
         foreach ($stream as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
-            $this->inferenceResponses[] = $partialResponse;
 
             // add accumulated content and last finish reason
             if ($partialResponse->finishReason !== '') {
@@ -158,14 +163,14 @@ class InferenceStream
                 ->withFinishReason($finishReason);
             $this->events->dispatch(new PartialInferenceResponseCreated($enrichedResponse));
 
-            $this->lastPartialInferenceResponse = $enrichedResponse;
+            $this->execution = $this->execution->withNewPartialResponse($enrichedResponse);
             if ($this->onPartialResponse !== null) {
                 ($this->onPartialResponse)($enrichedResponse);
             }
             yield $enrichedResponse;
         }
-        $this->streamReceived = true;
-        $this->finalInferenceResponse = InferenceResponse::fromPartialResponses($this->inferenceResponses);
-        $this->events->dispatch(new InferenceResponseCreated($this->finalInferenceResponse));
+        // finalize accumulated partial responses
+        $this->execution = $this->execution->withFinalizedPartialResponse();
+        $this->events->dispatch(new InferenceResponseCreated($this->execution->response()));
     }
 }

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\Json\Json;
@@ -16,18 +17,19 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * execute any request to the underlying LLM API until the data is accessed
  * via its methods (`get()`, `response()`).
  */
-readonly class PendingInference
+class PendingInference
 {
-    protected CanHandleInference $driver;
-    protected EventDispatcherInterface $events;
-    protected InferenceRequest $request;
+    protected readonly CanHandleInference $driver;
+    protected readonly EventDispatcherInterface $events;
+
+    protected InferenceExecution $execution;
 
     public function __construct(
-        InferenceRequest         $request,
-        CanHandleInference       $driver,
+        InferenceExecution $execution,
+        CanHandleInference $driver,
         EventDispatcherInterface $eventDispatcher,
     ) {
-        $this->request = $request;
+        $this->execution = $execution;
         $this->events = $eventDispatcher;
         $this->driver = $driver;
     }
@@ -38,7 +40,7 @@ readonly class PendingInference
      * @return bool True if the content is being streamed, false otherwise.
      */
     public function isStreamed() : bool {
-        return $this->request->isStreamed();
+        return $this->execution->request()->isStreamed();
     }
 
     /**
@@ -62,7 +64,7 @@ readonly class PendingInference
         }
 
         return new InferenceStream(
-            request: $this->request,
+            execution: $this->execution,
             driver: $this->driver,
             eventDispatcher: $this->events,
         );
@@ -94,10 +96,23 @@ readonly class PendingInference
      * @return InferenceResponse The constructed InferenceResponse object, either fully or from partial responses if streaming is enabled.
      */
     public function response() : InferenceResponse {
-        $response = match($this->isStreamed()) {
-            false => $this->driver->makeResponseFor($this->request), // $this->tryMakeInferenceResponse(),
-            true => InferenceResponse::fromPartialResponses($this->stream()->all()),
+        $response = $this->makeResponse($this->execution->request());
+        $this->execution = match(true) {
+            $response->hasFinishedWithFailure() => $this->execution->withFailedResponse($response),
+            default => $this->execution->withNewResponse($response),
         };
+        if ($response->hasFinishedWithFailure()) {
+            throw new \RuntimeException('Inference execution failed: ' . $response->finishReason()->value);
+        }
         return $response;
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function makeResponse(InferenceRequest $request) : InferenceResponse {
+        return match($this->isStreamed()) {
+            false => $this->driver->makeResponseFor($request),
+            true => $this->stream()->final(),
+        };
     }
 }

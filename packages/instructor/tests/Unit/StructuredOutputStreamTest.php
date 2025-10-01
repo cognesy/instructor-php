@@ -37,5 +37,5 @@ it('assembles streamed content into final typed value and accumulates usage', fu
     expect($final->age)->toBe(30);
 
     // Usage accumulated after consumption (1+2+3)
-    expect($stream->usage()->output())->toBeGreaterThanOrEqual(6);
+    expect($stream->lastResponse()->usage()->output())->toBeGreaterThanOrEqual(6);
 });

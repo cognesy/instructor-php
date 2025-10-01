@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -16,29 +19,31 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class StructuredOutputStream
 {
-    private Generator $stream;
+    private RequestHandler $requestHandler;
     private EventDispatcherInterface $events;
+
+    private Generator $stream;
+    private array $cachedResponseStream;
+    private readonly bool $cacheProcessedResponse;
+
+    private StructuredOutputExecution $execution;
     private PartialInferenceResponse|InferenceResponse|null $lastResponse = null;
-    private Usage $usage;
 
     /**
-     * @param Generator<PartialInferenceResponse> $stream
+     * @param Generator<StructuredOutputExecution> $stream
      * @param EventDispatcherInterface $events
      */
     public function __construct(
-        Generator $stream,
+        StructuredOutputExecution $execution,
+        RequestHandler $requestHandler,
         EventDispatcherInterface $events,
     ) {
-        $this->usage = new Usage();
-        $this->stream = $stream;
-        $this->events = $events;
-    }
+        $this->cacheProcessedResponse = true;
 
-    /**
-     * Returns current token usage for the stream
-     */
-    public function usage() : Usage {
-        return $this->usage;
+        $this->execution = $execution;
+        $this->requestHandler = $requestHandler;
+        $this->events = $events;
+        $this->stream = $this->getStream($execution);
     }
 
     /**
@@ -47,7 +52,7 @@ class StructuredOutputStream
      * @return TResponse
      */
     public function lastUpdate() : mixed {
-        return $this->lastResponse->value();
+        return $this->lastResponse?->value();
     }
 
     /**
@@ -115,15 +120,22 @@ class StructuredOutputStream
     }
 
     /**
-     * Returns a generator of partial LLM responses, which contain more detailed
-     * information about the response, including usage data.
+     * Returns a generator of streamed LLM responses (partials) and final response,
+     * which contain more detailed information, including usage data.
      *
-     * @return Generator<PartialInferenceResponse>
+     * @return Generator<PartialInferenceResponse|InferenceResponse>
      */
     public function responses() : Generator {
         foreach ($this->streamResponses() as $partialResponse) {
             yield $partialResponse;
         }
+    }
+
+    /**
+     * Convenience: aggregated usage for the last response seen on the stream.
+     */
+    public function usage() : Usage {
+        return $this->execution->usage() ?? Usage::none();
     }
 
     /**
@@ -141,15 +153,58 @@ class StructuredOutputStream
      * Private method that handles stream iteration, usage accumulation, and last response tracking.
      * This centralizes the common iteration logic used by all stream processing methods.
      *
-     * @return Generator<PartialInferenceResponse>
+     * @return Generator<StructuredOutputExecution> Yields structured output executions with updated responses.
      */
     private function streamResponses(): Generator {
-        foreach ($this->stream as $partialResponse) {
-            $this->lastResponse = $partialResponse;
-            $this->usage->accumulate($partialResponse->usage());
-            $this->events->dispatch(new StructuredOutputResponseUpdated(['partial' => json_encode($partialResponse->value())]));
-            yield $partialResponse;
+        /** @var StructuredOutputExecution $execution */
+        foreach ($this->stream as $execution) {
+            $response = $execution->inferenceResponse();
+            $this->lastResponse = $response;
+            $this->events->dispatch(new StructuredOutputResponseUpdated(['partial' => json_encode($response->value())]));
+            yield $response;
         }
         $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($this->lastResponse->value())]));
+    }
+
+    /**
+     * Gets a stream of partial responses for the given execution.
+     *
+     * @param StructuredOutputExecution $execution The execution for which to get the response stream.
+     * @return Generator<StructuredOutputExecution> A generator yielding structured output execution updates.
+     */
+    private function getStream(StructuredOutputExecution $execution) : Generator {
+        $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
+
+        // RESPONSE CACHING = IS DISABLED
+        if (!$this->cacheProcessedResponse) {
+            $executionUpdates = $this->requestHandler->streamUpdatesFor($execution);
+            $last = null;
+            foreach ($executionUpdates as $chunk) {
+                $last = $chunk;
+                yield $chunk;
+            }
+            if ($last !== null) {
+                $this->execution = $last;
+            }
+            return;
+        }
+
+        // RESPONSE CACHING = IS ENABLED
+        if (!isset($this->cachedResponseStream)) {
+            $this->cachedResponseStream = [];
+            $executionUpdates = $this->requestHandler->streamUpdatesFor($execution);
+            $last = null;
+            foreach ($executionUpdates as $chunk) {
+                $this->cachedResponseStream[] = $chunk;
+                $last = $chunk;
+                yield $chunk;
+            }
+            if ($last !== null) {
+                $this->execution = $last;
+            }
+            return;
+        }
+
+        yield from $this->cachedResponseStream;
     }
 }

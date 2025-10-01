@@ -9,12 +9,14 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Validation\Exceptions\ValidationException;
+use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
+use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
+use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Json\Json;
@@ -31,7 +33,6 @@ class RequestHandler
     protected readonly CanHandleEvents $events;
     protected readonly ?HttpClient $httpClient;
 
-    protected int $retries = 0;
     /** @var array<int, string> */
     protected array $errors = [];
 
@@ -49,8 +50,6 @@ class RequestHandler
         $this->llmProvider = $llmProvider;
         $this->events = $events;
         $this->httpClient = $httpClient;
-
-        $this->retries = 0;
         $this->errors = [];
     }
 
@@ -59,11 +58,11 @@ class RequestHandler
     /**
      * Generates response value
      */
-    public function responseFor(StructuredOutputExecution $execution): StructuredOutputExecution {
+    public function executionResultFor(StructuredOutputExecution $execution): StructuredOutputExecution {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$execution->maxRetriesReached()) {
             $inferenceResponse = $this->getInference($execution)->response();
-            $inferenceResponse->withContent(match ($execution->outputMode()) {
+            $inferenceResponse = $inferenceResponse->withContent(match ($execution->outputMode()) {
                 OutputMode::Text => $inferenceResponse->content(),
                 OutputMode::Tools => $inferenceResponse->toolCalls()->first()?->argsAsJson()
                     ?? $inferenceResponse->content() // fallback if no tool calls - some LLMs return just a string
@@ -72,14 +71,21 @@ class RequestHandler
                 // and replacing original content with it
                 default => Json::fromString($inferenceResponse->content())->toString(),
             });
-            $partialResponses = [];
-            $processingResult = $this->processResponse($execution, $inferenceResponse, $partialResponses);
+            $partialResponses = PartialInferenceResponseList::empty();
+            $processingResult = $this->responseGenerator->makeResponse(
+                response: $inferenceResponse,
+                responseModel: $execution->responseModel(),
+                mode: $execution->outputMode(),
+            );
+            if ($processingResult->isFailure()) {
+                $execution = $this->handleError($processingResult, $execution, $inferenceResponse, $partialResponses);
+            }
         }
 
-        $returnedValue = $this->finalizeResult($processingResult, $execution);
+        $returnedValue = $this->finalizeResult($execution, $processingResult);
 
         return $execution->withSuccessfulAttempt(
-            messages: $execution->request()->messages()->toArray(),
+            messages: $execution->request()->messages(),
             inferenceResponse: $inferenceResponse->withValue($returnedValue),
             partialInferenceResponses: $partialResponses,
             returnedValue: $returnedValue
@@ -87,25 +93,55 @@ class RequestHandler
     }
 
     /**
-     * Yields response value versions based on streamed responses
+     * Yields updated structured output executions based on streamed LLM responses.
      *
      * @param StructuredOutputExecution $execution
-     * @return Generator<PartialInferenceResponse>
+     * @return Generator<StructuredOutputExecution>
      */
-    public function streamResponseFor(StructuredOutputExecution $execution): Generator {
+    public function streamUpdatesFor(StructuredOutputExecution $execution): Generator {
         $processingResult = Result::failure("No response generated");
+
         while ($processingResult->isFailure() && !$execution->maxRetriesReached()) {
             $stream = $this->getInference($execution)->stream()->responses();
-            yield from $this->partialsGenerator->getPartialResponses($stream, $execution->responseModel());
+            $partialResponseStream = $this->partialsGenerator->getPartialResponses($stream, $execution->responseModel());
 
+            $partialResponses = PartialInferenceResponseList::empty();
+            /** @var PartialInferenceResponse $partialResponse */
+            foreach ($partialResponseStream as $partialResponse) {
+                $partialResponses = $partialResponses->withNewPartialResponse($partialResponse);
+                $aggregated = InferenceResponseFactory::fromPartialResponses($partialResponses)
+                    ->withValue($partialResponse->value());
+                $updatedExecution = $execution->withCurrentAttempt(
+                    messages: $execution->request()->messages(),
+                    inferenceResponse: $aggregated,
+                    partialInferenceResponses: $partialResponses,
+                    errors: $this->errors,
+                );
+                yield $updatedExecution;
+            }
+
+            // we're done streaming - get final response
             $inferenceResponse = $this->partialsGenerator->getCompleteResponse();
             $partialResponses = $this->partialsGenerator->partialResponses();
-            $processingResult = $this->processResponse($execution, $inferenceResponse, $partialResponses);
+            $processingResult = $this->responseGenerator->makeResponse(
+                response: $inferenceResponse,
+                responseModel: $execution->responseModel(),
+                mode: $execution->outputMode(),
+            );
+            if ($processingResult->isFailure()) {
+                $execution = $this->handleError($processingResult, $execution, $inferenceResponse, $partialResponses);
+            }
         }
 
-        $value = $this->finalizeResult($processingResult, $execution, $inferenceResponse, $partialResponses);
+        $value = $this->finalizeResult($execution, $processingResult);
 
-        yield $inferenceResponse->withValue($value);
+        // Yield final response with value
+        yield $execution->withSuccessfulAttempt(
+            messages: $execution->request()->messages(),
+            inferenceResponse: $inferenceResponse->withValue($value),
+            partialInferenceResponses: $partialResponses,
+            returnedValue: $value,
+        );
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////
@@ -132,35 +168,15 @@ class RequestHandler
             ->create();
     }
 
-    protected function processResponse(
-        StructuredOutputExecution $execution,
-        InferenceResponse $inferenceResponse,
-        array $partialResponses
-    ): Result {
-        // we have InferenceResponse here - let's process it: deserialize, validate, transform
-        $processingResult = $this->responseGenerator->makeResponse(
-            response: $inferenceResponse,
-            responseModel: $execution->responseModel(),
-            mode: $execution->outputMode(),
-        );
-
-        if ($processingResult->isFailure()) {
-            // retry - we have not managed to deserialize, validate or transform the response
-            assert($processingResult instanceof Failure);
-            $this->handleError($processingResult, $execution, $inferenceResponse, $partialResponses);
-        }
-
-        return $processingResult;
-    }
-
     protected function finalizeResult(
-        Result $processingResult,
         StructuredOutputExecution $execution,
+        Result $processingResult,
     ): mixed {
         if ($processingResult->isFailure()) {
-            $this->events->dispatch(new ValidationRecoveryLimitReached(['retries' => $execution->attemptCount(), 'errors' => $this->errors]));
-            throw new ValidationException(
-                message: "Validation recovery attempts limit reached after {$execution->attemptCount()} attempt(s) due to: " . implode(", ", $this->errors),
+            $this->events->dispatch(new StructuredOutputRecoveryLimitReached(['retries' => $execution->attemptCount(), 'errors' => $this->errors]));
+            throw new StructuredOutputRecoveryException(
+                message: "Structured output recovery attempts limit reached after {$execution->attemptCount()} attempt(s) due to: "
+                    . implode(", ", $this->errors),
                 errors: $this->errors,
             );
         }
@@ -168,25 +184,25 @@ class RequestHandler
     }
 
     protected function handleError(
-        Failure $processingResult,
+        Result $processingResult,
         StructuredOutputExecution $execution,
         InferenceResponse $inferenceResponse,
-        array $partialResponses
-    ): void {
+        PartialInferenceResponseList $partialResponses
+    ): StructuredOutputExecution {
+        assert($processingResult instanceof Failure);
         $request = $execution->request();
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
-
         // store failed response
-        $execution->withFailedAttempt(
-            messages: $request->messages()->toArray(), // TODO: set Messages not array?
+        $execution = $execution->withFailedAttempt(
+            messages: $request->messages(),
             inferenceResponse: $inferenceResponse,
             partialInferenceResponses: $partialResponses,
             errors: $this->errors
         );
-        $this->retries++;
         if (!$execution->maxRetriesReached()) {
-            $this->events->dispatch(new NewValidationRecoveryAttempt(['retries' => $this->retries, 'errors' => $this->errors]));
+            $this->events->dispatch(new NewValidationRecoveryAttempt(['retries' => $execution->attemptCount(), 'errors' => $this->errors]));
         }
+        return $execution;
     }
 }

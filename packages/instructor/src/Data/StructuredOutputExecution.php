@@ -2,7 +2,12 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Collections\StructuredOutputAttempts;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
+use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
+use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Uuid;
@@ -15,10 +20,12 @@ final readonly class StructuredOutputExecution
     private DateTimeImmutable $updatedAt;
 
     private StructuredOutputRequest $request;
-    private StructuredOutputAttempts $attempts;
     private StructuredOutputConfig $config;
     private ?ResponseModel $responseModel;
-    private ?StructuredOutputResponse $response;
+
+    private StructuredOutputAttempts $attempts;
+    private StructuredOutputAttempt $currentAttempt;
+    private bool $isFinalized;
 
     public function __construct(
         ?StructuredOutputRequest $request = null,
@@ -26,7 +33,8 @@ final readonly class StructuredOutputExecution
         ?ResponseModel $responseModel = null,
         //
         ?StructuredOutputAttempts $attempts = null,
-        ?StructuredOutputResponse $response = null,
+        ?StructuredOutputAttempt $currentAttempt = null,
+        ?bool $isFinalized = null,
         //
         ?string $id = null,
         ?DateTimeImmutable $createdAt = null,
@@ -37,10 +45,12 @@ final readonly class StructuredOutputExecution
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
         $this->request = $request ?? new StructuredOutputRequest();
-        $this->attempts = $attempts ?? new StructuredOutputAttempts();
-        $this->responseModel = $responseModel;
-        $this->response = $response;
         $this->config = $config ?? new StructuredOutputConfig();
+        $this->responseModel = $responseModel;
+
+        $this->attempts = $attempts ?? new StructuredOutputAttempts();
+        $this->currentAttempt = $currentAttempt ?? new StructuredOutputAttempt();
+        $this->isFinalized = $isFinalized ?? false;
     }
 
     // ACCESSORS /////////////////////////////////////////////////////////
@@ -53,18 +63,6 @@ final readonly class StructuredOutputExecution
         return $this->responseModel;
     }
 
-    public function attempts(): StructuredOutputAttempts {
-        return $this->attempts;
-    }
-
-    public function response(): ?StructuredOutputResponse {
-        return $this->response;
-    }
-
-    public function inferenceResponse(): ?InferenceResponse {
-        return $this->attempts->response()?->inferenceResponse();
-    }
-
     public function config(): StructuredOutputConfig {
         return $this->config;
     }
@@ -73,24 +71,32 @@ final readonly class StructuredOutputExecution
         return $this->config->outputMode();
     }
 
-    public function hasSucceeded(): bool {
-        return !is_null($this->response);
+    public function attempts(): StructuredOutputAttempts {
+        return $this->attempts;
     }
 
     public function attemptCount(): int {
-        return $this->attempts->attemptCount();
+        return $this->attempts->count();
     }
 
-    public function lastFailedResponse(): ?StructuredOutputAttempt {
-        return $this->attempts->lastFailedResponse();
+    public function inferenceResponse(): ?InferenceResponse {
+        return $this->currentAttempt->inferenceResponse();
     }
 
-    public function hasLastResponseFailed(): bool {
-        return $this->attempts->hasLastResponseFailed();
+    public function lastResponse(): ?StructuredOutputAttempt {
+        return $this->attempts->last();
     }
 
     public function maxRetriesReached(): bool {
-        return $this->attempts->attemptCount() > $this->config->maxRetries();
+        return $this->attempts->count() > $this->config->maxRetries();
+    }
+
+    public function isFinalized(): bool {
+        return $this->isFinalized;
+    }
+
+    public function usage(): \Cognesy\Polyglot\Inference\Data\Usage {
+        return $this->attempts->usage();
     }
 
     // MUTATORS //////////////////////////////////////////////////////////
@@ -100,14 +106,17 @@ final readonly class StructuredOutputExecution
         ?StructuredOutputConfig $config = null,
         ?ResponseModel $responseModel = null,
         ?StructuredOutputAttempts $attempts = null,
-        ?StructuredOutputResponse $response = null,
+        ?StructuredOutputAttempt $currentAttempt = null,
+        ?bool $isFinalized = null,
     ) : self {
         return new self(
             request: $request ?? $this->request,
             config: $config ?? $this->config,
             responseModel: $responseModel ?? $this->responseModel,
             attempts: $attempts ?? $this->attempts,
-            response: $response ?? $this->response,
+            currentAttempt: $currentAttempt ?? $this->currentAttempt,
+            isFinalized: $isFinalized ?? $this->isFinalized,
+            //
             id: $this->id,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
@@ -115,56 +124,103 @@ final readonly class StructuredOutputExecution
     }
 
     public function withStreamed(bool $isStreamed = true) : self {
-        return $this->with(
-            request: $this->request->withStreamed($isStreamed), // TODO: maybe this should be set at execution level?
-        );
+        return $this->with(request: $this->request->withStreamed($isStreamed));
     }
 
-    public function withResponseModel(ResponseModel $model): self {
-        return $this->with(responseModel: $model);
+    public function withCurrentAttempt(
+        Messages $messages,
+        InferenceResponse $inferenceResponse,
+        PartialInferenceResponseList $partialInferenceResponses,
+        array $errors
+    ) : self {
+        $inferenceExecution = new InferenceExecution();
+        $inferenceAttempt = new InferenceAttempt(
+            response: $inferenceResponse,
+            partialResponses: $partialInferenceResponses,
+            isFinalized: false,
+            errors: $errors,
+        );
+        $inferenceExecution = $inferenceExecution->with(
+            attempts: $inferenceExecution->attempts()->withNewAttempt($inferenceAttempt),
+            currentAttempt: $inferenceAttempt,
+            isFinalized: false,
+        );
+
+        $attempt = new StructuredOutputAttempt(
+            inferenceExecution: $inferenceExecution,
+            isFinalized: false,
+            errors: $errors,
+        );
+
+        return $this->with(
+            attempts: $this->attempts->withNewAttempt($attempt),
+            currentAttempt: $attempt,
+            isFinalized: false,
+        );
     }
 
     public function withFailedAttempt(
-        array $messages,
+        Messages $messages,
         InferenceResponse $inferenceResponse,
-        array $partialInferenceResponses = [],
+        ?PartialInferenceResponseList $partialInferenceResponses = null,
+        mixed $returnedValue = null,
         array $errors = [],
     ): self {
-        if (!is_null($this->response)) {
+        if ($this->isFinalized && !$this->currentAttempt->hasErrors()) {
             throw new \LogicException('Cannot record a failed attempt on an execution that has already succeeded.');
         }
-        $attempts = $this->attempts->withNewFailedAttempt(
-            messages: $messages,
-            inferenceResponse: $inferenceResponse,
-            partialInferenceResponses: $partialInferenceResponses,
+        $inferenceExecution = new InferenceExecution();
+        $inferenceAttempt = InferenceAttempt::fromFailedResponse(
+            response: $inferenceResponse,
+            partialResponses: $partialInferenceResponses,
             errors: $errors,
         );
-        return $this->with(attempts: $attempts);
+        $inferenceExecution = $inferenceExecution->with(
+            attempts: $inferenceExecution->attempts()->withNewAttempt($inferenceAttempt),
+            currentAttempt: $inferenceAttempt,
+            isFinalized: true,
+        );
+
+        $attempt = new StructuredOutputAttempt(
+            inferenceExecution: $inferenceExecution,
+            errors: $errors,
+        );
+        return $this->with(
+            attempts: $this->attempts->withNewAttempt($attempt),
+            currentAttempt: $attempt,
+            isFinalized: false, // failed attempt doesn't finalize the execution
+        );
     }
 
     public function withSuccessfulAttempt(
-        array $messages,
+        Messages $messages,
         InferenceResponse $inferenceResponse,
-        array $partialInferenceResponses = [],
+        ?PartialInferenceResponseList $partialInferenceResponses = null,
         mixed $returnedValue = null,
     ): self {
-        if (!is_null($this->response)) {
+        if ($this->isFinalized && !$this->currentAttempt->hasErrors()) {
             throw new \LogicException('Cannot record a successful attempt on an execution that has already succeeded.');
         }
-
-        $attempts = $this->attempts->withSuccessfulResponse(
-            messages: $messages,
-            inferenceResponse: $inferenceResponse,
-            partialInferenceResponses: $partialInferenceResponses,
+        $inferenceExecution = new InferenceExecution();
+        $inferenceAttempt = InferenceAttempt::fromResponse($inferenceResponse);
+        if ($partialInferenceResponses !== null && !$partialInferenceResponses->isEmpty()) {
+            $inferenceAttempt = $inferenceAttempt->with(partialResponses: $partialInferenceResponses);
+        }
+        $inferenceExecution = $inferenceExecution->with(
+            attempts: $inferenceExecution->attempts()->withNewAttempt($inferenceAttempt),
+            currentAttempt: $inferenceAttempt,
+            isFinalized: true,
         );
-        $response = new StructuredOutputResponse(
-            raw: $inferenceResponse->content(),
-            decoded: $inferenceResponse->findJsonData()->toArray(),
-            deserialized: $returnedValue,
+
+        $attempt = new StructuredOutputAttempt(
+            inferenceExecution: $inferenceExecution,
+            isFinalized: true,
+            output: $returnedValue,
         );
         return $this->with(
-            attempts: $attempts,
-            response: $response,
+            attempts: $this->attempts->withNewAttempt($attempt),
+            currentAttempt: $attempt,
+            isFinalized: true, // successful attempt finalizes the execution
         );
     }
 
@@ -178,6 +234,8 @@ final readonly class StructuredOutputExecution
             'request' => $this->request->toArray(),
             'attempts' => $this->attempts->toArray(),
             'response' => $this->response?->toArray(),
+            'responseModel' => $this->responseModel?->toArray(),
+            'config' => $this->config->toArray(),
         ];
     }
 }

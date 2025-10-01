@@ -54,6 +54,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
             }
         } catch (Exception $e) {
             $this->events->dispatch(new InferenceFailed([
+                'context' => 'Failed to process response',
                 'exception' => $e->getMessage(),
                 'statusCode' => $httpResponse->statusCode() ?? 500,
                 'headers' => $httpResponse->headers() ?? [],
@@ -81,6 +82,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
             }
         } catch (Exception $e) {
             $this->events->dispatch(new InferenceFailed([
+                'context' => 'Failed to process streamed response',
                 'exception' => $e->getMessage(),
                 'statusCode' => $httpResponse->statusCode() ?? 500,
                 'headers' => $httpResponse->headers() ?? [],
@@ -97,6 +99,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
             $httpResponse = $this->httpClient->withRequest($request)->get();
         } catch(Exception $e) {
             $this->events->dispatch(new InferenceFailed([
+                'context' => 'HTTP request sending failed',
                 'exception' => $e->getMessage(),
                 'request' => $request->toArray(),
             ]));
@@ -105,6 +108,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
 
         if ($httpResponse->statusCode() >= 400) {
             $this->events->dispatch(new InferenceFailed([
+                'context' => 'HTTP response received with error status',
                 'statusCode' => $httpResponse->statusCode(),
                 'headers' => $httpResponse->headers(),
                 'body' => $httpResponse->body(),

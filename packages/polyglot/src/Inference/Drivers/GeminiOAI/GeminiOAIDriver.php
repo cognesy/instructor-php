@@ -23,7 +23,7 @@ class GeminiOAIDriver extends BaseInferenceDriver
         protected EventDispatcherInterface $events,
     )
     {
-        $this->requestTranslator = new OpenAIRequestAdapter(
+        $this->requestTranslator = new GeminiOAIRequestAdapter(
             $config,
             new GeminiOAIBodyFormat(
                 $config,

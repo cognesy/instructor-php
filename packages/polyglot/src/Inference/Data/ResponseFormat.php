@@ -8,9 +8,9 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 class ResponseFormat
 {
     private ?string $name;
-    private ?bool $strict;
-    private ?string $type;
     private ?array $schema;
+    private ?string $type;
+    private ?bool $strict;
 
     private ?Closure $toTextHandler = null;
     private ?Closure $toJsonObjectHandler = null;
@@ -28,30 +28,51 @@ class ResponseFormat
         $this->strict = $strict;
     }
 
-    public static function fromResponseFormat(array $responseFormat): self {
+    // CONSTRUCTORS ///////////////////////////////////////////////////
+
+    public static function fromData(array $data): self {
         return new self(
-            $responseFormat['type'] ?? null,
-            $responseFormat['name'] ?? $responseFormat['json_schema']['name'] ?? null,
-            $responseFormat['strict'] ?? $responseFormat['json_schema']['strict'] ?? null,
-            $responseFormat['schema'] ?? $responseFormat['json_schema']['schema'] ?? null,
+            type: $data['type'] ?? null,
+            schema: $data['schema'] ?? $data['json_schema']['schema'] ?? null,
+            name: $data['name'] ?? $data['json_schema']['name'] ?? null,
+            strict: $data['strict'] ?? $data['json_schema']['strict'] ?? null,
         );
     }
 
-    public function name(): ?string {
+    public static function empty(): self {
+        return new self();
+    }
+
+    // ACCESSORS //////////////////////////////////////////////////////
+
+    public function schemaName(): string {
         return $this->name ?? 'schema';
     }
 
-    public function strict(): ?bool {
+    public function strict(): bool {
         return $this->strict ?? true;
     }
 
-    public function type(): ?string {
+    public function type(): string {
         return $this->type ?? 'text';
     }
 
-    public function schema(): ?array {
+    public function schema(): array {
         return $this->schema ?? [];
     }
+
+    public function schemaFilteredWith(callable $filter) : array {
+        return $filter($this->schema());
+    }
+
+    public function isEmpty() : bool {
+        return is_null($this->type)
+            && is_null($this->schema)
+            && is_null($this->name)
+            && is_null($this->strict);
+    }
+
+    // TRANSFORMATION AND CONVERSION //////////////////////////////////
 
     public function as(OutputMode $mode): array {
         return match ($mode) {
@@ -85,6 +106,8 @@ class ResponseFormat
         };
     }
 
+    // MUTATORS ///////////////////////////////////////////////////////
+
     public function withToTextHandler(Closure $callback): self {
         $this->toTextHandler = $callback;
         return $this;
@@ -99,6 +122,8 @@ class ResponseFormat
         $this->toJsonSchemaHandler = $callback;
         return $this;
     }
+
+    // SERIALIZATION //////////////////////////////////////////////////
 
     // INTERNAL //////////////////////////////////////////////////////
 

@@ -28,7 +28,7 @@ interface ListInterface extends Countable, IteratorAggregate
     /** @return ?T */
     public function last(): mixed;
 
-    public function withAdded(mixed ...$items): static;
+    public function withAppended(mixed ...$items): static;
 
     public function withInserted(int $index, mixed ...$items): static;
 

@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
@@ -20,7 +21,7 @@ it('maps InferenceRequest to OpenAI HttpRequest correctly (non-streaming)', func
     );
 
     $req = new InferenceRequest(
-        messages: 'Hello',
+        messages: Messages::fromAny('Hello'),
         model: '',
         options: ['stream' => false]
     );

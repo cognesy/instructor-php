@@ -17,8 +17,6 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseDeserializer
 {
-    use Traits\ResponseDeserializer\HandlesMutation;
-
     public function __construct(
         private EventDispatcherInterface $events,
         private array $deserializers,
@@ -37,6 +35,18 @@ class ResponseDeserializer
             default => new ResponseDeserialized(['response' => json_encode($result->unwrap())])
         });
         return $result;
+    }
+
+    /** @param CanDeserializeClass[] $deserializers */
+    public function appendDeserializers(array $deserializers) : self {
+        $this->deserializers = array_merge($this->deserializers, $deserializers);
+        return $this;
+    }
+
+    /** @param CanDeserializeClass[] $deserializers */
+    public function setDeserializers(array $deserializers) : self {
+        $this->deserializers = $deserializers;
+        return $this;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////

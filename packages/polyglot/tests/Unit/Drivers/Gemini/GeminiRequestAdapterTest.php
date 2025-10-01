@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiBodyFormat;
@@ -19,7 +20,7 @@ it('maps InferenceRequest to Gemini HttpRequest correctly (non-stream)', functio
         new GeminiBodyFormat($config, new GeminiMessageFormat())
     );
 
-    $req = new InferenceRequest(messages: 'Hello', options: ['stream' => false]);
+    $req = new InferenceRequest(messages: Messages::fromString('Hello'), options: ['stream' => false]);
     $http = $adapter->toHttpRequest($req);
 
     expect($http->method())->toBe('POST');
@@ -41,7 +42,7 @@ it('maps InferenceRequest to Gemini HttpRequest correctly (stream)', function ()
         new GeminiBodyFormat($config, new GeminiMessageFormat())
     );
 
-    $req = new InferenceRequest(messages: 'Hello', options: ['stream' => true]);
+    $req = new InferenceRequest(messages: Messages::fromString('Hello'), options: ['stream' => true]);
     $http = $adapter->toHttpRequest($req);
 
     expect($http->url())->toContain(':streamGenerateContent');

@@ -6,24 +6,46 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class InferenceRequestBuilder
 {
-    private Messages        $messages;
-    private string          $model = '';
-    private array           $tools = [];
-    private string|array    $toolChoice = [];
-    private array           $responseFormat = [];
-    private array           $options = [];
-    private ?OutputMode     $mode = null;
+    private ?Messages $messages;
+    private ?string $model;
+    private ?array $tools;
+    private null|string|array $toolChoice;
+    private ?ResponseFormat $responseFormat;
+    private ?array $options;
+    private ?OutputMode $mode;
+
+    private ?bool $streaming;
+    private ?int $maxTokens;
+
     protected CachedContext $cachedContext;
 
-    private ?bool            $streaming = null;
-    private ?int             $maxTokens = null;
-
-    public function __construct() {
-        $this->cachedContext = new CachedContext();
+    public function __construct(
+        ?Messages $messages = null,
+        ?string $model = null,
+        ?array $tools = null,
+        null|string|array $toolChoice = null,
+        ?ResponseFormat $responseFormat = null,
+        ?array $options = null,
+        ?OutputMode $mode = null,
+        ?CachedContext $cachedContext = null,
+        ?bool $streaming = null,
+        ?int $maxTokens = null,
+    ) {
+        $this->messages = $messages;
+        $this->model = $model;
+        $this->tools = $tools;
+        $this->toolChoice = $toolChoice;
+        $this->responseFormat = $responseFormat;
+        $this->options = $options;
+        $this->mode = $mode;
+        $this->streaming = $streaming;
+        $this->maxTokens = $maxTokens;
+        $this->cachedContext = $cachedContext ?? new CachedContext();
     }
 
     /**
@@ -38,22 +60,21 @@ class InferenceRequestBuilder
      * @param OutputMode $mode The mode of operation for the inference.
      */
     public function with(
-        string|array|Message|Messages $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = [],
-        array        $responseFormat = [],
-        array        $options = [],
+        null|string|array|Message|Messages $messages = null,
+        ?string       $model = null,
+        ?array        $tools = null,
+        null|string|array $toolChoice = null,
+        ?array        $responseFormat = null,
+        ?array        $options = null,
         ?OutputMode  $mode = null,
     ) : static {
-        $this->messages = Messages::fromAny($messages);
-        $this->model = $model;
-        $this->tools = $tools;
-        $this->toolChoice = $toolChoice;
-        $this->responseFormat = $responseFormat;
-        $this->options = array_merge($this->options, $options);
-        $this->streaming = $options['stream'] ?? $this->streaming;
-        $this->mode = $mode;
+        $this->messages = $messages ? Messages::fromAny($messages) : $this->messages;
+        $this->model = $model ?? $this->model;
+        $this->tools = $tools ?? $this->tools;
+        $this->toolChoice = $toolChoice ?? $this->toolChoice;
+        $this->responseFormat = $responseFormat ? ResponseFormat::fromData($responseFormat) : $this->responseFormat;
+        $this->options = $options ?? $this->options;
+        $this->mode = $mode ?? $this->mode;
         return $this;
     }
 
@@ -78,12 +99,12 @@ class InferenceRequestBuilder
     }
 
     public function withResponseFormat(array $responseFormat): static {
-        $this->responseFormat = $responseFormat;
+        $this->responseFormat = ResponseFormat::fromData($responseFormat);
         return $this;
     }
 
     public function withOptions(array $options): static {
-        $this->options = $options;
+        $this->options = array_merge($this->options ?? [], $options);
         return $this;
     }
 
@@ -134,17 +155,16 @@ class InferenceRequestBuilder
         $this->streaming = $request->isStreamed();
         $this->mode = $request->outputMode();
         $this->cachedContext = $request->cachedContext();
-
         return $this;
     }
 
     public function create(): InferenceRequest {
-        $options = $this->options;
+        $options = $this->options ?? [];
         $options = $this->override($options, 'stream', $this->streaming);
         $options = $this->override($options, 'max_tokens', $this->maxTokens);
 
         return new InferenceRequest(
-            messages: $this->messages->toArray(),
+            messages: $this->messages,
             model: $this->model,
             tools: $this->tools,
             toolChoice: $this->toolChoice,

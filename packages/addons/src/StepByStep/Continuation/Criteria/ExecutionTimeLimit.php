@@ -17,16 +17,23 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue
 {
     /** @var Closure(TState): DateTimeImmutable */
     private Closure $startedAtResolver;
+    private ClockInterface $clock;
+    private int $maxSeconds;
 
     /**
      * @param Closure(TState): DateTimeImmutable $startedAtResolver Provides the process start timestamp.
      */
     public function __construct(
-        private int $maxSeconds,
+        int $maxSeconds,
         callable $startedAtResolver,
-        private ClockInterface $clock = new SystemClock(),
+        ?ClockInterface $clock = null,
     ) {
+        if ($maxSeconds <= 0) {
+            throw new \InvalidArgumentException('Max seconds must be greater than zero.');
+        }
+        $this->maxSeconds = $maxSeconds;
         $this->startedAtResolver = Closure::fromCallable($startedAtResolver);
+        $this->clock = $clock ?? new SystemClock();
     }
 
     public function canContinue(object $state): bool {

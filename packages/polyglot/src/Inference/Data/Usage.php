@@ -73,6 +73,16 @@ class Usage
         return $this;
     }
 
+    public function withAccumulated(Usage $usage) : self {
+        return (new self(
+            inputTokens: $this->inputTokens,
+            outputTokens: $this->outputTokens,
+            cacheWriteTokens: $this->cacheWriteTokens,
+            cacheReadTokens: $this->cacheReadTokens,
+            reasoningTokens: $this->reasoningTokens,
+        ))->accumulate($usage);
+    }
+
     // TRANSFORMERS ////////////////////////////////////////////////////////
 
     public function toString() : string {

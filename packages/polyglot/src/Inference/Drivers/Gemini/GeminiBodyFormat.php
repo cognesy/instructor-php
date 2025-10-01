@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 
@@ -55,7 +56,7 @@ class GeminiBodyFormat implements CanMapRequestBody
             ->forRoles(['system'])
             ->toString();
 
-        return empty($system) ? [] : ['parts' => ['text' => $system]];
+        return empty($system) ? [] : ['parts' => [[ 'text' => $system ]]];
     }
 
     protected function toMessages(InferenceRequest $request): array {
@@ -76,7 +77,7 @@ class GeminiBodyFormat implements CanMapRequestBody
         return $this->filterEmptyValues([
             "responseMimeType" => $this->toResponseMimeType($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
-            "candidateCount" => 1,
+            // candidateCount is a top-level param in some API versions; omit here for compatibility
             "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
             "temperature" => $options['temperature'] ?? 1.0,
         ]);
@@ -101,7 +102,9 @@ class GeminiBodyFormat implements CanMapRequestBody
             is_array($toolChoice) => [
                 "function_calling_config" => array_filter([
                     "mode" => $this->mapToolChoice($toolChoice['mode'] ?? "ANY"),
-                    "allowed_function_names" => $toolChoice['function']['name'] ?? [],
+                    "allowed_function_names" => isset($toolChoice['function']['name'])
+                        ? [ $toolChoice['function']['name'] ]
+                        : [],
                 ]),
             ],
             default => ["function_calling_config" => ["mode" => "ANY"]],
@@ -120,27 +123,25 @@ class GeminiBodyFormat implements CanMapRequestBody
     protected function toResponseMimeType(?OutputMode $mode): string {
         return match($mode) {
             OutputMode::Text => "text/plain",
-            OutputMode::MdJson => "text/plain",
+            OutputMode::MdJson => "text/plain", // we prompt-format to JSON within text
             OutputMode::Tools => "text/plain",
             OutputMode::Json => "application/json",
             OutputMode::JsonSchema => "application/json",
-            default => "application/json",
+            default => "text/plain", // Unrestricted and any other defaults to plain text
         };
     }
 
-    protected function toResponseSchema(array $responseFormat, ?OutputMode $mode) : array {
-        $schema = $responseFormat['schema'] ?? $responseFormat['json_schema']['schema'] ?? [];
-
+    protected function toResponseSchema(ResponseFormat $responseFormat, ?OutputMode $mode) : array {
+        $schema = $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...));
         $responseSchema = match($mode) {
             OutputMode::Json,
-            OutputMode::JsonSchema,
-            OutputMode::Unrestricted => $this->removeDisallowedEntries($schema),
+            OutputMode::JsonSchema => $schema,
+            OutputMode::Unrestricted,
             OutputMode::Text,
             OutputMode::MdJson,
             OutputMode::Tools => [],
             default  => [],
         };
-
         return $responseSchema;
     }
 

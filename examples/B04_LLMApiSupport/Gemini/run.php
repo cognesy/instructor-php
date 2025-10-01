@@ -23,7 +23,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('gemini') // see /config/llm.php
+    ->using('gemini')
     ->wiretap(fn($e) => $e->print()) // optional, for debugging
     ->withDebugPreset('detailed')
     ->with(

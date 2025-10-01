@@ -51,7 +51,7 @@ final class StudentList implements Countable, IteratorAggregate
 
     public function withStudent(Student $student): self
     {
-        $next = $this->items->withAdded($student);
+        $next = $this->items->withAppended($student);
         return self::fromArray($next->all());
     }
 

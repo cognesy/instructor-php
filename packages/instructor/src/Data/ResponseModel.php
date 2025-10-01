@@ -92,7 +92,7 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     public function toolDescription() : string {
-        return $this->responseModel ?? $this->config->toolDescription() ?? '';
+        return $this->toolDescription ?? $this->config->toolDescription() ?? '';
     }
 
     // MUTATORS ////////////////////////////////////////////////////////

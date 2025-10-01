@@ -95,7 +95,7 @@ test('checks if list is empty', function () {
 
 test('adds elements immutably', function () {
     $original = ArrayList::fromArray([1, 2]);
-    $new = $original->withAdded(3, 4);
+    $new = $original->withAppended(3, 4);
 
     expect($original->count())->toBe(2)
         ->and($original->toArray())->toBe([1, 2])
@@ -279,7 +279,7 @@ test('chaining operations', function () {
     $result = $list
         ->filter(fn($x) => $x % 2 === 0)  // [2, 4, 6, 8, 10]
         ->map(fn($x) => $x * 2)            // [4, 8, 12, 16, 20]
-        ->withAdded(24)                    // [4, 8, 12, 16, 20, 24]
+        ->withAppended(24)                    // [4, 8, 12, 16, 20, 24]
         ->withRemovedAt(0)                 // [8, 12, 16, 20, 24]
         ->withInserted(2, 14);             // [8, 12, 14, 16, 20, 24]
 
@@ -357,7 +357,7 @@ test('reverse chaining with other operations', function () {
     $result = $list
         ->filter(fn($x) => $x % 2 === 0)  // [2, 4, 6]
         ->reverse()                       // [6, 4, 2]
-        ->withAdded(8)                    // [6, 4, 2, 8]
+        ->withAppended(8)                    // [6, 4, 2, 8]
         ->map(fn($x) => $x * 2);          // [12, 8, 4, 16]
 
     expect($result->toArray())->toBe([12, 8, 4, 16]);

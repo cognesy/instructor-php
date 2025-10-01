@@ -21,20 +21,16 @@ describe('RequestMaterializer', function () {
         ?string $prompt = '',
         array $examples = [],
         ?CachedContext $cached = null,
-        ?StructuredOutputConfig $config = null,
     ): StructuredOutputRequest {
-        $cfg = $config ?? makeConfig();
         return new StructuredOutputRequest(
             messages: $messages ?? '',
             requestedSchema: [],
-            responseModel: null,
             system: $system,
             prompt: $prompt,
             examples: $examples,
             model: null,
             options: [],
             cachedContext: $cached ?? new CachedContext(),
-            config: $cfg,
         );
     }
 
@@ -129,9 +125,9 @@ describe('RequestMaterializer', function () {
         $request = makeRequest(messages: [['role' => 'user', 'content' => 'foo']], system: '', prompt: '');
         $execution = makeExecution(request: $request);
 
-        // Simulate a failed attempt
-        $execution->withFailedAttempt(
-            messages: [['role' => 'assistant', 'content' => 'bad json']],
+        // Simulate a failed attempt (assign returned instance)
+        $execution = $execution->withFailedAttempt(
+            messages: Messages::fromAny([['role' => 'assistant', 'content' => 'bad json']]),
             inferenceResponse: new InferenceResponse(content: '{bad json}'),
             errors: ['Missing field x']
         );

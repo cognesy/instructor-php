@@ -4,14 +4,12 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
@@ -20,7 +18,6 @@ use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
-use Generator;
 
 /**
  * @template TResponse
@@ -36,14 +33,11 @@ class PendingStructuredOutput
     private readonly ResponseTransformer $responseTransformer;
 
     private StructuredOutputExecution $execution;
-    private readonly StructuredOutputRequest $request;
-    private readonly StructuredOutputConfig $config;
     private readonly LLMProvider $llmProvider;
-    private readonly bool $cacheProcessedResponse;
     private readonly ?HttpClient $httpClient;
 
+    private readonly bool $cacheProcessedResponse;
     private InferenceResponse $cachedResponse;
-    private array $cachedResponseStream;
 
     public function __construct(
         StructuredOutputExecution $execution,
@@ -51,7 +45,6 @@ class PendingStructuredOutput
         ResponseValidator        $responseValidator,
         ResponseTransformer      $responseTransformer,
         LLMProvider              $llmProvider,
-        StructuredOutputConfig   $config,
         CanHandleEvents          $events,
         ?HttpClient              $httpClient = null,
     ) {
@@ -63,7 +56,6 @@ class PendingStructuredOutput
         $this->responseValidator = $responseValidator;
         $this->responseTransformer = $responseTransformer;
         $this->llmProvider = $llmProvider;
-        $this->config = $config;
         $this->httpClient = $httpClient;
         $this->requestHandler = $this->makeRequestHandler();
     }
@@ -102,15 +94,22 @@ class PendingStructuredOutput
         return $this->getResponse();
     }
 
+    public function execution() : StructuredOutputExecution {
+        return $this->execution;
+    }
+
     /**
      * Executes the request and returns the response stream
      *
      * @return StructuredOutputStream<TResponse>
      */
     public function stream() : StructuredOutputStream {
-        $this->execution->withStreamed();
-        $stream = $this->getStream($this->execution);
-        return new StructuredOutputStream($stream, $this->events);
+        $this->execution = $this->execution->withStreamed();
+        return new StructuredOutputStream(
+            $this->execution,
+            $this->requestHandler,
+            $this->events,
+        );
     }
 
     // INTERNAL /////////////////////////////////////////////////
@@ -118,43 +117,22 @@ class PendingStructuredOutput
     private function getResponse() : InferenceResponse {
         $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
 
-        // RESPONSE CACHING IS DISABLED
+        // RESPONSE CACHING = IS DISABLED
         if (!$this->cacheProcessedResponse) {
-            $execution = $this->requestHandler->responseFor($this->execution);
-            $response = $execution->inferenceResponse();
+            $this->execution = $this->requestHandler->executionResultFor($this->execution);
+            $response = $this->execution->inferenceResponse();
             $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response?->value())]));
             return $response;
         }
 
-        // RESPONSE CACHING IS ENABLED
+        // RESPONSE CACHING = IS ENABLED
         if (!isset($this->cachedResponse)) {
-            $this->cachedResponse = $this->requestHandler->responseFor($this->execution)->inferenceResponse();
+            $this->execution = $this->requestHandler->executionResultFor($this->execution);
+            $this->cachedResponse = $this->execution->inferenceResponse();
         }
 
         $this->events->dispatch(new StructuredOutputResponseGenerated(['result' => json_encode($this->cachedResponse), 'cached' => true]));
         return $this->cachedResponse;
-    }
-
-    private function getStream(StructuredOutputExecution $execution) : Generator {
-        $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
-
-        // RESPONSE CACHING IS DISABLED
-        if (!$this->cacheProcessedResponse) {
-            yield $this->requestHandler->streamResponseFor($execution);
-            return;
-        }
-
-        // RESPONSE CACHING IS ENABLED
-        if (!isset($this->cachedResponseStream)) {
-            $this->cachedResponseStream = [];
-            foreach ($this->requestHandler->streamResponseFor($execution) as $chunk) {
-                $this->cachedResponseStream[] = $chunk;
-                yield $chunk;
-            }
-            return;
-        }
-
-        yield from $this->cachedResponseStream;
     }
 
     private function makeRequestHandler() : RequestHandler {
@@ -170,7 +148,7 @@ class PendingStructuredOutput
                 $this->responseTransformer,
                 $this->events,
             ),
-            requestMaterializer: new RequestMaterializer($this->config),
+            requestMaterializer: new RequestMaterializer(),
             llmProvider: $this->llmProvider,
             events: $this->events,
             httpClient: $this->httpClient,

@@ -71,6 +71,8 @@ class ResponseModelFactory
             is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
             // is string - so will be used as class-string
             is_string($requestedModel) => $this->fromClassString($requestedModel),
+            // is array and empty - create a default dynamic structure
+            is_array($requestedModel) && empty($requestedModel) => $this->fromClassString($this->config->outputClass()),
             // is array - so will be used as JSON Schema
             is_array($requestedModel) => $this->fromJsonSchema($requestedModel),
             is_object($requestedModel) => $this->fromInstance($requestedModel),

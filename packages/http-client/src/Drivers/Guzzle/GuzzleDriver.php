@@ -66,7 +66,7 @@ class GuzzleDriver implements CanHandleHttpRequest
         ]));
     }
 
-    private function performHttpCall(HttpRequest $request) {
+    private function performHttpCall(HttpRequest $request) : ResponseInterface {
         return $this->client->request($request->method(), $request->url(), [
             'headers' => $request->headers(),
             'json' => $request->body()->toArray(),

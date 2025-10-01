@@ -9,22 +9,26 @@ class CachedContext
     private Messages $messages;
     private array $tools;
     private string|array $toolChoice;
-    private array $responseFormat;
+    private ResponseFormat $responseFormat;
 
     public function __construct(
         string|array $messages = [],
         array $tools = [],
         string|array $toolChoice = [],
-        array $responseFormat = [],
+        array|ResponseFormat|null $responseFormat = null,
     ) {
         $this->messages = Messages::fromAny($messages);
         $this->tools = $tools;
         $this->toolChoice = $toolChoice;
-        $this->responseFormat = $responseFormat;
+        $this->responseFormat = match(true) {
+            $responseFormat instanceof ResponseFormat => $responseFormat,
+            is_array($responseFormat) => ResponseFormat::fromData($responseFormat),
+            default => new ResponseFormat(),
+        };
     }
 
-    public function messages() : array {
-        return $this->messages->toArray();
+    public function messages() : Messages {
+        return $this->messages;
     }
 
     public function tools() : array {
@@ -35,7 +39,7 @@ class CachedContext
         return $this->toolChoice;
     }
 
-    public function responseFormat() : array {
+    public function responseFormat() : ResponseFormat {
         return $this->responseFormat;
     }
 
@@ -43,15 +47,6 @@ class CachedContext
         return $this->messages->isEmpty()
             && empty($this->tools)
             && empty($this->toolChoice)
-            && empty($this->responseFormat);
-    }
-
-    public function clone() : self {
-        return new self(
-            messages: $this->messages->toArray(),
-            tools: $this->tools,
-            toolChoice: $this->toolChoice,
-            responseFormat: $this->responseFormat,
-        );
+            && $this->responseFormat->isEmpty();
     }
 }

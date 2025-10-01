@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
@@ -17,14 +17,6 @@ use Exception;
 
 class RequestMaterializer implements CanMaterializeRequest
 {
-    private StructuredOutputConfig $config;
-
-    public function __construct(
-        StructuredOutputConfig $config,
-    ) {
-        $this->config = $config;
-    }
-
     public function toMessages(StructuredOutputExecution $execution) : array {
         $request = $execution->request();
 
@@ -39,7 +31,7 @@ class RequestMaterializer implements CanMaterializeRequest
         // Add meta sections
         $output = $this
             ->withCacheMetaSections($request->cachedContext(), $this->withSections($store))
-            ->select($this->config->chatStructure());
+            ->select($execution->config()->chatStructure());
 
         $rendered = Template::arrowpipe()
             ->with(['json_schema' => json_encode($this->makeJsonSchema($execution->responseModel()))])
@@ -60,7 +52,7 @@ class RequestMaterializer implements CanMaterializeRequest
             ->section('system')->appendMessages($this->makeSystem($messages, $request->system()))
             ->section('messages')->appendMessages($this->makeMessages($messages))
             ->section('prompt')->appendMessages($this->makePrompt($request->prompt()
-                ?: $this->config->prompt($execution->outputMode())
+                ?: $execution->config()->prompt($execution->outputMode())
                 ?? ''
             ))
             ->section('examples')->setMessages($this->makeExamples($request->examples()));
@@ -148,15 +140,15 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     protected function addRetryMessages(StructuredOutputExecution $execution, MessageStore $store) : MessageStore {
-        $failedResponse = $execution->lastFailedResponse();
-        if (!$failedResponse || !$execution->hasLastResponseFailed()) {
+        if (!$execution->lastResponse()?->hasErrors()) {
             return $store;
         }
 
         $messages = [];
+        /** @var StructuredOutputAttempt $attempt */
         foreach($execution->attempts() as $attempt) {
             $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
-            $retryFeedback = $this->config->retryPrompt()
+            $retryFeedback = $execution->config()->retryPrompt()
                 . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }

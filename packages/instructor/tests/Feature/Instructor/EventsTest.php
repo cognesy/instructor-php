@@ -3,7 +3,7 @@
 //use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
-use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
@@ -106,7 +106,7 @@ it('handles events for simple case - validation failure', function ($event) use 
     //[NewValidationRecoveryAttempt::class],
     [ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
-    [ValidationRecoveryLimitReached::class],
+    [StructuredOutputRecoveryLimitReached::class],
     // LLM
     //[ChunkReceived::class],
     //[PartialJsonReceived::class],

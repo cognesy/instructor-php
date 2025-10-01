@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -24,13 +23,10 @@ class StructuredOutputRequest
     protected CachedContext $cachedContext;
     protected string|array|object $requestedSchema = [];
 
-    protected ?ResponseModel $responseModel = null;
-    protected StructuredOutputConfig $config;
 
     public function __construct(
         string|array|Message|Messages|null $messages = null,
         string|array|object|null $requestedSchema = null,
-        ?ResponseModel $responseModel = null,
         ?string        $system = null,
         ?string        $prompt = null,
         ?array         $examples = null,
@@ -48,7 +44,6 @@ class StructuredOutputRequest
 
         $this->messages = Messages::fromAny($messages);
         $this->requestedSchema = $requestedSchema;
-        $this->responseModel = $responseModel;
 
         $this->options = $options ?: [];
         $this->prompt = $prompt ?: '';
@@ -106,7 +101,6 @@ class StructuredOutputRequest
     public function with(
         string|array|Message|Messages|null $messages = null,
         string|array|object|null $requestedSchema = null,
-        ?ResponseModel $responseModel = null,
         ?string        $system = null,
         ?string        $prompt = null,
         ?array         $examples = null,
@@ -117,7 +111,6 @@ class StructuredOutputRequest
         return new static(
             messages: $messages ?? $this->messages,
             requestedSchema: $requestedSchema ?? $this->requestedSchema,
-            responseModel: $responseModel ?? $this->responseModel,
             system: $system ?? $this->system,
             prompt: $prompt ?? $this->prompt,
             examples: $examples ?? $this->examples,
@@ -136,10 +129,6 @@ class StructuredOutputRequest
 
     public function withRequestedSchema(string|array|object $requestedSchema) : static {
         return $this->with(requestedSchema: $requestedSchema);
-    }
-
-    public function withResponseModel(ResponseModel $responseModel) : static {
-        return $this->with(responseModel: $responseModel);
     }
 
     public function withSystem(string $system) : static {

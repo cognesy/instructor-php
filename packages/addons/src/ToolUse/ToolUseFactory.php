@@ -62,7 +62,7 @@ class ToolUseFactory
         return new ContinuationCriteria(
             new StepsLimit($maxSteps, fn(ToolUseState $state) => $state->stepCount()),
             new TokenUsageLimit($maxTokens, fn(ToolUseState $state) => $state->usage()->total()),
-            new ExecutionTimeLimit($maxExecutionTime, fn(ToolUseState $state) => $state->startedAt()),
+            new ExecutionTimeLimit($maxExecutionTime, fn(ToolUseState $state) => $state->startedAt(), null),
             new RetryLimit($maxRetries, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
             new ErrorPresenceCheck(fn(ToolUseState $state) => $state->currentStep()?->hasErrors() ?? false),
             new ToolCallPresenceCheck(

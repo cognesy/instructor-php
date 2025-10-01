@@ -28,12 +28,13 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
     protected function toHeaders(InferenceRequest $request): array {
         return [
             'Content-Type' => 'application/json; charset=utf-8',
+            'x-goog-api-key' => $this->config->apiKey,
         ];
     }
 
     protected function toUrl(InferenceRequest $request): string {
         $model = $request->model() ?: $this->config->model;
-        $urlParams = ['key' => $this->config->apiKey];
+        $urlParams = [];
 
         if ($request->isStreamed()) {
             $this->config->endpoint = '/models/{model}:streamGenerateContent';
@@ -42,10 +43,13 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
             $this->config->endpoint = '/models/{model}:generateContent';
         }
 
-        return str_replace(
-            search: "{model}",
+        $base = str_replace(
+            search: '{model}',
             replace: $model,
-            subject: "{$this->config->apiUrl}{$this->config->endpoint}?" . http_build_query($urlParams)
+            subject: "{$this->config->apiUrl}{$this->config->endpoint}"
         );
+
+        $query = http_build_query($urlParams);
+        return $query !== '' ? "$base?$query" : $base;
     }
 }

@@ -1,13 +1,16 @@
 <?php
 
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
+use Cognesy\Polyglot\Inference\InferenceResponseFactory;
 
 it('OpenAI golden adapter: complex request + streaming response assembly', function () {
     $config = new LLMConfig(
@@ -29,11 +32,11 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
     ]];
 
     $ireq = new InferenceRequest(
-        messages: [ ['role' => 'system', 'content' => 'You are helpful.'], ['role' => 'user', 'content' => 'Hi'] ],
+        messages: Messages::fromAny([['role' => 'system', 'content' => 'You are helpful.'], ['role' => 'user', 'content' => 'Hi']]),
         model: 'gpt-4o-mini',
         tools: $tools,
         toolChoice: 'auto',
-        responseFormat: ['type' => 'json_object'],
+        responseFormat: ResponseFormat::fromData(['type' => 'json_object']),
         options: ['stream' => true],
     );
 
@@ -56,7 +59,8 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         $p = $resAdapter->fromStreamResponse($e);
         if ($p) { $partials[] = $p; }
     }
-    $final = InferenceResponse::fromPartialResponses($partials);
+    $list = PartialInferenceResponseList::of(...$partials);
+    $final = InferenceResponseFactory::fromPartialResponses($list);
     expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
     $tool = $final->toolCalls()->first();
     expect($tool->name())->toBe('search');

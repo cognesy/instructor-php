@@ -20,10 +20,12 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\InferenceResponseFactory;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
@@ -44,7 +46,7 @@ class PartialsGenerator implements CanGeneratePartials
     private string $responseJson = '';
     private string $responseText = '';
     private string $previousHash = '';
-    private array $partialResponses = [];
+    private PartialInferenceResponseList $partialResponses;
     private ToolCalls $toolCalls;
     private SequenceableHandler $sequenceableHandler;
     // options
@@ -58,6 +60,7 @@ class PartialsGenerator implements CanGeneratePartials
     ) {
         $this->toolCalls = new ToolCalls();
         $this->sequenceableHandler = new SequenceableHandler($events);
+        $this->partialResponses = PartialInferenceResponseList::empty();
     }
 
     public function resetPartialResponse() : void {
@@ -66,6 +69,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->responseJson = '';
         $this->sequenceableHandler->reset();
         $this->toolCalls = ToolCalls::empty();
+        $this->partialResponses = PartialInferenceResponseList::empty();
     }
 
     /**
@@ -76,15 +80,13 @@ class PartialsGenerator implements CanGeneratePartials
      * @return Generator<PartialInferenceResponse>
      */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
-        // reset state
         $this->resetPartialResponse();
-
         // receive data
         /** @var PartialInferenceResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived(['partial' => $partialResponse->toArray()]));
             // store partial response
-            $this->partialResponses[] = $partialResponse;
+            $this->partialResponses = $this->partialResponses->withNewPartialResponse($partialResponse);
 
             // situation 1: new function call
             $this->handleToolSignal($partialResponse, $responseModel);
@@ -133,18 +135,17 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     public function getCompleteResponse() : InferenceResponse {
-        return InferenceResponse::fromPartialResponses($this->partialResponses);
+        return InferenceResponseFactory::fromPartialResponses($this->partialResponses);
     }
 
     public function lastPartialResponse() : PartialInferenceResponse {
-        if (empty($this->partialResponses)) {
+        if ($this->partialResponses->isEmpty()) {
             throw new Exception('No partial responses found');
         }
-        $index = count($this->partialResponses) - 1;
-        return $this->partialResponses[$index];
+        return $this->partialResponses->last();
     }
 
-    public function partialResponses() : array {
+    public function partialResponses() : PartialInferenceResponseList {
         return $this->partialResponses;
     }
 

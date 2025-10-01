@@ -111,22 +111,6 @@ class MistralBodyFormat implements CanMapRequestBody
         );
     }
 
-    protected function toSchemaData(InferenceRequest $request) : array {
-        $responseFormat = $request->responseFormat();
-
-        $schema = $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [];
-        $schema = $this->removeDisallowedEntries($schema);
-
-        $schemaName = $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema';
-        $schemaStrict = $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true;
-
-        return [
-            $schema,
-            $schemaName,
-            $schemaStrict,
-        ];
-    }
-
     protected function toResponseFormatMode(InferenceRequest $request) : ?OutputMode {
         if (!$request->outputMode()?->is(OutputMode::Unrestricted)) {
             return $request->outputMode();
@@ -146,5 +130,14 @@ class MistralBodyFormat implements CanMapRequestBody
             'json_schema' => OutputMode::JsonSchema,
             default => null,
         };
+    }
+
+    protected function toSchemaData(InferenceRequest $request) : array {
+        $responseFormat = $request->responseFormat();
+        return [
+            $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...)),
+            $responseFormat->schemaName(),
+            $responseFormat->strict(),
+        ];
     }
 }

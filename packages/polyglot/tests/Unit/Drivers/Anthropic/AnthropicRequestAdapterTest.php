@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicBodyFormat;
@@ -20,7 +21,7 @@ it('maps InferenceRequest to Anthropic HttpRequest correctly', function () {
         new AnthropicBodyFormat($config, new OpenAIMessageFormat())
     );
 
-    $req = new InferenceRequest(messages: 'Hello', options: ['stream' => true]);
+    $req = new InferenceRequest(messages: Messages::fromString('Hello'), options: ['stream' => true]);
     $http = $adapter->toHttpRequest($req);
 
     expect($http->method())->toBe('POST');

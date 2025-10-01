@@ -64,7 +64,7 @@ final class ArrayList implements ListInterface
         return $this->items[array_key_last($this->items)];
     }
 
-    public function withAdded(mixed ...$items): static {
+    public function withAppended(mixed ...$items): static {
         return new self([...$this->items, ...$items]);
     }
 

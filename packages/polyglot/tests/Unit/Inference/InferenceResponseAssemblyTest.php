@@ -1,8 +1,9 @@
 <?php
 
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\InferenceResponseFactory;
 
 it('accumulates content across partial responses', function () {
     $partials = [
@@ -11,7 +12,8 @@ it('accumulates content across partial responses', function () {
         new PartialInferenceResponse(contentDelta: '!', finishReason: 'stop', usage: new Usage(inputTokens: 0, outputTokens: 1)),
     ];
 
-    $res = InferenceResponse::fromPartialResponses($partials);
+    $list = PartialInferenceResponseList::of(...$partials);
+    $res = InferenceResponseFactory::fromPartialResponses($list);
     expect($res->content())->toBe('Hello!');
     expect($res->hasFinishReason())->toBeTrue();
     expect($res->usage()->input())->toBe(1);
@@ -23,7 +25,8 @@ it('aggregates tool arguments from partial responses (single tool)', function ()
         new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()),
         new PartialInferenceResponse(toolName: 'search', toolArgs: 'lo"}', usage: new Usage()),
     ];
-    $res = InferenceResponse::fromPartialResponses($partials);
+    $list = PartialInferenceResponseList::of(...$partials);
+    $res = InferenceResponseFactory::fromPartialResponses($list);
     expect($res->hasToolCalls())->toBeTrue();
     $tool = $res->toolCalls()->first();
     expect($tool->name())->toBe('search');

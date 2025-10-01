@@ -151,17 +151,10 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
     protected function toSchemaData(InferenceRequest $request) : array {
         $responseFormat = $request->responseFormat();
-
-        $schema = $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [];
-        $schema = $this->removeDisallowedEntries($schema);
-
-        $schemaName = $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema';
-        $schemaStrict = $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true;
-
         return [
-            $schema,
-            $schemaName,
-            $schemaStrict,
+            $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...)),
+            $responseFormat->schemaName(),
+            $responseFormat->strict(),
         ];
     }
 
@@ -177,7 +170,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         $responseFormat = $request->responseFormat();
-        $type = $responseFormat['type'] ?? $responseFormat['json_schema']['type'] ?? '';
+        $type = $responseFormat->type();
         return match($type) {
             'json' => OutputMode::Json,
             'json_object' => OutputMode::Json,
