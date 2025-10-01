@@ -26,9 +26,9 @@ trait HandlesShortcuts
     /**
      * Returns the first embedding for the provided input data.
      *
-     * @return Vector The first embedding vector
+     * @return ?Vector The first embedding vector or null if none
      */
-    public function first() : Vector {
+    public function first() : ?Vector {
         return $this->create()->get()->first();
     }
 }

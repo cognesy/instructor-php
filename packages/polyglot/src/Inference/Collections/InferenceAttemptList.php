@@ -18,7 +18,7 @@ class InferenceAttemptList
     }
 
     public static function of(InferenceAttempt ...$attempts): self {
-        return new self(ArrayList::of($attempts));
+        return new self(ArrayList::of(...$attempts));
     }
 
     public static function empty(): self {
@@ -54,7 +54,9 @@ class InferenceAttemptList
     public function usage(): Usage {
         return array_reduce(
             $this->attempts->all(),
-            fn (Usage $carry, InferenceAttempt $attempt) => $carry->withAccumulated($attempt->usage()),
+            fn (Usage $carry, InferenceAttempt $attempt) => $attempt->isFinalized()
+                ? $carry->withAccumulated($attempt->usage())
+                : $carry,
             Usage::none()
         );
     }
@@ -79,7 +81,7 @@ class InferenceAttemptList
             fn (array $item) => InferenceAttempt::fromArray($item),
             $data
         );
-        $list = ArrayList::of($attempts);
+        $list = ArrayList::fromArray($attempts);
         return new self($list);
     }
 }

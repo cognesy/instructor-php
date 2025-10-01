@@ -10,8 +10,8 @@ use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolExecutor;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -51,16 +51,10 @@ it('continues loop on tool failure and formats error message', function () {
     expect($step?->toolExecutions()->hasErrors())->toBeTrue();
     $msgs = $state->messages()->toArray();
 
-    // Debug: Let's see what's actually in the messages
-    dump('Messages:', $msgs);
-
     $invocationNames = [];
     foreach ($msgs as $m) {
         $invocationNames[] = $m['_metadata']['tool_calls'][0]['function']['name'] ?? null;
     }
-
-    // Debug: Let's see what invocation names we found
-    dump('Invocation names:', $invocationNames);
 
     expect($invocationNames)->toContain('_sum');
 

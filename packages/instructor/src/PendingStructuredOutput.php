@@ -131,7 +131,10 @@ class PendingStructuredOutput
             $this->cachedResponse = $this->execution->inferenceResponse();
         }
 
-        $this->events->dispatch(new StructuredOutputResponseGenerated(['result' => json_encode($this->cachedResponse), 'cached' => true]));
+        $this->events->dispatch(new StructuredOutputResponseGenerated([
+            'value' => json_encode($this->cachedResponse?->value()),
+            'cached' => true,
+        ]));
         return $this->cachedResponse;
     }
 

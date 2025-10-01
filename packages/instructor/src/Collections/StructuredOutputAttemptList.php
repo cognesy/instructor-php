@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Collection\ArrayList;
 use Traversable;
 
-final readonly class StructuredOutputAttempts implements \Countable, \IteratorAggregate
+final readonly class StructuredOutputAttemptList implements \Countable, \IteratorAggregate
 {
     /** @var ArrayList<StructuredOutputAttempt> */
     private ArrayList $attempts;
@@ -23,7 +23,7 @@ final readonly class StructuredOutputAttempts implements \Countable, \IteratorAg
     }
 
     public static function of(StructuredOutputAttempt ...$attempts): self {
-        return new self(ArrayList::of($attempts));
+        return new self(ArrayList::of(...$attempts));
     }
 
     // ACCESSORS ////////////////////////////////////////////////////////////////
@@ -40,9 +40,7 @@ final readonly class StructuredOutputAttempts implements \Countable, \IteratorAg
         return $this->attempts->last();
     }
 
-    public function hasAny(): bool {
-        return count($this->attempts) > 0;
-    }
+    // Prefer isEmpty() for cohesion; callers can use !isEmpty()
 
     public function count(): int {
         return count($this->attempts);
@@ -61,15 +59,14 @@ final readonly class StructuredOutputAttempts implements \Countable, \IteratorAg
     // SERIALIZATION ////////////////////////////////////////////////////////////
 
     public function toArray(): array {
-        return [
-            'attempts' => array_map(fn($attempt) => $attempt->toArray(), $this->attempts->all()),
-        ];
+        return array_map(fn($attempt) => $attempt->toArray(), $this->attempts->all());
     }
 
     public static function fromArray(array $data): self {
+        $list = isset($data['attempts']) && is_array($data['attempts']) ? $data['attempts'] : $data;
         $responses = array_map(
             fn(array $r) => StructuredOutputAttempt::fromArray($r),
-            $data ?? []
+            $list ?? []
         );
         return new self(ArrayList::fromArray($responses));
     }
@@ -77,7 +74,9 @@ final readonly class StructuredOutputAttempts implements \Countable, \IteratorAg
     public function usage(): Usage {
         $total = Usage::none();
         foreach ($this->attempts->all() as $attempt) {
-            $total = $total->withAccumulated($attempt->usage());
+            if ($attempt->isFinalized()) {
+                $total = $total->withAccumulated($attempt->usage());
+            }
         }
         return $total;
     }

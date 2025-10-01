@@ -59,9 +59,7 @@ class InferenceExecution
         return $this->attempts;
     }
 
-    public function errors(): array {
-        return $this->currentAttempt?->errors() ?? [];
-    }
+    
 
     public function response(): ?InferenceResponse {
         return $this->currentAttempt?->response();
@@ -76,12 +74,24 @@ class InferenceExecution
     }
 
     public function usage(): Usage {
-        $currentUsage = $this->currentAttempt?->response()?->usage() ?? Usage::none();
-        return $this->attempts->usage()->withAccumulated($currentUsage);
+        $attemptsUsage = $this->attempts->usage();
+        $current = $this->currentAttempt;
+        if ($current !== null && !$current->isFinalized()) {
+            // Include only partials usage from the current attempt to avoid double counting
+            $partialsUsage = Usage::none();
+            $partials = $current->partialResponses();
+            if ($partials !== null && !$partials->isEmpty()) {
+                foreach ($partials->all() as $partial) {
+                    $partialsUsage = $partialsUsage->withAccumulated($partial->usage());
+                }
+            }
+            return $attemptsUsage->withAccumulated($partialsUsage);
+        }
+        return $attemptsUsage;
     }
 
     public function hasErrors(): bool {
-        return $this->currentAttempt?->hasErrors() ?? false;
+        return !empty($this->errors());
     }
 
     public function isFinalized(): bool {
@@ -99,6 +109,62 @@ class InferenceExecution
         }
         // c) has finish reason indicating failure
         return $this->response()->hasFinishedWithFailure();
+    }
+
+    // COHESION HELPERS ///////////////////////////////////////
+
+    /**
+     * Errors for the in‑flight attempt (if any).
+     */
+    public function currentErrors(): array {
+        return $this->currentAttempt?->errors() ?? [];
+    }
+
+    /**
+     * Aggregate errors from finalized attempts and the current one.
+     */
+    public function errors(): array {
+        $all = [];
+        foreach ($this->attempts->all() as $attempt) {
+            $all = array_merge($all, $attempt->errors());
+        }
+        if ($this->currentAttempt?->hasErrors()) {
+            $all = array_merge($all, $this->currentAttempt->errors());
+        }
+        return $all;
+    }
+
+    /**
+     * True if the latest finalized attempt succeeded.
+     */
+    public function isSuccessful(): bool {
+        if ($this->currentAttempt && !$this->currentAttempt->isFinalized()) {
+            return false;
+        }
+        $last = $this->attempts->last();
+        if ($last === null) {
+            return false;
+        }
+        if ($last->hasErrors()) {
+            return false;
+        }
+        $resp = $last->response();
+        return $resp !== null && !$resp->hasFinishedWithFailure();
+    }
+
+    /**
+     * True if the latest finalized attempt failed.
+     */
+    public function isFailedFinal(): bool {
+        $last = $this->attempts->last();
+        if ($last === null) {
+            return false;
+        }
+        if ($last->hasErrors()) {
+            return true;
+        }
+        $resp = $last->response();
+        return $resp?->hasFinishedWithFailure() ?? false;
     }
 
     // MUTATORS //////////////////////////////////////////////////////////

@@ -17,7 +17,7 @@ class InferenceResponseList implements \IteratorAggregate, \Countable
     // CONSTRUCTION /////////////////////////////////////////////////////
 
     public static function of(InferenceResponse ...$responses): self {
-        return new self(ArrayList::of($responses));
+        return new self(ArrayList::of(...$responses));
     }
 
     // ACCESSORS ////////////////////////////////////////////////////////

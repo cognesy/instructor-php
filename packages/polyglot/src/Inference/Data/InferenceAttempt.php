@@ -96,16 +96,30 @@ class InferenceAttempt
     }
 
     public function hasErrors(): bool {
-        return $this->errors !== null;
+        return !empty($this->errors);
     }
 
     public function isFailed(): bool {
-        return $this->hasErrors()
-            || $this->response->hasFinishedWithFailure();
+        if ($this->hasErrors()) {
+            return true;
+        }
+        if ($this->response === null) {
+            return false;
+        }
+        return $this->response->hasFinishedWithFailure();
     }
 
     public function usage(): Usage {
-        return $this->response?->usage() ?? Usage::none();
+        $usage = Usage::none();
+        if ($this->response !== null) {
+            $usage = $this->response->usage();
+        }
+        if ($this->partialResponses !== null && !$this->partialResponses->isEmpty()) {
+            foreach ($this->partialResponses->all() as $partial) {
+                $usage = $usage->withAccumulated($partial->usage());
+            }
+        }
+        return $usage;
     }
 
     // MUTATORS //////////////////////////////////////////////////////////

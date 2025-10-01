@@ -6,7 +6,7 @@ use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
-use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
+// EmbeddingsRequested dispatched by driver; avoid duplicate here
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 
 trait HandlesInvocation
@@ -53,7 +53,7 @@ trait HandlesInvocation
             options: $this->options,
             model: $this->model
         );
-        $this->events->dispatch(new EmbeddingsRequested([$request->toArray()]));
+        // EmbeddingsRequested will be emitted by the driver with normalized payload
 
         // Ensure HttpClient is available; build default if not provided
         if ($this->httpClient !== null) {

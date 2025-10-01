@@ -111,14 +111,18 @@ class StructuredOutputStream
             // only yield if there's new element in sequence
             if ($update->count() > $lastSequenceCount) {
                 $lastSequenceCount = $update->count();
-                // yield snapshot of the previous state
-                yield is_null($lastSequence) ? null : clone $lastSequence;
+                // yield snapshot of the previous state if available
+                if (!is_null($lastSequence)) {
+                    yield clone $lastSequence;
+                }
             }
             // keep a snapshot to avoid later mutations affecting yielded values
             $lastSequence = clone $update;
         }
-        // yield last, fully updated sequence instance
-        yield is_null($lastSequence) ? null : clone $lastSequence;
+        // yield last, fully updated sequence instance if available
+        if (!is_null($lastSequence)) {
+            yield clone $lastSequence;
+        }
     }
 
     /**
@@ -155,7 +159,7 @@ class StructuredOutputStream
      * Private method that handles stream iteration, usage accumulation, and last response tracking.
      * This centralizes the common iteration logic used by all stream processing methods.
      *
-     * @return Generator<StructuredOutputExecution> Yields structured output executions with updated responses.
+     * @return Generator<PartialInferenceResponse|InferenceResponse> Yields inference responses (partials and final).
      */
     private function streamResponses(): Generator {
         /** @var StructuredOutputExecution $execution */

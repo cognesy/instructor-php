@@ -85,7 +85,6 @@ class RequestHandler
         $returnedValue = $this->finalizeResult($execution, $processingResult);
 
         return $execution->withSuccessfulAttempt(
-            messages: $execution->request()->messages(),
             inferenceResponse: $inferenceResponse->withValue($returnedValue),
             partialInferenceResponses: $partialResponses,
             returnedValue: $returnedValue
@@ -112,7 +111,6 @@ class RequestHandler
                 $aggregated = InferenceResponseFactory::fromPartialResponses($partialResponses)
                     ->withValue($partialResponse->value());
                 $updatedExecution = $execution->withCurrentAttempt(
-                    messages: $execution->request()->messages(),
                     inferenceResponse: $aggregated,
                     partialInferenceResponses: $partialResponses,
                     errors: $this->errors,
@@ -137,7 +135,6 @@ class RequestHandler
 
         // Yield final response with value
         yield $execution->withSuccessfulAttempt(
-            messages: $execution->request()->messages(),
             inferenceResponse: $inferenceResponse->withValue($value),
             partialInferenceResponses: $partialResponses,
             returnedValue: $value,
@@ -195,7 +192,6 @@ class RequestHandler
         $this->errors = is_array($error) ? $error : [$error];
         // store failed response
         $execution = $execution->withFailedAttempt(
-            messages: $request->messages(),
             inferenceResponse: $inferenceResponse,
             partialInferenceResponses: $partialResponses,
             errors: $this->errors

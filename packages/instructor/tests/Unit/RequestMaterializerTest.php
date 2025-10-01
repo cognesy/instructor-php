@@ -127,7 +127,6 @@ describe('RequestMaterializer', function () {
 
         // Simulate a failed attempt (assign returned instance)
         $execution = $execution->withFailedAttempt(
-            messages: Messages::fromAny([['role' => 'assistant', 'content' => 'bad json']]),
             inferenceResponse: new InferenceResponse(content: '{bad json}'),
             errors: ['Missing field x']
         );

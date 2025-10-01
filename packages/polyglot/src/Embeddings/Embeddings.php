@@ -7,7 +7,7 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -24,7 +24,7 @@ class Embeddings
     use Traits\HandlesInvocation;
 
     protected EmbeddingsProvider $embeddingsProvider;
-    protected EmbeddingsRequest $request;
+    protected ?CanResolveEmbeddingsConfig $embeddingsResolver = null;
     /** @var HttpClient|null Facade-level HTTP client (optional) */
     protected ?HttpClient $httpClient = null;
     /** @var string|null Facade-level HTTP debug preset (optional) */

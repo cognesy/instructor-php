@@ -71,7 +71,11 @@ class Vector
         }
         $magnitudeV1 = sqrt($magnitudeV1);
         $magnitudeV2 = sqrt($magnitudeV2);
-        return $dotProduct / ($magnitudeV1 * $magnitudeV2);
+        $den = $magnitudeV1 * $magnitudeV2;
+        if ($den == 0.0) {
+            return 0.0;
+        }
+        return $dotProduct / $den;
     }
 
     /**

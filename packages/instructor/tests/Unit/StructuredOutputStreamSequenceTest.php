@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\StructuredOutputStream;
-use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
+use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Collections\StructuredOutputAttempts;
+use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\StructuredOutputStream;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Instructor\Core\RequestHandler;
 use Tests\Instructor\Support\TestEventDispatcher;
 
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
@@ -32,7 +32,7 @@ it('yields sequence updates only when new items complete and dispatches events',
                 inferenceExecution: $infExec,
                 isFinalized: false,
             );
-            $attempts = StructuredOutputAttempts::of($attempt);
+            $attempts = StructuredOutputAttemptList::of($attempt);
             $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
             return new StructuredOutputExecution(
                 request: $request,
@@ -61,7 +61,7 @@ it('yields sequence updates only when new items complete and dispatches events',
             inferenceExecution: $infExec,
             isFinalized: false,
         );
-        $attempts = StructuredOutputAttempts::of($attempt);
+        $attempts = StructuredOutputAttemptList::of($attempt);
         $request = new Cognesy\Instructor\Data\StructuredOutputRequest(messages: 'dummy', requestedSchema: []);
         return new StructuredOutputExecution(
             request: $request,

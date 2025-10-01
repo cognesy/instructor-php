@@ -43,7 +43,7 @@ readonly final class StructuredOutputAttempt
     // MUTATORS //////////////////////////////////////////////////////////
 
     public function with(
-        ?InferenceExecution $inferenceResponse = null,
+        ?InferenceExecution $inferenceExecution = null,
         ?bool $isFinalized = null,
         ?array $errors = null,
         mixed $output = null,
@@ -53,7 +53,7 @@ readonly final class StructuredOutputAttempt
         ?DateTimeImmutable $updatedAt = null,
     ): self {
         return new self(
-            inferenceExecution: $inferenceResponse ?? $this->inferenceExecution,
+            inferenceExecution: $inferenceExecution ?? $this->inferenceExecution,
             isFinalized: $isFinalized ?? $this->isFinalized,
             errors: $errors ?? $this->errors,
             output: $output ?? $this->output,

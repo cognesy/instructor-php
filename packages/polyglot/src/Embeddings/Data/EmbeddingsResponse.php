@@ -47,7 +47,7 @@ class EmbeddingsResponse
      * Split the response vectors into two parts at the given index
      *
      * @param int $index
-     * @return Vector
+     * @return array{0: Vector[], 1: Vector[]}
      */
     public function split(int $index) : array {
         return [
