@@ -34,10 +34,14 @@ build/
 Thumbs.db
 
 # IDE files
-/.idea/
-/.vscode/
+.claude/
+.crush/
 .cursorignore
+.cursorprompt
 /docs/.idea/
+/.idea/
+/.taskmaster/
+/.vscode/
 
 # PHPUnit, Pest, and other test result files
 .phpunit.result.cache
