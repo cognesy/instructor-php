@@ -11,6 +11,7 @@ abstract readonly class Node implements NodeInterface
         public int $lineNumber = 0,
     ) {}
 
+    #[\Override]
     public function accept(NodeVisitor $visitor): mixed {
         return $visitor->visit($this);
     }

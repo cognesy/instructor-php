@@ -6,10 +6,12 @@ use Cognesy\Experimental\ModPredict\Optimize\Contracts\Redactor;
 
 final class NoopRedactor implements Redactor
 {
+    #[\Override]
     public function redactInput(string $signatureId, mixed $input): mixed {
         return $input;
     }
 
+    #[\Override]
     public function redactOutput(string $signatureId, mixed $output): mixed {
         return $output;
     }

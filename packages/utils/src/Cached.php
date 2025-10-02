@@ -28,8 +28,9 @@ final class Cached
      * Creates a lazy-loaded Cached instance from a producer callable.
      * The producer will be called only on the first access.
      *
-     * @param callable(mixed...): T $producer
-     * @return self<T>
+     * @template TValue
+     * @param callable(mixed...): TValue $producer
+     * @return self<TValue>
      */
     public static function from(callable $producer): self {
         return new self(
@@ -41,8 +42,9 @@ final class Cached
     /**
      * Creates an eagerly-loaded Cached instance from a value that is already resolved.
      *
-     * @param T $value
-     * @return self<T>
+     * @template TValue
+     * @param TValue $value
+     * @return self<TValue>
      */
     public static function withValue(mixed $value): self {
         return new self(producer: null, value: $value, isResolved: true);

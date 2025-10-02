@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyForm
 
 class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
 {
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $requestBody = parent::toRequestBody($request);
 
@@ -16,6 +17,7 @@ class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
         return $requestBody;
     }
 
+    #[\Override]
     protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
         return false;
     }

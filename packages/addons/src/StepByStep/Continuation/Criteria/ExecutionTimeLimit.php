@@ -40,6 +40,7 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         /** @var TState $state */
         $startedAt = ($this->startedAtResolver)($state);

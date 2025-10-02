@@ -24,6 +24,7 @@ class TokenUsageObserver implements CanGenerateObservations
      * @param mixed $subject The subject to be checked.
      * @return bool Returns true if the subject is of accepted type.
      */
+    #[\Override]
     public function accepts(mixed $subject): bool {
         return match(true) {
             $subject instanceof Experiment => true,
@@ -37,6 +38,7 @@ class TokenUsageObserver implements CanGenerateObservations
      * @param T $subject The subject for which observations need to be generated.
      * @return iterable<Observation> Yields a series of Observation objects.
      */
+    #[\Override]
     public function observations(mixed $subject): iterable {
         yield from match(true) {
             $subject instanceof Experiment => $this->experimentUsage($subject),

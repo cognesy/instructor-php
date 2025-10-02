@@ -15,7 +15,7 @@ trait DefinesPhpTypeConstants
     public const PHP_STRING = 'string';
     public const PHP_BOOL = 'bool';
     public const PHP_NULL = 'null';
-    public const PHP_UNSUPPORTED = null;
+    public const PHP_UNSUPPORTED = 'unsupported';
 
     public const PHP_TYPES = [
         self::PHP_OBJECT,

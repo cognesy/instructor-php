@@ -26,6 +26,7 @@ final class BaseExecution implements Execution
         private $terminal,
     ) {}
 
+    #[\Override]
     public function run(): mixed {
         return $this->runFrom(0, $this->initialPayload);
     }

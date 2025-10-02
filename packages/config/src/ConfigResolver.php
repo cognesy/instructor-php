@@ -60,10 +60,12 @@ class ConfigResolver implements CanProvideConfig
 
     // MAIN API ///////////////////////////////////////////////////////////
 
+    #[\Override]
     public function get(string $path, mixed $default = null): mixed {
         return $this->getCache->get($path, $default);
     }
 
+    #[\Override]
     public function has(string $path): bool {
         return $this->hasCache->get($path);
     }

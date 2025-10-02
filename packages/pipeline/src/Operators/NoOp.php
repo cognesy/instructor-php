@@ -7,6 +7,7 @@ use Cognesy\Pipeline\StateContracts\CanCarryState;
 
 readonly final class NoOp implements CanProcessState
 {
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         return $next ? $next($state) : $state;
     }

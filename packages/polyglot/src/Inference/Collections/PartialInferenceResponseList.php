@@ -6,9 +6,12 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Collection\ArrayList;
 use Traversable;
 
+/**
+ * @implements \IteratorAggregate<int, PartialInferenceResponse>
+ */
 final readonly class PartialInferenceResponseList implements \Countable, \IteratorAggregate
 {
-    /** @param ArrayList<PartialInferenceResponse> $responses */
+    /** @var ArrayList<PartialInferenceResponse> */
     private ArrayList $responses;
 
     private function __construct(?ArrayList $responses = null) {
@@ -29,10 +32,12 @@ final readonly class PartialInferenceResponseList implements \Countable, \Iterat
         return $this->responses->toArray();
     }
 
+    #[\Override]
     public function getIterator(): Traversable {
         return $this->responses->getIterator();
     }
 
+    #[\Override]
     public function count(): int {
         return $this->responses->count();
     }

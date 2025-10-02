@@ -29,6 +29,7 @@ class MakeLesson extends Command
         $this->lessonService = new LessonService(new LessonConfig());
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -51,6 +52,7 @@ class MakeLesson extends Command
             );
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $exampleArg = $input->getArgument('example');

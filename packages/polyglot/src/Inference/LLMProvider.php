@@ -70,10 +70,12 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
     /**
      * Resolves and returns the effective LLM configuration for this provider.
      */
+    #[\Override]
     public function resolveConfig(): LLMConfig {
         return $this->buildConfig();
     }
 
+    #[\Override]
     public function explicitInferenceDriver(): ?CanHandleInference {
         return $this->explicitDriver;
     }
@@ -147,7 +149,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
                 'effectivePreset' => $effectivePreset,
                 'preset' => $this->llmPreset,
                 'dsn' => $this->dsn,
-                'error' => $result->errorMessage(),
+                'error' => $result->exception()->getMessage(),
             ]));
             throw $result->exception();
         }

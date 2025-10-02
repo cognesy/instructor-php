@@ -17,6 +17,7 @@ class RunInference implements CanRunExecution
         $this->inferenceData = $data;
     }
 
+    #[\Override]
     public function run(Execution $execution) : Execution {
         $execution->data()->set('response', $this->makeInferenceResponse($execution));
         return $execution;

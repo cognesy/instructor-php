@@ -27,6 +27,7 @@ class GetUrlContent extends Module
         return ($this)(url: $url)->get('content');
     }
 
+    #[\Override]
     protected function forward(mixed ...$args): array {
         $url = $args['url'];
         $content = $this->getUrlContent($url);

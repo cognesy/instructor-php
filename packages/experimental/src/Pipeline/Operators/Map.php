@@ -18,10 +18,12 @@ readonly final class Map implements Operator
         $this->mapper = $mapper;
     }
 
+    #[\Override]
     public function supports(mixed $payload): bool {
         return true;
     }
 
+    #[\Override]
     public function handle(mixed $payload, Next $next): mixed {
         $mappedPayload = ($this->mapper)($payload);
         return $next->handle($mappedPayload);

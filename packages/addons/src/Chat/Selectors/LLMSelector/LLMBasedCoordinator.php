@@ -17,6 +17,7 @@ final class LLMBasedCoordinator implements CanChooseNextParticipant
         private readonly string $instruction = 'Choose the next participant who should take turn in this conversation.',
     ) {}
 
+    #[\Override]
     public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat {
         if ($participants->count() === 0) {
             throw new NoParticipantsException('No participants available to select from.');

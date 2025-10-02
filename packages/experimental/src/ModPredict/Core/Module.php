@@ -53,6 +53,7 @@ abstract class Module implements CanInitiateModuleCall
         return $this;
     }
 
+    #[\Override]
     public function __invoke(mixed ...$callArgs): ModuleCall {
         return new ModuleCall(
             inputs: $callArgs,

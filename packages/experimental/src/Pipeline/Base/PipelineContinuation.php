@@ -11,6 +11,7 @@ final class PipelineContinuation implements Next
         private int $nextIndex,
     ) {}
 
+    #[\Override]
     public function handle(mixed $payload): mixed {
         // Delegate back to the main execution object to run from the next index
         return $this->execution->runFrom($this->nextIndex, $payload);

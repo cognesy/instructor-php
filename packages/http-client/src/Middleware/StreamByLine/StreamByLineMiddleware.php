@@ -26,11 +26,13 @@ class StreamByLineMiddleware extends BaseMiddleware
         $this->events = $events ?? new EventDispatcher();
     }
 
+    #[\Override]
     protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool
     {
         return $request->isStreamed();
     }
 
+    #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse
     {
         return new StreamByLineResponseDecorator($request, $response, $this->parser, $this->events);

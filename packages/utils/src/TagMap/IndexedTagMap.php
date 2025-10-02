@@ -31,10 +31,12 @@ final class IndexedTagMap implements TagMapInterface
     /**
      * @param TagInterface[] $tags
      */
+    #[\Override]
     public static function create(array $tags): self {
         return self::empty()->add(...$tags);
     }
 
+    #[\Override]
     public static function empty(): self {
         return new self();
     }
@@ -48,6 +50,7 @@ final class IndexedTagMap implements TagMapInterface
     /**
      * @return TagInterface[]
      */
+    #[\Override]
     public function getAllInOrder(): array {
         return array_map(
             fn(string $id): TagInterface => $this->tagsById[$id],
@@ -55,6 +58,7 @@ final class IndexedTagMap implements TagMapInterface
         );
     }
 
+    #[\Override]
     public function has(string $tagClass): bool {
         foreach ($this->tagsById as $tag) {
             if ($tag instanceof $tagClass) {
@@ -64,10 +68,12 @@ final class IndexedTagMap implements TagMapInterface
         return false;
     }
 
+    #[\Override]
     public function isEmpty(): bool {
         return empty($this->insertionOrder);
     }
 
+    #[\Override]
     public function merge(TagMapInterface $other): TagMapInterface {
         if ($other->isEmpty()) {
             return $this;
@@ -78,6 +84,7 @@ final class IndexedTagMap implements TagMapInterface
         return $this->add(...$other->getAllInOrder());
     }
 
+    #[\Override]
     public function mergeInto(TagMapInterface $target): TagMapInterface {
         if ($this->isEmpty()) {
             return $target;
@@ -88,14 +95,17 @@ final class IndexedTagMap implements TagMapInterface
         return $target->add(...$this->getAllInOrder());
     }
 
+    #[\Override]
     public function newInstance(array $tags): TagMapInterface {
         return self::empty()->add(...$tags);
     }
 
+    #[\Override]
     public function query(): TagQuery {
         return new TagQuery($this);
     }
 
+    #[\Override]
     public function add(TagInterface ...$tags): self {
         if (empty($tags)) {
             return $this;
@@ -116,6 +126,7 @@ final class IndexedTagMap implements TagMapInterface
         return (string) self::$nextId++;
     }
 
+    #[\Override]
     public function replace(TagInterface ...$tags): TagMapInterface {
         $this->tagsById = [];
         $this->insertionOrder = [];

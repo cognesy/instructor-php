@@ -8,6 +8,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 use Symfony\Component\DomCrawler\Crawler;
 
 class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
+    #[\Override]
     public function getMetadata(string $html, array $attributes = []): array {
         // use Crawler to extract metadata
         $crawler = new Crawler($html);
@@ -33,6 +34,7 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
         return $filtered;
     }
 
+    #[\Override]
     public function getTitle(string $html) : string {
         $crawler = new Crawler($html);
         $node = $crawler->filter('title');
@@ -42,6 +44,7 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
         return $node->text();
     }
 
+    #[\Override]
     public function getBody(string $html) : string {
         $body = $this->cleanBodyTag($html);
         $parts = explode('<body>', $body);
@@ -51,6 +54,7 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
         return $body;
     }
 
+    #[\Override]
     public function toMarkdown(string $html) : string {
         return (new HtmlConverter)->convert($html);
     }

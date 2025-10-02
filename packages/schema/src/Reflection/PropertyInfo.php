@@ -203,7 +203,8 @@ class PropertyInfo
                 continue; // Skip methods other than with one parameter
             }
             // Check if the method returns a value
-            if ('void' !== $method->getReturnType()?->getName()) {
+            $returnType = $method->getReturnType();
+            if ($returnType instanceof \ReflectionNamedType && 'void' !== $returnType->getName()) {
                 continue; // Skip methods that do not return void
             }
             return true;
@@ -238,7 +239,8 @@ class PropertyInfo
                 continue;
             }
             // Check if the method returns a value
-            if ('void' === $method->getReturnType()?->getName()) {
+            $returnType = $method->getReturnType();
+            if ($returnType instanceof \ReflectionNamedType && 'void' === $returnType->getName()) {
                 continue;
             }
             return true;

@@ -28,6 +28,7 @@ readonly class ObjectSchema extends Schema
         $this->required = $required;
     }
 
+    #[\Override]
     public function removeProperty(string $name): static {
         if (!$this->hasProperty($name)) {
             throw new Exception('Property not found: ' . $name);
@@ -45,6 +46,7 @@ readonly class ObjectSchema extends Schema
         );
     }
 
+    #[\Override]
     public function withName(string $name): self {
         return new self(
             type: $this->typeDetails,
@@ -55,6 +57,7 @@ readonly class ObjectSchema extends Schema
         );
     }
 
+    #[\Override]
     public function withDescription(string $description): self {
         return new self(
             type: $this->typeDetails,
@@ -65,6 +68,7 @@ readonly class ObjectSchema extends Schema
         );
     }
 
+    #[\Override]
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitObjectSchema($this);
     }

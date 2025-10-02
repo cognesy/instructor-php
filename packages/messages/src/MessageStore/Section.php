@@ -34,6 +34,13 @@ final readonly class Section
         return new static(name: $name);
     }
 
+    public static function fromArray(array $data) : Section {
+        return new static(
+            name: $data['name'] ?? '',
+            messages: isset($data['messages']) ? Messages::fromArray($data['messages']) : null,
+        );
+    }
+
     // ACCESSORS //////////////////////////////////////////////
 
     public function name() : string {
@@ -77,7 +84,7 @@ final readonly class Section
     // TRANSFORMATIONS / CONVERSIONS //////////////////////////
 
     /**
-     * @return array<string,mixed>
+     * @return list<array<array-key, mixed>>
      */
     public function toArray() : array {
         return $this->messages()->toArray();

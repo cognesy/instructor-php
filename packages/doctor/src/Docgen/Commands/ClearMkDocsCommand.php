@@ -22,6 +22,7 @@ class ClearMkDocsCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         Cli::outln("Clearing MkDocs documentation...", [Color::BOLD, Color::YELLOW]);

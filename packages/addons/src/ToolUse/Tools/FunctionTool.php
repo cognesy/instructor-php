@@ -36,12 +36,14 @@ class FunctionTool extends BaseTool
         return $this->callback;
     }
 
+    #[\Override]
     public function __invoke(mixed ...$args): mixed {
         return ($this->callback)(...$args);
     }
 
     // override to provide the cached JSON schema
 
+    #[\Override]
     protected function paramsJsonSchema(): array {
         return $this->cachedParamsJsonSchema;
     }

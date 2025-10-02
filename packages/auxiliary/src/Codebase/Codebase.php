@@ -60,7 +60,9 @@ class Codebase
         }
         $params = [];
         foreach ($method->getParams() as $param) {
-            $params[] = $param->var->name;
+            if ($param->var instanceof Node\Expr\Variable) {
+                $params[] = $param->var->name;
+            }
         }
         return $params;
     }

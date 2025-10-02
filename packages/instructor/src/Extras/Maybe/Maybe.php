@@ -48,6 +48,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         return $this->hasValue;
     }
 
+    #[\Override]
     public function toJsonSchema(): array {
         $schema = $this->schemaFactory->schema($this->class);
         $schemaData = (new SchemaToJsonSchema)->toArray($schema);
@@ -66,6 +67,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         ];
     }
 
+    #[\Override]
     public function fromJson(string $jsonData, ?string $toolName = '') : static {
         $data = json_decode($jsonData, true);
         $this->hasValue = $data['hasValue'] ?? false;

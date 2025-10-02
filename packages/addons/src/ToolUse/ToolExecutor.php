@@ -114,9 +114,11 @@ final readonly class ToolExecutor
 
     private function prepareTool(string $name, ToolUseState $state): ToolInterface {
         $tool = $this->tools->get($name);
-        return $tool instanceof CanAccessAnyState
-            ? $tool->withState($state)
-            : $tool;
+        if ($tool instanceof CanAccessAnyState) {
+            // Since CanAccessAnyState extends ToolInterface, withState preserves ToolInterface
+            return $tool->withState($state);
+        }
+        return $tool;
     }
 
     private function validateArgs(ToolInterface $tool, array $args): Result {

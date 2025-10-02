@@ -19,6 +19,7 @@ class ShowExample extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->setName('show')
@@ -26,6 +27,7 @@ class ShowExample extends Command
             ->addArgument('example', InputArgument::REQUIRED, 'Example name or index to show');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $file = $input->getArgument('example');
 

@@ -22,6 +22,7 @@ class ConvertHtmlToMarkdown extends Module
         return ($this)(html: $html)->get('markdown');
     }
 
+    #[\Override]
     protected function forward(mixed ...$args): array {
         $html = $args['html'];
         $result = RawHtml::fromContent($html)->asMarkdown(); // $this->processHtml->toMarkdown($html);

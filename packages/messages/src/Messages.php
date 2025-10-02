@@ -235,7 +235,7 @@ final readonly class Messages
     }
 
     /**
-     * @return array<string, string|array>
+     * @return list<array<array-key, mixed>>
      */
     public function toArray() : array {
         $result = [];

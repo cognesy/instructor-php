@@ -12,6 +12,7 @@ use ReflectionClass;
  */
 final class DefaultOperatorFactory implements OperatorFactory
 {
+    #[\Override]
     public function create(OperatorSpec $spec): Operator {
         $operator = (new ReflectionClass($spec->class))->newInstanceArgs($spec->args);
         if (!$operator instanceof Operator) {

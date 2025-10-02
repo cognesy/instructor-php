@@ -13,6 +13,7 @@ class CohereBodyFormat implements CanMapRequestBody
         private readonly EmbeddingsConfig $config
     ) {}
 
+    #[\Override]
     public function toRequestBody(EmbeddingsRequest $request): array {
         $inputs = $request->inputs();
         $model = $request->model() ?: $this->config->model;

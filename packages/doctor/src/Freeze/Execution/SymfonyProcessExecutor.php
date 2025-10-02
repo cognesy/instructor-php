@@ -6,6 +6,7 @@ use Symfony\Component\Process\Process;
 
 class SymfonyProcessExecutor implements CommandExecutorInterface
 {
+    #[\Override]
     public function execute(array $commandArray, string $commandString): ExecutionResult
     {
         $process = new Process($commandArray);

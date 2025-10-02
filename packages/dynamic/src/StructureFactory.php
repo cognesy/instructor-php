@@ -4,6 +4,7 @@ namespace Cognesy\Dynamic;
 
 use Closure;
 use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Reflection\ClassInfo;
@@ -154,10 +155,11 @@ class StructureFactory
 
     static private function makeSchemaFields(Schema $schema) : array {
         $fields = [];
+        $required = ($schema instanceof ObjectSchema) ? $schema->required : [];
         foreach ($schema->getPropertySchemas() as $propertyName => $propertySchema) {
             $typeDetails = $propertySchema->typeDetails();
             $field = FieldFactory::fromTypeDetails($propertyName, $typeDetails, $propertySchema->description());
-            $isRequired = in_array($propertyName, $schema->required, true);
+            $isRequired = in_array($propertyName, $required, true);
             $fields[] = match (true) {
                 $isRequired => $field->required(),
                 default => $field->optional(),

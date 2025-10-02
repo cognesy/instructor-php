@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse\Contracts;
 
-interface CanAccessAnyState
+interface CanAccessAnyState extends ToolInterface
 {
     public function withState(object $state): self;
 }

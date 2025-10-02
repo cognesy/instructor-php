@@ -20,11 +20,13 @@ class ArrowpipeDriver implements CanHandleTemplate
         $this->extension = $this->config->extension;
     }
 
+    #[\Override]
     public function renderFile(string $path, array $parameters = []): string {
         $content = $this->getTemplateContent($path);
         return $this->renderString($content, $parameters);
     }
 
+    #[\Override]
     public function renderString(string $content, array $parameters = []): string {
         $template = new StringTemplate(
             parameters: $parameters,
@@ -33,6 +35,7 @@ class ArrowpipeDriver implements CanHandleTemplate
         return $template->renderString($content);
     }
 
+    #[\Override]
     public function getTemplateContent(string $path): string {
         $filePath = $this->baseDir . $path . $this->extension;
         if (!file_exists($filePath)) {
@@ -41,6 +44,7 @@ class ArrowpipeDriver implements CanHandleTemplate
         return file_get_contents($filePath);
     }
 
+    #[\Override]
     public function getVariableNames(string $content): array {
         $template = new StringTemplate(
             parameters: [],

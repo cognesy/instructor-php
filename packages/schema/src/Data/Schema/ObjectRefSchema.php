@@ -6,6 +6,7 @@ use Cognesy\Schema\Contracts\CanVisitSchema;
 
 readonly class ObjectRefSchema extends Schema
 {
+    #[\Override]
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitObjectRefSchema($this);
     }

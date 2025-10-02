@@ -76,6 +76,7 @@ class Image implements CanProvideMessages
      *
      * @return Messages
      */
+    #[\Override]
     public function toMessages(): Messages {
         return Messages::fromMessages([$this->toMessage()]);
     }

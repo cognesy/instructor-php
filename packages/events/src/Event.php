@@ -109,10 +109,11 @@ class Event implements JsonSerializable
     }
 
     /**
-     * Returns the event data as JSON string for serialization
+     * Returns the event data as array for JSON serialization
      *
-     * @return string The event data as a JSON string
+     * @return array<string, mixed> The event data as an array
      */
+    #[\Override]
     public function jsonSerialize() : array {
         return get_object_vars($this);
     }

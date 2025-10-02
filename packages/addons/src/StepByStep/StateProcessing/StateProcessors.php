@@ -43,6 +43,7 @@ final readonly class StateProcessors implements CanApplyProcessors
      * @param TState $state
      * @return TState
      */
+    #[\Override]
     public function apply(object $state, ?callable $terminalFn = null): object {
         $middlewareChain = $this->buildMiddlewareChain($terminalFn);
         return ($middlewareChain)($state);

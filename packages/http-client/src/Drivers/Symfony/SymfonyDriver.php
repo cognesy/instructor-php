@@ -39,6 +39,7 @@ class SymfonyDriver implements CanHandleHttpRequest
         $this->client = $clientInstance ?? SymfonyHttpClient::create(['http_version' => '2.0']);
     }
 
+    #[\Override]
     public function handle(HttpRequest $request) : HttpResponse {
         $startTime = microtime(true);
         $this->dispatchRequestSent($request);

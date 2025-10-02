@@ -17,6 +17,7 @@ final readonly class FrozenClock implements ClockInterface
         $this->frozenTime = $time ?? new DateTimeImmutable();
     }
 
+    #[\Override]
     public function now(): DateTimeImmutable
     {
         return $this->frozenTime;

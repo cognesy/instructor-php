@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class GroqBodyFormat extends OpenAICompatibleBodyFormat
 {
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $requestBody = parent::toRequestBody($request);
 
@@ -19,12 +20,14 @@ class GroqBodyFormat extends OpenAICompatibleBodyFormat
 
     // CAPABILITIES ///////////////////////////////////////////
 
+    #[\Override]
     protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
         return false;
     }
 
     // INTERNAL ///////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

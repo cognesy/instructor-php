@@ -26,6 +26,7 @@ readonly final class FailWhen implements CanProcessState
         return new self($condition, $message);
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         if (($this->condition)($state)) {
             return $state->failWith($this->message);

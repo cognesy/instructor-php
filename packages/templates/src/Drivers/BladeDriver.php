@@ -40,6 +40,7 @@ class BladeDriver implements CanHandleTemplate
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
+    #[\Override]
     public function renderFile(string $path, array $parameters = []): string {
         return $this->blade->run($path, $parameters);
     }
@@ -51,6 +52,7 @@ class BladeDriver implements CanHandleTemplate
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
+    #[\Override]
     public function renderString(string $content, array $parameters = []): string {
         return $this->blade->runString($content, $parameters);
     }
@@ -61,6 +63,7 @@ class BladeDriver implements CanHandleTemplate
      * @param string $path Library path of the template file
      * @return string Raw content of the template file
      */
+    #[\Override]
     public function getTemplateContent(string $path): string {
         $templatePath = $this->blade->getTemplateFile($path);
         if (!file_exists($templatePath)) {
@@ -74,6 +77,7 @@ class BladeDriver implements CanHandleTemplate
      * @param string $content
      * @return array
      */
+    #[\Override]
     public function getVariableNames(string $content): array {
         $variables = [];
         preg_match_all('/{{\s*([$a-zA-Z0-9_]+)\s*}}/', $content, $matches);

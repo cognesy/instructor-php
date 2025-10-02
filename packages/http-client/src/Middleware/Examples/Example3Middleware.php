@@ -12,6 +12,7 @@ abstract class Example3Middleware extends BaseMiddleware
      * beforeRequest() is called right before we send the request downstream.
      * Override to do logging, modify headers, measure start times, etc.
      */
+    #[\Override]
     protected function beforeRequest(HttpRequest $request): HttpRequest {
         // This is where you can modify the request before sending it
         // For example, you might want to add custom headers or log the request
@@ -24,6 +25,7 @@ abstract class Example3Middleware extends BaseMiddleware
      * afterRequest() is called once we have the raw response from the next handler.
      * Override to transform or log the response before returning it.
      */
+    #[\Override]
     protected function afterRequest(HttpRequest $request, HttpResponse $response): HttpResponse {
         if ($this->shouldDecorateResponse($request, $response)) {
             return $this->toResponse($request, $response);
@@ -36,6 +38,7 @@ abstract class Example3Middleware extends BaseMiddleware
      * additional transformations? By default, returns false. Subclasses
      * can override this to conditionally enable decoration.
      */
+    #[\Override]
     protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response,): bool {
         return false;
     }
@@ -45,6 +48,7 @@ abstract class Example3Middleware extends BaseMiddleware
      * Default implementation wraps the response in a basic chunk-decorating class
      * that calls processChunk() on every chunk. Override if you need custom logic.
      */
+    #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
         return $response;
     }

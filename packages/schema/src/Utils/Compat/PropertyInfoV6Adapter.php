@@ -29,6 +29,7 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
         $this->propertyName = $propertyName;
     }
 
+    #[\Override]
     public function getPropertyTypeDetails(): TypeDetails {
         $type = $this->makeTypes();
         if ($type === null || count($type) === 0) {
@@ -38,6 +39,7 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
         return TypeDetails::fromPhpDocTypeString($typeString);
     }
 
+    #[\Override]
     public function isPropertyNullable(): bool {
         $types = $this->makeTypes();
         if (is_null($types)) {

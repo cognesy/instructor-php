@@ -26,14 +26,17 @@ abstract class BaseTool implements ToolInterface
      */
     abstract public function __invoke(mixed ...$args): mixed;
 
+    #[\Override]
     public function name(): string {
         return $this->name;
     }
 
+    #[\Override]
     public function description(): string {
         return $this->description;
     }
 
+    #[\Override]
     public function use(mixed ...$args): Result {
         try {
             $value = $this->__invoke(...$args);
@@ -43,6 +46,7 @@ abstract class BaseTool implements ToolInterface
         return Result::success($value);
     }
 
+    #[\Override]
     public function toToolSchema(): array {
         return [
             'type' => 'function',

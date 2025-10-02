@@ -24,6 +24,7 @@ class Prediction extends Module implements HasSignature
         $this->setup();
     }
 
+    #[\Override]
     public function signature() : Signature {
         return $this->signature;
     }
@@ -37,6 +38,7 @@ class Prediction extends Module implements HasSignature
 
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
+    #[\Override]
     protected function forward(mixed ...$callArgs) : array {
         $this->validateArgs($callArgs, $this->signature->inputNames());
         $result = $this->predictor->predict(...$callArgs);

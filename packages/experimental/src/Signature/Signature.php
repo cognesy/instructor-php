@@ -126,10 +126,12 @@ final readonly class Signature implements HasInputSchema, HasOutputSchema
 
     // CONVERSION //////////////////////////////////////////////////////
 
+    #[\Override]
     public function toInputSchema(): Schema {
         return $this->input;
     }
 
+    #[\Override]
     public function toOutputSchema(): Schema {
         return $this->output;
     }

@@ -16,15 +16,15 @@ final readonly class FinishReasonCheck implements CanDecideToContinue
 {
     /** @var Closure(TState): mixed */
     private Closure $finishReasonResolver;
-    /** @var list<int|string|null> */
+    /** @var list<string> */
     private array $normalizedStopReasons;
 
     /**
      * @param array<int, string|int|BackedEnum|null> $stopReasons
-     * @param Closure(TState): string|int|BackedEnum|null $finishReasonResolver
+     * @param callable(TState): (string|int|BackedEnum|null) $finishReasonResolver
      */
     public function __construct(
-        private array $stopReasons,
+        array $stopReasons,
         callable $finishReasonResolver,
     ) {
         $this->finishReasonResolver = Closure::fromCallable($finishReasonResolver);
@@ -34,6 +34,7 @@ final readonly class FinishReasonCheck implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         if ($this->normalizedStopReasons === []) {
             return true;
@@ -53,16 +54,19 @@ final readonly class FinishReasonCheck implements CanDecideToContinue
 
     /**
      * @param array<int, string|int|BackedEnum|null> $stopReasons
-     * @return list<int|string|null>
+     * @return list<string>
      */
     private function normalizeStopReasons(array $stopReasons): array {
         $normalized = [];
         foreach ($stopReasons as $reason) {
             if ($reason instanceof BackedEnum) {
-                $normalized[] = $reason->value;
+                $normalized[] = (string) $reason->value;
                 continue;
             }
-            $normalized[] = $reason;
+            if ($reason === null) {
+                continue;
+            }
+            $normalized[] = (string) $reason;
         }
 
         return $normalized;

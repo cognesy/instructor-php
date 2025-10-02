@@ -20,11 +20,13 @@ final readonly class Failure extends Result {
         $this->error = $error;
     }
 
+    #[\Override]
     public function unwrap(): mixed {
         throw new RuntimeException('Cannot call unwrap() on Failure');
     }
 
     /** @return E */
+    #[\Override]
     public function error(): mixed {
         return $this->error;
     }
@@ -33,14 +35,17 @@ final readonly class Failure extends Result {
         return $this->toMessage($this->error);
     }
 
+    #[\Override]
     public function exception(): Throwable {
         return $this->toException($this->error);
     }
 
+    #[\Override]
     public function isSuccess(): bool {
         return false;
     }
 
+    #[\Override]
     public function isFailure(): bool {
         return true;
     }

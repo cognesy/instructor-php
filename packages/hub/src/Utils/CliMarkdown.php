@@ -41,6 +41,7 @@ class CliMarkdown extends GithubMarkdown
         $this->lang = $lang;
     }
 
+    #[\Override]
     public function parse($text): string {
         $parsed = parent::parse($text);
 
@@ -53,6 +54,7 @@ class CliMarkdown extends GithubMarkdown
         return Color::parseTag($parsed);
     }
 
+    #[\Override]
     protected function renderHeadline($block): string {
         $level = (int)$block['level'];
 
@@ -76,10 +78,12 @@ class CliMarkdown extends GithubMarkdown
         //return self::NL . ColorTag::add($hlText, $this->theme['headline']) . self::NL2;
     }
 
+    #[\Override]
     protected function renderParagraph($block): string {
         return self::NL . $this->renderAbsy($block['content']) . self::NL;
     }
 
+    #[\Override]
     protected function renderList($block): string {
         $output = self::NL;
 
@@ -90,6 +94,7 @@ class CliMarkdown extends GithubMarkdown
         return $output . self::NL2;
     }
 
+    #[\Override]
     protected function renderTable($block): string {
         $head = $body = '';
 
@@ -157,15 +162,18 @@ class CliMarkdown extends GithubMarkdown
         return $width;
     }
 
+    #[\Override]
     protected function renderLink($block): string {
         return Cli::str($block['orig'], $this->theme['link']);
         //return ColorTag::add('♆ ' . $block['orig'], $this->theme['link']);
     }
 
+    #[\Override]
     protected function renderUrl($block): string {
         return parent::renderUrl($block);
     }
 
+    #[\Override]
     protected function renderAutoUrl($block): string {
         $tag = $this->theme['link'];
         $url = $text = $block[1];
@@ -177,10 +185,12 @@ class CliMarkdown extends GithubMarkdown
         return sprintf('<%s>[%s]%s</%s>', $tag, $text, $url, $tag);
     }
 
+    #[\Override]
     protected function renderImage($block): string {
         return self::NL . Color::addTag('▨ ' . $block['orig'], $this->theme['image']);
     }
 
+    #[\Override]
     protected function renderQuote($block): string {
         // ¶ §
         //$prefix = Color::render('¶ ', [Color::FG_GREEN, Color::BOLD]);
@@ -195,6 +205,7 @@ class CliMarkdown extends GithubMarkdown
         ]);
     }
 
+    #[\Override]
     protected function renderCode($block): string {
         $highlighted = Highlighter::create()->highlight($block['content']);
         $lines = explode("\n", $highlighted);
@@ -225,19 +236,26 @@ class CliMarkdown extends GithubMarkdown
         return implode('', $out);
     }
 
+    #[\Override]
     protected function renderInlineCode($block): string {
         return Cli::str($block[1], $this->theme['inlineCode']);
         //return ColorTag::add($block[1], $this->theme['inlineCode']);
     }
 
+    #[\Override]
     protected function renderStrong($block): string {
         $text = $this->renderAbsy($block[1]);
 
         return ColorTag::add("**$text**", $this->theme['strong']);
     }
 
-    protected function renderText($text): string {
-        return $text[1];
+    /**
+     * @param array{0: string, 1: string} $block
+     * @psalm-suppress ParamNameMismatch Vendor library cebe/markdown has inconsistent param names: Parser uses $block, Markdown/GithubMarkdown use $text
+     */
+    #[\Override]
+    protected function renderText($block): string {
+        return $block[1];
     }
 
     public function getTheme(): array {

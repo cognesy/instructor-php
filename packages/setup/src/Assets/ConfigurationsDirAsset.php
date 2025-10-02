@@ -31,6 +31,7 @@ class ConfigurationsDirAsset implements Publishable
         $this->output = $output;
     }
 
+    #[\Override]
     public function publish(): bool {
         if ($this->filesystem->exists($this->destinationPath)) {
             $this->output->out(

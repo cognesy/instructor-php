@@ -79,6 +79,7 @@ class PartialsGenerator implements CanGeneratePartials
      * @param ResponseModel $responseModel
      * @return Generator<PartialInferenceResponse>
      */
+    #[\Override]
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         $this->resetPartialResponse();
         // receive data

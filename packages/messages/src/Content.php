@@ -122,7 +122,7 @@ final readonly class Content
     private function isSimple(): bool {
         return match(true) {
             $this->isNull() => true,
-            (count($this->parts) === 1) && $this->firstContentPart()?->isSimple() ?? false => true,
+            (count($this->parts) === 1) && ($this->firstContentPart()?->isSimple() ?? false) => true,
             default => false,
         };
     }

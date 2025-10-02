@@ -19,6 +19,7 @@ readonly class CollectionSchema extends Schema
         $this->nestedItemSchema = $nestedItemSchema;
     }
 
+    #[\Override]
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitCollectionSchema($this);
     }

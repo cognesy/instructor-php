@@ -9,6 +9,7 @@ class OpenRouterBodyFormat extends OpenAIBodyFormat
 {
     // CAPABILITIES /////////////////////////////////////////
 
+    #[\Override]
     protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
         return false;
     }

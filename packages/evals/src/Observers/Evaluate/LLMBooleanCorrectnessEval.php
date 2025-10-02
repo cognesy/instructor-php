@@ -10,6 +10,9 @@ use Cognesy\Evals\Observers\Evaluate\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
+/**
+ * @implements CanGenerateObservations<Execution>
+ */
 class LLMBooleanCorrectnessEval implements CanGenerateObservations
 {
     private ?BooleanCorrectnessAnalysis $result = null;
@@ -23,6 +26,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
         $this->structuredOutput = $structuredOutput ?? new StructuredOutput();
     }
 
+    #[\Override]
     public function accepts(mixed $subject): bool {
         return $subject instanceof Execution;
     }
@@ -33,6 +37,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
      * @param mixed $subject The subject to be observed.
      * @return iterable<Observation> The set of observations gathered from measurement and critique.
      */
+    #[\Override]
     public function observations(mixed $subject): iterable {
         yield $this->measure($subject);
         yield from $this->critique($subject);

@@ -9,6 +9,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class DeepseekResponseAdapter extends OpenAIResponseAdapter
 {
+    #[\Override]
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $responseBody = $response->body();
         $data = json_decode($responseBody, true);
@@ -22,6 +23,7 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
+    #[\Override]
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {

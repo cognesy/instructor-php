@@ -32,6 +32,7 @@ abstract class BaseMiddleware implements HttpMiddleware
      * 4) If shouldDecorateResponse() is true, wrap the response
      * 5) Return the final response
      */
+    #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         if ($this->shouldExecute($request) === false) {
             // If the middleware decides not to execute, just pass the request

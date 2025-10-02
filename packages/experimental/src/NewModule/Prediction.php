@@ -76,18 +76,22 @@ final readonly class Prediction implements CanCarryState
 
     // CORE STATE OPERATIONS (CanCarryState implementation)
 
+    #[\Override]
     public function withResult(Result $result): static {
         return new self($result, $this->tags);
     }
 
+    #[\Override]
     public function addTags(TagInterface ...$tags): static {
         return new self($this->result, $this->tags->add(...$tags));
     }
 
+    #[\Override]
     public function replaceTags(TagInterface ...$tags): static {
         return new self($this->result, $this->tags->replace(...$tags));
     }
 
+    #[\Override]
     public function failWith(string|Throwable $cause): static {
         $message = $cause instanceof Throwable ? $cause->getMessage() : $cause;
         $exception = match (true) {
@@ -101,10 +105,12 @@ final readonly class Prediction implements CanCarryState
 
     // RESULT ACCESS (CanCarryState implementation)
 
+    #[\Override]
     public function result(): Result {
         return $this->result;
     }
 
+    #[\Override]
     public function value(): mixed {
         if ($this->result->isFailure()) {
             throw new RuntimeException('Cannot unwrap value from a failed prediction');
@@ -112,18 +118,22 @@ final readonly class Prediction implements CanCarryState
         return $this->result->unwrap();
     }
 
+    #[\Override]
     public function valueOr(mixed $default): mixed {
         return $this->result->valueOr($default);
     }
 
+    #[\Override]
     public function isSuccess(): bool {
         return $this->result->isSuccess();
     }
 
+    #[\Override]
     public function isFailure(): bool {
         return $this->result->isFailure();
     }
 
+    #[\Override]
     public function exception(): Throwable {
         if ($this->result->isSuccess()) {
             throw new RuntimeException('Cannot get exception from a successful prediction');
@@ -131,12 +141,14 @@ final readonly class Prediction implements CanCarryState
         return $this->result->exception();
     }
 
+    #[\Override]
     public function exceptionOr(mixed $default): mixed {
         return $this->result->exceptionOr($default);
     }
 
     // TAG OPERATIONS (CanCarryState implementation)
 
+    #[\Override]
     public function tagMap(): TagMapInterface {
         return $this->tags;
     }
@@ -147,6 +159,7 @@ final readonly class Prediction implements CanCarryState
      * @param class-string|null $tagClass Optional class filter
      * @return TagInterface[]
      */
+    #[\Override]
     public function allTags(?string $tagClass = null): array {
         return $this->tags->query()->only($tagClass)->all();
     }
@@ -154,12 +167,14 @@ final readonly class Prediction implements CanCarryState
     /**
      * @param class-string $tagClass
      */
+    #[\Override]
     public function hasTag(string $tagClass): bool {
         return $this->tags->has($tagClass);
     }
 
     // ESSENTIAL TRANSFORMATIONS (CanCarryState implementation)
 
+    #[\Override]
     public function tags(): TagQuery {
         return $this->tagMap()->query();
     }
@@ -265,6 +280,7 @@ final readonly class Prediction implements CanCarryState
         };
     }
 
+    #[\Override]
     public function applyTo(CanCarryState $priorState): CanCarryState {
         // TODO: Implement applyTo() method.
     }

@@ -15,6 +15,10 @@ use Cognesy\Schema\Data\TypeDetails;
 use IteratorAggregate;
 use Traversable;
 
+/**
+ * @implements IteratorAggregate<int, object>
+ * @implements ArrayAccess<int, object>
+ */
 class Sequence implements
     Sequenceable,
     IteratorAggregate,
@@ -48,10 +52,12 @@ class Sequence implements
         $this->validator = new SymfonyValidator();
     }
 
+    #[\Override]
     public function getIterator() : Traversable {
         return new ArrayIterator($this->list);
     }
 
+    #[\Override]
     public function toSchema(): Schema {
         $collectionSchema = Schema::collection(
             nestedType: $this->class,

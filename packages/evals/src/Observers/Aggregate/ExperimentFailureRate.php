@@ -14,6 +14,7 @@ class ExperimentFailureRate implements CanObserveExperiment
      * @param Experiment $experiment The experiment to observe.
      * @return Observation The observation containing the experiment's failure rate and metadata.
      */
+    #[\Override]
     public function observe(Experiment $experiment): Observation {
         return Observation::make(
             type: 'summary',

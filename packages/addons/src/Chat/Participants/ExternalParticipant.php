@@ -35,8 +35,10 @@ final class ExternalParticipant implements CanParticipateInChat
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
+    #[\Override]
     public function name() : string { return $this->name; }
 
+    #[\Override]
     public function act(ChatState $state) : ChatStep {
         $this->emitChatResponseRequested($this->provider, $state);
         $response = $this->provider->respond($state);
@@ -59,11 +61,13 @@ final class ExternalParticipant implements CanParticipateInChat
             $provider instanceof CanRespondWithMessages => $provider,
             is_callable($provider) => new class($provider) implements CanRespondWithMessages {
                 public function __construct(private readonly Closure $provider) {}
+                #[\Override]
                 public function respond(ChatState $state) : Messages {
                     return Messages::fromAny(($this->provider)($state));
                 }
             },
             default => new class implements CanRespondWithMessages {
+                #[\Override]
                 public function respond(ChatState $state) : Messages {
                     return new Messages(new Message(role: 'user', content: ''));
                 }

@@ -38,6 +38,7 @@ class EnvFileAsset implements Publishable
         $this->output = $output;
     }
 
+    #[\Override]
     public function publish(): bool {
         // copy from .env-dist to .env if .env does not exist
         if (!$this->filesystem->exists($this->destinationPath)) {

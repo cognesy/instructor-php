@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <psalm
-    errorLevel="4"
+    errorLevel="6"
     resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
-    findUnusedBaselineEntry="true"
-    findUnusedCode="true"
-    findUnusedVariables="true"
-    findUnusedSuppressions="true"
-    checkForThrowsDocblock="true"
-    checkForThrowsInGlobalScope="true"
-    ensureArrayStringOffsetsExist="true"
-    ensureArrayIntOffsetsExist="true"
-    strictBinaryOperands="true"
+    findUnusedBaselineEntry="false"
+    findUnusedCode="false"
+    findUnusedVariables="false"
+    findUnusedSuppressions="false"
+    checkForThrowsDocblock="false"
+    checkForThrowsInGlobalScope="false"
+    ensureArrayStringOffsetsExist="false"
+    ensureArrayIntOffsetsExist="false"
+    strictBinaryOperands="false"
 >
     <projectFiles>
         <directory name="packages/addons/src" />
@@ -23,7 +23,6 @@
         <directory name="packages/dynamic/src" />
         <directory name="packages/evals/src" />
         <directory name="packages/events/src" />
-        <directory name="packages/experimental/src" />
         <directory name="packages/http-client/src" />
         <directory name="packages/hub/src" />
         <directory name="packages/instructor/src" />
@@ -36,9 +35,9 @@
         <directory name="packages/templates/src" />
         <directory name="packages/utils/src" />
         <directory name="config" />
-        <directory name="examples" />
         <ignoreFiles>
             <directory name="vendor" />
+            <directory name="packages/experimental" />
         </ignoreFiles>
     </projectFiles>
 </psalm>

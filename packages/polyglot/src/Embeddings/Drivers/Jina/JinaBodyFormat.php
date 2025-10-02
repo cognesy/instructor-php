@@ -13,6 +13,7 @@ class JinaBodyFormat implements CanMapRequestBody
         private readonly EmbeddingsConfig $config
     ) {}
 
+    #[\Override]
     public function toRequestBody(EmbeddingsRequest $request): array {
         $inputs = $request->inputs();
         $options = $request->options();

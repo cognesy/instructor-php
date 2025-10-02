@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 
 class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
 {
+    #[\Override]
     protected function toUrl(InferenceRequest $request): string {
         return str_replace(
                 search: array_map(fn($key) => "{".$key."}", array_keys($this->config->metadata)),
@@ -16,6 +17,7 @@ class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
             ) . $this->getUrlParams($this->config);
     }
 
+    #[\Override]
     protected function toHeaders(InferenceRequest $request): array {
         return [
             'Api-Key' => $this->config->apiKey,

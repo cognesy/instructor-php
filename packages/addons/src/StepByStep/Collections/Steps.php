@@ -11,15 +11,20 @@ use Traversable;
 /**
  * @template TStep of object
  * @implements HasSteps<TStep>
+ * @implements IteratorAggregate<int, TStep>
  */
 readonly class Steps implements HasSteps, Countable, IteratorAggregate
 {
     /** @var TStep[] $steps */
     protected array $steps;
 
+    /**
+     * @param TStep ...$steps
+     */
     public function __construct(
         object ...$steps
     ) {
+        /** @var TStep[] $steps */
         $this->steps = $steps;
     }
 
@@ -30,6 +35,7 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
         return $this->steps;
     }
 
+    #[\Override]
     public function currentStep(): ?object {
         return $this->lastStep();
     }
@@ -48,6 +54,7 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
     }
 
     /** @return ?TStep */
+    #[\Override]
     public function stepAt(int $index): ?object {
         return $this->steps[$index] ?? null;
     }
@@ -55,6 +62,7 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
     /**
      * @deprecated Use count() instead
      */
+    #[\Override]
     public function stepCount(): int {
         return $this->count();
     }
@@ -62,6 +70,7 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
     // ITERATORS ///////////////////////////////////////////////////
 
     /** @return iterable<TStep> */
+    #[\Override]
     public function eachStep(): iterable {
         foreach ($this->steps as $step) {
             yield $step;
@@ -69,10 +78,12 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
     }
 
     /** @return Traversable<int, TStep> */
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->steps);
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->steps);
     }
@@ -82,11 +93,13 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
     /**
      * @param TStep $step
      */
+    #[\Override]
     public function withAddedStep(object $step): static {
         return $this->withAddedSteps($step);
     }
 
     /** @param TStep ...$step */
+    #[\Override]
     public function withAddedSteps(object ...$step): static {
         return new static(...[...$this->steps, ...$step]);
     }

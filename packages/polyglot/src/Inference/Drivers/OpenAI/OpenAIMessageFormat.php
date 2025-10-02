@@ -6,6 +6,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 
 class OpenAIMessageFormat implements CanMapMessages
 {
+    #[\Override]
     public function map(array $messages) : array {
         $list = [];
         foreach ($messages as $message) {

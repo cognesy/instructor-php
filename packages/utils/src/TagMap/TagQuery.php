@@ -46,7 +46,7 @@ final readonly class TagQuery
         return new self($this->tagMap->newInstance($tags));
     }
 
-    /** @param TagInterface $class */
+    /** @param class-string<TagInterface> $class */
     public function ofType(string $class): self {
         $filtered = array_filter(
             $this->tags,
@@ -55,7 +55,7 @@ final readonly class TagQuery
         return new self($this->tagMap->newInstance(array_values($filtered)));
     }
 
-    /** @param TagInterface ...$tagClasses Classes of tags to include */
+    /** @param class-string<TagInterface> ...$tagClasses Classes of tags to include */
     public function only(string ...$tagClasses): self {
         $filtered = array_filter(
             $this->tags,
@@ -76,7 +76,7 @@ final readonly class TagQuery
         return $this->only($class);
     }
 
-    /** @param TagInterface ...$tagClasses Classes of tags to remove */
+    /** @param class-string<TagInterface> ...$tagClasses Classes of tags to remove */
     public function without(string ...$tagClasses): self {
         $filtered = array_filter(
             $this->tags,
@@ -105,7 +105,7 @@ final readonly class TagQuery
         return false;
     }
 
-    /** @return TagInterface Array of tag class names */
+    /** @return array<class-string<TagInterface>> Array of tag class names */
     public function classes(): array {
         return array_unique(
             array_map(
@@ -132,7 +132,7 @@ final readonly class TagQuery
         return $this->tags[0] ?? null;
     }
 
-    /** @param TagInterface $tag Class of the tag to check */
+    /** @param class-string<TagInterface>|TagInterface $tag Class of the tag to check */
     public function has(string|TagInterface $tag): bool {
         return match(true) {
             $tag instanceof TagInterface => in_array(get_class($tag), $this->classes(), true),
@@ -141,7 +141,7 @@ final readonly class TagQuery
         };
     }
 
-    /** @param TagInterface $tags Array of tags to check */
+    /** @param class-string<TagInterface>|TagInterface ...$tags Array of tags to check */
     public function hasAll(string|TagInterface ...$tags) : bool {
         foreach ($tags as $tag) {
             if (!$this->has($tag)) {
@@ -151,7 +151,7 @@ final readonly class TagQuery
         return true;
     }
 
-    /** @param TagInterface $tags Array of tags to check */
+    /** @param class-string<TagInterface>|TagInterface ...$tags Array of tags to check */
     public function hasAny(string|TagInterface ...$tags): bool {
         foreach ($tags as $tag) {
             if ($this->has($tag)) {

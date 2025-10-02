@@ -28,6 +28,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
     protected CanTranslateInferenceRequest $requestTranslator;
     protected CanTranslateInferenceResponse $responseTranslator;
 
+    #[\Override]
     public function makeResponseFor(InferenceRequest $request) : InferenceResponse {
         $httpRequest = $this->toHttpRequest($request);
         $httpResponse = $this->makeHttpResponse($httpRequest);
@@ -35,17 +36,20 @@ abstract class BaseInferenceDriver implements CanHandleInference
     }
 
     /** iterable<PartialInferenceResponse> */
+    #[\Override]
     public function makeStreamResponsesFor(InferenceRequest $request): iterable {
         $httpRequest = $this->toHttpRequest($request);
         $httpResponse = $this->makeHttpResponse($httpRequest);
         return $this->httpResponseToInferenceStream($httpResponse);
     }
 
+    #[\Override]
     public function toHttpRequest(InferenceRequest $request): HttpRequest {
         $this->events->dispatch(new InferenceRequested(['request' => $request->toArray()]));
         return $this->requestTranslator->toHttpRequest($request);
     }
 
+    #[\Override]
     public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
         try {
             $inferenceResponse = $this->responseTranslator->fromResponse($httpResponse);
@@ -67,6 +71,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
         return $inferenceResponse;
     }
 
+    #[\Override]
     public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
         try {
             $reader = new EventStreamReader(

@@ -15,6 +15,7 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
+    #[\Override]
     public function toHttpRequest(InferenceRequest $request): HttpRequest {
         return new HttpRequest(
             url: $this->toUrl($request),

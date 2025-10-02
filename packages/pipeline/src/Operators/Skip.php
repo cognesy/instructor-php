@@ -26,6 +26,7 @@ readonly final class Skip implements CanProcessState {
         return new self(ConditionalCall::withState($condition)->then(Call::withNoArgs(fn() => true)));
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $tempState = $this->conditionChecker->process($state, fn($s) => $s);
         return match(true) {

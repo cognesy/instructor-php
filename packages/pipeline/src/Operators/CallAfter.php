@@ -24,6 +24,7 @@ readonly final class CallAfter implements CanProcessState
     /**
      * @param callable(CanCarryState):CanCarryState $next
      */
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $nextState = $next ? $next($state) : $state;
         return $this->operator->process($nextState);

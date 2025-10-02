@@ -16,6 +16,14 @@ final readonly class Sections
 
     // CONSTRUCTORS /////////////////////////////////////////////
 
+    public static function fromArray(array $data): self {
+        $sections = [];
+        foreach ($data as $sectionData) {
+            $sections[] = Section::fromArray($sectionData);
+        }
+        return new self(...$sections);
+    }
+
     // MUTATORS /////////////////////////////////////////////////
 
     public function add(Section ...$sections): Sections {

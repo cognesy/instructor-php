@@ -9,6 +9,7 @@ use Cognesy\Evals\Observation;
 
 class ExperimentLatency implements CanObserveExperiment
 {
+    #[\Override]
     public function observe(Experiment $experiment): Observation {
         return (new AggregateExperimentObserver(
             name: 'experiment.latency_p95',

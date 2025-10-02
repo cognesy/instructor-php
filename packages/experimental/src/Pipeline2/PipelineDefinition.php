@@ -24,10 +24,12 @@ readonly final class PipelineDefinition implements \IteratorAggregate, \Countabl
         return new self(...$operators);
     }
 
+    #[\Override]
     public function getIterator(): ArrayIterator {
         return $this->operators->getIterator();
     }
 
+    #[\Override]
     public function count(): int {
         return $this->operators->count();
     }

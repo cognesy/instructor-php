@@ -70,6 +70,7 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
 
     // SCHEMA //////////////////////////////////////////////////////
 
+    #[\Override]
     public function toSchema(): Schema {
         return $this->arguments->toSchema();
     }
@@ -91,6 +92,7 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
 
     // TRANSFORMATION //////////////////////////////////////////////
 
+    #[\Override]
     public function transform() : mixed {
         return $this->toArgs();
     }
@@ -105,12 +107,14 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
 
     // VALIDATION //////////////////////////////////////////////////
 
+    #[\Override]
     public function validate(): ValidationResult {
         return $this->arguments->validate();
     }
 
     // SERIALIZATION ///////////////////////////////////////////////
 
+    #[\Override]
     public function fromJson(string $jsonData, ?string $toolName = null): static {
         $arguments = $this->arguments->fromJson($jsonData);
         $name = $toolName ?? $this->name;

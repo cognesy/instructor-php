@@ -13,19 +13,23 @@ class EnumInfo extends ClassInfo
         $this->reflectionEnum = new ReflectionEnum($class);
     }
 
+    #[\Override]
     public function isEnum() : bool {
         return true;
     }
 
+    #[\Override]
     public function isBacked() : bool {
         return isset($this->reflectionEnum)
             && $this->reflectionEnum->isBacked();
     }
 
     public function enumBackingType() : string {
-        return isset($this->reflectionEnum)
-            ? $this->reflectionEnum->getBackingType()?->getName()
-            : throw new \Exception("Not an enum");
+        if (!isset($this->reflectionEnum)) {
+            throw new \Exception("Not an enum");
+        }
+        $backingType = $this->reflectionEnum->getBackingType();
+        return $backingType instanceof \ReflectionNamedType ? $backingType->getName() : '';
     }
 
     /** @return string[]|int[] */

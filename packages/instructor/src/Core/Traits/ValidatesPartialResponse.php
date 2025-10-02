@@ -43,7 +43,7 @@ trait ValidatesPartialResponse
             ->through(fn(string $text) => $this->preventJsonSchemaResponse($preventJsonSchema, $text))
             ->through(fn(string $text) => $this->detectNonMatchingJson($matchToExpectedFields, $text, $responseModel))
             ->onFailure(fn(CanCarryState $state) => throw new JsonParsingException(
-                message: $state->result()->errorMessage(),
+                message: (string) $state->result()->error(),
                 json: $partialResponseText,
             ))
             ->create();

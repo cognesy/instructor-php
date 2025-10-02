@@ -45,7 +45,7 @@ class RawChain
      */
     private $processors = [];
     /**
-     * @var callable|null The callbacks used to decide if processing is done.
+     * @var callable[] The callbacks used to decide if processing is done.
      */
     private $isDoneCall = [];
     /**

@@ -51,6 +51,7 @@ class ValidateCodeBlocks extends Command
         );
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->addOption(
@@ -92,6 +93,7 @@ class ValidateCodeBlocks extends Command
             );
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $io = new SymfonyStyle($input, $output);
 

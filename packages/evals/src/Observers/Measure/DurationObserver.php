@@ -7,8 +7,12 @@ use Cognesy\Evals\Execution;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observation;
 
+/**
+ * @implements CanGenerateObservations<Experiment|Execution>
+ */
 class DurationObserver implements CanGenerateObservations
 {
+    #[\Override]
     public function accepts(mixed $subject): bool {
         return match(true) {
             $subject instanceof Experiment => true,
@@ -16,6 +20,7 @@ class DurationObserver implements CanGenerateObservations
         };
     }
 
+    #[\Override]
     public function observations(mixed $subject): iterable {
         yield match(true) {
             $subject instanceof Experiment => $this->experimentDuration($subject),

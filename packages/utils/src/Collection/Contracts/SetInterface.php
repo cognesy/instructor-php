@@ -8,6 +8,7 @@ use Traversable;
 
 /**
  * @template T
+ * @extends IteratorAggregate<int, T>
  */
 interface SetInterface extends Countable, IteratorAggregate
 {
@@ -27,5 +28,6 @@ interface SetInterface extends Countable, IteratorAggregate
     public function values(): array;
 
     /** @return Traversable<int,T> */
+    #[\Override]
     public function getIterator(): Traversable;
 }

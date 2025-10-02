@@ -21,11 +21,13 @@ final readonly class ChatSteps extends Steps
         return array_map(fn(ChatStep $step) => $step->toArray(), $this->all());
     }
 
+    #[\Override]
     public function currentStep(): ?ChatStep {
         /** @var ?ChatStep */
         return parent::currentStep();
     }
 
+    #[\Override]
     public function stepAt(int $index): ?ChatStep {
         /** @var ?ChatStep */
         return parent::stepAt($index);

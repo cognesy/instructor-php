@@ -75,7 +75,7 @@ class PendingInference
     /**
      * Converts the response content to a JSON representation.
      *
-     * @return array The JSON representation of the content as an associative array.
+     * @return string The JSON representation of the content as a JSON string.
      */
     public function asJson() : string {
         return Json::fromString($this->get())->toString();

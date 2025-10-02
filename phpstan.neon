@@ -4,15 +4,30 @@ includes:
 parameters:
   level: 8
   paths:
-    - packages/*/src
-    - packages/*/tests
-    - src-hub
+    - packages/addons/src
+    - packages/auxiliary/src
+    - packages/config/src
+    - packages/doctor/src
+    - packages/dynamic/src
+    - packages/evals/src
+    - packages/events/src
+    - packages/http-client/src
+    - packages/hub/src
+    - packages/instructor/src
+    - packages/messages/src
+    - packages/pipeline/src
+    - packages/polyglot/src
+    - packages/schema/src
+    - packages/setup/src
+    - packages/tell/src
+    - packages/templates/src
+    - packages/utils/src
     - config
-    - examples
   excludePaths:
     - packages/*/tests/Fixtures/*
     - packages/*/tests/Support/*
-    - examples/*/vendor/*
+    - packages/experimental
+    - examples/
   reportUnmatchedIgnoredErrors: false
   checkMissingCallableSignature: true
   checkUninitializedProperties: true

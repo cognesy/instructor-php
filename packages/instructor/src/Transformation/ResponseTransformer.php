@@ -18,7 +18,7 @@ class ResponseTransformer
 
     public function __construct(
         private EventDispatcherInterface $events,
-        /** @var CanTransformData[] $transformers */
+        /** @var array<CanTransformData|class-string<CanTransformData>> $transformers */
         private array $transformers,
         private StructuredOutputConfig $config,
     ) {}
@@ -70,9 +70,10 @@ class ResponseTransformer
             }
             if ($result->isFailure()) {
                 // if the transformer failed - try with the next one
-                $this->events->dispatch(new ResponseTransformationFailed(['data' => $data, 'error' => $result->errorMessage()]));
+                $errorMessage = $result->exception()->getMessage();
+                $this->events->dispatch(new ResponseTransformationFailed(['data' => $data, 'error' => $errorMessage]));
                 if ($this->config->throwOnTransformationFailure()) {
-                    throw new ResponseTransformationException($result->errorMessage());
+                    throw new ResponseTransformationException($errorMessage);
                 }
                 continue;
             }

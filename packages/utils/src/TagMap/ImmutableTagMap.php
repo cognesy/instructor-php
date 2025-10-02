@@ -42,7 +42,7 @@ use Cognesy\Utils\TagMap\Contracts\TagMapInterface;
 final readonly class ImmutableTagMap implements TagMapInterface
 {
     /**
-     * @param TagInterface[] $tags Tags indexed by class name
+     * @param array<class-string, array<TagInterface>> $tags Tags indexed by class name
      */
     private function __construct(
         private array $tags = [],
@@ -53,6 +53,7 @@ final readonly class ImmutableTagMap implements TagMapInterface
     /**
      * @param TagInterface[] $tags Array of tags to include
      */
+    #[\Override]
     public static function create(array $tags = []): self {
         return match(true) {
             empty($tags) => self::empty(),
@@ -60,6 +61,7 @@ final readonly class ImmutableTagMap implements TagMapInterface
         };
     }
 
+    #[\Override]
     public static function empty(): self {
         return new self([]);
     }
@@ -79,6 +81,7 @@ final readonly class ImmutableTagMap implements TagMapInterface
     /**
      * @return TagInterface[]
      */
+    #[\Override]
     public function getAllInOrder(): array {
         return Arrays::flatten($this->tags);
     }
@@ -86,10 +89,12 @@ final readonly class ImmutableTagMap implements TagMapInterface
     /**
      * @param class-string $tagClass Class of the tag to check
      */
+    #[\Override]
     public function has(string $tagClass): bool {
         return !empty($this->tags[$tagClass]);
     }
 
+    #[\Override]
     public function isEmpty(): bool {
         return $this->count() === 0;
     }
@@ -102,26 +107,38 @@ final readonly class ImmutableTagMap implements TagMapInterface
         return empty($tags) ? null : end($tags);
     }
 
+    #[\Override]
     public function merge(TagMapInterface $other): TagMapInterface {
         return new self(self::mergeGroupedTags($this->tags, $other->tags));
     }
 
+    #[\Override]
     public function mergeInto(TagMapInterface $target): TagMapInterface {
         return new self(self::mergeGroupedTags($target->tags, $this->tags));
     }
 
+    #[\Override]
     public function newInstance(array $tags): TagMapInterface {
-        return new self($tags);
+        // If already grouped by class-string, use directly
+        if ($this->isGroupedArray($tags)) {
+            /** @var array<class-string, array<array-key, TagInterface>> $tags */
+            return new self($tags);
+        }
+        // Otherwise, group the flat array
+        return new self(self::addTagsTo([], $tags));
     }
 
+    #[\Override]
     public function query(): TagQuery {
         return new TagQuery($this);
     }
 
+    #[\Override]
     public function add(TagInterface ...$tags): self {
         return new self(self::addTagsTo($this->tags, $tags));
     }
 
+    #[\Override]
     public function replace(TagInterface ...$tags): TagMapInterface {
         return self::create($tags);
     }
@@ -143,5 +160,20 @@ final readonly class ImmutableTagMap implements TagMapInterface
             $target[$class] = array_merge($target[$class], $tagList);
         }
         return $target;
+    }
+
+    /**
+     * Check if array is already grouped by class-string
+     * @param array<array-key, mixed> $tags
+     */
+    private function isGroupedArray(array $tags): bool {
+        if (empty($tags)) {
+            return false;
+        }
+        // Check if first key is a class-string and first value is an array
+        $firstKey = array_key_first($tags);
+        return is_string($firstKey)
+            && class_exists($firstKey)
+            && is_array($tags[$firstKey]);
     }
 }

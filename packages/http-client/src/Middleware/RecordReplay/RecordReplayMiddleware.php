@@ -44,6 +44,7 @@ class RecordReplayMiddleware implements HttpMiddleware
         $this->events = $events ?? new EventDispatcher();
     }
 
+    #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         switch ($this->mode) {
             case self::MODE_PASS:

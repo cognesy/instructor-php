@@ -14,6 +14,7 @@ class TellCommand extends Command
 {
     protected static $defaultName = 'tell';
 
+    #[\Override]
     protected function configure() : void {
         $this->setName(self::$defaultName)
             ->setDescription('Prompt AI')
@@ -23,6 +24,7 @@ class TellCommand extends Command
             ->addOption('dsn', 'd', InputOption::VALUE_OPTIONAL, 'The DSN option', '');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $prompt = $input->getArgument('prompt');
 

@@ -11,6 +11,7 @@ final class ArrowpipeMessagesRenderer implements CanRenderMessages
     /**
      * @param array<string,mixed> $parameters
      */
+    #[\Override]
     public function renderMessages(Messages $messages, array $parameters = []) : Messages
     {
         // Use Arrowpipe template engine to render text parts within messages

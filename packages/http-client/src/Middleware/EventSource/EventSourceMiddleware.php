@@ -32,10 +32,12 @@ class EventSourceMiddleware extends BaseMiddleware
         return $this;
     }
 
+    #[\Override]
     protected function shouldExecute(HttpRequest $request): bool {
         return $this->enabled;
     }
 
+    #[\Override]
     protected function beforeRequest(HttpRequest $request): HttpRequest {
         foreach ($this->listeners as $handler) {
             $handler->onRequestReceived($request);
@@ -43,6 +45,7 @@ class EventSourceMiddleware extends BaseMiddleware
         return $request;
     }
 
+    #[\Override]
     protected function afterRequest(HttpRequest $request, HttpResponse $response): HttpResponse {
         foreach ($this->listeners as $handler) {
             $handler->onResponseReceived($request, $response);
@@ -50,10 +53,12 @@ class EventSourceMiddleware extends BaseMiddleware
         return $response;
     }
 
+    #[\Override]
     protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response,): bool {
         return $request->isStreamed();
     }
 
+    #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
         return new EventSourceResponseDecorator($request, $response, $this->listeners);
     }

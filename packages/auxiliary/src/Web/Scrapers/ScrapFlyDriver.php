@@ -20,6 +20,7 @@ class ScrapFlyDriver implements CanGetUrlContent {
         $this->client = new Client();
     }
 
+    #[\Override]
     public function getContent(string $url, array $options = []): string {
         $apiUrl = $this->makeUrl($url);
         $request = new Request('GET', $apiUrl);

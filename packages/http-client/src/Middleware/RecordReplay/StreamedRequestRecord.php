@@ -46,6 +46,7 @@ class StreamedRequestRecord extends RequestRecord
         return new self($requestData, $responseData, $chunks);
     }
 
+    #[\Override]
     public static function fromJson(string $json): ?self {
         $data = json_decode($json, true);
         if (!$data || !isset($data['request']) || !isset($data['response'])) {
@@ -55,6 +56,7 @@ class StreamedRequestRecord extends RequestRecord
         return new self($data['request'], $data['response'], $chunks);
     }
 
+    #[\Override]
     public function toJson(bool $prettyPrint = true): string {
         $data = [
             'request' => $this->getRequestData(),
@@ -64,6 +66,7 @@ class StreamedRequestRecord extends RequestRecord
         return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0);
     }
 
+    #[\Override]
     public function toResponse(bool $isStreaming = true): HttpResponse {
         if ($isStreaming) {
             return MockHttpResponse::streaming(
@@ -103,6 +106,7 @@ class StreamedRequestRecord extends RequestRecord
         return RequestRecord::fromInteraction($request, $response);
     }
 
+    #[\Override]
     protected function getRequestData(): array {
         // Access request data via reflection or other mechanism
         // This is a simplified implementation
@@ -114,6 +118,7 @@ class StreamedRequestRecord extends RequestRecord
         ];
     }
 
+    #[\Override]
     protected function getResponseData(): array {
         // Access response data via reflection or other mechanism
         // This is a simplified implementation
@@ -124,6 +129,7 @@ class StreamedRequestRecord extends RequestRecord
         ];
     }
 
+    #[\Override]
     public function getResponseHeaders(): array {
         // This method would need to be implemented in the parent class as well
         // This is a simplified implementation

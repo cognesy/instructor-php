@@ -78,7 +78,8 @@ class EventStreamReader
         if ($line === '') {
             return null;
         }
-        if (false === ($data = $this->parse($line))) {
+        $data = $this->parse($line);
+        if ($data === false || $data === true) {
             return null;
         }
         return $data;

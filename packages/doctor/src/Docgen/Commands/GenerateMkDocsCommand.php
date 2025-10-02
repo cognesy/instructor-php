@@ -31,6 +31,7 @@ class GenerateMkDocsCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->addOption(
@@ -47,6 +48,7 @@ class GenerateMkDocsCommand extends Command
             );
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         $view = new MkDocsGenerationView();

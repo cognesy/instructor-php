@@ -5,6 +5,9 @@ namespace Cognesy\Polyglot\Inference\Collections;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\Collection\ArrayList;
 
+/**
+ * @implements \IteratorAggregate<int, InferenceResponse>
+ */
 class InferenceResponseList implements \IteratorAggregate, \Countable
 {
     /** @var ArrayList<InferenceResponse> */
@@ -26,10 +29,12 @@ class InferenceResponseList implements \IteratorAggregate, \Countable
         return $this->responses->toArray();
     }
 
+    #[\Override]
     public function count(): int {
         return $this->responses->count();
     }
 
+    #[\Override]
     public function getIterator(): \Traversable {
         return $this->responses->getIterator();
     }

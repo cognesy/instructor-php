@@ -14,18 +14,22 @@ final readonly class Variables implements HasVariables
         $this->variables = $variables;
     }
 
+    #[\Override]
     public function variables(): array {
         return $this->variables;
     }
 
+    #[\Override]
     public function hasVariable(string $name): bool {
         return array_key_exists($name, $this->variables);
     }
 
+    #[\Override]
     public function variable(string $name, mixed $default = null): mixed {
         return $this->variables[$name] ?? $default;
     }
 
+    #[\Override]
     public function withVariable(string $name, mixed $value): static {
         $newVariables = $this->variables;
         $newVariables[$name] = $value;

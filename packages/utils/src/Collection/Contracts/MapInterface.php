@@ -9,6 +9,7 @@ use Traversable;
 /**
  * @template K of array-key
  * @template V
+ * @extends IteratorAggregate<K, V>
  */
 interface MapInterface extends Countable, IteratorAggregate
 {
@@ -39,5 +40,6 @@ interface MapInterface extends Countable, IteratorAggregate
     public function toArray(): array;
 
     /** @return Traversable<K,V> */
+    #[\Override]
     public function getIterator(): Traversable;
 }

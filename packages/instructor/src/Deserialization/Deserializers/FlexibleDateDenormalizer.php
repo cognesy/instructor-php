@@ -9,6 +9,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class FlexibleDateDenormalizer implements DenormalizerInterface
 {
+    #[\Override]
     public function denormalize($data, string $type, ?string $format = null, array $context = []): mixed
     {
         if (!is_string($data)) {
@@ -24,6 +25,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
         return $output;
     }
 
+    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return [
             DateTimeInterface::class => true,
@@ -32,6 +34,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
         ];
     }
 
+    #[\Override]
     public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool {
         return in_array($type, [
             DateTimeInterface::class,

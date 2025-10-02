@@ -31,6 +31,7 @@ final readonly class ResponseContentCheck implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         /** @var TState $state */
         $response = ($this->responseResolver)($state);

@@ -11,6 +11,7 @@ final readonly class Some extends Option
     /** @param T $value */
     public function __construct(private mixed $value) {}
 
+    #[\Override]
     protected function getUnsafe(): mixed {
         return $this->value;
     }

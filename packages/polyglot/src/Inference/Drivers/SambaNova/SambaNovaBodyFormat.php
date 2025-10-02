@@ -10,12 +10,14 @@ class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
 {
     // CAPABILITIES ///////////////////////////////////////////
 
+    #[\Override]
     protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
         return false;
     }
 
     // INTERNAL ///////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

@@ -8,15 +8,17 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMessages;
 
 /**
- * @implements CanProcessAnyState<HasSteps<HasStepMessages>&HasMessageStore>
+ * @implements CanProcessAnyState<HasSteps<object>&HasMessageStore>
  */
 final class AppendStepMessages implements CanProcessAnyState
 {
+    #[\Override]
     public function canProcess(object $state): bool {
         return $state instanceof HasSteps
             && $state instanceof HasMessageStore;
     }
 
+    #[\Override]
     public function process(object $state, ?callable $next = null): object {
         $newState = $next ? $next($state) : $state;
 
@@ -24,6 +26,7 @@ final class AppendStepMessages implements CanProcessAnyState
         $currentStep = $newState->currentStep();
 
         if ($currentStep === null) {
+            /** @psalm-suppress InvalidReturnStatement - $newState is checked via canProcess() to be intersection type */
             return $newState;
         }
 

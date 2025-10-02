@@ -9,6 +9,7 @@ use Cognesy\Template\Template;
 
 class MessageToRoleStringRenderer implements CanRenderMessages
 {
+    #[\Override]
     public function renderMessages(Messages $messages, array $parameters = []): Messages {
         $text = $this->fromMessages($messages);
         return Messages::fromString($text);
@@ -27,7 +28,7 @@ class MessageToRoleStringRenderer implements CanRenderMessages
 
     private function fromMessage(Message $message) : string {
         $template = match(true) {
-            !empty($message->name()) => "<|name|> (<|role|>): <|content|>",
+            $message->name() !== '' => "<|name|> (<|role|>): <|content|>",
             default => "<|role|>: <|content|>"
         };
         return Template::arrowpipe()

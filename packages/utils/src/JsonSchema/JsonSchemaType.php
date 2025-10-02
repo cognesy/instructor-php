@@ -49,6 +49,7 @@ class JsonSchemaType implements JsonSerializable, Stringable
         );
     }
 
+    #[\Override]
     public function jsonSerialize(): mixed {
         if (count($this->types) === 1) {
             return $this->types[0];
@@ -67,6 +68,7 @@ class JsonSchemaType implements JsonSerializable, Stringable
         return json_encode($this->types);
     }
 
+    #[\Override]
     public function __toString() {
         return $this->toString();
     }

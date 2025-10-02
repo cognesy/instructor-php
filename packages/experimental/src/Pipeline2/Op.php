@@ -51,14 +51,17 @@ readonly final class Op implements Serializable, JsonSerializable
 
     // SERIALIZATION ///////////////////////////////////
 
+    #[\Override]
     public function jsonSerialize(): array {
         return ['class' => $this->class, 'args' => $this->args];
     }
 
+    #[\Override]
     public function serialize() {
         return serialize($this->__serialize());
     }
 
+    #[\Override]
     public function unserialize(string $data) {
         $this->__unserialize(unserialize($data, ['allowed_classes' => false]));
     }

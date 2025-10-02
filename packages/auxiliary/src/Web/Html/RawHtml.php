@@ -24,7 +24,7 @@ class RawHtml
 
     public function asCleanHtml(): string {
         return Pipeline::builder(ErrorStrategy::FailFast)
-            ->throughAll([
+            ->throughAll(...[
                 $this->normalizeEncoding(...),
                 $this->cleanupWhitespace(...),
                 $this->removeEmptyElements(...),
@@ -376,13 +376,16 @@ class RawHtml
 
         // Find base URL if specified
         $baseNode = $xpath->query('//base[@href]')->item(0);
-        if ($baseNode) {
+        if ($baseNode instanceof \DOMElement) {
             $baseUrl = $baseNode->getAttribute('href');
         }
 
         // Process all elements with href or src attributes
         $nodes = $xpath->query('//*[@href or @src]');
         foreach ($nodes as $node) {
+            if (!$node instanceof \DOMElement) {
+                continue;
+            }
             if ($node->hasAttribute('href')) {
                 $url = $node->getAttribute('href');
                 $node->setAttribute('href', $this->makeAbsoluteUrl($url, $baseUrl));

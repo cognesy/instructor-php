@@ -140,7 +140,7 @@ class InferenceRequest
     /**
      * Retrieves the response format configuration based on the current mode.
      *
-     * @return array An array representing the response format, varying depending on the mode.
+     * @return ResponseFormat Represents the response format, varying depending on the mode.
      *               Includes schema details for JSON or JSON schema modes, or defaults to the
      *               existing response format configuration for other modes.
      */

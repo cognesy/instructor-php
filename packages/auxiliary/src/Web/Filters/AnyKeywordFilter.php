@@ -12,6 +12,7 @@ class AnyKeywordFilter implements CanFilterContent
         readonly private bool $isCaseSensitive = false
     ) {}
 
+    #[\Override]
     public function filter(string $content): bool {
         return Str::containsAll($content, $this->keywords, $this->isCaseSensitive);
     }

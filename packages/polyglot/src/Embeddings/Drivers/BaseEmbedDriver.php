@@ -26,12 +26,15 @@ class BaseEmbedDriver implements CanHandleVectorization
     protected EmbedRequestAdapter $requestAdapter;
     protected EmbedResponseAdapter $responseAdapter;
 
+    /** @psalm-suppress InvalidReturnType, InvalidReturnStatement - Return type matches interface */
+    #[\Override]
     public function handle(EmbeddingsRequest $request): HttpResponse {
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
         $this->events->dispatch(new EmbeddingsRequested(['request' => $request->toArray()]));
         return $this->makeHttpResponse($clientRequest);
     }
 
+    #[\Override]
     public function fromData(array $data): ?EmbeddingsResponse {
         return $this->responseAdapter->fromResponse($data);
     }

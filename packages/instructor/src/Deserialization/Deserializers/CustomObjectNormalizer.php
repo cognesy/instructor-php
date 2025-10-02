@@ -66,10 +66,12 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         $this->writeInfoExtractor = new ReflectionExtractor();
     }
 
+    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return ['object' => true];
     }
 
+    #[\Override]
     protected function extractAttributes(object $object, ?string $format = null, array $context = []): array {
         if (\stdClass::class === $object::class) {
             return array_keys((array)$object);
@@ -133,12 +135,14 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         return array_keys($attributes);
     }
 
+    #[\Override]
     protected function getAttributeValue(object $object, string $attribute, ?string $format = null, array $context = []): mixed {
         $mapping = $this->classDiscriminatorResolver?->getMappingForMappedObject($object);
 
         return $attribute === $mapping?->getTypeProperty() ? $mapping : $this->propertyAccessor->getValue($object, $attribute);
     }
 
+    #[\Override]
     protected function setAttributeValue(object $object, string $attribute, mixed $value, ?string $format = null, array $context = []): void {
         try {
             $this->propertyAccessor->setValue($object, $attribute, $value);
@@ -147,6 +151,7 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         }
     }
 
+    #[\Override]
     protected function getAllowedAttributes(string|object $classOrObject, array $context, bool $attributesAsString = false): array|bool {
         if (false === $allowedAttributes = parent::getAllowedAttributes($classOrObject, $context, $attributesAsString)) {
             return false;
@@ -170,6 +175,7 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         return $allowedAttributes;
     }
 
+    #[\Override]
     protected function isAllowedAttribute($classOrObject, string $attribute, ?string $format = null, array $context = []): bool {
         if (!parent::isAllowedAttribute($classOrObject, $attribute, $format, $context)) {
             return false;

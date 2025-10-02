@@ -17,6 +17,7 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
         protected CanMapUsage $usageFormat,
     ) {}
 
+    #[\Override]
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $responseBody = $response->body();
         $data = json_decode($responseBody, true);
@@ -29,6 +30,7 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
         );
     }
 
+    #[\Override]
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if (empty($data)) {
@@ -45,6 +47,7 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
         );
     }
 
+    #[\Override]
     public function toEventBody(string $data): string|bool {
         if (!str_starts_with($data, 'data:')) {
             return '';

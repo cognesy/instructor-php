@@ -5,11 +5,15 @@ namespace Cognesy\Evals\Executors\Data;
 use Cognesy\Evals\Contracts\CanMapValues;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
+/**
+ * @implements CanMapValues<self>
+ */
 class InferenceCaseParams implements CanMapValues {
     public string $preset;
     public bool $isStreamed;
     public OutputMode $mode;
 
+    #[\Override]
     public static function map(array $values) : static {
         $instance = new self();
         $instance->mode = $values['mode'] ?? OutputMode::Text;

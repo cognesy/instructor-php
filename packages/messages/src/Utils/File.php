@@ -30,10 +30,10 @@ class File implements CanProvideMessages
     }
 
     /**
-     * Create an Image object from a file.
+     * Create a File object from a file.
      *
-     * @param string $imagePath The path to the image file.
-     * @return Image
+     * @param string $imagePath The path to the file.
+     * @return static
      */
     public static function fromFile(string $imagePath): static {
         $mimeType = mime_content_type($imagePath);
@@ -42,11 +42,11 @@ class File implements CanProvideMessages
     }
 
     /**
-     * Create an Image object from a base64 encoded string.
+     * Create a File object from a base64 encoded string.
      *
      * @param string $base64string The base64 encoded string.
-     * @param string $mimeType The MIME type of the image.
-     * @return Image
+     * @param string $mimeType The MIME type of the file.
+     * @return static
      */
     public static function fromBase64(string $base64string, string $mimeType): static {
         $prefix = 'data:{$mimeType};base64,';
@@ -61,6 +61,7 @@ class File implements CanProvideMessages
      *
      * @return Messages
      */
+    #[\Override]
     public function toMessages(): Messages {
         return Messages::fromMessages([$this->toMessage()]);
     }

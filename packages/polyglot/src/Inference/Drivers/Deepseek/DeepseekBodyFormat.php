@@ -10,6 +10,7 @@ use Cognesy\Utils\Str;
 
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 {
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $request = $request->withCacheApplied();
 
@@ -46,16 +47,19 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 
     // CAPABILITIES ///////////////////////////////////////////
 
+    #[\Override]
     protected function supportsToolSelection(InferenceRequest $request) : bool {
         $model = $request->model() ?: $this->config->model;
         return !Str::contains($model, 'reasoner');
     }
 
+    #[\Override]
     protected function supportsStructuredOutput(InferenceRequest $request) : bool {
         $model = $request->model() ?: $this->config->model;
         return !Str::contains($model, 'reasoner');
     }
 
+    #[\Override]
     protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
         $model = $request->model() ?: $this->config->model;
         return !Str::contains($model, 'reasoner');
@@ -63,6 +67,7 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         if (!$this->supportsStructuredOutput($request)) {
             return ['type' => 'text'];

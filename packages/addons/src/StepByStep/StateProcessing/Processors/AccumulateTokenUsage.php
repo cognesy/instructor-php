@@ -9,15 +9,17 @@ use Cognesy\Addons\StepByStep\Step\Contracts\HasStepUsage;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 /**
- * @implements CanProcessAnyState<HasSteps<HasStepUsage>&HasUsage>
+ * @implements CanProcessAnyState<HasSteps<object>&HasUsage>
  */
 final class AccumulateTokenUsage implements CanProcessAnyState
 {
+    #[\Override]
     public function canProcess(object $state): bool {
         return $state instanceof HasUsage
             && $state instanceof HasSteps;
     }
 
+    #[\Override]
     public function process(object $state, ?callable $next = null): object {
         $newState = $next ? $next($state) : $state;
 

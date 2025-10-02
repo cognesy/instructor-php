@@ -26,6 +26,7 @@ readonly final class CallBefore implements CanProcessState
      *
      * @param callable(CanCarryState):CanCarryState $next
      */
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $modifiedState = $this->operator->process($state);
         return $next ? $next($modifiedState) : $modifiedState;

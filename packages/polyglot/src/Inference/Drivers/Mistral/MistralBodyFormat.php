@@ -16,6 +16,7 @@ class MistralBodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat
     ) {}
 
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $request = $request->withCacheApplied();
 
@@ -123,7 +124,7 @@ class MistralBodyFormat implements CanMapRequestBody
         }
 
         $responseFormat = $request->responseFormat();
-        $type = $responseFormat['type'] ?? $responseFormat['json_schema']['type'] ?? '';
+        $type = $responseFormat->type();
         return match($type) {
             'json' => OutputMode::Json,
             'json_object' => OutputMode::Json,
@@ -132,6 +133,9 @@ class MistralBodyFormat implements CanMapRequestBody
         };
     }
 
+    /**
+     * @return array{0: array<string, mixed>, 1: string, 2: bool}
+     */
     protected function toSchemaData(InferenceRequest $request) : array {
         $responseFormat = $request->responseFormat();
         return [

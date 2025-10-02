@@ -19,6 +19,7 @@ final class ToString implements NodeVisitor
         private MetadataStyle $metadataStyle = MetadataStyle::Comments
     ) {
     }
+    #[\Override]
     public function visit(Node $node): string {
         return match (true) {
             $node instanceof DocumentNode => array_reduce($node->children, fn($carry, $n) => $carry . $n->accept($this), ''),

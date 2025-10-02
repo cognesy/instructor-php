@@ -25,6 +25,7 @@ readonly class TrackMemory implements CanProcessState
         return new self($operationName);
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $startMemory = memory_get_usage(true);
         $startPeakMemory = memory_get_peak_usage(true);

@@ -28,6 +28,7 @@ class BaseResponseDecorator implements HttpResponse
      *
      * @return int
      */
+    #[\Override]
     public function statusCode(): int {
         return $this->response->statusCode();
     }
@@ -37,6 +38,7 @@ class BaseResponseDecorator implements HttpResponse
      *
      * @return array
      */
+    #[\Override]
     public function headers(): array {
         return $this->response->headers();
     }
@@ -46,6 +48,7 @@ class BaseResponseDecorator implements HttpResponse
      *
      * @return string
      */
+    #[\Override]
     public function body(): string {
         return $this->response->body();
     }
@@ -56,6 +59,7 @@ class BaseResponseDecorator implements HttpResponse
      * @param int $chunkSize
      * @return iterable<string>
      */
+    #[\Override]
     public function stream(?int $chunkSize = null): iterable {
         foreach ($this->response->stream($chunkSize) as $chunk) {
             yield $this->toChunk($chunk);
@@ -72,6 +76,7 @@ class BaseResponseDecorator implements HttpResponse
         return $chunk;
     }
 
+    #[\Override]
     public function isStreamed(): bool {
         return $this->response->isStreamed();
     }

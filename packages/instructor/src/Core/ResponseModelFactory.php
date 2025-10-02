@@ -67,8 +67,8 @@ class ResponseModelFactory
             // object and is instance of Schema (specifically - ObjectSchema)
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
             //is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
-            // is object and can provide OpenAI tool call
-            is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
+            // is class-string implementing tool selection handling
+            is_string($requestedModel) && is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($this->makeInstance($requestedModel)),
             // is string - so will be used as class-string
             is_string($requestedModel) => $this->fromClassString($requestedModel),
             // is array and empty - create a default dynamic structure
@@ -200,7 +200,6 @@ class ResponseModelFactory
             is_array($requestedSchema) => $requestedSchema['name'] ?? $requestedSchema['x-title'] ?? null,
             is_object($requestedSchema) && method_exists($requestedSchema, 'name') => $requestedSchema->name(),
             is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->name,
-            is_object($requestedSchema) => get_class($requestedSchema),
             default => 'default_schema',
         };
         $name = $name ?: $this->config->schemaName() ?: 'default_schema';

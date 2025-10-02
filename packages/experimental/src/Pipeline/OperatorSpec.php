@@ -30,6 +30,7 @@ readonly final class OperatorSpec implements JsonSerializable
         return new self($class, $args);
     }
 
+    #[\Override]
     public function jsonSerialize(): array {
         return ['class' => $this->class, 'args' => $this->args];
     }

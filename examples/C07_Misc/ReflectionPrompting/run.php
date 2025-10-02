@@ -38,6 +38,7 @@ class ReflectiveResponse implements CanValidateSelf {
     public string $finalOutput;
 
     // Validation method to ensure thorough reflection
+    #[\Override]
     public function validate(): ValidationResult {
         $errors = [];
         if (empty($this->reflection)) {

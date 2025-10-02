@@ -51,7 +51,7 @@ class DataMap implements JsonSerializable
      * Set a value by key using dot notation.
      *
      * @param string $key
-     * @param TValue $value
+     * @param mixed $value
      * @return self
      */
     public function set(string $key, mixed $value): self {
@@ -207,6 +207,7 @@ class DataMap implements JsonSerializable
      *
      * @return mixed
      */
+    #[\Override]
     public function jsonSerialize(): mixed {
         return $this->toArray();
     }
@@ -323,6 +324,7 @@ class DataMap implements JsonSerializable
      * @return Map
      */
     private function collectValues(string $path): Map {
+        /** @psalm-suppress InvalidArgument - Option::flatMap generic type inference issue with match expression */
         return $this->getOption($path)
             ->flatMap(function($subset) use ($path) {
                 return match(true) {

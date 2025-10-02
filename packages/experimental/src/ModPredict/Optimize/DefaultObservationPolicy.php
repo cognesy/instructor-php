@@ -8,10 +8,12 @@ final class DefaultObservationPolicy implements ObservationPolicy
 {
     public function __construct(private float $defaultSample = 0.0) {}
 
+    #[\Override]
     public function shouldObserve(string $signatureId, string $predictorPath, string $class): bool {
         return $this->defaultSample > 0.0;
     }
 
+    #[\Override]
     public function sampleRate(string $signatureId): float {
         return $this->defaultSample;
     }

@@ -35,6 +35,7 @@ class PrintToConsole implements CanListenToHttpEvents
         }
     }
 
+    #[\Override]
     public function onRequestReceived(HttpRequest $request): void {
         $highlight = [Color::YELLOW];
         if ($this->config->httpRequestUrl) {
@@ -62,6 +63,7 @@ class PrintToConsole implements CanListenToHttpEvents
         }
     }
 
+    #[\Override]
     public function onStreamChunkReceived(HttpRequest $request, HttpResponse $response, string $chunk): void {
         if (!$this->config->httpResponseStream) {
             return;
@@ -73,6 +75,7 @@ class PrintToConsole implements CanListenToHttpEvents
         Console::println($chunk, [Color::DARK_GRAY]);
     }
 
+    #[\Override]
     public function onStreamEventAssembled(HttpRequest $request, HttpResponse $response, string $line): void {
         if (!$this->config->httpResponseStream) {
             return;
@@ -84,6 +87,7 @@ class PrintToConsole implements CanListenToHttpEvents
         Console::println($line, [Color::DARK_GRAY]);
     }
 
+    #[\Override]
     public function onResponseReceived(HttpRequest $request, HttpResponse $response): void {
         $highlight = [Color::WHITE];
         if ($this->config->httpTrace) {

@@ -47,6 +47,7 @@ class ExtractCodeBlocks extends Command
         $this->eventDispatcher->addListener(ExtractionCompleted::class, fn($e) => $this->metricsCollector->handle($e));
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->addOption(
@@ -88,6 +89,7 @@ class ExtractCodeBlocks extends Command
             );
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $io = new SymfonyStyle($input, $output);
 

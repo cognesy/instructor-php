@@ -12,6 +12,7 @@ final class RoundRobinSelector implements CanChooseNextParticipant
 {
     private int $index = 0;
 
+    #[\Override]
     public function nextParticipant(ChatState $state, Participants $participants) : CanParticipateInChat {
         if ($participants->count() === 0) {
             throw new NoParticipantsException('No participants available to select from.');

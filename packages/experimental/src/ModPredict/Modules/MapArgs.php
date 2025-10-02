@@ -22,6 +22,7 @@ class MapArgs extends Module
         };
     }
 
+    #[\Override]
     protected function forward(mixed ...$callArgs) : array {
         if (empty($this->mapping)) {
             return $callArgs;

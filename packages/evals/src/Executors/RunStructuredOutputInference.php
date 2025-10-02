@@ -16,6 +16,7 @@ class RunStructuredOutputInference implements CanRunExecution
         $this->structuredOutputData = $data;
     }
 
+    #[\Override]
     public function run(Execution $execution) : Execution {
         $execution->data()->set('response', $this->makeInstructorResponse($execution)->response());
         return $execution;

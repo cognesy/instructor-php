@@ -215,7 +215,7 @@ class Template
     private function makeMessageStore(string $text) : MessageStore {
         return match(true) {
             $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeScriptFromXml($text),
-            default => Messages::fromString($text),
+            default => MessageStore::fromMessages(Messages::fromString($text)),
         };
     }
 

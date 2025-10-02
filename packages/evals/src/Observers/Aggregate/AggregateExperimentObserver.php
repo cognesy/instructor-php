@@ -27,6 +27,7 @@ class AggregateExperimentObserver implements CanObserveExperiment
         }
     }
 
+    #[\Override]
     public function observe(Experiment $experiment): Observation {
         return Observation::make(
             type: 'summary',

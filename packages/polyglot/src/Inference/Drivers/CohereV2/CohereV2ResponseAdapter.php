@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 {
+    #[\Override]
     public function fromResponse(HttpResponse $response): InferenceResponse {
         $responseBody = $response->body();
         $data = json_decode($responseBody, true);
@@ -23,6 +24,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
+    #[\Override]
     public function fromStreamResponse(string $eventBody) : ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if (empty($data)) {
@@ -39,6 +41,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
+    #[\Override]
     public function toEventBody(string $data): string|bool {
         if (!str_starts_with($data, 'data:')) {
             return '';
@@ -52,6 +55,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 
     // OVERRIDES - HELPERS ///////////////////////////////////
 
+    #[\Override]
     protected function makeContent(array $data): string {
         $contentMsg = $data['message']['content'][0]['text'] ?? '';
         $contentFnArgs = $data['message']['tool_calls'][0]['function']['arguments'] ?? '';
@@ -62,6 +66,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         };
     }
 
+    #[\Override]
     protected function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
             callback: fn(array $call) => $this->makeToolCall($call),
@@ -69,6 +74,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         ));
     }
 
+    #[\Override]
     protected function makeToolCall(array $data) : ?ToolCall {
         if (empty($data)) {
             return null;
@@ -82,6 +88,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         return ToolCall::fromArray($data['function'] ?? [])?->withId($data['id'] ?? '');
     }
 
+    #[\Override]
     protected function makeContentDelta(array $data): string {
         $deltaContent = match(true) {
             ([] !== ($data['delta']['message']['content'] ?? [])) => $this->normalizeContent($data['delta']['message']['content']),

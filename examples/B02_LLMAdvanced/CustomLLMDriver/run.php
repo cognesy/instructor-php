@@ -28,6 +28,7 @@ use Cognesy\Utils\Str;
 Inference::registerDriver(
     name: 'custom-driver',
     driver: fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
+        #[\Override]
         protected function makeHttpResponse(\Cognesy\Http\Data\HttpRequest $request): HttpResponse {
             // some extra functionality to demonstrate our driver is being used
             echo ">>> Handling request...\n";

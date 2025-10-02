@@ -63,7 +63,7 @@ class PendingExecution
         $state = $this->execute();
         return match(true) {
             $state->isFailure() => throw new RuntimeException(
-                'Cannot extract value from a failed state: ' . $state->result()->errorMessage()
+                'Cannot extract value from a failed state: ' . (string) $state->result()->error()
             ),
             default => $state->result()->unwrap(),
         };

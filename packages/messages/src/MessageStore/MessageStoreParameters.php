@@ -12,6 +12,10 @@ final readonly class MessageStoreParameters
 
     // CONSTRUCTORS /////////////////////////////////////////////
 
+    public static function fromArray(array $parameters): self {
+        return new self($parameters);
+    }
+
     // ACCESSORS ////////////////////////////////////////////////
 
     public function has(string $name) : bool {

@@ -22,11 +22,13 @@ class HttpClientErrorException extends HttpRequestException
         parent::__construct($message, $request, $response, $duration, $previous);
     }
     
+    #[\Override]
     public function getStatusCode(): ?int
     {
         return $this->statusCode;
     }
     
+    #[\Override]
     public function isRetriable(): bool
     {
         return $this->statusCode === 429; // Only 429 Too Many Requests is retriable

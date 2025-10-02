@@ -17,6 +17,7 @@ class Finalize implements CanProcessState {
         });
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $finalizedState = $this->finalizer->process($state);
         if ($finalizedState->isFailure()) {

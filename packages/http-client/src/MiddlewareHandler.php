@@ -41,6 +41,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
     /**
      * Run all middlewares in sequence, then the final driver.
      */
+    #[\Override]
     public function handle(HttpRequest $request): HttpResponse
     {
         // We'll build a chain in reverse so the first middleware is called first.
@@ -67,6 +68,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
                 private CanHandleHttpRequest $next
             ) {}
 
+            #[\Override]
             public function handle(HttpRequest $request): HttpResponse {
                 return $this->middleware->handle($request, $this->next);
             }

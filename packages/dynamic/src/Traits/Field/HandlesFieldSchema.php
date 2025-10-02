@@ -14,7 +14,7 @@ trait HandlesFieldSchema
     }
 
     public function withName(string $name) : self {
-        $this->schema->name = $name;
+        $this->schema = $this->schema->withName($name);
         // TODO: revise this
         if ($this->isStructure()) {
             $this->get()?->withName($name);
@@ -27,7 +27,7 @@ trait HandlesFieldSchema
     }
 
     public function withDescription(string $description) : self {
-        $this->schema->description = $description;
+        $this->schema = $this->schema->withDescription($description);
         // TODO: revise this
         if ($this->isStructure()) {
             $this->get()->withDescription($description);

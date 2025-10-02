@@ -25,6 +25,7 @@ class FirecrawlDriver implements CanGetUrlContent
         $this->client = new Client();
     }
 
+    #[\Override]
     public function getContent(string $url, array $options = []): string {
         $body = [
             'url' => $url,

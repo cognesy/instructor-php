@@ -102,7 +102,7 @@ final readonly class MessageStore
     }
 
     /**
-     * @return array<string,array>
+     * @return list<array<array-key, mixed>>
      */
     public function toArray() : array {
         return $this->toMessages()->toArray();

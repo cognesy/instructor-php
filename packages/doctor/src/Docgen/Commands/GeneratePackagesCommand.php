@@ -27,12 +27,14 @@ class GeneratePackagesCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->setName('gen:packages')
             ->setDescription('Generate package documentation');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         $view = new PackageGenerationView();

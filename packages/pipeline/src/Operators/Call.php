@@ -32,6 +32,9 @@ readonly final class Call implements CanProcessState {
     /**
      * @param callable(mixed):mixed $callable
      */
+    /**
+     * @param callable():mixed $callable
+     */
     public static function withNoArgs(callable $callable) : self {
         return new self(function (CanCarryState $state) use ($callable) {
             if ($state->isFailure()) {
@@ -78,6 +81,7 @@ readonly final class Call implements CanProcessState {
     /**
      * @param null|callable(CanCarryState):CanCarryState $next
      */
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $outputState = ($this->normalizedCall)($state);
 

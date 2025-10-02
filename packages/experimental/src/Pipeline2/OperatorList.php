@@ -28,10 +28,12 @@ final readonly class OperatorList implements \Countable, \IteratorAggregate
         };
     }
 
+    #[\Override]
     public function getIterator(): \Traversable {
         yield from $this->operators;
     }
 
+    #[\Override]
     public function count(): int {
         return $this->operators->count();
     }

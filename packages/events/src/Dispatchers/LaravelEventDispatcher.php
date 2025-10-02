@@ -11,10 +11,10 @@ final class LaravelEventDispatcher implements CanHandleEvents
     /** Laravel’s own dispatcher (sync or queued) */
     private Dispatcher $dispatcher;
 
-    /** @var array<class-string, SplPriorityQueue<callable>> */
+    /** @var array<class-string, SplPriorityQueue<callable, int>> */
     private array $registry = [];
 
-    /** @var SplPriorityQueue<callable>  wire-tap listeners (“*”) */
+    /** @var SplPriorityQueue<callable, int>  wire-tap listeners ("*") */
     private SplPriorityQueue $taps;
 
     public function __construct(Dispatcher $laravel)
@@ -23,6 +23,7 @@ final class LaravelEventDispatcher implements CanHandleEvents
         $this->taps    = new SplPriorityQueue();
     }
 
+    #[\Override]
     public function addListener(string $name, callable $listener, int $priority = 0): void {
         if ($name === '*') {
             /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
@@ -39,16 +40,19 @@ final class LaravelEventDispatcher implements CanHandleEvents
         $this->dispatcher->listen($name, $listener);
     }
 
+    #[\Override]
     public function wiretap(callable $listener, int $priority = \PHP_INT_MIN): void {
         $this->addListener('*', $listener, $priority);
     }
 
+    #[\Override]
     public function dispatch(object $event): object {
         // Laravel executes all framework / user listeners.
         $this->dispatcher->dispatch($event);
 
         // Now run taps (guaranteed, final state of the event).
         foreach (clone $this->taps as $tap) {
+            /** @var callable $tap */
             $tap($event);
         }
 
@@ -56,6 +60,7 @@ final class LaravelEventDispatcher implements CanHandleEvents
     }
 
     // workaround for Laravel’s lack of introspection - via bridge
+    #[\Override]
     public function getListenersForEvent(object $event): iterable {
         $name = $event::class;
 

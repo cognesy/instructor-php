@@ -37,7 +37,7 @@ class MakeObservations
      */
     public function withObservers(array $observers) : self {
         if (is_array($observers[0] ?? null)) {
-            $observers = array_merge(...$observers);
+            $observers = array_merge(...array_values($observers));
         }
         $this->observers = $observers;
         return $this;

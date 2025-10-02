@@ -29,6 +29,7 @@ final class DefaultExecution implements Execution
         private ?Observer $observer = null,
     ) {}
 
+    #[\Override]
     public function run(): mixed {
         return $this->runFrom(0, $this->initialPayload);
     }

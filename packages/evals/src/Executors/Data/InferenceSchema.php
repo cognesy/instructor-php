@@ -55,6 +55,7 @@ class InferenceSchema implements CanProvideJsonSchema
         ];
     }
 
+    #[\Override]
     public function toJsonSchema(): array {
         return $this->schema;
     }

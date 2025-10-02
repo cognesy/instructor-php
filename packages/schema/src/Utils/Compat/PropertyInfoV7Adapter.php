@@ -31,12 +31,14 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         $this->propertyName = $propertyName;
     }
 
+    #[\Override]
     public function getPropertyTypeDetails(): TypeDetails {
         $types = $this->makeTypes();
         $typeString = $this->typeToString($types);
         return TypeDetails::fromPhpDocTypeString($typeString);
     }
 
+    #[\Override]
     public function isPropertyNullable(): bool {
         return $this->makeTypes()->isNullable();
     }
@@ -50,7 +52,10 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         if ($type->isIdentifiedBy(TypeIdentifier::STRING)) { $types[] = 'string'; }
         if ($type->isIdentifiedBy(TypeIdentifier::BOOL)) { $types[] = 'bool'; }
         if ($type->isIdentifiedBy(TypeIdentifier::ARRAY)) { $types[] = $this->getCollectionOrArrayType($type); }
-        if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) { $types[] = $type->getClassName(); }
+        if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) {
+            /** @psalm-suppress UndefinedMethod - getClassName() exists on ObjectType */
+            $types[] = $type->getClassName();
+        }
         if ($type->isIdentifiedBy(TypeIdentifier::ITERABLE)) { $types[] = $this->getCollectionOrArrayType($type); }
         //if ($type->isIdentifiedBy(TypeIdentifier::NULL)) { $types[] = 'null'; }
         if (empty($types)) {
@@ -109,7 +114,10 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         if ($type->isIdentifiedBy(TypeIdentifier::STRING)) { $types[] = 'string[]'; }
         if ($type->isIdentifiedBy(TypeIdentifier::BOOL)) { $types[] = 'bool[]'; }
         if ($type->isIdentifiedBy(TypeIdentifier::ARRAY)) { $types[] = 'array'; }
-        if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) { $types[] = $type->getClassName(). '[]'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) {
+            /** @psalm-suppress UndefinedMethod - getClassName() exists on ObjectType */
+            $types[] = $type->getClassName(). '[]';
+        }
         if ($type->isIdentifiedBy(TypeIdentifier::ITERABLE)) { $types[] = 'array'; }
         //if ($type->isIdentifiedBy(TypeIdentifier::NULL)) { $types[] = 'null'; }
         if (empty($types)) {

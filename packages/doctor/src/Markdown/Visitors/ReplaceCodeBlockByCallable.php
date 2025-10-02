@@ -14,6 +14,7 @@ final class ReplaceCodeBlockByCallable implements NodeVisitor
         private Closure $replacer,
     ) {}
 
+    #[\Override]
     public function visit(Node $node): Node {
         return match(true) {
             $node instanceof DocumentNode => $this->visitDocument($node),

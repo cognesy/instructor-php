@@ -25,6 +25,7 @@ class MakeSubqueries extends Module
             ->get('subqueries');
     }
 
+    #[\Override]
     protected function forward(mixed ...$callArgs) : array {
         $query = $callArgs['question'];
         $context = $callArgs['context'];

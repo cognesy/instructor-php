@@ -30,6 +30,7 @@ class Image extends ImageUtil
      * @param string $imagePath The path to the image file.
      * @return static
      */
+    #[\Override]
     public static function fromFile(string $imagePath): static {
         return parent::fromFile($imagePath);
     }
@@ -39,6 +40,7 @@ class Image extends ImageUtil
      *
      * @return array
      */
+    #[\Override]
     public function toArray(): array {
         $content = [];
         if (!empty($this->prompt)) {

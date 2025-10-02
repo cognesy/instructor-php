@@ -13,6 +13,7 @@ class StripSelectedTags implements CanCleanHtml
         $this->tags = $tags;
     }
 
+    #[\Override]
     public function process(string $html): string
     {
         if (empty($this->tags)) {

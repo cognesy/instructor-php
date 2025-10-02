@@ -26,6 +26,7 @@ final class ContextContainer implements ContainerInterface
         $this->keyTypes = $keyTypes;
     }
 
+    #[\Override]
     public function get(string $id): mixed {
         // Prefer class-string bindings
         if (class_exists($id) || interface_exists($id)) {
@@ -53,6 +54,7 @@ final class ContextContainer implements ContainerInterface
         throw new NotFound("Service not found: {$id}");
     }
 
+    #[\Override]
     public function has(string $id): bool {
         if (class_exists($id) || interface_exists($id)) {
             return $this->ctx->has($id);

@@ -33,6 +33,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         return $this->result;
     }
 
+    #[\Override]
     public function visitSchema(Schema $schema): void {
         // this is fallback - should never be called in practice
         $this->result = array_filter([
@@ -47,6 +48,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitArraySchema(ArraySchema $schema): void {
         $this->result = [
             'type' => 'array',
@@ -56,6 +58,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ];
     }
 
+    #[\Override]
     public function visitCollectionSchema(CollectionSchema $schema): void {
         $this->result = array_filter([
             'type' => 'array',
@@ -64,6 +67,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitObjectSchema(ObjectSchema $schema): void {
         // SPECIAL CASES: DateTime and DateTimeImmutable
         if (in_array($schema->typeDetails->class, [
@@ -99,6 +103,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitEnumSchema(EnumSchema $schema): void {
         $this->result = array_filter([
             'type' => $schema->typeDetails->enumType ?? 'string',
@@ -108,6 +113,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitOptionSchema(OptionSchema $schema): void {
         $this->result = array_filter([
             'type' => 'string',
@@ -116,6 +122,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitScalarSchema(ScalarSchema $schema): void {
         $array = [
             'type' => $schema->typeDetails->toJsonType()->toString(),
@@ -127,6 +134,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         $this->result = array_filter($array);
     }
 
+    #[\Override]
     public function visitObjectRefSchema(ObjectRefSchema $schema): void {
         $class = $this->className($schema->typeDetails->class);
         $id = "#/{$this->defsLabel}/{$class}";
@@ -144,6 +152,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitArrayShapeSchema(ArrayShapeSchema $schema): void {
         $propertyDefs = [];
         foreach ($schema->properties as $property) {

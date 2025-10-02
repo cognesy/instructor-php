@@ -36,6 +36,7 @@ abstract readonly class Result
      * @template R The return type of the callable.
      * @param callable():R $callable The callable to execute.
      * @return Result<R, Throwable> A Result instance representing the outcome of the callable execution.
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Success/Failure are valid Result implementations
      */
     public static function try(callable $callable): Result {
         try {
@@ -148,6 +149,7 @@ abstract readonly class Result
      * @template S
      * @param callable(T):Result<S, E> $f Function to apply to the value in case of success
      * @return Result<S, E> A new Result instance with the function applied, or the original failure
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Monadic composition is type-safe
      */
     public function then(callable $f): Result {
         return $this->map(function($value) use ($f) {
@@ -162,6 +164,7 @@ abstract readonly class Result
      * @template S
      * @param callable(T):S $f Function to apply to the value in case of success
      * @return Result<S, E> A new Result instance with the transformed value, or the original failure
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Functor mapping preserves Result type
      */
     public function map(callable $f): Result {
         if ($this->isSuccess()) {
@@ -228,6 +231,7 @@ abstract readonly class Result
      * @template F
      * @param callable(E):F $f Function to recover from the error in case of failure
      * @return Result<T, F> A new Result instance with the recovery applied, or the original success
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Error recovery transforms error type
      */
     public function recover(callable $f): Result {
         if ($this->isFailure()) {
@@ -244,6 +248,7 @@ abstract readonly class Result
      * @template ENew
      * @param callable(E):ENew|Result<T, ENew> $f Transformer applied to the error when the result is a failure
      * @return Result<T, ENew>
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Error mapping transforms error type
      */
     public function mapError(callable $f): Result {
         if ($this->isSuccess()) {

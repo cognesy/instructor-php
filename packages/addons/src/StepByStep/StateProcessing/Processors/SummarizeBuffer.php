@@ -11,6 +11,9 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Tokenizer;
 
+/**
+ * @implements CanProcessAnyState<object>
+ */
 final readonly class SummarizeBuffer implements CanProcessAnyState
 {
     private CanHandleEvents $events;
@@ -26,10 +29,12 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
+    #[\Override]
     public function canProcess(object $state): bool {
         return $state instanceof ChatState;
     }
 
+    #[\Override]
     public function process(object $state, ?callable $next = null): ChatState {
         $newState = $next ? $next($state) : $state;
 

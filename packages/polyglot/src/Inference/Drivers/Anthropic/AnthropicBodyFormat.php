@@ -17,6 +17,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
         protected bool $parallelToolCalls = false
     ) {}
 
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $options = array_merge($this->config->options, $request->options());
 

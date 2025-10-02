@@ -31,7 +31,7 @@ class ResponseDeserializer
             default => $this->deserializeAny($json, $responseModel)
         };
         $this->events->dispatch(match(true) {
-            $result->isFailure() => new ResponseDeserializationFailed(['error' => $result->errorMessage()]),
+            $result->isFailure() => new ResponseDeserializationFailed(['error' => (string) $result->error()]),
             default => new ResponseDeserialized(['response' => json_encode($result->unwrap())])
         });
         return $result;

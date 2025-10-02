@@ -21,6 +21,7 @@ class DispatchDebugEvents implements CanListenToHttpEvents
         protected readonly EventDispatcherInterface $events,
     ) {}
 
+    #[\Override]
     public function onRequestReceived(HttpRequest $request): void {
         if ($this->config->httpRequestUrl) {
             $this->events->dispatch(new DebugRequestUrlUsed(['url' => $request->url()]));
@@ -33,6 +34,7 @@ class DispatchDebugEvents implements CanListenToHttpEvents
         }
     }
 
+    #[\Override]
     public function onStreamChunkReceived(HttpRequest $request, HttpResponse $response, string $chunk): void {
         if (!$this->config->httpResponseStream) {
             return;
@@ -40,6 +42,7 @@ class DispatchDebugEvents implements CanListenToHttpEvents
         $this->events->dispatch(new DebugStreamChunkReceived(['chunk' => $chunk]));
     }
 
+    #[\Override]
     public function onStreamEventAssembled(HttpRequest $request, HttpResponse $response, string $line): void {
         if (!$this->config->httpResponseStream) {
             return;
@@ -47,6 +50,7 @@ class DispatchDebugEvents implements CanListenToHttpEvents
         $this->events->dispatch(new DebugStreamLineReceived(['line' => $line]));
     }
 
+    #[\Override]
     public function onResponseReceived(HttpRequest $request, HttpResponse $response): void {
         if ($this->config->httpResponseHeaders) {
             $this->events->dispatch(new DebugResponseHeadersReceived(['headers' => $response->headers()]));

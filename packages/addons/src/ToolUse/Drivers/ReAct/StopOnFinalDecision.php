@@ -6,8 +6,12 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
 
+/**
+ * @implements CanDecideToContinue<object>
+ */
 final class StopOnFinalDecision implements CanDecideToContinue
 {
+    #[\Override]
     public function canContinue(object $state): bool {
         if (!$state instanceof ToolUseState) {
             return true;

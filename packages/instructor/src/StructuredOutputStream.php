@@ -91,6 +91,9 @@ class StructuredOutputStream
         foreach ($this->streamResponses() as $partialResponse) {
             // Just consume the stream, processStream() handles the updates
         }
+        if (!$this->lastResponse instanceof InferenceResponse) {
+            throw new Exception('Expected final InferenceResponse, got ' . get_class($this->lastResponse));
+        }
         return $this->lastResponse;
     }
 

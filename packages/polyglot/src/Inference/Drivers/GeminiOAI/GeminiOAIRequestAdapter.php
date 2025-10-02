@@ -10,6 +10,7 @@ class GeminiOAIRequestAdapter extends OpenAIRequestAdapter
     /**
      * Override headers to use Google header auth instead of Bearer token.
      */
+    #[\Override]
     protected function toHeaders(InferenceRequest $request): array {
         return [
             'Authorization' => "Bearer {$this->config->apiKey}",

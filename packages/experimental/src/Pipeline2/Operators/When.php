@@ -17,10 +17,12 @@ readonly final class When implements Operator
         $this->callable = $callable;
     }
 
+    #[\Override]
     public function supports(mixed $payload): bool {
         return true;
     }
 
+    #[\Override]
     public function handle(mixed $payload, Continuation $next): mixed {
         if (($this->condition)($payload)) {
             return $next->handle(($this->callable)($payload));

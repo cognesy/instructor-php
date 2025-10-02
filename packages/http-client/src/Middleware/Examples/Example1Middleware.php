@@ -12,6 +12,7 @@ class Example1Middleware implements HttpMiddleware
 {
     public function __construct() {}
 
+    #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Execute code before the next handler in the chain

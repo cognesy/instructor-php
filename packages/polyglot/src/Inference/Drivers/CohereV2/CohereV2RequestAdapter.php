@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 
 class CohereV2RequestAdapter extends OpenAIRequestAdapter
 {
+    #[\Override]
     protected function toHeaders(InferenceRequest $request): array {
         $optional = [
             'X-Client-Name' => $this->config->metadata['client_name'] ?? '',

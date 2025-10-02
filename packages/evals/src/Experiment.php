@@ -117,7 +117,10 @@ class Experiment {
         try {
             $execution->execute();
         } catch(Exception $e) {
-            $this->exceptions[$execution->id()] = $execution->exception();
+            $exception = $execution->exception();
+            if ($exception !== null) {
+                $this->exceptions[$execution->id()] = $exception;
+            }
         }
         $this->executions[] = $execution;
         return $execution;

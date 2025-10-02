@@ -27,7 +27,7 @@ class FunctionInfo
         return new self(match(true) {
             !empty($class) => new ReflectionMethod($class, $functionName),
             !empty($functionName) => $reflection,
-            default => throw new \InvalidArgumentException('Unsupported callable type: ' . gettype($callable)),
+            default => throw new \InvalidArgumentException('Unsupported callable type: ' . gettype($closure)),
         });
     }
 

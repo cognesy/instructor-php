@@ -45,14 +45,17 @@ final class ArrayMap implements MapInterface
         return new self($e);
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->entries);
     }
 
+    #[\Override]
     public function has(int|string $key): bool {
         return array_key_exists($key, $this->entries);
     }
 
+    #[\Override]
     public function get(int|string $key): mixed {
         if (!array_key_exists($key, $this->entries)) {
             throw new OutOfBoundsException("ArrayMap key not found: {$key}");
@@ -60,10 +63,12 @@ final class ArrayMap implements MapInterface
         return $this->entries[$key];
     }
 
+    #[\Override]
     public function getOrNull(int|string $key): mixed {
         return $this->entries[$key] ?? null;
     }
 
+    #[\Override]
     public function with(int|string $key, mixed $value): static {
         $n = $this->entries;
         /** @var array<array-key,mixed> $n */
@@ -71,10 +76,12 @@ final class ArrayMap implements MapInterface
         return new self($n);
     }
 
+    #[\Override]
     public function withAll(array $entries): static {
         return new self($this->entries + $entries); // existing keys preserved; change to array_replace for overwrite
     }
 
+    #[\Override]
     public function withRemoved(int|string $key): static {
         if (!array_key_exists($key, $this->entries)) {
             return $this; // idempotent
@@ -84,12 +91,14 @@ final class ArrayMap implements MapInterface
         return new self($n);
     }
 
+    #[\Override]
     public function merge(MapInterface $other): static {
         // other wins on collisions (array_replace)
         return new self(array_replace($this->entries, $other->toArray()));
     }
 
     /** @return list<K> */
+    #[\Override]
     public function keys(): array {
         /** @var list<K> $k */
         $k = array_keys($this->entries);
@@ -97,6 +106,7 @@ final class ArrayMap implements MapInterface
     }
 
     /** @return list<V> */
+    #[\Override]
     public function values(): array {
         /** @var list<V> $v */
         $v = array_values($this->entries);
@@ -104,11 +114,13 @@ final class ArrayMap implements MapInterface
     }
 
     /** @return array<K,V> */
+    #[\Override]
     public function toArray(): array {
         return $this->entries;
     }
 
     /** @return Traversable<K,V> */
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->entries);
     }

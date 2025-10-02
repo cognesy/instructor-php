@@ -37,10 +37,12 @@ final readonly class LLMParticipant implements CanParticipateInChat
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
+    #[\Override]
     public function name(): string {
         return $this->name;
     }
 
+    #[\Override]
     public function act(ChatState $state): ChatStep {
         $inference = $this->inference ?? new Inference;
         if ($this->llmProvider) {

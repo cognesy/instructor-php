@@ -144,6 +144,7 @@ class ResponseModel implements CanProvideJsonSchema
 
     // CONVERSION //////////////////////////////////////////////////////
 
+    #[\Override]
     public function toJsonSchema() : array {
         // TODO: this can be computed from schema
         return $this->jsonSchema;

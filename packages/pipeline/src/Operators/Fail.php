@@ -21,6 +21,7 @@ readonly final class Fail implements CanProcessState {
         });
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         if ($state->isFailure()) {
             return $next ? $next($state) : $state;

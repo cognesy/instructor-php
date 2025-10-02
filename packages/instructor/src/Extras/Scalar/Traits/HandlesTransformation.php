@@ -12,6 +12,7 @@ trait HandlesTransformation
     public function transform() : mixed {
         // if enum type - return enum instance
         if (self::isEnum($this->enumType)) {
+            assert($this->enumType !== null);
             return ($this->enumType)::from($this->value);
         }
 
@@ -21,7 +22,7 @@ trait HandlesTransformation
             ValueType::INTEGER => (int) $this->value,
             ValueType::FLOAT => (float) $this->value,
             ValueType::BOOLEAN => (bool) $this->value,
-            //default => $this->value,
+            ValueType::ENUM => $this->value,
         };
     }
 }

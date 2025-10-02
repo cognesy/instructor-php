@@ -113,6 +113,7 @@ class MockHttpResponse implements HttpResponse
      * 
      * @return int
      */
+    #[\Override]
     public function statusCode(): int {
         return $this->statusCode;
     }
@@ -122,6 +123,7 @@ class MockHttpResponse implements HttpResponse
      * 
      * @return array
      */
+    #[\Override]
     public function headers(): array {
         return $this->headers;
     }
@@ -131,10 +133,12 @@ class MockHttpResponse implements HttpResponse
      * 
      * @return string
      */
+    #[\Override]
     public function body(): string {
         return $this->body;
     }
 
+    #[\Override]
     public function isStreamed(): bool {
         return $this->streaming;
     }
@@ -145,6 +149,7 @@ class MockHttpResponse implements HttpResponse
      * @param int $chunkSize Not used in mock implementation, included for interface compatibility
      * @return iterable<string>
      */
+    #[\Override]
     public function stream(?int $chunkSize = null): iterable {
         foreach ($this->chunks as $chunk) {
             $this->events?->dispatch(new HttpResponseChunkReceived($chunk));

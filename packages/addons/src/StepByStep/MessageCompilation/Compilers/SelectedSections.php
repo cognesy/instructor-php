@@ -7,6 +7,9 @@ use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
 
+/**
+ * @implements CanCompileMessages<HasMessageStore>
+ */
 final class SelectedSections implements CanCompileMessages
 {
     /**
@@ -16,6 +19,7 @@ final class SelectedSections implements CanCompileMessages
         private readonly array $sections = [],
     ) {}
 
+    #[\Override]
     public function compile(HasMessageStore $state): Messages
     {
         if ($this->sections === []) {

@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 
 class GeminiUsageFormat implements CanMapUsage
 {
+    #[\Override]
     public function fromData(array $data) : Usage {
         return new Usage(
             inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,

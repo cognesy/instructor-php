@@ -11,6 +11,7 @@ class GuessProgrammingLanguageFromExt extends Module
         return ($this)(filePath: $filePath)->get('language');
     }
 
+    #[\Override]
     protected function forward(...$callArgs): array {
         $filePath = $callArgs['filePath'];
         $language = $this->getLanguage($filePath);

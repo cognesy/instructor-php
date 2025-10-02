@@ -23,11 +23,10 @@ class Str
     }
 
     /**
-     * Joins an array of strings into a single string.
+     * Converts a string to PascalCase.
      *
-     * @param array $input The array of strings.
-     * @param string $glue The glue.
-     * @return string The joined string.
+     * @param string $input The input string.
+     * @return string The PascalCase string.
      */
     static public function pascal(string $input) : string {
         // turn any case into pascal case
@@ -96,30 +95,32 @@ class Str
         $pipeline = Pipeline::builder(ErrorStrategy::FailFast)
             ->throughAll(
                 // separate groups of capitalized words
-                fn ($data) => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data),
+                fn (string $data): string => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data) ?? $data,
                 // de-camel
                 //fn ($data) => preg_replace('/([A-Z]{2,})([A-Z])([a-z])/', '$1 $2$3', $data),
                 //fn ($data) => preg_replace('/([a-z])([A-Z])([a-z])/', '$1 $2$3', $data),
                 // separate groups of capitalized words of 2+ characters with spaces
-                fn ($data) => preg_replace('/([A-Z]{2,})/', ' $1 ', $data),
+                fn (string $data): string => preg_replace('/([A-Z]{2,})/', ' $1 ', $data) ?? $data,
                 // de-kebab
-                fn ($data) => str_replace('-', ' ', $data),
+                fn (string $data): string => str_replace('-', ' ', $data),
                 // de-snake
-                fn ($data) => str_replace('_', ' ', $data),
+                fn (string $data): string => str_replace('_', ' ', $data),
                 // remove double spaces
-                fn ($data) => preg_replace('/\s+/', ' ', $data),
+                fn (string $data): string => preg_replace('/\s+/', ' ', $data) ?? $data,
                 // remove leading _
-                fn ($data) => ltrim($data, '_'),
+                fn (string $data): string => ltrim($data, '_'),
                 // remove leading -
-                fn ($data) => ltrim($data, '-'),
+                fn (string $data): string => ltrim($data, '-'),
                 // trim space
-                fn ($data) => trim($data),
+                fn (string $data): string => trim($data),
             )
             ->create();
 
-        return $pipeline
+        $result = $pipeline
             ->executeWith(ProcessingState::with($input))
             ->value();
+
+        return is_string($result) ? $result : $input;
     }
 
     /**

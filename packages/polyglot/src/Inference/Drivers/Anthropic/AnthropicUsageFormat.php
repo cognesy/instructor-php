@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 
 class AnthropicUsageFormat implements CanMapUsage
 {
+    #[\Override]
     public function fromData(array $data) : Usage {
         return new Usage(
             inputTokens: $data['usage']['input_tokens']

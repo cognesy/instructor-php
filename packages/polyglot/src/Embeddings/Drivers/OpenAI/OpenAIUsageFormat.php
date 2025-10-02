@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 
 class OpenAIUsageFormat implements CanMapUsage
 {
+    #[\Override]
     public function fromData(array $data): Usage {
          $input = (int)($data['usage']['prompt_tokens'] ?? 0);
          $total = (int)($data['usage']['total_tokens'] ?? 0);

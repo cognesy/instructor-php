@@ -17,6 +17,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         protected CanMapUsage $usageFormat,
     ) {}
 
+    #[\Override]
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $responseBody = $response->body();
         //$responseBody = $this->normalizeUnknownValues($responseBody);
@@ -31,6 +32,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         );
     }
 
+    #[\Override]
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
         //$eventBody = $this->normalizeUnknownValues($responseBody);
         $data = json_decode($eventBody, true);
@@ -49,6 +51,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         );
     }
 
+    #[\Override]
     public function toEventBody(string $data): string|bool {
         if (!str_starts_with($data, 'data:')) {
             return '';
@@ -71,16 +74,19 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
     }
 
     private function makeToolCalls(array $data) : ToolCalls {
-        return ToolCalls::fromMapper(array_map(
-            callback: fn(array $call) => $call,
-            array: array_filter(
-                array: $data['content'] ?? [],
-                callback: fn($part) => 'tool_use' === ($part['type'] ?? ''))
-        ), fn($call) => ToolCall::fromArray([
-            'id' => $call['id'] ?? '',
-            'name' => $call['name'] ?? '',
-            'arguments' => $call['input'] ?? ''
-        ]));
+        $toolUseParts = array_filter(
+            array: $data['content'] ?? [],
+            callback: fn($part) => 'tool_use' === ($part['type'] ?? '')
+        );
+
+        return ToolCalls::fromMapper(
+            $toolUseParts,
+            fn($call) => ToolCall::fromArray([
+                'id' => $call['id'] ?? '',
+                'name' => $call['name'] ?? '',
+                'arguments' => $call['input'] ?? ''
+            ])
+        );
     }
 
     private function makeReasoningContent(array $data) : string {

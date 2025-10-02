@@ -49,6 +49,7 @@ final readonly class ProcessingState implements CanCarryState
 
     // QUERY AND TRANSFORMATION APIs
 
+    #[\Override]
     public function applyTo(CanCarryState $priorState): CanCarryState {
         $newState = $this->replaceTags(
             ...$priorState->tagMap()->merge($this->tagMap())->getAllInOrder()

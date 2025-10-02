@@ -24,7 +24,7 @@ class Execution
 
     private EventDispatcherInterface $events;
 
-    /** @var CanObserveExecution[] */
+    /** @var list<class-string<CanGenerateObservations>> */
     private array $defaultObservers = [
         DurationObserver::class,
         TokenUsageObserver::class,
@@ -51,6 +51,7 @@ class Execution
     ) {
         $this->events = $events;
         $this->id = Uuid::uuid4();
+        /** @var DataMap<string, mixed> */
         $this->data = new DataMap();
         $this->data->set('case', $case);
         $this->usage = Usage::none();

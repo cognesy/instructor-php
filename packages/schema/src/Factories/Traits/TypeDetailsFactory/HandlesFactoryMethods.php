@@ -92,6 +92,9 @@ trait HandlesFactoryMethods
     public function enumType(string $typeName, ?string $enumType = null, ?array $enumValues = null) : TypeDetails {
         $classInfo = ClassInfo::fromString($typeName);
         // enum specific
+        if (!$classInfo instanceof \Cognesy\Schema\Reflection\EnumInfo) {
+            throw new \Exception('Type must be an enum');
+        }
         if (!$classInfo->isBacked()) {
             throw new \Exception('Enum must be backed by a string or int');
         }

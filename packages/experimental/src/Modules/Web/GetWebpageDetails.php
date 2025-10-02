@@ -26,6 +26,7 @@ class GetWebpageDetails extends Module
         return ($this)(url: $url)->get('pageDetails');
     }
 
+    #[\Override]
     protected function forward(...$callArgs): array {
         $url = $callArgs['url'];
         $content = $this->getUrlContent->for(url: $url);

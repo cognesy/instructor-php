@@ -14,6 +14,7 @@ readonly final class Processor implements CanProcessState {
         return new self($processor);
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $processedState = $this->processor->process($state);
         if ($processedState->isFailure()) {

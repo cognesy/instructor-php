@@ -16,11 +16,13 @@ class SymfonyParameterBagProvider implements CanProvideConfig
         $this->parameterBag = $parameterBag;
     }
 
+    #[\Override]
     public function get(string $path, mixed $default = null): mixed
     {
         return $this->getDot()->get($path, $default);
     }
 
+    #[\Override]
     public function has(string $path): bool
     {
         return $this->getDot()->has($path);

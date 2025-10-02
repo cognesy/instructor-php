@@ -26,6 +26,7 @@ class SymfonyDeserializer implements CanDeserializeClass
         protected ?Serializer $serializer = null,
     ) {}
 
+    #[\Override]
     public function fromJson(string $jsonData, string $dataType): mixed {
         return match ($dataType) {
             default => $this->deserializeObject($this->serializer(), $jsonData, $dataType)
@@ -44,8 +45,8 @@ class SymfonyDeserializer implements CanDeserializeClass
             ($normalized === null) => [],
             is_array($normalized) => $normalized,
             is_object($normalized) => (array)$normalized,
-            is_string($normalized) => ['value' => $normalized], // TODO: find better way
-            default => $normalized
+            is_string($normalized) => ['value' => $normalized],
+            default => ['value' => $normalized], // wrap scalars (bool, int, float) in array
         };
     }
 

@@ -56,7 +56,7 @@ final readonly class CachedContext
         return $this->messages->isEmpty()
             && empty($this->system)
             && empty($this->prompt)
-            && empty($this->examples->isEmpty());
+            && $this->examples->isEmpty();
     }
 
     // SERIALIZATION ///////////////////////////////////////////////////////////////////

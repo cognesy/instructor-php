@@ -35,10 +35,12 @@ final class ScriptedParticipant implements CanParticipateInChat
         $this->events = $events ?? EventBusResolver::using($events);
     }
 
+    #[\Override]
     public function name() : string {
         return $this->name;
     }
 
+    #[\Override]
     public function act(ChatState $state) : ChatStep {
         $compiledMessages = $this->compiler->compile($state);
         $currentIndex = $this->index; // Store current index before incrementing

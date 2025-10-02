@@ -39,6 +39,7 @@ class SymfonyHttpResponse implements HttpResponse
      *
      * @return int
      */
+    #[\Override]
     public function statusCode(): int {
         return $this->response->getStatusCode();
     }
@@ -46,8 +47,9 @@ class SymfonyHttpResponse implements HttpResponse
     /**
      * Get the response headers
      *
-     * @return array<string, string>
+     * @return array<string, list<string>>
      */
+    #[\Override]
     public function headers(): array {
         return $this->response->getHeaders();
     }
@@ -57,6 +59,7 @@ class SymfonyHttpResponse implements HttpResponse
      *
      * @return string
      */
+    #[\Override]
     public function body(): string {
         // workaround to handle connect timeout: https://github.com/symfony/symfony/pull/57811
         /** @noinspection LoopWhichDoesNotLoopInspection */
@@ -75,6 +78,7 @@ class SymfonyHttpResponse implements HttpResponse
      *
      * @return iterable<string>
      */
+    #[\Override]
     public function stream(?int $chunkSize = null): iterable {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout()) {
@@ -86,6 +90,7 @@ class SymfonyHttpResponse implements HttpResponse
         }
     }
 
+    #[\Override]
     public function isStreamed(): bool {
         return $this->isStreamed;
     }

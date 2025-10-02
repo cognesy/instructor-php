@@ -40,6 +40,7 @@ class PsrHttpResponse implements HttpResponse
      *
      * @return int
      */
+    #[\Override]
     public function statusCode(): int {
         return $this->response->getStatusCode();
     }
@@ -47,8 +48,9 @@ class PsrHttpResponse implements HttpResponse
     /**
      * Get the response headers
      *
-     * @return array<string, string>
+     * @return array<string, array<string>>
      */
+    #[\Override]
     public function headers(): array {
         return $this->response->getHeaders();
     }
@@ -58,6 +60,7 @@ class PsrHttpResponse implements HttpResponse
      *
      * @return string
      */
+    #[\Override]
     public function body(): string {
         return $this->response->getBody()->getContents();
     }
@@ -67,6 +70,7 @@ class PsrHttpResponse implements HttpResponse
      *
      * @return iterable<string>
      */
+    #[\Override]
     public function stream(?int $chunkSize = null): iterable {
         while (!$this->stream->eof()) {
             $chunk = $this->stream->read($chunkSize ?? $this->streamChunkSize);
@@ -75,6 +79,7 @@ class PsrHttpResponse implements HttpResponse
         }
     }
 
+    #[\Override]
     public function isStreamed(): bool {
         return $this->isStreamed;
     }

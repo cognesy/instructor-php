@@ -26,6 +26,7 @@ readonly final class RawCall implements CanProcessState
         return new self($closure(...));
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         return ($this->closure)($state, $next);
     }

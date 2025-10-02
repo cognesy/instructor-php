@@ -4,6 +4,7 @@ namespace Cognesy\Doctor\Freeze\Execution;
 
 class ShellExecutor implements CommandExecutorInterface
 {
+    #[\Override]
     public function execute(array $commandArray, string $commandString): ExecutionResult
     {
         // Use shell_exec for a different approach

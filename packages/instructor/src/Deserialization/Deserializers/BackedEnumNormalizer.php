@@ -21,6 +21,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
      */
     public const ALLOW_INVALID_VALUES = 'allow_invalid_values';
 
+    #[\Override]
     public function getSupportedTypes(?string $format): array
     {
         return [
@@ -28,6 +29,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
         ];
     }
 
+    #[\Override]
     public function normalize(mixed $data, ?string $format = null, array $context = []): int|string
     {
         if (!$data instanceof \BackedEnum) {
@@ -37,6 +39,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
         return $data->value;
     }
 
+    #[\Override]
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof \BackedEnum;
@@ -45,6 +48,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
     /**
      * @throws NotNormalizableValueException
      */
+    #[\Override]
     public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
         if (!is_subclass_of($type, \BackedEnum::class)) {
@@ -76,6 +80,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
         }
     }
 
+    #[\Override]
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_subclass_of($type, \BackedEnum::class);

@@ -14,12 +14,14 @@ final class InMemoryPromptRepository implements PromptRepository
     /** @var array<string, list<string>> key: signatureId|modelId => [versions] */
     private array $canaries = [];
 
+    #[\Override]
     public function getActive(string $signatureId, string $modelId): ?PromptPreset {
         $key = $this->pairKey($signatureId, $modelId);
         $v = $this->active[$key] ?? null;
         return $v ? ($this->store[$this->tripleKey($signatureId, $modelId, $v)] ?? null) : null;
     }
 
+    #[\Override]
     public function getCanaries(string $signatureId, string $modelId): array {
         $key = $this->pairKey($signatureId, $modelId);
         $versions = $this->canaries[$key] ?? [];
@@ -33,10 +35,12 @@ final class InMemoryPromptRepository implements PromptRepository
         return $result;
     }
 
+    #[\Override]
     public function publish(PromptPreset $preset): void {
         $this->store[$this->tripleKey($preset->signatureId, $preset->modelId, $preset->version)] = $preset;
     }
 
+    #[\Override]
     public function activate(string $signatureId, string $modelId, string $version): void {
         $this->active[$this->pairKey($signatureId, $modelId)] = $version;
     }

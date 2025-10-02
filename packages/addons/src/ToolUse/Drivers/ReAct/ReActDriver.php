@@ -63,6 +63,7 @@ final class ReActDriver implements CanUseTools
         $this->mode = $mode;
     }
 
+    #[\Override]
     public function useTools(ToolUseState $state, Tools $tools, ToolExecutor $executor): ToolUseStep {
         $messages = $state->messages();
         $system = ReActPrompt::buildSystemPrompt($tools);

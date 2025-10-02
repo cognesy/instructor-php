@@ -7,6 +7,7 @@ use Spatie\Browsershot\Browsershot;
 
 class BrowsershotDriver implements CanGetUrlContent
 {
+    #[\Override]
     public function getContent(string $url, array $options = []): string
     {
         return Browsershot::url($url)->bodyHtml();

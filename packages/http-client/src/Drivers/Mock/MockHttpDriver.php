@@ -45,6 +45,7 @@ class MockHttpDriver implements CanHandleHttpRequest
      * @return HttpResponse The predefined response
      * @throws InvalidArgumentException If no response is defined for the request
      */
+    #[\Override]
     public function handle(HttpRequest $request): HttpResponse {
         $this->recordRequest($request);
         $this->dispatchResponseReceived($request);

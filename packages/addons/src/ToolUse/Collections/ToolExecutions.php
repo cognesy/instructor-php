@@ -48,12 +48,15 @@ final readonly class ToolExecutions
         return array_filter($this->toolExecutions, fn(ToolExecution $toolExecution) => $toolExecution->hasError());
     }
 
-    /** @return Throwable[] */
+    /** @return array<array-key, Throwable> */
     public function errors() : array {
         $errors = [];
         foreach($this->toolExecutions as $toolExecution) {
             if ($toolExecution->hasError()) {
-                $errors[] = $toolExecution->error();
+                $error = $toolExecution->error();
+                if ($error !== null) {
+                    $errors[] = $error;
+                }
             }
         }
         return $errors;

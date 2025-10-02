@@ -30,6 +30,7 @@ class SummarizeWebpage extends Module
         return ($this)(url: $url)->get('summary');
     }
 
+    #[\Override]
     protected function forward(mixed ...$callArgs): array {
         $url = $callArgs['url'];
         $html = $this->getContent->for(url: $url);

@@ -12,10 +12,12 @@ use Cognesy\Http\Middleware\Base\BaseMiddleware;
  */
 class BufferResponseMiddleware extends BaseMiddleware
 {
+    #[\Override]
     protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool {
         return true;
     }
 
+    #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
         return new BufferResponseDecorator($request, $response);
     }

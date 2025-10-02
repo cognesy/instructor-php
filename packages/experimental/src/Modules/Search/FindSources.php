@@ -25,6 +25,7 @@ class FindSources extends Module
         return ($this)(sourceUrls: $sourceUrls, query: $query, topK: $topK)->get('sources');
     }
 
+    #[\Override]
     protected function forward(mixed ...$callArgs) : array {
         $urls = $callArgs['sourceUrls'];
         $query = $callArgs['query'];

@@ -40,6 +40,7 @@ $sourceModel = new TextElementModel(
 );
 
 $validator = new class implements CanValidateObject {
+    #[\Override]
     public function validate(object $dataObject): ValidationResult {
         $isInGerman = (new StructuredOutput)
             //->withDebugPreset('on')

@@ -26,6 +26,7 @@ final readonly class ErrorPresenceCheck implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         /** @var TState $state */
         return !($this->hasErrorsResolver)($state);

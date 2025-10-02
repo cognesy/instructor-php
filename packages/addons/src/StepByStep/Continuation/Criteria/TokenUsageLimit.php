@@ -29,6 +29,7 @@ final readonly class TokenUsageLimit implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         /** @var TState $state */
         return ($this->usageCounter)($state) < $this->maxTokens;

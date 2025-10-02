@@ -63,16 +63,19 @@ final class ArraySet implements SetInterface
         return new self($hashOf, $eq, $values);
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->byHash);
     }
 
+    #[\Override]
     public function contains(mixed $item): bool {
         $h = ($this->hashOf)($item);
         if (!array_key_exists($h, $this->byHash)) return false;
         return ($this->equals)($this->byHash[$h], $item);
     }
 
+    #[\Override]
     public function withAdded(mixed ...$items): static {
         $n = $this->byHash;
         foreach ($items as $i) {
@@ -81,6 +84,7 @@ final class ArraySet implements SetInterface
         return new self($this->hashOf, $this->equals, array_values($n));
     }
 
+    #[\Override]
     public function withRemoved(mixed ...$items): static {
         $n = $this->byHash;
         foreach ($items as $i) {
@@ -92,6 +96,7 @@ final class ArraySet implements SetInterface
         return new self($this->hashOf, $this->equals, array_values($n));
     }
 
+    #[\Override]
     public function union(SetInterface $other): static {
         $n = $this->byHash;
         foreach ($other as $i) {
@@ -100,6 +105,7 @@ final class ArraySet implements SetInterface
         return new self($this->hashOf, $this->equals, array_values($n));
     }
 
+    #[\Override]
     public function intersect(SetInterface $other): static {
         $n = [];
         foreach ($this->byHash as $h => $v) {
@@ -110,6 +116,7 @@ final class ArraySet implements SetInterface
         return new self($this->hashOf, $this->equals, array_values($n));
     }
 
+    #[\Override]
     public function diff(SetInterface $other): static {
         $n = [];
         foreach ($this->byHash as $h => $v) {
@@ -121,6 +128,7 @@ final class ArraySet implements SetInterface
     }
 
     /** @return list<T> */
+    #[\Override]
     public function values(): array {
         /** @var list<T> $v */
         $v = array_values($this->byHash);
@@ -128,6 +136,7 @@ final class ArraySet implements SetInterface
     }
 
     /** @return Traversable<int,T> */
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator(array_values($this->byHash));
     }

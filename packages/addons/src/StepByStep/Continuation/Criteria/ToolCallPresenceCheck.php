@@ -26,6 +26,7 @@ final readonly class ToolCallPresenceCheck implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         /** @var TState $state */
         return ($this->hasToolCallsResolver)($state);

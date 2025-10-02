@@ -18,6 +18,7 @@ class SplitMarkdown extends Module
         return ($this)(markdown: $markdown, source: $source)->get('sections');
     }
 
+    #[\Override]
     protected function forward(...$callArgs): array {
         $markdown = $callArgs['markdown'];
         $source = $callArgs['source'];

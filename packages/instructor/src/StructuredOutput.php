@@ -38,6 +38,7 @@ class StructuredOutput
 
     use Traits\HandlesLLMProvider;
     use Traits\HandlesExecutionBuilder;
+    /** @use Traits\HandlesRequestBuilder<TResponse> */
     use Traits\HandlesRequestBuilder;
     use Traits\HandlesConfigBuilder;
 

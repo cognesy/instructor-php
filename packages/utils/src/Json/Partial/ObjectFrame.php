@@ -36,6 +36,7 @@ final class ObjectFrame implements ParseFrame
     }
 
     /** @return array<string,mixed> */
+    #[\Override]
     public function getValue(): array {
         return $this->value;
     }

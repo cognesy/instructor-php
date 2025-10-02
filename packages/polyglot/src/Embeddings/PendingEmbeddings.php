@@ -41,7 +41,9 @@ class PendingEmbeddings
     }
 
     public function makeResponse() : EmbeddingsResponse {
-        $this->httpResponse = $this->driver->handle($this->request);
+        /** @var HttpResponse $httpResponse */
+        $httpResponse = $this->driver->handle($this->request);
+        $this->httpResponse = $httpResponse;
         $responseBody = $this->httpResponse->body();
         $data = Json::decode($responseBody) ?? [];
         $response = $this->driver->fromData($data);

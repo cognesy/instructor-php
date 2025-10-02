@@ -68,7 +68,6 @@ class SchemaFactory
         $type = match(true) {
             $anyType instanceof TypeDetails => $anyType,
             is_string($anyType) => TypeDetails::fromTypeName($anyType),
-            is_object($anyType) => TypeDetails::fromTypeName(get_class($anyType)),
             default => throw new \Exception('Unknown input type: '.gettype($anyType)),
         };
 

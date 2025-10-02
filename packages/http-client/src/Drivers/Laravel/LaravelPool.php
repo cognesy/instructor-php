@@ -38,6 +38,7 @@ class LaravelPool implements CanHandleRequestPool
         };
     }
 
+    #[\Override]
     public function pool(array $requests, ?int $maxConcurrent = null): array {
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
         $responses = [];

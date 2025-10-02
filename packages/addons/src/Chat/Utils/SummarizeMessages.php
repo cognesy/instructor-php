@@ -14,7 +14,6 @@ class SummarizeMessages implements CanSummarizeMessages
     private string $prompt = 'Summarize the content of following sequence of messages for further reference:';
     private string $model;
     private LLMProvider $llm;
-    private int $tokenLimit;
 
     public function __construct(
         string $prompt = '',
@@ -26,6 +25,7 @@ class SummarizeMessages implements CanSummarizeMessages
         $this->model = $model;
     }
 
+    #[\Override]
     public function summarize(Messages $messages, int $tokenLimit): string {
         return (new Inference)->withLLMProvider($this->llm)->with(
             messages: $messages->prependMessages(new Message(content: $this->prompt))->toArray(),

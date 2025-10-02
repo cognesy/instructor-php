@@ -11,6 +11,7 @@ class Example2Middleware implements HttpMiddleware
 {
     public function __construct() {}
 
+    #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Execute code before the next handler in the chain
@@ -30,11 +31,16 @@ class Example2Middleware implements HttpMiddleware
                 private string       $param,
             ) {}
 
+            #[\Override]
             public function statusCode(): int { return $this->wrapped->statusCode(); }
+            #[\Override]
             public function headers(): array { return $this->wrapped->headers(); }
+            #[\Override]
             public function body(): string { return $this->wrapped->body(); }
+            #[\Override]
             public function isStreamed(): bool { return $this->wrapped->isStreamed(); }
 
+            #[\Override]
             public function stream(?int $chunkSize = null): iterable
             {
                 // do something with param

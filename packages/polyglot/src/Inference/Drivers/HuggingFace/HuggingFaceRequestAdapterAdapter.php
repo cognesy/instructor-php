@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 
 class HuggingFaceRequestAdapterAdapter extends OpenAIRequestAdapter
 {
+    #[\Override]
     protected function toUrl(InferenceRequest $request): string {
         return str_replace(
                 search: array_map(fn($key) => "{" . $key . "}", array_keys($this->config->metadata)),
@@ -15,6 +16,7 @@ class HuggingFaceRequestAdapterAdapter extends OpenAIRequestAdapter
             );
     }
 
+    #[\Override]
     protected function toHeaders(InferenceRequest $request): array {
         return [
             'Authorization' => 'Bearer '.$this->config->apiKey,

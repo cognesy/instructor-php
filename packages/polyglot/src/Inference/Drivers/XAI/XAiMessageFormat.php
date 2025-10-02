@@ -6,6 +6,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 
 class XAiMessageFormat extends OpenAIMessageFormat
 {
+    #[\Override]
     protected function toNativeToolCall(array $message) : array {
         return [
             'role' => 'assistant',

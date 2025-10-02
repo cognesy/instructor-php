@@ -21,11 +21,13 @@ final readonly class ToolUseSteps extends Steps
         return array_map(fn(ToolUseStep $step) => $step->toArray(), $this->all());
     }
 
+    #[\Override]
     public function currentStep(): ?ToolUseStep {
         /** @var ?ToolUseStep */
         return parent::currentStep();
     }
 
+    #[\Override]
     public function stepAt(int $index): ?ToolUseStep {
         /** @var ?ToolUseStep */
         return parent::stepAt($index);

@@ -25,6 +25,7 @@ class StreamByLineResponseDecorator extends BaseResponseDecorator
         );
     }
 
+    #[\Override]
     public function stream(?int $chunkSize = null): iterable
     {
         $stream = $this->response->stream($chunkSize);

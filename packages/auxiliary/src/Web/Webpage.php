@@ -33,6 +33,7 @@ class Webpage implements CanProvideMessage
         $this->htmlProcessor = new HtmlProcessor();
     }
 
+    #[\Override]
     public function toMessage(): Message {
         return new Message(content: $this->asMarkdown());
     }

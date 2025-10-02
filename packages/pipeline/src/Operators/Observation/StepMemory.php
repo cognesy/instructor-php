@@ -25,6 +25,7 @@ readonly class StepMemory implements CanProcessState
         return new self($stepName);
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $startMemory = memory_get_usage(true);
 

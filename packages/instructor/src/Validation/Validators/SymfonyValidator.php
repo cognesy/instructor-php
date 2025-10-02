@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Validation;
 
 class SymfonyValidator implements CanValidateObject
 {
+    #[\Override]
     public function validate(object $dataObject) : ValidationResult {
         $validator = Validation::createValidatorBuilder()
             ->enableAttributeMapping()

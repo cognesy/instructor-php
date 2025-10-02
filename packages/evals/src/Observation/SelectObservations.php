@@ -12,7 +12,7 @@ class SelectObservations
 
     public static function from(array $sources) : self {
         if (is_array($sources[0] ?? null)) {
-            $sources = array_merge(...$sources);
+            $sources = array_merge(...array_values($sources));
         }
         return new self($sources);
     }

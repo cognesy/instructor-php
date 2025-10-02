@@ -22,6 +22,7 @@ final class StdoutLogger implements LoggerInterface
 {
     use LoggerTrait;
 
+    #[\Override]
     public function log($level, $message, array $context = []): void {
         echo sprintf(
             "[%s] %s%s\n",

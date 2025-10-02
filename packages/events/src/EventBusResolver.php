@@ -35,18 +35,22 @@ class EventBusResolver implements CanHandleEvents
 
     // PUBLIC ////////////////////////////////////////////////////
 
+    #[\Override]
     public function wiretap(callable $listener): void {
         $this->eventHandler->wiretap($listener);
     }
 
+    #[\Override]
     public function addListener(string $name, callable $listener, int $priority = 0): void {
         $this->eventHandler->addListener($name, $listener, $priority);
     }
 
+    #[\Override]
     public function dispatch(object $event) : object{
         return $this->eventHandler->dispatch($event);
     }
 
+    #[\Override]
     public function getListenersForEvent(object $event): iterable {
         return $this->eventHandler->getListenersForEvent($event);
     }

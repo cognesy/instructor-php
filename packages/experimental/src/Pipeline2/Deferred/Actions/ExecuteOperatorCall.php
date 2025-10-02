@@ -18,6 +18,7 @@ class ExecuteOperatorCall implements CanProcessPayload
         private HandleBoundary $atBoundaryFn,
     ) {}
 
+    #[\Override]
     public function __invoke(mixed $payload): mixed {
         $next = ExecuteCall::next(
             nextFn: $this->downstreamFn,

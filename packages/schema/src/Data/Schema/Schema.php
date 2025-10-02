@@ -104,6 +104,7 @@ readonly class Schema implements CanAcceptSchemaVisitor
 
     // OTHER ///////////////////////////////////////////////////////////////////
 
+    #[\Override]
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitSchema($this);
     }

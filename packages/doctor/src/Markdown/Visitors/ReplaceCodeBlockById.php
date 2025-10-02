@@ -14,6 +14,7 @@ final class ReplaceCodeBlockById implements NodeVisitor
         private string $newContent,
     ) {}
 
+    #[\Override]
     public function visit(Node $node): Node {
         return match(true) {
             $node instanceof DocumentNode => $this->visitDocument($node),

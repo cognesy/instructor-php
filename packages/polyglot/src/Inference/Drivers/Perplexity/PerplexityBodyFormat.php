@@ -9,6 +9,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 {
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $request = $request->withCacheApplied();
 
@@ -31,6 +32,7 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL ///////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

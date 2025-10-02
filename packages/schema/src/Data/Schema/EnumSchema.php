@@ -6,6 +6,7 @@ use Cognesy\Schema\Contracts\CanVisitSchema;
 
 readonly class EnumSchema extends Schema
 {
+    #[\Override]
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitEnumSchema($this);
     }

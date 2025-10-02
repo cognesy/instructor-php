@@ -26,6 +26,7 @@ class PublishCommand extends Command
     private Filesystem $filesystem;
     private EnvFile $envFile;
 
+    #[\Override]
     protected function configure(): void {
         $this->setName(self::$defaultName)
             ->setDescription('Publishes or updates assets for the Instructor library.')
@@ -36,6 +37,7 @@ class PublishCommand extends Command
             ->addOption('no-op', 'no', InputOption::VALUE_NONE, 'Do not perform any actions, only log what would be done');
     }
 
+    #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void {
         $this->noOp = (bool)$input->getOption('no-op');
         $this->stopOnError = !$this->noOp;
@@ -50,6 +52,7 @@ class PublishCommand extends Command
         }
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $this->output->out("");
         $this->output->out("<white>{$this->getApplication()?->getName()}</white> v{$this->getApplication()?->getVersion()}");

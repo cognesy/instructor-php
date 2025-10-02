@@ -22,6 +22,7 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 class ToolUseFactory
 {
@@ -45,6 +46,7 @@ class ToolUseFactory
     }
 
     protected static function defaultProcessors(): CanApplyProcessors {
+        /** @psalm-suppress InvalidArgument - Processors have different TState constraints but work via canProcess() runtime check */
         return new StateProcessors(
             new AccumulateTokenUsage(),
             new AppendContextMetadata(),
@@ -60,17 +62,17 @@ class ToolUseFactory
         array $finishReasons = [],
     ) : ContinuationCriteria {
         return new ContinuationCriteria(
-            new StepsLimit($maxSteps, fn(ToolUseState $state) => $state->stepCount()),
-            new TokenUsageLimit($maxTokens, fn(ToolUseState $state) => $state->usage()->total()),
-            new ExecutionTimeLimit($maxExecutionTime, fn(ToolUseState $state) => $state->startedAt(), null),
-            new RetryLimit($maxRetries, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
-            new ErrorPresenceCheck(fn(ToolUseState $state) => $state->currentStep()?->hasErrors() ?? false),
+            new StepsLimit($maxSteps, static fn(ToolUseState $state) => $state->stepCount()),
+            new TokenUsageLimit($maxTokens, static fn(ToolUseState $state) => $state->usage()->total()),
+            new ExecutionTimeLimit($maxExecutionTime, static fn(ToolUseState $state) => $state->startedAt(), null),
+            new RetryLimit($maxRetries, static fn(ToolUseState $state) => $state->steps(), static fn(ToolUseStep $step) => $step->hasErrors()),
+            new ErrorPresenceCheck(static fn(ToolUseState $state) => $state->currentStep()?->hasErrors() ?? false),
             new ToolCallPresenceCheck(
-                fn(ToolUseState $state) => $state->stepCount() === 0
+                static fn(ToolUseState $state) => $state->stepCount() === 0
                     ? true
                     : ($state->currentStep()?->hasToolCalls() ?? false)
             ),
-            new FinishReasonCheck($finishReasons, fn(ToolUseState $state) => $state->currentStep()?->finishReason()),
+            new FinishReasonCheck($finishReasons, static fn(ToolUseState $state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
         );
     }
 }

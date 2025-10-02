@@ -8,6 +8,7 @@ use Traversable;
 
 /**
  * @template T
+ * @extends IteratorAggregate<int, T>
  */
 interface ListInterface extends Countable, IteratorAggregate
 {
@@ -51,5 +52,6 @@ interface ListInterface extends Countable, IteratorAggregate
     public function toArray(): array;
 
     /** @return Traversable<int,T> */
+    #[\Override]
     public function getIterator(): Traversable;
 }

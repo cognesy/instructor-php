@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 
 class GroqUsageFormat implements CanMapUsage
 {
+    #[\Override]
     public function fromData(array $data): Usage {
         return new Usage(
             inputTokens: $data['x_groq']['usage']['prompt_tokens'] ?? $data['usage']['prompt_tokens'] ?? 0,

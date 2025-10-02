@@ -13,6 +13,7 @@ class CohereResponseAdapter implements EmbedResponseAdapter
         private readonly CanMapUsage $usageFormat,
     ) {}
 
+    #[\Override]
     public function fromResponse(array $data): EmbeddingsResponse {
         $vectors = [];
         foreach ($data['embeddings']['float'] as $key => $item) {

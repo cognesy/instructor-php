@@ -32,6 +32,7 @@ class GetHtmlLinks extends Module
     /**
      * @return Link[]
      */
+    #[\Override]
     protected function forward(mixed ...$callArgs): array {
         $html = $callArgs['html'];
         $links = $this->extractLinks($html);

@@ -32,6 +32,7 @@ class ReplayMiddleware implements HttpMiddleware
         $this->events = $events ?? new EventDispatcher();
     }
 
+    #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         $record = $this->records->find($request);
 

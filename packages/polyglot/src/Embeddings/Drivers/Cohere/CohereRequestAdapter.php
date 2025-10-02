@@ -15,6 +15,7 @@ class CohereRequestAdapter implements EmbedRequestAdapter
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
+    #[\Override]
     public function toHttpClientRequest(EmbeddingsRequest $request): HttpRequest {
          return new HttpRequest(
             url: $this->getEndpointUrl(),

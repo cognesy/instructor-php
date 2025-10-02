@@ -17,6 +17,7 @@ readonly final class Terminal implements CanProcessState
         };
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         return $state;
     }

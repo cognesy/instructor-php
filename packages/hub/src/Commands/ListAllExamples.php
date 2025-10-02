@@ -18,12 +18,14 @@ class ListAllExamples extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->setName('list')
             ->setDescription('List all examples');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         Cli::outln("Listing all examples...", [Color::BOLD, Color::YELLOW]);
 

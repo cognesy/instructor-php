@@ -18,6 +18,7 @@ class GeminiBodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat,
     ) {}
 
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $request = $request->withCacheApplied();
 

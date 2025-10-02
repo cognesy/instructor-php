@@ -63,11 +63,13 @@ class ToolUse extends StepByStep
 
     // INTERNAL /////////////////////////////////////////////
 
+    #[\Override]
     protected function canContinue(object $state): bool {
         assert($state instanceof ToolUseState);
         return $this->continuationCriteria->canContinue($state);
     }
 
+    #[\Override]
     protected function makeNextStep(object $state): ToolUseStep {
         assert($state instanceof ToolUseState);
         $this->emitToolUseStepStarted($state);
@@ -78,6 +80,7 @@ class ToolUse extends StepByStep
         );
     }
 
+    #[\Override]
     protected function applyStep(object $state, object $nextStep): ToolUseState {
         assert($state instanceof ToolUseState);
         assert($nextStep instanceof ToolUseStep);
@@ -88,18 +91,21 @@ class ToolUse extends StepByStep
         return $newState;
     }
 
+    #[\Override]
     protected function onNoNextStep(object $state): ToolUseState {
         assert($state instanceof ToolUseState);
         $this->emitToolUseFinished($state);
         return $state;
     }
 
+    #[\Override]
     protected function onStepCompleted(object $state): ToolUseState {
         assert($state instanceof ToolUseState);
         $this->emitToolUseStepCompleted($state);
         return $state;
     }
 
+    #[\Override]
     protected function onFailure(Throwable $error, object $state): ToolUseState {
         assert($state instanceof ToolUseState);
         $failure = $error instanceof ToolUseException

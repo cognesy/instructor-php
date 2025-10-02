@@ -15,6 +15,7 @@ class SettingsConfigProvider implements CanProvideConfig
         }
     }
 
+    #[\Override]
     public function get(string $path, mixed $default = null): mixed {
         [$group, $key] = $this->parsePath($path);
 
@@ -36,6 +37,7 @@ class SettingsConfigProvider implements CanProvideConfig
         }
     }
 
+    #[\Override]
     public function has(string $path): bool {
         [$group, $key] = $this->parsePath($path);
 

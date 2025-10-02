@@ -10,6 +10,7 @@ class MetaBodyFormat extends OpenAICompatibleBodyFormat
 {
     // INTERNAL //////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

@@ -21,6 +21,7 @@ class RunOneExample extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->setName('run')
@@ -28,6 +29,7 @@ class RunOneExample extends Command
             ->addArgument('example', InputArgument::REQUIRED, 'Example name or index to run');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $file = $input->getArgument('example');
 

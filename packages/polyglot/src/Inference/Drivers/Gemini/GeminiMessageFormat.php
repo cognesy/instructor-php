@@ -16,6 +16,7 @@ class GeminiMessageFormat implements CanMapMessages
         'tool' => 'tool',
     ];
 
+    #[\Override]
     public function map(array $messages) : array {
         $list = [];
         foreach ($messages as $message) {

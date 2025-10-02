@@ -217,7 +217,7 @@ class MintlifyDocGenerator
         $madeReplacements = false;
         $markdownDir = dirname($markdown->path());
 
-        $newMarkdown = $markdown->withReplacedCodeBlocks(function(CodeBlockNode $codeblock) use ($markdownDir, &$madeReplacements) {
+        $newMarkdown = $markdown->withReplacedCodeBlocks(function(CodeBlockNode $codeblock) use ($markdown, $markdownDir, &$madeReplacements) {
             $includePath = $codeblock->metadata('include');
             if (empty($includePath)) {
                 return $codeblock;

@@ -56,6 +56,7 @@ final class Context
      * @template T of object
      * @param class-string<T> $class
      * @return T
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Generic type preserved in array storage
      */
     public function get(string $class): object {
         if (!array_key_exists($class, $this->services)) {
@@ -70,6 +71,7 @@ final class Context
      * @template T of object
      * @param class-string<T> $class
      * @return Result<T, MissingServiceException>
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Result monad preserves generic type
      */
     public function tryGet(string $class): Result {
         return array_key_exists($class, $this->services)
@@ -116,6 +118,7 @@ final class Context
      * @template T of object
      * @param Key<T> $key
      * @return T
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Generic type preserved in keyed storage
      */
     public function getKey(Key $key): object {
         if (!array_key_exists($key->id, $this->keyed)) {

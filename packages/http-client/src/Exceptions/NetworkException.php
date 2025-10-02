@@ -7,6 +7,7 @@ use Throwable;
 
 class NetworkException extends HttpRequestException
 {
+    #[\Override]
     public function isRetriable(): bool
     {
         return true;

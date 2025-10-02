@@ -36,14 +36,17 @@ final class ArrayList implements ListInterface
         return new self($items);
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->items);
     }
 
+    #[\Override]
     public function isEmpty(): bool {
         return $this->items === [];
     }
 
+    #[\Override]
     public function itemAt(int $index): mixed {
         if (!array_key_exists($index, $this->items)) {
             throw new OutOfBoundsException("ArrayList index out of range: {$index}");
@@ -51,23 +54,28 @@ final class ArrayList implements ListInterface
         return $this->items[$index];
     }
 
+    #[\Override]
     public function getOrNull(int $index): mixed {
         return $this->items[$index] ?? null;
     }
 
+    #[\Override]
     public function first(): mixed {
         return $this->items[0] ?? null;
     }
 
+    #[\Override]
     public function last(): mixed {
         if ($this->items === []) return null;
         return $this->items[array_key_last($this->items)];
     }
 
+    #[\Override]
     public function withAppended(mixed ...$items): static {
         return new self([...$this->items, ...$items]);
     }
 
+    #[\Override]
     public function withInserted(int $index, mixed ...$items): static {
         $n = $this->items;
         if ($index < 0 || $index > count($n)) {
@@ -77,6 +85,7 @@ final class ArrayList implements ListInterface
         return new self($n);
     }
 
+    #[\Override]
     public function withRemovedAt(int $index, int $count = 1): static {
         if ($count < 0) {
             throw new OutOfBoundsException("Removal count must be >= 0");
@@ -89,37 +98,45 @@ final class ArrayList implements ListInterface
         return new self($n);
     }
 
+    #[\Override]
     public function filter(callable $predicate): static {
         return new self(array_values(array_filter($this->items, $predicate)));
     }
 
+    #[\Override]
     public function map(callable $mapper): ListInterface {
         return new self(array_map($mapper, $this->items));
     }
 
+    #[\Override]
     public function reduce(callable $reducer, mixed $initial): mixed {
         return array_reduce($this->items, $reducer, $initial);
     }
 
+    #[\Override]
     public function concat(ListInterface $other): static {
         return new self([...$this->items, ...$other->all()]);
     }
 
+    #[\Override]
     public function reverse(): static {
         return new self(array_reverse($this->items));
     }
 
     /** @return list<T> */
+    #[\Override]
     public function all(): array {
         return $this->items;
     }
 
     /** @return list<T> */
+    #[\Override]
     public function toArray(): array {
         return $this->items;
     }
 
     /** @return Traversable<int,T> */
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->items);
     }

@@ -40,6 +40,7 @@ class GuzzleDriver implements CanHandleHttpRequest
         $this->client = $clientInstance ?? new Client();
     }
 
+    #[\Override]
     public function handle(HttpRequest $request) : HttpResponse {
         $startTime = microtime(true);
         $this->dispatchRequestSent($request);

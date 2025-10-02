@@ -40,6 +40,7 @@ class Chat extends StepByStep
     private readonly Participants $participants;
     private readonly CanChooseNextParticipant $nextParticipantSelector;
     private readonly ContinuationCriteria $continuationCriteria;
+    private bool $forceThrowOnFailure;
 
     /**
      * @param CanApplyProcessors<ChatState> $processors
@@ -50,6 +51,7 @@ class Chat extends StepByStep
         CanApplyProcessors $processors,
         ContinuationCriteria $continuationCriteria,
         ?CanHandleEvents $events = null,
+        bool $forceThrowOnFailure = true,
     ) {
         parent::__construct($processors);
 
@@ -57,6 +59,7 @@ class Chat extends StepByStep
         $this->nextParticipantSelector = $nextParticipantSelector;
         $this->continuationCriteria = $continuationCriteria;
         $this->events = EventBusResolver::using($events);
+        $this->forceThrowOnFailure = $forceThrowOnFailure;
     }
 
     // INTERNAL ////////////////////////////////////////////
@@ -67,11 +70,13 @@ class Chat extends StepByStep
         return $participant;
     }
 
+    #[\Override]
     protected function canContinue(object $state): bool {
         assert($state instanceof ChatState);
         return $this->continuationCriteria->canContinue($state);
     }
 
+    #[\Override]
     protected function makeNextStep(object $state): ChatStep {
         assert($state instanceof ChatState);
         $this->emitChatTurnStarting($state);
@@ -80,6 +85,7 @@ class Chat extends StepByStep
         return $participant->act($state);
     }
 
+    #[\Override]
     protected function applyStep(object $state, object $nextStep): ChatState {
         assert($state instanceof ChatState);
         assert($nextStep instanceof ChatStep);
@@ -90,20 +96,22 @@ class Chat extends StepByStep
         return $newState;
     }
 
+    #[\Override]
     protected function onNoNextStep(object $state): ChatState {
         assert($state instanceof ChatState);
         $this->emitChatCompleted($state);
         return $state;
     }
 
+    #[\Override]
     protected function onStepCompleted(object $state): ChatState {
         assert($state instanceof ChatState);
         $this->emitChatTurnCompleted($state);
         return $state;
     }
 
+    #[\Override]
     protected function onFailure(Throwable $error, object $state): ChatState {
-throw $error;
         assert($state instanceof ChatState);
         $failure = $error instanceof ChatException
             ? $error
@@ -118,6 +126,9 @@ throw $error;
             nextStep: $failureStep
         );
         $this->emitChatTurnFailed($failedState, $failure);
+        if ($this->forceThrowOnFailure) {
+            throw $failure;
+        }
         return $failedState;
     }
 

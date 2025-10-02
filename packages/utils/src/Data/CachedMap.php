@@ -44,9 +44,11 @@ final class CachedMap implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Convenience factory.
      *
-     * @param callable(TKey, mixed...): TValue $producer
-     * @param array<TKey, TValue> $preloaded
-     * @return self<TKey, TValue>
+     * @template TK of array-key
+     * @template TV
+     * @param callable(TK, mixed...): TV $producer
+     * @param array<TK, TV> $preloaded
+     * @return self<TK, TV>
      */
     public static function from(callable $producer, array $preloaded = []): self
     {
@@ -135,29 +137,35 @@ final class CachedMap implements ArrayAccess, IteratorAggregate, Countable
 
     // ARRAY ACCESS /////////////////////////////////////////
 
+    #[\Override]
     public function offsetExists(mixed $offset): bool {
         return $this->isResolved($offset);
     }
 
+    #[\Override]
     public function offsetGet(mixed $offset): mixed {
         return $this->get($offset);
     }
 
+    #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void {
         $this->set($offset, $value);
     }
 
+    #[\Override]
     public function offsetUnset(mixed $offset): void {
         $this->forget($offset);
     }
 
     // ITERATOR AGGREGATE ///////////////////////////////////
 
+    #[\Override]
     public function getIterator(): Traversable {
         yield from $this->cache;
     }
 
     /** Number of resolved entries. */
+    #[\Override]
     public function count(): int {
         return \count($this->resolved);
     }

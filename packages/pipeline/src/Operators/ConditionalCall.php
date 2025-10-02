@@ -61,6 +61,7 @@ readonly final class ConditionalCall implements CanProcessState {
         );
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $newState = $this->conditionChecker->process($state, fn($s) => $s);
         if ($newState->isFailure()) {

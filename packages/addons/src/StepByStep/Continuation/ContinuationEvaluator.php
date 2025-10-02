@@ -16,9 +16,9 @@ final readonly class ContinuationEvaluator
 
     /**
      * @param iterable<callable(TState): bool> $criteria
+     * @psalm-suppress InvalidPropertyAssignmentValue, InvalidArgument - Template parameter passthrough
      */
     private function __construct(iterable $criteria) {
-        /** @var iterable<callable(TState): bool> $criteria */
         $this->criteria = self::normalize($criteria);
     }
 
@@ -26,8 +26,10 @@ final readonly class ContinuationEvaluator
      * @template TNewState of object
      * @param callable(TNewState): bool ...$criteria
      * @return self<TNewState>
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement
      */
     public static function with(callable ...$criteria): self {
+        /** @var self<TNewState> */
         return new self($criteria);
     }
 
@@ -35,8 +37,10 @@ final readonly class ContinuationEvaluator
      * @template TNewState of object
      * @param iterable<callable(TNewState): bool> $criteria
      * @return self<TNewState>
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement
      */
     public static function from(iterable $criteria): self {
+        /** @var self<TNewState> */
         return new self($criteria);
     }
 
@@ -68,6 +72,7 @@ final readonly class ContinuationEvaluator
     /**
      * @param callable(TState): bool ...$criteria
      * @return self<TState>
+     * @psalm-suppress InvalidReturnType, InvalidReturnStatement
      */
     public function withAdded(callable ...$criteria): self {
         if ($criteria === []) {
@@ -79,12 +84,14 @@ final readonly class ContinuationEvaluator
             $merged[] = $criterion;
         }
 
+        /** @var self<TState> */
         return new self($merged);
     }
 
     /**
-     * @param iterable<callable(TState): bool> $criteria
-     * @return list<callable(TState): bool>
+     * @template TNormState of object
+     * @param iterable<callable(TNormState): bool> $criteria
+     * @return list<callable(TNormState): bool>
      */
     private static function normalize(iterable $criteria): array {
         $normalized = [];

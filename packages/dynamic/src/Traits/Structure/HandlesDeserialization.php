@@ -44,7 +44,7 @@ trait HandlesDeserialization
         $type = $field->typeDetails();
         $value = match(true) {
             ($type === null) => throw new \Exception("Undefined field `$name` found in JSON data."),
-            ($type->isEnum()) => ($type->class)::from($fieldData),
+            ($type->isEnum() && $type->class !== null) => ($type->class)::from($fieldData),
             ($type->isCollection()) => $this->deserializeCollection($field, $fieldData),
             ($type->isArray()) => is_array($fieldData) ? $fieldData : [$fieldData],
             ($type->class() === null) => $fieldData,
@@ -62,7 +62,7 @@ trait HandlesDeserialization
         foreach($fieldData as $itemData) {
             $values[] = match(true) {
                 ($typeDetails->isScalar()) => $itemData,
-                ($typeDetails->isEnum()) => ($typeDetails->class)::from($itemData),
+                ($typeDetails->isEnum() && $typeDetails->class !== null) => ($typeDetails->class)::from($itemData),
                 ($typeDetails->isCollection()) => throw new Exception('Nested collections are not supported.'),
                 ($typeDetails->class() === Structure::class) && ($field->hasPrototype()) => $field->prototype()?->clone()->fromArray($itemData),
                 ($typeDetails->class() === DateTime::class) => new DateTime($itemData),

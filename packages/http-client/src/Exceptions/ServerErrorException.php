@@ -22,11 +22,13 @@ class ServerErrorException extends HttpRequestException
         parent::__construct($message, $request, $response, $duration, $previous);
     }
     
+    #[\Override]
     public function getStatusCode(): ?int
     {
         return $this->statusCode;
     }
     
+    #[\Override]
     public function isRetriable(): bool
     {
         return true; // All 5xx errors are retriable

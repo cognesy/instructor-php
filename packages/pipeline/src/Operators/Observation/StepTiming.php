@@ -25,6 +25,7 @@ readonly class StepTiming implements CanProcessState
         return new self($stepName);
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $startTime = microtime(true);
 

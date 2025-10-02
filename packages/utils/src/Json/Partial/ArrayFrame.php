@@ -12,6 +12,7 @@ final class ArrayFrame implements ParseFrame
     }
 
     /** @return array<int,mixed> */
+    #[\Override]
     public function getValue(): array {
         return $this->value;
     }

@@ -25,6 +25,7 @@ readonly class TrackTime implements CanProcessState
         return new self($operationName);
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $startTime = microtime(true);
 

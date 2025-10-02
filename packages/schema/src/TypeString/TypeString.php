@@ -239,6 +239,7 @@ class TypeString implements \Stringable
         return implode('|', $this->types);
     }
 
+    #[\Override]
     public function __toString() : string {
         return $this->toString();
     }

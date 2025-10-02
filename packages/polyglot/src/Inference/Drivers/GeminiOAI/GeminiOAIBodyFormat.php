@@ -10,6 +10,7 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
 {
     // CAPABILITIES /////////////////////////////////////////
 
+    #[\Override]
     protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
         // Gemini OAI does not support non-text responses for tools
         return false;
@@ -17,6 +18,7 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
 
     // INTERNAL /////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
@@ -34,6 +36,7 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
         return $result;
     }
 
+    #[\Override]
     protected function toToolChoice(InferenceRequest $request) : array|string {
         $tools = $request->tools();
         $toolChoice = $request->toolChoice();

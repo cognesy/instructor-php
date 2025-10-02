@@ -44,20 +44,18 @@ class XmlElement
     }
 
     /**
-     * Create an XmlElement from a SimpleXMLElement
+     * Return the tag name of the element
      *
-     * @param \SimpleXMLElement $element
-     * @return XmlElement
+     * @return string
      */
     public function tag(): string {
         return $this->tag;
     }
 
     /**
-     * Create an XmlElement from a SimpleXMLElement
+     * Return the content of the element
      *
-     * @param \SimpleXMLElement $element
-     * @return XmlElement
+     * @return string
      */
     public function content(): string {
         return $this->content;
@@ -65,7 +63,7 @@ class XmlElement
 
     /**
      * Return the attributes of the element
-     * @return string
+     * @return array<string, string>
      */
     public function attributes(): array {
         return $this->attributes;
@@ -132,8 +130,8 @@ class XmlElement
     }
 
     /**
-     * Return the content of the element
-     * @return string
+     * Return the element as an array
+     * @return array<string, mixed>
      */
     public function toArray(): array {
         $children = [];
@@ -149,16 +147,16 @@ class XmlElement
     }
 
     /**
-     * Return the content of the element
-     * @return string
+     * Check if the element has children
+     * @return bool
      */
     public function hasChildren() : bool {
         return count($this->children) > 0;
     }
 
     /**
-     * Return the content of the element
-     * @return string
+     * Check if the element has content
+     * @return bool
      */
     public function hasContent() : bool {
         return $this->content !== '';

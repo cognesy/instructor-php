@@ -18,6 +18,7 @@ class RunAllExamples extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->setName('all')
@@ -25,6 +26,7 @@ class RunAllExamples extends Command
             ->addArgument('index', InputArgument::OPTIONAL, 'Starting index (optional)');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $arg = $input->getArgument('index') ?? '';
         $index = !empty($arg) ? (int) $arg : 0;

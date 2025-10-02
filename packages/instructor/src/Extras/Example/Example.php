@@ -118,6 +118,7 @@ class Example implements CanProvideMessages, JsonSerializable
         ]];
     }
 
+    #[\Override]
     public function toMessages() : Messages {
         return Messages::fromArray([
             ['role' => 'user', 'content' => $this->inputString()],
@@ -131,6 +132,7 @@ class Example implements CanProvideMessages, JsonSerializable
 
     // SERIALIZATION ////////////////////////////////////////////////////////////////////
 
+    #[\Override]
     public function jsonSerialize(): array {
         return [
             'input' => $this->input(),

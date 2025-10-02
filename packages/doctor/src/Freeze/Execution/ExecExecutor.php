@@ -4,6 +4,7 @@ namespace Cognesy\Doctor\Freeze\Execution;
 
 class ExecExecutor implements CommandExecutorInterface
 {
+    #[\Override]
     public function execute(array $commandArray, string $commandString): ExecutionResult
     {
         $output = [];

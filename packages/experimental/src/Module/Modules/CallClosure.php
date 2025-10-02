@@ -24,6 +24,7 @@ class CallClosure extends Module
         return ($this)(...$args)->get('result');
     }
 
+    #[\Override]
     public function forward(mixed ...$args): array {
         return [
             'result' => ($this->callable)(...$args)

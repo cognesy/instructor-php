@@ -74,6 +74,7 @@ class TwigDriver implements CanHandleTemplate
              * @param bool $throw Whether to throw an exception if the template is not found
              * @return string The path to the template
              */
+            #[\Override]
             protected function findTemplate(string $name, bool $throw = true): string {
                 if (pathinfo($name, PATHINFO_EXTENSION) === '') {
                     $name .= $this->fileExtension;
@@ -95,6 +96,7 @@ class TwigDriver implements CanHandleTemplate
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
+    #[\Override]
     public function renderFile(string $path, array $parameters = []): string {
         return $this->twig->render($path, $parameters);
     }
@@ -106,6 +108,7 @@ class TwigDriver implements CanHandleTemplate
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
+    #[\Override]
     public function renderString(string $content, array $parameters = []): string {
         return $this->twig->createTemplate($content)->render($parameters);
     }
@@ -116,6 +119,7 @@ class TwigDriver implements CanHandleTemplate
      * @param string $path
      * @return string
      */
+    #[\Override]
     public function getTemplateContent(string $path): string {
         return $this->twig->getLoader()->getSourceContext($path)->getCode();
     }
@@ -127,6 +131,7 @@ class TwigDriver implements CanHandleTemplate
      * @return array
      * @throws \Twig\Error\SyntaxError
      */
+    #[\Override]
     public function getVariableNames(string $content): array {
         // make Twig Source from content string
         $source = new Source($content, 'template');

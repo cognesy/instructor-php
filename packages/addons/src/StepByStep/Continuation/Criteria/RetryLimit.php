@@ -35,6 +35,7 @@ final readonly class RetryLimit implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     public function canContinue(object $state): bool {
         /** @var TState $state */
         $steps = $this->collectSteps($state);

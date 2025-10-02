@@ -40,6 +40,7 @@ class RespondToChat extends Module
         return ($this)(chat: $chat)->get('answer');
     }
 
+    #[\Override]
     protected function forward(mixed ...$callArgs) : array {
         $chat = $callArgs['chat'];
         $finalAnswer = $this->respondToChat(chat: $chat);

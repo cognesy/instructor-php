@@ -11,6 +11,7 @@ final class DefaultCanaryPolicy implements CanaryPolicy
 {
     public function __construct(private float $percentage = 0.0) {}
 
+    #[\Override]
     public function pick(?PromptPreset $active, array $canaries, string $signatureId, string $modelId): PromptPresetSelection {
         if ($this->percentage <= 0.0 || empty($canaries)) {
             return $active

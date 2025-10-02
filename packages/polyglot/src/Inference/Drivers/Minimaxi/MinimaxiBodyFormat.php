@@ -10,6 +10,7 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 {
     // INTERNAL ///////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
@@ -30,17 +31,19 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
         return $result;
     }
 
+    #[\Override]
     protected function toTools(InferenceRequest $request) : array {
         return $request->hasTools()
             ? $this->toNativeTools($request->tools())
             : [];
     }
 
+    #[\Override]
     protected function toToolChoice(InferenceRequest $request) : array|string {
         return [];
     }
 
-    protected function toNativeTools(array $tools) : array|string {
+    protected function toNativeTools(array $tools) : array {
         return array_map(fn($tool) => $this->toNativeTool($tool), $tools);
     }
 

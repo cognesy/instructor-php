@@ -17,6 +17,7 @@ final class PartialInferenceResponseCreated extends InferenceEvent
         return Json::encode($this->toArray());
     }
 
+    #[\Override]
     public function toArray() : array {
         return [
             'partialInferenceResponse' => $this->partialInferenceResponse->toArray()

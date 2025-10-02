@@ -36,6 +36,7 @@ class GuzzlePool implements CanHandleRequestPool
      * @return array Array of results for each request, in the same order as the input.
      * @throws HttpRequestException If any request fails and failOnError is true.
      */
+    #[\Override]
     public function pool(array $requests, ?int $maxConcurrent = null): array {
         $responses = [];
         $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;

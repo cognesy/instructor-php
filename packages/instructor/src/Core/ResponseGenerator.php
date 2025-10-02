@@ -31,6 +31,7 @@ class ResponseGenerator implements CanGenerateResponse
         private EventDispatcherInterface $events,
     ) {}
 
+    #[\Override]
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
         $pipeline = $this->makeResponsePipeline($responseModel);
         $json = $response->findJsonData($mode)->toString();

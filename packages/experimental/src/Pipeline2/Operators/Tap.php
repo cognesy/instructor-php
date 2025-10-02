@@ -15,10 +15,12 @@ readonly final class Tap implements Operator
         $this->sideEffect = $sideEffect;
     }
 
+    #[\Override]
     public function supports(mixed $payload): bool {
         return true;
     }
 
+    #[\Override]
     public function handle(mixed $payload, Continuation $next): mixed {
         ($this->sideEffect)($payload);
         return $next->handle($payload);

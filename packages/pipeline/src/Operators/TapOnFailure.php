@@ -32,6 +32,7 @@ readonly final class TapOnFailure implements CanProcessState
     /**
      * @param callable(CanCarryState):CanCarryState $next
      */
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $newState = $next ? $next($state) : $state;
         if (!$newState->isFailure()) {

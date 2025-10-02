@@ -12,6 +12,7 @@ class RetrieveCodeBlock implements NodeVisitor
         private string $id,
     ) {}
 
+    #[\Override]
     public function visit($node): mixed {
         return match(true) {
             $node instanceof DocumentNode => array_reduce($node->children, fn($carry, $n) => $carry ?? $n->accept($this), null),

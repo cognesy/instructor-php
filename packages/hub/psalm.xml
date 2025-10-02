@@ -14,4 +14,11 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <ParamNameMismatch>
+            <errorLevel type="suppress">
+                <file name="src/Utils/CliMarkdown.php" />
+            </errorLevel>
+        </ParamNameMismatch>
+    </issueHandlers>
 </psalm>

@@ -17,6 +17,7 @@ use Exception;
 
 class RequestMaterializer implements CanMaterializeRequest
 {
+    #[\Override]
     public function toMessages(StructuredOutputExecution $execution) : array {
         $request = $execution->request();
 

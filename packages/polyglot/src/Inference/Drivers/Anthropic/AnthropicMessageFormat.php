@@ -16,6 +16,7 @@ class AnthropicMessageFormat implements CanMapMessages
         'tool' => 'user',
     ];
 
+    #[\Override]
     public function map(array $messages) : array {
         $list = [];
         foreach ($messages as $message) {

@@ -6,6 +6,7 @@ use Cognesy\Experimental\Pipeline2\Contracts\CanProcessPayload;
 
 class IdentityFn implements CanProcessPayload
 {
+    #[\Override]
     public function __invoke(mixed $payload): mixed {
         return $payload;
     }

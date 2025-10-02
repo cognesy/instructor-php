@@ -14,7 +14,7 @@ class Runner
     public int $total = 0;
     public float $timeStart = 0;
     public float $totalTime = 0;
-    /** @var ErrorEvent[] */
+    /** @var array<string, list<ErrorEvent>> */
     public array $errors = [];
 
     public function __construct(

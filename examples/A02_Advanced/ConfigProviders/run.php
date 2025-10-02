@@ -32,10 +32,12 @@ class CustomConfigProvider implements CanProvideConfig
         $this->dot = new Dot($config);
     }
 
+    #[\Override]
     public function get(string $path, mixed $default = null): mixed {
         return $this->dot->get($path, $default);
     }
 
+    #[\Override]
     public function has(string $path): bool {
         return $this->dot->has($path);
     }

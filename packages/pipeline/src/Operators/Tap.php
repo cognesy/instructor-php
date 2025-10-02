@@ -52,6 +52,7 @@ readonly final class Tap implements CanProcessState {
         );
     }
 
+    #[\Override]
     public function process(CanCarryState $state, ?callable $next = null): CanCarryState {
         $this->operator->process($state, fn($s) => $s);
         return $next ? $next($state) : $state;

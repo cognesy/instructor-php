@@ -24,6 +24,9 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;
 
+/**
+ * @implements HasStepErrors<Throwable>
+ */
 final readonly class ToolUseStep implements
     HasStepErrors,
     HasStepInfo,

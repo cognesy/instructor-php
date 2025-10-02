@@ -17,6 +17,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat,
     ) {}
 
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $request = $request->withCacheApplied();
 
@@ -151,6 +152,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
     protected function toSchemaData(InferenceRequest $request) : array {
         $responseFormat = $request->responseFormat();
+        assert($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat);
         return [
             $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...)),
             $responseFormat->schemaName(),
@@ -170,6 +172,7 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         $responseFormat = $request->responseFormat();
+        assert($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat);
         $type = $responseFormat->type();
         return match($type) {
             'json' => OutputMode::Json,

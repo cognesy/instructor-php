@@ -22,12 +22,14 @@ class ClearMintlifyDocsCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void {
         $this
             ->setName('clear')
             ->setDescription('Clear all documentation');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         Cli::outln("Clearing Mintlify documentation...", [Color::BOLD, Color::YELLOW]);

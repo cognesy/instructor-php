@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Collection\ArrayList;
 use Traversable;
 
+/** @implements \IteratorAggregate<int, StructuredOutputAttempt> */
 final readonly class StructuredOutputAttemptList implements \Countable, \IteratorAggregate
 {
     /** @var ArrayList<StructuredOutputAttempt> */
@@ -28,6 +29,7 @@ final readonly class StructuredOutputAttemptList implements \Countable, \Iterato
 
     // ACCESSORS ////////////////////////////////////////////////////////////////
 
+    /** @return list<StructuredOutputAttempt> */
     public function all(): array {
         return $this->attempts->all();
     }
@@ -42,10 +44,13 @@ final readonly class StructuredOutputAttemptList implements \Countable, \Iterato
 
     // Prefer isEmpty() for cohesion; callers can use !isEmpty()
 
+    #[\Override]
     public function count(): int {
         return count($this->attempts);
     }
 
+    /** @return Traversable<int, StructuredOutputAttempt> */
+    #[\Override]
     public function getIterator(): Traversable {
         return $this->attempts->getIterator();
     }

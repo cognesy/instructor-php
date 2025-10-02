@@ -17,6 +17,7 @@ final class VirtualClock implements ClockInterface
         $this->currentTime = $startTime ?? new DateTimeImmutable();
     }
 
+    #[\Override]
     public function now(): DateTimeImmutable
     {
         return $this->currentTime;

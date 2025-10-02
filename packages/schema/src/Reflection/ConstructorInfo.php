@@ -4,6 +4,8 @@ namespace Cognesy\Schema\Reflection;
 
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Attributes\Instructions;
+use Cognesy\Schema\Utils\AttributeUtils;
+use Cognesy\Schema\Utils\DocstringUtils;
 use ReflectionClass;
 use ReflectionMethod;
 

@@ -23,6 +23,9 @@ use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Metadata;
 use Throwable;
 
+/**
+ * @implements HasStepErrors<Throwable>
+ */
 final readonly class ChatStep implements
     HasStepChatCompletion,
     HasStepErrors,

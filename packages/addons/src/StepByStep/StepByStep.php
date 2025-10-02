@@ -25,6 +25,7 @@ abstract class StepByStep implements CanExecuteIteratively
         $this->processors = $processors;
     }
 
+    #[\Override]
     public function nextStep(object $state): object {
         return match(true) {
             !$this->hasNextStep($state) => $this->onNoNextStep($state),
@@ -36,6 +37,7 @@ abstract class StepByStep implements CanExecuteIteratively
     /**
      * @param TState $state
      */
+    #[\Override]
     public function hasNextStep(object $state): bool {
         return $this->canContinue($state);
     }
@@ -44,6 +46,7 @@ abstract class StepByStep implements CanExecuteIteratively
      * @param TState $state
      * @return TState
      */
+    #[\Override]
     public function finalStep(object $state): object {
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
@@ -55,6 +58,7 @@ abstract class StepByStep implements CanExecuteIteratively
      * @param TState $state
      * @return iterable<TState>
      */
+    #[\Override]
     public function iterator(object $state): iterable {
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);

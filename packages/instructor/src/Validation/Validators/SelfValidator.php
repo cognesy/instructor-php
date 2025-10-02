@@ -8,6 +8,7 @@ use Cognesy\Instructor\Validation\ValidationResult;
 
 class SelfValidator implements CanValidateObject
 {
+    #[\Override]
     public function validate(object $dataObject): ValidationResult {
         if ($dataObject instanceof CanValidateSelf) {
             return $dataObject->validate();

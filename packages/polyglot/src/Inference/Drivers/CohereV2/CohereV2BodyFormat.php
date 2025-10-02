@@ -9,6 +9,7 @@ use Cognesy\Utils\Arrays;
 
 class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 {
+    #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $requestBody = parent::toRequestBody($request);
 
@@ -28,12 +29,14 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 
     // CAPABILITIES /////////////////////////////////////////
 
+    #[\Override]
     protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
         return false;
     }
 
     // INTERNAL //////////////////////////////////////////////
 
+    #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
@@ -55,6 +58,7 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
         return $result;
     }
 
+    #[\Override]
     protected function removeDisallowedEntries(array $jsonSchema) : array {
         return Arrays::removeRecursively(
             array: $jsonSchema,

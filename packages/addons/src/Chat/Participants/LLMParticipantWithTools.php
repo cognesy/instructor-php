@@ -42,10 +42,12 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
         $this->toolUse = $toolUse ?? ToolUseFactory::default(events: $this->events);
     }
 
+    #[\Override]
     public function name(): string {
         return $this->name;
     }
 
+    #[\Override]
     public function act(ChatState $state): ChatStep {
         $messages = $this->prepareMessages($state);
         $toolUseState = (new ToolUseState)->withMessages($messages);

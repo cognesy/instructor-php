@@ -6,6 +6,7 @@ use Cognesy\Auxiliary\Web\Contracts\CanCleanHtml;
 
 class AddTagSpaces implements CanCleanHtml
 {
+    #[\Override]
     public function process(string $html): string {
         return preg_replace_callback('/<[^>]+>/', function ($matches) {
             $tag = $matches[0];

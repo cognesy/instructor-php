@@ -19,10 +19,12 @@ readonly final class Around implements Operator
         $this->closure = $closure;
     }
 
+    #[\Override]
     public function supports(mixed $payload): bool {
         return true;
     }
 
+    #[\Override]
     public function handle(mixed $payload, Continuation $next): mixed {
         return ($this->closure)($payload, $next);
     }

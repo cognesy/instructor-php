@@ -19,7 +19,9 @@ readonly class ContinuationCriteria implements CanDecideToContinue
      * @param CanDecideToContinue<TState> ...$criteria
      */
     public function __construct(CanDecideToContinue ...$criteria) {
+        /** @var list<CanDecideToContinue<TState>> $criteria */
         $this->criteria = $criteria;
+        /** @psalm-suppress InvalidPropertyAssignmentValue - Template parameter preserved through wrapAll */
         $this->evaluator = ContinuationEvaluator::from($this->wrapAll($criteria));
     }
 
@@ -30,6 +32,7 @@ readonly class ContinuationCriteria implements CanDecideToContinue
     /**
      * @param TState $state
      */
+    #[\Override]
     final public function canContinue(object $state): bool {
         return $this->evaluator->canContinue($state);
     }
