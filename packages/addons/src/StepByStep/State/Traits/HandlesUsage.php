@@ -17,8 +17,6 @@ trait HandlesUsage
     }
 
     public function withAccumulatedUsage(Usage $usage): static {
-        $newUsage = $this->usage->clone();
-        $newUsage->accumulate($usage);
-        return $this->withUsage($newUsage);
+        return $this->withUsage($this->usage->withAccumulated($usage));
     }
 }

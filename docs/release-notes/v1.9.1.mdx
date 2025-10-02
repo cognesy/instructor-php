@@ -1,0 +1,39 @@
+## Changes
+
+### Bug Fixes
+
+- Prevent null dereference when finalizing streaming responses with no current attempt
+  - packages/polyglot/src/Inference/Data/InferenceExecution.php
+    - Null-safe access to `currentAttempt` in `withFinalizedPartialResponse()` and `withFailedFinalizedResponse()`
+  - packages/polyglot/src/Inference/Data/InferenceAttempt.php
+    - Null-safe `withFinalizedPartialResponse()` using empty `PartialInferenceResponseList` when needed
+
+- Console display stability in evals
+  - packages/evals/src/Console/Display.php
+    - Replaced invalid `ImmutableDataMap::except()` usage with safe filtering of `toArray()` output
+    - Fixed constant name `COLOR::BOLD` → `Color::BOLD`
+
+### Behavior/Compatibility
+
+- Groq driver request body cleanup
+  - packages/polyglot/src/Inference/Drivers/Groq/GroqBodyFormat.php
+    - Removed redundant `max_tokens` → `max_completion_tokens` conversion (already handled by parent)
+
+### Immutability & Usage Accounting
+
+- Immutable accumulation for usage data to avoid inadvertent mutation/double-counting
+  - packages/polyglot/src/Inference/InferenceResponseFactory.php
+    - Use `withAccumulated(...)` when combining partial usage
+  - packages/addons/src/StepByStep/State/Traits/HandlesUsage.php
+    - Replace clone+mutate with `withAccumulated(...)`
+  - packages/evals/src/Traits/Experiment/HandlesAccess.php
+    - Compute experiment usage on demand by accumulating execution usages immutably
+  - packages/evals/src/Experiment.php
+    - Removed cached `$usage` and post-run accumulator; observations/summary rely on computed usage
+
+### Notes
+
+- This release focuses on correctness and immutability:
+  - Eliminates potential fatals in streaming finalization and console display
+  - Standardizes usage accumulation to immutable patterns across modules
+

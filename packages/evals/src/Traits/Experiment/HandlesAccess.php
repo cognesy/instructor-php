@@ -24,7 +24,11 @@ trait HandlesAccess
     }
 
     public function usage() : Usage {
-        return $this->usage;
+        $usage = new Usage();
+        foreach ($this->executions as $execution) {
+            $usage = $usage->withAccumulated($execution->usage());
+        }
+        return $usage;
     }
 
     public function data() : DataMap {

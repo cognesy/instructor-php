@@ -70,7 +70,7 @@ class InferenceResponseFactory
     private static function applyPartialResponse(PartialInferenceResponse $partialResponse, InferenceResponse $response): InferenceResponse {
         $newContent = $response->content() . ($partialResponse->contentDelta ?? '');
         $newReasoningContent = $response->reasoningContent() . ($partialResponse->reasoningContentDelta ?? '');
-        $newUsage = $response->usage()->accumulate($partialResponse->usage());
+        $newUsage = $response->usage()->withAccumulated($partialResponse->usage());
         $newResponseData = match(true) {
             empty($partialResponse->responseData) => $response->responseData(),
             default => array_merge($response->responseData(), $partialResponse->responseData),

@@ -157,8 +157,9 @@ class InferenceAttempt
     }
 
     public function withFinalizedPartialResponse(): self {
+        $partials = $this->partialResponses ?? PartialInferenceResponseList::empty();
         return $this->with(
-            response: InferenceResponseFactory::fromPartialResponses($this->partialResponses),
+            response: InferenceResponseFactory::fromPartialResponses($partials),
             isFinalized: true
         );
     }

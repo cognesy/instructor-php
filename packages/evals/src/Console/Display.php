@@ -128,7 +128,7 @@ class Display
         echo Console::columns([
             [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
             [10, '', STR_PAD_LEFT, [Color::CYAN]],
-            [6, '!!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
+            [6, '!!!!', STR_PAD_BOTH, [Color::WHITE, Color::BOLD, Color::BG_MAGENTA]],
             [60, $this->exceptionToText($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
         ], $this->terminalWidth);
     }
@@ -167,10 +167,14 @@ class Display
             $unit = $observation->metadata()->get('unit', '-');
             $format = $observation->metadata()->get('format', '%s');
             $method = $observation->metadata()->get('aggregationMethod', '-');
-            $meta = Str::limit(
-                text: $observation->metadata()->except('experimentId', 'unit', 'format', 'aggregationMethod')->toJson(),
-                limit: 60
-            );
+            $metaArray = $observation->metadata()->toArray();
+            foreach (['experimentId', 'unit', 'format', 'aggregationMethod'] as $k) {
+                if (array_key_exists($k, $metaArray)) {
+                    unset($metaArray[$k]);
+                }
+            }
+            $metaJson = json_encode($metaArray, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $meta = Str::limit(text: $metaJson ?: '{}', limit: 60);
 
             Console::printColumns([
                 [5, $id, STR_PAD_LEFT, [Color::DARK_GRAY]],

@@ -13,7 +13,6 @@ use Cognesy\Evals\Observers\Aggregate\ExperimentLatency;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Data\DataMap;
 use Cognesy\Utils\Uuid;
 use DateTime;
@@ -41,7 +40,6 @@ class Experiment {
     readonly private string $id;
     private ?DateTime $startedAt = null;
     private float $timeElapsed = 0.0;
-    private ?Usage $usage = null;
     private DataMap $data;
 
     /** @var Execution[] */
@@ -91,7 +89,6 @@ class Experiment {
             $execution = $this->executeCase($case);
             $this->display->displayExecution($execution);
         }
-        $this->usage = $this->accumulateUsage();
         $this->timeElapsed = microtime(true) - $this->startedAt->getTimestamp();
 
         $this->observations = $this->makeObservations();
@@ -139,14 +136,6 @@ class Experiment {
             ->withExecutor($this->executor)
             ->withProcessors($this->processors)
             ->withPostprocessors($this->postprocessors);
-    }
-
-    private function accumulateUsage() : Usage {
-        $usage = new Usage();
-        foreach ($this->executions as $execution) {
-            $usage->accumulate($execution->usage());
-        }
-        return $usage;
     }
 
     private function makeObservations() : array {

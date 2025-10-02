@@ -229,7 +229,8 @@ class InferenceExecution
     }
 
     public function withFinalizedPartialResponse(): self {
-        $newAttempt = InferenceAttempt::fromPartialResponses($this->currentAttempt->partialResponses(), true);
+        $partials = $this->currentAttempt?->partialResponses() ?? PartialInferenceResponseList::empty();
+        $newAttempt = InferenceAttempt::fromPartialResponses($partials, true);
         return $this->with(
             attempts: $this->attempts->withNewAttempt($newAttempt),
             currentAttempt: $newAttempt,
@@ -239,8 +240,8 @@ class InferenceExecution
 
     public function withFailedFinalizedResponse(string|Throwable ...$errors) : self {
         $newAttempt = InferenceAttempt::fromFailedResponse(
-            response: $this->currentAttempt->response(),
-            partialResponses: $this->currentAttempt->partialResponses(),
+            response: $this->currentAttempt?->response(),
+            partialResponses: $this->currentAttempt?->partialResponses(),
             errors: $errors,
         );
         return $this->with(
