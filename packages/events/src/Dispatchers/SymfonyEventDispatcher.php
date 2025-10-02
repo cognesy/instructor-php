@@ -19,6 +19,7 @@ final class SymfonyEventDispatcher implements CanHandleEvents
 
     public function addListener(string $name, callable $listener, int $priority = 0): void {
         if ($name === '*') { // ← wildcard stored in the taps queue
+            /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
             $this->taps->insert($listener, $priority);
             return;
         }
@@ -26,6 +27,7 @@ final class SymfonyEventDispatcher implements CanHandleEvents
     }
 
     public function wiretap(callable $listener, int $priority = 0): void {
+        /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
         $this->taps->insert($listener, $priority);
     }
 

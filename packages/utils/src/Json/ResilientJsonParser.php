@@ -137,8 +137,8 @@ class ResilientJsonParser
                 continue;
             }
 
-            // Normal string processing
-            if ($char === $quoteChar && !$inBackticks) {
+            // Normal string processing (inBackticks handled above, so it's always false here)
+            if ($char === $quoteChar) {
                 $this->position++;
                 return $result;
             }

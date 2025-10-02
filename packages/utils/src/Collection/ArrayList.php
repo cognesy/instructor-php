@@ -44,7 +44,7 @@ final class ArrayList implements ListInterface
         return $this->items === [];
     }
 
-    public function get(int $index): mixed {
+    public function itemAt(int $index): mixed {
         if (!array_key_exists($index, $this->items)) {
             throw new OutOfBoundsException("ArrayList index out of range: {$index}");
         }

@@ -29,7 +29,9 @@ final readonly class Messages
         return new Messages(Message::fromString($content, $role));
     }
 
-    /** @param array<string, string|array> $messages */
+    /**
+     * @param list<string|array<array-key, mixed>> $messages List of messages (strings or arrays with role/content)
+     */
     static public function fromArray(array $messages) : Messages {
         $newMessages = [];
         foreach ($messages as $message) {

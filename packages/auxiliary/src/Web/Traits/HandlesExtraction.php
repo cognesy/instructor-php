@@ -29,7 +29,7 @@ trait HandlesExtraction
     /**
      * @param string $selector CSS selector
      * @param callable|null $callback Function to transform the selected item
-     * @return Generator<\Cognesy\Auxiliary\Web\Webpage> a generator of Webpage objects
+     * @return Generator<mixed> Generator of Webpage objects or callback results
      */
     public function selectMany(string $selector, ?callable $callback = null, int $limit = 0) : Generator {
         $count = 0;

@@ -69,9 +69,9 @@ final readonly class ChatStep implements
             'participantName' => $this->participantName,
             'inputMessages' => $this->inputMessages?->toArray(),
             'outputMessages' => $this->outputMessages?->toArray(),
-            'usage' => $this->usage?->toArray(),
+            'usage' => $this->usage->toArray(),
             'inferenceResponse' => $this->inferenceResponse?->toArray(),
-            'finishReason' => $this->finishReason->value ?? null,
+            'finishReason' => $this->finishReason?->value,
             'meta' => $this->metadata,
             'errors' => array_map(
                 fn(Throwable $error): array => [

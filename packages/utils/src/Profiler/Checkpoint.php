@@ -8,7 +8,7 @@ class Checkpoint
         public string $name,
         public float $time,
         public float $delta,
-        public bool $debug,
+        public string $debug,
         public array $context,
     ) {}
 

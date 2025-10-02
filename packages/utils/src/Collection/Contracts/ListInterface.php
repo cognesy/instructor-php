@@ -17,7 +17,7 @@ interface ListInterface extends Countable, IteratorAggregate
     public function isEmpty(): bool;
 
     /** @return mixed<T> */
-    public function get(int $index): mixed; // throws OutOfBoundsException
+    public function itemAt(int $index): mixed; // throws OutOfBoundsException
 
     /** @return ?T */
     public function getOrNull(int $index): mixed;

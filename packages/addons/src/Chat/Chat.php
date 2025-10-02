@@ -69,7 +69,7 @@ class Chat extends StepByStep
 
     protected function canContinue(object $state): bool {
         assert($state instanceof ChatState);
-        return $this->continuationCriteria->canContinue($state) ?? false;
+        return $this->continuationCriteria->canContinue($state);
     }
 
     protected function makeNextStep(object $state): ChatStep {
@@ -135,7 +135,7 @@ throw $error;
             nextParticipantSelector: $nextParticipantSelector ?? $this->nextParticipantSelector,
             processors: $processors ?? $this->processors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
-            events: EventBusResolver::using($events) ?? $this->events,
+            events: EventBusResolver::using($events),
         );
     }
 
@@ -170,8 +170,8 @@ throw $error;
 
     private function emitChatParticipantSelected(CanParticipateInChat $participant, ChatState $state) : void {
         $this->events->dispatch(new ChatParticipantSelected([
-            'participantName' => $participant?->name(),
-            'participantClass' => $participant ? get_class($participant) : null,
+            'participantName' => $participant->name(),
+            'participantClass' => get_class($participant),
             'state' => $state->toArray(),
         ]));
     }

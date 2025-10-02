@@ -53,8 +53,8 @@ class JsonSchemaToSchema
         $class = $json->objectClass() ?? $this->defaultOutputClass;
         return new ObjectSchema(
             type: TypeDetails::object($class),
-            name: $customName ?? ($json->title() ?? $this->defaultToolName),
-            description: $customDescription ?? ($json->description() ?? $this->defaultToolDescription),
+            name: $customName !== '' ? $customName : ($json->title() ?? $this->defaultToolName),
+            description: $customDescription !== '' ? $customDescription : ($json->description() ?? $this->defaultToolDescription),
             properties: $this->makeProperties($json->properties()),
             required: $json->requiredProperties(),
         );

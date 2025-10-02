@@ -12,6 +12,7 @@ use DateTimeImmutable;
  * Stops once elapsed time between the state's start and current clock exceeds the limit.
  *
  * @template TState of object
+ * @implements CanDecideToContinue<TState>
  */
 final readonly class ExecutionTimeLimit implements CanDecideToContinue
 {
@@ -36,7 +37,11 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue
         $this->clock = $clock ?? new SystemClock();
     }
 
+    /**
+     * @param TState $state
+     */
     public function canContinue(object $state): bool {
+        /** @var TState $state */
         $startedAt = ($this->startedAtResolver)($state);
         $now = $this->clock->now();
         return ($now->getTimestamp() - $startedAt->getTimestamp()) < $this->maxSeconds;

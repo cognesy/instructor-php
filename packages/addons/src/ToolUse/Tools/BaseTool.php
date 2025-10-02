@@ -7,9 +7,6 @@ use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
-/**
- * @method mixed __invoke(mixed ...$args)
- */
 abstract class BaseTool implements ToolInterface
 {
     protected string $name;
@@ -24,7 +21,10 @@ abstract class BaseTool implements ToolInterface
         $this->description = $description ?? '';
     }
 
-    // Intentionally rely on subclass __invoke signature.
+    /**
+     * Subclasses must implement __invoke with their specific signature
+     */
+    abstract public function __invoke(mixed ...$args): mixed;
 
     public function name(): string {
         return $this->name;

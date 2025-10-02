@@ -32,23 +32,23 @@ test('reindexes array on creation', function () {
     ]);
 
     expect($list->toArray())->toBe(['a', 'b', 'c'])
-        ->and($list->get(0))->toBe('a')
-        ->and($list->get(1))->toBe('b')
-        ->and($list->get(2))->toBe('c');
+        ->and($list->itemAt(0))->toBe('a')
+        ->and($list->itemAt(1))->toBe('b')
+        ->and($list->itemAt(2))->toBe('c');
 });
 
 test('gets element by index', function () {
     $list = ArrayList::fromArray(['a', 'b', 'c']);
 
-    expect($list->get(0))->toBe('a')
-        ->and($list->get(1))->toBe('b')
-        ->and($list->get(2))->toBe('c');
+    expect($list->itemAt(0))->toBe('a')
+        ->and($list->itemAt(1))->toBe('b')
+        ->and($list->itemAt(2))->toBe('c');
 });
 
 test('throws exception for out of bounds index', function () {
     $list = ArrayList::fromArray([1, 2, 3]);
 
-    $list->get(3);
+    $list->itemAt(3);
 })->throws(OutOfBoundsException::class, 'ArrayList index out of range: 3');
 
 test('gets element or null by index', function () {
@@ -177,8 +177,8 @@ test('filter preserves list semantics', function () {
     $list = ArrayList::fromArray(['a', 'b', 'c', 'd']);
     $filtered = $list->filter(fn($x) => $x !== 'b' && $x !== 'd');
 
-    expect($filtered->get(0))->toBe('a')
-        ->and($filtered->get(1))->toBe('c')
+    expect($filtered->itemAt(0))->toBe('a')
+        ->and($filtered->itemAt(1))->toBe('c')
         ->and($filtered->count())->toBe(2);
 });
 
@@ -264,13 +264,13 @@ test('handles mixed types', function () {
         $object
     );
 
-    expect($list->get(0))->toBeString()
-        ->and($list->get(1))->toBeInt()
-        ->and($list->get(2))->toBeFloat()
-        ->and($list->get(3))->toBeBool()
-        ->and($list->get(4))->toBeNull()
-        ->and($list->get(5))->toBeArray()
-        ->and($list->get(6))->toBeObject();
+    expect($list->itemAt(0))->toBeString()
+        ->and($list->itemAt(1))->toBeInt()
+        ->and($list->itemAt(2))->toBeFloat()
+        ->and($list->itemAt(3))->toBeBool()
+        ->and($list->itemAt(4))->toBeNull()
+        ->and($list->itemAt(5))->toBeArray()
+        ->and($list->itemAt(6))->toBeObject();
 });
 
 test('chaining operations', function () {

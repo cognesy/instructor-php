@@ -38,8 +38,10 @@ final readonly class Message
     protected Metadata $metadata;
 
     /**
-     * @param string|array<string|array> $content
-     * @param array<string,mixed> $metadata
+     * @param string|MessageRole|null $role
+     * @param string|array|Content|null $content
+     * @param string $name
+     * @param Metadata|array<string,mixed> $metadata
      */
     public function __construct(
         string|MessageRole|null $role = '',

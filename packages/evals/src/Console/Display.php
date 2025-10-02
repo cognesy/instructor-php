@@ -101,17 +101,15 @@ class Display
         $answerLine = str_replace("\n", '\n', $answer);
         $timeElapsed = $execution->timeElapsed();
         $tokensPerSec = $execution->outputTps();
-        $isCorrect = $execution->hasException();
+        $hasException = $execution->hasException();
 
-        $rowStatus = match($isCorrect) {
+        $rowStatus = match($hasException) {
             false => 'DONE',
             true => 'FAIL',
-            default => '????',
         };
-        $cliColor = match($isCorrect) {
+        $cliColor = match($hasException) {
             false => [Color::BG_GREEN, Color::WHITE],
             true => [Color::BG_RED, Color::WHITE],
-            default => [Color::BG_BLACK, Color::RED],
         };
 
         $columns = [

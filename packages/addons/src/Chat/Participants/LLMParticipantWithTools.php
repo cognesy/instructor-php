@@ -81,7 +81,7 @@ final readonly class LLMParticipantWithTools implements CanParticipateInChat
             finishReason: $toolStep?->finishReason() ?? InferenceFinishReason::Other,
             metadata: [
                 'hasToolCalls' => $toolStep?->hasToolCalls() ? true : false,
-                'toolsUsed' => $toolStep?->toolCalls()->toString() ?? '',
+                'toolsUsed' => $toolStep?->toolCalls()->toString(),
                 'toolErrors' => count($toolStep?->errors() ?? []),
             ],
         );

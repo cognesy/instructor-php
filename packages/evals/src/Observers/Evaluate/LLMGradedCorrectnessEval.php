@@ -12,7 +12,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class LLMGradedCorrectnessEval implements CanGenerateObservations
 {
-    private GradedCorrectnessAnalysis $result;
+    private ?GradedCorrectnessAnalysis $result = null;
 
     public function __construct(
         private string $name,
@@ -60,7 +60,7 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
     }
 
     private function call() : GradedCorrectnessAnalysis {
-        if (!$this->result) {
+        if ($this->result === null) {
             $this->result = $this->llmEval();
         }
         return $this->result;

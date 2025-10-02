@@ -26,7 +26,6 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Exception;
 
 /**
  * The StructuredOutput is facade for handling structured output requests and responses.
@@ -84,24 +83,19 @@ class StructuredOutput
     /**
      * Sets values for the request builder and configures the StructuredOutput instance
      *
-     * @param string|array $messages Text or chat sequence to be used for generating the response.
-     * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
-     * @param string $system The system instructions (optional).
-     * @param string $prompt The prompt to guide the request's response generation (optional).
-     * @param array $examples Example data to provide additional context for the request (optional).
-     * @param string $model Specifies the model to be employed - check LLM documentation for more details.
-     * @param int $maxRetries The maximum number of retries for the request in case of failure.
-     * @param array $options Additional LLM options - check LLM documentation for more details.
-     * @param string $toolName The name of the tool to be used in OutputMode::Tools.
-     * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
-     * @param string $retryPrompt The prompt to be used during retries.
-     * @param OutputMode $mode The mode of operation for the request.
-     * @throws Exception If the response model is empty or invalid.
-     *
-     * @template T of object
-     * @psalm-param class-string<T>|T|array|null $responseModel
-     * @phpstan-param class-string<T>|T|array|null $responseModel
-     * @return StructuredOutput<TResponse|T>
+     * @param string|array|Message|Messages|null $messages Text or chat sequence to be used for generating the response.
+     * @param string|array|object|null $responseModel The class, JSON schema, or object representing the response format.
+     * @param string|null $system The system instructions (optional).
+     * @param string|null $prompt The prompt to guide the request's response generation (optional).
+     * @param array|null $examples Example data to provide additional context for the request (optional).
+     * @param string|null $model Specifies the model to be employed - check LLM documentation for more details.
+     * @param int|null $maxRetries The maximum number of retries for the request in case of failure.
+     * @param array|null $options Additional LLM options - check LLM documentation for more details.
+     * @param string|null $toolName The name of the tool to be used in OutputMode::Tools.
+     * @param string|null $toolDescription A description of the tool to be used in OutputMode::Tools.
+     * @param string|null $retryPrompt The prompt to be used during retries.
+     * @param OutputMode|null $mode The mode of operation for the request.
+     * @return StructuredOutput<TResponse>
      */
     public function with(
         string|array|Message|Messages|null $messages = null,

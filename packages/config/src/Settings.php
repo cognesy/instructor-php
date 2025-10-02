@@ -71,6 +71,15 @@ final class Settings
         return $dot->get($key);
     }
 
+    public static function getGroup(string $group): mixed {
+        $dot = self::load($group);
+        return $dot->all();
+    }
+
+    public static function hasGroup(string $group): bool {
+        return self::locate($group) !== null;
+    }
+
     // ----------------------------------------------------------------
 
     private static function load(string $group, bool $throw = true): ?Dot {

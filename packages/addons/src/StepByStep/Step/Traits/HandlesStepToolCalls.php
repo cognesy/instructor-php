@@ -22,7 +22,7 @@ trait HandlesStepToolCalls
     }
 
     public function finishReason(): ?InferenceFinishReason {
-        return $this->inferenceResponse?->finishReason();
+        return $this->inferenceResponse->finishReason();
     }
 
     public function inferenceResponse(): ?InferenceResponse {

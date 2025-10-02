@@ -22,8 +22,16 @@ final readonly class Success extends Result {
     /**
      * @return T
      */
-    public function unwrap() {
+    public function unwrap(): mixed {
         return $this->value;
+    }
+
+    public function error(): mixed {
+        throw new \BadMethodCallException('Cannot call error() on Success');
+    }
+
+    public function exception(): \Throwable {
+        throw new \BadMethodCallException('Cannot call exception() on Success');
     }
 
     public function isSuccess(): bool {

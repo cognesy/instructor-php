@@ -10,6 +10,7 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
  * Stops when the current step's finish reason matches a configured set.
  *
  * @template TState of object
+ * @implements CanDecideToContinue<TState>
  */
 final readonly class FinishReasonCheck implements CanDecideToContinue
 {
@@ -30,11 +31,15 @@ final readonly class FinishReasonCheck implements CanDecideToContinue
         $this->normalizedStopReasons = $this->normalizeStopReasons($stopReasons);
     }
 
+    /**
+     * @param TState $state
+     */
     public function canContinue(object $state): bool {
         if ($this->normalizedStopReasons === []) {
             return true;
         }
 
+        /** @var TState $state */
         $reason = ($this->finishReasonResolver)($state);
         if ($reason instanceof BackedEnum) {
             $reason = $reason->value;

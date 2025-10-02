@@ -240,7 +240,7 @@ class MintlifyDocumentation
     private function updateHubIndex(): GenerationResult {
         try {
             $index = MintlifyIndex::fromFile($this->config->mintlifySourceIndexFile);
-            if ($index === false) {
+            if (!$index instanceof MintlifyIndex) {
                 return GenerationResult::failure(['Failed to read hub index file']);
             }
 

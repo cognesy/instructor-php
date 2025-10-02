@@ -142,10 +142,9 @@ class Arrays
     }
 
     /**
-     * Filters an array using a callback.
+     * Converts an array to a bulleted list string.
      * @param array $array
-     * @param callable $callback
-     * @return array
+     * @return string
      */
     static public function toBullets(array $array): string {
         return implode("\n", array_map(fn($c) => " - {$c}\n", $array));

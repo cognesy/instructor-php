@@ -68,7 +68,7 @@ final readonly class LLMParticipant implements CanParticipateInChat
             outputMessages: $outputMessages,
             usage: $response->usage(),
             inferenceResponse: $response,
-            finishReason: $response->finishReason() ?? InferenceFinishReason::Other,
+            finishReason: $response->finishReason(),
         );
     }
 

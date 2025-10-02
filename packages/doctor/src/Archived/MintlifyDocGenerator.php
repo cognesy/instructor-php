@@ -84,7 +84,7 @@ class MintlifyDocGenerator
     private function updateHubIndex(): bool|int {
         // get the content of the hub index
         $index = MintlifyIndex::fromFile($this->mintlifySourceIndexFile);
-        if ($index === false) {
+        if (!$index instanceof MintlifyIndex) {
             throw new \Exception("Failed to read hub index file");
         }
 

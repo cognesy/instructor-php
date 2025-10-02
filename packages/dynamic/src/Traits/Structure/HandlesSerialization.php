@@ -47,7 +47,7 @@ trait HandlesSerialization
             ($object instanceof DateTimeInterface) => $object->format('Y-m-d H:i:s'),
             ($object instanceof DateTime) => $object->format('Y-m-d H:i:s'),
             ($object instanceof DateTimeImmutable) => $object->format('Y-m-d H:i:s'),
-            (is_object($object) && ($object instanceof BackedEnum)) => $object->value,
+            ($object instanceof BackedEnum) => $object->value,
             default => $this->deserializer->toArray($object),
         };
     }

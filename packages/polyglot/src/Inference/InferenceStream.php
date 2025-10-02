@@ -90,7 +90,7 @@ class InferenceStream
     /**
      * Retrieves all partial LLM responses from the given stream.
      *
-     * @return iterable<PartialInferenceResponse> An array of all partial LLM responses.
+     * @return array<PartialInferenceResponse> An array of all partial LLM responses.
      */
     public function all(): array {
         if ($this->execution->response() === null) {
@@ -137,7 +137,7 @@ class InferenceStream
     /**
      * Processes the given stream to generate partial LLM responses and enriches them with accumulated content and finish reason.
      *
-     * @param Generator<PartialInferenceResponse> $stream The stream to be processed to extract and enrich partial LLM responses.
+     * @param iterable<PartialInferenceResponse> $stream The stream to be processed to extract and enrich partial LLM responses.
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
     private function makePartialResponses(iterable $stream): Generator {

@@ -10,7 +10,7 @@ trait HandlesFieldSchema
     private Schema $schema;
 
     public function name() : string {
-        return $this->schema->name ?? '';
+        return $this->schema->name;
     }
 
     public function withName(string $name) : self {
@@ -23,7 +23,7 @@ trait HandlesFieldSchema
     }
 
     public function description() : string {
-        return $this->schema->description ?? '';
+        return $this->schema->description;
     }
 
     public function withDescription(string $description) : self {

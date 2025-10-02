@@ -10,6 +10,7 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
  *
  * @template TState of object
  * @template TResponse of object|null
+ * @implements CanDecideToContinue<TState>
  */
 final readonly class ResponseContentCheck implements CanDecideToContinue
 {
@@ -27,7 +28,11 @@ final readonly class ResponseContentCheck implements CanDecideToContinue
         $this->predicate = Closure::fromCallable($predicate);
     }
 
+    /**
+     * @param TState $state
+     */
     public function canContinue(object $state): bool {
+        /** @var TState $state */
         $response = ($this->responseResolver)($state);
         if ($response === null) {
             return true;

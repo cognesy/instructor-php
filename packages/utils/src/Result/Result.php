@@ -85,6 +85,25 @@ abstract readonly class Result
     abstract public function isSuccess(): bool;
     abstract public function isFailure(): bool;
 
+    // Value Access (implemented in subclasses) ////////////////////////////
+
+    /**
+     * Get the success value (only available on Success instances)
+     * @return T
+     */
+    abstract public function unwrap(): mixed;
+
+    /**
+     * Get the error value (only available on Failure instances)
+     * @return E
+     */
+    abstract public function error(): mixed;
+
+    /**
+     * Get the error as an exception (only available on Failure instances)
+     */
+    abstract public function exception(): Throwable;
+
     public function isSuccessAndNull(): bool {
         return $this->isSuccess()
             && ($this->unwrap() === null);

@@ -12,7 +12,7 @@ trait HandlesMessageStore
     protected readonly MessageStore $store;
 
     public function messages(): Messages {
-        return $this->store->section(self::DEFAULT_SECTION)->get()?->messages()
+        return $this->store->section(self::DEFAULT_SECTION)->get()->messages()
             ?? Messages::empty();
     }
 

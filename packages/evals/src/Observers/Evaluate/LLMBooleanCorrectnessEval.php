@@ -12,7 +12,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class LLMBooleanCorrectnessEval implements CanGenerateObservations
 {
-    private BooleanCorrectnessAnalysis $result;
+    private ?BooleanCorrectnessAnalysis $result = null;
 
     public function __construct(
         private string $name,
@@ -66,7 +66,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
     }
 
     private function call() : BooleanCorrectnessAnalysis {
-        if (!$this->result) {
+        if ($this->result === null) {
             $this->result = $this->llmEval();
         }
         return $this->result;

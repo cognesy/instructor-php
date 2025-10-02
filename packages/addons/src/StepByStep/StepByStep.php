@@ -15,8 +15,12 @@ use Throwable;
  */
 abstract class StepByStep implements CanExecuteIteratively
 {
+    /** @var CanApplyProcessors<TState>|null */
     protected ?CanApplyProcessors $processors;
 
+    /**
+     * @param CanApplyProcessors<TState>|null $processors
+     */
     public function __construct(?CanApplyProcessors $processors = null) {
         $this->processors = $processors;
     }
@@ -88,7 +92,10 @@ abstract class StepByStep implements CanExecuteIteratively
         try {
             return $this->processors->apply(
                 $state,
-                fn(object $state) => $this->performStep($state)
+                function(object $state): object {
+                    /** @var TState $state */
+                    return $this->performStep($state);
+                }
             );
         } catch (Throwable $error) {
             return $this->onFailure($error, $state);

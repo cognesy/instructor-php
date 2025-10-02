@@ -10,6 +10,7 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
  *
  * @template TState of object
  * @template TStep of object
+ * @implements CanDecideToContinue<TState>
  */
 final readonly class RetryLimit implements CanDecideToContinue
 {
@@ -31,7 +32,11 @@ final readonly class RetryLimit implements CanDecideToContinue
         $this->stepHasError = Closure::fromCallable($stepHasError);
     }
 
+    /**
+     * @param TState $state
+     */
     public function canContinue(object $state): bool {
+        /** @var TState $state */
         $steps = $this->collectSteps($state);
         if ($steps === []) {
             return true;

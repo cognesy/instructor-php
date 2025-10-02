@@ -205,7 +205,7 @@ class Str
      * @param string $nextNeedle The next needle.
      * @return string The extracted substring.
      */
-    public static function between(mixed $text, string $firstNeedle, string $nextNeedle) : string {
+    public static function between(string $text, string $firstNeedle, string $nextNeedle) : string {
         $start = strpos($text, $firstNeedle);
         if ($start === false) {
             return '';
@@ -225,7 +225,7 @@ class Str
      * @param string $needle The needle.
      * @return string The extracted substring.
      */
-    public static function after(mixed $text, string $needle) : string {
+    public static function after(string $text, string $needle) : string {
         $start = strpos($text, $needle);
         if ($start === false) {
             return '';

@@ -9,6 +9,7 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
  * Stops a process once the number of completed steps reaches a configured maximum.
  *
  * @template TState of object
+ * @implements CanDecideToContinue<TState>
  */
 final readonly class StepsLimit implements CanDecideToContinue
 {
@@ -25,7 +26,11 @@ final readonly class StepsLimit implements CanDecideToContinue
         $this->stepCounter = Closure::fromCallable($stepCounter);
     }
 
+    /**
+     * @param TState $state
+     */
     public function canContinue(object $state): bool {
+        /** @var TState $state */
         return ($this->stepCounter)($state) < $this->maxSteps;
     }
 }

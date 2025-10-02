@@ -178,8 +178,12 @@ class BasePath
         $envVars = ['APP_BASE_PATH', 'APP_ROOT', 'PROJECT_ROOT', 'BASE_PATH'];
 
         foreach ($envVars as $var) {
-            $path = $_ENV[$var] ?? $_SERVER[$var] ?? getenv($var);
-            if ($path && is_dir($path)) {
+            $raw = $_ENV[$var] ?? $_SERVER[$var] ?? getenv($var);
+            if (!is_string($raw) || $raw === '') {
+                continue;
+            }
+            $path = $raw;
+            if (is_dir($path)) {
                 return rtrim($path, '/\\');
             }
         }

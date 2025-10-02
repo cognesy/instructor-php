@@ -9,6 +9,7 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
  * Stops when accumulated token usage reaches or exceeds the configured limit.
  *
  * @template TState of object
+ * @implements CanDecideToContinue<TState>
  */
 final readonly class TokenUsageLimit implements CanDecideToContinue
 {
@@ -25,7 +26,11 @@ final readonly class TokenUsageLimit implements CanDecideToContinue
         $this->usageCounter = Closure::fromCallable($usageCounter);
     }
 
+    /**
+     * @param TState $state
+     */
     public function canContinue(object $state): bool {
+        /** @var TState $state */
         return ($this->usageCounter)($state) < $this->maxTokens;
     }
 }

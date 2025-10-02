@@ -198,7 +198,7 @@ class ExtractCodeBlocks extends Command
                 $plannedRegions = $plannedById[$doctest->id]->regions ?? [];
                 foreach ($plannedRegions as $plannedRegion) {
                     $regionName = $plannedRegion->name;
-                    $regionOutputPath = $plannedRegion->path ?? $this->determineRegionOutputPath($doctest, $regionName, $targetDir);
+                    $regionOutputPath = $plannedRegion->path;
                     $this->ensureDirectoryExists(dirname($regionOutputPath));
 
                     $this->docRepository->writeFile($regionOutputPath, $doctest->toFileContent($regionName));

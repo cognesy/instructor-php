@@ -155,7 +155,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
         $config = LLMConfig::fromArray($result->unwrap());
 
         // Apply DSN overrides if present
-        $dsnOverrides = $dsn?->without('preset')->toArray() ?? [];
+        $dsnOverrides = $dsn->without('preset')->toArray();
         $withDsn = !empty($dsnOverrides)
             ? $config->withOverrides($dsnOverrides)
             : $config;

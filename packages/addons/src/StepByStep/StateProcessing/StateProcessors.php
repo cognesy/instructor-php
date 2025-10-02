@@ -6,14 +6,18 @@ use Closure;
 
 /**
  * Generic middleware chain for processing state objects.
- * 
+ *
  * @template TState of object
+ * @implements CanApplyProcessors<TState>
  */
 final readonly class StateProcessors implements CanApplyProcessors
 {
-    /** @var CanProcessAnyState[] */
+    /** @var CanProcessAnyState<TState>[] */
     protected array $processors;
 
+    /**
+     * @param CanProcessAnyState<TState> ...$processors
+     */
     public function __construct(CanProcessAnyState ...$processors) {
         $this->processors = $processors;
     }
@@ -24,6 +28,9 @@ final readonly class StateProcessors implements CanApplyProcessors
         return new static();
     }
 
+    /**
+     * @param CanProcessAnyState<TState> ...$processors
+     */
     public function withProcessors(CanProcessAnyState ...$processors): static {
         return new static(...$processors);
     }

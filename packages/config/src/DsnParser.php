@@ -39,9 +39,12 @@ class DsnParser
             // Format: {key}
             $placeholders[] = '{' . $key . '}';
             // Ensure replacement is a string
-            $replacements[] = is_scalar($val)
-                ? (string) $val
-                : json_encode($val);
+            if (is_scalar($val)) {
+                $replacements[] = (string) $val;
+            } else {
+                $json = json_encode($val);
+                $replacements[] = is_string($json) ? $json : '';
+            }
         }
         return str_replace($placeholders, $replacements, $value);
     }

@@ -6,14 +6,18 @@ namespace Cognesy\Addons\StepByStep\Continuation;
  * Shared base for domain continuation collections.
  *
  * @template TState of object
+ * @implements CanDecideToContinue<TState>
  */
 readonly class ContinuationCriteria implements CanDecideToContinue
 {
-    /** @var list<CanDecideToContinue> */
+    /** @var list<CanDecideToContinue<TState>> */
     private array $criteria;
     /** @var ContinuationEvaluator<TState> */
     private ContinuationEvaluator $evaluator;
 
+    /**
+     * @param CanDecideToContinue<TState> ...$criteria
+     */
     public function __construct(CanDecideToContinue ...$criteria) {
         $this->criteria = $criteria;
         $this->evaluator = ContinuationEvaluator::from($this->wrapAll($criteria));
@@ -30,6 +34,9 @@ readonly class ContinuationCriteria implements CanDecideToContinue
         return $this->evaluator->canContinue($state);
     }
 
+    /**
+     * @param CanDecideToContinue<TState> ...$criteria
+     */
     final public function withCriteria(CanDecideToContinue ...$criteria): static {
         if ($criteria === []) {
             return $this;
@@ -39,7 +46,7 @@ readonly class ContinuationCriteria implements CanDecideToContinue
     }
 
     /**
-     * @param list<CanDecideToContinue> $criteria
+     * @param list<CanDecideToContinue<TState>> $criteria
      * @return list<callable(TState): bool>
      */
     private function wrapAll(array $criteria): array {
@@ -51,11 +58,15 @@ readonly class ContinuationCriteria implements CanDecideToContinue
         return $wrapped;
     }
 
+    /**
+     * @param CanDecideToContinue<TState> ...$criteria
+     */
     protected function newInstance(CanDecideToContinue ...$criteria): static {
         return new static(...$criteria);
     }
 
     /**
+     * @param CanDecideToContinue<TState> $criterion
      * @return callable(TState): bool
      */
     protected function wrapCriterion(CanDecideToContinue $criterion): callable {

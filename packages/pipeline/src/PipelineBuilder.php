@@ -170,6 +170,7 @@ class PipelineBuilder
         callable $then,
         ?callable $otherwise = null,
     ): static {
+        /** @psalm-suppress InvalidArgument - Condition returns bool but is wrapped to work with pipeline */
         $operator = ConditionalCall::withValue($condition)->then(Call::withValue($then));
         if (!is_null($otherwise)) {
             $operator = $operator->otherwise(Call::withValue($otherwise));

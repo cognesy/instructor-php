@@ -25,12 +25,14 @@ final class LaravelEventDispatcher implements CanHandleEvents
 
     public function addListener(string $name, callable $listener, int $priority = 0): void {
         if ($name === '*') {
+            /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
             $this->taps->insert($listener, $priority);
             return;
         }
 
         // remember for introspection
         $queue = $this->registry[$name] ??= new SplPriorityQueue();
+        /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
         $queue->insert($listener, $priority);
 
         // hand off to Laravel (priority ignored by Laravel, but order is preserved per registration)

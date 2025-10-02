@@ -56,11 +56,11 @@ trait HandlesFieldDefinitions
                 description: $description,
                 typeDetails: TypeDetails::collection($itemType)
             ),
-            is_object($itemType) && $itemType instanceof TypeDetails => (new Field(
+            $itemType instanceof TypeDetails => (new Field(
                 name: $name,
                 description: $description,
                 typeDetails: TypeDetails::collection($itemType->toString())))->set($itemType),
-            is_object($itemType) && $itemType instanceof Structure => (new Field(
+            $itemType instanceof Structure => (new Field(
                 name: $name,
                 description: $description,
                 typeDetails: TypeDetails::collection(Structure::class),

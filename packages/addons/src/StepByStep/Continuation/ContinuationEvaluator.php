@@ -18,6 +18,7 @@ final readonly class ContinuationEvaluator
      * @param iterable<callable(TState): bool> $criteria
      */
     private function __construct(iterable $criteria) {
+        /** @var iterable<callable(TState): bool> $criteria */
         $this->criteria = self::normalize($criteria);
     }
 
