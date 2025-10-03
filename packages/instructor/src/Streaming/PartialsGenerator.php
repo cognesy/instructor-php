@@ -51,6 +51,9 @@ class PartialsGenerator implements CanGeneratePartials
         $this->sequenceableHandler = new SequenceableHandler($events);
         $this->partialResponses = PartialInferenceResponseList::empty();
         $this->validationPolicy = $validationPolicy ?? new PartialValidationPolicy();
+        // initialize typed properties to satisfy static analysis
+        $this->partialJson = PartialJson::start();
+        $this->partialObject = PartialObject::empty();
     }
 
     /**
