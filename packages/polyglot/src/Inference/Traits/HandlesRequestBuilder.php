@@ -4,8 +4,8 @@ namespace Cognesy\Polyglot\Inference\Traits;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\InferenceRequestBuilder;
 
 trait HandlesRequestBuilder
 {

@@ -16,6 +16,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Instructor\Streaming\StructuredOutputStream;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;

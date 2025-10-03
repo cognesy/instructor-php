@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Polyglot\Inference;
+namespace Cognesy\Polyglot\Inference\Creation;
 
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;

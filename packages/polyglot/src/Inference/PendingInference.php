@@ -6,6 +6,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;

@@ -3,10 +3,9 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
-use Cognesy\Polyglot\Inference\InferenceResponseFactory;
+use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
-use RuntimeException;
 use Throwable;
 
 class InferenceAttempt

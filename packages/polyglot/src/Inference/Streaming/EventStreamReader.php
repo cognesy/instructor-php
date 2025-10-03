@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Polyglot\Inference\Utils;
+namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;

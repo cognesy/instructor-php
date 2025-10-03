@@ -3,6 +3,7 @@
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
@@ -10,7 +11,6 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
-use Cognesy\Polyglot\Inference\InferenceResponseFactory;
 
 it('OpenAI golden adapter: complex request + streaming response assembly', function () {
     $config = new LLMConfig(

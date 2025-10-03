@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Polyglot\Inference;
+namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
@@ -142,9 +142,7 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
     private function makePartialResponses(iterable $stream): Generator {
-        $content = '';
-        $reasoningContent = '';
-        $finishReason = '';
+        $accumulation = ContentAccumulation::empty();
 
         /** @var PartialInferenceResponse $partialResponse */
         foreach ($stream as $partialResponse) {
@@ -152,25 +150,45 @@ class InferenceStream
                 continue;
             }
 
-            // add accumulated content and last finish reason
-            if ($partialResponse->finishReason !== '') {
-                $finishReason = $partialResponse->finishReason;
-            }
-            $content .= $partialResponse->contentDelta;
-            $reasoningContent .= $partialResponse->reasoningContentDelta;
-            $enrichedResponse = $partialResponse
-                ->withContent($content)
-                ->withReasoningContent($reasoningContent)
-                ->withFinishReason($finishReason);
-            $this->events->dispatch(new PartialInferenceResponseCreated($enrichedResponse));
+            $accumulation = $accumulation->withPartialResponse($partialResponse);
+            $enrichedResponse = $this->enrichResponse($partialResponse, $accumulation);
+            $this->notifyOnPartialResponse($enrichedResponse);
 
-            $this->execution = $this->execution->withNewPartialResponse($enrichedResponse);
-            if ($this->onPartialResponse !== null) {
-                ($this->onPartialResponse)($enrichedResponse);
-            }
             yield $enrichedResponse;
         }
-        // finalize accumulated partial responses
+
+        $this->finalizeStream();
+    }
+
+    /**
+     * Enriches partial response with accumulated content and finish reason.
+     */
+    private function enrichResponse(
+        PartialInferenceResponse $partialResponse,
+        ContentAccumulation $accumulation
+    ): PartialInferenceResponse {
+        return $partialResponse
+            ->withContent($accumulation->content)
+            ->withReasoningContent($accumulation->reasoningContent)
+            ->withFinishReason($accumulation->finishReason);
+    }
+
+    /**
+     * Dispatches events and calls callback for partial response.
+     */
+    private function notifyOnPartialResponse(PartialInferenceResponse $enrichedResponse): void {
+        $this->events->dispatch(new PartialInferenceResponseCreated($enrichedResponse));
+        $this->execution = $this->execution->withNewPartialResponse($enrichedResponse);
+
+        if ($this->onPartialResponse !== null) {
+            ($this->onPartialResponse)($enrichedResponse);
+        }
+    }
+
+    /**
+     * Finalizes the stream by creating final response and dispatching event.
+     */
+    private function finalizeStream(): void {
         $this->execution = $this->execution->withFinalizedPartialResponse();
         $this->events->dispatch(new InferenceResponseCreated($this->execution->response()));
     }

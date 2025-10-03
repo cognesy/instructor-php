@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 it('creates driver from explicit config and resolves correct class', function () {

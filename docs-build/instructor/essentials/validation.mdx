@@ -20,7 +20,7 @@ $person = (new StructuredOutput)->with(
 )->get();
 
 // if the resulting object does not validate, Instructor throws an exception
-// @doctest id="a6b1"
+// @doctest id="9ddb"
 ```
 
 > NOTE: For further details on available validation rules, check [Symfony Validation constraints](https://symfony.com/doc/current/validation.html#constraints).
@@ -52,7 +52,7 @@ $person = (new StructuredOutput)->with(
 )->get();
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
-// @doctest id="6c66"
+// @doctest id="d5c0"
 ```
 
 ## Custom Validation
@@ -90,7 +90,7 @@ $user = (new StructuredOutput)->with(
 )->get();
 
 assert($user->name === "JASON");
-// @doctest id="3fad"
+// @doctest id="4999"
 ```
 
 Note that method ```validate()``` has to return:
@@ -108,7 +108,7 @@ $violations = [
     ],
     // ...other violations
 ];
-// @doctest id="ca8b"
+// @doctest id="c622"
 ``` 
 
 
@@ -149,7 +149,7 @@ $user = (new StructuredOutput)
     ->get();
 
 assert($user->name === "JASON");
-// @doctest id="d000"
+// @doctest id="daf2"
 ```
 
 > NOTE: See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.

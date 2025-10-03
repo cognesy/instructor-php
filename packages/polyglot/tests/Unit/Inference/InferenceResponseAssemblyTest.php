@@ -1,9 +1,9 @@
 <?php
 
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
+use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\InferenceResponseFactory;
 
 it('accumulates content across partial responses', function () {
     $partials = [

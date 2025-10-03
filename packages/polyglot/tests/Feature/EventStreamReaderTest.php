@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
-use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
+use Cognesy\Polyglot\Inference\Streaming\EventStreamReader;
 use Mockery as Mock;
 
 beforeEach(function () {

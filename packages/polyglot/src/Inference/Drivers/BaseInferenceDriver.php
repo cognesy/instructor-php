@@ -15,7 +15,7 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Events\InferenceFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
-use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
+use Cognesy\Polyglot\Inference\Streaming\EventStreamReader;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;

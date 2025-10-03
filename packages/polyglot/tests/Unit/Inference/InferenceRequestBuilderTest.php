@@ -1,7 +1,7 @@
 <?php
 
+use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\InferenceRequestBuilder;
 
 it('builds request with messages, model, options, streaming, max tokens and mode', function () {
     $b = new InferenceRequestBuilder();

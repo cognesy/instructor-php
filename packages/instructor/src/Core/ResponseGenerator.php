@@ -40,17 +40,6 @@ class ResponseGenerator implements CanGenerateResponse
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    protected function extractErrors(CanCarryState|Failure|Exception|ValidationResult $output) : array {
-        return match(true) {
-            $output instanceof Throwable => [$output->getMessage()],
-            $output instanceof CanCarryState && $output->isSuccess() => [],
-            $output instanceof CanCarryState && $output->isFailure() => [$output->exception()->getMessage()],
-            $output instanceof Result && $output->isSuccess() => [],
-            $output instanceof Result && $output->isFailure() => [$output->errorMessage()],
-            default => []
-        };
-    }
-
     private function makeResponsePipeline(ResponseModel $responseModel) : Pipeline {
         return Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($responseJson) => match(true) {
@@ -67,5 +56,16 @@ class ResponseGenerator implements CanGenerateResponse
                 default => Result::failure(implode('; ', $this->extractErrors($state)))
             })
             ->create();
+    }
+
+    protected function extractErrors(CanCarryState|Failure|Exception|ValidationResult $output) : array {
+        return match(true) {
+            $output instanceof Throwable => [$output->getMessage()],
+            $output instanceof CanCarryState && $output->isSuccess() => [],
+            $output instanceof CanCarryState && $output->isFailure() => [$output->exception()->getMessage()],
+            $output instanceof Result && $output->isSuccess() => [],
+            $output instanceof Result && $output->isFailure() => [$output->errorMessage()],
+            default => []
+        };
     }
 }

@@ -528,8 +528,7 @@ Refactor wiring so Inference receives ready collaborators from layers.
 - Layers
 
 ```php
-use Cognesy\Polyglot\Inference\InferenceDriverFactory;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 
 $inferenceLayers = $eventsLayer
   ->merge($configLayer)

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\Streaming;
 
-use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
@@ -13,13 +13,14 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Exception;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 
 /**
  * @template TResponse
  */
 class StructuredOutputStream
 {
-    private RequestHandler $requestHandler;
+    private CanExecuteStructuredOutput $requestHandler;
     private EventDispatcherInterface $events;
 
     private Generator $stream;
@@ -28,7 +29,7 @@ class StructuredOutputStream
     private readonly bool $cacheProcessedResponse;
 
     private StructuredOutputExecution $execution;
-    private PartialInferenceResponse|InferenceResponse|null $lastResponse = null;
+    private InferenceResponse|null $lastResponse = null;
 
     /**
      * @param Generator<StructuredOutputExecution> $stream
@@ -36,7 +37,7 @@ class StructuredOutputStream
      */
     public function __construct(
         StructuredOutputExecution $execution,
-        RequestHandler $requestHandler,
+        CanExecuteStructuredOutput $requestHandler,
         EventDispatcherInterface $events,
     ) {
         $this->cacheProcessedResponse = true;
@@ -60,7 +61,7 @@ class StructuredOutputStream
      * Returns last received LLM response object, which contains
      * detailed information from LLM API response
      */
-    public function lastResponse() : InferenceResponse|PartialInferenceResponse {
+    public function lastResponse() : InferenceResponse {
         if ($this->lastResponse === null) {
             throw new \RuntimeException('No response available yet');
         }
@@ -95,9 +96,8 @@ class StructuredOutputStream
         foreach ($this->streamResponses() as $partialResponse) {
             // Just consume the stream, processStream() handles the updates
         }
-        if (!$this->lastResponse instanceof InferenceResponse) {
-            $type = $this->lastResponse === null ? 'null' : get_class($this->lastResponse);
-            throw new Exception('Expected final InferenceResponse, got ' . $type);
+        if (is_null($this->lastResponse)) {
+            throw new RuntimeException('Expected final InferenceResponse, got null');
         }
         return $this->lastResponse;
     }
@@ -173,7 +173,7 @@ class StructuredOutputStream
      * Private method that handles stream iteration, usage accumulation, and last response tracking.
      * This centralizes the common iteration logic used by all stream processing methods.
      *
-     * @return Generator<PartialInferenceResponse|InferenceResponse> Yields inference responses (partials and final).
+     * @return Generator<InferenceResponse> Yields inference responses (partials and final).
      */
     private function streamResponses(): Generator {
         /** @var StructuredOutputExecution $execution */
@@ -182,7 +182,7 @@ class StructuredOutputStream
             if ($response === null) {
                 continue;
             }
-            $this->lastResponse = $response;
+            $this->lastResponse = $execution->inferenceResponse();
             $this->events->dispatch(new StructuredOutputResponseUpdated(['partial' => json_encode($response->value())]));
             yield $response;
         }
@@ -200,36 +200,58 @@ class StructuredOutputStream
     private function getStream(StructuredOutputExecution $execution) : Generator {
         $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
 
-        // RESPONSE CACHING = IS DISABLED
-        if (!$this->cacheProcessedResponse) {
-            $executionUpdates = $this->requestHandler->streamUpdatesFor($execution);
-            $last = null;
-            foreach ($executionUpdates as $chunk) {
-                $last = $chunk;
-                yield $chunk;
-            }
-            if ($last !== null) {
-                $this->execution = $last;
-            }
-            return;
-        }
+        return match($this->cacheProcessedResponse) {
+            false => $this->streamWithoutCaching($execution),
+            true => $this->streamWithCaching($execution),
+        };
+    }
 
-        // RESPONSE CACHING = IS ENABLED
+    /**
+     * Streams execution updates without caching.
+     *
+     * @return Generator<StructuredOutputExecution>
+     */
+    private function streamWithoutCaching(StructuredOutputExecution $execution): Generator {
+        $executionUpdates = $this->requestHandler->nextUpdate($execution);
+        $last = null;
+        foreach ($executionUpdates as $chunk) {
+            $last = $chunk;
+            yield $chunk;
+        }
+        if ($last !== null) {
+            $this->execution = $last;
+        }
+    }
+
+    /**
+     * Streams execution updates with caching - builds cache on first call, replays from cache on subsequent calls.
+     *
+     * @return Generator<StructuredOutputExecution>
+     */
+    private function streamWithCaching(StructuredOutputExecution $execution): Generator {
         if (empty($this->cachedResponseStream)) {
-            $this->cachedResponseStream = [];
-            $executionUpdates = $this->requestHandler->streamUpdatesFor($execution);
-            $last = null;
-            foreach ($executionUpdates as $chunk) {
-                $this->cachedResponseStream[] = $chunk;
-                $last = $chunk;
-                yield $chunk;
-            }
-            if ($last !== null) {
-                $this->execution = $last;
-            }
+            yield from $this->buildAndCacheStream($execution);
             return;
         }
-
         yield from $this->cachedResponseStream;
+    }
+
+    /**
+     * Builds the response stream and populates the cache.
+     *
+     * @return Generator<StructuredOutputExecution>
+     */
+    private function buildAndCacheStream(StructuredOutputExecution $execution): Generator {
+        $this->cachedResponseStream = [];
+        $executionUpdates = $this->requestHandler->nextUpdate($execution);
+        $last = null;
+        foreach ($executionUpdates as $chunk) {
+            $this->cachedResponseStream[] = $chunk;
+            $last = $chunk;
+            yield $chunk;
+        }
+        if ($last !== null) {
+            $this->execution = $last;
+        }
     }
 }

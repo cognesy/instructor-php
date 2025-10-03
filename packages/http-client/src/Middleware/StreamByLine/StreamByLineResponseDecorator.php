@@ -5,7 +5,7 @@ namespace Cognesy\Http\Middleware\StreamByLine;
 use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
-use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
+use Cognesy\Polyglot\Inference\Streaming\EventStreamReader;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StreamByLineResponseDecorator extends BaseResponseDecorator

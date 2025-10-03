@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
-use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\StructuredOutputStream;
+use Cognesy\Instructor\Streaming\StructuredOutputStream;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Tests\Instructor\Support\TestEventDispatcher;
@@ -12,10 +12,10 @@ use Tests\Instructor\Support\TestEventDispatcher;
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
 
 // Minimal stub to feed a predefined generator of execution updates
-class FakeRequestHandlerForSequence extends RequestHandler {
+class FakeRequestHandlerForSequence implements CanExecuteStructuredOutput {
     private \Generator $gen;
     public function __construct(\Generator $gen) { $this->gen = $gen; }
-    public function streamUpdatesFor(StructuredOutputExecution $execution): \Generator { yield from $this->gen; }
+    public function nextUpdate(StructuredOutputExecution $execution): \Generator { yield from $this->gen; }
 }
 
 it('yields sequence updates only when new items complete and dispatches events', function () {

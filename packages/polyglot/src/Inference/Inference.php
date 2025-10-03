@@ -11,10 +11,13 @@ use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
+use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

@@ -78,8 +78,16 @@ final readonly class StructuredOutputExecution
         return $this->attempts->count();
     }
 
+    public function currentAttempt(): ?StructuredOutputAttempt {
+        return $this->currentAttempt;
+    }
+
     public function inferenceResponse(): ?InferenceResponse {
         return $this->currentAttempt->inferenceResponse();
+    }
+
+    public function partialResponses(): PartialInferenceResponseList {
+        return $this->currentAttempt->partialResponses();
     }
 
     public function lastFinalizedAttempt(): ?StructuredOutputAttempt {
