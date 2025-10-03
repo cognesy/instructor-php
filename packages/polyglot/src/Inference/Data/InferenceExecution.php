@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Polyglot\Inference\Collections\InferenceAttemptList;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
@@ -59,13 +60,11 @@ class InferenceExecution
         return $this->attempts;
     }
 
-    
-
     public function response(): ?InferenceResponse {
         return $this->currentAttempt?->response();
     }
 
-    public function finishReason() : ?InferenceFinishReason {
+    public function finishReason(): ?InferenceFinishReason {
         return $this->currentAttempt?->response()?->finishReason();
     }
 
@@ -124,14 +123,16 @@ class InferenceExecution
      * Aggregate errors from finalized attempts and the current one.
      */
     public function errors(): array {
-        $all = [];
+        $chunks = [];
         foreach ($this->attempts->all() as $attempt) {
-            $all = array_merge($all, $attempt->errors());
+            if ($attempt->hasErrors()) {
+                $chunks[] = $attempt->errors();
+            }
         }
         if ($this->currentAttempt?->hasErrors()) {
-            $all = array_merge($all, $this->currentAttempt->errors());
+            $chunks[] = $this->currentAttempt->errors();
         }
-        return $all;
+        return Arrays::mergeMany($chunks);
     }
 
     /**
@@ -196,7 +197,7 @@ class InferenceExecution
         return $this->with(
             attempts: $this->attempts->withNewAttempt($newAttempt),
             currentAttempt: $newAttempt,
-            isFinalized: true
+            isFinalized: true,
         );
     }
 
@@ -213,14 +214,14 @@ class InferenceExecution
         return $this->with(
             attempts: $this->attempts->withNewAttempt($newAttempt),
             currentAttempt: $newAttempt,
-            isFinalized: true
+            isFinalized: true,
         );
     }
 
     public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
         $currentAttempt = $this->currentAttempt ?? InferenceAttempt::fromPartialResponses(
             PartialInferenceResponseList::empty(),
-            isFinalized: false
+            isFinalized: false,
         );
         return $this->with(
             currentAttempt: $currentAttempt->withNewPartialResponse($partialResponse),
@@ -234,11 +235,11 @@ class InferenceExecution
         return $this->with(
             attempts: $this->attempts->withNewAttempt($newAttempt),
             currentAttempt: $newAttempt,
-            isFinalized: true
+            isFinalized: true,
         );
     }
 
-    public function withFailedFinalizedResponse(string|Throwable ...$errors) : self {
+    public function withFailedFinalizedResponse(string|Throwable ...$errors): self {
         $newAttempt = InferenceAttempt::fromFailedResponse(
             response: $this->currentAttempt?->response(),
             partialResponses: $this->currentAttempt?->partialResponses(),
@@ -247,7 +248,7 @@ class InferenceExecution
         return $this->with(
             attempts: $this->attempts->withNewAttempt($newAttempt),
             currentAttempt: $newAttempt,
-            isFinalized: true
+            isFinalized: true,
         );
     }
 
@@ -266,7 +267,7 @@ class InferenceExecution
         ];
     }
 
-    public static function fromArray(mixed $data) : self {
+    public static function fromArray(mixed $data): self {
         return new self(
             request: InferenceRequest::fromArray($data['request'] ?? []),
             attempts: InferenceAttemptList::fromArray($data['attempts'] ?? []),

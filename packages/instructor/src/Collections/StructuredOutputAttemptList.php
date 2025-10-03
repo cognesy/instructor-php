@@ -42,7 +42,9 @@ final readonly class StructuredOutputAttemptList implements \Countable, \Iterato
         return $this->attempts->last();
     }
 
-    // Prefer isEmpty() for cohesion; callers can use !isEmpty()
+    public function isEmpty(): bool {
+        return $this->attempts->isEmpty();
+    }
 
     #[\Override]
     public function count(): int {

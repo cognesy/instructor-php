@@ -11,6 +11,65 @@ use WeakMap;
 class Arrays
 {
     /**
+     * Efficiently merge many arrays produced in a loop.
+     * Avoids calling array_merge inside the loop by doing a single merge.
+     *
+     * Example:
+     *  $chunks = [];
+     *  foreach ($sources as $s) { $chunks[] = $s->getOptions(); }
+     *  $merged = Arrays::mergeMany($chunks);
+     *
+     * Semantics match PHP's array_merge: numeric keys are reindexed and later
+     * values overwrite earlier ones for string keys.
+     *
+     * @param iterable<array<int|string, mixed>> $arrays
+     * @return array<int|string, mixed>
+     */
+    public static function mergeMany(iterable $arrays): array {
+        $parts = [];
+        foreach ($arrays as $arr) {
+            if (!is_array($arr) || $arr === []) {
+                continue;
+            }
+            $parts[] = $arr;
+        }
+        $count = count($parts);
+        return match ($count) {
+            0 => [],
+            1 => $parts[0],
+            default => array_merge(...$parts),
+        };
+    }
+
+    /**
+     * Map items to arrays and merge them efficiently.
+     * Useful when each item must be transformed into an array before merging.
+     *
+     * Example:
+     *  $errors = Arrays::mergeOver($attempts, fn($a) => $a->hasErrors() ? $a->errors() : []);
+     *
+     * @param iterable<mixed> $items
+     * @param callable(mixed, array-key): array $toArray maps item to array
+     * @return array<int|string, mixed>
+     */
+    public static function mergeOver(iterable $items, callable $toArray): array {
+        $parts = [];
+        foreach ($items as $key => $item) {
+            $arr = $toArray($item, $key);
+            if ($arr === []) {
+                continue;
+            }
+            $parts[] = $arr;
+        }
+        $count = count($parts);
+        return match ($count) {
+            0 => [],
+            1 => $parts[0],
+            default => array_merge(...$parts),
+        };
+    }
+
+    /**
      * Merges two arrays, handling null values.
      * @param array|null $array1
      * @param array|null $array2

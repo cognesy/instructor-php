@@ -41,7 +41,7 @@ class SymfonyHttpResponse implements HttpResponse
      */
     #[\Override]
     public function statusCode(): int {
-        return $this->response->getStatusCode(false); // false = don't throw on error codes
+        return $this->response->getStatusCode();
     }
 
     /**

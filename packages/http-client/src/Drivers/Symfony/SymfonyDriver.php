@@ -104,13 +104,13 @@ class SymfonyDriver implements CanHandleHttpRequest
         $httpResponse = $this->buildHttpResponse($response, $request);
 
         $httpException = HttpExceptionFactory::fromStatusCode(
-            $response->getStatusCode(false), // false = don't throw on error codes
+            $response->getStatusCode(),
             $request,
             $httpResponse,
             $duration
         );
 
-        $this->dispatchStatusCodeFailed($response->getStatusCode(false), $request, $duration);
+        $this->dispatchStatusCodeFailed($response->getStatusCode(), $request, $duration);
         throw $httpException;
     }
 
@@ -126,7 +126,7 @@ class SymfonyDriver implements CanHandleHttpRequest
     }
 
     private function validateStatusCodeOrFail(ResponseInterface $response, HttpRequest $request, float $startTime): void {
-        $statusCode = $response->getStatusCode(false); // false = don't throw on error codes
+        $statusCode = $response->getStatusCode();
 
         if (!$this->config->failOnError || $statusCode < 400) {
             return;
@@ -157,7 +157,7 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     private function dispatchResponseReceived(ResponseInterface $response): void {
         $this->events->dispatch(new HttpResponseReceived([
-            'statusCode' => $response->getStatusCode(false) // false = don't throw on error codes
+            'statusCode' => $response->getStatusCode()
         ]));
     }
 
