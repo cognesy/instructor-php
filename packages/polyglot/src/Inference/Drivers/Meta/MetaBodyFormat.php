@@ -12,11 +12,11 @@ class MetaBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // Meta API (via OpenRouter) supports: json_schema
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => [

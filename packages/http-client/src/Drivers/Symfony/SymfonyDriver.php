@@ -16,6 +16,7 @@ use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -45,12 +46,15 @@ class SymfonyDriver implements CanHandleHttpRequest
         $this->dispatchRequestSent($request);
         try {
             $response = $this->performHttpCall($request);
+            $this->validateStatusCodeOrFail($response, $request, $startTime);
+            $this->dispatchResponseReceived($response);
+            return $this->buildHttpResponse($response, $request);
         } catch (TransportExceptionInterface $e) {
             $this->handleTransportException($e, $request, $startTime);
+        } catch (HttpExceptionInterface $e) {
+            // Symfony throws HTTP exceptions when accessing status code or content with error codes
+            $this->handleHttpException($e, $request, $startTime);
         }
-        $this->validateStatusCodeOrFail($response, $request, $startTime);
-        $this->dispatchResponseReceived($response);
-        return $this->buildHttpResponse($response, $request);
     }
 
     // INTERNAL /////////////////////////////////////////////
@@ -83,14 +87,30 @@ class SymfonyDriver implements CanHandleHttpRequest
         $message = $e->getMessage();
 
         $httpException = match (true) {
-            str_contains($message, 'timeout') || str_contains($message, 'timed out') 
+            str_contains($message, 'timeout') || str_contains($message, 'timed out')
                 => new TimeoutException($message, $request, $duration, $e),
-            str_contains($message, 'Failed to connect') || str_contains($message, 'Could not resolve host') 
+            str_contains($message, 'Failed to connect') || str_contains($message, 'Could not resolve host')
                 => new ConnectionException($message, $request, $duration, $e),
             default => new NetworkException($message, $request, null, $duration, $e),
         };
 
         $this->dispatchRequestFailed($httpException, $request, $duration);
+        throw $httpException;
+    }
+
+    private function handleHttpException(HttpExceptionInterface $e, HttpRequest $request, float $startTime): never {
+        $duration = microtime(true) - $startTime;
+        $response = $e->getResponse();
+        $httpResponse = $this->buildHttpResponse($response, $request);
+
+        $httpException = HttpExceptionFactory::fromStatusCode(
+            $response->getStatusCode(false), // false = don't throw on error codes
+            $request,
+            $httpResponse,
+            $duration
+        );
+
+        $this->dispatchStatusCodeFailed($response->getStatusCode(false), $request, $duration);
         throw $httpException;
     }
 
@@ -106,7 +126,9 @@ class SymfonyDriver implements CanHandleHttpRequest
     }
 
     private function validateStatusCodeOrFail(ResponseInterface $response, HttpRequest $request, float $startTime): void {
-        if (!$this->config->failOnError || $response->getStatusCode() < 400) {
+        $statusCode = $response->getStatusCode(false); // false = don't throw on error codes
+
+        if (!$this->config->failOnError || $statusCode < 400) {
             return;
         }
 
@@ -114,13 +136,13 @@ class SymfonyDriver implements CanHandleHttpRequest
         $httpResponse = $this->buildHttpResponse($response, $request);
 
         $httpException = HttpExceptionFactory::fromStatusCode(
-            $response->getStatusCode(),
+            $statusCode,
             $request,
             $httpResponse,
             $duration
         );
 
-        $this->dispatchStatusCodeFailed($response->getStatusCode(), $request, $duration);
+        $this->dispatchStatusCodeFailed($statusCode, $request, $duration);
         throw $httpException;
     }
 
@@ -135,7 +157,7 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     private function dispatchResponseReceived(ResponseInterface $response): void {
         $this->events->dispatch(new HttpResponseReceived([
-            'statusCode' => $response->getStatusCode()
+            'statusCode' => $response->getStatusCode(false) // false = don't throw on error codes
         ]));
     }
 

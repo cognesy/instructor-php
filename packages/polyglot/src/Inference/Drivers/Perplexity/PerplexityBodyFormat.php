@@ -34,11 +34,11 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // Perplexity API only supports: json_schema (with schema field only, no name/strict)
         // Both Json and JsonSchema modes use json_schema type
         $responseFormat = $request->responseFormat()

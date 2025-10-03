@@ -29,11 +29,11 @@ class GroqBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // Groq API supports: json_object, json_schema, text
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])

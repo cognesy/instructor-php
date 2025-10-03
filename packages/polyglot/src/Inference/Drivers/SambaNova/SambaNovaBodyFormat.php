@@ -19,11 +19,11 @@ class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // SambaNova API supports: json_object (no schema support)
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])

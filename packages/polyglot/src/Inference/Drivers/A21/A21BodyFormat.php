@@ -12,11 +12,11 @@ class A21BodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // A21 API supports: json_object, text
         // Does not support json_schema with schema
         $responseFormat = $request->responseFormat()

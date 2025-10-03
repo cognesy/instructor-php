@@ -12,11 +12,11 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // Minimaxi API supports: json_schema (with integer->number transformation)
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => [

@@ -18,11 +18,11 @@ class HuggingFaceBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
             ->withToJsonSchemaHandler(fn() => [

@@ -20,11 +20,11 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$request->hasResponseFormat()) {
+        $mode = $this->toResponseFormatMode($request);
+        if ($mode === null) {
             return [];
         }
 
-        $mode = $request->outputMode();
         // Gemini OAI API supports: json_object, text (no schema support)
         $responseFormat = $request->responseFormat()
             ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
