@@ -156,8 +156,8 @@ class PropertyInfo
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     private function makeAdapter() : CanGetPropertyType {
-        $class = "Symfony\Component\PropertyInfo\PropertyInfoExtractor";
-        $useV7Adapter = class_exists($class);
+        // Symfony 7+ uses TypeInfo component, Symfony 6 uses PropertyInfo Type class
+        $useV7Adapter = class_exists("Symfony\Component\TypeInfo\Type");
 
         return match(true) {
             $useV7Adapter => new PropertyInfoV7Adapter(
