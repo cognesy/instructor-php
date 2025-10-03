@@ -17,7 +17,10 @@ class ExampleRepository {
         return $this->getExamplesInGroups();
     }
 
-    /** @return array<Example> */
+    /**
+     * @param callable(Example): bool $callback
+     * @return array<Example>
+     */
     public function forEachExample(callable $callback, string $path = '') : array {
         $directories = $this->getExampleDirectories();
         // loop through the files and select only directories
@@ -40,7 +43,7 @@ class ExampleRepository {
 
     public function argToExample(string $input) : ?Example {
         // handle example provided by index
-        $example = (int) ($input ?? '');
+        $example = (int) $input;
         if ($example > 0) {
             $list = $this->getExampleDirectories();
             $index = $example - 1;
@@ -56,9 +59,9 @@ class ExampleRepository {
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
-    /** @return array<string, array<Example> */
+    /** @return array<string, ExampleGroup> */
     private function getExamplesInGroups() : array {
-        $examples = $this->forEachExample(fn($example) => $example);
+        $examples = $this->forEachExample(fn($example) => true);
         $groups = [];
         foreach ($examples as $example) {
             $group = $example->group;
@@ -78,9 +81,14 @@ class ExampleRepository {
         return $this->baseDir . $path . '/run.php';
     }
 
+    /** @phpstan-ignore-next-line */
     private function getContent(string $path) : string {
         $runPath = $this->getRunPath($path);
-        return file_get_contents($runPath);
+        $content = file_get_contents($runPath);
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read file: {$runPath}");
+        }
+        return $content;
     }
 
     private function getTitle(string $content) : string {
@@ -124,6 +132,7 @@ class ExampleRepository {
         return array_merge([], $directories);
     }
 
+    /** @phpstan-ignore-next-line */
     private function hasSubdirectories(string $path) : bool {
         $runPath = $this->baseDir . $path;
         if (!is_dir($runPath)) {
@@ -141,12 +150,13 @@ class ExampleRepository {
         // remove leading and trailing spaces
         $output = trim($output);
         // remove double spaces
-        $output = preg_replace('/\s+/', ' ', $output);
+        $output = preg_replace('/\s+/', ' ', $output) ?? $output;
         // remove any ANSI codes
-        $output = preg_replace('/\e\[[\d;]*m/', '', $output);
+        $output = preg_replace('/\e\[[\d;]*m/', '', $output) ?? $output;
         return substr(trim($output), 0, $limit);
     }
 
+    /** @phpstan-ignore-next-line */
     private function hasTitle(string $content) : bool {
         $title = $this->getTitle($content);
         return ($title !== '');

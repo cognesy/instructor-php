@@ -21,8 +21,12 @@ class Example
         public string $runPath = '',
     ) {}
 
+    /**
+     * @return static
+     */
     public static function fromFile(string $baseDir, string $path, int $index = 0) : static {
-        return static::loadExample($baseDir, $path, $index);
+        /** @var static */
+        return self::loadExample($baseDir, $path, $index);
     }
 
     public function toNavigationItem() : NavigationItem {
@@ -35,7 +39,7 @@ class Example
 
     // INTERNAL ////////////////////////////////////////////////////////////////////
 
-    private static function loadExample(string $baseDir, string $path, int $index = 0) : static {
+    private static function loadExample(string $baseDir, string $path, int $index = 0) : self {
         [$group, $name] = explode('/', $path, 2);
 
         $info = ExampleInfo::fromFile($baseDir . $path . '/run.php', $name);

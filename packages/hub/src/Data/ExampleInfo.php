@@ -33,6 +33,9 @@ class ExampleInfo
 
     private static function yamlFrontMatter(string $path) : array {
         $content = file_get_contents($path);
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read file: {$path}");
+        }
         $document = FrontMatter::parse($content);
         $content = $document->document();
         $data = $document->data();
@@ -50,9 +53,9 @@ class ExampleInfo
         // remove leading and trailing spaces
         $output = trim($output);
         // remove double spaces
-        $output = preg_replace('/\s+/', ' ', $output);
+        $output = preg_replace('/\s+/', ' ', $output) ?? $output;
         // remove any ANSI codes
-        $output = preg_replace('/\e\[[\d;]*m/', '', $output);
+        $output = preg_replace('/\e\[[\d;]*m/', '', $output) ?? $output;
         return substr(trim($output), 0, $limit);
     }
 
