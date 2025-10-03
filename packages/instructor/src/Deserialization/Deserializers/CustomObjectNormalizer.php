@@ -73,7 +73,9 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         $this->writeInfoExtractor = new ReflectionExtractor();
     }
 
-    #[\Override]
+    /**
+     * @return array<string, bool>
+     */
     public function getSupportedTypes(?string $format): array {
         return ['object' => true];
     }

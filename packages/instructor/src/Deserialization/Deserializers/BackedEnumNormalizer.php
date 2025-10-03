@@ -21,7 +21,9 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
      */
     public const ALLOW_INVALID_VALUES = 'allow_invalid_values';
 
-    #[\Override]
+    /**
+     * @return array<class-string, bool>
+     */
     public function getSupportedTypes(?string $format): array
     {
         return [
