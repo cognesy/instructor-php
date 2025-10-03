@@ -173,7 +173,7 @@ final readonly class StructuredOutputExecution
         foreach ($this->attempts as $attempt) {
             $all = array_merge($all, $attempt->errors());
         }
-        if ($this->currentAttempt?->hasErrors()) {
+        if ($this->currentAttempt->hasErrors()) {
             $all = array_merge($all, $this->currentAttempt->errors());
         }
         return $all;
@@ -183,14 +183,14 @@ final readonly class StructuredOutputExecution
      * Errors for the in‑flight attempt (if any).
      */
     public function currentErrors(): array {
-        return $this->currentAttempt?->errors() ?? [];
+        return $this->currentAttempt->errors();
     }
 
     /**
      * True if the latest finalized attempt succeeded.
      */
     public function isSuccessful(): bool {
-        if ($this->currentAttempt && !$this->currentAttempt->isFinalized()) {
+        if (!$this->currentAttempt->isFinalized()) {
             return false;
         }
         $last = $this->attempts->last();
@@ -216,7 +216,7 @@ final readonly class StructuredOutputExecution
             return true;
         }
         $resp = $last->inferenceResponse();
-        return $resp?->hasFinishedWithFailure() ?? false;
+        return $resp !== null && $resp->hasFinishedWithFailure();
     }
 
     public function withFailedAttempt(

@@ -9,23 +9,20 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 class A21BodyFormat extends OpenAICompatibleBodyFormat
 {
     // INTERNAL ///////////////////////////////////////////////
-    
+
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Json:
-            case OutputMode::JsonSchema:
-                $result = ['type' => 'json_object'];
-                break;
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = ['type' => 'text'];
-                break;
-            default:
-                $result = [];
+        if (!$request->hasResponseFormat()) {
+            return [];
         }
 
-        return $result;
+        $mode = $request->outputMode();
+        // A21 API supports: json_object, text
+        // Does not support json_schema with schema
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
+            ->withToJsonSchemaHandler(fn() => ['type' => 'json_object']); // Falls back to json_object for schema mode
+
+        return $responseFormat->as($mode);
     }
 }

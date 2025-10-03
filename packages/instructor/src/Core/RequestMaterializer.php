@@ -52,9 +52,8 @@ class RequestMaterializer implements CanMaterializeRequest
         $store = (new MessageStore())
             ->section('system')->appendMessages($this->makeSystem($messages, $request->system()))
             ->section('messages')->appendMessages($this->makeMessages($messages))
-            ->section('prompt')->appendMessages($this->makePrompt($request->prompt()
-                ?: $execution->config()->prompt($execution->outputMode())
-                ?? ''
+            ->section('prompt')->appendMessages($this->makePrompt(
+                $request->prompt() ?: $execution->config()->prompt($execution->outputMode())
             ))
             ->section('examples')->setMessages($this->makeExamples($request->examples()));
         return $this->removeEmptyMessages($store);
@@ -203,10 +202,10 @@ class RequestMaterializer implements CanMaterializeRequest
 
     protected function isRequestEmpty(StructuredOutputRequest $request) : bool {
         return match(true) {
-            !empty($request->messages()) => false,
-            !empty($request->prompt()) => false,
-            !empty($request->system()) => false, // ?
-            !empty($request->examples()) => false, // ?
+            !$request->messages()->isEmpty() => false,
+            $request->prompt() !== '' => false,
+            $request->system() !== '' => false,
+            !empty($request->examples()) => false,
             default => true,
         };
     }

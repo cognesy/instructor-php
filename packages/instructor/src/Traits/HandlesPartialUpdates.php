@@ -6,12 +6,13 @@ use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 
 trait HandlesPartialUpdates
 {
-    protected $onPartialResponse;
+    /** @var callable(object): void|null */
+    protected $onPartialResponse = null;
 
     /**
      * Listens to partial responses
      *
-     * @param-later-invoked-callable $listener
+     * @param callable(object): void $listener
      */
     public function onPartialUpdate(callable $listener) : static {
         $this->onPartialResponse = $listener;

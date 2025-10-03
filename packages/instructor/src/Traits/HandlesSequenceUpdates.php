@@ -6,12 +6,13 @@ use Cognesy\Instructor\Events\Request\SequenceUpdated;
 
 trait HandlesSequenceUpdates
 {
-    protected $onSequenceUpdate;
+    /** @var callable(object): void|null */
+    protected $onSequenceUpdate = null;
 
     /**
      * Listens to sequence updates
      *
-     * @param-later-invoked-callable $listener
+     * @param callable(object): void $listener
      */
     public function onSequenceUpdate(callable $listener) : static {
         $this->onSequenceUpdate = $listener;

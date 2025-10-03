@@ -55,7 +55,11 @@ trait HandlesFactoryMethods
             ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed nested type not supported for collections - use array'),
             ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('You have not specified collection element type'),
             (in_array($typeName, TypeDetails::PHP_SCALAR_TYPES, true)) => $this->scalarType($typeName),
-            default => $this->objectType($typeName),
+            default => (function() use ($typeName) {
+                /** @var class-string $objectClass */
+                $objectClass = $typeName;
+                return $this->objectType($objectClass);
+            })(),
         };
         return new TypeDetails(
             type: TypeDetails::PHP_COLLECTION,
@@ -68,7 +72,7 @@ trait HandlesFactoryMethods
     /**
      * Create TypeDetails for object type
      *
-     * @param string $typeName
+     * @param class-string $typeName
      * @return TypeDetails
      */
     public function objectType(string $typeName) : TypeDetails {
@@ -86,7 +90,7 @@ trait HandlesFactoryMethods
     /**
      * Create TypeDetails for enum type
      *
-     * @param string $typeName
+     * @param class-string $typeName
      * @return TypeDetails
      */
     public function enumType(string $typeName, ?string $enumType = null, ?array $enumValues = null) : TypeDetails {

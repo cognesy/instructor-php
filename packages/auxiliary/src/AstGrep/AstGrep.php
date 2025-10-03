@@ -71,7 +71,7 @@ class AstGrep
     public function isAvailable(): bool {
         $command = sprintf('%s --version 2>&1', $this->astGrepPath);
         $result = shell_exec($command);
-        return $result !== null && str_contains($result, 'ast-grep');
+        return is_string($result) && str_contains($result, 'ast-grep');
     }
 
     private function buildCommand(string $pattern, string $path): string {
@@ -87,7 +87,9 @@ class AstGrep
     private function execute(string $command): string {
         if ($this->workingDirectory !== null) {
             $originalDir = getcwd();
-            chdir($this->workingDirectory);
+            if ($originalDir !== false) {
+                chdir($this->workingDirectory);
+            }
         }
 
         // Debug: uncomment to see actual command
@@ -95,11 +97,11 @@ class AstGrep
 
         $output = shell_exec($command);
 
-        if (isset($originalDir)) {
+        if (isset($originalDir) && is_string($originalDir)) {
             chdir($originalDir);
         }
 
-        return $output ?? '';
+        return is_string($output) ? $output : '';
     }
 
     private function parseOutput(string $output): SearchResults {
@@ -152,7 +154,7 @@ class AstGrep
         foreach ($paths as $path) {
             $command = sprintf('%s --version 2>&1', $path);
             $result = shell_exec($command);
-            if ($result !== null && str_contains($result, 'ast-grep')) {
+            if (is_string($result) && str_contains($result, 'ast-grep')) {
                 return $path;
             }
         }

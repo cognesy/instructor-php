@@ -95,14 +95,7 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
 
     // INTERNAL /////////////////////////////////////////////////////////
 
-    private function selectorTiers() : array {
-        return [
-            ['article'],
-            ['div.prose'],
-            ['div.content', 'div[role="content"]'],
-            ['main', 'div[role="main"]', 'div.main'],
-        ];
-    }
+    // removed unused selector tier helpers to satisfy static analysis
 
     private function stripHtmlTags(string $html, array $allowed = []) : string {
         return strip_tags($html, $allowed);
@@ -117,47 +110,44 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
 
     private function removeTagWithContent(string $html, string $tag) : string {
         $pattern = '/<'. $tag . '\b[^>]*>(.*?)<\/' .$tag . '>/is';
-        return preg_replace($pattern, '', $html);
+        $result = preg_replace($pattern, '', $html);
+        return is_string($result) ? $result : $html;
     }
 
-    private function removeTagKeepContent(string $html, string $tag) : string {
-        // remove opening tag entry
-        $html = preg_replace('/<' . $tag . '\b[^>]*>/', '', $html);
-        // remove closing tag entry
-        $html = preg_replace('/<\/' . $tag . '>/is', '', $html);
-        return $html;
-    }
+    // removed unused removeTagKeepContent
 
     private function cleanBodyTag(string $html) : string {
-        return preg_replace('/<body[^>]*>/', '<body>', $html);
+        $result = preg_replace('/<body[^>]*>/', '<body>', $html);
+        return is_string($result) ? $result : $html;
     }
 
-    private function replaceMultipleSpaces(string $str) : string {
-        return preg_replace('/ {2,}/', ' ', $str);
-    }
+    // removed unused replaceMultipleSpaces
 
     private function replaceMultipleNewlines(string $str) : string {
-        return preg_replace('/\n{2,}/', "\n\n", $str);
+        $result = preg_replace('/\n{2,}/', "\n\n", $str);
+        return is_string($result) ? $result : $str;
     }
 
-    private function removeDuplicateEmptyLines(string $str) : string {
-        return preg_replace('/\n[ \t]*\n/', "\n\n", $str);
-    }
+    // removed unused removeDuplicateEmptyLines
 
     private function removeWhitespaceBeforeEndOfLine(string $str) : string {
-        return preg_replace('/[\t ]+$/m', '', $str);
+        $result = preg_replace('/[\t ]+$/m', '', $str);
+        return is_string($result) ? $result : $str;
     }
 
     protected function removeWhitespaceBeforeBr(string $str) : string {
-        return preg_replace('/[\t\n ]*<br>\n/s', "<br>\n", $str);
+        $result = preg_replace('/[\t\n ]*<br>\n/s', "<br>\n", $str);
+        return is_string($result) ? $result : $str;
     }
 
     protected function consolidateBrs(string $str) : string {
-        return preg_replace('/(\s*<br>\s*)+/', "<br>\n", $str);
+        $result = preg_replace('/(\s*<br>\s*)+/', "<br>\n", $str);
+        return is_string($result) ? $result : $str;
     }
 
     protected function consolidateBrNewlines(string $str) : string {
-        return preg_replace('/(\s*<br>\n\s*\n)+/', "<br>\n", $str);
+        $result = preg_replace('/(\s*<br>\n\s*\n)+/', "<br>\n", $str);
+        return is_string($result) ? $result : $str;
     }
 
     private function replaceMultipleSpacesPreservePre(string $str) : string {
@@ -166,9 +156,15 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
 
         // Step 2: Replace all <pre></pre> blocks with placeholders
         $strWithPlaceholders = preg_replace('/<pre\b[^>]*>(.*?)<\/pre>/is', 'PRE_PLACEHOLDER', $str);
+        if (!is_string($strWithPlaceholders)) {
+            return $str;
+        }
 
         // Step 3: Replace multiple spaces with a single one
         $strWithPlaceholders = preg_replace('/[ \t]{2,}/', ' ', $strWithPlaceholders);
+        if (!is_string($strWithPlaceholders)) {
+            return $str;
+        }
 
         // Step 4: Replace placeholders with original <pre></pre> blocks
         foreach ($preMatches[0] as $preMatch) {
@@ -182,7 +178,7 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
     }
 
     private function addSpaces(string $body) : string {
-        return preg_replace_callback('/<[^>]+>/', function ($matches) {
+        $result = preg_replace_callback('/<[^>]+>/', function ($matches) {
             $tag = $matches[0];
             if (strpos($tag, '<span') === 0 || strpos($tag, '</span') === 0) {
                 // If it's a span tag, return it unchanged
@@ -191,60 +187,16 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
             // Otherwise, add spaces around the tag
             return ' ' . $tag . ' ';
         }, $body);
+        return is_string($result) ? $result : $body;
     }
 
-    private function containsAny(string $html, array $selectors) : bool {
-        $crawler = new Crawler($html);
-        $filtered = $crawler->filter(implode(', ', $selectors));
-        return $filtered->count() > 0;
-    }
+    // removed unused content extraction helpers
 
-    private function containsSingle(string $html, mixed $selectors) : bool {
-        $crawler = new Crawler($html);
-        $filtered = $crawler->filter(implode(', ', $selectors));
-        return $filtered->count() === 1;
-    }
+    // removed unused extractContentByTier
 
-    private function extractContent(string $html, array $selectors) : string {
-        $crawler = new Crawler($html);
-        $items = $crawler->filter(implode(', ', $selectors))->each(function (Crawler $node) {
-            return $node->html();
-        });
-        $content = '';
-        foreach ($items as $item) {
-            $content .= $item . "\n\n";
-        }
-        return $content;
-    }
+    // removed unused hasIdApp
 
-    private function extractContentByTier(string $html, array $selectorTiers) : string {
-        foreach ($selectorTiers as $selectors) {
-            if ($this->containsSingle($html, $selectors)) {
-                return $this->extractContent($html, $selectors);
-            }
-            $selectorTiers = array_reverse($selectorTiers);
-            if ($this->containsAny($html, $selectors)) {
-                return $this->extractContent($html, $selectors);
-            }
-        }
-        return $html;
-    }
+    // removed unused getAppContent
 
-    private function hasIdApp(string $body) : bool {
-        $crawler = new Crawler($body);
-        $node = $crawler->filter('#app');
-        return $node->count() > 0;
-    }
-
-    private function getAppContent(string $body) : string {
-        $crawler = new Crawler($body);
-        return $crawler->filter('div#app')->attr('data-page');
-    }
-
-    private function removeHtmlTags(string $body, array $excluded) : string {
-        foreach ($excluded as $tag) {
-            $body = $this->removeTagKeepContent($body, $tag);
-        }
-        return $body;
-    }
+    // removed unused removeHtmlTags
 }

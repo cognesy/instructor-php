@@ -15,7 +15,7 @@ class GitService
     public function runCommand(string $command): string {
         $fullCommand = sprintf('cd %s && git %s', escapeshellarg($this->repoPath), $command);
         $output = shell_exec($fullCommand);
-        if ($output === null) {
+        if (!is_string($output)) {
             throw new RuntimeException("Git command failed: {$command}");
         }
 

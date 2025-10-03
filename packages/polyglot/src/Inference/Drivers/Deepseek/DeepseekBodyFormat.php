@@ -69,24 +69,20 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
+        if (!$request->hasResponseFormat()) {
+            return [];
+        }
+
         if (!$this->supportsStructuredOutput($request)) {
             return ['type' => 'text'];
         }
 
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Json:
-            case OutputMode::JsonSchema:
-                $result = ['type' => 'json_object'];
-                break;
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = ['type' => 'text'];
-                break;
-            default:
-                $result = [];
-        }
+        $mode = $request->outputMode();
+        // Deepseek API supports: json_object, text (no schema support)
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
+            ->withToJsonSchemaHandler(fn() => ['type' => 'json_object']); // Falls back to json_object
 
-        return $result;
+        return $responseFormat->as($mode);
     }
 }

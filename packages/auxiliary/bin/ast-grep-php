@@ -1,0 +1,146 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Cognesy\Auxiliary\AstGrep\UsageFinder;
+
+if ($argc < 3) {
+    echo "Usage: ast-grep-php <command> <arguments>\n\n";
+    echo "Commands:\n";
+    echo "  class <className> [path]     - Find all usages of a class\n";
+    echo "  method <className> <method> [path] - Find all usages of a method\n";
+    echo "  check-class <className> [path]     - Check if class is used (exit 0 if used, 1 if not)\n";
+    echo "  check-method <className> <method> [path] - Check if method is used\n\n";
+    echo "Examples:\n";
+    echo "  ast-grep-php class ChatState packages/\n";
+    echo "  ast-grep-php method ChatState withVariable packages/\n";
+    echo "  ast-grep-php check-class UnusedClass src/\n";
+    exit(1);
+}
+
+$command = $argv[1];
+$finder = new UsageFinder();
+
+switch ($command) {
+    case 'class':
+        $className = $argv[2];
+        $path = $argv[3] ?? '.';
+
+        echo "Analyzing usage of class '$className' in '$path'...\n\n";
+
+        $usages = $finder->findClassUsages($className, $path);
+
+        if ($usages->hasAnyUsage()) {
+            echo "✓ Class '$className' is used:\n";
+            echo "  - Instantiations: {$usages->instantiations->count()}\n";
+            echo "  - Static calls: {$usages->staticCalls->count()}\n";
+            echo "  - Extensions: {$usages->extensions->count()}\n";
+            echo "  - Implementations: {$usages->implementations->count()}\n";
+            echo "  - Imports: {$usages->imports->count()}\n";
+            echo "  - Total: {$usages->getTotalUsageCount()} usages\n\n";
+
+            if ($usages->instantiations->isNotEmpty()) {
+                echo "Instantiations found in:\n";
+                foreach ($usages->instantiations as $result) {
+                    echo "  {$result->file}:{$result->line} - {$result->getMatchPreview()}\n";
+                }
+                echo "\n";
+            }
+
+            if ($usages->staticCalls->isNotEmpty()) {
+                echo "Static calls found in:\n";
+                foreach ($usages->staticCalls as $result) {
+                    echo "  {$result->file}:{$result->line} - {$result->getMatchPreview()}\n";
+                }
+                echo "\n";
+            }
+
+            exit(0);
+        } else {
+            echo "✗ Class '$className' is NOT used in '$path'\n";
+            exit(1);
+        }
+        break;
+
+    case 'method':
+        if ($argc < 4) {
+            echo "Error: method command requires className and methodName\n";
+            exit(1);
+        }
+
+        $className = $argv[2];
+        $methodName = $argv[3];
+        $path = $argv[4] ?? '.';
+
+        echo "Analyzing usage of method '$className::$methodName' in '$path'...\n\n";
+
+        $usages = $finder->findMethodUsages($className, $methodName, $path);
+
+        if ($usages->hasAnyUsage()) {
+            echo "✓ Method '$className::$methodName' is used:\n";
+            echo "  - Instance calls: {$usages->instanceCalls->count()}\n";
+            echo "  - Static calls: {$usages->staticCalls->count()}\n";
+            echo "  - Total: {$usages->getTotalUsageCount()} usages\n\n";
+
+            if ($usages->instanceCalls->isNotEmpty()) {
+                echo "Instance calls found in:\n";
+                foreach ($usages->instanceCalls as $result) {
+                    echo "  {$result->file}:{$result->line} - {$result->getMatchPreview()}\n";
+                }
+                echo "\n";
+            }
+
+            if ($usages->staticCalls->isNotEmpty()) {
+                echo "Static calls found in:\n";
+                foreach ($usages->staticCalls as $result) {
+                    echo "  {$result->file}:{$result->line} - {$result->getMatchPreview()}\n";
+                }
+                echo "\n";
+            }
+
+            exit(0);
+        } else {
+            echo "✗ Method '$className::$methodName' is NOT used in '$path'\n";
+            exit(1);
+        }
+        break;
+
+    case 'check-class':
+        $className = $argv[2];
+        $path = $argv[3] ?? '.';
+
+        if ($finder->isClassUsed($className, $path)) {
+            echo "✓ '$className' is used\n";
+            exit(0);
+        } else {
+            echo "✗ '$className' is NOT used\n";
+            exit(1);
+        }
+        break;
+
+    case 'check-method':
+        if ($argc < 4) {
+            echo "Error: check-method command requires className and methodName\n";
+            exit(1);
+        }
+
+        $className = $argv[2];
+        $methodName = $argv[3];
+        $path = $argv[4] ?? '.';
+
+        if ($finder->isMethodUsed($className, $methodName, $path)) {
+            echo "✓ '$className::$methodName' is used\n";
+            exit(0);
+        } else {
+            echo "✗ '$className::$methodName' is NOT used\n";
+            exit(1);
+        }
+        break;
+
+    default:
+        echo "Unknown command: $command\n";
+        echo "Run 'ast-grep-php' without arguments for usage information.\n";
+        exit(1);
+}

@@ -19,12 +19,13 @@ class CohereDriver extends BaseEmbedDriver
         protected HttpClient $httpClient,
         protected EventDispatcherInterface $events,
     ) {
-        $this->requestAdapter = new CohereRequestAdapter(
+        $requestAdapter = new CohereRequestAdapter(
             $config,
             new CohereBodyFormat($config)
         );
-        $this->responseAdapter = new CohereResponseAdapter(
+        $responseAdapter = new CohereResponseAdapter(
             new CohereUsageFormat()
         );
+        parent::__construct($config, $httpClient, $events, $requestAdapter, $responseAdapter);
     }
 }

@@ -241,7 +241,7 @@ class PartialsGenerator implements CanGeneratePartials
     private function makeDeltaPipeline(ResponseModel $responseModel) : Pipeline {
         return Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($json) => $this->validatePartialResponse($json, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
-            ->tap(function($json) use ($responseModel) : void {
+            ->tap(function($json) : void {
                 $this->events->dispatch(new PartialJsonReceived(['partialJson' => $json]));
             })
             ->tap(function($json) use ($responseModel) : void {

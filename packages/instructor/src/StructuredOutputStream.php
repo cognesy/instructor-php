@@ -23,7 +23,8 @@ class StructuredOutputStream
     private EventDispatcherInterface $events;
 
     private Generator $stream;
-    private array $cachedResponseStream;
+    /** @var array<StructuredOutputExecution> */
+    private array $cachedResponseStream = [];
     private readonly bool $cacheProcessedResponse;
 
     private StructuredOutputExecution $execution;
@@ -60,15 +61,18 @@ class StructuredOutputStream
      * detailed information from LLM API response
      */
     public function lastResponse() : InferenceResponse|PartialInferenceResponse {
+        if ($this->lastResponse === null) {
+            throw new \RuntimeException('No response available yet');
+        }
         return $this->lastResponse;
     }
 
     /**
      * Returns a stream of partial parsed values.
      *
-     * @return Iterable<TResponse>
+     * @return \Generator<TResponse>
      */
-    public function partials() : Iterable {
+    public function partials() : \Generator {
         foreach ($this->streamResponses() as $partialResponse) {
             $result = $partialResponse->value();
             yield $result;
@@ -92,7 +96,8 @@ class StructuredOutputStream
             // Just consume the stream, processStream() handles the updates
         }
         if (!$this->lastResponse instanceof InferenceResponse) {
-            throw new Exception('Expected final InferenceResponse, got ' . get_class($this->lastResponse));
+            $type = $this->lastResponse === null ? 'null' : get_class($this->lastResponse);
+            throw new Exception('Expected final InferenceResponse, got ' . $type);
         }
         return $this->lastResponse;
     }
@@ -101,8 +106,10 @@ class StructuredOutputStream
      * Returns single update for each completed item of the sequence.
      * This method is useful when you want to process only fully updated
      * sequence items, e.g. for visualization or further processing.
+     *
+     * @return \Generator<Sequence>
      */
-    public function sequence() : Iterable {
+    public function sequence() : \Generator {
         $lastSequence = null;
         $lastSequenceCount = 1;
 
@@ -116,6 +123,7 @@ class StructuredOutputStream
                 $lastSequenceCount = $update->count();
                 // yield snapshot of the previous state if available
                 if (!is_null($lastSequence)) {
+                    /** @phpstan-ignore-next-line */
                     yield clone $lastSequence;
                 }
             }
@@ -124,6 +132,7 @@ class StructuredOutputStream
         }
         // yield last, fully updated sequence instance if available
         if (!is_null($lastSequence)) {
+            /** @phpstan-ignore-next-line */
             yield clone $lastSequence;
         }
     }
@@ -144,15 +153,17 @@ class StructuredOutputStream
      * Convenience: aggregated usage for the last response seen on the stream.
      */
     public function usage() : Usage {
-        return $this->execution->usage() ?? Usage::none();
+        return $this->execution->usage();
     }
 
     /**
      * Returns raw stream for custom processing.
      * Processing with this method does not trigger any events or dispatch any notifications.
      * It also does not update usage data on the stream object.
+     *
+     * @return Generator<StructuredOutputExecution>
      */
-    public function getIterator() : Iterable {
+    public function getIterator() : Generator {
         return $this->stream;
     }
 
@@ -168,11 +179,16 @@ class StructuredOutputStream
         /** @var StructuredOutputExecution $execution */
         foreach ($this->stream as $execution) {
             $response = $execution->inferenceResponse();
+            if ($response === null) {
+                continue;
+            }
             $this->lastResponse = $response;
             $this->events->dispatch(new StructuredOutputResponseUpdated(['partial' => json_encode($response->value())]));
             yield $response;
         }
-        $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($this->lastResponse->value())]));
+        if ($this->lastResponse !== null) {
+            $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($this->lastResponse->value())]));
+        }
     }
 
     /**
@@ -199,7 +215,7 @@ class StructuredOutputStream
         }
 
         // RESPONSE CACHING = IS ENABLED
-        if (!isset($this->cachedResponseStream)) {
+        if (empty($this->cachedResponseStream)) {
             $this->cachedResponseStream = [];
             $executionUpdates = $this->requestHandler->streamUpdatesFor($execution);
             $last = null;

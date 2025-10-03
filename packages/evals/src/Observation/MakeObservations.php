@@ -89,13 +89,16 @@ class MakeObservations
     }
 
     /**
-     * @param callable $callback
+     * @param callable(object):\Cognesy\Evals\Observation $callback
      * @param object $subject
      * @return iterable<\Cognesy\Evals\Observation>
      */
     private function wrapObservation(callable $callback, mixed $subject) : iterable {
         if ($subject !== null) {
-            yield $callback($subject);
+            $result = $callback($subject);
+            if ($result !== null) {
+                yield $result;
+            }
         }
     }
 
@@ -110,7 +113,10 @@ class MakeObservations
         }
     }
 
-    private function observers(array $observers, ?array $types = null) : iterable {
+    /**
+     * @return array<object>
+     */
+    private function observers(array $observers, ?array $types = null) : array {
         $instances = $this->makeInstances($observers);
         return match(true) {
             empty($types) => $instances,

@@ -5,6 +5,7 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\InferenceData;
+use Cognesy\Events\Event;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 class RunInference implements CanRunExecution
@@ -24,10 +25,15 @@ class RunInference implements CanRunExecution
     }
 
     public function withDebugPreset(?string $preset) : self {
-        $this->inferenceAdapter->withDebugPreset($preset);
+        if ($preset !== null) {
+            $this->inferenceAdapter->withDebugPreset($preset);
+        }
         return $this;
     }
 
+    /**
+     * @param (callable(object):void)|null $callback
+     */
     public function wiretap(?callable $callback) : self {
         $this->inferenceAdapter->wiretap($callback);
         return $this;

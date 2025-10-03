@@ -7,10 +7,14 @@ test('returns correct string representation', function () {
     $stringType = new TypeDetails('string');
     $this->assertSame('string', (string) $stringType);
 
-    $objectType = new TypeDetails('object', 'Foo\Bar');
+    /** @var class-string $objectClass */
+    $objectClass = 'Foo\Bar';
+    $objectType = new TypeDetails('object', $objectClass);
     $this->assertSame('Foo\Bar', (string) $objectType);
 
-    $enumType = new TypeDetails('enum', 'Foo\Bar', null, 'string', ['foo', 'bar']);
+    /** @var class-string $enumClass */
+    $enumClass = 'Foo\Bar';
+    $enumType = new TypeDetails('enum', $enumClass, null, 'string', ['foo', 'bar']);
     $this->assertSame('Foo\Bar', (string) $enumType);
 
     $collectionType = new TypeDetails('collection', null, new TypeDetails('int'));
@@ -24,10 +28,14 @@ test('returns correct JSON type', function () {
     $stringType = new TypeDetails('string');
     $this->assertSame('string', $stringType->toJsonType()->toString());
 
-    $objectType = new TypeDetails('object', 'Foo\Bar');
+    /** @var class-string $objectClass */
+    $objectClass = 'Foo\Bar';
+    $objectType = new TypeDetails('object', $objectClass);
     $this->assertSame('object', $objectType->toJsonType()->toString());
 
-    $enumType = new TypeDetails('enum', 'Foo\Bar', null, 'int', [1, 2, 3]);
+    /** @var class-string $enumClass */
+    $enumClass = 'Foo\Bar';
+    $enumType = new TypeDetails('enum', $enumClass, null, 'int', [1, 2, 3]);
     $this->assertSame('integer', $enumType->toJsonType()->toString());
 
     $collectionType = new TypeDetails('collection', null, new TypeDetails('bool'));
@@ -46,10 +54,14 @@ test('returns correct short name', function () {
     $stringType = new TypeDetails('string');
     $this->assertSame('string', $stringType->shortName());
 
-    $objectType = new TypeDetails('object', 'Foo\Bar');
+    /** @var class-string $objectClass */
+    $objectClass = 'Foo\Bar';
+    $objectType = new TypeDetails('object', $objectClass);
     $this->assertSame('Bar', $objectType->shortName());
 
-    $enumType = new TypeDetails('enum', 'Foo\Bar', null, 'string', ['foo', 'bar']);
+    /** @var class-string $enumClass */
+    $enumClass = 'Foo\Bar';
+    $enumType = new TypeDetails('enum', $enumClass, null, 'string', ['foo', 'bar']);
     $this->assertSame('one of: foo, bar', $enumType->shortName());
 
     $collectionType = new TypeDetails('collection', null, new TypeDetails('int'));
@@ -60,10 +72,14 @@ test('returns correct short name', function () {
 });
 
 test('returns correct class only name', function () {
-    $objectType = new TypeDetails('object', 'Foo\Bar');
+    /** @var class-string $objectClass */
+    $objectClass = 'Foo\Bar';
+    $objectType = new TypeDetails('object', $objectClass);
     $this->assertSame('Bar', $objectType->classOnly());
 
-    $enumType = new TypeDetails('enum', 'Foo\Bar', null, 'string', ['foo', 'bar']);
+    /** @var class-string $enumClass */
+    $enumClass = 'Foo\Bar';
+    $enumType = new TypeDetails('enum', $enumClass, null, 'string', ['foo', 'bar']);
     $this->assertSame('Bar', $enumType->classOnly());
 
     $this->expectException(Exception::class);

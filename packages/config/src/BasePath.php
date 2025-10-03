@@ -25,7 +25,11 @@ class BasePath
      * @var string|null
      */
     private ?string $basePath = null;
-    private $detectionMethods = [
+
+    /**
+     * @var array<int, string>
+     */
+    private array $detectionMethods = [
         'getBasePathFromEnv',
         'getBasePathFromCwd',
         'getBasePathFromComposer',
@@ -86,6 +90,9 @@ class BasePath
 
     // INTERNAL //////////////////////////////////////////////////////////////////
 
+    /**
+     * @return Generator<int, string>
+     */
     private function detectionMethods(): Generator {
         yield from $this->detectionMethods;
     }
@@ -110,8 +117,17 @@ class BasePath
 
         // Try each method in sequence to determine the base path
         foreach ($this->detectionMethods() as $method) {
-            $result = $this->$method();
-            if ($result && $this->validateBasePath($result)) {
+            $result = match ($method) {
+                'getBasePathFromEnv' => $this->getBasePathFromEnv(),
+                'getBasePathFromCwd' => $this->getBasePathFromCwd(),
+                'getBasePathFromComposer' => $this->getBasePathFromComposer(),
+                'getBasePathFromServerVars' => $this->getBasePathFromServerVars(),
+                'getBasePathFromReflection' => $this->getBasePathFromReflection(),
+                'getBasePathFromFrameworkPatterns' => $this->getBasePathFromFrameworkPatterns(),
+                default => null,
+            };
+
+            if ($result !== null && $this->validateBasePath($result)) {
                 $this->basePath = $result;
                 return $this->makePath($path);
             }
@@ -138,6 +154,9 @@ class BasePath
      * @return string The full path
      */
     private function makePath(?string $path = null): string {
+        if ($this->basePath === null) {
+            throw new \RuntimeException('Base path is not set');
+        }
         return $path
             ? $this->basePath . DIRECTORY_SEPARATOR . ltrim($path, '/\\')
             : $this->basePath;
@@ -197,7 +216,7 @@ class BasePath
      */
     private function getBasePathFromCwd(): ?string {
         $cwd = getcwd();
-        if ($cwd && file_exists($cwd . '/composer.json')) {
+        if (is_string($cwd) && file_exists($cwd . '/composer.json')) {
             return $cwd;
         }
         return null;
@@ -213,7 +232,11 @@ class BasePath
             // Method 1: Use ClassLoader reflection
             if (class_exists(ClassLoader::class)) {
                 $reflection = new ReflectionClass(ClassLoader::class);
-                $vendorDir = dirname($reflection->getFileName(), 2);
+                $fileName = $reflection->getFileName();
+                if ($fileName === false) {
+                    return null;
+                }
+                $vendorDir = dirname($fileName, 2);
                 $baseDir = dirname($vendorDir);
 
                 if (file_exists($baseDir . '/composer.json')) {
@@ -278,7 +301,11 @@ class BasePath
 
         try {
             $reflection = new ReflectionClass(self::class);
-            $dir = dirname($reflection->getFileName());
+            $fileName = $reflection->getFileName();
+            if ($fileName === false) {
+                return null;
+            }
+            $dir = dirname($fileName);
 
             while ($dir !== dirname($dir)) {
                 foreach ($patterns as $pattern) {
@@ -303,7 +330,11 @@ class BasePath
     private function getBasePathFromReflection(): ?string {
         try {
             $reflection = new ReflectionClass(self::class);
-            $dir = dirname($reflection->getFileName());
+            $fileName = $reflection->getFileName();
+            if ($fileName === false) {
+                return null;
+            }
+            $dir = dirname($fileName);
 
             // Walk up directories until we find composer.json
             while (!file_exists($dir . '/composer.json')) {

@@ -24,8 +24,16 @@ class TypeDetailsFactory
         return match (true) {
             $typeString->isMixed() => $this->mixedType(),
             $typeString->isScalar() => $this->scalarType($typeString->firstType()),
-            $typeString->isEnumObject() => $this->enumType($typeString->firstType()),
-            $typeString->isObject() => $this->objectType($typeString->firstType()),
+            $typeString->isEnumObject() => (function() use ($typeString) {
+                /** @var class-string $enumClass */
+                $enumClass = $typeString->firstType();
+                return $this->enumType($enumClass);
+            })(),
+            $typeString->isObject() => (function() use ($typeString) {
+                /** @var class-string $objectClass */
+                $objectClass = $typeString->firstType();
+                return $this->objectType($objectClass);
+            })(),
             $typeString->isCollection() => $this->collectionType($typeString->itemType()),
             $typeString->isArray() => $this->arrayType(),
             default => throw new \Exception('Unknown type: ' . $typeSpec),
@@ -77,8 +85,16 @@ class TypeDetailsFactory
             ($normalized->isUntypedEnum()) => throw new \Exception('Enum type must have a class'),
             ($normalized->isCollection()) => $this->collectionType($anyType),
             ($normalized->isScalar()) => $this->scalarType($anyType),
-            ($normalized->isEnumObject()) => $this->enumType($normalized->className() ?? throw new \Exception('Enum class name is required')),
-            ($normalized->isObject()) => $this->objectType($anyType),
+            ($normalized->isEnumObject()) => (function() use ($normalized) {
+                /** @var class-string $enumClass */
+                $enumClass = $normalized->className() ?? throw new \Exception('Enum class name is required');
+                return $this->enumType($enumClass);
+            })(),
+            ($normalized->isObject()) => (function() use ($anyType) {
+                /** @var class-string $objectClass */
+                $objectClass = $anyType;
+                return $this->objectType($objectClass);
+            })(),
             ($normalized->isArray()) => $this->arrayType(),
             ($normalized->isMixed()) => $this->mixedType(),
             default => throw new \Exception('Unsupported type: ' . $anyType),
@@ -90,8 +106,8 @@ class TypeDetailsFactory
         $type = TypeString::fromString($typeName);
         return match (true) {
             $type->isScalar() => $this->scalarType($typeName),
-            $type->isObject() => $this->objectType(get_class($anyVar)),
-            $type->isEnumObject() => $this->enumType(get_class($anyVar)),
+            $type->isObject() => $this->objectType(get_class($anyVar) ?: throw new \Exception('Could not determine object class')),
+            $type->isEnumObject() => $this->enumType(get_class($anyVar) ?: throw new \Exception('Could not determine enum class')),
             is_array($anyVar) && empty($anyVar) => $this->arrayType(),
             $type->isArray() && $this->allItemsShareType($anyVar) => $this->collectionTypeStringFromValues($anyVar),
             $type->isArray() => $this->arrayType(),

@@ -187,17 +187,21 @@ it('creates Schema object from JSON Schema array - object props', function ($jso
     $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
-    expect($schema->properties['objectProperty']->name)->toBe('objectProperty');
-    expect($schema->properties['objectProperty']->description)->toBe('Object property');
-    expect($schema->properties['objectProperty']->typeDetails->type())->toBe('object');
-    expect($schema->properties['objectProperty']->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject');
-    expect($schema->properties['objectProperty']->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
-    expect($schema->properties['objectProperty']->properties['nestedStringProperty']->typeDetails->type())->toBe('string');
-    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->name)->toBe('nestedObjectProperty');
-    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->typeDetails->type())->toBe('object');
-    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestDoubleNestedObject');
-    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->properties['nestedNestedStringProperty']->name)->toBe('nestedNestedStringProperty');
-    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->properties['nestedNestedStringProperty']->typeDetails->type)->toBe('string');
+    /** @var \Cognesy\Schema\Data\Schema\ObjectSchema $objectProperty */
+    $objectProperty = $schema->properties['objectProperty'];
+    expect($objectProperty->name)->toBe('objectProperty');
+    expect($objectProperty->description)->toBe('Object property');
+    expect($objectProperty->typeDetails->type())->toBe('object');
+    expect($objectProperty->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject');
+    expect($objectProperty->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
+    expect($objectProperty->properties['nestedStringProperty']->typeDetails->type())->toBe('string');
+    /** @var \Cognesy\Schema\Data\Schema\ObjectSchema $nestedObjectProperty */
+    $nestedObjectProperty = $objectProperty->properties['nestedObjectProperty'];
+    expect($nestedObjectProperty->name)->toBe('nestedObjectProperty');
+    expect($nestedObjectProperty->typeDetails->type())->toBe('object');
+    expect($nestedObjectProperty->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestDoubleNestedObject');
+    expect($nestedObjectProperty->properties['nestedNestedStringProperty']->name)->toBe('nestedNestedStringProperty');
+    expect($nestedObjectProperty->properties['nestedNestedStringProperty']->typeDetails->type)->toBe('string');
 
 })->with('schema_converter_json');
 
@@ -215,25 +219,35 @@ it('creates Schema object from JSON Schema array - collection props', function (
     $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
-    expect($schema->properties['collectionProperty']->name)->toBe('collectionProperty');
-    expect($schema->properties['collectionProperty']->description)->toBe('Collection property');
-    expect($schema->properties['collectionProperty']->typeDetails->type)->toBe('collection');
-    expect($schema->properties['collectionProperty']->nestedItemSchema->typeDetails->type)->toBe('object');
-    expect($schema->properties['collectionProperty']->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\Simple');
-    expect($schema->properties['collectionObjectProperty']->name)->toBe('collectionObjectProperty');
-    expect($schema->properties['collectionObjectProperty']->description)->toBe('Collection of objects property');
-    expect($schema->properties['collectionObjectProperty']->typeDetails->type)->toBe('collection');
-    expect($schema->properties['collectionObjectProperty']->nestedItemSchema->typeDetails->type)->toBe('object');
-    expect($schema->properties['collectionObjectProperty']->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject');
-    expect($schema->properties['collectionObjectProperty']->nestedItemSchema->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
-    expect($schema->properties['collectionObjectProperty']->nestedItemSchema->properties['nestedStringProperty']->typeDetails->type)->toBe('string');
-    expect($schema->properties['collectionEnumProperty']->name)->toBe('collectionEnumProperty');
-    expect($schema->properties['collectionEnumProperty']->description)->toBe('Collection of enum property');
-    expect($schema->properties['collectionEnumProperty']->typeDetails->type)->toBe('collection');
-    expect($schema->properties['collectionEnumProperty']->nestedItemSchema->typeDetails->type)->toBe('enum');
-    expect($schema->properties['collectionEnumProperty']->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum');
-    expect($schema->properties['collectionEnumProperty']->nestedItemSchema->typeDetails->enumType)->toBe('string');
-    expect($schema->properties['collectionEnumProperty']->nestedItemSchema->typeDetails->enumValues)->toBe(['one', 'two', 'three']);
+    /** @var \Cognesy\Schema\Data\Schema\CollectionSchema $collectionProperty */
+    $collectionProperty = $schema->properties['collectionProperty'];
+    expect($collectionProperty->name)->toBe('collectionProperty');
+    expect($collectionProperty->description)->toBe('Collection property');
+    expect($collectionProperty->typeDetails->type)->toBe('collection');
+    expect($collectionProperty->nestedItemSchema->typeDetails->type)->toBe('object');
+    expect($collectionProperty->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\Simple');
+
+    /** @var \Cognesy\Schema\Data\Schema\CollectionSchema $collectionObjectProperty */
+    $collectionObjectProperty = $schema->properties['collectionObjectProperty'];
+    expect($collectionObjectProperty->name)->toBe('collectionObjectProperty');
+    expect($collectionObjectProperty->description)->toBe('Collection of objects property');
+    expect($collectionObjectProperty->typeDetails->type)->toBe('collection');
+    expect($collectionObjectProperty->nestedItemSchema->typeDetails->type)->toBe('object');
+    expect($collectionObjectProperty->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestNestedObject');
+    /** @var \Cognesy\Schema\Data\Schema\ObjectSchema $nestedObject */
+    $nestedObject = $collectionObjectProperty->nestedItemSchema;
+    expect($nestedObject->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
+    expect($nestedObject->properties['nestedStringProperty']->typeDetails->type)->toBe('string');
+
+    /** @var \Cognesy\Schema\Data\Schema\CollectionSchema $collectionEnumProperty */
+    $collectionEnumProperty = $schema->properties['collectionEnumProperty'];
+    expect($collectionEnumProperty->name)->toBe('collectionEnumProperty');
+    expect($collectionEnumProperty->description)->toBe('Collection of enum property');
+    expect($collectionEnumProperty->typeDetails->type)->toBe('collection');
+    expect($collectionEnumProperty->nestedItemSchema->typeDetails->type)->toBe('enum');
+    expect($collectionEnumProperty->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\TestEnum');
+    expect($collectionEnumProperty->nestedItemSchema->typeDetails->enumType)->toBe('string');
+    expect($collectionEnumProperty->nestedItemSchema->typeDetails->enumValues)->toBe(['one', 'two', 'three']);
 })->with('schema_converter_json');
 
 it('creates object schema with empty properties array', function () {

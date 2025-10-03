@@ -33,6 +33,9 @@ trait HandlesFactoryMethods
         return new ArraySchema(TypeDetails::array(), $name, $description);
     }
 
+    /**
+     * @param class-string $class
+     */
     public function object(string $class, string $name = '', string $description = '', array $properties = [], array $required = []): ObjectSchema {
         $classInfo = ClassInfo::fromString($class);
         $properties = $properties ?: $this->getPropertySchemas($classInfo);
@@ -42,6 +45,9 @@ trait HandlesFactoryMethods
         return new ObjectSchema(TypeDetails::object($class), $name, $description, $properties, $required);
     }
 
+    /**
+     * @param class-string $class
+     */
     public function enum(string $class, string $name = '', string $description = ''): EnumSchema {
         return new EnumSchema(TypeDetails::enum($class), $name, $description);
     }

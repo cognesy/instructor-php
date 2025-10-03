@@ -8,10 +8,10 @@ class Commit
 {
     protected GitService $gitService;
     protected string $hash;
-    protected string $message;
-    protected string $author;
-    protected DateTime $date;
-    protected string $diff;
+    protected ?string $message = null;
+    protected ?string $author = null;
+    protected ?DateTime $date = null;
+    protected ?string $diff = null;
 
     public function __construct(
         string $hash,
@@ -26,7 +26,7 @@ class Commit
     }
 
     public function author(): string {
-        if (!isset($this->author)) {
+        if ($this->author === null) {
             $author = $this->gitService->runCommand(sprintf('log -1 --pretty=format:%%an %%ae %s', escapeshellarg($this->hash)));
             $this->author = $author;
         }
@@ -34,7 +34,7 @@ class Commit
     }
 
     public function message(): string {
-        if (!isset($this->message)) {
+        if ($this->message === null) {
             $message = $this->gitService->runCommand(sprintf('log -1 --pretty=format:%%B %s', escapeshellarg($this->hash)));
             $this->message = $message;
         }
@@ -42,7 +42,7 @@ class Commit
     }
 
     public function date(): DateTime {
-        if (!isset($this->date)) {
+        if ($this->date === null) {
             $date = $this->gitService->runCommand(sprintf('log -1 --pretty=format:%%ad %s', escapeshellarg($this->hash)));
             $this->date = new DateTime($date);
         }

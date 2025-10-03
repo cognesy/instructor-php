@@ -159,16 +159,16 @@ class InferenceRequest
     public function hasTextResponseFormat() : bool {
         if (!$this->hasResponseFormat()) return false;
         $ownType = !$this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext?->responseFormat()->isEmpty();
-        $cachedType = $hasCached ? $this->cachedContext?->responseFormat()->type() : null;
+        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
+        $cachedType = $hasCached ? $this->cachedContext->responseFormat()->type() : null;
         return $ownType === 'text' || $cachedType === 'text';
     }
 
     public function hasNonTextResponseFormat() : bool {
         if (!$this->hasResponseFormat()) return false;
         $ownType = !$this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext?->responseFormat()->isEmpty();
-        $cachedType = $hasCached ? $this->cachedContext?->responseFormat()->type() : null;
+        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
+        $cachedType = $hasCached ? $this->cachedContext->responseFormat()->type() : null;
         return ($ownType !== null && $ownType !== 'text') || ($cachedType !== null && $cachedType !== 'text');
     }
 

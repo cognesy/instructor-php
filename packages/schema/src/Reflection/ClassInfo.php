@@ -8,6 +8,7 @@ use Exception;
 use ReflectionClass;
 
 class ClassInfo {
+    /** @var class-string */
     protected string $class;
     protected ReflectionClass $reflectionClass;
     protected array $propertyInfos = [];

@@ -97,6 +97,7 @@ class StructuredOutput
      * @param string|null $retryPrompt The prompt to be used during retries.
      * @param OutputMode|null $mode The mode of operation for the request.
      * @return StructuredOutput<TResponse>
+     * @phpstan-ignore-next-line
      */
     public function with(
         string|array|Message|Messages|null $messages = null,
@@ -181,7 +182,7 @@ class StructuredOutput
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,
             responseTransformer: $responseTransformer,
-            llmProvider: $this->llmProvider,
+            llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
             events: $this->events,
             httpClient: $client,
         );

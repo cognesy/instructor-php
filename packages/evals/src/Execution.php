@@ -30,6 +30,7 @@ class Execution
         TokenUsageObserver::class,
     ];
 
+    /** @phpstan-ignore-next-line */
     private CanRunExecution $action;
     private array $processors = [];
     private array $postprocessors = [];
@@ -38,6 +39,7 @@ class Execution
     private ?DateTime $startedAt = null;
     private float $timeElapsed = 0.0;
     private Usage $usage;
+    /** @var DataMap<string, mixed> */
     private DataMap $data;
 
     private ?Exception $exception = null;
@@ -51,7 +53,6 @@ class Execution
     ) {
         $this->events = $events;
         $this->id = Uuid::uuid4();
-        /** @var DataMap<string, mixed> */
         $this->data = new DataMap();
         $this->data->set('case', $case);
         $this->usage = Usage::none();
@@ -60,6 +61,9 @@ class Execution
     // PUBLIC /////////////////////////////////////////////////////////
 
     public function execute() : void {
+        if (!isset($this->action)) {
+            throw new \RuntimeException('Executor must be set via withExecutor() before calling execute()');
+        }
         $this->startedAt = new DateTime();
         $time = microtime(true);
         try {

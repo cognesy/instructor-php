@@ -44,12 +44,18 @@ class SelectObservations
         );
     }
 
+    /**
+     * @param callable(\Cognesy\Evals\Observation):bool $callback
+     */
     public function filter(callable $callback) : self {
         return new SelectObservations(
             array_filter($this->observations, $callback)
         );
     }
 
+    /**
+     * @param callable(\Cognesy\Evals\Observation,\Cognesy\Evals\Observation):int $callback
+     */
     public function sort(callable $callback) : self {
         $observations = $this->observations;
         usort($observations, $callback);

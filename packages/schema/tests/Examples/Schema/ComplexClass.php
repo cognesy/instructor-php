@@ -5,31 +5,36 @@ namespace Cognesy\Schema\Tests\Examples\Schema;
 class ComplexClass
 {
     /** is a bool var */
-    public bool $boolVarWithDescription;
-    public int $integerVar;
-    public float $floatVar;
+    public bool $boolVarWithDescription = false;
+    public int $integerVar = 0;
+    public float $floatVar = 0.0;
     /** information about string */
-    public string $stringVarWithDescription;
-    public IntEnum $integerEnumVar;
-    public ?IntEnum $optionalIntegerEnumVar;
-    public StringEnum $stringEnumVar;
-    public ?StringEnum $optionalStringEnumVar;
+    public string $stringVarWithDescription = '';
+    public IntEnum $integerEnumVar = IntEnum::Case1;
+    public ?IntEnum $optionalIntegerEnumVar = null;
+    public StringEnum $stringEnumVar = StringEnum::CaseA;
+    public ?StringEnum $optionalStringEnumVar = null;
     /** description of $simpleObject property */
     public SimpleClass $simpleObject;
-    public ?SimpleClass $optionalSimpleObject;
+    public ?SimpleClass $optionalSimpleObject = null;
     /** @var string[] */
-    public array $arrayOfStrings;
+    public array $arrayOfStrings = [];
     /** @var int[] */
-    public array $arrayOfInts;
+    public array $arrayOfInts = [];
     /** @var float[] */
-    public array $arrayOfFloats;
+    public array $arrayOfFloats = [];
     /** @var bool[] */
-    public array $arrayOfBools;
+    public array $arrayOfBools = [];
     /** @var StringEnum[] */
-    public array $arrayOfStringEnums;
+    public array $arrayOfStringEnums = [];
     /** @var IntEnum[] */
-    public array $arrayOfIntEnums;
+    public array $arrayOfIntEnums = [];
     /** @var SimpleClass[] description of array of SimpleClass */
-    public array $arrayOfSimpleObjects;
+    public array $arrayOfSimpleObjects = [];
+
+    public function __construct(SimpleClass $simpleObject)
+    {
+        $this->simpleObject = $simpleObject;
+    }
 }
 

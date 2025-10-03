@@ -8,10 +8,10 @@ use Cognesy\Schema\Attributes\Description;
 class BooleanCorrectnessAnalysis
 {
     #[Description("Step by step assessment of the expected versus actual results.")]
-    public string $assessment;
+    public string $assessment = '';
     #[Description("Decision if the actual result is correct.")]
-    public bool $isCorrect;
+    public bool $isCorrect = false;
     #[Description("If the result is incorrect - list of individual issues found in the actual result considering the expected values. Otherwise empty.")]
     /** @var \Cognesy\Evals\Feedback\FeedbackItem[] */
-    public array $feedback;
+    public array $feedback = [];
 }

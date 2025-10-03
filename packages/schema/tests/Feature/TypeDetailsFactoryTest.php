@@ -76,6 +76,7 @@ test('creates TypeDetails for object type', function () {
 });
 
 test('creates TypeDetails for enum type', function () {
+    /** @var class-string $enumClassName */
     $enumClassName = 'Cognesy\Schema\Tests\Examples\Schema\StringEnum';
     $enumType = TypeDetails::enum($enumClassName);
     $this->assertInstanceOf(TypeDetails::class, $enumType);
@@ -84,5 +85,7 @@ test('creates TypeDetails for enum type', function () {
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Cannot create ClassInfo for `UnknownEnum`');
-    TypeDetails::enum('UnknownEnum');
+    /** @var class-string $invalidEnum */
+    $invalidEnum = 'UnknownEnum';
+    TypeDetails::enum($invalidEnum);
 });

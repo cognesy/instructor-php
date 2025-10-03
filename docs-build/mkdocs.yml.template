@@ -1,0 +1,392 @@
+site_name: Instructor for PHP
+site_author: Dariusz Debowczyk
+site_description: A lightweight library for structured outputs with LLMs.
+repo_name: instructor-php
+repo_url: https://github.com/cognesy/instructor-php
+site_url: https://cognesy.github.io/instructor-php/
+edit_uri: edit/main/docs-mkdocs/
+copyright: Copyright &copy; 2024 Dariusz Debowczyk
+
+# Custom directories
+docs_dir: 'docs-mkdocs'    # Use docs-mkdocs as source directory
+site_dir: 'docs-site'      # Output built HTML to docs-site/
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  palette:
+      - scheme: default
+        primary: black
+        accent: indigo
+        toggle:
+          icon: material/brightness-7
+          name: Switch to dark mode
+      - scheme: slate
+        primary: black
+        accent: indigo
+        toggle:
+          icon: material/brightness-4
+          name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: cognesy
+      repo: instructor-php
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+# Navigation structure - generator will fill in existing files
+nav:
+  - Home:
+    - index.md
+    - Philosophy: instructor/misc/philosophy.md
+    - Contributing: instructor/misc/contributing.md
+    - Help: instructor/misc/help.md
+    - LLM API Providers: instructor/misc/llm_providers.md
+    - Changelog Overview: release-notes/versions.md
+  - Instructor:
+    - Introduction: instructor/introduction.md
+    - Quickstart: instructor/quickstart.md
+    - Setup: instructor/setup.md
+    - Upgrading Instructor: instructor/upgrade.md
+    - CLI Tools: instructor/cli_tools.md
+    - Concepts:
+      - Overview: instructor/concepts/overview.md
+      - Why use Instructor?: instructor/concepts/why.md
+    - Essentials:
+      - Usage: instructor/essentials/usage.md
+      - Modes: instructor/essentials/modes.md
+      - Data model: instructor/essentials/data_model.md
+      - Scalars: instructor/essentials/scalars.md
+      - Validation: instructor/essentials/validation.md
+      - Customize prompts: instructor/essentials/customize_prompts.md
+      - Demonstrations: instructor/essentials/demonstrations.md
+    - Advanced Features:
+      - Model options: instructor/advanced/model_options.md
+      - Partials: instructor/advanced/partials.md
+      - Sequences: instructor/advanced/sequences.md
+      - Structures: instructor/advanced/structures.md
+      - Structure to structure: instructor/advanced/structure-to-structure.md
+      - Prompt Templates: instructor/advanced/prompts.md
+      - Function calls: instructor/advanced/function_calls.md
+    - Practical Techniques:
+      - Prompting: instructor/techniques/prompting.md
+      - Classification: instructor/techniques/classification.md
+      - Search: instructor/techniques/search.md
+    - Internals:
+      - Instructor: instructor/internals/instructor.md
+      - Lifecycle: instructor/internals/lifecycle.md
+      - Response Models: instructor/internals/response_models.md
+      - Debugging: instructor/internals/debugging.md
+      - Events: instructor/internals/events.md
+      - Environment: instructor/internals/environment.md
+      - Configuration Path: instructor/internals/configuration_path.md
+      - Config files: instructor/internals/config_files.md
+      - Settings class: instructor/internals/settings_class.md
+  - Polyglot:
+    - Overview: polyglot/overview.md
+    - Quickstart: polyglot/quickstart.md
+    - Setup: polyglot/setup.md
+    - Essentials:
+      - Overview of Inference: polyglot/essentials/overview.md
+      - Creating Requests: polyglot/essentials/creating-requests.md
+      - Response Handling: polyglot/essentials/response-handling.md
+      - Inference Class: polyglot/essentials/inference-class.md
+      - Request Options: polyglot/essentials/request-options.md
+    - Streaming:
+      - Overview of Streaming: polyglot/streaming/overview.md
+      - Advanced Stream Processing: polyglot/streaming/misc.md
+    - Embeddings:
+      - Overview of Embeddings: polyglot/embeddings/overview.md
+      - Working with Embeddings: polyglot/embeddings/work-with-embeddings.md
+      - Optimization: polyglot/embeddings/optimization.md
+    - Output Modes:
+      - Overview of Output Modes: polyglot/modes/overview.md
+      - Text Mode: polyglot/modes/text.md
+      - JSON Mode: polyglot/modes/json.md
+      - JSON Schema Mode: polyglot/modes/json-schema.md
+      - MdJSON Mode: polyglot/modes/md-json.md
+      - Tools Mode: polyglot/modes/tools.md
+    - Advanced:
+      - Structured outputs with JsonSchema class: polyglot/advanced/json-schema.md
+      - Context Caching: polyglot/advanced/context-caching.md
+      - Preset Management: polyglot/advanced/connection-mgmt.md
+      - Configuration Deep Dive: polyglot/advanced/custom-config.md
+      - Customizing HTTP Client: polyglot/advanced/custom-http-client.md
+      - Extending Polyglot: polyglot/advanced/extending.md
+    - Troubleshooting:
+      - Overview of Troubleshooting: polyglot/troubleshooting/overview.md
+      - Authentication: polyglot/troubleshooting/issues-authentication.md
+      - Connection Issues: polyglot/troubleshooting/issues-connection.md
+      - Streaming: polyglot/troubleshooting/issues-streaming.md
+      - Rate Limits: polyglot/troubleshooting/issues-rate-limits.md
+      - Model-Specific Issues: polyglot/troubleshooting/issues-model-specific.md
+      - Provider-Specific Issues: polyglot/troubleshooting/issues-provider-specific.md
+      - Connection Configurations: polyglot/troubleshooting/issues-configuration.md
+      - Debugging Requests and Responses: polyglot/troubleshooting/debugging.md
+    - Internals:
+      - Overview of Architecture: polyglot/internals/overview.md
+      - Public API Layer: polyglot/internals/public-api.md
+      - Request and Response Objects: polyglot/internals/request-response.md
+      - Request/Response Lifecycle: polyglot/internals/lifecycle.md
+      - Provider Abstraction Layer: polyglot/internals/providers.md
+      - Adapters: polyglot/internals/adapters.md
+      - HTTP Client Layer: polyglot/internals/http-client.md
+      - Configuration Layer: polyglot/internals/configuration.md
+      - Events System: polyglot/internals/events.md
+  - HTTP Client:
+    - Overview: http/1-overview.md
+    - Getting Started: http/2-getting-started.md
+    - Making Requests: http/3-making-requests.md
+    - Handling Responses: http/4-handling-responses.md
+    - Streaming Responses: http/5-streaming-responses.md
+    - Changing Client: http/7-changing-client.md
+    - Changing Client Config: http/8-changing-client-config.md
+    - Custom Clients: http/9-1-custom-clients.md
+    - Middleware: http/10-middleware.md
+    - Processing with Middleware: http/11-processing-with-middleware.md
+    - Troubleshooting: http/12-troubleshooting.md
+  - Cookbook:
+    - Introduction: cookbook/introduction.md
+    - Contributing: cookbook/contributing.md
+    - Instructor:
+      - Basics:
+        - Basic Use: cookbook/instructor/basics/basic_use.md
+        - Constructor Parameters: cookbook/instructor/basics/constructor_parameters.md
+        - Getters and Setters: cookbook/instructor/basics/getters_and_setters.md
+        - Public vs Private Fields: cookbook/instructor/basics/public_vs_private.md
+        - Using Attributes: cookbook/instructor/basics/attributes.md
+        - Fluent API: cookbook/instructor/basics/fluent_api.md
+        - Maybe Type: cookbook/instructor/basics/maybe.md
+        - Messages API: cookbook/instructor/basics/messages_api.md
+        - Mixed Type Property: cookbook/instructor/basics/mixed_type_property.md
+        - Response Modes: cookbook/instructor/basics/modes.md
+        - Optional Fields: cookbook/instructor/basics/optional_fields.md
+        - Self Correction: cookbook/instructor/basics/self_correction.md
+        - Using Config: cookbook/instructor/basics/using_config.md
+        - Validation: cookbook/instructor/basics/validation.md
+        - Custom Validation: cookbook/instructor/basics/custom_validation.md
+        - Validation Mixin: cookbook/instructor/basics/validation_multifield.md
+        - Validation with LLM: cookbook/instructor/basics/validation_with_llm.md
+        - Using Mixin: cookbook/instructor/basics/basic_use_mixin.md
+      - Advanced:
+        - Config Providers: cookbook/instructor/advanced/config_providers.md
+        - Context Caching: cookbook/instructor/advanced/context_cache_structured.md
+        - Custom Client Parameters: cookbook/instructor/advanced/custom_config.md
+        - Custom HTTP Client: cookbook/instructor/advanced/custom_http_client.md
+        - Custom HTTP Client Laravel: cookbook/instructor/advanced/custom_http_client_laravel.md
+        - Custom Prompts: cookbook/instructor/advanced/custom_prompts.md
+        - DSN Configuration: cookbook/instructor/advanced/custom_llm_with_dsn.md
+        - Function Calls: cookbook/instructor/advanced/function_calls.md
+        - Logging Monolog: cookbook/instructor/advanced/logging_monolog.md
+        - Logging PSR: cookbook/instructor/advanced/logging_psr.md
+        - Partial Updates: cookbook/instructor/advanced/partials.md
+        - Providing Examples: cookbook/instructor/advanced/demonstrations.md
+        - Scalars: cookbook/instructor/advanced/scalars.md
+        - Sequences: cookbook/instructor/advanced/sequences.md
+        - Streaming: cookbook/instructor/advanced/streaming.md
+        - Structures: cookbook/instructor/advanced/structures.md
+      - API Support:
+        - A21: cookbook/instructor/api_support/a21.md
+        - Anthropic: cookbook/instructor/api_support/anthropic.md
+        - Azure OpenAI: cookbook/instructor/api_support/azure_openai.md
+        - Cerebras: cookbook/instructor/api_support/cerebras.md
+        - Cohere: cookbook/instructor/api_support/cohere.md
+        - DeepSeek: cookbook/instructor/api_support/deepseek.md
+        - Fireworks AI: cookbook/instructor/api_support/fireworks.md
+        - Google Gemini: cookbook/instructor/api_support/google_gemini.md
+        - Google Gemini OpenAI: cookbook/instructor/api_support/google_gemini_oai.md
+        - Groq: cookbook/instructor/api_support/groq.md
+        - HuggingFace: cookbook/instructor/api_support/huggingface.md
+        - Meta: cookbook/instructor/api_support/meta.md
+        - Minimaxi: cookbook/instructor/api_support/minimaxi.md
+        - Mistral AI: cookbook/instructor/api_support/mistralai.md
+        - Moonshot AI: cookbook/instructor/api_support/moonshotai.md
+        - Ollama: cookbook/instructor/api_support/ollama.md
+        - OpenAI: cookbook/instructor/api_support/openai.md
+        - OpenRouter: cookbook/instructor/api_support/openrouter.md
+        - Perplexity: cookbook/instructor/api_support/perplexity.md
+        - SambaNova: cookbook/instructor/api_support/sambanova.md
+        - Together AI: cookbook/instructor/api_support/togetherai.md
+        - xAI: cookbook/instructor/api_support/xai.md
+      - Extras:
+        - Complex Extraction: cookbook/instructor/extras/complex_extraction.md
+        - Complex Extraction Claude: cookbook/instructor/extras/complex_extraction_claude.md
+        - Complex Extraction Cohere: cookbook/instructor/extras/complex_extraction_cohere.md
+        - Complex Extraction Gemini: cookbook/instructor/extras/complex_extraction_gemini.md
+        - Structured Input: cookbook/instructor/extras/structured_input.md
+        - Image Car Damage: cookbook/instructor/extras/image_car_damage.md
+        - Image to Data: cookbook/instructor/extras/image_to_data.md
+        - Image to Data Anthropic: cookbook/instructor/extras/image_to_data_anthropic.md
+        - Image to Data Gemini: cookbook/instructor/extras/image_to_data_gemini.md
+        - Schema: cookbook/instructor/extras/schema.md
+        - Dynamic Schema: cookbook/instructor/extras/schema_dynamic.md
+        - Transcription to Tasks: cookbook/instructor/extras/transcription_to_tasks.md
+        - Translate UI Fields: cookbook/instructor/extras/translate_ui_fields.md
+        - Web to Objects: cookbook/instructor/extras/web_to_objects.md
+      - Troubleshooting:
+        - Debugging: cookbook/instructor/troubleshooting/debugging.md
+        - Event Handling: cookbook/instructor/troubleshooting/on_event.md
+        - Settings: cookbook/instructor/troubleshooting/settings.md
+        - Token Usage: cookbook/instructor/troubleshooting/token_usage_events.md
+        - Wiretap: cookbook/instructor/troubleshooting/wiretap.md
+    - Polyglot:
+      - LLM Basics:
+        - Basic LLM Use: cookbook/polyglot/llm_basics/inference.md
+        - JSON Mode: cookbook/polyglot/llm_basics/llm_json.md
+        - JSON Schema Mode: cookbook/polyglot/llm_basics/llm_json_schema.md
+        - MdJSON Mode: cookbook/polyglot/llm_basics/llm_md_json.md
+        - Tools Mode: cookbook/polyglot/llm_basics/llm_tools.md
+        - JSON Schema API: cookbook/polyglot/llm_basics/json_schema_api.md
+      - LLM Advanced:
+        - Config Providers: cookbook/polyglot/llm_advanced/config_providers.md
+        - Context Caching: cookbook/polyglot/llm_advanced/context_cache_llm.md
+        - Custom Configuration: cookbook/polyglot/llm_advanced/custom_config.md
+        - Custom Embeddings Driver: cookbook/polyglot/llm_advanced/custom_embeddings_config.md
+        - Custom LLM Driver: cookbook/polyglot/llm_advanced/custom_llm_driver.md
+        - DSN Configuration: cookbook/polyglot/llm_advanced/custom_llm_via_dsn.md
+        - Embed Utils: cookbook/polyglot/llm_advanced/embed_utils.md
+        - Embeddings: cookbook/polyglot/llm_advanced/embeddings.md
+        - HTTP Client: cookbook/polyglot/llm_advanced/http_client.md
+        - Parallel Calls: cookbook/polyglot/llm_advanced/parallel_calls.md
+        - Reasoning Content: cookbook/polyglot/llm_advanced/reasoning_content.md
+      - LLM API Support:
+        - A21: cookbook/polyglot/llm_api_support/a21.md
+        - Anthropic: cookbook/polyglot/llm_api_support/anthropic.md
+        - Azure OpenAI: cookbook/polyglot/llm_api_support/azure_openai.md
+        - Cerebras: cookbook/polyglot/llm_api_support/cerebras.md
+        - Cohere: cookbook/polyglot/llm_api_support/cohere.md
+        - DeepSeek: cookbook/polyglot/llm_api_support/deepseek.md
+        - Fireworks AI: cookbook/polyglot/llm_api_support/fireworks.md
+        - Google Gemini: cookbook/polyglot/llm_api_support/google_gemini.md
+        - Groq: cookbook/polyglot/llm_api_support/groq.md
+        - Meta: cookbook/polyglot/llm_api_support/meta.md
+        - Minimaxi: cookbook/polyglot/llm_api_support/minimaxi.md
+        - Mistral AI: cookbook/polyglot/llm_api_support/mistralai.md
+        - Moonshot AI: cookbook/polyglot/llm_api_support/moonshotai.md
+        - Ollama: cookbook/polyglot/llm_api_support/ollama.md
+        - OpenAI: cookbook/polyglot/llm_api_support/openai.md
+        - OpenRouter: cookbook/polyglot/llm_api_support/openrouter.md
+        - Perplexity: cookbook/polyglot/llm_api_support/perplexity.md
+        - SambaNova: cookbook/polyglot/llm_api_support/sambanova.md
+        - Together AI: cookbook/polyglot/llm_api_support/togetherai.md
+        - xAI: cookbook/polyglot/llm_api_support/xai.md
+      - LLM Extras:
+        - Chat with Summary: cookbook/polyglot/llm_extras/chat_with_summary.md
+        - Image Processing: cookbook/polyglot/llm_extras/image_data.md
+        - Prompt Templates: cookbook/polyglot/llm_extras/prompt_templates.md
+        - Summary with LLM: cookbook/polyglot/llm_extras/summary_with_llm.md
+        - Tool Use: cookbook/polyglot/llm_extras/tool_use.md
+      - LLM Troubleshooting:
+        - HTTP Debug: cookbook/polyglot/llm_troubleshooting/http_debug.md
+    - Prompting:
+      - Zero Shot:
+        - Assign Role: cookbook/prompting/zero_shot/assign_role.md
+        - Auto Refine: cookbook/prompting/zero_shot/auto_refine.md
+        - Clarify Ambiguity: cookbook/prompting/zero_shot/clarify_ambiguity.md
+        - Define Style: cookbook/prompting/zero_shot/define_style.md
+        - Emotional Stimuli: cookbook/prompting/zero_shot/emotional_stimuli.md
+        - Follow Up Questions: cookbook/prompting/zero_shot/follow_up_questions.md
+        - Repeat Query: cookbook/prompting/zero_shot/repeat_query.md
+        - Simulate Perspective: cookbook/prompting/zero_shot/simulate_perspective.md
+      - Few Shot:
+        - In Context Examples: cookbook/prompting/few_shot/in_context_examples.md
+      - Thought Generation:
+        - Analogical Prompting: cookbook/prompting/thought_gen/analogical_prompting.md
+      - Miscellaneous:
+        - Arbitrary Properties: cookbook/prompting/misc/arbitrary_properties.md
+        - Arbitrary Properties Consistent: cookbook/prompting/misc/arbitrary_properties_consistent.md
+        - Chain of Summaries: cookbook/prompting/misc/chain_of_summaries.md
+        - Chain of Thought: cookbook/prompting/misc/chain_of_thought.md
+        - Classification: cookbook/prompting/misc/classification.md
+        - Classification Multiclass: cookbook/prompting/misc/classification_multiclass.md
+        - Component Reuse: cookbook/prompting/misc/component_reuse.md
+        - Component Reuse CoT: cookbook/prompting/misc/component_reuse_cot.md
+        - Entity Relationships: cookbook/prompting/misc/entity_relationships.md
+        - Handling Errors: cookbook/prompting/misc/handling_errors.md
+        - Limiting Lists: cookbook/prompting/misc/limiting_lists.md
+        - Reflection Prompting: cookbook/prompting/misc/reflection_prompting.md
+        - Restate Instructions: cookbook/prompting/misc/restate_instructions.md
+        - Rewrite Instructions: cookbook/prompting/misc/rewrite_instructions.md
+        - Search Query Expansion: cookbook/prompting/misc/search_query_expansion.md
+        - Summary with Keywords: cookbook/prompting/misc/summary_with_keywords.md
+
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+#  - minify:
+#      minify_html: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/ddebowczyk
+    - icon: fontawesome/brands/github
+      link: https://github.com/cognesy

@@ -4,16 +4,16 @@ namespace Cognesy\Schema\Tests\Examples\Schema;
 
 class NestedClass
 {
-    public int $nestedIntVar;
-    public float $nestedFloatVar;
-    public string $nestedStringVar;
-    public StringEnum $nestedStringEnumVar;
+    public int $nestedIntVar = 0;
+    public float $nestedFloatVar = 0.0;
+    public string $nestedStringVar = '';
+    public StringEnum $nestedStringEnumVar = StringEnum::CaseA;
     /** @var string[] */
-    public array $nestedArrayOfStrings;
+    public array $nestedArrayOfStrings = [];
     /** @var bool[] */
-    public array $nestedArrayOfBools;
+    public array $nestedArrayOfBools = [];
     /** @var int[] */
-    public array $nestedArrayOfIntegers;
+    public array $nestedArrayOfIntegers = [];
     /** @var IntEnum[] */
-    public array $nestedArrayOfIntegerEnums;
+    public array $nestedArrayOfIntegerEnums = [];
 }

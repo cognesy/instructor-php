@@ -8,7 +8,8 @@ use Cognesy\Utils\Str;
 
 class AnthropicMessageFormat implements CanMapMessages
 {
-    private $roles = [
+    /** @var array<string, string> */
+    private array $roles = [
         'user' => 'user',
         'assistant' => 'assistant',
         'system' => 'user',

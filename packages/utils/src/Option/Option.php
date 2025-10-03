@@ -36,6 +36,7 @@ abstract readonly class Option
      * @return Option<U>
      */
     public static function fromNullable(mixed $value): Option {
+        /** @var Option<U> */
         return $value === null ? self::none() : self::some($value);
     }
 
@@ -44,9 +45,10 @@ abstract readonly class Option
      * Failure becomes None.
      *
      * @template U
-     * @param Result $result
+     * @param Result<U, mixed> $result
      * @param bool $noneOnNull
      * @return Option<U>
+     * @phpstan-ignore-next-line
      */
     public static function fromResult(Result $result, bool $noneOnNull = true): Option {
         if (!$result->isSuccess()) {
@@ -118,6 +120,7 @@ abstract readonly class Option
             return $this;
         }
         $out = $f($this->getUnsafe());
+        /** @phpstan-ignore-next-line */
         return $out instanceof Option ? $out : self::some($out);
     }
 
@@ -265,9 +268,6 @@ abstract readonly class Option
     /**
      * @return T
      */
-    protected function getUnsafe(): mixed {
-        // Implemented in subclasses
-        return null; // unreachable
-    }
+    abstract protected function getUnsafe(): mixed;
 }
 

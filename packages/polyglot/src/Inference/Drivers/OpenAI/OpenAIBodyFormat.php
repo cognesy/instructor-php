@@ -79,30 +79,24 @@ class OpenAIBodyFormat implements CanMapRequestBody
     // INTERNAL ///////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Json:
-                $result = ['type' => 'json_object'];
-                break;
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = ['type' => 'text'];
-                break;
-            case OutputMode::JsonSchema:
-                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
-                $result = [
-                    'type' => 'json_schema',
-                    'json_schema' => [
-                        'name' => $schemaName,
-                        'schema' => $schema,
-                        'strict' => $schemaStrict,
-                    ],
-                ];
-                break;
-            default:
-                $result = [];
+        if (!$request->hasResponseFormat()) {
+            return [];
         }
 
+        $mode = $request->outputMode();
+        // OpenAI API supports: json_object, json_schema, text
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
+            ->withToJsonSchemaHandler(fn() => [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $request->responseFormat()->schemaName(),
+                    'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                    'strict' => $request->responseFormat()->strict(),
+                ],
+            ]);
+
+        $result = $responseFormat->as($mode);
         return $this->filterEmptyValues($result);
     }
 
@@ -152,7 +146,9 @@ class OpenAIBodyFormat implements CanMapRequestBody
 
     protected function toSchemaData(InferenceRequest $request) : array {
         $responseFormat = $request->responseFormat();
-        assert($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat);
+        if (!($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat)) {
+            return [];
+        }
         return [
             $responseFormat->schemaFilteredWith($this->removeDisallowedEntries(...)),
             $responseFormat->schemaName(),
@@ -172,7 +168,9 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         $responseFormat = $request->responseFormat();
-        assert($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat);
+        if (!($responseFormat instanceof \Cognesy\Polyglot\Inference\Data\ResponseFormat)) {
+            return null;
+        }
         $type = $responseFormat->type();
         return match($type) {
             'json' => OutputMode::Json,

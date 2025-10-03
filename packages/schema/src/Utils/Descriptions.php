@@ -19,12 +19,18 @@ class Descriptions
 {
     private function __construct() {}
 
+    /**
+     * @param class-string $class
+     */
     public static function forClass(
         string $class,
     ): string {
         return (new self)->makeClassDescription($class);
     }
 
+    /**
+     * @param class-string $class
+     */
     public static function forProperty(
         string $class,
         string $propertyName,
@@ -38,6 +44,9 @@ class Descriptions
         return (new self)->makeFunctionDescription($functionName);
     }
 
+    /**
+     * @param class-string $class
+     */
     public static function forMethod(
         string $class,
         string $methodName,
@@ -45,6 +54,9 @@ class Descriptions
         return (new self)->makeMethodDescriptions($class, $methodName);
     }
 
+    /**
+     * @param class-string $class
+     */
     public static function forMethodParameter(
         string $class,
         string $methodName,
@@ -92,6 +104,9 @@ class Descriptions
         return trim(implode('\n', array_filter($descriptions)));
     }
 
+    /**
+     * @param class-string $class
+     */
     private function makePropertyDescriptions(string $class, string $propertyName): string {
         $reflection = new ReflectionProperty($class, $propertyName);
         $extractor = $this->makeExtractor();
@@ -150,6 +165,9 @@ class Descriptions
         return trim(implode('\n', array_filter($descriptions)));
     }
 
+    /**
+     * @param class-string $class
+     */
     private function makeMethodDescriptions(
         string $class,
         string $methodName,

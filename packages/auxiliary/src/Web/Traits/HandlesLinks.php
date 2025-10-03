@@ -23,10 +23,7 @@ trait HandlesLinks
     }
 
     public function links() : array {
-        if (!property_exists($this, 'content')) {
-            return [];
-        }
-        if (!property_exists($this, 'links')) {
+        if (empty($this->links)) {
             $this->links = $this->extractLinks($this->content, $this->url);
         }
         return $this->links;

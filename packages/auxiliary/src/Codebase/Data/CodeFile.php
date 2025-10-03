@@ -18,6 +18,7 @@ class CodeFile
     }
 
     public function getContent(): string {
-        return file_get_contents($this->path . '/' . $this->file);
+        $content = file_get_contents($this->path . '/' . $this->file);
+        return is_string($content) ? $content : '';
     }
 }

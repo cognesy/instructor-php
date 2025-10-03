@@ -22,7 +22,7 @@ class ExtractNamespaces
         $functionNamespaces = [];
         foreach ($functions as $function) {
             $functionNamespaces[$function->namespace][] = $function->name;
-            $anyNamespaces[$class->namespace] = true;
+            $anyNamespaces[$function->namespace] = true;
         }
 
         // find only direct children for each namespace

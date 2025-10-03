@@ -37,7 +37,7 @@ class ExperimentFailureRate implements CanObserveExperiment
      *
      * @param Experiment $experiment The experiment instance from which metrics are calculated.
      *
-     * @return object An anonymous object containing failureRate, total, and failed properties.
+     * @return object{failureRate: float, total: int, failed: int} An anonymous object containing failureRate, total, and failed properties.
      */
     private function metrics(Experiment $experiment) : object {
         $executionCount = count($experiment->executions());

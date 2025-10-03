@@ -9,6 +9,9 @@ final class Layer
     /** @var Closure(Context): Context */
     private Closure $builder;
 
+    /**
+     * @param Closure(Context): Context $builder
+     */
     private function __construct(Closure $builder) {
         $this->builder = $builder;
     }

@@ -25,6 +25,9 @@ trait HandlesFieldDefinitions
         return new Field($name, $description, TypeDetails::bool());
     }
 
+    /**
+     * @param class-string $enumClass
+     */
     static public function enum(string $name, string $enumClass, string $description = '') : self {
         return new Field($name, $description, TypeDetails::enum($enumClass));
     }
@@ -33,6 +36,9 @@ trait HandlesFieldDefinitions
         return new Field($name, $description, TypeDetails::option($values));
     }
 
+    /**
+     * @param class-string $class
+     */
     static public function object(string $name, string $class, string $description = '') : self {
         return new Field($name, $description, TypeDetails::object($class));
     }

@@ -100,7 +100,7 @@ class ArrayMatchEval implements CanGenerateObservations
     private function critique(Execution $execution): array {
         $data = $execution->get('response')?->findJsonData()->toArray();
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
-        $feedback = $this->makeFeedback($differences) ?? Feedback::none();
+        $feedback = $this->makeFeedback($differences);
         return array_map(
             callback: fn(Observation $observation) => $observation->withMetadata(['executionId' => $execution->id()]),
             array: $feedback->toObservations([

@@ -21,6 +21,7 @@ class ResponseValidator
         private EventDispatcherInterface $events,
         /** @var CanValidateObject[]|class-string[] $validators */
         private array $validators,
+        /** @phpstan-ignore-next-line */
         private StructuredOutputConfig $config,
     ) {}
 

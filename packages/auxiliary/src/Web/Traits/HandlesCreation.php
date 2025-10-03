@@ -17,13 +17,13 @@ trait HandlesCreation
     }
 
     public static function withHtml(string $html, string $url = '') : static {
-        $webpage = new Webpage();
+        $webpage = new static();
         $webpage->url = $url;
         $webpage->content = $html;
         return $webpage;
     }
 
     public static function withScraper(string $scraper = '') : static {
-        return new Webpage(Scraper::withDriver($scraper));
+        return new static(Scraper::withDriver($scraper));
     }
 }

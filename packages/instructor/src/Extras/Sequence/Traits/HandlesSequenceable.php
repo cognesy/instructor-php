@@ -4,8 +4,11 @@ namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
 trait HandlesSequenceable
 {
+    /**
+     * @return static
+     */
     public static function of(string $class, string $name = '', string $description = '') : static {
-        return new self($class, $name, $description);
+        return new static($class, $name, $description);
     }
 
     public function toArray() : array {

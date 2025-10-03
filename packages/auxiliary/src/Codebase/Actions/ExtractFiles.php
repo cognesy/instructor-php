@@ -16,6 +16,9 @@ class ExtractFiles
     public function __invoke(string $path) : array {
         $list = [];
         $files = scandir($path);
+        if ($files === false) {
+            return $list;
+        }
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') {
                 continue;

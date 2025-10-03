@@ -10,11 +10,16 @@ use Cognesy\Schema\Attributes\Description;
 class TestClassA
 {
     /** Property description */
-    public $mixedProperty;
+    public mixed $mixedProperty = null;
     #[Description('Attribute description')]
-    public $attributeMixedProperty;
-    public int $nonNullableIntProperty;
-    public mixed $explicitMixedProperty;
-    public ?int $nullableIntProperty;
+    public mixed $attributeMixedProperty = null;
+    public int $nonNullableIntProperty = 0;
+    public mixed $explicitMixedProperty = null;
+    public ?int $nullableIntProperty = null;
     public readonly string $readOnlyStringProperty;
+
+    public function __construct(string $readOnlyStringProperty)
+    {
+        $this->readOnlyStringProperty = $readOnlyStringProperty;
+    }
 }

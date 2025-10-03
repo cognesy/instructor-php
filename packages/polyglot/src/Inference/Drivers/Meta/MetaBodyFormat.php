@@ -12,28 +12,30 @@ class MetaBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Json:
-            case OutputMode::JsonSchema:
-                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
-                $result = [
-                    'type' => 'json_schema',
-                    'json_schema' => [
-                        'name' => $schemaName,
-                        'schema' => $schema,
-                        'strict' => $schemaStrict,
-                    ],
-                ];
-                break;
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = [];
-                break;
-            default:
-                $result = [];
+        if (!$request->hasResponseFormat()) {
+            return [];
         }
 
-        return $result;
+        $mode = $request->outputMode();
+        // Meta API (via OpenRouter) supports: json_schema
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $request->responseFormat()->schemaName(),
+                    'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                    'strict' => $request->responseFormat()->strict(),
+                ],
+            ])
+            ->withToJsonSchemaHandler(fn() => [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $request->responseFormat()->schemaName(),
+                    'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+                    'strict' => $request->responseFormat()->strict(),
+                ],
+            ]);
+
+        return $responseFormat->as($mode);
     }
 }

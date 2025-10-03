@@ -69,7 +69,7 @@ class NumberSeriesAggregator
     /**
      * Performs the aggregation based on the selected method.
      *
-     * @return float|int
+     * @return float
      * @throws RuntimeException
      */
     public function aggregate() : float {
@@ -86,7 +86,6 @@ class NumberSeriesAggregator
             NumberAggregationMethod::GeometricMean => $this->geometricMean(),
             NumberAggregationMethod::HarmonicMean => $this->harmonicMean(),
             NumberAggregationMethod::Percentile => $this->percentile(),
-            default => throw new RuntimeException("Unsupported aggregation method: {$this->method->value}"),
         };
     }
 
@@ -135,7 +134,7 @@ class NumberSeriesAggregator
      *
      * @return float
      */
-    private function median(): float|int
+    private function median(): float
     {
         $sorted = $this->values;
         sort($sorted);

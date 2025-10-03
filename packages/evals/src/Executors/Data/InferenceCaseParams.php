@@ -9,12 +9,12 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
  * @implements CanMapValues<self>
  */
 class InferenceCaseParams implements CanMapValues {
-    public string $preset;
-    public bool $isStreamed;
-    public OutputMode $mode;
+    public string $preset = 'openai';
+    public bool $isStreamed = false;
+    public OutputMode $mode = OutputMode::Text;
 
     #[\Override]
-    public static function map(array $values) : static {
+    public static function map(array $values) : self {
         $instance = new self();
         $instance->mode = $values['mode'] ?? OutputMode::Text;
         $instance->preset = $values['preset'] ?? 'openai';

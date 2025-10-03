@@ -151,7 +151,7 @@ class InferenceRequestBuilder
         $this->tools = $request->tools();
         $this->toolChoice = $request->toolChoice();
         $this->responseFormat = $request->responseFormat();
-        $this->options = array_merge($this->options, $request->options());
+        $this->options = array_merge($this->options ?? [], $request->options());
         $this->streaming = $request->isStreamed();
         $this->mode = $request->outputMode();
         $this->cachedContext = $request->cachedContext();

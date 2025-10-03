@@ -153,6 +153,7 @@ nav:
   -
     Changelog:
       - { Overview: release-notes/versions.md }
+      - { v1.10.0: release-notes/v1.10.0.md }
       - { v1.9.1: release-notes/v1.9.1.md }
       - { v1.9.0: release-notes/v1.9.0.md }
       - { v1.8.1: release-notes/v1.8.1.md }

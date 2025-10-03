@@ -49,16 +49,17 @@ trait HandlesEnumType
         $cases = $enumReflection->getCases();
         $values = [];
         foreach ($cases as $case) {
-            $values[] = $case->getValue()->value;
+            $caseValue = $case->getValue();
+            if ($caseValue instanceof BackedEnum) {
+                $values[] = $caseValue->value;
+            }
         }
         return $values;
     }
 
     static private function isEnum(?string $enumType) : bool {
-        if (empty($enumType)) {
-            return false;
-        }
-        return !empty($enumType)
+        return $enumType !== null
+            && $enumType !== ''
             && class_exists($enumType)
             && is_subclass_of($enumType, BackedEnum::class);
     }

@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+<?php
+
+use Cognesy\InstructorHub\Hub;
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+function findAutoload()
+{
+    $dir = __DIR__;
+    $previousDir = '';
+
+    while ($dir !== $previousDir) {
+        $autoload = $dir . '/vendor/autoload.php';
+        if (file_exists($autoload)) {
+            return $autoload;
+        }
+        $previousDir = $dir;
+        $dir = dirname($dir);
+    }
+
+    throw new RuntimeException('Unable to locate vendor/autoload.php. Please ensure you have run "composer install".');
+}
+
+require findAutoload();
+
+// run the app
+$app = new Hub();
+$app->run();

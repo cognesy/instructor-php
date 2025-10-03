@@ -53,10 +53,18 @@ class SearchResults implements Countable, Iterator
         return count($this->results);
     }
 
+    /**
+     * @param callable(SearchResult): bool $callback
+     */
     public function filter(callable $callback): self {
         return new self(array_values(array_filter($this->results, $callback)));
     }
 
+    /**
+     * @template T
+     * @param callable(SearchResult): T $callback
+     * @return array<T>
+     */
     public function map(callable $callback): array {
         return array_map($callback, $this->results);
     }
@@ -103,7 +111,8 @@ class SearchResults implements Countable, Iterator
     }
 
     public function toJson(): string {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+        $json = json_encode($this->toArray(), JSON_PRETTY_PRINT);
+        return is_string($json) ? $json : '[]';
     }
 
     #[\Override]

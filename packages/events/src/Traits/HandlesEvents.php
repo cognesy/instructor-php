@@ -28,7 +28,7 @@ trait HandlesEvents
     /**
      * Registers callback listening to all events
      *
-     * @param callable $listener The listener callable to be invoked on any event
+     * @param callable(object): void|null $listener The listener callable to be invoked on any event
      */
     public function wiretap(?callable $listener) : self {
         if ($listener !== null) {
@@ -41,7 +41,7 @@ trait HandlesEvents
      * Registers callback listening to a specific event type
      *
      * @param string $class The event class
-     * @param callable $listener The listener callable to be invoked on event
+     * @param callable(object): void|null $listener The listener callable to be invoked on event
      */
     public function onEvent(string $class, ?callable $listener) : self {
         if ($listener !== null) {

@@ -9,10 +9,10 @@ use Cognesy\Auxiliary\Web\Filters\NoFilter;
 class Website
 {
     protected string $rootUrl;
-    protected string $scraperType;
+    protected string $scraperType = '';
     protected CanGetUrlContent $scraper;
-    protected $count = 0;
-    protected $maxPages = 10;
+    protected int $count = 0;
+    protected int $maxPages = 10;
 
     /** @var Webpage[] */
     protected array $pages = [];

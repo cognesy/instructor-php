@@ -34,25 +34,24 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = ['type' => 'text'];
-                break;
-            case OutputMode::Json:
-            case OutputMode::JsonSchema:
-                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
-                $result = [
-                    'type' => 'json_schema',
-                    'json_schema' => ['schema' => $schema],
-                ];
-                break;
-            default:
-                $result = [];
+        if (!$request->hasResponseFormat()) {
+            return [];
         }
 
-        return $result ?? [];
+        $mode = $request->outputMode();
+        // Perplexity API only supports: json_schema (with schema field only, no name/strict)
+        // Both Json and JsonSchema modes use json_schema type
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => [
+                'type' => 'json_schema',
+                'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
+            ])
+            ->withToJsonSchemaHandler(fn() => [
+                'type' => 'json_schema',
+                'json_schema' => ['schema' => $this->removeDisallowedEntries($request->responseFormat()->schema())],
+            ]);
+
+        return $responseFormat->as($mode);
     }
 }
 

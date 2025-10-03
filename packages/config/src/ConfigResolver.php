@@ -36,15 +36,18 @@ class ConfigResolver implements CanProvideConfig
         return (new static([new SettingsConfigProvider]));
     }
 
-    public static function using(?CanProvideConfig $provider): static {
+    public static function using(?CanProvideConfig $provider): self {
         return match(true) {
             is_null($provider) => self::default(),
             $provider instanceof ConfigResolver => $provider, // avoid double wrapping
-            $provider instanceof CanProvideConfig => (new static([$provider, new SettingsConfigProvider])),
+            $provider instanceof CanProvideConfig => (new self([$provider, new SettingsConfigProvider])),
             default => throw new InvalidArgumentException('Provider must be a CanProvideConfig instance or null.'),
         };
     }
 
+    /**
+     * @param (callable(): CanProvideConfig)|CanProvideConfig|null $provider
+     */
     public function then(callable|CanProvideConfig|null $provider): static {
         if ($provider !== null) {
             $newProviders = [...$this->providerFactories, $this->createProviderFactory($provider)];
@@ -96,6 +99,9 @@ class ConfigResolver implements CanProvideConfig
         return false;
     }
 
+    /**
+     * @return callable(): CanProvideConfig
+     */
     private function createProviderFactory(mixed $provider): callable {
         return match (true) {
             is_null($provider) => throw new InvalidArgumentException('Provider cannot be null.'),

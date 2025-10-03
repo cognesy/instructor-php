@@ -21,12 +21,13 @@ class JinaDriver extends BaseEmbedDriver
         protected HttpClient $httpClient,
         protected EventDispatcherInterface $events,
     ) {
-        $this->requestAdapter = new JinaRequestAdapter(
+        $requestAdapter = new JinaRequestAdapter(
             $config,
             new JinaBodyFormat($config)
         );
-        $this->responseAdapter = new OpenAIResponseAdapter(
+        $responseAdapter = new OpenAIResponseAdapter(
             new OpenAIUsageFormat()
         );
+        parent::__construct($config, $httpClient, $events, $requestAdapter, $responseAdapter);
     }
 }

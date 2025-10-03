@@ -1,0 +1,119 @@
+---
+title: 'Inference and tool use'
+docname: 'tool_use'
+---
+
+## Overview
+
+`ToolUse` class automates the process of using tools by LLM, i.e.:
+ - calling LLM with provided context (message sequence),
+ - extracting tool calls requested by LLM from the response,
+ - calling the requested tool and storing its results,
+ - constructing message sequence with the result of call,
+ - sending updated message sequence back to LLM.
+
+This cycle is repeated until one of the exit criteria is met:
+- LLM no longer requests any tool calls,
+- specified maximum number of iterations is reached,
+- specified token usage limit is reached
+- there are any errors during the process (e.g. LLM requested a tool that is not available).
+
+`ToolUse` class provides 3 ways to iterate through the process:
+- manual control - code is responsible for checking `hasNextStep()` and calling `nextStep()` in a loop,
+- using iterator - code uses foreach loop to iterate through the steps (internally it checks
+`hasNextStep()` and calls `nextStep()`),
+- just get final step - you only get the final step, iteration process is done internally.
+
+## Example
+
+This example demonstrates 3 ways to use `ToolUse` class to allow LLM call functions
+if needed to answer simple math question. We provide 2 functions (`add_numbers` and
+`subtract_numbers`) as tools available to LLM and specify the task in plain language.
+The LLM is expected to call the functions in the correct order to get the final result.
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Messages\Messages;
+
+function add_numbers(int $a, int $b) : int { return $a + $b; }
+function subtract_numbers(int $a, int $b) : int { return $a - $b; }
+
+$toolUse = ToolUseFactory::default(
+    tools: new Tools(
+        FunctionTool::fromCallable(add_numbers(...)),
+        FunctionTool::fromCallable(subtract_numbers(...))
+    ),
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(6, fn(ToolUseState $state) => $state->stepCount()),
+        new TokenUsageLimit(8192, fn(ToolUseState $state) => $state->usage()->total()),
+        new ExecutionTimeLimit(60, fn(ToolUseState $state) => $state->startedAt()),
+        new RetryLimit(2, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
+        new StopOnFinalDecision(),
+    ),
+);
+
+//
+// PATTERN #1 - manual control
+//
+echo "\nPATTERN #1 - manual control\n";
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+// iterate until no more steps
+while ($toolUse->hasNextStep($state)) {
+    $state = $toolUse->nextStep($state);
+    $step = $state->currentStep();
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
+}
+
+// print final response
+$result = $state->currentStep()->outputMessages()->toString();
+print("RESULT: " . $result . "\n");
+
+
+//
+// PATTERN #2 - using iterator
+//
+echo "\nPATTERN #2 - using iterator\n";
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+// iterate until no more steps
+foreach ($toolUse->iterator($state) as $currentState) {
+    $step = $currentState->currentStep();
+    print("STEP - tokens used: " . ($step->usage()?->total() ?? 0)  . ' [' . $step->toString() . ']' . "\n");
+    $state = $currentState; // keep the latest state
+}
+
+// print final response
+$result = $state->currentStep()->outputMessages()->toString();
+print("RESULT: " . $result . "\n");
+
+
+
+//
+// PATTERN #3 - just get final step (fast forward to it)
+//
+echo "\nPATTERN #3 - get only final result\n";
+$state = (new ToolUseState)
+    ->withMessages(Messages::fromString('Add 2455 and 3558 then subtract 4344 from the result.'));
+
+// print final response
+$finalState = $toolUse->finalStep($state);
+$result = $finalState->currentStep()->outputMessages()->toString();
+print("RESULT: " . $result . "\n");
+?>
+```

@@ -96,20 +96,23 @@ class GeminiBodyFormat implements CanMapRequestBody
     protected function toToolChoice(InferenceRequest $request): string|array {
         $toolChoice = $request->toolChoice();
 
-        return match(true) {
-            $request->hasResponseFormat() => ["function_calling_config" => ["mode" => "ANY"]],
-            empty($toolChoice) => ["function_calling_config" => ["mode" => "ANY"]],
-            is_string($toolChoice) => ["function_calling_config" => ["mode" => $this->mapToolChoice($toolChoice)]],
-            is_array($toolChoice) => [
-                "function_calling_config" => array_filter([
-                    "mode" => $this->mapToolChoice($toolChoice['mode'] ?? "ANY"),
-                    "allowed_function_names" => isset($toolChoice['function']['name'])
-                        ? [ $toolChoice['function']['name'] ]
-                        : [],
-                ]),
-            ],
-            default => ["function_calling_config" => ["mode" => "ANY"]],
-        };
+        if ($request->hasResponseFormat()) {
+            return ["function_calling_config" => ["mode" => "ANY"]];
+        }
+        if (empty($toolChoice)) {
+            return ["function_calling_config" => ["mode" => "ANY"]];
+        }
+        if (is_string($toolChoice)) {
+            return ["function_calling_config" => ["mode" => $this->mapToolChoice($toolChoice)]];
+        }
+        return [
+            "function_calling_config" => array_filter([
+                "mode" => $this->mapToolChoice($toolChoice['mode'] ?? "ANY"),
+                "allowed_function_names" => isset($toolChoice['function']['name'])
+                    ? [ $toolChoice['function']['name'] ]
+                    : [],
+            ]),
+        ];
     }
 
     protected function mapToolChoice(string $choice) : string {

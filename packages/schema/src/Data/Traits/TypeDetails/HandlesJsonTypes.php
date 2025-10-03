@@ -38,14 +38,22 @@ trait HandlesJsonTypes
         return match (true) {
             $json->isOption() => TypeDetails::option($json->enumValues()),
             $json->isObject() && !$json->hasObjectClass() => throw new \Exception('Object must have x-php-class field with the target class name'),
-            $json->isObject() => TypeDetails::object($json->objectClass() ?? throw new \Exception('Object class is required')),
-            $json->isEnum() => TypeDetails::enum($json->objectClass() ?? throw new \Exception('Enum class is required'), self::jsonToPhpType($json->type()), $json->enumValues()),
+            $json->isObject() => (function() use ($json) {
+                /** @var class-string $objectClass */
+                $objectClass = $json->objectClass() ?? throw new \Exception('Object class is required');
+                return TypeDetails::object($objectClass);
+            })(),
+            $json->isEnum() => (function() use ($json) {
+                /** @var class-string $enumClass */
+                $enumClass = $json->objectClass() ?? throw new \Exception('Enum class is required');
+                return TypeDetails::enum($enumClass, self::jsonToPhpType($json->type()), $json->enumValues());
+            })(),
             $json->isCollection() => TypeDetails::collection(match (true) {
-                $json->itemSchema()?->isOption() => TypeDetails::option($json->itemSchema()->enumValues()),
+                $json->itemSchema()?->isOption() => self::PHP_STRING,
                 $json->itemSchema()?->isEnum() => $json->itemSchema()->objectClass() ?? throw new \Exception('Enum class is required'),
                 $json->itemSchema()?->isObject() => $json->itemSchema()->objectClass() ?? throw new \Exception('Object class is required'),
                 $json->itemSchema()?->isScalar() => self::jsonToPhpType($json->itemSchema()->type()),
-                $json->itemSchema()?->isAny() => TypeDetails::mixed(),
+                $json->itemSchema()?->isAny() => self::PHP_MIXED,
                 default => throw new \Exception('Collection item type must be scalar, object or enum: ' . ($json->itemSchema()?->type()->toString() ?? 'unknown')),
             }),
             $json->isArray() => TypeDetails::array(),

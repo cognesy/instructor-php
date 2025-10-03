@@ -19,7 +19,7 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
     use Traits\HandlesTypeDefinitions;
     use Traits\HandlesValidation;
 
-    public mixed $value;
+    public mixed $value = null;
 
     public string $name = 'value';
     public string $description = 'Response value';

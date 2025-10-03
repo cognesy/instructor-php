@@ -160,6 +160,7 @@ readonly class Schema implements CanAcceptSchemaVisitor
     }
 
     /**
+     * @param class-string $class
      * @param array<string, Schema> $properties
      * @param array<string> $required
      */
@@ -167,6 +168,9 @@ readonly class Schema implements CanAcceptSchemaVisitor
         return self::factory()->object($class, $name, $description, $properties, $required);
     }
 
+    /**
+     * @param class-string $class
+     */
     public static function enum(string $class, string $name = '', string $description = ''): EnumSchema {
         return self::factory()->enum($class, $name, $description);
     }

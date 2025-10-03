@@ -9,7 +9,7 @@ class PI_Fixture {
     public ?array $nullableIntStringArray = null;
 
     /** @var iterable<float> */
-    public iterable $iterableOfFloats;
+    public iterable $iterableOfFloats = [];
 
     /** @var array<array<int>> */
     public array $arrayOfArraysOfInts = [];

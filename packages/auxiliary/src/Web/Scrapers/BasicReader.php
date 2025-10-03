@@ -8,6 +8,7 @@ class BasicReader implements CanGetUrlContent
 {
     #[\Override]
     public function getContent(string $url, array $options = []): string {
-        return file_get_contents($url);
+        $content = file_get_contents($url);
+        return is_string($content) ? $content : '';
     }
 }

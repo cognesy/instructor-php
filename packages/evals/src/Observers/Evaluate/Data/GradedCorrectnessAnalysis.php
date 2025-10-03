@@ -9,10 +9,10 @@ use Cognesy\Schema\Attributes\Description;
 class GradedCorrectnessAnalysis
 {
     #[Description("Step by step assessment of the expected versus actual results.")]
-    public string $assessment;
+    public string $assessment = '';
     #[Description("Graded correctness of the result.")]
-    public CorrectnessGrade $correctness;
+    public CorrectnessGrade $correctness = CorrectnessGrade::Correct;
     #[Description("If the result is incorrect - list of individual issues found in the actual result considering the expected values. Otherwise empty.")]
     /** @var \Cognesy\Evals\Feedback\FeedbackItem[] */
-    public array $feedback;
+    public array $feedback = [];
 }

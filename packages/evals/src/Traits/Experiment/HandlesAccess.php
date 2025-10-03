@@ -15,7 +15,7 @@ trait HandlesAccess
         return $this->id;
     }
 
-    public function startedAt() : DateTime {
+    public function startedAt() : ?DateTime {
         return $this->startedAt;
     }
 

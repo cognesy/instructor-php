@@ -16,7 +16,10 @@ class SelectiveXmlParser
 
     public function parse(string $xmlContent): array {
         $this->validator->validate($xmlContent);
-        $reader = XMLReader::xml($xmlContent);
+        $reader = XMLReader::XML($xmlContent);
+        if ($reader === true || $reader === false) {
+            throw new \RuntimeException('Failed to create XMLReader');
+        }
         return $this->parseNodes($reader);
     }
 
@@ -67,7 +70,7 @@ class SelectiveXmlParser
             return ['continue' => $node];
         }
 
-        $node['content'] .= $reader->readOuterXML();
+        $node['content'] .= $reader->readOuterXml();
         $reader->next();
         return ['continue' => $node];
     }

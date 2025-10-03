@@ -20,6 +20,7 @@ class PsrHttpResponse implements HttpResponse
     private EventDispatcherInterface $events;
     private bool $isStreamed;
     private int $streamChunkSize;
+    private ?string $cachedBody = null;
 
     public function __construct(
         ResponseInterface $response,
@@ -62,7 +63,12 @@ class PsrHttpResponse implements HttpResponse
      */
     #[\Override]
     public function body(): string {
-        return $this->response->getBody()->getContents();
+        if ($this->cachedBody === null) {
+            $body = $this->response->getBody();
+            $body->rewind(); // Rewind to ensure we read from the beginning
+            $this->cachedBody = $body->getContents();
+        }
+        return $this->cachedBody;
     }
 
     /**

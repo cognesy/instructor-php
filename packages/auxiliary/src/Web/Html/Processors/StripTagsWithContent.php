@@ -25,6 +25,7 @@ class StripTagsWithContent implements CanCleanHtml
 
     private function removeTagWithContent(string $html, string $tag) : string {
         $pattern = "/<($tag)[^>]*>.*?<\/\\1>/si";
-        return preg_replace($pattern, '', $html);
+        $result = preg_replace($pattern, '', $html);
+        return is_string($result) ? $result : $html;
     }
 }

@@ -9,8 +9,11 @@ class LaravelConfigProvider implements CanProvideConfig
 {
     private ConfigRepository $config;
 
-    public function __construct(ConfigRepository $config = null)
+    public function __construct(?ConfigRepository $config = null)
     {
+        if ($config === null) {
+            throw new \InvalidArgumentException('Config repository must be provided');
+        }
         $this->config = $config;
     }
 

@@ -22,11 +22,16 @@ use RuntimeException;
 
 abstract class BaseInferenceDriver implements CanHandleInference
 {
+    /** @phpstan-ignore-next-line */
     protected LLMConfig $config;
+    /** @phpstan-ignore-next-line */
     protected HttpClient $httpClient;
+    /** @phpstan-ignore-next-line */
     protected EventDispatcherInterface $events;
 
+    /** @phpstan-ignore-next-line */
     protected CanTranslateInferenceRequest $requestTranslator;
+    /** @phpstan-ignore-next-line */
     protected CanTranslateInferenceResponse $responseTranslator;
 
 

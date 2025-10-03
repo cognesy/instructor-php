@@ -37,7 +37,7 @@ class PendingStructuredOutput
     private readonly ?HttpClient $httpClient;
 
     private readonly bool $cacheProcessedResponse;
-    private InferenceResponse $cachedResponse;
+    private ?InferenceResponse $cachedResponse = null;
 
     public function __construct(
         StructuredOutputExecution $execution,
@@ -121,18 +121,24 @@ class PendingStructuredOutput
         if (!$this->cacheProcessedResponse) {
             $this->execution = $this->requestHandler->executionResultFor($this->execution);
             $response = $this->execution->inferenceResponse();
-            $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response?->value())]));
+            if ($response === null) {
+                throw new \RuntimeException('Failed to get inference response');
+            }
+            $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
             return $response;
         }
 
         // RESPONSE CACHING = IS ENABLED
-        if (!isset($this->cachedResponse)) {
+        if ($this->cachedResponse === null) {
             $this->execution = $this->requestHandler->executionResultFor($this->execution);
             $this->cachedResponse = $this->execution->inferenceResponse();
+            if ($this->cachedResponse === null) {
+                throw new \RuntimeException('Failed to get inference response');
+            }
         }
 
         $this->events->dispatch(new StructuredOutputResponseGenerated([
-            'value' => json_encode($this->cachedResponse?->value()),
+            'value' => json_encode($this->cachedResponse->value()),
             'cached' => true,
         ]));
         return $this->cachedResponse;

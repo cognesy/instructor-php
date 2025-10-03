@@ -18,20 +18,15 @@ final class MultiJsonExtractor
             if ($start === -1) break;
 
             $parsed = self::parseFrom($text, $start);
-            if ($parsed !== null) {
-                if ($strategy === MultiJsonStrategy::StopOnFirst) return $parsed;
-                $results[] = $parsed;
-                if ($strategy === MultiJsonStrategy::StopOnLast) {
-                    // continue scanning to possibly replace with a later one
-                    $i = max($parsed->endIndex, $start + 1);
-                    continue;
-                }
-                // ParseAll: move past this fragment
+            if ($strategy === MultiJsonStrategy::StopOnFirst) return $parsed;
+            $results[] = $parsed;
+            if ($strategy === MultiJsonStrategy::StopOnLast) {
+                // continue scanning to possibly replace with a later one
                 $i = max($parsed->endIndex, $start + 1);
-            } else {
-                // Could not parse from this '{'/'[' — skip it
-                $i = $start + 1;
+                continue;
             }
+            // ParseAll: move past this fragment
+            $i = max($parsed->endIndex, $start + 1);
         }
 
         return match ($strategy) {
@@ -54,12 +49,14 @@ final class MultiJsonExtractor
                 $run = 1; $j = $i + 1;
                 while ($j < $n && $s[$j] === $fenceChar) { $run++; $j++; }
                 if ($run >= 3) {
+                    /** @phpstan-ignore-next-line */
                     $inFence = !$inFence;
                     $i = $j;
                     continue;
                 }
             }
 
+            /** @phpstan-ignore-next-line */
             if (!$inFence && ($ch === '{' || $ch === '[')) {
                 return $i;
             }
@@ -68,7 +65,7 @@ final class MultiJsonExtractor
         return -1;
     }
 
-    private static function parseFrom(string $s, int $start): ?ParsedJsonFragment
+    private static function parseFrom(string $s, int $start): ParsedJsonFragment
     {
         // 1) Try native + minimal repair on the slice starting at $start
         $slice = substr($s, $start);

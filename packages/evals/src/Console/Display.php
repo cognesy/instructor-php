@@ -68,7 +68,7 @@ class Display
             [8, $streamLabel, STR_PAD_LEFT, $streamed ? Color::BLUE : Color::DARK_BLUE],
         ], $this->terminalWidth);
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
-        if ($execution->hasException()) {
+        if ($execution->hasException() && $execution->exception() !== null) {
             $this->displayException($execution->exception());
         } else {
             $this->displayResult($execution);

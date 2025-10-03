@@ -54,7 +54,7 @@ class Dsn
         return $this->params->all();
     }
 
-    public function param(string $key, $default = null) : mixed {
+    public function param(string $key, mixed $default = null) : mixed {
         return $this->params->get($key, $default);
     }
 

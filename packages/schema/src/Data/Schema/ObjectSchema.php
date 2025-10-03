@@ -28,6 +28,7 @@ readonly class ObjectSchema extends Schema
         $this->required = $required;
     }
 
+    /** @return static */
     #[\Override]
     public function removeProperty(string $name): static {
         if (!$this->hasProperty($name)) {

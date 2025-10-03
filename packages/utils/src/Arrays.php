@@ -26,10 +26,10 @@ class Arrays
     }
 
     /**
-     * Merges two arrays, handling null values.
-     * @param array|null $array1
-     * @param array|null $array2
-     * @return array|null
+     * Unsets specified fields from an array.
+     * @param array $array
+     * @param array|string $fields
+     * @return array
      */
     public static function unset(array $array, array|string $fields) : array {
         if (!is_array($fields)) {
@@ -83,7 +83,7 @@ class Arrays
     /**
      * Maps an array using a callback.
      * @param array $array
-     * @param callable $callback
+     * @param callable(mixed, array-key): mixed $callback
      * @return array
      */
     static public function map(array $array, callable $callback): array {

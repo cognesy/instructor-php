@@ -16,9 +16,9 @@ class Combination
     /**
      * Generates all possible combinations of the provided sources and maps them to instances of the mapping class.
      *
-     * @template T
+     * @template T of CanMapValues
      *
-     * @param class-string<CanMapValues> $mapping The fully qualified class name that implements CanMapValues.
+     * @param class-string<T> $mapping The fully qualified class name that implements CanMapValues.
      * @param array<string, iterable> $sources Associative array mapping keys to their respective iterables.
      *
      * @return Generator<int, T> Yields instances of the mapping class for each combination.
@@ -50,9 +50,9 @@ class Combination
     /**
      * Recursively generates combinations of values.
      *
-     * @template T
+     * @template T of CanMapValues
      *
-     * @param class-string<CanMapValues> $mapping
+     * @param class-string<T> $mapping
      * @param string[] $keys
      * @param array<string, Iterator> $iterators
      * @param array<string, mixed> $currentCombination
@@ -94,6 +94,6 @@ class Combination
             return $iterable;
         }
 
-        return new ArrayIterator(array: $iterable);
+        return new ArrayIterator(is_array($iterable) ? $iterable : iterator_to_array($iterable));
     }
 }

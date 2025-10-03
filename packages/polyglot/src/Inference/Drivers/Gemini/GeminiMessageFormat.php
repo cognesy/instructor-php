@@ -8,7 +8,8 @@ use Cognesy\Utils\Str;
 
 class GeminiMessageFormat implements CanMapMessages
 {
-    private $roles = [
+    /** @var array<string, string> */
+    private array $roles = [
         'user' => 'user',
         'assistant' => 'model',
         'system' => 'user',
@@ -55,17 +56,20 @@ class GeminiMessageFormat implements CanMapMessages
     }
 
     private function toNativeToolCallPart(array $call) : array {
+        $arguments = $call['function']['arguments'] ?? [];
         return [
             'functionCall' => [
                 'name' => $call['function']['name'] ?? '',
-                'args' => Json::fromString($call['function']['arguments'])->toArray() ?? [],
+                'args' => is_string($arguments) ? Json::fromString($arguments)->toArray() : $arguments,
             ]
         ];
     }
 
     private function toNativeToolResult(array $message) : array {
+        $result = $message['_metadata']['result'] ?? '';
         $content = match(true) {
-            is_array($message['_metadata']['result'] ?? '') => Json::fromString($message['_metadata']['result'] ?? '')->toArray(),
+            is_array($result) => $result,
+            is_string($result) => Json::fromString($result)->toArray(),
             default => $message['content'],
         };
         return [

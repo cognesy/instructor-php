@@ -33,16 +33,23 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
  */
 final class CustomObjectNormalizer extends AbstractObjectNormalizer
 {
-    private static $reflectionCache = [];
-    private static $isReadableCache = [];
-    private static $isWritableCache = [];
+    /** @var array<string, \ReflectionClass<object>> */
+    private static array $reflectionCache = [];
+    /** @var array<string, bool> */
+    private static array $isReadableCache = [];
+    /** @var array<string, bool> */
+    private static array $isWritableCache = [];
 
     protected PropertyAccessorInterface $propertyAccessor;
-    protected $propertyInfoExtractor;
-    private $writeInfoExtractor;
+    protected ?PropertyInfoExtractorInterface $propertyInfoExtractor = null;
+    private ?ReflectionExtractor $writeInfoExtractor = null;
 
+    /** @var \Closure(object|class-string): class-string */
     private readonly \Closure $objectClassResolver;
 
+    /**
+     * @param \Closure(object|class-string): class-string|null $objectClassResolver
+     */
     public function __construct(
         ?ClassMetadataFactoryInterface $classMetadataFactory = null,
         ?NameConverterInterface $nameConverter = null,
@@ -160,15 +167,22 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
         if (null !== $this->classDiscriminatorResolver) {
             $class = \is_object($classOrObject) ? $classOrObject::class : $classOrObject;
             if (null !== $discriminatorMapping = $this->classDiscriminatorResolver->getMappingForMappedObject($classOrObject)) {
+                /** @phpstan-ignore-next-line */
                 $allowedAttributes[] = $attributesAsString ? $discriminatorMapping->getTypeProperty() : new AttributeMetadata($discriminatorMapping->getTypeProperty());
             }
 
             if (null !== $discriminatorMapping = $this->classDiscriminatorResolver->getMappingForClass($class)) {
                 $attributes = [];
                 foreach ($discriminatorMapping->getTypesMapping() as $mappedClass) {
-                    $attributes[] = parent::getAllowedAttributes($mappedClass, $context, $attributesAsString);
+                    $mappedAttributes = parent::getAllowedAttributes($mappedClass, $context, $attributesAsString);
+                    if (is_array($mappedAttributes)) {
+                        $attributes[] = $mappedAttributes;
+                    }
                 }
-                $allowedAttributes = array_merge($allowedAttributes, ...$attributes);
+                if (!empty($attributes)) {
+                    /** @phpstan-ignore-next-line */
+                    $allowedAttributes = array_merge($allowedAttributes, ...$attributes);
+                }
             }
         }
 
@@ -176,7 +190,7 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
     }
 
     #[\Override]
-    protected function isAllowedAttribute($classOrObject, string $attribute, ?string $format = null, array $context = []): bool {
+    protected function isAllowedAttribute(string|object $classOrObject, string $attribute, ?string $format = null, array $context = []): bool {
         if (!parent::isAllowedAttribute($classOrObject, $attribute, $format, $context)) {
             return false;
         }
@@ -185,7 +199,8 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
 
         if ($context['_read_attributes'] ?? true) {
             if (!isset(self::$isReadableCache[$class . $attribute])) {
-                self::$isReadableCache[$class . $attribute] = $this->propertyInfoExtractor->isReadable($class, $attribute) || $this->hasAttributeAccessorMethod($class, $attribute) || (\is_object($classOrObject) && $this->propertyAccessor->isReadable($classOrObject, $attribute));
+                /** @phpstan-ignore-next-line */
+                self::$isReadableCache[$class . $attribute] = ($this->propertyInfoExtractor?->isReadable($class, $attribute) ?? false) || $this->hasAttributeAccessorMethod($class, $attribute) || (\is_object($classOrObject) && $this->propertyAccessor->isReadable($classOrObject, $attribute));
             }
 
             return self::$isReadableCache[$class . $attribute];
@@ -195,16 +210,22 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
             if (str_contains($attribute, '.')) {
                 self::$isWritableCache[$class . $attribute] = true;
             } else {
-                self::$isWritableCache[$class . $attribute] = $this->propertyInfoExtractor->isWritable($class, $attribute) || (($writeInfo = $this->writeInfoExtractor->getWriteInfo($class, $attribute)) && PropertyWriteInfo::TYPE_NONE !== $writeInfo->getType());
+                $writeInfo = $this->writeInfoExtractor?->getWriteInfo($class, $attribute);
+                self::$isWritableCache[$class . $attribute] = ($this->propertyInfoExtractor?->isWritable($class, $attribute) ?? false) || ($writeInfo !== null && PropertyWriteInfo::TYPE_NONE !== $writeInfo->getType());
             }
         }
 
         return self::$isWritableCache[$class . $attribute];
     }
 
+    /**
+     * @param class-string $class
+     */
     private function hasAttributeAccessorMethod(string $class, string $attribute): bool {
         if (!isset(self::$reflectionCache[$class])) {
-            self::$reflectionCache[$class] = new \ReflectionClass($class);
+            /** @var \ReflectionClass<object> $reflection */
+            $reflection = new \ReflectionClass($class);
+            self::$reflectionCache[$class] = $reflection;
         }
 
         $reflection = self::$reflectionCache[$class];

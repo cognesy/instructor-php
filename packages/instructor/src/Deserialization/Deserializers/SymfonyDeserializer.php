@@ -26,13 +26,26 @@ class SymfonyDeserializer implements CanDeserializeClass
         protected ?Serializer $serializer = null,
     ) {}
 
+    /**
+     * @template T of object
+     * @param string $jsonData
+     * @param class-string<T> $dataType
+     * @return T
+     */
     #[\Override]
     public function fromJson(string $jsonData, string $dataType): mixed {
+        /** @phpstan-ignore-next-line */
         return match ($dataType) {
             default => $this->deserializeObject($this->serializer(), $jsonData, $dataType)
         };
     }
 
+    /**
+     * @template T of object
+     * @param array $data
+     * @param class-string<T> $dataType
+     * @return T
+     */
     public function fromArray(array $data, string $dataType): mixed {
         return match ($dataType) {
             default => $this->denormalizeObject($this->serializer(), $data, $dataType)
@@ -118,6 +131,13 @@ class SymfonyDeserializer implements CanDeserializeClass
         );
     }
 
+    /**
+     * @template T of object
+     * @param Serializer $serializer
+     * @param string $jsonData
+     * @param class-string<T> $dataClass
+     * @return T
+     */
     protected function deserializeObject(Serializer $serializer, string $jsonData, string $dataClass): object {
         try {
             return $serializer->deserialize($jsonData, $dataClass, 'json');
@@ -126,6 +146,13 @@ class SymfonyDeserializer implements CanDeserializeClass
         }
     }
 
+    /**
+     * @template T of object
+     * @param Serializer $serializer
+     * @param array $data
+     * @param class-string<T> $dataClass
+     * @return T
+     */
     protected function denormalizeObject(Serializer $serializer, array $data, string $dataClass): object {
         try {
             return $serializer->denormalize($data, $dataClass);

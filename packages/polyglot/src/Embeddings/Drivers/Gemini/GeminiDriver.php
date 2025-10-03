@@ -21,12 +21,13 @@ class GeminiDriver extends BaseEmbedDriver
         protected EventDispatcherInterface $events,
     ) {
         $this->usageFormat = new GeminiUsageFormat();
-        $this->requestAdapter = new GeminiRequestAdapter(
+        $requestAdapter = new GeminiRequestAdapter(
             $config,
             new GeminiBodyFormat($config)
         );
-        $this->responseAdapter = new GeminiResponseAdapter(
+        $responseAdapter = new GeminiResponseAdapter(
             $this->usageFormat
         );
+        parent::__construct($config, $httpClient, $events, $requestAdapter, $responseAdapter);
     }
 }

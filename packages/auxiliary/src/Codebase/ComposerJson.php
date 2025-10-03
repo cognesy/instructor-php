@@ -53,7 +53,11 @@ class ComposerJson {
         if (!$composerJsonPath) {
             throw new \RuntimeException("composer.json not found in the project path or its parent directories.");
         }
-        $composerJson = json_decode(file_get_contents($composerJsonPath), true);
+        $content = file_get_contents($composerJsonPath);
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read composer.json at: " . $composerJsonPath);
+        }
+        $composerJson = json_decode($content, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \RuntimeException("Failed to parse composer.json: " . json_last_error_msg());
         }

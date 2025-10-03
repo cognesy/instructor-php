@@ -56,12 +56,14 @@ final class Context
      * @template T of object
      * @param class-string<T> $class
      * @return T
+     * @phpstan-return T
      * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Generic type preserved in array storage
      */
     public function get(string $class): object {
         if (!array_key_exists($class, $this->services)) {
             throw new MissingServiceException($class);
         }
+        /** @var T */
         return $this->services[$class];
     }
 
@@ -118,6 +120,7 @@ final class Context
      * @template T of object
      * @param Key<T> $key
      * @return T
+     * @phpstan-return T
      * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Generic type preserved in keyed storage
      */
     public function getKey(Key $key): object {
@@ -125,6 +128,7 @@ final class Context
             // re-use MissingService for consistency (typed by expected class)
             throw new MissingServiceException($key->type);
         }
+        /** @var T */
         return $this->keyed[$key->id];
     }
 }

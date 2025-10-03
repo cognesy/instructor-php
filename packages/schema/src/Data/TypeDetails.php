@@ -22,6 +22,7 @@ class TypeDetails
      */
     public function __construct(
         public string $type,
+        /** @var class-string|null */
         public ?string $class = null,
         public ?TypeDetails $nestedType = null,
         public ?string $enumType = null,

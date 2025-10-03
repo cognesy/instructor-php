@@ -78,7 +78,7 @@ trait HandlesAccess
         return $this->exception ? 'failed' : 'success';
     }
 
-    public function startedAt() : DateTime {
+    public function startedAt() : ?DateTime {
         return $this->startedAt;
     }
 
@@ -91,15 +91,15 @@ trait HandlesAccess
     }
 
     public function totalTps() : float {
-        if ($this->timeElapsed() === 0) {
-            return 0;
+        if ($this->timeElapsed() === 0.0) {
+            return 0.0;
         }
         return $this->usage->total() / $this->timeElapsed();
     }
 
     public function outputTps() : float {
-        if ($this->timeElapsed === 0) {
-            return 0;
+        if ($this->timeElapsed === 0.0) {
+            return 0.0;
         }
         return $this->usage->output() / $this->timeElapsed();
     }

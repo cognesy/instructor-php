@@ -45,7 +45,7 @@ class ResponseModelFactory
             defaultToolDescription: $config->toolDescription(),
             defaultOutputClass: $config->outputClass(),
         );
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
     }
 
     public function fromAny(string|array|object $requestedModel) : ResponseModel {
@@ -61,22 +61,22 @@ class ResponseModelFactory
     private function buildFrom(string|array|object $requestedModel) : ResponseModel {
         return match(true) {
             // object and can provide JSON schema
-            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel),
+            (is_string($requestedModel) || is_object($requestedModel)) && is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel),
             // object and can provide Schema object
-            is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
+            (is_string($requestedModel) || is_object($requestedModel)) && is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
             // object and is instance of Schema (specifically - ObjectSchema)
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
             //is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
             // is class-string implementing tool selection handling
-            is_string($requestedModel) && is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($this->makeInstance($requestedModel)),
+            is_string($requestedModel) && is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProviderClass($requestedModel),
             // is string - so will be used as class-string
             is_string($requestedModel) => $this->fromClassString($requestedModel),
             // is array and empty - create a default dynamic structure
             is_array($requestedModel) && empty($requestedModel) => $this->fromClassString($this->config->outputClass()),
             // is array - so will be used as JSON Schema
             is_array($requestedModel) => $this->fromJsonSchema($requestedModel),
-            is_object($requestedModel) => $this->fromInstance($requestedModel),
-            default => throw new InvalidArgumentException('Unsupported response model type: ' . gettype($requestedModel))
+            // must be object at this point
+            default => $this->fromInstance($requestedModel),
         };
     }
 
@@ -113,7 +113,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
-    private function fromInstance(mixed $requestedModel) : ResponseModel {
+    private function fromInstance(object $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromInstance']));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
@@ -159,12 +159,21 @@ class ResponseModelFactory
     private function fromSchema(Schema $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchema']));
         $schema = $requestedModel;
-        $class = $schema->typeDetails->class;
+        $class = $schema->typeDetails->class ?? throw new InvalidArgumentException('Schema must have a class to create ResponseModel');
         $instance = $this->makeInstance($class);
         $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
+    }
+
+    /**
+     * @param class-string<CanHandleToolSelection> $requestedModel
+     */
+    private function fromToolSelectionProviderClass(string $requestedModel) : ResponseModel {
+        $instance = $this->makeInstance($requestedModel);
+        assert($instance instanceof CanHandleToolSelection);
+        return $this->fromToolSelectionProvider($instance);
     }
 
     private function fromToolSelectionProvider(CanHandleToolSelection $requestedModel) : ResponseModel {
@@ -178,28 +187,12 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
-    private function fromOutputSchemaProvider(mixed $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromOutputSchemaProvider']));
-        if (is_object($requestedModel)) {
-            $class = get_class($requestedModel);
-            $instance = $requestedModel;
-        } else {
-            $class = $requestedModel;
-            $instance = $this->makeInstance($class);
-        }
-        $schema = $instance->toOutputSchema();
-        $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
-        $schemaName = $this->schemaName($schema);
-        $schemaDescription = $this->schemaDescription($requestedModel);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
-    }
-
     private function schemaName(string|array|object $requestedSchema) : string {
         $name = match(true) {
             is_string($requestedSchema) => $requestedSchema,
             is_array($requestedSchema) => $requestedSchema['name'] ?? $requestedSchema['x-title'] ?? null,
-            is_object($requestedSchema) && method_exists($requestedSchema, 'name') => $requestedSchema->name(),
-            is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->name,
+            method_exists($requestedSchema, 'name') => $requestedSchema->name(),
+            method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->name,
             default => 'default_schema',
         };
         $name = $name ?: $this->config->schemaName() ?: 'default_schema';
@@ -214,8 +207,8 @@ class ResponseModelFactory
         $resolved = match(true) {
             is_string($requestedSchema) => '',
             is_array($requestedSchema) => $requestedSchema['description'] ?? '',
-            is_object($requestedSchema) && ($requestedSchema instanceof Schema) => $requestedSchema->description(),
-            //is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->description(),
+            $requestedSchema instanceof Schema => $requestedSchema->description(),
+            //method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->description(),
             default => '',
         };
         return $resolved ?: $this->config->schemaDescription() ?: '';

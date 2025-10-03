@@ -1,0 +1,44 @@
+<chat>
+    <message role="system">
+        {{ request.system }}
+    </message>
+
+    {% if request.context_cache.prompt is not empty %}
+        <message role="user">
+            TASK:
+            {{ request.context_cache.prompt }}
+        </message>
+    {% endif %}
+
+    {% if request.context_cache.examples is not empty %}
+        <message role="user">
+            EXAMPLES:
+            {{ request.context_cache.examples }}
+        </message>
+    {% endif %}
+
+    {% if request.context_cache.input is not empty %}
+        <message role="user">
+            INPUT:
+            {{ request.context_cache.input }}
+        </message>
+    {% endif %}
+
+    {% if request.context_cache is not empty %}
+        <message role="user">
+            <content cache="true">
+                INSTRUCTIONS:
+            </content>
+        </message>
+    {% endif %}
+
+
+    {% for attempt in request.attempts %}
+        <message role="assistant">
+            {{ attempt.inferenceResponse.content }}
+        </message>
+        <message role="user">
+            {{ attempt.errors }}
+        </message>
+    {% endfor %}
+</chat>

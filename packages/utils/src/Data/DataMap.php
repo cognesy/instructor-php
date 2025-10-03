@@ -128,7 +128,11 @@ class DataMap implements JsonSerializable
      * @return string
      */
     public function toJson(int $options = 0): string {
-        return json_encode($this->toArray(), $options);
+        $result = json_encode($this->toArray(), $options);
+        if ($result === false) {
+            throw new \RuntimeException('Failed to encode DataMap to JSON');
+        }
+        return $result;
     }
 
     /**
@@ -368,8 +372,15 @@ class DataMap implements JsonSerializable
         $collected = [];
 
         if ($currentPart === '*') {
-            if (is_array($currentData) || is_object($currentData)) {
+            if (is_array($currentData)) {
                 foreach ($currentData as $value) {
+                    $results = $this->traverseWithWildcards($value, $pathParts);
+                    $collected = array_merge($collected, $results);
+                }
+            } elseif (is_object($currentData)) {
+                /** @var array<string, mixed> $objectAsArray */
+                $objectAsArray = get_object_vars($currentData);
+                foreach ($objectAsArray as $value) {
                     $results = $this->traverseWithWildcards($value, $pathParts);
                     $collected = array_merge($collected, $results);
                 }
@@ -377,6 +388,7 @@ class DataMap implements JsonSerializable
         } else {
             if (is_object($currentData)) {
                 if (property_exists($currentData, $currentPart)) {
+                    /** @phpstan-ignore-next-line */
                     $value = $currentData->{$currentPart};
                     $results = $this->traverseWithWildcards($value, $pathParts);
                     $collected = array_merge($collected, $results);

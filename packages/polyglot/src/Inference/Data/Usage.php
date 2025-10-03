@@ -18,7 +18,7 @@ class Usage
         return new self();
     }
 
-    public static function fromArray(array $value) : static {
+    public static function fromArray(array $value) : self {
         return new self(
             inputTokens: $value['input'] ?? 0,
             outputTokens: $value['output'] ?? 0,
@@ -28,7 +28,7 @@ class Usage
         );
     }
 
-    public static function copy(Usage $usage) : static {
+    public static function copy(Usage $usage) : self {
         return new self(
             inputTokens: $usage->inputTokens,
             outputTokens: $usage->outputTokens,

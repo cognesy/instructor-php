@@ -24,6 +24,8 @@ class EmbeddingsSimilarityFilter implements CanFilterContent
         $this->embeddings = (new Embeddings)->using($this->preset);
         if (is_string($compareTo)) {
             $this->compareTo = $this->embeddings->with($compareTo)->first();
+        } else {
+            $this->compareTo = $compareTo;
         }
     }
 

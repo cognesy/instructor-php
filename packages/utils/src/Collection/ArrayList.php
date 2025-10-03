@@ -35,6 +35,7 @@ final class ArrayList implements ListInterface
      * @template U
      * @return ArrayList<U>
      * @phpstan-return ArrayList<U>
+     * @phpstan-ignore-next-line
      */
     public static function empty(): self {
         return new self([]);

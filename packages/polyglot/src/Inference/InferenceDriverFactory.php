@@ -51,6 +51,7 @@ class InferenceDriverFactory
 
     /**
      * Registers driver under given name
+     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
         self::$drivers[$name] = match(true) {
@@ -73,16 +74,12 @@ class InferenceDriverFactory
             throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$driver}");
         }
 
-        $driver = $driverFactory(
-            config: $config,
-            httpClient: $httpClient,
-            events: $this->events,
-        );
+        $driver = $driverFactory($config, $httpClient, $this->events);
 
         $this->events->dispatch(new InferenceDriverBuilt([
             'driverClass' => get_class($driver),
             'config' => $config->toArray(),
-            'httpClient' => $httpClient ? get_class($httpClient) : null,
+            'httpClient' => get_class($httpClient),
         ]));
 
         return $driver;
@@ -92,6 +89,7 @@ class InferenceDriverFactory
 
     /**
      * Returns factory to create LLM driver instance
+     * @return (callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanHandleInference)|null
      */
     protected function getBundledDriver(string $name) : ?callable {
        return $this->bundledDrivers[$name] ?? null;

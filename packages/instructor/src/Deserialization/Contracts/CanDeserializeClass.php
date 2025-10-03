@@ -8,10 +8,10 @@ namespace Cognesy\Instructor\Deserialization\Contracts;
 interface CanDeserializeClass
 {
     /**
-     * @template T
+     * @template T of object
      * @param string $jsonData
      * @param class-string<T> $dataType
-     * @return mixed<T>
+     * @return T
      */
     public function fromJson(string $jsonData, string $dataType) : mixed;
 }

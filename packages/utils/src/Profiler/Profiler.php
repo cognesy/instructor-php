@@ -7,10 +7,14 @@ class Profiler
     private array $checkpoints = [];
     static private Profiler $instance;
 
+    /**
+     * @phpstan-return static
+     */
     static public function get() : static {
         if (!isset(self::$instance)) {
             self::$instance = new self();
         }
+        /** @var static */
         return self::$instance;
     }
 
@@ -37,7 +41,8 @@ class Profiler
         $time = microtime(true);
         $previous = count($this->checkpoints) - 1;
         $delta = ($previous == -1) ? 0 : ($time - $this->checkpoints[$previous]->time);
-        $debugTrace = debug_backtrace()[1]['class'].'::'.debug_backtrace()[1]['function'];
+        $trace = debug_backtrace()[1] ?? [];
+        $debugTrace = ($trace['class'] ?? 'unknown').'::'.($trace['function'] ?? 'unknown');
         return $this->store($name, $time, $delta, $debugTrace, $context);
     }
 

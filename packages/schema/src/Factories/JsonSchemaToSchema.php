@@ -50,6 +50,7 @@ class JsonSchemaToSchema
         if (!$json->isObject()) {
             throw new Exception('Root JSON Schema must be an object');
         }
+        /** @var class-string $class */
         $class = $json->objectClass() ?? $this->defaultOutputClass;
         return new ObjectSchema(
             type: TypeDetails::object($class),

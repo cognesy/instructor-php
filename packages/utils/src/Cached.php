@@ -14,13 +14,18 @@ use WeakMap;
  */
 final class Cached
 {
+    /** @var WeakMap<object, mixed> */
     private static WeakMap $cache;
 
+    /**
+     * @param (Closure(mixed...): mixed)|null $producer
+     */
     private function __construct(
         private readonly ?Closure $producer,
         private readonly mixed $value = null,
         private readonly bool $isResolved = false
     ) {
+        /** @phpstan-ignore-next-line */
         self::$cache ??= new WeakMap();
     }
 

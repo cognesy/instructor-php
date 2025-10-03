@@ -149,6 +149,10 @@ final class CachedMap implements ArrayAccess, IteratorAggregate, Countable
 
     #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void {
+        if ($offset === null || (!is_int($offset) && !is_string($offset))) {
+            return;
+        }
+        /** @var TKey $offset */
         $this->set($offset, $value);
     }
 

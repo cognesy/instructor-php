@@ -71,7 +71,7 @@ final readonly class StructuredOutputAttemptList implements \Countable, \Iterato
         $list = isset($data['attempts']) && is_array($data['attempts']) ? $data['attempts'] : $data;
         $responses = array_map(
             fn(array $r) => StructuredOutputAttempt::fromArray($r),
-            $list ?? []
+            $list
         );
         return new self(ArrayList::fromArray($responses));
     }

@@ -12,9 +12,6 @@ class InferenceResponseFactory
      public static function fromPartialResponses(PartialInferenceResponseList $partialResponses): InferenceResponse {
         $response = new InferenceResponse(isPartial: true);
         foreach ($partialResponses as $partialResponse) {
-            if ($partialResponse === null) {
-                continue;
-            }
             $response = self::applyPartialResponse($partialResponse, $response);
         }
         $toolCalls = ToolCalls::fromArray(self::makeTools($partialResponses));
@@ -41,9 +38,6 @@ class InferenceResponseFactory
         $tools = [];
         $currentTool = '';
         foreach ($partialResponses as $partialResponse) {
-            if ($partialResponse === null) {
-                continue;
-            }
             // if the tool name changes, start a new tool call
             if ($partialResponse->hasToolName()
                 && ($currentTool !== ($partialResponse->toolName()))) {

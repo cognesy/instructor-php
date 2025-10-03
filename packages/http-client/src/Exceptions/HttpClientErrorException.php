@@ -18,8 +18,29 @@ class HttpClientErrorException extends HttpRequestException
         ?Throwable $previous = null,
     ) {
         $this->statusCode = $statusCode;
-        $message = sprintf('HTTP %d Client Error', $statusCode);
+        $message = $this->buildMessage($statusCode, $response);
         parent::__construct($message, $request, $response, $duration, $previous);
+    }
+
+    private function buildMessage(int $statusCode, ?HttpResponse $response): string
+    {
+        $message = sprintf('HTTP %d Client Error', $statusCode);
+
+        if ($response?->body()) {
+            $body = $response->body();
+            // Try to extract error message from JSON response
+            $decoded = json_decode($body, true);
+            if (is_array($decoded) && isset($decoded['error'])) {
+                $errorMsg = is_string($decoded['error'])
+                    ? $decoded['error']
+                    : ($decoded['error']['message'] ?? json_encode($decoded['error']));
+                $message .= ": {$errorMsg}";
+            } elseif (strlen($body) < 200) {
+                $message .= ": {$body}";
+            }
+        }
+
+        return $message;
     }
     
     #[\Override]

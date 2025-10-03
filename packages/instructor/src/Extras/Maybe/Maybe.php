@@ -11,9 +11,10 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {
-    private string $class;
-    private string $name;
-    private string $description;
+    /** @var class-string */
+    private string $class = '';
+    private string $name = '';
+    private string $description = '';
 
     private mixed $value = null;
     private bool $hasValue = false;
@@ -73,7 +74,9 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         $this->hasValue = $data['hasValue'] ?? false;
         $this->error = $data['error'] ?? '';
         if ($this->hasValue) {
-            $this->value = $this->deserializer->fromJson(Json::encode($data['value']), $this->class);
+            /** @var class-string $class */
+            $class = $this->class;
+            $this->value = $this->deserializer->fromJson(Json::encode($data['value']), $class);
         }
         return $this;
     }

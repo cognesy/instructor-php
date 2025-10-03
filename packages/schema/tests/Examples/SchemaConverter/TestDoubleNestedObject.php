@@ -2,5 +2,5 @@
 namespace Cognesy\Schema\Tests\Examples\SchemaConverter;
 
 class TestDoubleNestedObject {
-    public string $nestedNestedStringProperty;
+    public string $nestedNestedStringProperty = '';
 }

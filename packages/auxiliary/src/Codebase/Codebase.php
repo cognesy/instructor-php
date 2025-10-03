@@ -14,7 +14,6 @@ use Symfony\Component\Finder\Finder;
 
 class Codebase
 {
-    private string $projectRoot;
     private array $psr4Paths;
     private array $filesPaths;
     private array $phpFiles = [];
@@ -80,7 +79,13 @@ class Codebase
 
         foreach ($phpFiles as $file) {
             $code = file_get_contents($file->getRealPath());
+            if ($code === false) {
+                continue;
+            }
             $ast = $parser->parse($code);
+            if ($ast === null) {
+                continue;
+            }
             $ast = $traverser->traverse($ast);
 
             $this->appendClasses((new ExtractClasses($this))($ast));

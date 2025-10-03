@@ -50,9 +50,20 @@ trait HandlesDeserialization
             ($type->class() === Structure::class) => $structure->get($name)->fromArray($fieldData),
             ($type->class() === DateTime::class) => new DateTime($fieldData),
             ($type->class() === DateTimeImmutable::class) => new DateTimeImmutable($fieldData),
-            default => $this->deserializer->fromArray($fieldData, $type->class() ?: ''),
+            default => $this->deserializeObject($fieldData, $type->class()),
         };
         return $value;
+    }
+
+    /**
+     * @param string|null $className
+     */
+    private function deserializeObject(mixed $data, ?string $className): mixed {
+        if ($className === null) {
+            throw new Exception('Class type required for deserialization');
+        }
+        /** @var class-string<object> $className */
+        return $this->deserializer->fromArray($data, $className);
     }
 
     private function deserializeCollection(Field $field, mixed $fieldData) : mixed {
@@ -67,7 +78,7 @@ trait HandlesDeserialization
                 ($typeDetails->class() === DateTime::class) => new DateTime($itemData),
                 ($typeDetails->class() === DateTimeImmutable::class) => new DateTimeImmutable($itemData),
                 ($typeDetails->isArray()) => is_array($itemData) ? $itemData : [$itemData],
-                default => $this->deserializer->fromArray($itemData, $typeDetails->class() ?: ''),
+                default => $this->deserializeObject($itemData, $typeDetails->class()),
             };
         }
         return $values;

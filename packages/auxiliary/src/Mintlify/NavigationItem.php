@@ -5,8 +5,8 @@ namespace Cognesy\Auxiliary\Mintlify;
 class NavigationItem
 {
     private bool $isGroup = false;
-    private string $page;
-    private NavigationGroup $group;
+    private string $page = '';
+    private ?NavigationGroup $group = null;
 
     public static function fromAny(string|array|NavigationItem $data) : NavigationItem {
         return match(true) {
@@ -32,10 +32,16 @@ class NavigationItem
     }
 
     public function getItem() : string|NavigationGroup {
-        return $this->isGroup ? $this->group : $this->page;
+        if ($this->isGroup && $this->group !== null) {
+            return $this->group;
+        }
+        return $this->page;
     }
 
     public function toArrayItem() : string|array {
-        return $this->isGroup ? $this->group->toArray() : $this->page;
+        if ($this->isGroup && $this->group !== null) {
+            return $this->group->toArray();
+        }
+        return $this->page;
     }
 }

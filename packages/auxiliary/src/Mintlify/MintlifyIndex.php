@@ -13,17 +13,22 @@ class MintlifyIndex
     public array $primaryTab = [];
     public array $tabs = [];
     public array $anchors = [];
-    public Navigation $navigation;
+    public ?Navigation $navigation = null;
     public array $footerSocials = [];
     public array $analytics = [];
 
-    public function __construct() {}
+    public function __construct() {
+        $this->navigation = new Navigation();
+    }
 
     public static function fromFile(string $path) : static {
         if (!file_exists($path)) {
             throw new \Exception("Failed to Mintlify index file");
         }
         $json = file_get_contents($path);
+        if ($json === false) {
+            throw new \Exception("Failed to read Mintlify index file");
+        }
         $data = json_decode($json, true);
         if ($data === null) {
             throw new \Exception("Failed to decode Mintlify index file");

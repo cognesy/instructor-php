@@ -9,10 +9,16 @@ trait HandlesFactoryMethods
 {
     // TYPES
 
+    /**
+     * @param class-string $class
+     */
     static public function object(string $class) : TypeDetails {
         return (new TypeDetailsFactory)->objectType($class);
     }
 
+    /**
+     * @param class-string $class
+     */
     static public function enum(string $class, ?string $backingType = null, ?array $values = null) : TypeDetails {
         return (new TypeDetailsFactory)->enumType($class, $backingType, $values);
     }

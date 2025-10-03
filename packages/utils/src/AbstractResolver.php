@@ -10,14 +10,14 @@ use RuntimeException;
  */
 abstract class AbstractResolver
 {
-    /** @var Closure[] */
+    /** @var list<Closure(): mixed> */
     private array $pipeline;
 
     private bool $suppressErrors;
     private mixed $cached = null;
 
     /**
-     * @param list<callable|object> $providers ordered by priority (first wins)
+     * @param list<(callable(): mixed)|object> $providers ordered by priority (first wins)
      */
     public function __construct(array $providers, bool $suppressErrors = true) {
         if ($providers === []) {
@@ -30,6 +30,10 @@ abstract class AbstractResolver
 
     abstract protected function accepts(mixed $candidate): bool;
 
+    /**
+     * @param (callable(): mixed)|object $provider
+     * @return Closure(): mixed
+     */
     protected function defer(callable|object $provider): Closure {
         return $provider instanceof Closure
             ? $provider

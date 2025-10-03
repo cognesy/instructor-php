@@ -42,8 +42,8 @@ class StructuredOutputRequest
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
-        $this->messages = Messages::fromAny($messages);
-        $this->requestedSchema = $requestedSchema;
+        $this->messages = Messages::fromAny($messages ?? []);
+        $this->requestedSchema = $requestedSchema ?? [];
 
         $this->options = $options ?: [];
         $this->prompt = $prompt ?: '';
@@ -172,7 +172,7 @@ class StructuredOutputRequest
             'examples' => $this->examples,
             'model' => $this->model,
             'options' => $this->options,
-            'cachedContext' => $this->cachedContext?->toArray() ?? [],
+            'cachedContext' => $this->cachedContext->toArray(),
             'requestedSchema' => $this->requestedSchema,
         ];
     }

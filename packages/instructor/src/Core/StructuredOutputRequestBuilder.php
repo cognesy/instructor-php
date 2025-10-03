@@ -144,7 +144,7 @@ class StructuredOutputRequestBuilder
 
         return new StructuredOutputRequest(
             messages: $this->messages,
-            requestedSchema: $this->requestedSchema ?? [],
+            requestedSchema: $this->requestedSchema,
             system: $this->system ?: null,
             prompt: $this->prompt ?: null,
             examples: $this->examples ?: null,

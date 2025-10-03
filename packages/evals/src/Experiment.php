@@ -129,7 +129,7 @@ class Experiment {
     private function makeExecution(mixed $case) : Execution {
         $caseData = match(true) {
             is_array($case) => $case,
-            method_exists($case, 'toArray') => $case->toArray(),
+            is_object($case) && method_exists($case, 'toArray') => $case->toArray(),
             default => (array) $case,
         };
         return (new Execution(

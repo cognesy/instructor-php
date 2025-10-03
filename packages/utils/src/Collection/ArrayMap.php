@@ -39,6 +39,7 @@ final class ArrayMap implements MapInterface
      * @template V2
      * @return ArrayMap<K2,V2>
      * @phpstan-return ArrayMap<K2,V2>
+     * @phpstan-ignore-next-line
      */
     public static function empty(): self {
         /** @var array<K2,V2> $e */

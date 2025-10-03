@@ -21,8 +21,8 @@ class Webpage implements CanProvideMessage
 
     protected CanGetUrlContent $scraper;
     protected HtmlProcessor $htmlProcessor;
-    protected string $content;
-    protected string $url;
+    protected string $content = '';
+    protected string $url = '';
     /** @var Link[] */
     protected array $links = [];
 

@@ -66,7 +66,13 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
     // INTERNAL //////////////////////////////////////////////
 
     private function makeContent(array $data) : string {
-        return $data['content'][0]['text'] ?? Json::encode($data['content'][0]['input']) ?? '';
+        if (isset($data['content'][0]['text'])) {
+            return $data['content'][0]['text'];
+        }
+        if (isset($data['content'][0]['input'])) {
+            return Json::encode($data['content'][0]['input']);
+        }
+        return '';
     }
 
     private function makeContentDelta(array $data) : string {
@@ -99,6 +105,9 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         return $content;
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     private function normalizeUnknownValues(string $responseBody): string {
         // this is Anthropic specific workaround - the model returns sometimes <UNKNOWN> for missing values
         // when working with tool calls or structured outputs

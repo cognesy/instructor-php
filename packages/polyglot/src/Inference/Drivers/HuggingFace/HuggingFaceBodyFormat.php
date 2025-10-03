@@ -4,7 +4,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\HuggingFace;
 
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class HuggingFaceBodyFormat extends OpenAICompatibleBodyFormat
 {
@@ -19,24 +18,18 @@ class HuggingFaceBodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Json:
-                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
-                $result = ['type' => 'json', 'value' => $schema];
-                break;
-            case OutputMode::JsonSchema:
-                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
-                $result = ['type' => 'json_object', 'value' => $schema];
-                break;
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = [];
-                break;
-            default:
-                $result = [];
+        if (!$request->hasResponseFormat()) {
+            return [];
         }
 
-        return $result;
+        $mode = $request->outputMode();
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => ['type' => 'json_object'])
+            ->withToJsonSchemaHandler(fn() => [
+                'type' => 'json_schema',
+                'value' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+            ]);
+
+        return $responseFormat->as($mode);
     }
 }

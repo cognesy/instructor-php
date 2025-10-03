@@ -38,24 +38,23 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 
     #[\Override]
     protected function toResponseFormat(InferenceRequest $request) : array {
-        $mode = $this->toResponseFormatMode($request);
-        switch ($mode) {
-            case OutputMode::Json:
-            case OutputMode::JsonSchema:
-                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
-                $result = [
-                    'type' => 'json_object',
-                    'json_schema' => $schema,
-                ];
-                break;
-            case OutputMode::Text:
-            case OutputMode::MdJson:
-                $result = ['type' => 'text'];
-                break;
-            default:
-                $result = [];
+        if (!$request->hasResponseFormat()) {
+            return [];
         }
-        return $result;
+
+        $mode = $request->outputMode();
+        // Cohere V2 API supports: json_object with schema, text
+        $responseFormat = $request->responseFormat()
+            ->withToJsonObjectHandler(fn() => [
+                'type' => 'json_object',
+                'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+            ])
+            ->withToJsonSchemaHandler(fn() => [
+                'type' => 'json_object',
+                'schema' => $this->removeDisallowedEntries($request->responseFormat()->schema()),
+            ]);
+
+        return $responseFormat->as($mode);
     }
 
     #[\Override]

@@ -16,7 +16,7 @@ final class StructuredOutputConfig
         return self::CONFIG_GROUP;
     }
 
-    private ?OutputMode $outputMode = OutputMode::Tools;
+    private OutputMode $outputMode = OutputMode::Tools;
     private bool $useObjectReferences = false;
     private int $maxRetries = 0;
     private string $retryPrompt = "JSON generated incorrectly, fix following errors:\n";

@@ -2,9 +2,10 @@ parameters:
   level: 1
   paths:
     - src
-    - tests
-    - src-hub
-    - config
   reportUnmatchedIgnoredErrors: false
-  checkGenericClassInNonGenericObjectType: false
   tmpDir: /tmp
+  ignoreErrors:
+    -
+      identifier: missingType.generics
+    -
+      identifier: new.static

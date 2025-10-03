@@ -81,7 +81,7 @@ class InferenceCases
     }
 
     /**
-     * @return Generator<array>
+     * @return Generator<int, InferenceCaseParams>
      */
     private function make() : Generator {
         return Combination::generator(

@@ -29,10 +29,14 @@ for package_dir in packages/*/; do
         fi
         
         # Remove bin directory contents (but keep the directory)
-        if [ -d "${package_dir}bin" ]; then
-            rm -rf "${package_dir}bin/"*
-            echo "  ✓ Removed bin files"
-        fi
+        # TODO: We need to figure out a better way to handle bin files
+        #       Some packages have important bin files that are needed for
+        #       the package to function properly and are not stored in main
+        #       ./bin or ./scripts directories.
+        #if [ -d "${package_dir}bin" ]; then
+        #    rm -rf "${package_dir}bin/"*
+        #    echo "  ✓ Removed bin files"
+        #fi
         
         # Remove examples directory contents (but keep the directory)
         if [ -d "${package_dir}examples" ]; then

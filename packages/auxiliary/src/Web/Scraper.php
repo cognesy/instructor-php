@@ -14,8 +14,6 @@ use Exception;
 
 class Scraper
 {
-    protected CanGetUrlContent $driver;
-
     public static function withDriver(string $scraper = '') : CanGetUrlContent {
         $scraper = $scraper ?: Settings::get('web', 'defaultScraper', 'none');
 
@@ -31,9 +29,5 @@ class Scraper
             'scrapingbee' => new ScrapingBeeDriver($baseUrl, $apiKey),
             default => throw new Exception("Unknown scraper requested: $scraper"),
         };
-    }
-
-    public function getContent(string $url, array $options = []): string {
-        return $this->driver->getContent($url, $options);
     }
 }

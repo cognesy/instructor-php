@@ -12,11 +12,10 @@ enum InferenceFinishReason : string
     case Other = 'other';
 
     public function equals(string|InferenceFinishReason $reason) : bool {
-        return match(true) {
-            $reason instanceof InferenceFinishReason => ($this->value === $reason->value),
-            is_string($reason) => ($this->value === $reason),
-            default => false,
-        };
+        if ($reason instanceof InferenceFinishReason) {
+            return $this->value === $reason->value;
+        }
+        return $this->value === $reason;
     }
 
     public static function fromText(string $text) : InferenceFinishReason {

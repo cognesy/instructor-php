@@ -3,6 +3,7 @@
 namespace Cognesy\Evals\Executors;
 
 use Closure;
+use Cognesy\Events\Event;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -12,6 +13,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 class InferenceAdapter
 {
     private ?string $debugPreset = null;
+    /** @var Closure(object):void|null */
     private ?Closure $wiretap = null;
 
     public function withDebugPreset(string $preset) : self {
@@ -19,6 +21,9 @@ class InferenceAdapter
         return $this;
     }
 
+    /**
+     * @param (callable(object):void)|null $callback
+     */
     public function wiretap(?callable $callback) : self {
         if ($callback !== null) {
             $this->wiretap = Closure::fromCallable($callback);
@@ -66,12 +71,13 @@ class InferenceAdapter
     }
 
     public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+        $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
-                messages: array_merge($messages, [
+                messages: array_merge($messagesArray, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                 ]),
@@ -83,12 +89,13 @@ class InferenceAdapter
     }
 
     public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+        $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
-                messages: array_merge($messages, [
+                messages: array_merge($messagesArray, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                 ]),
@@ -100,12 +107,13 @@ class InferenceAdapter
     }
 
     public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
+        $messagesArray = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
-                messages: array_merge($messages, [
+                messages: array_merge($messagesArray, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                     ['role' => 'user', 'content' => '```json'],
@@ -118,7 +126,7 @@ class InferenceAdapter
 
     public function forModeText(?string $preset, string|array $messages, array $options) : PendingInference {
         return (new Inference)
-            ->using($preset)
+            ->using($preset ?? 'openai')
             ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(

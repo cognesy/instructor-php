@@ -95,7 +95,7 @@ trait HandlesResultTypecasting
     /**
      * Returns the result as an instance of the specified class.
      *
-     * @template T
+     * @template T of object
      * @param class-string<T> $class The class name of the returned object
      * @return T
      * @psalm-return T

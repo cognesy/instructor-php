@@ -13,8 +13,9 @@ class EnumInfo extends ClassInfo
      */
     public function __construct(string $class) {
         parent::__construct($class);
-        /** @var class-string $class */
-        $this->reflectionEnum = new ReflectionEnum($class);
+        /** @var class-string<\UnitEnum> $enumClass */
+        $enumClass = $this->class;
+        $this->reflectionEnum = new ReflectionEnum($enumClass);
     }
 
     #[\Override]

@@ -52,6 +52,9 @@ class Inference
         );
     }
 
+    /**
+     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver
+     */
     public static function registerDriver(string $name, string|callable $driver): void {
         InferenceDriverFactory::registerDriver($name, $driver);
     }

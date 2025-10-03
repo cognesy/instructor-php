@@ -7,7 +7,7 @@ use Cognesy\Utils\Json\Json;
 class DeserializationException extends \Exception
 {
     public function __construct(
-        public $message,
+        string $message,
         public string $modelClass,
         public string $data,
     ) {

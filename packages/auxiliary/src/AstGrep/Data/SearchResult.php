@@ -32,6 +32,10 @@ readonly class SearchResult
         $preview = str_replace(["\n", "\r", "\t"], [' ', '', ' '], $this->match);
         $preview = preg_replace('/\s+/', ' ', $preview);
 
+        if (!is_string($preview)) {
+            return '';
+        }
+
         if (strlen($preview) > $maxLength) {
             return substr($preview, 0, $maxLength - 3) . '...';
         }

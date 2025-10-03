@@ -55,7 +55,7 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     public function returnedClass() : string {
-        return $this->schema->typeDetails->class;
+        return $this->schema->typeDetails->class ?? '';
     }
 
     public function instance() : mixed {
@@ -63,7 +63,7 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     public function schemaName() : string {
-        return $this->schemaName ?? $this->schema()->name()  ?? 'default_schema';
+        return $this->schemaName ?: ($this->schema()->name() ?: 'default_schema');
     }
 
     public function schema() : Schema {
@@ -78,8 +78,12 @@ class ResponseModel implements CanProvideJsonSchema
     /** @return array<string, mixed> */
     public function getPropertyValues() : array {
         $values = [];
+        if (!is_object($this->instance)) {
+            return $values;
+        }
         foreach ($this->getPropertyNames() as $name) {
             $values[$name] = match(true) {
+                /** @phpstan-ignore-next-line */
                 isset($this->instance->$name) => $this->instance->$name,
                 default => null,
             };
@@ -88,11 +92,11 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     public function toolName() : string {
-        return $this->toolName ?? $this->config->toolName() ?? 'extract_data';
+        return $this->toolName ?: ($this->config->toolName() ?: 'extract_data');
     }
 
     public function toolDescription() : string {
-        return $this->toolDescription ?? $this->config->toolDescription() ?? '';
+        return $this->toolDescription ?: ($this->config->toolDescription() ?: '');
     }
 
     // MUTATORS ////////////////////////////////////////////////////////
@@ -135,8 +139,12 @@ class ResponseModel implements CanProvideJsonSchema
 
     /** @param array<string, mixed> $values */
     public function setPropertyValues(array $values) : void {
+        if (!is_object($this->instance)) {
+            return;
+        }
         foreach ($values as $name => $value) {
             if (property_exists($this->instance, $name)) {
+                /** @phpstan-ignore-next-line */
                 $this->instance->$name = $value;
             }
         }

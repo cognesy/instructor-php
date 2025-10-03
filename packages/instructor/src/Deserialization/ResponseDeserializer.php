@@ -62,6 +62,7 @@ class ResponseDeserializer
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {
         $this->events->dispatch(new ResponseDeserializationAttempt(['responseModel' => $responseModel->toArray(), 'json' => $json]));
+        $result = Result::failure('No deserializer available');
         foreach ($this->deserializers as $deserializer) {
             $deserializer = match(true) {
                 is_string($deserializer) && is_subclass_of($deserializer, CanDeserializeClass::class) => new $deserializer(),
@@ -72,7 +73,9 @@ class ResponseDeserializer
             // we're catching exceptions here - then trying the next deserializer
             // TODO: but the exceptions can be for other reason than deserialization problems
 
-            $result = Result::try(fn() => $deserializer->fromJson($json, $responseModel->returnedClass()));
+            /** @var class-string $returnedClass */
+            $returnedClass = $responseModel->returnedClass();
+            $result = Result::try(fn() => $deserializer->fromJson($json, $returnedClass));
             if ($result->isSuccess()) {
                 return $result;
             }

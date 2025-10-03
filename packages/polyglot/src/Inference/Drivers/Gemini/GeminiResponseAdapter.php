@@ -82,9 +82,13 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     }
 
     private function makeContentPart(array $data, int $index) : string {
-        return $data['candidates'][0]['content']['parts'][$index]['text']
-            ?? Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'] ?? '')
-            ?? '';
+        if (isset($data['candidates'][0]['content']['parts'][$index]['text'])) {
+            return $data['candidates'][0]['content']['parts'][$index]['text'];
+        }
+        if (isset($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'])) {
+            return Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args']);
+        }
+        return '';
     }
 
     private function makeContentDelta(array $data): string {
@@ -102,9 +106,13 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     }
 
     private function makeContentDeltaPart(array $data, int $index) : string {
-        return $data['candidates'][0]['content']['parts'][$index]['text']
-            ?? Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'] ?? '')
-            ?? '';
+        if (isset($data['candidates'][0]['content']['parts'][$index]['text'])) {
+            return $data['candidates'][0]['content']['parts'][$index]['text'];
+        }
+        if (isset($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'])) {
+            return Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args']);
+        }
+        return '';
     }
 
     private function makeToolName(array $data) : string {

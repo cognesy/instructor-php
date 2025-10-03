@@ -7,7 +7,7 @@ use Exception;
 class ValidationException extends Exception
 {
     public function __construct(
-        public $message,
+        string $message,
         public array $errors
     ) {
         parent::__construct($message);

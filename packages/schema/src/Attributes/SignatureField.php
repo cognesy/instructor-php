@@ -28,6 +28,7 @@ abstract class SignatureField
         return $this->type ?? TypeDetails::mixed();
     }
 
+    /** @return static */
     public static function string(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -35,6 +36,7 @@ abstract class SignatureField
         return $field;
     }
 
+    /** @return static */
     public static function int(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -42,6 +44,7 @@ abstract class SignatureField
         return $field;
     }
 
+    /** @return static */
     public static function float(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -49,6 +52,7 @@ abstract class SignatureField
         return $field;
     }
 
+    /** @return static */
     public static function bool(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -56,6 +60,7 @@ abstract class SignatureField
         return $field;
     }
 
+    /** @return static */
     public static function collection(string $name, string $itemType, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -63,6 +68,7 @@ abstract class SignatureField
         return $field;
     }
 
+    /** @return static */
     public static function array(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -70,6 +76,10 @@ abstract class SignatureField
         return $field;
     }
 
+    /**
+     * @param class-string $class
+     * @return static
+     */
     public static function object(string $name, string $class, string $description = '') {
         $field = new static($description);
         $field->name = $name;
@@ -77,6 +87,10 @@ abstract class SignatureField
         return $field;
     }
 
+    /**
+     * @param class-string $class
+     * @return static
+     */
     public static function enum(string $name, string $class, string $description = '') {
         $field = new static($description);
         $field->name = $name;
