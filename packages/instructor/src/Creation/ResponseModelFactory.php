@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Dynamic\Structure;
 use Cognesy\Dynamic\StructureFactory;
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Data\ResponseModel;

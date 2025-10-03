@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Core\StructuredOutputExecutionBuilder;
+use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
 
 trait HandlesExecutionBuilder
 {

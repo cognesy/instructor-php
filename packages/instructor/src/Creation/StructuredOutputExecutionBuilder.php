@@ -1,17 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Exception;
 
 class StructuredOutputExecutionBuilder
 {

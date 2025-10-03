@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Streaming;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
@@ -51,17 +51,6 @@ class SequenceableHandler
                 $this->previousSequenceLength = $currentLength;
             }
         }
-    }
-
-    /**
-     * Resets the internal state of the object by clearing any stored partial sequences
-     * and resetting the sequence length counter.
-     *
-     * @return void
-     */
-    public function reset() : void {
-        $this->lastPartialSequence = null;
-        $this->previousSequenceLength = 0;
     }
 
     // INTERNAL /////////////////////////////////////////////////

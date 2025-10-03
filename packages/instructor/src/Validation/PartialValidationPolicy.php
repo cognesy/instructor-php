@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Core\Traits;
+namespace Cognesy\Instructor\Validation;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
@@ -13,7 +13,12 @@ use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 
-trait ValidatesPartialResponse
+/**
+ * Validates partial response text during streaming according to early policies:
+ * - prevent JSON Schema-shaped responses when strict JSON object data is expected
+ * - ensure keys match expected ResponseModel (subset check, tolerant for partials)
+ */
+class PartialValidationPolicy
 {
     public function validatePartialResponse(
         string $partialResponseText,
@@ -30,8 +35,6 @@ trait ValidatesPartialResponse
             ->executeWith(ProcessingState::with($partialResponseText))
             ->result();
     }
-
-    // INTERNAL ////////////////////////////////////////////////////////
 
     public function makePartialValidationPipeline(
         string $partialResponseText,
@@ -65,7 +68,7 @@ trait ValidatesPartialResponse
     private function isJsonSchemaResponse(string $responseText) : bool {
         try {
             $decoded = Json::fromPartial($responseText)->toArray();
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             // also covers no JSON at all - which is fine, as some models will respond with text
             return false;
         }
@@ -89,21 +92,17 @@ trait ValidatesPartialResponse
         string $partialResponseText,
         ResponseModel $responseModel
     ) : bool {
-        // ...check for response model property names
         $propertyNames = $responseModel->getPropertyNames();
         if (empty($propertyNames)) {
             return true;
         }
-        // ...detect matching response model
         try {
             $decoded = Json::fromPartial($partialResponseText)->toArray();
-            // we can try removing last item as it is likely to be still incomplete
+            // remove last item as it is likely to be incomplete in streaming
             $decoded = Arrays::removeTail($decoded, 1);
-        } catch (Exception $e) {
+        } catch (Exception $_) {
             return false;
         }
-        // Question: how to make this work while we're getting partially
-        // retrieved field names
         $decodedKeys = array_filter(array_keys($decoded));
         if (empty($decodedKeys)) {
             return true;
@@ -111,3 +110,4 @@ trait ValidatesPartialResponse
         return Arrays::isSubset($decodedKeys, $propertyNames);
     }
 }
+

@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\RequestMaterializer;
-use Cognesy\Instructor\Core\StructuredOutputExecutionBuilder;
+use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;

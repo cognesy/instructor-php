@@ -4,7 +4,7 @@ use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Core\ResponseModelFactory;
+use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
 use Cognesy\Schema\Factories\SchemaFactory;

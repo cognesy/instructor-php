@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Core\Traits;
+namespace Cognesy\Instructor\Traits;
 
 use Exception;
 

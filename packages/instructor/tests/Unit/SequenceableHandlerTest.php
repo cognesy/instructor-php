@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Core\SequenceableHandler;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\Streaming\SequenceableHandler;
 
 class Item { public function __construct(public string $name) {} }
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;

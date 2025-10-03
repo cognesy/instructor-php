@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;

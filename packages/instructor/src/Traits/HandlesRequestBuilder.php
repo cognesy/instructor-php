@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
+use Cognesy\Instructor\Creation\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;

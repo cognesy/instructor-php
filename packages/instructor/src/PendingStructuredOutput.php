@@ -4,15 +4,15 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
-use Cognesy\Instructor\Core\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
+use Cognesy\Instructor\Streaming\PartialsGenerator;
+use Cognesy\Instructor\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

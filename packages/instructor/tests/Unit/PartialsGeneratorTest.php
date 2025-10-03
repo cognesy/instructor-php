@@ -2,14 +2,14 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Core\PartialsGenerator;
-use Cognesy\Instructor\Core\ResponseModelFactory;
+use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
+use Cognesy\Instructor\Streaming\PartialsGenerator;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Schema\Factories\SchemaFactory;
