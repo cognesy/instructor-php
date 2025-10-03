@@ -18,7 +18,7 @@ class Event implements JsonSerializable
     public readonly DateTimeImmutable $createdAt;
     public mixed $data;
 
-    public $logLevel = LogLevel::DEBUG;
+    public string $logLevel = LogLevel::DEBUG;
 
     public function __construct(mixed $data = []) {
         $this->id = Uuid::uuid4();
@@ -105,7 +105,11 @@ class Event implements JsonSerializable
      */
     public function toArray(): array {
         // TODO: make this better
-        return json_decode(json_encode($this), true);
+        $encoded = json_encode($this);
+        if ($encoded === false) {
+            return [];
+        }
+        return json_decode($encoded, true);
     }
 
     /**

@@ -11,15 +11,14 @@ class EventBusResolver implements CanHandleEvents
     private CanHandleEvents $eventHandler;
 
     private function __construct(
-        null|CanHandleEvents|EventDispatcher $eventHandler
+        null|CanHandleEvents|EventDispatcherInterface $eventHandler
     ) {
         $this->eventHandler = match(true) {
             is_null($eventHandler) => new EventDispatcher(),
             $eventHandler instanceof EventBusResolver => $eventHandler->eventHandler, // avoid double wrapping
-            $eventHandler instanceof EventDispatcher => $eventHandler, // already an EventDispatcher
-            $eventHandler instanceof CanHandleEvents => $eventHandler, // CanHandleEvents implementation
-            $eventHandler instanceof EventDispatcherInterface =>  new EventDispatcher(parent: $eventHandler), // wrap with EventDispatcher
-            default => $eventHandler,
+            $eventHandler instanceof CanHandleEvents => $eventHandler, // CanHandleEvents implementation (includes EventDispatcher)
+            $eventHandler instanceof EventDispatcherInterface => new EventDispatcher(parent: $eventHandler), // wrap with EventDispatcher
+            default => new EventDispatcher(),
         };
     }
 
@@ -35,11 +34,17 @@ class EventBusResolver implements CanHandleEvents
 
     // PUBLIC ////////////////////////////////////////////////////
 
+    /**
+     * @param callable(object): void $listener
+     */
     #[\Override]
     public function wiretap(callable $listener): void {
         $this->eventHandler->wiretap($listener);
     }
 
+    /**
+     * @param callable(object): void $listener
+     */
     #[\Override]
     public function addListener(string $name, callable $listener, int $priority = 0): void {
         $this->eventHandler->addListener($name, $listener, $priority);
@@ -50,6 +55,9 @@ class EventBusResolver implements CanHandleEvents
         return $this->eventHandler->dispatch($event);
     }
 
+    /**
+     * @return iterable<callable(object): void>
+     */
     #[\Override]
     public function getListenersForEvent(object $event): iterable {
         return $this->eventHandler->getListenersForEvent($event);

@@ -11,10 +11,10 @@ final class LaravelEventDispatcher implements CanHandleEvents
     /** Laravel’s own dispatcher (sync or queued) */
     private Dispatcher $dispatcher;
 
-    /** @var array<class-string, SplPriorityQueue<callable, int>> */
+    /** @var array<class-string, SplPriorityQueue> */
     private array $registry = [];
 
-    /** @var SplPriorityQueue<callable, int>  wire-tap listeners ("*") */
+    /** @var SplPriorityQueue  wire-tap listeners ("*") */
     private SplPriorityQueue $taps;
 
     public function __construct(Dispatcher $laravel)
@@ -26,20 +26,23 @@ final class LaravelEventDispatcher implements CanHandleEvents
     #[\Override]
     public function addListener(string $name, callable $listener, int $priority = 0): void {
         if ($name === '*') {
-            /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
             $this->taps->insert($listener, $priority);
             return;
         }
 
         // remember for introspection
+        /** @var class-string $name */
         $queue = $this->registry[$name] ??= new SplPriorityQueue();
-        /** @psalm-suppress InvalidArgument - SplPriorityQueue::insert($value, $priority) accepts mixed for both params */
         $queue->insert($listener, $priority);
 
         // hand off to Laravel (priority ignored by Laravel, but order is preserved per registration)
+        /** @var \Closure $listener */
         $this->dispatcher->listen($name, $listener);
     }
 
+    /**
+     * @param callable(object): void $listener
+     */
     #[\Override]
     public function wiretap(callable $listener, int $priority = \PHP_INT_MIN): void {
         $this->addListener('*', $listener, $priority);
@@ -59,7 +62,10 @@ final class LaravelEventDispatcher implements CanHandleEvents
         return $event;
     }
 
-    // workaround for Laravel’s lack of introspection - via bridge
+    // workaround for Laravel's lack of introspection - via bridge
+    /**
+     * @return iterable<callable(object): void>
+     */
     #[\Override]
     public function getListenersForEvent(object $event): iterable {
         $name = $event::class;
