@@ -1,0 +1,5 @@
+## Changes
+
+### Bug Fixes
+
+- Removed `#[\Override]` attribute from `getSupportedTypes()` in `FlexibleDateDenormalizer`, `BackedEnumNormalizer`, and `CustomObjectNormalizer` - method only exists in Symfony 7+ interfaces, causing fatal errors with Symfony 6.4.
