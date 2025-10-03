@@ -27,6 +27,8 @@ class Field {
         if ($typeDetails === null) {
             throw new \Exception('Field type details cannot be null');
         }
+        $this->value = null;
+        $this->validator = null;
         $this->schema = $customSchema
             ?? (new SchemaFactory)->propertySchema($typeDetails, $name, $description);
         $this->prototype = $prototype;

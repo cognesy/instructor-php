@@ -41,6 +41,9 @@ trait HandlesFieldDefinitions
         return new Field($name, $description, TypeDetails::object(DateTime::class));
     }
 
+    /**
+     * @param array<Field>|callable(Structure): array<Field> $fields
+     */
     static public function structure(string $name, array|callable $fields, string $description = '') : self {
         $structure = Structure::define($name, $fields, $description);
         $result = new Field($name, $description, TypeDetails::object(Structure::class));

@@ -134,6 +134,9 @@ class Chat extends StepByStep
 
     // MUTATORS ///////////////////////////////////////////////////
 
+    /**
+     * @param CanApplyProcessors<ChatState>|null $processors
+     */
     public function with(
         ?Participants $participants = null,
         ?CanChooseNextParticipant $nextParticipantSelector = null,
@@ -158,6 +161,9 @@ class Chat extends StepByStep
         return $this->with(nextParticipantSelector: $selector);
     }
 
+    /**
+     * @param CanApplyProcessors<ChatState> $processors
+     */
     public function withProcessors(CanApplyProcessors $processors): Chat {
         return $this->with(processors: $processors);
     }

@@ -112,7 +112,7 @@ class PendingInference
     private function makeResponse(InferenceRequest $request) : InferenceResponse {
         return match($this->isStreamed()) {
             false => $this->driver->makeResponseFor($request),
-            true => $this->stream()->final(),
+            true => $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream'),
         };
     }
 }

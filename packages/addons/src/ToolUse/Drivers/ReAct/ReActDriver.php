@@ -263,7 +263,10 @@ final class ReActDriver implements CanUseTools
             [$thoughtField, $typeField, $toolField, $argsField, $answerField],
             'ReAct decision payload.',
         );
-        $decision->validator(fn(Structure $structure) => $this->validateDecisionStructure($structure, $toolNames, $toolArgumentStructures));
+        $decision->validator(function(mixed $structure) use ($toolNames, $toolArgumentStructures) {
+            assert($structure instanceof Structure);
+            return $this->validateDecisionStructure($structure, $toolNames, $toolArgumentStructures);
+        });
 
         return [$decision, $toolArgumentStructures];
     }
@@ -312,7 +315,8 @@ final class ReActDriver implements CanUseTools
 
     /** Validates decision structure using Structure validator. */
     private function validateDecisionStructure(Structure $structure, array $toolNames, array $toolArgumentStructures): ValidationResult {
-        $type = (string)($structure->get('type') ?? '');
+        $typeValue = $structure->get('type');
+        $type = is_string($typeValue) ? $typeValue : '';
         if ($type === 'call_tool') {
             return $this->validateCallDecision($structure, $toolNames, $toolArgumentStructures);
         }
@@ -324,7 +328,8 @@ final class ReActDriver implements CanUseTools
 
     /** Ensures call_tool decisions reference an available tool and provide args. */
     private function validateCallDecision(Structure $structure, array $toolNames, array $toolArgumentStructures): ValidationResult {
-        $tool = (string)($structure->get('tool') ?? '');
+        $toolValue = $structure->get('tool');
+        $tool = is_string($toolValue) ? $toolValue : '';
         if ($tool === '') {
             return ValidationResult::fieldError('tool', $tool, 'Tool name is required when type=call_tool.');
         }
@@ -346,7 +351,8 @@ final class ReActDriver implements CanUseTools
 
     /** Ensures final_answer decisions contain an answer. */
     private function validateFinalDecision(Structure $structure): ValidationResult {
-        $answer = (string)($structure->get('answer') ?? '');
+        $answerValue = $structure->get('answer');
+        $answer = is_string($answerValue) ? $answerValue : '';
         if ($answer === '') {
             return ValidationResult::fieldError('answer', $answer, 'Answer is required when type=final_answer.');
         }

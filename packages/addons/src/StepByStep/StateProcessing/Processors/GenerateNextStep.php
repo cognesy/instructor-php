@@ -7,7 +7,7 @@ use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 
 /**
- * @implements CanProcessAnyState<object>
+ * @implements CanProcessAnyState<HasSteps<object>>
  */
 class GenerateNextStep implements CanProcessAnyState
 {
@@ -22,6 +22,7 @@ class GenerateNextStep implements CanProcessAnyState
 
     #[\Override]
     public function process(object $state, ?callable $next = null): object {
+        assert($state instanceof HasSteps);
         $nextStep = $this->nextStepGenerator->makeNextStep($state);
         $newState = $state
             ->withAddedStep($nextStep)

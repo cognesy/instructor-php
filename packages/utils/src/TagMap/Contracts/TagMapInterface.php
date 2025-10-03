@@ -16,6 +16,7 @@ interface TagMapInterface
 
     /** @return array<TagInterface> */
     public function getAllInOrder(): array;
+    /** @param class-string $tagClass */
     public function has(string $tagClass): bool;
     public function isEmpty(): bool;
 

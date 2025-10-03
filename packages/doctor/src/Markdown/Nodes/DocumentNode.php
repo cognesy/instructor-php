@@ -14,6 +14,9 @@ final readonly class DocumentNode extends Node
         $this->children = $children;
     }
 
+    /**
+     * @param iterable<Node> $nodes
+     */
     public static function fromIterator(iterable $nodes): self
     {
         return new self(...iterator_to_array($nodes));

@@ -76,10 +76,10 @@ class SymfonyHttpResponse implements HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @return iterable<string>
+     * @return \Generator<string>
      */
     #[\Override]
-    public function stream(?int $chunkSize = null): iterable {
+    public function stream(?int $chunkSize = null): \Generator {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout()) {
                 continue;

@@ -27,7 +27,7 @@ class Json
     }
 
     public static function fromArray(array $array) : Json {
-        return new Json(json_encode($array));
+        return new Json(json_encode($array) ?: '');
     }
 
     public static function fromPartial(string $text) : Json {
@@ -54,10 +54,12 @@ class Json
     }
 
     public function format(int $options = 0, ?int $depth = null) : string {
-        return match(true) {
-            is_null($depth) => json_encode($this->toArray(), $options),
-            default => json_encode($this->toArray(), $options, $depth),
-        };
+        if (is_null($depth)) {
+            return json_encode($this->toArray(), $options) ?: '';
+        }
+        $safeDepth = max(1, $depth);
+        /** @var int<1, 2147483647> $safeDepth */
+        return json_encode($this->toArray(), $options, $safeDepth) ?: '';
     }
 
     // STATIC /////////////////////////////////////////////////
@@ -78,6 +80,6 @@ class Json
     }
 
     public static function encode(mixed $json, int $options = 0) : string {
-        return json_encode($json, $options);
+        return json_encode($json, $options) ?: '';
     }
 }

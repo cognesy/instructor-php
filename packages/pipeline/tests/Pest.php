@@ -24,21 +24,19 @@
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
+expect()->extend('toBeOne', fn() => expect(func_get_args()[0] ?? null)->toBe(1));
 
 expect()->extend('toBeCloseTo', function (float $expected, int $precision = 8) {
     $epsilon = 1 / (10 ** $precision);
-    $actual = $this->value;
-    $diff = abs($expected - $actual);
+    $actual = func_get_args()[0] ?? null;
+    $diff = abs($expected - (float) $actual);
     $message = "Failed asserting that %.{$precision}f matches expected %.{$precision}f within epsilon %.{$precision}f.";
     PHPUnit\Framework\Assert::assertLessThanOrEqual(
         expected: $epsilon,
         actual: $diff,
-        message: sprintf($message, $actual, $expected, $epsilon)
+        message: sprintf($message, (float) $actual, $expected, $epsilon)
     );
-    return $this;
+    return expect($actual);
 });
 
 /*

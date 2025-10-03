@@ -11,13 +11,13 @@ class EmbeddingsResponse
 {
     /** @var Vector[] */
     private array $vectors;
-    private ?Usage $usage;
+    private Usage $usage;
 
     public function __construct(
         array $vectors = [],
         ?Usage $usage = null
     ) {
-        $this->vectors = $vectors ?? [];
+        $this->vectors = $vectors;
         $this->usage = $usage ?? new Usage();
     }
 
@@ -94,7 +94,7 @@ class EmbeddingsResponse
     public function toArray() : array {
         return [
             'vectors' => array_map(fn(Vector $vector) => $vector->toArray(), $this->vectors),
-            'usage' => $this->usage?->toArray() ?? [],
+            'usage' => $this->usage->toArray(),
         ];
     }
 }

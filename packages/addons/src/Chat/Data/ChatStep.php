@@ -61,7 +61,7 @@ final readonly class ChatStep implements
         $this->usage = $usage ?? new Usage();
         $this->inferenceResponse = $inferenceResponse;
         $this->finishReason = $finishReason;
-        $this->metadata = Metadata::fromArray($metadata ?? []);
+        $this->metadata = $metadata instanceof Metadata ? $metadata : Metadata::fromArray($metadata ?? []);
         $this->errors = $this->normalizeErrors($errors);
     }
 

@@ -8,7 +8,7 @@ abstract class SignatureField
 {
     public string $name = '';
     public string $description = '';
-    public TypeDetails $type;
+    public ?TypeDetails $type = null;
 
     public function __construct(
         string $description = '',
@@ -25,7 +25,7 @@ abstract class SignatureField
     }
 
     public function type(): TypeDetails {
-        return $this->type;
+        return $this->type ?? TypeDetails::mixed();
     }
 
     public static function string(string $name, string $description = '') {

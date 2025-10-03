@@ -268,7 +268,7 @@ class MintlifyDocumentation
     }
 
     private function getReleaseNotesGroup(): NavigationGroup {
-        $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx'));
+        $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx')) ?: [];
         $pages = [];
 
         foreach ($releaseNotesFiles as $releaseNotesFile) {
@@ -289,22 +289,29 @@ class MintlifyDocumentation
 
     private function inlineExternalCodeblocks(string $targetPath, string $subpackage): void {
         $docFiles = array_merge(
-            glob("$targetPath/*.mdx"),
-            glob("$targetPath/**/*.mdx"),
-            glob("$targetPath/*.md"),
-            glob("$targetPath/**/*.md"),
+            glob("$targetPath/*.mdx") ?: [],
+            glob("$targetPath/**/*.mdx") ?: [],
+            glob("$targetPath/*.md") ?: [],
+            glob("$targetPath/**/*.md") ?: [],
         );
 
         foreach ($docFiles as $docFile) {
-            $content = file_get_contents(realpath($docFile));
-            $markdown = MarkdownFile::fromString($content, realpath($docFile));
+            $realPath = realpath($docFile);
+            if ($realPath === false) {
+                continue;
+            }
+            $content = file_get_contents($realPath);
+            if ($content === false) {
+                continue;
+            }
+            $markdown = MarkdownFile::fromString($content, $realPath);
 
-            if (!$markdown->hasCodeBlocks()) {
+            if (!$markdown->hasCodeblocks()) {
                 continue;
             }
 
             try {
-                $newMarkdown = $markdown->withInlinedCodeblocks();
+                $newMarkdown = $markdown->withInlinedCodeBlocks();
                 file_put_contents($docFile, $newMarkdown->toString());
             } catch (\Throwable $e) {
                 // Continue processing other files

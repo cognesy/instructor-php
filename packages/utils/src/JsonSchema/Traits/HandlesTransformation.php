@@ -9,7 +9,7 @@ trait HandlesTransformation
     }
 
     public function toString() : string {
-        return json_encode($this->toArray(), JSON_UNESCAPED_SLASHES);
+        return json_encode($this->toArray(), JSON_UNESCAPED_SLASHES) ?: '';
     }
 
     public function toArray() : array {
@@ -136,7 +136,7 @@ trait HandlesTransformation
 
     private function propertiesAsArray() : array {
         $result = [];
-        foreach ($this->properties as $property) {
+        foreach ($this->properties ?? [] as $property) {
             $result[$property->name()] = $property->toArray();
         }
         return $result;

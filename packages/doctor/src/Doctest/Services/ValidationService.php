@@ -14,6 +14,9 @@ class ValidationService
 {
     public function validateFile(string $filePath): ValidationResult {
         $sourceContent = file_get_contents($filePath);
+        if ($sourceContent === false) {
+            throw new \RuntimeException("Failed to read file: {$filePath}");
+        }
         $markdown = MarkdownFile::fromString($sourceContent, $filePath);
         $markdownDir = dirname($filePath);
 

@@ -60,21 +60,26 @@ class RequestHandler
      */
     public function executionResultFor(StructuredOutputExecution $execution): StructuredOutputExecution {
         $processingResult = Result::failure("No response generated");
+        $inferenceResponse = null;
+        $partialResponses = PartialInferenceResponseList::empty();
+
         while ($processingResult->isFailure() && !$execution->maxRetriesReached()) {
             $inferenceResponse = $this->getInference($execution)->response();
             $inferenceResponse = $inferenceResponse->withContent(match ($execution->outputMode()) {
                 OutputMode::Text => $inferenceResponse->content(),
                 OutputMode::Tools => $inferenceResponse->toolCalls()->first()?->argsAsJson()
-                    ?? $inferenceResponse->content() // fallback if no tool calls - some LLMs return just a string
-                    ?? '',
+                    ?: $inferenceResponse->content() // fallback if no tool calls - some LLMs return just a string
+                    ?: '',
                 // for OutputMode::MdJson, OutputMode::Json, OutputMode::JsonSchema try extracting JSON from content
                 // and replacing original content with it
                 default => Json::fromString($inferenceResponse->content())->toString(),
             });
             $partialResponses = PartialInferenceResponseList::empty();
+            $responseModel = $execution->responseModel();
+            assert($responseModel !== null, 'Response model cannot be null');
             $processingResult = $this->responseGenerator->makeResponse(
                 response: $inferenceResponse,
-                responseModel: $execution->responseModel(),
+                responseModel: $responseModel,
                 mode: $execution->outputMode(),
             );
             if ($processingResult->isFailure()) {
@@ -82,6 +87,7 @@ class RequestHandler
             }
         }
 
+        assert($inferenceResponse !== null, 'Inference response must be defined after loop');
         $returnedValue = $this->finalizeResult($execution, $processingResult);
 
         return $execution->withSuccessfulAttempt(
@@ -99,10 +105,14 @@ class RequestHandler
      */
     public function streamUpdatesFor(StructuredOutputExecution $execution): Generator {
         $processingResult = Result::failure("No response generated");
+        $inferenceResponse = null;
+        $partialResponses = PartialInferenceResponseList::empty();
 
         while ($processingResult->isFailure() && !$execution->maxRetriesReached()) {
             $stream = $this->getInference($execution)->stream()->responses();
-            $partialResponseStream = $this->partialsGenerator->getPartialResponses($stream, $execution->responseModel());
+            $responseModel = $execution->responseModel();
+            assert($responseModel !== null, 'Response model cannot be null');
+            $partialResponseStream = $this->partialsGenerator->getPartialResponses($stream, $responseModel);
 
             $partialResponses = PartialInferenceResponseList::empty();
             /** @var PartialInferenceResponse $partialResponse */
@@ -123,7 +133,7 @@ class RequestHandler
             $partialResponses = $this->partialsGenerator->partialResponses();
             $processingResult = $this->responseGenerator->makeResponse(
                 response: $inferenceResponse,
-                responseModel: $execution->responseModel(),
+                responseModel: $responseModel,
                 mode: $execution->outputMode(),
             );
             if ($processingResult->isFailure()) {
@@ -131,6 +141,7 @@ class RequestHandler
             }
         }
 
+        assert($inferenceResponse !== null, 'Inference response must be defined after loop');
         $value = $this->finalizeResult($execution, $processingResult);
 
         // Yield final response with value
@@ -146,6 +157,7 @@ class RequestHandler
     protected function getInference(StructuredOutputExecution $execution): PendingInference {
         $request = $execution->request();
         $responseModel = $execution->responseModel();
+        assert($responseModel !== null, 'Response model cannot be null');
 
         $inference = (new Inference(events: $this->events))
             ->withLLMProvider($this->llmProvider);
@@ -156,7 +168,7 @@ class RequestHandler
             ->with(
                 messages: $this->requestMaterializer->toMessages($execution),
                 model: $request->model(),
-                tools: $responseModel->toolCallSchema(),
+                tools: $responseModel->toolCallSchema() ?? [],
                 toolChoice: $responseModel->toolChoice(),
                 responseFormat: $responseModel->responseFormat(),
                 options: $request->options(),

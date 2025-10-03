@@ -23,6 +23,9 @@ interface HasSteps
      */
     public function withAddedStep(object $step): static;
 
+    /** @param TStep $step */
+    public function withCurrentStep(object $step): static;
+
     /** @param TStep ...$step */
     public function withAddedSteps(object ...$step): static;
 }

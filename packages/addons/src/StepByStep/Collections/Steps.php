@@ -98,6 +98,13 @@ readonly class Steps implements HasSteps, Countable, IteratorAggregate
         return $this->withAddedSteps($step);
     }
 
+    /** @param TStep $step */
+    #[\Override]
+    public function withCurrentStep(object $step): static {
+        // For this implementation, setting current step is the same as adding it
+        return $this->withAddedStep($step);
+    }
+
     /** @param TStep ...$step */
     #[\Override]
     public function withAddedSteps(object ...$step): static {

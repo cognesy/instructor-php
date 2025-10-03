@@ -59,11 +59,11 @@ class LaravelHttpResponse implements HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @param int $chunkSize
-     * @return iterable<string>
+     * @param int|null $chunkSize
+     * @return \Generator<string>
      */
     #[\Override]
-    public function stream(?int $chunkSize = null): iterable {
+    public function stream(?int $chunkSize = null): \Generator {
         //if (!$this->streaming) {
         //    $chunk = $this->body();
         //    $this->events->dispatch(new HttpResponseChunkReceived($chunk));

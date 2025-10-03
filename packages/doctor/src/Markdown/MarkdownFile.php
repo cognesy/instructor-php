@@ -42,21 +42,32 @@ final readonly class MarkdownFile
         return new CodeBlockManipulator($this, $id);
     }
 
-    /** @return Iterator<CodeBlockNode> */
+    /**
+     * @return Iterator<CodeBlockNode>
+     * @phpstan-return Iterator<mixed, CodeBlockNode>
+     */
     public function codeBlocks(): Iterator {
+        /** @var Iterator<mixed, CodeBlockNode> */
         return $this->collectNodes(CodeBlockNode::class, $this->document->children);
     }
 
     /** @return Iterator<string> */
     public function codeQuotes(): Iterator {
+        /** @var Iterator<mixed, ContentNode> */
+        $contentNodes = $this->collectNodes(ContentNode::class, $this->document->children);
         return \iter\values(\iter\flatten(\iter\map(
+            /** @param ContentNode $node */
             fn(ContentNode $node) => $node->codeQuotes(),
-            $this->collectNodes(ContentNode::class, $this->document->children)
+            $contentNodes
         )));
     }
 
-    /** @return Iterator<HeaderNode> */
+    /**
+     * @return Iterator<HeaderNode>
+     * @phpstan-return Iterator<mixed, HeaderNode>
+     */
     public function headers(): Iterator {
+        /** @var Iterator<mixed, HeaderNode> */
         return $this->collectNodes(HeaderNode::class, $this->document->children);
     }
 
@@ -111,9 +122,14 @@ final readonly class MarkdownFile
         };
     }
 
+    /**
+     * @param callable(CodeBlockNode): CodeBlockNode $replacer
+     */
     public function withReplacedCodeBlocks(callable $replacer) : self {
+        /** @var \Closure(CodeBlockNode): CodeBlockNode $closure */
+        $closure = \Closure::fromCallable($replacer);
         return new self(
-            document: $this->document->accept(new ReplaceCodeBlockByCallable($replacer)),
+            document: $this->document->accept(new ReplaceCodeBlockByCallable($closure)),
             metadata: $this->metadata,
             path: $this->path,
         );
@@ -125,7 +141,7 @@ final readonly class MarkdownFile
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    private function tryInlineCodeblocks(MarkdownFile $markdownFile, string $markdownDir): ?MarkdownFile {
+    private function tryInlineCodeblocks(MarkdownFile $markdownFile, string $markdownDir): MarkdownFile {
         $madeReplacements = false;
         $newMarkdown = $markdownFile->withReplacedCodeBlocks(function (CodeBlockNode $codeblock) use ($markdownDir, &$madeReplacements) {
             $includePath = $codeblock->metadata('include');

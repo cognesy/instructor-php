@@ -8,11 +8,11 @@ namespace Cognesy\Pipeline\Legacy\Chain;
  */
 final class ProcessorChain
 {
-    /** @var list<callable> */
+    /** @var list<callable(mixed):mixed> */
     private array $processors;
 
     /**
-     * @param list<callable> $processors
+     * @param list<callable(mixed):mixed> $processors
      */
     public function __construct(array $processors) {
         if ($processors === []) {
@@ -39,7 +39,7 @@ final class ProcessorChain
     /**
      * Returns the list of processors in the chain.
      *
-     * @return list<callable>
+     * @return list<callable(mixed):mixed>
      */
     public function processors(): array {
         return $this->processors;

@@ -143,7 +143,7 @@ class MintlifyDocGenerator
 
     private function getReleaseNotesGroup(): NavigationGroup {
         // get all .mdx files from docs/release-notes
-        $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx'));
+        $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx')) ?: [];
         $pages = [];
         foreach ($releaseNotesFiles as $releaseNotesFile) {
             // get file name without extension
@@ -179,18 +179,25 @@ class MintlifyDocGenerator
     private function inlineExternalCodeblocks(string $targetPath, string $subpackage) : void {
         // inline example code blocks
         $docFiles = array_merge(
-            glob("$targetPath/*.mdx"),
-            glob("$targetPath/**/*.mdx"),
-            glob("$targetPath/*.md"),
-            glob("$targetPath/**/*.md"),
+            glob("$targetPath/*.mdx") ?: [],
+            glob("$targetPath/**/*.mdx") ?: [],
+            glob("$targetPath/*.md") ?: [],
+            glob("$targetPath/**/*.md") ?: [],
         );
 
         $this->view->renderInlineHeader($subpackage);
         foreach ($docFiles as $docFile) {
             $this->view->renderInlinedItem($docFile, $subpackage);
-            $content = file_get_contents(realpath($docFile));
-            $markdown = MarkdownFile::fromString($content, realpath($docFile));
-            if (!$markdown->hasCodeBlocks()) {
+            $realPath = realpath($docFile);
+            if ($realPath === false) {
+                continue;
+            }
+            $content = file_get_contents($realPath);
+            if ($content === false) {
+                continue;
+            }
+            $markdown = MarkdownFile::fromString($content, $realPath);
+            if (!$markdown->hasCodeblocks()) {
                 $this->view->renderInlinedResult('skip');
                 continue;
             }
@@ -222,7 +229,7 @@ class MintlifyDocGenerator
             if (empty($includePath)) {
                 return $codeblock;
             }
-            $includeDir = trim($includePath, '\'"'); // remove quotes
+            $includeDir = trim((string) $includePath, '\'"'); // remove quotes
             
             // Resolve path relative to markdown file
             $path = $markdownDir . '/' . ltrim($includeDir, './');

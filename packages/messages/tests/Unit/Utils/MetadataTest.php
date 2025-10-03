@@ -205,18 +205,20 @@ describe('Metadata', function () {
 
         it('supports conditional metadata building', function () {
             $metadata = Metadata::empty();
-            
+
             $hasConfidence = true;
             $hasTimestamp = false;
-            
+
+            /** @phpstan-ignore-next-line */
             if ($hasConfidence) {
                 $metadata = $metadata->withKeyValue('confidence', 0.87);
             }
-            
+
+            /** @phpstan-ignore-next-line */
             if ($hasTimestamp) {
                 $metadata = $metadata->withKeyValue('timestamp', time());
             }
-            
+
             expect($metadata->toArray())->toBe(['confidence' => 0.87]);
         });
     });

@@ -31,16 +31,7 @@ class Docs extends Application
     private MkDocsDocumentation $mkDocsGen;
     private Filesystem $filesystem;
     private DocRepository $docRepository;
-    private ValidationService $validationService;
     private EventDispatcher $eventDispatcher;
-
-    public function __construct() {
-        parent::__construct('Instructor Docs // Documentation Automation', '1.0.0');
-
-        $this->registerServices();
-        $this->registerCommands();
-    }
-
     private ExampleRepository $examples;
     private string $docsSourceDir;
     private string $docsTargetDir;
@@ -50,7 +41,17 @@ class Docs extends Application
     private string $mintlifySourceIndexFile;
     private string $mintlifyTargetIndexFile;
     private string $codeblocksDir;
+    /** @var array<int, string> */
     private array $dynamicGroups;
+
+    public function __construct() {
+        // Initialize all properties in registerServices() before use in registerCommands()
+        $this->registerServices();
+
+        parent::__construct('Instructor Docs // Documentation Automation', '1.0.0');
+
+        $this->registerCommands();
+    }
 
     private function registerServices(): void
     {
@@ -120,12 +121,15 @@ class Docs extends Application
 
         $this->filesystem = new Filesystem();
         $this->docRepository = new DocRepository($this->filesystem);
-        $this->validationService = new ValidationService();
         $this->eventDispatcher = new EventDispatcher();
     }
 
     private function registerCommands(): void
     {
+        // All properties are initialized in registerServices() which is called before this method
+        assert(isset($this->examples, $this->docsSourceDir, $this->docsTargetDir, $this->cookbookTargetDir,
+            $this->mintlifySourceIndexFile, $this->mintlifyTargetIndexFile, $this->codeblocksDir, $this->dynamicGroups, $this->docGen));
+
         // Register docs-specific commands
         $this->addCommands([
             new GenerateExamplesCommand(
@@ -177,7 +181,6 @@ class Docs extends Application
             new ExtractCodeBlocks(
                 $this->docRepository,
                 $this->eventDispatcher,
-                null,
             ),
             new ValidateCodeBlocks($this->eventDispatcher),
             new MakeLesson($this->examples),

@@ -12,7 +12,7 @@ class PartialInferenceResponse
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
-    private mixed $value; // data extracted from response or tool calls
+    private mixed $value = null; // data extracted from response or tool calls
     private string $content; // full content accumulated from deltas
     private string $reasoningContent; // full reasoning content accumulated from deltas
     public string $finishReason;

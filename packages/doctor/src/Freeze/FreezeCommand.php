@@ -150,7 +150,7 @@ class FreezeCommand
 
     private function buildCommandArray(): array {
         // Auto-detect language if not specified and we have a file
-        if (!$this->language && $this->filePath) {
+        if (empty($this->language) && !empty($this->filePath)) {
             $this->language = $this->detectLanguageFromFile($this->filePath);
         } else {
             $this->language = strtolower($this->language ?? 'text');
@@ -159,11 +159,11 @@ class FreezeCommand
         $parts = ['freeze'];
 
         // Add file path right after freeze command if we have one
-        if ($this->filePath && !$this->executeCommand) {
+        if (!empty($this->filePath) && empty($this->executeCommand)) {
             $parts[] = $this->filePath;
         }
 
-        if ($this->executeCommand) {
+        if (!empty($this->executeCommand)) {
             $parts[] = '-x';
             $parts[] = $this->executeCommand;
         }
@@ -262,7 +262,7 @@ class FreezeCommand
         foreach ($commandArray as $index => $part) {
             if ($index === 0) {
                 $escapedParts[] = $part; // Don't escape 'freeze'
-            } else if ($index === 1 && $this->filePath && !$this->executeCommand) {
+            } else if ($index === 1 && !empty($this->filePath) && empty($this->executeCommand)) {
                 $escapedParts[] = $part; // Don't escape file path when it's first argument
             } else if (str_starts_with($part, '--') || str_starts_with($part, '-')) {
                 $escapedParts[] = $part; // Don't escape flag names

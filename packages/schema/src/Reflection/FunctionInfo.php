@@ -13,13 +13,17 @@ class FunctionInfo
     private ReflectionFunction|ReflectionMethod $function;
     /** @var ReflectionParameter[] */
     private array $parameters;
-    private $returnType;
+    /** @phpstan-ignore-next-line - property is intentionally unused */
+    private mixed $returnType;
 
     private function __construct(ReflectionFunction|ReflectionMethod $function) {
         $this->function = $function;
         $this->parameters = $function->getParameters();
     }
 
+    /**
+     * @param Closure(): mixed $closure
+     */
     static public function fromClosure(Closure $closure) : self {
         $reflection = new \ReflectionFunction($closure);
         $class = $reflection->getClosureScopeClass()?->getName();
@@ -81,7 +85,7 @@ class FunctionInfo
 
     public function getDescription() : string {
         return match(true) {
-            $this->isClassMethod() => Descriptions::forMethod(
+            $this->function instanceof ReflectionMethod => Descriptions::forMethod(
                 $this->function->getDeclaringClass()->getName(),
                 $this->function->getName()
             ),
@@ -93,7 +97,7 @@ class FunctionInfo
 
     public function getParameterDescription(string $argument) : string {
         return match(true) {
-            $this->isClassMethod() => Descriptions::forMethodParameter(
+            $this->function instanceof ReflectionMethod => Descriptions::forMethodParameter(
                 $this->function->getDeclaringClass()->getName(),
                 $this->function->getName(),
                 $argument

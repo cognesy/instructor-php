@@ -6,5 +6,5 @@ use Psr\Log\LogLevel;
 
 class DebugEvent extends \Cognesy\Events\Event
 {
-    public $logLevel = LogLevel::DEBUG;
+    public string $logLevel = LogLevel::DEBUG;
 }

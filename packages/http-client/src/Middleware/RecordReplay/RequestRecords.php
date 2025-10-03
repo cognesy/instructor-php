@@ -36,10 +36,13 @@ class RequestRecords
         }
 
         $json = file_get_contents($filename);
+        if ($json === false) {
+            return null;
+        }
         $record = RequestRecord::fromJson($json);
 
         // Ensure we return the right type of record based on the request
-        if ($record && $request->isStreamed() && !$record->isStreamed()) {
+        if ($record !== null && $request->isStreamed() && !$record->isStreamed()) {
             // If we have a regular record but need a streamed one, return null
             // This forces re-recording with the correct type
             return null;
@@ -61,6 +64,9 @@ class RequestRecords
     public function clear(): int {
         $count = 0;
         $files = glob($this->storageDir . '/*.json');
+        if ($files === false) {
+            return 0;
+        }
 
         foreach ($files as $file) {
             if (unlink($file)) {
@@ -74,12 +80,18 @@ class RequestRecords
     public function all(): array {
         $records = [];
         $files = glob($this->storageDir . '/*.json');
+        if ($files === false) {
+            return [];
+        }
 
         foreach ($files as $file) {
             $json = file_get_contents($file);
+            if ($json === false) {
+                continue;
+            }
             $record = RequestRecord::fromJson($json);
 
-            if ($record) {
+            if ($record !== null) {
                 $records[] = $record;
             }
         }
@@ -101,7 +113,8 @@ class RequestRecords
     }
 
     public function count(): int {
-        return count(glob($this->storageDir . '/*.json'));
+        $files = glob($this->storageDir . '/*.json');
+        return is_array($files) ? count($files) : 0;
     }
 
     private function getFilenameForRequest(HttpRequest $request): string {

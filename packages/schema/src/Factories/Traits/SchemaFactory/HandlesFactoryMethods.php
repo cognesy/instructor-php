@@ -33,7 +33,7 @@ trait HandlesFactoryMethods
         return new ArraySchema(TypeDetails::array(), $name, $description);
     }
 
-    public function object(string $class, string $name = '', string $description = '', $properties = [], $required = []): ObjectSchema {
+    public function object(string $class, string $name = '', string $description = '', array $properties = [], array $required = []): ObjectSchema {
         $classInfo = ClassInfo::fromString($class);
         $properties = $properties ?: $this->getPropertySchemas($classInfo);
         $required = $required ?: $classInfo->getRequiredProperties();

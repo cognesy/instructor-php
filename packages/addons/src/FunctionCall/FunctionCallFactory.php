@@ -26,8 +26,12 @@ class FunctionCallFactory
         );
     }
 
+    /**
+     * @param callable(): mixed $callable
+     */
     static public function fromCallable(callable $callable) : FunctionCall {
-        $functionInfo = FunctionInfo::fromClosure($callable);
+        $closure = $callable instanceof \Closure ? $callable : \Closure::fromCallable($callable);
+        $functionInfo = FunctionInfo::fromClosure($closure);
         $structure = StructureFactory::fromCallable($callable, '', '');
         return self::makeFromFunctionInfo(
             $functionInfo,

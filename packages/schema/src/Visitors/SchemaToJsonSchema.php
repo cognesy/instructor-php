@@ -24,9 +24,13 @@ use DateTimeImmutable;
 class SchemaToJsonSchema implements CanVisitSchema
 {
     private array $result = [];
+    /** @var callable(Reference): void|null */
     private $refCallback;
     private string $defsLabel = '$defs';
 
+    /**
+     * @param callable(Reference): void|null $refCallback
+     */
     public function toArray(Schema $schema, ?callable $refCallback = null): array {
         $this->refCallback = $refCallback;
         $schema->accept($this);
@@ -41,6 +45,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    #[\Override]
     public function visitMixedSchema(MixedSchema $schema): void {
         $this->result = array_filter([
             //'type' => ['null', 'boolean', 'object', 'array', 'number', 'string'],
@@ -73,7 +78,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         if (in_array($schema->typeDetails->class, [
             DateTime::class,
             DateTimeImmutable::class,
-        ], false)) {
+        ], true)) {
             $this->handleDateTimeSchema($schema);
             return;
         }
@@ -136,19 +141,20 @@ class SchemaToJsonSchema implements CanVisitSchema
 
     #[\Override]
     public function visitObjectRefSchema(ObjectRefSchema $schema): void {
-        $class = $this->className($schema->typeDetails->class);
+        $className = $schema->typeDetails->class ?? 'object';
+        $class = $this->className($className);
         $id = "#/{$this->defsLabel}/{$class}";
         if ($this->refCallback) {
             ($this->refCallback)(new Reference(
                 id: $id,
-                class: $schema->typeDetails->class,
+                class: $className,
                 classShort: $class
             ));
         }
         $this->result = array_filter([
             '$ref' => $id,
             'description' => $schema->description,
-            'x-php-class' => $schema->typeDetails->class,
+            'x-php-class' => $className,
         ]);
     }
 

@@ -48,7 +48,7 @@ class GenerateDocs extends Command
         $timeStart = microtime(true);
 
         // Determine which docs to generate
-        if ($examplesOnly && $packagesOnly) {
+        if ((bool) $examplesOnly && (bool) $packagesOnly) {
             Cli::outln("Error: Cannot specify both --examples and --packages options.", [Color::BOLD, Color::RED]);
             return Command::FAILURE;
         }

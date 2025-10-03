@@ -30,7 +30,7 @@ trait HandlesInvocation
      * Sets provided input and options data.
      * @param string|array $input
      * @param array $options
-     * @return self
+     * @return static
      */
     public function with(
         string|array $input = [],

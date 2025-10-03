@@ -47,7 +47,7 @@ class ChatFactory
     }
     
     protected static function defaultProcessors(): CanApplyProcessors {
-        /** @psalm-suppress InvalidArgument - Processors have different TState constraints but work via canProcess() runtime check */
+        /** @psalm-suppress InvalidArgument - Processors work via canProcess() runtime check */
         return new StateProcessors(
             new AppendStepMessages(),
             new AccumulateTokenUsage(),

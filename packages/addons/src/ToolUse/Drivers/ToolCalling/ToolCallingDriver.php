@@ -82,12 +82,17 @@ class ToolCallingDriver implements CanUseTools
         Messages $messages,
         Tools $tools
     ) : PendingInference {
+        $toolChoice = is_array($this->toolChoice)
+            ? ($this->toolChoice['type'] ?? 'auto')
+            : $this->toolChoice;
+        assert(is_string($toolChoice));
+
         $inference = (new Inference)
             ->withLLMProvider($this->llm)
             ->withMessages($messages->toArray())
             ->withModel($this->model)
             ->withTools($tools->toToolSchema())
-            ->withToolChoice($this->toolChoice)
+            ->withToolChoice($toolChoice)
             ->withResponseFormat($this->responseFormat)
             ->withOptions(array_merge($this->options, ['parallel_tool_calls' => $this->parallelToolCalls]))
             ->withOutputMode($this->mode);

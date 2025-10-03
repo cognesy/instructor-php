@@ -51,6 +51,10 @@ trait HandlesFieldSchema
     }
 
     public function nestedType() : TypeDetails {
-        return $this->schema->typeDetails->nestedType;
+        $nestedType = $this->schema->typeDetails->nestedType;
+        if ($nestedType === null) {
+            throw new \Exception('Field does not have a nested type');
+        }
+        return $nestedType;
     }
 }

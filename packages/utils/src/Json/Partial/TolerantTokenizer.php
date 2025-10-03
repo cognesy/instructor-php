@@ -85,7 +85,7 @@ final class TolerantTokenizer
         // numbers (tolerant)
         if (preg_match('/[0-9\-]/', $ch)) {
             $start = $this->index - 1;
-            while ($this->index < $n && preg_match('/[0-9eE\+\-\.]/', $s[$this->index])) $this->index++;
+            while ($this->index < $n && preg_match('/[0-9eE\+\-\.]/', $s[$this->index]) === 1) $this->index++;
             $raw = substr($s, $start, $this->index - $start);
             $complete = ($this->index >= $n) || ctype_space($s[$this->index]) || strpbrk($s[$this->index], ',}]') !== false;
             return new Token($complete ? TokenType::Number : TokenType::NumberPartial, $raw);

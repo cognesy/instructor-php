@@ -195,7 +195,7 @@ class ResilientJsonParser
         return false;
     }
 
-    private function parseNull(): ?string {
+    private function parseNull(): null {
         $this->consume('null');
         return null;
     }
@@ -237,7 +237,7 @@ class ResilientJsonParser
                 $this->position++;
             } elseif ($char === '\\' && $this->position + 1 < $this->length) {
                 $nextChar = $this->input[$this->position + 1];
-                if (in_array($nextChar, ['n', 'r', 't', 'f', 'b'])) {
+                if (in_array($nextChar, ['n', 'r', 't', 'f', 'b'], true)) {
                     $this->position += 2;
                 } else {
                     break;

@@ -85,7 +85,7 @@ class GenerateExamplesCommand extends Command
         }
     }
 
-    private function renderSuccess($result, float $totalTime): void {
+    private function renderSuccess(mixed $result, float $totalTime): void {
         Cli::outln(
             sprintf("Done in %.2fs", $totalTime),
             [Color::BOLD, Color::YELLOW],

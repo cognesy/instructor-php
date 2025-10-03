@@ -15,10 +15,11 @@ class Str
      * Splits a string into an array by a delimiter.
      *
      * @param string $input The input string.
-     * @param string $delimiter The delimiter.
+     * @param non-empty-string $delimiter The delimiter.
      * @return array The array of strings.
      */
     static public function split(string $input, string $delimiter = ' ') : array {
+        assert($delimiter !== '', 'Delimiter must not be empty');
         return explode($delimiter, $input);
     }
 

@@ -128,14 +128,4 @@ final readonly class ToolCall
             id: $this->id
         );
     }
-
-    // INTERNAL ////////////////////////////////////////////////////
-
-    private function makeArgs(array|string $args) : array {
-        return match(true) {
-            is_array($args) => $args,
-            is_string($args) => Json::fromString($args)->toArray(),
-            default => []
-        };
-    }
 }

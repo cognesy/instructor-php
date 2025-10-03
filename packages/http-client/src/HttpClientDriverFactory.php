@@ -31,7 +31,7 @@ class HttpClientDriverFactory
      * Registers a custom HTTP driver with the specified name and closure.
      *
      * @param string $name The name of the driver to register.
-     * @param class-string|callable $driver The closure that creates the driver instance, accepting following closure arguments:
+     * @param class-string|callable(HttpClientConfig, EventDispatcherInterface): CanHandleHttpRequest $driver The closure that creates the driver instance, accepting following closure arguments:
      *   - HttpClientConfig $config: The configuration object for the HTTP client.
      *   - EventDispatcherInterface $events: The event dispatcher instance.
      * @return void
@@ -39,8 +39,7 @@ class HttpClientDriverFactory
     public static function registerDriver(string $name, string|callable $driver): void {
         self::$drivers[$name] = match(true) {
             is_string($driver) => fn($config, $events) => new $driver($config, $events),
-            is_callable($driver) => $driver,
-            default => throw new InvalidArgumentException("Invalid driver provided for {$name} - must be a class name or callable."),
+            default => $driver,
         };
     }
 

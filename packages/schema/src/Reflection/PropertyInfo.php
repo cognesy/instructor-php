@@ -118,7 +118,7 @@ class PropertyInfo
         // case 3: property is NOT public, but has a mutator method and the mutator parameter is not nullable
         if (!$this->isPublic() && $this->hasMutatorCandidates($this->propertyName)) {
             $mutatorParam = $this->getMutatorParam($this->propertyName);
-            if (is_null($mutatorParam)) {
+            if ($mutatorParam === null) {
                 return false; // no mutator found
             }
             return match(true) {
@@ -159,8 +159,7 @@ class PropertyInfo
 //            && interface_exists("\Symfony\Component\TypeInfo\TypeInterface");
 
         $class = "Symfony\Component\PropertyInfo\PropertyInfoExtractor";
-        $useV7Adapter = class_exists($class)
-            && method_exists($class, 'getType');
+        $useV7Adapter = class_exists($class) && method_exists($class, 'getType');
 
         return match(true) {
             $useV7Adapter => new PropertyInfoV7Adapter(
@@ -212,6 +211,7 @@ class PropertyInfo
         return $this->hasMutatorCandidates = false;
     }
 
+    /** @phpstan-ignore-next-line - method is intentionally unused */
     private function hasAccessorCandidates(string $propertyName) : bool {
         if (!is_null($this->hasAccessorCandidates)) {
             return $this->hasAccessorCandidates;

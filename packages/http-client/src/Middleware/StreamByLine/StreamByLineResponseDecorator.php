@@ -12,6 +12,9 @@ class StreamByLineResponseDecorator extends BaseResponseDecorator
 {
     private EventStreamReader $eventStreamReader;
 
+    /**
+     * @param callable(string): (bool|string)|null $parser
+     */
     public function __construct(
         HttpRequest              $request,
         HttpResponse             $response,
@@ -21,12 +24,12 @@ class StreamByLineResponseDecorator extends BaseResponseDecorator
         parent::__construct($request, $response);
         $this->eventStreamReader = new EventStreamReader(
             events: $events,
-            parser: $parser,
+            parser: $parser !== null ? \Closure::fromCallable($parser) : null,
         );
     }
 
     #[\Override]
-    public function stream(?int $chunkSize = null): iterable
+    public function stream(?int $chunkSize = null): \Generator
     {
         $stream = $this->response->stream($chunkSize);
         yield from $this->eventStreamReader->eventsFrom($stream);

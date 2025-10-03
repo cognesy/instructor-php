@@ -34,7 +34,7 @@ final readonly class MarkdownInfo
 
     private static function generateCasePrefix(string $markdownPath): string {
         $filename = pathinfo($markdownPath, PATHINFO_FILENAME);
-        $cleanName = preg_replace('/^([0-9]+[-_\s]*)+/', '', $filename);
+        $cleanName = preg_replace('/^([0-9]+[-_\s]*)+/', '', $filename) ?? $filename;
         return \Cognesy\Utils\Str::camel($cleanName) . '_';
     }
 }

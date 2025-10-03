@@ -56,8 +56,11 @@ readonly class StepTimingTag implements TagInterface
      */
     public function startDateTime(): \DateTimeImmutable {
         $timestamp = sprintf('%.6F', $this->startTime);
-        return \DateTimeImmutable::createFromFormat('U.u', $timestamp)
-            ?: \DateTimeImmutable::createFromFormat('U', (string)(int)$this->startTime);
+        $result = \DateTimeImmutable::createFromFormat('U.u', $timestamp);
+        if ($result === false) {
+            $result = \DateTimeImmutable::createFromFormat('U', (string)(int)$this->startTime);
+        }
+        return $result ?: new \DateTimeImmutable();
     }
 
     /**

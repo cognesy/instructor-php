@@ -112,7 +112,7 @@ class JsonSchema implements CanProvideJsonSchema
         $properties = [];
         if (isset($data['properties'])) {
             foreach ($data['properties'] as $propertyName => $propertyData) {
-                $isRequired = in_array($propertyName, $data['required'] ?? []);
+                $isRequired = in_array($propertyName, $data['required'] ?? [], true);
                 $properties[$propertyName] = JsonSchema::fromArray($propertyData, $propertyName, $isRequired);
             }
             $properties = array_filter($properties);
@@ -146,7 +146,7 @@ class JsonSchema implements CanProvideJsonSchema
     private static function extractMetaFields(array $data, array $excludedFields) : array {
         $meta = [];
         foreach ($data as $key => $value) {
-            if (in_array($key, $excludedFields)) {
+            if (in_array($key, $excludedFields, true)) {
                 continue;
             }
             // if key starts with x- add it to meta
@@ -174,7 +174,11 @@ class JsonSchema implements CanProvideJsonSchema
         foreach ($properties as $key => $property) {
             $index = match(true) {
                 is_int($key) && is_array($property) => $property['name'] ?? $property['x-name'] ?? null,
-                is_int($key) && is_object($property) => $property->name ?? $property->meta['name'] ?? $property->meta['x-name'] ?? null,
+                is_int($key) && is_object($property) => (
+                    (property_exists($property, 'name') ? $property->name : null)
+                    ?? (property_exists($property, 'meta') && isset($property->meta['name']) ? $property->meta['name'] : null)
+                    ?? (property_exists($property, 'meta') && isset($property->meta['x-name']) ? $property->meta['x-name'] : null)
+                ),
                 is_string($key) => $key,
                 default => null,
             };
@@ -185,7 +189,7 @@ class JsonSchema implements CanProvideJsonSchema
 
             $keyedProperties[$index] = match(true) {
                 $property instanceof JsonSchema => $property->withName($index),
-                is_array($property) => JsonSchema::fromArray($property)?->withName($index),
+                is_array($property) => JsonSchema::fromArray($property)->withName($index),
                 default => throw new Exception('Invalid property: ' . print_r($property, true)),
             };
         }

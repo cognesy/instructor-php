@@ -8,6 +8,22 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 
+/**
+ * @property mixed $stringProperty
+ * @property mixed $integerProperty
+ * @property mixed $boolProperty
+ * @property mixed $floatProperty
+ * @property mixed $datetimeProperty
+ * @property mixed $enumProperty
+ * @property mixed $optionProperty
+ * @property mixed $objectProperty
+ * @property mixed $arrayProperty
+ * @property mixed $collectionProperty
+ * @property mixed $collectionObjectProperty
+ * @property mixed $collectionEnumProperty
+ * @property mixed $collectionDateProperty
+ * @property mixed $structureProperty
+ */
 class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {
     use Traits\Structure\HandlesDefinition;

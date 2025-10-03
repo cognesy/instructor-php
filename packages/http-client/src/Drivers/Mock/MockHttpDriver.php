@@ -20,7 +20,7 @@ class MockHttpDriver implements CanHandleHttpRequest
 {
     /** @var array Array of legacy request matchers to predefined responses */
     private array $responses = [];
-    /** @var array<int,array{matchers: callable[], times: int|null, response: (callable|HttpResponse)}> */
+    /** @var array<int,array{matchers: array<callable(HttpRequest): bool>, times: int|null, response: (callable(HttpRequest): HttpResponse)|HttpResponse}> */
     private array $expectations = [];
 
     /** @var HttpRequest[] Array of received requests for inspection */
@@ -123,21 +123,21 @@ class MockHttpDriver implements CanHandleHttpRequest
 
     private function matchesLegacyCriteria(array $matcher, HttpRequest $request): bool {
         // Check URL match if defined
-        if (isset($matcher['url']) && $matcher['url'] !== null) {
+        if (isset($matcher['url'])) {
             if (!$this->matchesUrlCriteria($matcher['url'], $request->url())) {
                 return false;
             }
         }
 
         // Check method match if defined
-        if (isset($matcher['method']) && $matcher['method'] !== null) {
+        if (isset($matcher['method'])) {
             if ($matcher['method'] !== $request->method()) {
                 return false;
             }
         }
 
         // Check body match if defined
-        if (isset($matcher['body']) && $matcher['body'] !== null) {
+        if (isset($matcher['body'])) {
             if (!$this->matchesBodyCriteria($matcher['body'], $request->body()->toString())) {
                 return false;
             }
@@ -146,20 +146,24 @@ class MockHttpDriver implements CanHandleHttpRequest
         return true;
     }
 
+    /**
+     * @param string|callable(string): bool $urlCriteria
+     */
     private function matchesUrlCriteria(string|callable $urlCriteria, string $requestUrl): bool {
-        return match (true) {
-            is_string($urlCriteria) => $urlCriteria === $requestUrl,
-            is_callable($urlCriteria) => (bool)$urlCriteria($requestUrl),
-            default => false,
-        };
+        if (is_string($urlCriteria)) {
+            return $urlCriteria === $requestUrl;
+        }
+        return (bool)$urlCriteria($requestUrl);
     }
 
+    /**
+     * @param string|callable(string): bool $bodyCriteria
+     */
     private function matchesBodyCriteria(string|callable $bodyCriteria, string $requestBody): bool {
-        return match (true) {
-            is_string($bodyCriteria) => $bodyCriteria === $requestBody,
-            is_callable($bodyCriteria) => (bool)$bodyCriteria($requestBody),
-            default => false,
-        };
+        if (is_string($bodyCriteria)) {
+            return $bodyCriteria === $requestBody;
+        }
+        return (bool)$bodyCriteria($requestBody);
     }
 
     private function throwNoMatchException(HttpRequest $request): never {
@@ -171,10 +175,10 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * Add a predefined response for a specific request pattern
      *
-     * @param HttpResponse|callable $response The response to return or a callback that returns a response
-     * @param string|callable|null $url URL to match exactly or a callable that returns true if URL matches
+     * @param HttpResponse|(callable(HttpRequest): HttpResponse) $response The response to return or a callback that returns a response
+     * @param string|(callable(string): bool)|null $url URL to match exactly or a callable that returns true if URL matches
      * @param string|null $method HTTP method to match
-     * @param string|callable|null $body Body content to match exactly or a callable that returns true if body matches
+     * @param string|(callable(string): bool)|null $body Body content to match exactly or a callable that returns true if body matches
      * @return self
      */
     public function addResponse(
@@ -253,7 +257,7 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * INTERNAL: Register a compiled expectation (used by MockExpectation::reply()).
      *
-     * @param array{matchers: callable[], times: int|null, response: (callable|HttpResponse)} $compiled
+     * @param array{matchers: array<callable(HttpRequest): bool>, times: int|null, response: (callable(HttpRequest): HttpResponse)|HttpResponse} $compiled
      */
     public function registerExpectation(array $compiled): self {
         $this->expectations[] = $compiled;

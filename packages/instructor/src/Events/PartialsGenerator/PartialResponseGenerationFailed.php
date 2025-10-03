@@ -7,5 +7,5 @@ use Psr\Log\LogLevel;
 
 final class PartialResponseGenerationFailed extends Event
 {
-    public $logLevel = LogLevel::WARNING;
+    public string $logLevel = LogLevel::WARNING;
 }

@@ -15,27 +15,27 @@ class FileLogger implements LoggerInterface
     }
 
     #[\Override]
-    public function log($level, $message, array $context = []): void
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
         $timestamp = date('[Y-m-d H:i:s]');
-        $logMessage = sprintf('%s [%s] %s', $timestamp, strtoupper($level), $message);
+        $logMessage = sprintf('%s [%s] %s', $timestamp, strtoupper((string)$level), (string)$message);
         file_put_contents($this->logFile, $logMessage . PHP_EOL, FILE_APPEND);
     }
 
     #[\Override]
-    public function emergency($message, array $context = []): void { $this->log(LogLevel::EMERGENCY, $message, $context); }
+    public function emergency(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::EMERGENCY, $message, $context); }
     #[\Override]
-    public function alert($message, array $context = []): void { $this->log(LogLevel::ALERT, $message, $context); }
+    public function alert(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::ALERT, $message, $context); }
     #[\Override]
-    public function critical($message, array $context = []): void { $this->log(LogLevel::CRITICAL, $message, $context); }
+    public function critical(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::CRITICAL, $message, $context); }
     #[\Override]
-    public function error($message, array $context = []): void { $this->log(LogLevel::ERROR, $message, $context); }
+    public function error(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::ERROR, $message, $context); }
     #[\Override]
-    public function warning($message, array $context = []): void { $this->log(LogLevel::WARNING, $message, $context); }
+    public function warning(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::WARNING, $message, $context); }
     #[\Override]
-    public function notice($message, array $context = []): void { $this->log(LogLevel::NOTICE, $message, $context); }
+    public function notice(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::NOTICE, $message, $context); }
     #[\Override]
-    public function info($message, array $context = []): void { $this->log(LogLevel::INFO, $message, $context); }
+    public function info(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::INFO, $message, $context); }
     #[\Override]
-    public function debug($message, array $context = []): void { $this->log(LogLevel::DEBUG, $message, $context); }
+    public function debug(string|\Stringable $message, array $context = []): void { $this->log(LogLevel::DEBUG, $message, $context); }
 }

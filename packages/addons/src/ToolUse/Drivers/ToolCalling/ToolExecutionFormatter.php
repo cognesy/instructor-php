@@ -54,7 +54,10 @@ class ToolExecutionFormatter
                 is_string($value) => $value,
                 is_array($value) => Json::encode($value),
                 is_object($value) => Json::encode($value),
-                default => (string) $value,
+                $value === null => 'null',
+                is_bool($value) => $value ? 'true' : 'false',
+                is_int($value) || is_float($value) => (string) $value,
+                default => var_export($value, true),
             },
             metadata: [
                 'tool_call_id' => $toolCall->id(),

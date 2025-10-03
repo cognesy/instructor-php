@@ -153,7 +153,7 @@ class MiddlewareStack
     /**
      * Filter the middleware stack based on a condition
      *
-     * @param callable $callback Function that takes HttpMiddleware and returns bool
+     * @param callable(HttpMiddleware, int): bool $callback Function that takes HttpMiddleware and returns bool
      * @return self
      */
     public function filter(callable $callback): self {
@@ -172,7 +172,10 @@ class MiddlewareStack
             return $driver;
         }
 
-        return new MiddlewareHandler($driver, array_values($this->stack), $this->events);
+        $eventDispatcher = $this->events instanceof \Cognesy\Events\Dispatchers\EventDispatcher
+            ? $this->events
+            : null;
+        return new MiddlewareHandler($driver, array_values($this->stack), $eventDispatcher);
     }
 
     public function toDebugArray(): array {

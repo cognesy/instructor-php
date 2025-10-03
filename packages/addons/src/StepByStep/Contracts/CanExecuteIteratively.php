@@ -31,7 +31,8 @@ interface CanExecuteIteratively
 
     /**
      * Create an iterator to traverse through each step.
-     * @return Generator<TState>
+     * @param TState $state
+     * @return Generator<mixed, TState, mixed, mixed>
      */
     public function iterator(object $state): iterable;
 }

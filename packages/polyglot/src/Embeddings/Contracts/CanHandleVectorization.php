@@ -17,7 +17,7 @@ interface CanHandleVectorization
      *
      * @param array<string> $input
      * @param array $options
-     * @return \Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse
+     * @return HttpResponse
      */
     public function handle(EmbeddingsRequest $request) : HttpResponse;
     public function fromData(array $data): ?EmbeddingsResponse;

@@ -13,21 +13,23 @@ trait HandlesChatSteps
     // MUTATORS /////////////////////////////////////////////////
 
     /**
-     * @param object<ChatStep> $step
+     * @param ChatStep $step
      */
     public function withAddedStep(object $step): static {
         assert($step instanceof ChatStep);
+        /** @var ChatStep $step */
         return $this->with(steps: $this->steps->withAddedSteps($step));
     }
 
     /**
-     * @param object<ChatStep> ...$step
+     * @param ChatStep ...$step
      */
     public function withAddedSteps(object ...$step): static {
         return $this->with(steps: $this->steps->withAddedSteps(...$step));
     }
 
-    public function withCurrentStep(ChatStep $step): self {
+    public function withCurrentStep(object $step): static {
+        assert($step instanceof ChatStep);
         return $this->with(currentStep: $step);
     }
 

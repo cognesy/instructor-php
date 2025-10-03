@@ -12,8 +12,11 @@ class ResponseFormat
     private ?string $type;
     private ?bool $strict;
 
+    /** @var (Closure(): array)|null */
     private ?Closure $toTextHandler = null;
+    /** @var (Closure(): array)|null */
     private ?Closure $toJsonObjectHandler = null;
+    /** @var (Closure(): array)|null */
     private ?Closure $toJsonSchemaHandler = null;
 
     public function __construct(
@@ -61,6 +64,9 @@ class ResponseFormat
         return $this->schema ?? [];
     }
 
+    /**
+     * @param callable(array): array $filter
+     */
     public function schemaFilteredWith(callable $filter) : array {
         return $filter($this->schema());
     }
@@ -108,16 +114,25 @@ class ResponseFormat
 
     // MUTATORS ///////////////////////////////////////////////////////
 
+    /**
+     * @param Closure(): array $callback
+     */
     public function withToTextHandler(Closure $callback): self {
         $this->toTextHandler = $callback;
         return $this;
     }
 
+    /**
+     * @param Closure(): array $callback
+     */
     public function withToJsonObjectHandler(Closure $callback): self {
         $this->toJsonObjectHandler = $callback;
         return $this;
     }
 
+    /**
+     * @param Closure(): array $callback
+     */
     public function withToJsonSchemaHandler(Closure $callback): self {
         $this->toJsonSchemaHandler = $callback;
         return $this;
@@ -144,14 +159,6 @@ class ResponseFormat
                 'strict' => $this->strict ?? true,
             ]),
         ];
-    }
-
-    private function defaultAsUnrestricted(): array {
-        return match($this->type) {
-            'json_object' => $this->asJsonObject(),
-            'json_schema' => $this->asJsonSchema(),
-            default => $this->asText(),
-        };
     }
 
     protected function filterEmptyValues(array $data) : array {

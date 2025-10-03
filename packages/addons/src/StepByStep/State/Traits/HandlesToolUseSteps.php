@@ -12,20 +12,22 @@ trait HandlesToolUseSteps
 
     // MUTATORS /////////////////////////////////////////////////
 
-    public function withCurrentStep(ToolUseStep $step) : static {
+    public function withCurrentStep(object $step) : static {
+        assert($step instanceof ToolUseStep);
         return $this->with(currentStep: $step);
     }
 
     /**
-     * @param object<ToolUseStep> $step
+     * @param ToolUseStep $step
      */
     public function withAddedStep(object $step) : static {
         assert($step instanceof ToolUseStep);
+        /** @var ToolUseStep $step */
         return $this->with(steps: $this->steps->withAddedSteps($step));
     }
 
     /**
-     * @param object<ToolUseStep> ...$step
+     * @param ToolUseStep ...$step
      */
     public function withAddedSteps(object ...$step): static {
         return $this->with(steps: $this->steps->withAddedSteps(...$step));

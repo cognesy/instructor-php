@@ -43,7 +43,6 @@ trait HandlesDeserialization
     private function deserializeField(Structure $structure, Field $field, string $name, mixed $fieldData) : mixed {
         $type = $field->typeDetails();
         $value = match(true) {
-            ($type === null) => throw new \Exception("Undefined field `$name` found in JSON data."),
             ($type->isEnum() && $type->class !== null) => ($type->class)::from($fieldData),
             ($type->isCollection()) => $this->deserializeCollection($field, $fieldData),
             ($type->isArray()) => is_array($fieldData) ? $fieldData : [$fieldData],
@@ -51,7 +50,7 @@ trait HandlesDeserialization
             ($type->class() === Structure::class) => $structure->get($name)->fromArray($fieldData),
             ($type->class() === DateTime::class) => new DateTime($fieldData),
             ($type->class() === DateTimeImmutable::class) => new DateTimeImmutable($fieldData),
-            default => $this->deserializer->fromArray($fieldData, $type->class()),
+            default => $this->deserializer->fromArray($fieldData, $type->class() ?: ''),
         };
         return $value;
     }
@@ -68,7 +67,7 @@ trait HandlesDeserialization
                 ($typeDetails->class() === DateTime::class) => new DateTime($itemData),
                 ($typeDetails->class() === DateTimeImmutable::class) => new DateTimeImmutable($itemData),
                 ($typeDetails->isArray()) => is_array($itemData) ? $itemData : [$itemData],
-                default => $this->deserializer->fromArray($itemData, $typeDetails->class()),
+                default => $this->deserializer->fromArray($itemData, $typeDetails->class() ?: ''),
             };
         }
         return $values;

@@ -106,12 +106,12 @@ class ParameterInfo
         }
 
         if ($type instanceof \ReflectionUnionType) {
-            $types = array_map(fn(ReflectionType $t) => $t->getName(), $type->getTypes());
+            $types = array_map(fn(ReflectionType $t) => $t instanceof \ReflectionNamedType ? $t->getName() : 'mixed', $type->getTypes());
             return implode('|', $types);
         }
 
         if ($type instanceof \ReflectionIntersectionType) {
-            $types = array_map(fn(ReflectionType $t) => $t->getName(), $type->getTypes());
+            $types = array_map(fn(ReflectionType $t) => $t instanceof \ReflectionNamedType ? $t->getName() : 'mixed', $type->getTypes());
             return implode('&', $types);
         }
 
@@ -120,7 +120,7 @@ class ParameterInfo
 
     public function getDescription(): string {
         return match(true) {
-            $this->belongsToClassMethod => Descriptions::forMethodParameter(
+            $this->function instanceof \ReflectionMethod => Descriptions::forMethodParameter(
                 class: $this->function->getDeclaringClass()->getName(),
                 methodName: $this->function->getShortName(),
                 parameterName: $this->name

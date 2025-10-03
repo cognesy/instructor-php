@@ -69,7 +69,11 @@ class BladeDriver implements CanHandleTemplate
         if (!file_exists($templatePath)) {
             throw new Exception("Template '$path' file does not exist: $templatePath");
         }
-        return file_get_contents($templatePath);
+        $content = file_get_contents($templatePath);
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read template file: $templatePath");
+        }
+        return $content;
     }
 
     /**

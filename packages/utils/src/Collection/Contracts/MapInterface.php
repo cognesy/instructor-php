@@ -15,7 +15,7 @@ interface MapInterface extends Countable, IteratorAggregate
 {
     public function has(int|string $key): bool;
 
-    /** @return mixed<V> */
+    /** @return V */
     public function get(int|string $key): mixed; // throws OutOfBoundsException
 
     /** @return ?V */

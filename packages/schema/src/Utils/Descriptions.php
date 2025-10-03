@@ -70,7 +70,11 @@ class Descriptions
 
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
+    /**
+     * @param class-string $class
+     */
     private function makeClassDescription(string $class) : string {
+        /** @var class-string $class */
         $reflection = new ReflectionClass($class);
 
         // get #[Description] attributes

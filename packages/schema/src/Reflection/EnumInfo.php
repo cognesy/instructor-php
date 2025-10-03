@@ -8,8 +8,12 @@ class EnumInfo extends ClassInfo
 {
     protected ReflectionEnum $reflectionEnum;
 
+    /**
+     * @param class-string $class
+     */
     public function __construct(string $class) {
         parent::__construct($class);
+        /** @var class-string $class */
         $this->reflectionEnum = new ReflectionEnum($class);
     }
 
@@ -38,7 +42,10 @@ class EnumInfo extends ClassInfo
 
         $values = [];
         foreach ($enum->getCases() as $item) {
-            $values[] = $item->getValue()->value;
+            $enumInstance = $item->getValue();
+            if ($enumInstance instanceof \BackedEnum) {
+                $values[] = $enumInstance->value;
+            }
         }
         return $values;
     }

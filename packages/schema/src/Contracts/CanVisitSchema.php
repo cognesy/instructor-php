@@ -6,6 +6,7 @@ use Cognesy\Schema\Data\Schema\ArraySchema;
 use Cognesy\Schema\Data\Schema\ArrayShapeSchema;
 use Cognesy\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Schema\Data\Schema\EnumSchema;
+use Cognesy\Schema\Data\Schema\MixedSchema;
 use Cognesy\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\OptionSchema;
@@ -24,4 +25,5 @@ interface CanVisitSchema
     public function visitScalarSchema(ScalarSchema $schema): void;
     public function visitObjectRefSchema(ObjectRefSchema $schema): void;
     public function visitOptionSchema(OptionSchema $schema) : void;
+    public function visitMixedSchema(MixedSchema $schema): void;
 }

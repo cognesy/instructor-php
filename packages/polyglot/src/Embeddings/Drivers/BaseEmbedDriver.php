@@ -19,12 +19,14 @@ use RuntimeException;
 
 class BaseEmbedDriver implements CanHandleVectorization
 {
-    protected EmbeddingsConfig $config;
-    protected HttpClient $httpClient;
-    protected EventDispatcherInterface $events;
-
-    protected EmbedRequestAdapter $requestAdapter;
-    protected EmbedResponseAdapter $responseAdapter;
+    public function __construct(
+        protected EmbeddingsConfig $config,
+        protected HttpClient $httpClient,
+        protected EventDispatcherInterface $events,
+        protected EmbedRequestAdapter $requestAdapter,
+        protected EmbedResponseAdapter $responseAdapter
+    ) {
+    }
 
     /** @psalm-suppress InvalidReturnType, InvalidReturnStatement - Return type matches interface */
     #[\Override]

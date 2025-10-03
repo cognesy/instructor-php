@@ -13,14 +13,21 @@ use Throwable;
  */
 class PartialJsonParser
 {
-    private $parsers = [];
+    /** @var array<string, callable(string, Throwable): array> */
+    private array $parsers = [];
     private string $lastParseReminding = '';
+    /** @var (callable(string, mixed, string): void)|null */
     private $onExtraToken;
-    private $skipExtraTokens = true;
+    private bool $skipExtraTokens = true;
 
     public function __construct()
     {
-        $this->parsers = array_fill_keys([' ', "\r", "\n", "\t"], $this->parseSpace(...));
+        $this->parsers = [
+            ' ' => $this->parseSpace(...),
+            "\r" => $this->parseSpace(...),
+            "\n" => $this->parseSpace(...),
+            "\t" => $this->parseSpace(...),
+        ];
         $this->parsers['['] = $this->parseArray(...);
         $this->parsers['{'] = $this->parseObject(...);
         $this->parsers['"'] = $this->parseString(...);
@@ -52,7 +59,7 @@ class PartialJsonParser
             } catch (JsonException $e) {
                 [$data, $reminding] = $this->parseAny($json, $e);
                 $this->lastParseReminding = $reminding;
-                if ($this->onExtraToken && $reminding && !$this->skipExtraTokens) {
+                if ($this->onExtraToken !== null && $reminding && !$this->skipExtraTokens) {
                     ($this->onExtraToken)($json, $data, $reminding);
                 }
                 return match(true) {
@@ -71,7 +78,7 @@ class PartialJsonParser
         return $this->lastParseReminding;
     }
 
-    private function parseAny(string $json, Throwable $e) : array|object {
+    private function parseAny(string $json, Throwable $e) : array {
         if (!$json) {
             throw $e;
         }
@@ -82,7 +89,7 @@ class PartialJsonParser
         return $parser($json, $e);
     }
 
-    private function parseSpace(string $json, Throwable $e) : array|object {
+    private function parseSpace(string $json, Throwable $e) : array {
         return $this->parseAny(trim($json), $e);
     }
 
@@ -130,7 +137,7 @@ class PartialJsonParser
             $json = substr($json, 1);  // skip ':'
             $json = trim($json);
 
-            if (!$json || in_array($json[0], [',', '}'])) {
+            if (!$json || in_array($json[0], [',', '}'], true)) {
                 $acc[$key] = null;
                 if (strpos($json, ',') === 0) {
                     $json = substr($json, 1);

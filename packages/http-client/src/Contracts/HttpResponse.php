@@ -14,8 +14,8 @@ interface HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @param int $chunkSize
-     * @return Generator<string>
+     * @param int|null $chunkSize
+     * @return \Generator<string>
      */
-    public function stream(?int $chunkSize = null): iterable;
+    public function stream(?int $chunkSize = null): \Generator;
 }

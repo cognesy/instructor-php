@@ -21,8 +21,7 @@ final readonly class ContentNode extends Node
 
     private function extractCodeQuotes(string $content): array
     {
-        $matches = [];
         preg_match_all('/(?<!`)`([^`]+)`(?!`)/', $content, $matches);
-        return $matches[1] ?? [];
+        return $matches[1];
     }
 }

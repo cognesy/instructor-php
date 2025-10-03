@@ -18,6 +18,9 @@ final class RoundRobinSelector implements CanChooseNextParticipant
             throw new NoParticipantsException('No participants available to select from.');
         }
         $participant = $participants->at($this->index);
+        if ($participant === null) {
+            throw new NoParticipantsException('No participant found at index ' . $this->index);
+        }
         $this->index = ($this->index + 1) % $participants->count();
         return $participant;
     }

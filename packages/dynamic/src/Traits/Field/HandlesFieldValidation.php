@@ -5,12 +5,13 @@ use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesFieldValidation
 {
+    /** @var callable(mixed): ValidationResult|null */
     private $validator;
 
     /**
      * Defines a simple, inline validator for the field - the callback has to return true/false
      *
-     * @param callable $validator
+     * @param callable(mixed): bool $validator
      * @return $this
      */
     public function validIf(callable $validator, string $error = '') : self {
@@ -27,7 +28,7 @@ trait HandlesFieldValidation
     /**
      * Defines validator for the field - the callback has to return ValidationResult
      *
-     * @param callable $validator
+     * @param callable(mixed): ValidationResult $validator
      * @return $this
      */
     public function validator(callable $validator) : self {

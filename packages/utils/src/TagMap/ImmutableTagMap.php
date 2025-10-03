@@ -109,12 +109,14 @@ final readonly class ImmutableTagMap implements TagMapInterface
 
     #[\Override]
     public function merge(TagMapInterface $other): TagMapInterface {
-        return new self(self::mergeGroupedTags($this->tags, $other->tags));
+        $otherTags = $this->extractTagsFrom($other);
+        return new self(self::mergeGroupedTags($this->tags, $otherTags));
     }
 
     #[\Override]
     public function mergeInto(TagMapInterface $target): TagMapInterface {
-        return new self(self::mergeGroupedTags($target->tags, $this->tags));
+        $targetTags = $this->extractTagsFrom($target);
+        return new self(self::mergeGroupedTags($targetTags, $this->tags));
     }
 
     #[\Override]
@@ -144,6 +146,18 @@ final readonly class ImmutableTagMap implements TagMapInterface
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Extract grouped tags from another TagMapInterface instance
+     * @return array<class-string, array<TagInterface>>
+     */
+    private function extractTagsFrom(TagMapInterface $other): array {
+        if ($other instanceof self) {
+            return $other->tags;
+        }
+        // For other implementations, rebuild from flat array
+        return self::addTagsTo([], $other->getAllInOrder());
+    }
 
     private static function addTagsTo(array $target, array $tags) : array {
         foreach ($tags as $tag) {

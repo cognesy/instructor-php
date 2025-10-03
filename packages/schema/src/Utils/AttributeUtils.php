@@ -27,6 +27,7 @@ class AttributeUtils
         foreach ($attributes as $attribute) {
             $instance = $attribute->newInstance();
             if (property_exists($instance, $attributeProperty)) {
+                /** @phpstan-ignore-next-line - dynamic property access verified by property_exists */
                 $values[] = $instance->$attributeProperty;
             }
         }

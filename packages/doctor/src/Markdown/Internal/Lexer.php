@@ -6,8 +6,8 @@ final class Lexer
 {
     private int $position = 0;
     private int $line = 1;
-    private string $input;
-    private int $length;
+    private string $input = '';
+    private int $length = 0;
 
     /**
      * Tokenizes the input string into a generator of tokens.

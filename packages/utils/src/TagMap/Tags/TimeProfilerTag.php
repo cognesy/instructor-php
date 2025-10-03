@@ -62,7 +62,7 @@ readonly class TimeProfilerTag implements TagInterface
     public function startDateTime(): \DateTimeImmutable {
         $timestamp = sprintf('%.6F', $this->startTime);
         return \DateTimeImmutable::createFromFormat('U.u', $timestamp)
-            ?: \DateTimeImmutable::createFromFormat('U', (string)(int)$this->startTime);
+            ?: (\DateTimeImmutable::createFromFormat('U', (string)(int)$this->startTime) ?: new \DateTimeImmutable('@' . (int)$this->startTime));
     }
 
     /**
@@ -71,7 +71,7 @@ readonly class TimeProfilerTag implements TagInterface
     public function endDateTime(): \DateTimeImmutable {
         $timestamp = sprintf('%.6F', $this->endTime);
         return \DateTimeImmutable::createFromFormat('U.u', $timestamp)
-            ?: \DateTimeImmutable::createFromFormat('U', (string)(int)$this->endTime);
+            ?: (\DateTimeImmutable::createFromFormat('U', (string)(int)$this->endTime) ?: new \DateTimeImmutable('@' . (int)$this->endTime));
     }
 
     /**

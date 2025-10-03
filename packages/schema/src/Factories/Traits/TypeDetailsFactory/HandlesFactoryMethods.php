@@ -17,7 +17,7 @@ trait HandlesFactoryMethods
         if (empty($type)) {
             return $this->mixedType();
         }
-        if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
+        if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES, true)) {
             throw new \Exception('Unsupported scalar type: '.$type);
         }
         return new TypeDetails(
@@ -54,7 +54,7 @@ trait HandlesFactoryMethods
         $nestedType = match (true) {
             ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed nested type not supported for collections - use array'),
             ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('You have not specified collection element type'),
-            (in_array($typeName, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($typeName),
+            (in_array($typeName, TypeDetails::PHP_SCALAR_TYPES, true)) => $this->scalarType($typeName),
             default => $this->objectType($typeName),
         };
         return new TypeDetails(
@@ -99,7 +99,7 @@ trait HandlesFactoryMethods
             throw new \Exception('Enum must be backed by a string or int');
         }
         $backingType = $enumType ?? $classInfo->enumBackingType();
-        if (!in_array($backingType, TypeDetails::PHP_ENUM_TYPES)) {
+        if (!in_array($backingType, TypeDetails::PHP_ENUM_TYPES, true)) {
             throw new \Exception('Enum must be backed by a string or int');
         }
         return new TypeDetails(

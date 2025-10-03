@@ -126,11 +126,12 @@ test('asString works with custom renderer', function () {
         ['role' => 'user', 'content' => 'Hello'],
         ['role' => 'assistant', 'content' => 'Hi']
     ];
-    
-    $result = Messages::asString($messagesArray, ' | ', function($message) {
+
+    $result = Messages::asString($messagesArray, ' | ', function(array $message): string {
+        /** @var array{role: string, content: string} $message */
         return strtoupper($message['role']) . ': ' . $message['content'] . ' | ';
     });
-    
+
     expect($result)->toBe('USER: Hello | ASSISTANT: Hi | ');
 });
 

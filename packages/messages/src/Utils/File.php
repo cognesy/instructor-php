@@ -37,7 +37,11 @@ class File implements CanProvideMessages
      */
     public static function fromFile(string $imagePath): static {
         $mimeType = mime_content_type($imagePath);
-        $fileData = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($imagePath));
+        $contents = file_get_contents($imagePath);
+        if ($contents === false) {
+            throw new \RuntimeException("Failed to read file: {$imagePath}");
+        }
+        $fileData = 'data:' . $mimeType . ';base64,' . base64_encode($contents);
         return new static(fileData: $fileData, mimeType: $mimeType);
     }
 

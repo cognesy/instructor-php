@@ -117,7 +117,8 @@ class PartialsGenerator implements CanGeneratePartials
                 ->withValue($result->unwrap())
                 ->withContent($this->responseText);
         }
-        $this->events->dispatch(new StreamedResponseFinished(['partial' => $this->lastPartialResponse()->toArray()]));
+        $lastPartial = $this->lastPartialResponse();
+        $this->events->dispatch(new StreamedResponseFinished(['partial' => $lastPartial?->toArray() ?? []]));
 
         // finalize last function call
         // check if there are any toolCalls
@@ -139,9 +140,9 @@ class PartialsGenerator implements CanGeneratePartials
         return InferenceResponseFactory::fromPartialResponses($this->partialResponses);
     }
 
-    public function lastPartialResponse() : PartialInferenceResponse {
+    public function lastPartialResponse() : ?PartialInferenceResponse {
         if ($this->partialResponses->isEmpty()) {
-            throw new Exception('No partial responses found');
+            return null;
         }
         return $this->partialResponses->last();
     }
@@ -161,7 +162,7 @@ class PartialsGenerator implements CanGeneratePartials
         $hasBuffer = !empty($this->responseJson);
 
         // If a tool is already active, buffer is empty, and the same tool is signaled again, ignore duplicate start
-        if ($active && !$hasBuffer && ($active->name() === $maybeToolName)) {
+        if ($active !== null && !$hasBuffer && ($active->name() === $maybeToolName)) {
             return;
         }
 
@@ -171,8 +172,8 @@ class PartialsGenerator implements CanGeneratePartials
             $this->responseJson = '';
         }
 
-        // Start the new (or first) tool call with the signaled or default name
-        $this->newToolCall($maybeToolName ?? $responseModel->toolName());
+        // Start the new (or first) tool call with the signaled name
+        $this->newToolCall($maybeToolName);
     }
 
     protected function handleDelta(
@@ -219,36 +220,39 @@ class PartialsGenerator implements CanGeneratePartials
         return $result;
     }
 
-    protected function newToolCall(string $name) : ToolCall {
+    protected function newToolCall(string $name) : void {
         $this->toolCalls = $this->toolCalls->withAddedToolCall($name);
         $newToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallStarted(['toolCall' => $newToolCall?->toArray()]));
-        return $newToolCall;
     }
 
-    protected function updateToolCall(string $name, string $responseJson) : ToolCall {
+    protected function updateToolCall(string $name, string $responseJson) : void {
         $this->toolCalls = $this->toolCalls->withLastToolCallUpdated($name, $responseJson);
         $updatedToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallUpdated(['toolCall' => $updatedToolCall?->toArray()]));
-        return $updatedToolCall;
     }
 
-    protected function finalizeToolCall(string $name, string $responseJson) : ToolCall {
+    protected function finalizeToolCall(string $name, string $responseJson) : void {
         $this->toolCalls = $this->toolCalls->withLastToolCallUpdated($name, $responseJson);
         $finalizedToolCall = $this->toolCalls->last();
         $this->events->dispatch(new StreamedToolCallCompleted(['toolCall' => $finalizedToolCall?->toArray()]));
-        return $finalizedToolCall;
     }
 
     private function makeDeltaPipeline(ResponseModel $responseModel) : Pipeline {
         return Pipeline::builder(ErrorStrategy::FailFast)
             ->through(fn($json) => $this->validatePartialResponse($json, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
-            ->tap(fn($json) => $this->events->dispatch(new PartialJsonReceived(['partialJson' => $json])))
-            ->tap(fn($json) => $this->updateToolCall($responseModel->toolName(), $json))
+            ->tap(function($json) use ($responseModel) : void {
+                $this->events->dispatch(new PartialJsonReceived(['partialJson' => $json]));
+            })
+            ->tap(function($json) use ($responseModel) : void {
+                $this->updateToolCall($responseModel->toolName(), $json);
+            })
             ->through(fn($json) => $this->tryGetPartialObject($json, $responseModel))
-            ->onFailure(fn($result) => $this->events->dispatch(
-                new PartialResponseGenerationFailed(Arrays::asArray($result->exception()))
-            ))
+            ->onFailure(function($result) : void {
+                $this->events->dispatch(
+                    new PartialResponseGenerationFailed(Arrays::asArray($result->exception()))
+                );
+            })
             ->finally(fn($state) => $this->getChangedOnly($state->result()))
             ->create();
     }

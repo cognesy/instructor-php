@@ -138,7 +138,7 @@ class InferenceExecution
      * True if the latest finalized attempt succeeded.
      */
     public function isSuccessful(): bool {
-        if ($this->currentAttempt && !$this->currentAttempt->isFinalized()) {
+        if ($this->currentAttempt !== null && !$this->currentAttempt->isFinalized()) {
             return false;
         }
         $last = $this->attempts->last();

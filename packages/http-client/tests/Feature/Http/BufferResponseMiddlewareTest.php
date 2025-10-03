@@ -116,7 +116,7 @@ class MockResponse implements HttpResponse
         return $this->body;
     }
 
-    public function stream(?int $chunkSize = null): iterable
+    public function stream(?int $chunkSize = null): \Generator
     {
         $this->handler->incrementStreamReadCount();
         yield $this->body;
@@ -154,7 +154,7 @@ class MockStreamResponse implements HttpResponse
         return implode('', $this->chunks);
     }
 
-    public function stream(?int $chunkSize = null): iterable
+    public function stream(?int $chunkSize = null): \Generator
     {
         $this->handler->incrementStreamReadCount();
         foreach ($this->chunks as $chunk) {

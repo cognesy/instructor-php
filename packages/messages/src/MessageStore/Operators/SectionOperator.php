@@ -41,7 +41,11 @@ final readonly class SectionOperator
         if (!$this->store->sections()->has($this->sectionName)) {
             return Section::empty($this->sectionName);
         }
-        return $this->store->sections()->get($this->sectionName);
+        $section = $this->store->sections()->get($this->sectionName);
+        if ($section === null) {
+            return Section::empty($this->sectionName);
+        }
+        return $section;
     }
 
     public function exists(): bool {

@@ -37,11 +37,15 @@ class Image implements CanProvideMessages
      * Create an Image object from a file.
      *
      * @param string $imagePath The path to the image file.
-     * @return Image
+     * @return static
      */
     public static function fromFile(string $imagePath): static {
         $mimeType = mime_content_type($imagePath);
-        $imageBase64 = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($imagePath));
+        $contents = file_get_contents($imagePath);
+        if ($contents === false) {
+            throw new \RuntimeException("Failed to read image file: {$imagePath}");
+        }
+        $imageBase64 = 'data:' . $mimeType . ';base64,' . base64_encode($contents);
         return new static($imageBase64, $mimeType);
     }
 
@@ -50,7 +54,7 @@ class Image implements CanProvideMessages
      *
      * @param string $base64string The base64 encoded string.
      * @param string $mimeType The MIME type of the image.
-     * @return Image
+     * @return static
      */
     public static function fromBase64(string $base64string, string $mimeType): static {
         $prefix = 'data:{$mimeType};base64,';
@@ -65,7 +69,7 @@ class Image implements CanProvideMessages
      *
      * @param string $imageUrl The URL of the image.
      * @param string $mimeType The MIME type of the image.
-     * @return Image
+     * @return static
      */
     public static function fromUrl(string $imageUrl, string $mimeType): static {
         return new static($imageUrl, $mimeType);

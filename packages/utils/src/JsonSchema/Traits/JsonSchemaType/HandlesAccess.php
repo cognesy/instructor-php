@@ -13,42 +13,42 @@ trait HandlesAccess
 
     public function isArray() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_ARRAY, $this->types);
+            && in_array(JsonSchemaType::JSON_ARRAY, $this->types, true);
     }
 
     public function isObject() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_OBJECT, $this->types);
+            && in_array(JsonSchemaType::JSON_OBJECT, $this->types, true);
     }
 
     public function isString() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_STRING, $this->types);
+            && in_array(JsonSchemaType::JSON_STRING, $this->types, true);
     }
 
     public function isInteger() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_INTEGER, $this->types);
+            && in_array(JsonSchemaType::JSON_INTEGER, $this->types, true);
     }
 
     public function isBoolean() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_BOOLEAN, $this->types);
+            && in_array(JsonSchemaType::JSON_BOOLEAN, $this->types, true);
     }
 
     public function isNumber() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_NUMBER, $this->types);
+            && in_array(JsonSchemaType::JSON_NUMBER, $this->types, true);
     }
 
     public function isNull() : bool {
         return count($this->types) === 1
-            && in_array(JsonSchemaType::JSON_NULL, $this->types);
+            && in_array(JsonSchemaType::JSON_NULL, $this->types, true);
     }
 
     public function isScalar() : bool {
         foreach($this->types as $type) {
-            if (!in_array($type, JsonSchemaType::JSON_SCALAR_TYPES)) {
+            if (!in_array($type, JsonSchemaType::JSON_SCALAR_TYPES, true)) {
                 return false;
             }
         }

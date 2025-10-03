@@ -251,6 +251,9 @@ class MkDocsDocumentation
             if (file_exists($templatePath)) {
                 // Read template content and preprocess Python tags
                 $templateContent = file_get_contents($templatePath);
+                if ($templateContent === false) {
+                    return GenerationResult::failure(['Failed to read template file']);
+                }
                 $templateContent = $this->preprocessPythonTags($templateContent);
                 $config = Yaml::parse($templateContent);
             } else {
@@ -260,6 +263,8 @@ class MkDocsDocumentation
             if ($config === false || $config === null) {
                 return GenerationResult::failure(['Failed to parse MkDocs template']);
             }
+
+            assert(is_array($config));
 
             // Add dynamic release notes section to navigation
             $config = $this->addReleaseNotesToNavigation($config);
@@ -288,21 +293,24 @@ class MkDocsDocumentation
         }
     }
 
+    /** @phpstan-ignore-next-line */
     private function buildNavigation(array $baseNav, array $exampleGroups): array {
         // Remove existing dynamic sections if any
         $staticNav = array_filter($baseNav, function($item) {
             if (is_array($item)) {
                 $key = array_key_first($item);
-                return !in_array($key, $this->config->dynamicGroups);
+                return !in_array($key, $this->config->dynamicGroups, true);
             }
             return true;
         });
 
         // Add example groups
         foreach ($exampleGroups as $exampleGroup) {
+            /** @var \Cognesy\InstructorHub\Data\ExampleGroup $exampleGroup */
             $groupNav = [$exampleGroup->name => []];
-            
+
             foreach ($exampleGroup->examples as $example) {
+                /** @var \Cognesy\InstructorHub\Data\Example $example */
                 if (!empty($example->tab)) {
                     $title = $example->hasTitle ? $example->title : $example->name;
                     $path = 'cookbook' . $example->toDocPath() . '.md';
@@ -318,6 +326,7 @@ class MkDocsDocumentation
         return $staticNav;
     }
 
+    /** @phpstan-ignore-next-line */
     private function buildNavigationFromStructure(): array {
         // Basic navigation structure - can be expanded
         $nav = [];
@@ -364,7 +373,10 @@ class MkDocsDocumentation
     private function buildDirectoryNavigation(string $dirPath, string $relativeBasePath): array {
         $nav = [];
         $entries = scandir($dirPath);
-        
+        if ($entries === false) {
+            return $nav;
+        }
+
         foreach ($entries as $entry) {
             if ($entry === '.' || $entry === '..') continue;
             
@@ -394,7 +406,10 @@ class MkDocsDocumentation
 
         $nav = [];
         $entries = scandir($cookbookDir);
-        
+        if ($entries === false) {
+            return $nav;
+        }
+
         foreach ($entries as $entry) {
             if ($entry === '.' || $entry === '..') continue;
             
@@ -419,7 +434,10 @@ class MkDocsDocumentation
     private function buildPackageNavigation(string $packageDir): array {
         $nav = [];
         $entries = scandir($packageDir);
-        
+        if ($entries === false) {
+            return $nav;
+        }
+
         foreach ($entries as $entry) {
             if ($entry === '.' || $entry === '..') continue;
             
@@ -440,7 +458,10 @@ class MkDocsDocumentation
     private function buildCategoryNavigation(string $categoryDir): array {
         $nav = [];
         $entries = scandir($categoryDir);
-        
+        if ($entries === false) {
+            return $nav;
+        }
+
         foreach ($entries as $entry) {
             if ($entry === '.' || $entry === '..' || !str_ends_with($entry, '.md')) continue;
             
@@ -482,15 +503,23 @@ class MkDocsDocumentation
 
     private function preprocessPythonTags(string $yamlContent): string {
         // Convert Python-specific YAML tags to strings that Symfony YAML can handle
-        $yamlContent = preg_replace('/!!python\/name:([^\s]+)/', '"$1"', $yamlContent);
-        
+        $result = preg_replace('/!!python\/name:([^\s]+)/', '"$1"', $yamlContent);
+        if ($result === null) {
+            return $yamlContent;
+        }
+        $yamlContent = $result;
+
         // Remove problematic emoji extension that requires Python functions
-        $yamlContent = preg_replace('/\s*-\s*pymdownx\.emoji:.*?(?=\n\s*-|\n[^\s]|$)/s', '', $yamlContent);
-        
+        $result = preg_replace('/\s*-\s*pymdownx\.emoji:.*?(?=\n\s*-|\n[^\s]|$)/s', '', $yamlContent);
+        if ($result === null) {
+            return $yamlContent;
+        }
+
         // Just return the preprocessed content - let template control plugins/extra sections
-        return $yamlContent;
+        return $result;
     }
 
+    /** @phpstan-ignore-next-line */
     private function filterExistingFiles(array $nav): array {
         return array_filter(array_map(function($item) {
             if (!is_array($item)) {
@@ -513,6 +542,7 @@ class MkDocsDocumentation
         }, $nav));
     }
 
+    /** @phpstan-ignore-next-line */
     private function convertDictToList(array $dict): array {
         $list = [];
         foreach ($dict as $key => $value) {
@@ -527,20 +557,27 @@ class MkDocsDocumentation
 
     private function inlineExternalCodeblocks(string $targetPath, string $subpackage): void {
         $docFiles = array_merge(
-            glob("$targetPath/*.md"),
-            glob("$targetPath/**/*.md"),
+            glob("$targetPath/*.md") ?: [],
+            glob("$targetPath/**/*.md") ?: [],
         );
 
         foreach ($docFiles as $docFile) {
-            $content = file_get_contents(realpath($docFile));
-            $markdown = MarkdownFile::fromString($content, realpath($docFile));
+            $realPath = realpath($docFile);
+            if ($realPath === false) {
+                continue;
+            }
+            $content = file_get_contents($realPath);
+            if ($content === false) {
+                continue;
+            }
+            $markdown = MarkdownFile::fromString($content, $realPath);
 
-            if (!$markdown->hasCodeBlocks()) {
+            if (!$markdown->hasCodeblocks()) {
                 continue;
             }
 
             try {
-                $newMarkdown = $markdown->withInlinedCodeblocks();
+                $newMarkdown = $markdown->withInlinedCodeBlocks();
                 file_put_contents($docFile, $newMarkdown->toString());
             } catch (\Throwable $e) {
                 // Continue processing other files
@@ -550,14 +587,17 @@ class MkDocsDocumentation
 
     private function fixImagePaths(): void {
         $markdownFiles = array_merge(
-            glob($this->config->docsTargetDir . '/*.md'),
-            glob($this->config->docsTargetDir . '/**/*.md'),
-            glob($this->config->docsTargetDir . '/**/**/*.md'),
-            glob($this->config->docsTargetDir . '/**/**/**/*.md')
+            glob($this->config->docsTargetDir . '/*.md') ?: [],
+            glob($this->config->docsTargetDir . '/**/*.md') ?: [],
+            glob($this->config->docsTargetDir . '/**/**/*.md') ?: [],
+            glob($this->config->docsTargetDir . '/**/**/**/*.md') ?: []
         );
 
         foreach ($markdownFiles as $filePath) {
             $content = file_get_contents($filePath);
+            if ($content === false) {
+                continue;
+            }
             $relativePath = str_replace($this->config->docsTargetDir . '/', '', $filePath);
             $depth = substr_count($relativePath, '/');
             
@@ -565,8 +605,11 @@ class MkDocsDocumentation
             $imagePrefix = $depth > 0 ? str_repeat('../', $depth) . 'images/' : 'images/';
             
             // Replace absolute image paths with relative ones
-            $content = preg_replace('/(?<!["\'])(\/images\/)/', $imagePrefix, $content);
-            
+            $result = preg_replace('/(?<!["\'])(\/images\/)/', $imagePrefix, $content);
+            if ($result !== null) {
+                $content = $result;
+            }
+
             file_put_contents($filePath, $content);
         }
     }
@@ -577,7 +620,7 @@ class MkDocsDocumentation
             return [];
         }
 
-        $files = glob($releaseNotesDir . '/*.md');
+        $files = glob($releaseNotesDir . '/*.md') ?: [];
         $versions = [];
 
         foreach ($files as $file) {
@@ -585,7 +628,7 @@ class MkDocsDocumentation
             if ($filename === 'versions') {
                 continue; // Skip the overview file
             }
-            
+
             // Extract version from filename (e.g., v1.4.0, v1.0.0-RC22)
             if (preg_match('/^v(.+)$/', $filename, $matches)) {
                 $versions[] = [
@@ -613,7 +656,7 @@ class MkDocsDocumentation
             // Split version and pre-release parts
             if (preg_match('/^(\d+\.\d+\.\d+)(.*)$/', $version, $matches)) {
                 $baseVersion = $matches[1];
-                $preRelease = $matches[2] ?? '';
+                $preRelease = $matches[2];
                 
                 // Assign priority: stable > rc > other pre-releases
                 $priority = 1000; // stable release

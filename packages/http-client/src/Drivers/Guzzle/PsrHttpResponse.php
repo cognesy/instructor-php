@@ -68,10 +68,10 @@ class PsrHttpResponse implements HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @return iterable<string>
+     * @return \Generator<string>
      */
     #[\Override]
-    public function stream(?int $chunkSize = null): iterable {
+    public function stream(?int $chunkSize = null): \Generator {
         while (!$this->stream->eof()) {
             $chunk = $this->stream->read($chunkSize ?? $this->streamChunkSize);
             $this->events->dispatch(new HttpResponseChunkReceived($chunk));

@@ -41,6 +41,7 @@ final readonly class StateProcessors implements CanApplyProcessors
      * Apply all processors to the state using middleware chain pattern.
      *
      * @param TState $state
+     * @param (callable(TState): TState)|null $terminalFn
      * @return TState
      */
     #[\Override]
@@ -51,11 +52,21 @@ final readonly class StateProcessors implements CanApplyProcessors
 
     // INTERNALS ////////////////////////////////////////////
 
+    /**
+     * @param (callable(TState): TState)|null $terminalFn
+     * @return Closure(TState): TState
+     */
     private function buildMiddlewareChain(?callable $terminalFn = null): Closure {
-        $next = match(true) {
-            ($terminalFn !== null) => $terminalFn,
-            default => fn(object $state): object => $state,
+        /**
+         * @param TState $state
+         * @return TState
+         */
+        $identity = function(object $state): object {
+            return $state;
         };
+
+        /** @var callable(TState): TState $next */
+        $next = $terminalFn ?? $identity;
 
         foreach ($this->reversed() as $processor) {
             $currentNext = $next;
@@ -63,9 +74,14 @@ final readonly class StateProcessors implements CanApplyProcessors
                 if (!$processor->canProcess($state)) {
                     return $currentNext($state);
                 }
+                /**
+                 * @var TState $state
+                 * @psalm-suppress InvalidArgument - Processors work via canProcess() runtime check
+                 */
                 return $processor->process($state, $currentNext);
             };
         }
+        /** @var Closure(TState): TState $next */
         return $next;
     }
 

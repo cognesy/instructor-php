@@ -88,9 +88,13 @@ final class HttpClientBuilder
 
     /**
      * Convenience: attach a MockHttpDriver and optionally configure expectations.
+     * @param callable(MockHttpDriver): void|null $configure
      */
     public function withMock(?callable $configure = null): self {
-        $mock = new MockHttpDriver($this->events);
+        $eventDispatcher = $this->events instanceof \Cognesy\Events\Dispatchers\EventDispatcher
+            ? $this->events
+            : null;
+        $mock = new MockHttpDriver($eventDispatcher);
         if ($configure) {
             $configure($mock);
         }
@@ -218,7 +222,13 @@ final class HttpClientBuilder
             'preset' => $this->debugPreset,
         ]));
 
-        return DebugConfig::fromArray($config);
+        if (is_array($config)) {
+            return DebugConfig::fromArray($config);
+        }
+        if ($config instanceof DebugConfig) {
+            return $config;
+        }
+        throw new \InvalidArgumentException('Invalid debug configuration type');
     }
 
     private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack {

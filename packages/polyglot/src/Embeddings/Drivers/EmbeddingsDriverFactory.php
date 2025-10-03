@@ -26,7 +26,10 @@ class EmbeddingsDriverFactory
         $this->events = $events;
     }
 
-    public static function registerDriver(string $name, string|callable $driver) {
+    /**
+     * @param callable(EmbeddingsConfig, HttpClient, EventDispatcherInterface): CanHandleVectorization|string $driver
+     */
+    public static function registerDriver(string $name, string|callable $driver) : void {
         self::$drivers[$name] = match(true) {
             is_string($driver) => fn($config, $httpClient, $events) => new $driver($config, $httpClient, $events),
             is_callable($driver) => $driver,
@@ -44,7 +47,7 @@ class EmbeddingsDriverFactory
         $type = $config->driver ?? 'openai';
 
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
-        if (!$driver) {
+        if ($driver === null) {
             throw new InvalidArgumentException("Unknown driver: {$type}");
         }
 
@@ -59,6 +62,9 @@ class EmbeddingsDriverFactory
 
     // INTERNAL ////////////////////////////////////////////////////
 
+    /**
+     * @return (callable(EmbeddingsConfig, HttpClient, EventDispatcherInterface): CanHandleVectorization)|null
+     */
     protected function getBundledDriver(string $type) : ?callable {
         return match ($type) {
             'azure' => fn($config, $httpClient, $events) => new AzureOpenAIDriver($config, $httpClient, $events),

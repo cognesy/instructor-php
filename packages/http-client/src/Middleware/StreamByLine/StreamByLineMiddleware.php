@@ -14,9 +14,13 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class StreamByLineMiddleware extends BaseMiddleware
 {
+    /** @var Closure(string): (bool|string) */
     protected Closure $parser;
     protected EventDispatcherInterface $events;
 
+    /**
+     * @param callable(string): (bool|string)|null $parser
+     */
     public function __construct(
         ?callable $parser = null,
         ?EventDispatcherInterface $events = null

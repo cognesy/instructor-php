@@ -14,6 +14,7 @@ use Cognesy\Utils\TagMap\Tags\ErrorTag;
 use RuntimeException;
 
 readonly final class Call implements CanProcessState {
+    /** @var Closure(CanCarryState):mixed */
     private Closure $normalizedCall;
     private NullStrategy $onNull;
 

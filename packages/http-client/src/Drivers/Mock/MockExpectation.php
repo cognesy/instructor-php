@@ -10,11 +10,10 @@ use Cognesy\Http\Data\HttpRequest;
  */
 class MockExpectation
 {
-    /** @var callable[] */
+    /** @var array<callable(HttpRequest): bool> */
     private array $matchers = [];
     /** @var int|null Times this expectation can be used; null means unlimited */
     private ?int $times = null;
-    private ?bool $requireStream = null;
 
     public function __construct(private readonly MockHttpDriver $driver) {}
 
@@ -28,26 +27,44 @@ class MockExpectation
         return $this;
     }
 
+    /**
+     * @param string|(callable(string): bool)|null $url
+     */
     public function get(string|callable|null $url = null): self {
         return $this->method('GET')->url($url);
     }
 
+    /**
+     * @param string|(callable(string): bool)|null $url
+     */
     public function post(string|callable|null $url = null): self {
         return $this->method('POST')->url($url);
     }
 
+    /**
+     * @param string|(callable(string): bool)|null $url
+     */
     public function put(string|callable|null $url = null): self {
         return $this->method('PUT')->url($url);
     }
 
+    /**
+     * @param string|(callable(string): bool)|null $url
+     */
     public function patch(string|callable|null $url = null): self {
         return $this->method('PATCH')->url($url);
     }
 
+    /**
+     * @param string|(callable(string): bool)|null $url
+     */
     public function delete(string|callable|null $url = null): self {
         return $this->method('DELETE')->url($url);
     }
 
+    /**
+     * @param string|(callable(string): bool)|null $matcher
+     */
     public function url(string|callable|null $matcher): self {
         if ($matcher === null) {
             return $this;
@@ -78,6 +95,9 @@ class MockExpectation
         return $this;
     }
 
+    /**
+     * @param string|(callable(string): bool) $value
+     */
     public function header(string $name, string|callable $value): self {
         $lname = strtolower($name);
         $this->matchers[] = function (HttpRequest $r) use ($lname, $value): bool {
@@ -99,7 +119,6 @@ class MockExpectation
     }
 
     public function withStream(?bool $stream): self {
-        $this->requireStream = $stream;
         $this->matchers[] = fn(HttpRequest $r): bool => $stream === null ? true : $r->isStreamed() === $stream;
         return $this;
     }
@@ -131,6 +150,9 @@ class MockExpectation
         return $this;
     }
 
+    /**
+     * @param callable(string): bool $predicate
+     */
     public function body(callable $predicate): self {
         $this->matchers[] = fn(HttpRequest $r): bool => (bool)$predicate($r->body()->toString());
         return $this;
@@ -143,6 +165,9 @@ class MockExpectation
 
     // Responses //////////////////////////////////////////////////////////
 
+    /**
+     * @param HttpResponse|(callable(HttpRequest): HttpResponse) $response
+     */
     public function reply(HttpResponse|callable $response): MockHttpDriver {
         $compiled = [
             'matchers' => $this->matchers,

@@ -251,14 +251,16 @@ it('creates structure from JSON Schema', function() {
     expect($structure->field('arrayProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_ARRAY);
     expect($structure->field('stringCollectionProperty')->name())->toBe('stringCollectionProperty');
     expect($structure->field('stringCollectionProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_COLLECTION);
-    expect($structure->field('stringCollectionProperty')->typeDetails()->nestedType->type())->toBe(TypeDetails::PHP_STRING);
-    expect($structure->field('stringCollectionProperty')->typeDetails()->nestedType->class)->toBeEmpty();
-    expect($structure->field('stringCollectionProperty')->typeDetails()->nestedType->enumValues())->toBeEmpty();
+    $stringCollectionNestedType = $structure->field('stringCollectionProperty')->typeDetails()->nestedType;
+    expect($stringCollectionNestedType?->type())->toBe(TypeDetails::PHP_STRING);
+    expect($stringCollectionNestedType?->class)->toBeEmpty();
+    expect($stringCollectionNestedType?->enumValues())->toBeEmpty();
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
     expect($structure->field('collectionProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_COLLECTION);
-    expect($structure->field('collectionProperty')->typeDetails()->nestedType->type())->toBe(TypeDetails::PHP_ENUM);
-    expect($structure->field('collectionProperty')->typeDetails()->nestedType->class)->toBe(TestEnum::class);
-    expect($structure->field('collectionProperty')->typeDetails()->nestedType->enumValues())->toBe(['A', 'B']);
+    $collectionNestedType = $structure->field('collectionProperty')->typeDetails()->nestedType;
+    expect($collectionNestedType?->type())->toBe(TypeDetails::PHP_ENUM);
+    expect($collectionNestedType?->class)->toBe(TestEnum::class);
+    expect($collectionNestedType?->enumValues())->toBe(['A', 'B']);
 });
 
 it('creates structure from array', function() {

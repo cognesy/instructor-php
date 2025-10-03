@@ -8,6 +8,9 @@ use Exception;
 
 trait HandlesDefinition
 {
+    /**
+     * @param array<Field>|callable(Structure): array<Field> $fields
+     */
     static public function define(
         string $name,
         array|callable $fields,

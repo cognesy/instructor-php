@@ -27,11 +27,11 @@ trait HandlesAccess
     }
 
     public function docString() : string {
-        return $this->docString;
+        return $this->docString ?? '';
     }
 
     public function isScalar() : bool {
-        return in_array($this->type, [self::PHP_INT, self::PHP_STRING, self::PHP_BOOL, self::PHP_FLOAT]);
+        return in_array($this->type, [self::PHP_INT, self::PHP_STRING, self::PHP_BOOL, self::PHP_FLOAT], true);
     }
 
     public function isMixed() : bool {
@@ -63,7 +63,7 @@ trait HandlesAccess
     }
 
     public function isArray() : bool {
-        return in_array($this->type, [self::PHP_ARRAY, self::PHP_COLLECTION]);
+        return in_array($this->type, [self::PHP_ARRAY, self::PHP_COLLECTION], true);
     }
 
     public function isCollection() : bool {
@@ -71,23 +71,23 @@ trait HandlesAccess
     }
 
     public function isCollectionOf(string $type) : bool {
-        return $this->isCollection() && $this->nestedType->type() === $type;
+        return $this->isCollection() && $this->nestedType?->type() === $type;
     }
 
     public function isCollectionOfScalar() : bool {
-        return $this->isCollection() && $this->nestedType->isScalar();
+        return $this->isCollection() && ($this->nestedType?->isScalar() ?? false);
     }
 
     public function isCollectionOfObject() : bool {
-        return $this->isCollection() && $this->nestedType->isObject();
+        return $this->isCollection() && ($this->nestedType?->isObject() ?? false);
     }
 
     public function isCollectionOfEnum() : bool {
-        return $this->isCollection() && $this->nestedType->isEnum();
+        return $this->isCollection() && ($this->nestedType?->isEnum() ?? false);
     }
 
     public function isCollectionOfArray() : bool {
-        return $this->isCollection() && $this->nestedType->isArray();
+        return $this->isCollection() && ($this->nestedType?->isArray() ?? false);
     }
 
     public function hasNestedType() : bool {

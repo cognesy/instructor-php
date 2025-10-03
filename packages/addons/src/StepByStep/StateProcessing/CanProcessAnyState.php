@@ -20,7 +20,7 @@ interface CanProcessAnyState
      * Process the given state and optionally pass it to the next processor.
      *
      * @param TState $state The state object to process.
-     * @param callable|null $next The next processor in the chain, or null if processor just returns the processed state.
+     * @param (callable(TState): TState)|null $next The next processor in the chain, or null if processor just returns the processed state.
      * @return TState The processed state object.
      */
     public function process(object $state, ?callable $next = null): object;

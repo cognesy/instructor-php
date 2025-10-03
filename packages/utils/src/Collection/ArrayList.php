@@ -21,17 +21,31 @@ final class ArrayList implements ListInterface
         $this->items = array_values($items);
     }
 
-    /** @template U @param list<U> $items @return ArrayList<U> */
+    /**
+     * @template U
+     * @param list<U> $items
+     * @return ArrayList<U>
+     * @phpstan-return ArrayList<U>
+     */
     public static function fromArray(array $items): self {
         return new self($items);
     }
 
-    /** @template U @return ArrayList<U> */
+    /**
+     * @template U
+     * @return ArrayList<U>
+     * @phpstan-return ArrayList<U>
+     */
     public static function empty(): self {
         return new self([]);
     }
 
-    /** @template U @param U ...$items @return ArrayList<U> */
+    /**
+     * @template U
+     * @param U ...$items
+     * @return ArrayList<U>
+     * @phpstan-return ArrayList<U>
+     */
     public static function of(mixed ...$items): self {
         return new self($items);
     }
@@ -103,11 +117,22 @@ final class ArrayList implements ListInterface
         return new self(array_values(array_filter($this->items, $predicate)));
     }
 
+    /**
+     * @template U
+     * @param callable(T):U $mapper
+     * @return ListInterface<U>
+     */
     #[\Override]
     public function map(callable $mapper): ListInterface {
         return new self(array_map($mapper, $this->items));
     }
 
+    /**
+     * @template U
+     * @param callable(U,T):U $reducer
+     * @param U $initial
+     * @return U
+     */
     #[\Override]
     public function reduce(callable $reducer, mixed $initial): mixed {
         return array_reduce($this->items, $reducer, $initial);

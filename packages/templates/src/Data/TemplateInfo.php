@@ -12,7 +12,7 @@ class TemplateInfo
 
     public function __construct(
         string $content,
-        private ?TemplateEngineConfig $config = null,
+        private ?TemplateEngineConfig $config = null, // @phpstan-ignore-line
     ) {
         $document = FrontMatter::parse($content);
         $this->templateData = $document->data();

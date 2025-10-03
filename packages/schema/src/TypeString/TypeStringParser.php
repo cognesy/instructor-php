@@ -91,7 +91,8 @@ class TypeStringParser
             // For `array<K, V>`, we only care about the value type `V`.
             // We find the last top-level comma to get the value type.
             $genericParams = $this->splitOnTopLevelDelimiter($genericContent, ',');
-            $valueType = trim(end($genericParams));
+            $lastParam = end($genericParams);
+            $valueType = $lastParam !== false ? trim($lastParam) : '';
 
             // Recursively parse the value type, which may be a union itself (e.g., `string|bool`).
             $subTypes = $this->parse($valueType);

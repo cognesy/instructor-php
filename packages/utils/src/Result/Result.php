@@ -46,6 +46,14 @@ abstract readonly class Result
         }
     }
 
+    /**
+     * Execute all callbacks and collect results and errors.
+     *
+     * @template R
+     * @param array<array-key, mixed> $args Arguments spread into each callback
+     * @param callable(mixed ...): R ...$callbacks Callbacks invoked with spread arguments
+     * @return Result<list<R>|null, Throwable> Success with list of results (or null if none), or CompositeException
+     */
     public static function tryAll(array $args, callable ...$callbacks): Result {
         $errors = [];
         $results = [];
@@ -63,6 +71,15 @@ abstract readonly class Result
         };
     }
 
+    /**
+     * Execute callbacks until condition returns true for a result.
+     *
+     * @template R
+     * @param callable(R): bool $condition Predicate to test each callback result
+     * @param array<array-key, mixed> $args Arguments spread into each callback
+     * @param callable(mixed ...): R ...$callbacks Callbacks invoked with spread arguments
+     * @return Result<R|false, Throwable> First matching result or false if none; errors aggregated
+     */
     public static function tryUntil(callable $condition, array $args, callable ...$callbacks): Result {
         $errors = [];
         foreach($callbacks as $callback) {
@@ -128,6 +145,9 @@ abstract readonly class Result
         return $this->isSuccess() && $this->unwrap() instanceof $class;
     }
 
+    /**
+     * @param callable(T):bool $predicate
+     */
     public function matches(callable $predicate): bool {
         return $this->isSuccess() && $predicate($this->unwrap());
     }
@@ -147,17 +167,25 @@ abstract readonly class Result
 
     /**
      * @template S
-     * @param callable(T):Result<S, E> $f Function to apply to the value in case of success
-     * @return Result<S, E> A new Result instance with the function applied, or the original failure
-     * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Monadic composition is type-safe
+     * @param callable(T):(Result<S, E>|S) $f Function to apply to the value in case of success
+     * @return Result A new Result instance with the function applied, or the original failure
+     * @psalm-return Result<S, E>
+     * @phpstan-return Result
      */
     public function then(callable $f): Result {
-        return $this->map(function($value) use ($f) {
+        if ($this->isFailure()) {
+            // Return a fresh Failure to avoid template-invariance issues when returning $this
+            return self::failure($this->error());
+        }
+        try {
+            $value = $this->unwrap();
             $result = $f($value);
             return $result instanceof Result
                 ? $result
                 : self::success($result);
-        });
+        } catch (Exception $e) {
+            return self::failure($e);
+        }
     }
 
     /**
@@ -185,12 +213,15 @@ abstract readonly class Result
     /**
      * @template ENew
      * @param callable(T):bool $predicate Guard evaluated when the result is successful
-     * @param callable(T):ENew|Result<T, ENew> $onFailure Error factory executed when the predicate fails
-     * @return Result<T, E|ENew>
+     * @param callable(T):(ENew|Result<T, ENew>) $onFailure Error factory executed when the predicate fails
+     * @return Result
+     * @psalm-return Result<T, E|ENew>
+     * @phpstan-return Result
      */
     public function ensure(callable $predicate, callable $onFailure): Result {
         if ($this->isFailure()) {
-            return $this;
+            // Return a fresh Failure to avoid template-invariance issues when returning $this
+            return self::failure($this->error());
         }
 
         try {
@@ -246,7 +277,7 @@ abstract readonly class Result
 
     /**
      * @template ENew
-     * @param callable(E):ENew|Result<T, ENew> $f Transformer applied to the error when the result is a failure
+     * @param callable(E):(ENew|Result<T, ENew>) $f Transformer applied to the error when the result is a failure
      * @return Result<T, ENew>
      * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Error mapping transforms error type
      */
@@ -268,6 +299,9 @@ abstract readonly class Result
 
     // Side-Effect Hooks ///////////////////////////////////////////////////
 
+    /**
+     * @param callable(T):void $callback
+     */
     public function ifSuccess(callable $callback): self {
         if ($this->isSuccess()) {
             $callback($this->unwrap());
@@ -275,6 +309,9 @@ abstract readonly class Result
         return $this;
     }
 
+    /**
+     * @param callable(Throwable):void $callback
+     */
     public function ifFailure(callable $callback): self {
         if ($this->isFailure()) {
             $callback($this->exception());

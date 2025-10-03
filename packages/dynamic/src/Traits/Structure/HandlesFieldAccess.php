@@ -64,7 +64,14 @@ trait HandlesFieldAccess
     }
 
     private function firstKey() : string {
-        return array_key_first($this->fields);
+        $key = array_key_first($this->fields);
+        if ($key === null) {
+            throw new \Exception("Cannot get first key - structure has no fields.");
+        }
+        if (!is_string($key)) {
+            throw new \Exception("Field key must be a string.");
+        }
+        return $key;
     }
 
     public function __get(string $field) : mixed {

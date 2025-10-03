@@ -24,9 +24,9 @@ use Exception;
  */
 class JsonSchemaToSchema
 {
-    private $defaultToolName;
-    private $defaultToolDescription;
-    private $defaultOutputClass;
+    private string $defaultToolName;
+    private string $defaultToolDescription;
+    private string $defaultOutputClass;
 
     public function __construct(
         string $defaultToolName = 'extract_object',
@@ -53,8 +53,8 @@ class JsonSchemaToSchema
         $class = $json->objectClass() ?? $this->defaultOutputClass;
         return new ObjectSchema(
             type: TypeDetails::object($class),
-            name: $customName !== '' ? $customName : ($json->title() ?? $this->defaultToolName),
-            description: $customDescription !== '' ? $customDescription : ($json->description() ?? $this->defaultToolDescription),
+            name: $customName !== '' ? $customName : ($json->title() ?: $this->defaultToolName),
+            description: $customDescription !== '' ? $customDescription : ($json->description() ?: $this->defaultToolDescription),
             properties: $this->makeProperties($json->properties()),
             required: $json->requiredProperties(),
         );
@@ -189,11 +189,15 @@ class JsonSchemaToSchema
 //            description:      $json->description(),
 //            nestedItemSchema: $this->makePropertySchema('', $json->itemSchema()),
 //        );
+        $itemSchema = $json->itemSchema();
+        if ($itemSchema === null) {
+            throw new \Exception('Collection must have item schema defined');
+        }
         return new CollectionSchema(
             type:             TypeDetails::fromJson($json),
             name:             $name,
             description:      $json->description(),
-            nestedItemSchema: $this->makePropertySchema('', $json->itemSchema()),
+            nestedItemSchema: $this->makePropertySchema('', $itemSchema),
         );
     }
 

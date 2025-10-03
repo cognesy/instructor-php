@@ -79,8 +79,8 @@ final readonly class ToolUseStep implements
     public function toArray(): array {
         return [
             'stepInfo' => $this->stepInfo->toArray(),
-            'inputMessages' => $this->inputMessages->toArray(),
-            'outputMessages' => $this->outputMessages->toArray(),
+            'inputMessages' => $this->inputMessages()->toArray(),
+            'outputMessages' => $this->outputMessages()->toArray(),
             'toolCalls' => $this->toolCalls->toArray(),
             'toolExecutions' => $this->toolExecutions->toArray(),
             'errors' => array_map(
@@ -111,7 +111,7 @@ final readonly class ToolUseStep implements
     }
 
     public function toString(): string {
-        return ($this->outputMessages->toString() ?: '(no response)')
+        return ($this->outputMessages()->toString() ?: '(no response)')
             . ' ['
             . ($this->hasToolCalls() ? $this->toolCalls->toString() : '(-)')
             . ']';

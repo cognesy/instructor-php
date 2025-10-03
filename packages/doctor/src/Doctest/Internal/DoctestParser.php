@@ -101,8 +101,9 @@ final class DoctestParser
         return new DoctestRegionNode($regionName, trim($content), $startLine, $endLine);
     }
 
-    private function parseCode(): ?DoctestNode {
+    private function parseCode(): DoctestNode {
         $token = $this->currentToken;
+        assert($token !== null);
         return new DoctestCodeNode($token->value, $token->line, $token->line);
     }
 }

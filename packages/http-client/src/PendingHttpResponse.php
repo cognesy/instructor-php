@@ -43,7 +43,7 @@ class PendingHttpResponse
             ->body();
     }
 
-    public function stream(?int $chunkSize = null): iterable {
+    public function stream(?int $chunkSize = null): \Generator {
         yield from $this
             ->makeResponse($this->request->withStreaming(true))
             ->stream($chunkSize);

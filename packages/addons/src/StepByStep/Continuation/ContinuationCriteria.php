@@ -73,6 +73,9 @@ readonly class ContinuationCriteria implements CanDecideToContinue
      * @return callable(TState): bool
      */
     protected function wrapCriterion(CanDecideToContinue $criterion): callable {
-        return static fn(object $state): bool => $criterion->canContinue($state);
+        return static function(object $state) use ($criterion): bool {
+            /** @var TState $state */
+            return $criterion->canContinue($state);
+        };
     }
 }

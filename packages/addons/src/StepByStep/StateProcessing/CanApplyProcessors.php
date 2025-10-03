@@ -12,7 +12,8 @@ interface CanApplyProcessors {
      * Provide steps to be executed.
      *
      * @param TState $state The current state object.
+     * @param (callable(TState): TState)|null $terminalFn Optional terminal function to call after all processors.
      * @return TState The modified state after applying processing steps.
      */
-    public function apply(object $state): object;
+    public function apply(object $state, ?callable $terminalFn = null): object;
 }

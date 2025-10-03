@@ -13,7 +13,7 @@ trait HandlesValidation
         ?string $enumType,
         ?array $enumValues,
     ) : void {
-        if (!in_array($type, self::PHP_TYPES)) {
+        if (!in_array($type, self::PHP_TYPES, true)) {
             throw new \Exception('Unsupported type: '.$type);
         }
 

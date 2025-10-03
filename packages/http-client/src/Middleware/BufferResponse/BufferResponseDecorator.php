@@ -32,7 +32,7 @@ class BufferResponseDecorator extends BaseResponseDecorator
     }
 
     #[\Override]
-    public function stream(?int $chunkSize = null): iterable {
+    public function stream(?int $chunkSize = null): \Generator {
         if (!$this->isStreamBuffered) {
             foreach ($this->response->stream($chunkSize) as $chunk) {
                 $this->bufferedChunks[] = $chunk;

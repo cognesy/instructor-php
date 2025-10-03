@@ -24,6 +24,9 @@ final class ExternalParticipant implements CanParticipateInChat
     private CanCompileMessages $compiler;
     private CanHandleEvents $events;
 
+    /**
+     * @param callable(ChatState): (Messages|Message|array)|CanRespondWithMessages|null $provider
+     */
     public function __construct(
         private readonly string $name = 'external',
         CanRespondWithMessages|callable|null $provider = null,
@@ -56,10 +59,16 @@ final class ExternalParticipant implements CanParticipateInChat
 
     // INTERNAL //////////////////////////////////////////////////////////
 
-    private function makeProvider(callable|CanProvideMessage|null $provider) : CanRespondWithMessages {
+    /**
+     * @param callable(ChatState): (Messages|Message|array)|CanRespondWithMessages|null $provider
+     */
+    private function makeProvider(callable|CanRespondWithMessages|null $provider) : CanRespondWithMessages {
         return match(true) {
             $provider instanceof CanRespondWithMessages => $provider,
-            is_callable($provider) => new class($provider) implements CanRespondWithMessages {
+            is_callable($provider) => new class(Closure::fromCallable($provider)) implements CanRespondWithMessages {
+                /**
+                 * @param Closure(ChatState): (Messages|Message|array) $provider
+                 */
                 public function __construct(private readonly Closure $provider) {}
                 #[\Override]
                 public function respond(ChatState $state) : Messages {

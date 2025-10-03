@@ -23,27 +23,30 @@ final class AppendStepMessages implements CanProcessAnyState
         $newState = $next ? $next($state) : $state;
 
         assert($newState instanceof HasSteps);
+        assert($newState instanceof HasMessageStore);
+
         $currentStep = $newState->currentStep();
 
         if ($currentStep === null) {
-            /** @psalm-suppress InvalidReturnStatement - $newState is checked via canProcess() to be intersection type */
+            /** @var HasSteps<object>&HasMessageStore $newState */
             return $newState;
         }
-
-        assert($newState instanceof HasMessageStore);
 
         // Only append the output message from the step, not all messages
         // This prevents duplication of input messages that are already in the state
         if (!($currentStep instanceof HasStepMessages)) {
+            /** @var HasSteps<object>&HasMessageStore $newState */
             return $newState;
         }
 
         $outputMessages = $currentStep->outputMessages();
         if ($outputMessages->isEmpty()) {
+            /** @var HasSteps<object>&HasMessageStore $newState */
             return $newState;
         }
 
         $newMessages = $newState->messages()->appendMessages($outputMessages);
+        /** @var HasSteps<object>&HasMessageStore $newState */
         return $newState->withMessages($newMessages);
     }
 }

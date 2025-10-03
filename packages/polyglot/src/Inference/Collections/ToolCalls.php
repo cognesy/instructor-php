@@ -11,7 +11,6 @@ final readonly class ToolCalls
     /** @var ToolCall[] */
     private array $toolCalls;
 
-    /** @param ToolCall[] $toolCalls */
     public function __construct(ToolCall ...$toolCalls) {
         $this->toolCalls = $toolCalls;
     }
@@ -25,16 +24,22 @@ final readonly class ToolCalls
     public static function fromArray(array $toolCalls) : ToolCalls {
         $list = [];
         foreach ($toolCalls as $key => $toolCall) {
-            $list[] = match(true) {
+            $toolCall = match(true) {
                 is_array($toolCall) => ToolCall::fromArray($toolCall),
                 is_object($toolCall) && $toolCall instanceof ToolCall => $toolCall,
                 is_string($toolCall) => new ToolCall($key, self::makeArgs($toolCall)),
                 default => throw new InvalidArgumentException('Cannot create ToolCall from provided data: ' . print_r($toolCall, true))
             };
+            if ($toolCall !== null) {
+                $list[] = $toolCall;
+            }
         }
         return new ToolCalls(...$list);
     }
 
+    /**
+     * @param callable(mixed): ?ToolCall $mapper
+     */
     public static function fromMapper(array $toolCalls, callable $mapper) : ToolCalls {
         $list = [];
         foreach ($toolCalls as $item) {
@@ -126,14 +131,23 @@ final readonly class ToolCalls
 
     // TRANSFORMERS ////////////////////////////////////////////////
 
+    /**
+     * @param callable(ToolCall): mixed $callback
+     */
     public function map(callable $callback) : array {
         return array_map($callback, $this->toolCalls);
     }
 
+    /**
+     * @param callable(ToolCall): bool $callback
+     */
     public function filter(callable $callback) : ToolCalls {
         return new ToolCalls(...array_filter($this->toolCalls, $callback));
     }
 
+    /**
+     * @param callable(mixed, ToolCall): mixed $callback
+     */
     public function reduce(callable $callback, mixed $initial = null) : mixed {
         return array_reduce($this->toolCalls, $callback, $initial);
     }
@@ -165,12 +179,9 @@ final readonly class ToolCalls
     // INTERNAL ////////////////////////////////////////////////////
 
     private static function makeArgs(string|array $args): array {
-        return match(true) {
-            is_array($args) => $args,
-            is_string($args) => empty($args)
-                ? []
-                : Json::fromString($args)->toArray(),
-            default => []
-        };
+        if (is_array($args)) {
+            return $args;
+        }
+        return empty($args) ? [] : Json::fromString($args)->toArray();
     }
 }

@@ -41,7 +41,10 @@ class Embeddings
         );
     }
 
-    public static function registerDriver(string $name, string|callable $driver) {
+    /**
+     * @param callable(Config\EmbeddingsConfig, HttpClient, EventDispatcherInterface): Contracts\CanHandleVectorization|string $driver
+     */
+    public static function registerDriver(string $name, string|callable $driver) : void {
         EmbeddingsDriverFactory::registerDriver($name, $driver);
     }
 }

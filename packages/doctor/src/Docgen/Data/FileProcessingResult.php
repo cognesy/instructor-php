@@ -33,6 +33,6 @@ readonly class FileProcessingResult
     }
 
     public function wasProcessed(): bool {
-        return in_array($this->action, ['created', 'updated']);
+        return in_array($this->action, ['created', 'updated'], true);
     }
 }

@@ -11,7 +11,7 @@ class ArrowpipeDriver implements CanHandleTemplate
 {
     private string $baseDir;
     private string $extension;
-    private $clearUnknownParams = false;
+    private bool $clearUnknownParams = false;
 
     public function __construct(
         private TemplateEngineConfig $config,
@@ -41,7 +41,11 @@ class ArrowpipeDriver implements CanHandleTemplate
         if (!file_exists($filePath)) {
             throw new \InvalidArgumentException("Template file not found: $filePath");
         }
-        return file_get_contents($filePath);
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read template file: $filePath");
+        }
+        return $content;
     }
 
     #[\Override]

@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Events\InferenceFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -28,6 +29,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
     protected CanTranslateInferenceRequest $requestTranslator;
     protected CanTranslateInferenceResponse $responseTranslator;
 
+
     #[\Override]
     public function makeResponseFor(InferenceRequest $request) : InferenceResponse {
         $httpRequest = $this->toHttpRequest($request);
@@ -35,7 +37,9 @@ abstract class BaseInferenceDriver implements CanHandleInference
         return $this->httpResponseToInference($httpResponse);
     }
 
-    /** iterable<PartialInferenceResponse> */
+    /**
+     * @return iterable<PartialInferenceResponse>
+     */
     #[\Override]
     public function makeStreamResponsesFor(InferenceRequest $request): iterable {
         $httpRequest = $this->toHttpRequest($request);
@@ -60,9 +64,9 @@ abstract class BaseInferenceDriver implements CanHandleInference
             $this->events->dispatch(new InferenceFailed([
                 'context' => 'Failed to process response',
                 'exception' => $e->getMessage(),
-                'statusCode' => $httpResponse->statusCode() ?? 500,
-                'headers' => $httpResponse->headers() ?? [],
-                'body' => $httpResponse->body() ?? '',
+                'statusCode' => $httpResponse->statusCode(),
+                'headers' => $httpResponse->headers(),
+                'body' => $httpResponse->body(),
             ]));
             throw $e;
         }
@@ -71,6 +75,9 @@ abstract class BaseInferenceDriver implements CanHandleInference
         return $inferenceResponse;
     }
 
+    /**
+     * @return iterable<PartialInferenceResponse>
+     */
     #[\Override]
     public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
         try {
@@ -89,9 +96,9 @@ abstract class BaseInferenceDriver implements CanHandleInference
             $this->events->dispatch(new InferenceFailed([
                 'context' => 'Failed to process streamed response',
                 'exception' => $e->getMessage(),
-                'statusCode' => $httpResponse->statusCode() ?? 500,
-                'headers' => $httpResponse->headers() ?? [],
-                'body' => $httpResponse->body() ?? '',
+                'statusCode' => $httpResponse->statusCode(),
+                'headers' => $httpResponse->headers(),
+                'body' => $httpResponse->body(),
             ]));
             throw $e;
         }

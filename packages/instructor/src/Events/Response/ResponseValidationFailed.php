@@ -7,5 +7,5 @@ use Psr\Log\LogLevel;
 
 final class ResponseValidationFailed extends Event
 {
-    public $logLevel = LogLevel::WARNING;
+    public string $logLevel = LogLevel::WARNING;
 }

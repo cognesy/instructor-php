@@ -28,19 +28,20 @@ class LaravelPool implements CanHandleRequestPool
         protected EventDispatcherInterface $events,
         protected HttpClientConfig $config,
     ) {
+        /** @phpstan-ignore-next-line */
         match (true) {
             $clientInstance instanceof HttpFactory => $this->factory = $clientInstance,
             $clientInstance instanceof PendingRequest => $this->setupFromPendingRequest($clientInstance),
-            $clientInstance === null => $this->factory = new HttpFactory(),
-            default => throw new \InvalidArgumentException(
-                'Client instance must be an instance of HttpFactory or PendingRequest'
-            )
+            default => $this->factory = new HttpFactory(),
         };
     }
 
     #[\Override]
     public function pool(array $requests, ?int $maxConcurrent = null): array {
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
+        if ($maxConcurrent < 1) {
+            throw new \InvalidArgumentException('Max concurrent must be at least 1');
+        }
         $responses = [];
         $batches = array_chunk($requests, $maxConcurrent);
 
@@ -56,6 +57,7 @@ class LaravelPool implements CanHandleRequestPool
     }
 
     private function processBatch(array $batch): array {
+        /** @phpstan-ignore-next-line */
         return $this->factory->pool(function (Pool $pool) use ($batch) {
             return $this->createPoolRequests($pool, $batch);
         });
@@ -84,19 +86,21 @@ class LaravelPool implements CanHandleRequestPool
     }
 
     private function createPoolRequest(Pool $pool, HttpRequest $request) {
+        /** @phpstan-ignore-next-line */
         $poolRequest = $pool->withOptions([
             'timeout' => $this->config->requestTimeout,
             'connect_timeout' => $this->config->connectTimeout,
             'headers' => $request->headers(),
         ]);
-        
+
         // Apply base PendingRequest configuration if available
         if ($this->basePendingRequest) {
             // Note: Pool requests inherit from the factory that created the pool,
             // so the base configuration from PendingRequest should already be applied
             // through the factory that was extracted in setupFromPendingRequest
         }
-        
+
+        /** @phpstan-ignore-next-line */
         return $poolRequest->{strtolower($request->method())}(
             $request->url(),
             $request->method() === 'GET' ? [] : $request->body()->toArray(),

@@ -110,9 +110,9 @@ class SimpleXmlParser
         }
         
         libxml_use_internal_errors(true);
-        $xmlElement = new SimpleXMLElement($this->xmlString, LIBXML_NOCDATA);
-        
-        if ($xmlElement === false) {
+        try {
+            $xmlElement = new SimpleXMLElement($this->xmlString, LIBXML_NOCDATA);
+        } catch (\Exception $e) {
             $errors = libxml_get_errors();
             $errorMessages = array_map(fn($error) => trim($error->message), $errors);
             libxml_clear_errors();

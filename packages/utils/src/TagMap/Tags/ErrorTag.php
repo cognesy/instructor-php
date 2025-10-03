@@ -58,15 +58,16 @@ readonly class ErrorTag implements TagInterface
     }
 
     public static function fromResult(Result $result, ?string $context = null): self {
+        $exception = $result->exception();
         return new self(
-            error: $result->exception(),
+            error: $exception,
             context: $context,
             category: 'result_error',
             metadata: [
-                'message' => $result->exception()?->getMessage() ?? 'Unknown error',
-                'file' => $result->exception()?->getFile(),
-                'line' => $result->exception()?->getLine(),
-                'trace' => $result->exception()?->getTraceAsString(),
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'trace' => $exception->getTraceAsString(),
             ],
         );
     }

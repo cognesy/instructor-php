@@ -25,12 +25,12 @@ trait HandlesTypeDetails
      */
     protected function makeSchema(TypeDetails $type) : Schema {
         $classInfo = match(true) {
-            $type->hasClass() => ClassInfo::fromString($type->class),
+            $type->hasClass() => ClassInfo::fromString($type->class() ?? ''),
             default => null,
         };
 
         return match (true) {
-            $type->isObject() && $classInfo => new ObjectSchema(
+            $type->isObject() && $classInfo !== null => new ObjectSchema(
                 type: $type,
                 name: $type->classOnly(),
                 description: $classInfo->getClassDescription(),
@@ -46,14 +46,14 @@ trait HandlesTypeDetails
             ),
             $type->isEnum() => new EnumSchema(
                 type: $type,
-                name: $type->class(),
+                name: $type->class() ?? '',
                 description: $classInfo?->getClassDescription() ?? '',
             ),
             $type->isCollection() => new CollectionSchema(
                 type: $type,
                 name: '',
                 description: '',
-                nestedItemSchema: $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
+                nestedItemSchema: $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.($type->nestedType?->shortName() ?? 'mixed'))
             ),
             $type->isArray() => new ArraySchema(
                 type: $type,
@@ -91,9 +91,9 @@ trait HandlesTypeDetails
                 $name,
                 $description,
                 $this->makeNestedItemSchema(
-                    type: $type->nestedType,
+                    type: $type->nestedType ?? TypeDetails::mixed(),
                     name: 'item',
-                    description: 'Correctly extract items of type: ' . $type->nestedType->shortName()
+                    description: 'Correctly extract items of type: ' . ($type->nestedType?->shortName() ?? 'mixed')
                 ),
             ),
             $type->isScalar() => new ScalarSchema($type, $name, $description),
@@ -116,7 +116,7 @@ trait HandlesTypeDetails
             return new ObjectRefSchema($type, $name, $description);
         }
         // if references are turned off, just generate the object schema
-        $classInfo = ClassInfo::fromString($type->class());
+        $classInfo = ClassInfo::fromString($type->class() ?? throw new \Exception('Object type must have a class'));
         return new ObjectSchema(
             $type,
             $name,

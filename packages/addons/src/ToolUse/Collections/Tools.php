@@ -11,7 +11,7 @@ final readonly class Tools
     private array $tools;
 
     /**
-     * @param ToolInterface[] $tools
+     * @param ToolInterface ...$tools
      */
     public function __construct(
         ToolInterface ...$tools,

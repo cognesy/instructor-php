@@ -58,7 +58,7 @@ class RequestRecord
             'response' => $this->responseData,
         ];
 
-        return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0);
+        return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0) ?: '';
     }
 
     public function matches(HttpRequest $request): bool {

@@ -64,7 +64,7 @@ class TypeString implements \Stringable
             if ($type === TypeDetails::PHP_MIXED) {
                 return false; // mixed is not a scalar type
             }
-            if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
+            if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES, true)) {
                 return false;
             }
         }
@@ -99,7 +99,7 @@ class TypeString implements \Stringable
             if ($type === TypeDetails::PHP_ARRAY) {
                 return false; // array type is not an object
             }
-            if (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
+            if (in_array($type, TypeDetails::PHP_SCALAR_TYPES, true)) {
                 return false; // scalar types are not objects
             }
             if ($this->endsWithBrackets($type)) {
@@ -304,15 +304,17 @@ class TypeString implements \Stringable
         return false;
     }
 
+    /** @phpstan-ignore-next-line - method is intentionally unused */
     private function containsScalar(array $types) : bool {
         foreach ($types as $type) {
-            if (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
+            if (in_array($type, TypeDetails::PHP_SCALAR_TYPES, true)) {
                 return true;
             }
         }
         return false;
     }
 
+    /** @phpstan-ignore-next-line - method is intentionally unused */
     private function containsMixed(array $types) : bool {
         foreach ($types as $type) {
             if ($type === TypeDetails::PHP_MIXED) {
@@ -322,6 +324,7 @@ class TypeString implements \Stringable
         return false;
     }
 
+    /** @phpstan-ignore-next-line - method is intentionally unused */
     private function containsManyTypes(array $types) : bool {
         return count($this->withoutNull($types)) > 1;
     }
@@ -334,7 +337,11 @@ class TypeString implements \Stringable
         return substr($type, -2) === '[]';
     }
 
-    private function withoutNull($types) : array {
+    /**
+     * @param array<string> $types
+     * @return array<string>
+     */
+    private function withoutNull(array $types) : array {
         return array_filter($types, fn($type) => $type !== TypeDetails::PHP_NULL);
     }
 
@@ -355,7 +362,7 @@ class TypeString implements \Stringable
             if ($this->endsWithBrackets($type)) {
                 continue; // skip collection types
             }
-            if (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
+            if (in_array($type, TypeDetails::PHP_SCALAR_TYPES, true)) {
                 continue; // skip scalar types
             }
             if ($type === TypeDetails::PHP_ARRAY) {

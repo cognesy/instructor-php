@@ -109,11 +109,11 @@ class RecordReplayMiddleware implements HttpMiddleware
     }
 
     public function getRecords(): ?RequestRecords {
-        if ($this->mode === self::MODE_RECORD && $this->recordingMiddleware) {
+        if ($this->mode === self::MODE_RECORD && $this->recordingMiddleware !== null) {
             return $this->recordingMiddleware->getRecords();
         }
 
-        if ($this->mode === self::MODE_REPLAY && $this->replayMiddleware) {
+        if ($this->mode === self::MODE_REPLAY && $this->replayMiddleware !== null) {
             return $this->replayMiddleware->getRecords();
         }
         return new RequestRecords($this->storageDir);

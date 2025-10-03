@@ -31,7 +31,9 @@ class RecordingMiddleware implements HttpMiddleware
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         $response = $next->handle($request);
         $this->records->save($request, $response);
-        $this->events->dispatch(new HttpInteractionRecorded($request, $response));
+        if ($this->events !== null) {
+            $this->events->dispatch(new HttpInteractionRecorded($request, $response));
+        }
         return $response;
     }
 

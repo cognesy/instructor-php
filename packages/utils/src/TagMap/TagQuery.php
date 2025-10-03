@@ -69,6 +69,7 @@ final readonly class TagQuery
         return new self($this->tagMap->newInstance($skipped));
     }
 
+    /** @param class-string<TagInterface> $class */
     public function tag(string $class): self {
         if ($this->tagMap->has($class)) {
             return $this;
@@ -96,6 +97,9 @@ final readonly class TagQuery
         return $this->tags;
     }
 
+    /**
+     * @param callable(TagInterface): bool $predicate
+     */
     public function any(callable $predicate): bool {
         foreach ($this->tags as $tag) {
             if ($predicate($tag)) {
@@ -119,6 +123,9 @@ final readonly class TagQuery
         return count($this->tags);
     }
 
+    /**
+     * @param callable(TagInterface): bool $predicate
+     */
     public function every(callable $predicate): bool {
         foreach ($this->tags as $tag) {
             if (!$predicate($tag)) {
@@ -134,11 +141,10 @@ final readonly class TagQuery
 
     /** @param class-string<TagInterface>|TagInterface $tag Class of the tag to check */
     public function has(string|TagInterface $tag): bool {
-        return match(true) {
-            $tag instanceof TagInterface => in_array(get_class($tag), $this->classes(), true),
-            is_string($tag) => in_array($tag, $this->classes(), true),
-            default => throw new \InvalidArgumentException('Expected TagInterface or class string, got ' . get_debug_type($tag)),
-        };
+        if ($tag instanceof TagInterface) {
+            return in_array(get_class($tag), $this->classes(), true);
+        }
+        return in_array($tag, $this->classes(), true);
     }
 
     /** @param class-string<TagInterface>|TagInterface ...$tags Array of tags to check */
@@ -181,6 +187,9 @@ final readonly class TagQuery
         return array_map($transformer, $this->tags);
     }
 
+    /**
+     * @param callable(mixed, TagInterface): mixed $reducer
+     */
     public function reduce(callable $reducer, mixed $initial = null): mixed {
         return array_reduce($this->tags, $reducer, $initial);
     }

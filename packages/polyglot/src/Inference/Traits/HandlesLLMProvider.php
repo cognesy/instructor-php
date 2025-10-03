@@ -26,22 +26,22 @@ trait HandlesLLMProvider
     }
 
     public function withConfig(LLMConfig $config) : static {
-        $this->llmProvider->withConfig($config);
+        $this->llmProvider?->withConfig($config);
         return $this;
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider) : static {
-        $this->llmProvider = $this->llmProvider->withConfigProvider($configProvider);
+        $this->llmProvider = $this->llmProvider?->withConfigProvider($configProvider);
         return $this;
     }
 
     public function withDsn(string $dsn) : static {
-        $this->llmProvider->withDsn($dsn);
+        $this->llmProvider?->withDsn($dsn);
         return $this;
     }
 
     public function using(string $preset) : static {
-        $this->llmProvider->withLLMPreset($preset);
+        $this->llmProvider?->withLLMPreset($preset);
         return $this;
     }
 
@@ -58,12 +58,12 @@ trait HandlesLLMProvider
     }
 
     public function withLLMConfigOverrides(array $overrides) : static {
-        $this->llmProvider->withConfigOverrides($overrides);
+        $this->llmProvider?->withConfigOverrides($overrides);
         return $this;
     }
 
     public function withDriver(CanHandleInference $driver) : static {
-        $this->llmProvider->withDriver($driver);
+        $this->llmProvider?->withDriver($driver);
         return $this;
     }
 

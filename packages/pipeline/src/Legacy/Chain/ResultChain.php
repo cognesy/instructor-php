@@ -49,12 +49,20 @@ class ResultChain
     public const CONTINUE_ON_NULL = 'continue';
 
     private ?Result $carry;
-    private mixed $source;
+    /** @var callable():mixed|null */
+    private $source;
+    /** @var list<callable(Failure):void> */
     private array $onFailure = [];
+    /** @var list<callable> */
     private array $processors;
-    private mixed $finalizer;
+    /** @var callable(Result):mixed|null */
+    private $finalizer;
     private mixed $context;
 
+    /**
+     * @param callable():mixed|null $source
+     * @param callable(Result):mixed|null $finalizer
+     */
     public function __construct(
         ?Result $value = null,
         ?callable $source = null,
@@ -73,40 +81,31 @@ class ResultChain
 
     /**
      * Create a new ResultChain instance.
-     *
-     * @return ResultChain
      */
     static public function make(): static {
-        return new ResultChain();
+        return new static();
     }
 
     /**
      * Create a new ResultChain instance with an initial value.
-     *
-     * @param mixed $input
-     * @return ResultChain
      */
     static public function for(mixed $input): static {
-        return new ResultChain(value: Result::from($input));
+        return new static(value: Result::from($input));
     }
 
     /**
      * Create a new ResultChain instance with a source of values.
      *
-     * @param callable $source
-     * @return ResultChain
+     * @param callable():mixed $source
      */
     static public function from(callable $source): static {
-        return new ResultChain(source: $source);
+        return new static(source: $source);
     }
 
     // DEFINITION /////////////////////////////////////////////////////////////////////////////
 
     /**
      * Set the initial value of the chain.
-     *
-     * @param mixed $context
-     * @return ResultChain
      */
     public function withContext(mixed $context): static {
         $this->context = $context;
@@ -119,9 +118,8 @@ class ResultChain
      * The processors are executed on the value, and the result is passed
      * to the next processor in the chain.
      *
-     * @param callable $processor - a processor callback
+     * @param callable(mixed):mixed|list<callable(mixed):mixed> $processors - a processor callback or array of callbacks
      * @param string $onNull - how to handle null values: FAIL_ON_NULL (default), BREAK_ON_NULL, CONTINUE_ON_NULL
-     * @return ResultChain
      */
     public function through(array|callable $processors, string $onNull = self::FAIL_ON_NULL): static {
         // ensure processors is an array
@@ -148,9 +146,8 @@ class ResultChain
      *
      * Otherwise, the chain continues with the original value.
      *
-     * @param callable $condition - a condition callback, must return a boolean
-     * @param callable $callback
-     * @return ResultChain
+     * @param callable(mixed,mixed):bool $condition - a condition callback, must return a boolean
+     * @param callable(mixed):mixed $callback
      */
     public function when(callable $condition, callable $callback): static {
         $this->processors[] = function ($value) use ($condition, $callback) {
@@ -168,8 +165,7 @@ class ResultChain
      * The processor is executed on the value, but the chain continues
      * with the original value.
      *
-     * @param callable $processor
-     * @return ResultChain
+     * @param callable(mixed):mixed $processor
      */
     public function tap(callable $processor): static {
         $this->processors[] = function ($value) use ($processor) {
@@ -185,8 +181,7 @@ class ResultChain
      *
      * The handler is executed when a processor returns a failure result.
      *
-     * @param callable $handler <Failure>
-     * @return ResultChain
+     * @param callable(Failure):void $handler
      */
     public function onFailure(callable $handler): static {
         $this->onFailure[] = $handler;
@@ -198,8 +193,7 @@ class ResultChain
      *
      * The finalizer is executed after all processors have been applied.
      *
-     * @param callable|null $callback <Result>
-     * @return ResultChain
+     * @param callable(Result):mixed|null $callback
      */
     public function then(?callable $callback = null): static {
         $this->finalizer = $callback;
@@ -233,9 +227,9 @@ class ResultChain
      * The final result of the processing can be processed by the finalizer
      * callback (if it has been provided) and also yielded to the caller.
      *
-     * @param iterable $stream
+     * @param iterable<mixed> $stream
      * @param bool $unwrap
-     * @return iterable
+     * @return iterable<mixed>
      */
     public function stream(iterable $stream, bool $unwrap = true): iterable {
         $chainResult = Result::success(true);
@@ -250,7 +244,7 @@ class ResultChain
     /**
      * Process the chain and return Result object
      *
-     * @param callable|null $callback
+     * @param callable(Result):mixed|null $callback
      * @return Result
      */
     public function result(?callable $callback = null): Result {
@@ -376,7 +370,7 @@ class ResultChain
     /**
      * Apply the then final callback to the processing result.
      *
-     * @param callable|null $callback
+     * @param callable(Result):mixed|null $callback
      * @param Result $result
      * @return mixed
      */

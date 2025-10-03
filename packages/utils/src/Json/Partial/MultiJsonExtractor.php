@@ -44,7 +44,7 @@ final class MultiJsonExtractor
     private static function findNextJsonStart(string $s, int $from): int
     {
         $n = strlen($s); $i = $from;
-        $inFence = false; $fenceTickCount = 0; $fenceChar = '`';
+        $inFence = false; $fenceChar = '`';
 
         while ($i < $n) {
             $ch = $s[$i];
@@ -53,7 +53,11 @@ final class MultiJsonExtractor
             if ($ch === $fenceChar) {
                 $run = 1; $j = $i + 1;
                 while ($j < $n && $s[$j] === $fenceChar) { $run++; $j++; }
-                if ($run >= 3) { $inFence = !$inFence; $i = $j; continue; }
+                if ($run >= 3) {
+                    $inFence = !$inFence;
+                    $i = $j;
+                    continue;
+                }
             }
 
             if (!$inFence && ($ch === '{' || $ch === '[')) {

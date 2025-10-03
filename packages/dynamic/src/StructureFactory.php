@@ -35,6 +35,10 @@ class StructureFactory
         return self::makeFromFunctionInfo(FunctionInfo::fromMethodName($class, $method), $name, $description);
     }
 
+    /**
+     * @param callable $callable
+     * @phpstan-ignore-next-line
+     */
     static public function fromCallable(callable $callable, ?string $name = null, ?string $description = null) : Structure {
         $closure = match(true) {
             $callable instanceof Closure => $callable,

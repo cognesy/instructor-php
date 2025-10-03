@@ -69,15 +69,15 @@ class ProgrammingLanguage {
         // Handle different comment styles based on language
         return match (true) {
             // C-style languages (PHP, JS, Java, C#, etc.)
-            in_array($language, ['php', 'javascript', 'js', 'java', 'c', 'cpp', 'csharp', 'c#', 'typescript', 'ts']) =>
+            in_array($language, ['php', 'javascript', 'js', 'java', 'c', 'cpp', 'csharp', 'c#', 'typescript', 'ts'], true) =>
                 str_starts_with($line, '//') || str_starts_with($line, '/*') || str_starts_with($line, '*'),
 
             // Python, Ruby, Bash, etc.
-            in_array($language, ['python', 'py', 'ruby', 'rb', 'bash', 'shell', 'sh']) =>
+            in_array($language, ['python', 'py', 'ruby', 'rb', 'bash', 'shell', 'sh'], true) =>
                 str_starts_with($line, '#') && !str_starts_with($line, '#!'),
 
             // HTML/XML
-            in_array($language, ['html', 'xml']) =>
+            in_array($language, ['html', 'xml'], true) =>
             str_starts_with($line, '<!--'),
 
             // CSS

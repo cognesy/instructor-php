@@ -30,9 +30,6 @@ class JsonParser
             if (empty($candidates)) {
                 continue;
             }
-            if (is_string($candidates)) {
-                $candidates = [$candidates];
-            }
 
             foreach ($candidates as $candidate) {
                 if (!is_string($candidate) || trim($candidate) === '') {
@@ -69,10 +66,6 @@ class JsonParser
             $candidates = $extractor($input);
             if (empty($candidates)) {
                 continue;
-            }
-
-            if (is_string($candidates)) {
-                $candidates = [$candidates];
             }
 
             foreach ($candidates as $candidate) {

@@ -114,16 +114,16 @@ readonly class SymfonyPool implements CanHandleRequestPool
                 throw new HttpRequestException($e->getMessage());
             }
             // Handle any remaining unprocessed responses
-            foreach ($httpResponses as $index => $response) {
-                if (!isset($responses[$index])) {
-                    $responses[$index] = Result::failure(new HttpRequestException($e->getMessage()));
+            foreach ($httpResponses as $idx => $resp) {
+                if (!isset($responses[$idx])) {
+                    $responses[$idx] = Result::failure(new HttpRequestException($e->getMessage()));
                 }
             }
         } finally {
             // Cancel any leftover/unconsumed responses
             foreach ($httpResponses as $resp) {
                 try {
-                    if ($resp !== null && method_exists($resp, 'cancel')) {
+                    if ($resp !== null && is_object($resp) && is_callable([$resp, 'cancel'])) {
                         $resp->cancel();
                     }
                 } catch (\Throwable $t) {
@@ -133,6 +133,9 @@ readonly class SymfonyPool implements CanHandleRequestPool
         }
     }
 
+    /**
+     * @param mixed $response
+     */
     private function handleTimeout($response, array $httpResponses, array &$responses): void {
         $timeoutException = new HttpRequestException('Request timeout in pool');
         if ($this->config->failOnError) {
@@ -144,6 +147,9 @@ readonly class SymfonyPool implements CanHandleRequestPool
         }
     }
 
+    /**
+     * @param mixed $response
+     */
     private function checkForErrors($response): ?HttpRequestException {
         try {
             $statusCode = $response->getStatusCode();
@@ -173,6 +179,9 @@ readonly class SymfonyPool implements CanHandleRequestPool
         }
     }
 
+    /**
+     * @param mixed $response
+     */
     private function processLastChunk($response, array $httpResponses, array &$responses): void {
         $index = array_search($response, $httpResponses, true);
 

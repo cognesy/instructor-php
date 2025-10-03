@@ -77,7 +77,7 @@ class TypeDetailsFactory
             ($normalized->isUntypedEnum()) => throw new \Exception('Enum type must have a class'),
             ($normalized->isCollection()) => $this->collectionType($anyType),
             ($normalized->isScalar()) => $this->scalarType($anyType),
-            ($normalized->isEnumObject()) => $this->enumType($normalized->className()),
+            ($normalized->isEnumObject()) => $this->enumType($normalized->className() ?? throw new \Exception('Enum class name is required')),
             ($normalized->isObject()) => $this->objectType($anyType),
             ($normalized->isArray()) => $this->arrayType(),
             ($normalized->isMixed()) => $this->mixedType(),
@@ -86,7 +86,7 @@ class TypeDetailsFactory
     }
 
     public function fromValue(mixed $anyVar) : TypeDetails {
-        $typeName = TypeDetails::getPhpType($anyVar);
+        $typeName = TypeDetails::getPhpType($anyVar) ?? 'mixed';
         $type = TypeString::fromString($typeName);
         return match (true) {
             $type->isScalar() => $this->scalarType($typeName),
@@ -134,7 +134,7 @@ class TypeDetailsFactory
         if (empty($array)) {
             return $this->arrayType();
         }
-        $nestedType = TypeDetails::getPhpType($array[0]);
+        $nestedType = TypeDetails::getPhpType($array[0]) ?? 'mixed';
         $type = TypeString::fromString($nestedType);
         if ($type->isScalar()) {
             return $this->collectionType("{$nestedType}[]");

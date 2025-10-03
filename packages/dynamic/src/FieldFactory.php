@@ -18,10 +18,10 @@ class FieldFactory
             $typeDetails->isString() => Field::string($name, $description),
             $typeDetails->isFloat() => Field::float($name, $description),
             $typeDetails->isBool() => Field::bool($name, $description),
-            $typeDetails->isEnum() => Field::enum($name, $typeDetails->class, $description),
-            $typeDetails->isCollection() => Field::collection($name, $typeDetails->nestedType, $description),
+            $typeDetails->isEnum() => Field::enum($name, $typeDetails->class ?? '', $description),
+            $typeDetails->isCollection() => Field::collection($name, $typeDetails->nestedType?->toString() ?? 'mixed', $description),
             $typeDetails->isArray() => Field::array($name, $description),
-            $typeDetails->isObject() => Field::object($name, $typeDetails->class, $description),
+            $typeDetails->isObject() => Field::object($name, $typeDetails->class ?? '', $description),
             $typeDetails->isMixed() => Field::string($name, $description),
             default => throw new Exception('Unsupported type: ' . $typeDetails->type),
         };

@@ -22,9 +22,10 @@ class Template
     private TemplateInfo $templateInfo;
 
     private string $templateContent;
-    private array $variableValues;
-    private string $rendered;
-    private $tags = ['chat', 'message', 'content', 'section'];
+    private array $variableValues = [];
+    private ?string $rendered = null;
+    /** @var list<string> */
+    private array $tags = ['chat', 'message', 'content', 'section'];
 
     public function __construct(
         string                $path = '',
@@ -34,6 +35,7 @@ class Template
     ) {
         $this->provider = new TemplateProvider($preset, $config, $driver);
         $this->templateContent = $path ? $this->provider->loadTemplate($path) : '';
+        $this->templateInfo = new TemplateInfo($this->templateContent, $this->provider->config());
     }
 
     public static function twig() : self {
@@ -50,13 +52,13 @@ class Template
 
     public static function make(string $pathOrDsn) : static {
         return match(true) {
-            Str::contains($pathOrDsn, self::DSN_SEPARATOR) => self::fromDsn($pathOrDsn),
-            default => new self(path: $pathOrDsn),
+            Str::contains($pathOrDsn, self::DSN_SEPARATOR) => static::fromDsn($pathOrDsn),
+            default => new static(path: $pathOrDsn),
         };
     }
 
     public static function using(string $preset) : static {
-        return new self(preset: $preset);
+        return new static(preset: $preset);
     }
 
     public static function text(string $pathOrDsn, array $variables) : string {
@@ -75,7 +77,7 @@ class Template
         if (count($parts) !== 2) {
             throw new InvalidArgumentException("Invalid DSN: `$dsn` - failed to parse");
         }
-        return new self(path: $parts[1], preset: $parts[0]);
+        return new static(path: $parts[1], preset: $parts[0]);
     }
 
     public function withPreset(string $preset) : self {
@@ -198,7 +200,7 @@ class Template
     // INTERNAL ///////////////////////////////////////////////////
 
     private function rendered() : string {
-        if (!isset($this->rendered)) {
+        if ($this->rendered === null) {
             $rendered = $this->provider->renderString($this->templateContent, $this->variableValues);
             $this->rendered = $rendered;
         }
@@ -256,7 +258,7 @@ class Template
             }
             
             $message = Message::make(
-                role: $element->attribute('role', 'user'),
+                role: (string)($element->attribute('role') ?? 'user'),
                 content: match(true) {
                     $element->hasChildren() => $this->getMessageContent($element),
                     default => $element->content(),
@@ -276,7 +278,7 @@ class Template
                 continue;
             }
             $messages = $messages->appendMessage(Message::make(
-                role: $element->attribute('role', 'user'),
+                role: (string)($element->attribute('role') ?? 'user'),
                 content: match(true) {
                     $element->hasChildren() => $this->getMessageContent($element),
                     default => $element->content(),
@@ -292,7 +294,7 @@ class Template
             if ($child->tag() !== 'content') {
                 continue;
             }
-            $type = $child->attribute('type', 'text');
+            $type = (string)($child->attribute('type') ?? 'text');
             $content[] = match($type) {
                 'image' => $this->makeImageContent($child),
                 'audio' => $this->makeAudioContent($child),
@@ -333,26 +335,26 @@ class Template
     private function validateVariables(array $infoVars, array $templateVars, array $valueKeys) : array {
         $messages = [];
         foreach($infoVars as $var) {
-            if (!in_array($var, $valueKeys)) {
+            if (!in_array($var, $valueKeys, true)) {
                 $messages[] = "$var: variable defined in template info, but value not provided";
             }
-            if (!in_array($var, $templateVars)) {
+            if (!in_array($var, $templateVars, true)) {
                 $messages[] = "$var: variable defined in template info, but not used";
             }
         }
         foreach($valueKeys as $var) {
-            if (!in_array($var, $infoVars)) {
+            if (!in_array($var, $infoVars, true)) {
                 $messages[] = "$var: value provided, but not defined in template info";
             }
-            if (!in_array($var, $templateVars)) {
+            if (!in_array($var, $templateVars, true)) {
                 $messages[] = "$var: value provided, but not used in template content";
             }
         }
         foreach($templateVars as $var) {
-            if (!in_array($var, $infoVars)) {
+            if (!in_array($var, $infoVars, true)) {
                 $messages[] = "$var: variable used in template, but not defined in template info";
             }
-            if (!in_array($var, $valueKeys)) {
+            if (!in_array($var, $valueKeys, true)) {
                 $messages[] = "$var: variable used in template, but value not provided";
             }
         }

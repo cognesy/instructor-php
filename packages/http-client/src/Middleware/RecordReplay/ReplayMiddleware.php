@@ -38,24 +38,30 @@ class ReplayMiddleware implements HttpMiddleware
 
         if ($record) {
             $response = $record->toResponse($request->isStreamed());
-            $this->events->dispatch(new HttpInteractionReplayed([
-                'method' => $request->method(),
-                'url' => $request->url(),
-                'statusCode' => $response->statusCode(),
-            ]));
+            if ($this->events !== null) {
+                $this->events->dispatch(new HttpInteractionReplayed([
+                    'method' => $request->method(),
+                    'url' => $request->url(),
+                    'statusCode' => $response->statusCode(),
+                ]));
+            }
             return $response;
         }
 
         if (!$this->fallbackToRealRequests) {
-            $this->events->dispatch(new HttpInteractionNotFound([
-                'method' => $request->method(),
-                'url' => $request->url(),
-            ]));
+            if ($this->events !== null) {
+                $this->events->dispatch(new HttpInteractionNotFound([
+                    'method' => $request->method(),
+                    'url' => $request->url(),
+                ]));
+            }
             throw new RecordingNotFoundException(
                 "No recording found for request: {$request->method()} {$request->url()}",
             );
         }
-        $this->events->dispatch(new HttpInteractionFallback($request));
+        if ($this->events !== null) {
+            $this->events->dispatch(new HttpInteractionFallback($request));
+        }
         return $next->handle($request);
     }
 

@@ -141,9 +141,10 @@ test('static asString concatenates message content with separator', function () 
     // Custom separator
     $customSeparator = Messages::asString($messagesArray, ' | ');
     expect($customSeparator)->toBe("Hello | Hi | How are you? | ");
-    
+
     // Custom renderer
-    $customRenderer = Messages::asString($messagesArray, ' ', function($message) {
+    $customRenderer = Messages::asString($messagesArray, ' ', function(array $message): string {
+        /** @var array{role: string, content: string} $message */
         return "[{$message['role']}] {$message['content']} ";
     });
     expect($customRenderer)->toBe("[user] Hello [assistant] Hi [user] How are you? ");

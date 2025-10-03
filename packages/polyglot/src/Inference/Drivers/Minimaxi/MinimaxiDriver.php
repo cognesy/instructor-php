@@ -22,8 +22,7 @@ class MinimaxiDriver extends BaseInferenceDriver
         protected LLMConfig $config,
         protected HttpClient $httpClient,
         protected EventDispatcherInterface $events,
-    )
-    {
+    ) {
         $this->requestTranslator = new OpenAIRequestAdapter(
             $config,
             new MinimaxiBodyFormat(

@@ -6,10 +6,13 @@ use Exception;
 
 class JsonParsingException extends Exception
 {
+    public string $json;
+
     public function __construct(
-        public $message = "JSON parsing failed",
-        public string $json = '',
+        string $message = "JSON parsing failed",
+        string $json = '',
     ) {
         parent::__construct($message);
+        $this->json = $json;
     }
 }

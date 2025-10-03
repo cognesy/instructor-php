@@ -102,10 +102,10 @@ class ExtractCodeBlocks extends Command
             $modifySource = $input->getOption('modify-source');
 
             // Validate input
-            if (!$sourcePath && !$sourceDir) {
+            if (empty($sourcePath) && empty($sourceDir)) {
                 throw new InvalidArgumentException('Either --source or --source-dir must be specified.');
             }
-            if ($sourcePath && $sourceDir) {
+            if (!empty($sourcePath) && !empty($sourceDir)) {
                 throw new InvalidArgumentException('Cannot specify both --source and --source-dir.');
             }
 
@@ -349,6 +349,7 @@ class ExtractCodeBlocks extends Command
         return Path::join($markdownDir, ltrim($doctest->codePath, './'));
     }
 
+    /** @phpstan-ignore-next-line */
     private function determineRegionOutputPath(DoctestFile $doctest, string $regionName, ?string $targetDir): string {
         $pathInfo = pathinfo($doctest->codePath);
         $baseFilename = $pathInfo['filename'] ?? '';
@@ -489,6 +490,7 @@ class ExtractCodeBlocks extends Command
 
     /**
      * Normalize path separators to system-appropriate ones
+     * @phpstan-ignore-next-line
      */
     private function normalizePath(string $path): string {
         // Replace both forward and backward slashes with system separator

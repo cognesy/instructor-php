@@ -56,11 +56,11 @@ class BaseResponseDecorator implements HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @param int $chunkSize
-     * @return iterable<string>
+     * @param int|null $chunkSize
+     * @return \Generator<string>
      */
     #[\Override]
-    public function stream(?int $chunkSize = null): iterable {
+    public function stream(?int $chunkSize = null): \Generator {
         foreach ($this->response->stream($chunkSize) as $chunk) {
             yield $this->toChunk($chunk);
         }

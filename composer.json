@@ -157,7 +157,7 @@
   "scripts": {
     "docs": "@php ./bin/instructor-docs",
     "hub": "@php ./bin/instructor-hub",
-    "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
+    "phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
     "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
     "tell": "bin/tell",

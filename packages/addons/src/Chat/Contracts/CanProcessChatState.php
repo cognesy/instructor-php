@@ -6,5 +6,8 @@ use Cognesy\Addons\Chat\Data\ChatState;
 
 interface CanProcessChatState
 {
+    /**
+     * @param callable(ChatState): ChatState|null $next
+     */
     public function process(ChatState $state, ?callable $next = null) : ChatState;
 }

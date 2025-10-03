@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class TellCommand extends Command
 {
-    protected static $defaultName = 'tell';
+    protected static string $defaultName = 'tell';
 
     #[\Override]
     protected function configure() : void {
@@ -37,8 +37,8 @@ class TellCommand extends Command
             default => $this->inferenceUsingDSN($dsn, $prompt),
         };
 
-        foreach ($response->stream()->responses() as $response) {
-            $output->write($response->contentDelta);
+        foreach ($response->stream()->responses() as $partialResponse) {
+            $output->write($partialResponse->contentDelta);
         }
         $output->writeln('');
 

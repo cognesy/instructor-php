@@ -56,7 +56,7 @@ abstract class StepByStep implements CanExecuteIteratively
 
     /**
      * @param TState $state
-     * @return iterable<TState>
+     * @return \Generator<mixed, TState, mixed, mixed>
      */
     #[\Override]
     public function iterator(object $state): iterable {
@@ -94,6 +94,10 @@ abstract class StepByStep implements CanExecuteIteratively
      */
     protected function performThroughProcessors(object $state): object {
         try {
+            assert($this->processors !== null);
+            /**
+             * @psalm-suppress InvalidArgument - Terminal function signature is correct at runtime
+             */
             return $this->processors->apply(
                 $state,
                 function(object $state): object {

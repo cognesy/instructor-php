@@ -63,7 +63,7 @@ class StreamedRequestRecord extends RequestRecord
             'response' => $this->getResponseData(),
             'chunks' => $this->chunks,
         ];
-        return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0);
+        return json_encode($data, $prettyPrint ? JSON_PRETTY_PRINT : 0) ?: '';
     }
 
     #[\Override]

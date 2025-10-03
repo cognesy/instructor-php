@@ -159,16 +159,16 @@ class InferenceRequest
     public function hasTextResponseFormat() : bool {
         if (!$this->hasResponseFormat()) return false;
         $ownType = !$this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
-        $cachedType = $hasCached ? $this->cachedContext->responseFormat()->type() : null;
+        $hasCached = $this->cachedContext !== null && !$this->cachedContext?->responseFormat()->isEmpty();
+        $cachedType = $hasCached ? $this->cachedContext?->responseFormat()->type() : null;
         return $ownType === 'text' || $cachedType === 'text';
     }
 
     public function hasNonTextResponseFormat() : bool {
         if (!$this->hasResponseFormat()) return false;
         $ownType = !$this->responseFormat->isEmpty() ? $this->responseFormat->type() : null;
-        $hasCached = $this->cachedContext !== null && !$this->cachedContext->responseFormat()->isEmpty();
-        $cachedType = $hasCached ? $this->cachedContext->responseFormat()->type() : null;
+        $hasCached = $this->cachedContext !== null && !$this->cachedContext?->responseFormat()->isEmpty();
+        $cachedType = $hasCached ? $this->cachedContext?->responseFormat()->type() : null;
         return ($ownType !== null && $ownType !== 'text') || ($cachedType !== null && $cachedType !== 'text');
     }
 
@@ -183,7 +183,7 @@ class InferenceRequest
     }
 
     public function hasMessages() : bool {
-        return !empty($this->messages) || !$this->cachedContext->messages()->isEmpty();
+        return !empty($this->messages) || !$this->cachedContext?->messages()->isEmpty();
     }
 
     public function hasModel() : bool {
@@ -197,21 +197,27 @@ class InferenceRequest
     // MUTATORS //////////////////////////////////////
 
     public function with(
-        string|array|null $messages = null,
+        Messages|string|array|null $messages = null,
         ?string $model = null,
         ?array $tools = null,
         string|array|null $toolChoice = null,
-        ?array $responseFormat = null,
+        ResponseFormat|array|null $responseFormat = null,
         ?array $options = null,
         ?OutputMode $mode = null,
         ?CachedContext $cachedContext = null,
     ) : self {
+        $normalizedMessages = match(true) {
+            $messages instanceof Messages => $messages,
+            is_string($messages) => Messages::fromString($messages),
+            is_array($messages) => Messages::fromArray($messages),
+            default => $this->messages,
+        };
         return new self(
-            messages: $messages ?? $this->messages,
+            messages: $normalizedMessages,
             model: $model ?? $this->model,
             tools: $tools ?? $this->tools,
             toolChoice: $toolChoice ?? $this->toolChoice,
-            responseFormat: $responseFormat ?? $this->responseFormat,
+            responseFormat: $responseFormat instanceof ResponseFormat ? $responseFormat : ($responseFormat !== null ? ResponseFormat::fromData($responseFormat) : $this->responseFormat),
             options: $options ?? $this->options,
             mode: $mode ?? $this->mode,
             cachedContext: $cachedContext ?? $this->cachedContext,

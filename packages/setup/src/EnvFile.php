@@ -168,7 +168,11 @@ class EnvFile
      */
     private function getSettingsBaseDir(): string
     {
-        return dirname((new ReflectionClass(Settings::class))->getFileName());
+        $filename = (new ReflectionClass(Settings::class))->getFileName();
+        if ($filename === false) {
+            throw new \RuntimeException('Could not determine Settings class file location');
+        }
+        return dirname($filename);
     }
 
     /**

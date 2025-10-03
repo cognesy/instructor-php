@@ -160,6 +160,6 @@ final class EmbeddingsProvider implements CanResolveEmbeddingsConfig, HasExplici
         if ($this->dsn === null) {
             return [];
         }
-        return Dsn::fromString($this->dsn)->toArray() ?? [];
+        return Dsn::fromString($this->dsn)->toArray();
     }
 }

@@ -21,6 +21,7 @@ class InferenceStream
 {
     protected readonly EventDispatcherInterface $events;
     protected readonly CanHandleInference $driver;
+    /** @var (Closure(PartialInferenceResponse): void)|null */
     protected ?Closure $onPartialResponse = null;
 
     /** @var iterable<PartialInferenceResponse> */
@@ -121,7 +122,7 @@ class InferenceStream
     /**
      * Sets a callback to be called when a partial response is received.
      *
-     * @param callable $callback
+     * @param callable(PartialInferenceResponse): void $callback
      */
     public function onPartialResponse(callable $callback): self {
         $this->onPartialResponse = $callback(...);

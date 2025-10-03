@@ -47,7 +47,7 @@ final readonly class InferenceResponse
         $this->updatedAt = $updatedAt ?? $this->createdAt;
         $this->value = $value;
 
-        $this->content = $content ?? '';
+        $this->content = $content;
         $this->finishReason = $finishReason;
         $this->toolCalls = $toolCalls ?? new ToolCalls();
         $this->reasoningContent = $reasoningContent;
@@ -109,7 +109,7 @@ final readonly class InferenceResponse
     }
 
     public function hasToolCalls(): bool {
-        return $this->toolCalls?->hasAny() ?? false;
+        return $this->toolCalls->hasAny();
     }
 
     public function hasFinishReason(): bool {
@@ -126,7 +126,7 @@ final readonly class InferenceResponse
         return match (true) {
             is_null($mode) => Json::fromString($this->content),
             OutputMode::Tools->is($mode) && $this->hasToolCalls() => match (true) {
-                $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()?->args()),
+                $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()->args()),
                 default => Json::fromArray($this->toolCalls->toArray()),
             },
             //$this->hasContent() => Json::fromString($this->content),
@@ -165,9 +165,9 @@ final readonly class InferenceResponse
      * Set the processed / transformed value of the response.
      *
      * @param mixed $value
-     * @return $this
+     * @return static
      */
-    public function withValue(mixed $value): self {
+    public function withValue(mixed $value): static {
         return $this->with(value: $value);
     }
 
@@ -181,7 +181,7 @@ final readonly class InferenceResponse
         return [
             'content' => $this->content,
             'finishReason' => $this->finishReason,
-            'toolCalls' => $this->toolCalls?->toArray() ?? [],
+            'toolCalls' => $this->toolCalls->toArray(),
             'reasoningContent' => $this->reasoningContent,
             'usage' => $this->usage->toArray(),
             'responseData' => $this->responseData, // raw response data

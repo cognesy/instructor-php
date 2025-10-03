@@ -58,7 +58,7 @@ class PromptsDirAsset implements Publishable
             return true;
         }
 
-        if ($this->filesystem->exists($this->destinationPath)) {
+        if ($result === Filesystem::RESULT_OK) {
             $this->output->out("Published prompts from {$this->sourcePath} to {$this->destinationPath}");
             return true;
         }

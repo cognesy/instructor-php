@@ -22,16 +22,22 @@ final class LLMBasedCoordinator implements CanChooseNextParticipant
         if ($participants->count() === 0) {
             throw new NoParticipantsException('No participants available to select from.');
         }
+
+        $firstParticipant = $participants->at(0);
+        if ($firstParticipant === null) {
+            throw new NoParticipantsException('No participants available to select from.');
+        }
+
         if ($participants->count() === 1) {
-            return $participants->at(0);
+            return $firstParticipant;
         }
 
         $ids = array_map(fn(CanParticipateInChat $p) => $p->name(), $participants->all());
         $availableParticipants = 'Available participants: ' . implode(', ', $ids);
-        
+
         $messages = $state->messages();
         $prompt = "{$this->instruction}\nAvailable participants:\n{$availableParticipants}";
-        
+
         $structuredOutput = $this->structuredOutput ?? new StructuredOutput();
 
         $result = Result::try(fn() => $structuredOutput
@@ -50,6 +56,6 @@ final class LLMBasedCoordinator implements CanChooseNextParticipant
         }
 
         // Fallback to first participant if choice is invalid
-        return $participants->at(0);
+        return $firstParticipant;
     }
 }

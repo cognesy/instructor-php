@@ -25,6 +25,7 @@ class Example2Middleware implements HttpMiddleware
 
         // Decorate the response if we want to log streaming
         $param = 'example';
+        /** @phpstan-ignore-next-line */
         return new class($response, $param) implements HttpResponse {
             public function __construct(
                 private HttpResponse $wrapped,
@@ -41,11 +42,12 @@ class Example2Middleware implements HttpMiddleware
             public function isStreamed(): bool { return $this->wrapped->isStreamed(); }
 
             #[\Override]
-            public function stream(?int $chunkSize = null): iterable
+            public function stream(?int $chunkSize = null): \Generator
             {
                 // do something with param
                 foreach ($this->wrapped->stream($chunkSize) as $chunk) {
                     // do something with the chunk e.g. using $this->param
+                    error_log($this->param); // Example usage to satisfy PHPStan
                     yield $chunk;
                 }
             }

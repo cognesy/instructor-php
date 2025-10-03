@@ -113,7 +113,7 @@ class HttpClient
     /**
      * Extracts configuration from the current driver to pass to pool handler.
      */
-    private function getConfigFromDriver(): ?HttpClientConfig {
+    private function getConfigFromDriver(): null {
         // For now, we'll let the factory create with default config
         // In future, we might want to extract actual config from driver
         return null;

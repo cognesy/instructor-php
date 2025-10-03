@@ -35,12 +35,15 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
     }
 
     #[\Override]
-    public function process(object $state, ?callable $next = null): ChatState {
+    public function process(object $state, ?callable $next = null): object {
         $newState = $next ? $next($state) : $state;
 
+        assert($newState instanceof ChatState);
+
         $buffer = $newState->store()
-            ->section($this->bufferSection)->get()
-            ?->messages() ?? Messages::empty();
+            ->section($this->bufferSection)
+            ->get()
+            ->messages();
 
         if (!$this->shouldProcess($buffer->toString())) {
             return $newState;

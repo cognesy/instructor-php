@@ -35,6 +35,8 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
     public function process(object $state, ?callable $next = null): object {
         $newState = $next ? $next($state) : $state;
 
+        assert($newState instanceof ChatState);
+
         [$keep, $overflow] = (new SplitMessages)->split(
             messages: $newState->messages(),
             tokenLimit: $this->maxTokens,
@@ -44,8 +46,6 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
             'overflow' => $overflow->toArray(),
             'keep' => $keep->toArray(),
         ]));
-
-        assert($newState instanceof ChatState);
 
         $newMessageStore = $newState->store()
             ->section($this->bufferSection)

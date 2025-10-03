@@ -207,10 +207,6 @@ class InferenceAttempt
 
     // PRIVATE HELPERS ////////////////////////////////////////////////////
 
-    private function normalizeErrors(array $errors) : array {
-        return array_map(fn($e) => $e instanceof Throwable ? $e : new RuntimeException((string) $e), $errors);
-    }
-
     private function errorsToStringArray(array $errors) : array {
         return array_map(fn($e) => $e instanceof Throwable ? $e->getMessage() : (string) $e, $errors);
     }

@@ -159,7 +159,11 @@ readonly class Schema implements CanAcceptSchemaVisitor
         return self::factory()->array($name, $description);
     }
 
-    public static function object(string $class, string $name = '', string $description = '', $properties = [], $required = []): ObjectSchema {
+    /**
+     * @param array<string, Schema> $properties
+     * @param array<string> $required
+     */
+    public static function object(string $class, string $name = '', string $description = '', array $properties = [], array $required = []): ObjectSchema {
         return self::factory()->object($class, $name, $description, $properties, $required);
     }
 

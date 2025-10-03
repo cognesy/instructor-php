@@ -10,10 +10,15 @@ use Cognesy\Doctor\Markdown\Nodes\Node;
 
 final class Parser
 {
+    /** @var \Iterator<Token> */
     private \Iterator $tokens;
     private ?Token $currentToken = null;
     private bool $hasMoreTokens = true;
 
+    /**
+     * @param iterable<Token> $tokens
+     * @return \Generator<Node>
+     */
     public function parse(iterable $tokens): \Generator {
         // Convert iterable to Iterator for consistent interface
         $this->tokens = match (true) {
@@ -56,6 +61,7 @@ final class Parser
 
     private function parseHeader(): Node {
         $token = $this->currentToken;
+        assert($token !== null, 'Current token must not be null in parseHeader');
         // extract header level and content
         if (preg_match('/^(#+)\s+(.+?)[\r\n]*$/', $token->value, $matches)) {
             $level = strlen($matches[1]);
@@ -69,7 +75,8 @@ final class Parser
         return new HeaderNode($level, $content, $token->line);
     }
 
-    private function parseCodeBlock(): ?Node {
+    private function parseCodeBlock(): CodeBlockNode|null {
+        assert($this->currentToken !== null, 'Current token must not be null in parseCodeBlock');
         // Current token is CodeBlockFenceStart, capture line number
         $codeBlockStartLine = $this->currentToken->line;
         $this->advance();
@@ -107,30 +114,32 @@ final class Parser
         if ($hasPhpCloseTag) {
             $contentWithoutPhpTags = substr($contentWithoutPhpTags, 0, -2); // Remove '\?\>'
         }
-        
+
         // Expect CodeBlockFenceEnd
-        if (!$this->hasMoreTokens || $this->currentToken === null
-            || $this->currentToken->type !== TokenType::CodeBlockFenceEnd) {
+        if (!$this->hasMoreTokens || $this->currentToken === null) {
             return null;
         }
-        
+        if ($this->currentToken->type !== TokenType::CodeBlockFenceEnd) {
+            return null;
+        }
+
         // Extract metadata from different sources
         $extractedId = CodeBlockIdentifier::extractId($content);
         $doctestMetadata = CodeBlockMetadataParser::extractDoctestMetadata($content, $language);
-        
+
         // Combine metadata with precedence: @doctest > fence params > extracted ID
         $combinedMetadata = CodeBlockMetadataParser::combineMetadata(
-            $fenceMetadata, 
-            $doctestMetadata, 
+            $fenceMetadata,
+            $doctestMetadata,
             $extractedId
         );
-        
+
         // Generate codeblock ID using centralized method
         $fullId = CodeBlockIdentifier::createCodeBlockId($combinedMetadata['id'] ?? null);
-            
+
         return new CodeBlockNode(
-            $fullId, 
-            $language, 
+            $fullId,
+            $language,
             $contentWithoutPhpTags,  // Store clean content as main content
             $combinedMetadata,
             $hasPhpOpenTag,
@@ -142,6 +151,7 @@ final class Parser
 
     private function parseContent(): Node {
         $token = $this->currentToken;
+        assert($token !== null, 'Current token must not be null in parseContent');
         return new ContentNode($token->value, $token->line);
     }
 

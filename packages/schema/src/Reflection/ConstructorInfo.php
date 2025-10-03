@@ -18,6 +18,9 @@ class ConstructorInfo
     private array $parameterInfos = [];
     private array $propertyMatchingCache = [];
 
+    /**
+     * @param class-string|ReflectionClass $class
+     */
     public function __construct(string|ReflectionClass $class)
     {
         $this->reflectionClass = is_string($class) ? new ReflectionClass($class) : $class;
@@ -25,6 +28,9 @@ class ConstructorInfo
         $this->constructor = $this->reflectionClass->getConstructor();
     }
 
+    /**
+     * @param class-string $class
+     */
     public static function fromClass(string $class): self
     {
         return new self($class);
@@ -129,14 +135,16 @@ class ConstructorInfo
 
     public function getDescription(): string
     {
-        if (!$this->hasConstructor()) {
+        $constructor = $this->constructor;
+        if (!$constructor instanceof ReflectionMethod) {
             return '';
         }
 
+        $doc = $constructor->getDocComment() ?: '';
         $descriptions = array_merge(
-            AttributeUtils::getValues($this->constructor, Description::class, 'text'),
-            AttributeUtils::getValues($this->constructor, Instructions::class, 'text'),
-            [DocstringUtils::descriptionsOnly($this->constructor->getDocComment())],
+            AttributeUtils::getValues($constructor, Description::class, 'text'),
+            AttributeUtils::getValues($constructor, Instructions::class, 'text'),
+            [DocstringUtils::descriptionsOnly($doc)],
         );
         return trim(implode('\n', array_filter($descriptions)));
     }
@@ -217,7 +225,7 @@ class ConstructorInfo
     // FILTERING /////////////////////////////////////////////////////////////////
 
     /**
-     * @param array<callable> $filters
+     * @param array<callable(ParameterInfo): bool> $filters
      * @return array<string>
      */
     public function getFilteredParameterNames(array $filters): array
@@ -229,7 +237,7 @@ class ConstructorInfo
     }
 
     /**
-     * @param array<callable> $filters
+     * @param array<callable(ParameterInfo): bool> $filters
      * @return array<ParameterInfo>
      */
     public function getFilteredParameters(array $filters): array
@@ -309,7 +317,7 @@ class ConstructorInfo
     // INTERNAL /////////////////////////////////////////////////////////////////
 
     /**
-     * @param callable[] $filters
+     * @param array<callable(ParameterInfo): bool> $filters
      * @return ParameterInfo[]
      */
     protected function filterParameters(array $filters): array
@@ -331,17 +339,21 @@ class ConstructorInfo
             return [];
         }
 
-        $parameters = $this->constructor->getParameters();
+        $constructor = $this->constructor;
+        if (!$constructor instanceof ReflectionMethod) {
+            return [];
+        }
+        $parameters = $constructor->getParameters();
         $info = [];
         foreach ($parameters as $parameter) {
-            $info[$parameter->getName()] = new ParameterInfo($parameter, $this->constructor);
+            $info[$parameter->getName()] = new ParameterInfo($parameter, $constructor);
         }
         return $info;
     }
 
     /**
-     * @param array $filters
-     * @param callable $extractor
+     * @param array<callable(ParameterInfo): bool> $filters
+     * @param callable(ParameterInfo): mixed $extractor
      * @return array<string, mixed>
      */
     private function getFilteredParameterData(array $filters, callable $extractor): array

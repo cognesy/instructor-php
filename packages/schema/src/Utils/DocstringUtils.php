@@ -35,9 +35,13 @@ class DocstringUtils
 
         // Remove comment markers from the string
         $cleanedString = preg_replace($pattern, '', $code);
+        if ($cleanedString === null) {
+            return '';
+        }
 
         // Optional: Clean up extra asterisks and whitespace from multiline comments
-        return preg_replace('/^\s*\*\s?/m', '', $cleanedString);
+        $result = preg_replace('/^\s*\*\s?/m', '', $cleanedString);
+        return $result ?? '';
     }
 
     private static function removeAnnotations(string $code): string {

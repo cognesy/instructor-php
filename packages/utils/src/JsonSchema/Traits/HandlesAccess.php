@@ -140,11 +140,13 @@ trait HandlesAccess
     }
 
     public function isEnum() : bool {
+        $objectClass = $this->objectClass();
         return !empty($this->enumValues)
             || (
                 $this->hasObjectClass()
-                && class_exists($this->objectClass())
-                && is_subclass_of($this->objectClass(), \BackedEnum::class)
+                && $objectClass !== null
+                && class_exists($objectClass)
+                && is_subclass_of($objectClass, \BackedEnum::class)
             );
     }
 
@@ -158,42 +160,42 @@ trait HandlesAccess
         return $this->type->isArray()
             && (
                 !$this->hasItemSchema()
-                || $this->itemSchema()?->isAny()
+                || ($this->itemSchema()?->isAny() ?? false)
             );
     }
 
     public function isCollection() : bool {
         return $this->type->isArray()
             && $this->hasItemSchema()
-            && !$this->itemSchema?->isAny();
+            && !($this->itemSchema?->isAny() ?? false);
     }
 
     public function isScalarCollection() : bool {
         return $this->type->isArray()
             && $this->hasItemType()
-            && $this->itemSchema?->isScalar();
+            && ($this->itemSchema?->isScalar() ?? false);
     }
 
     public function isEnumCollection() : bool {
         return $this->type->isArray()
             && $this->hasItemSchema()
-            && $this->itemSchema?->isEnum();
+            && ($this->itemSchema?->isEnum() ?? false);
     }
 
     public function isObjectCollection() : bool {
         return $this->type->isArray()
             && $this->hasItemSchema()
-            && $this->itemSchema?->isObject();
+            && ($this->itemSchema?->isObject() ?? false);
     }
 
     public function isOptionCollection() : bool {
         return $this->type->isArray()
             && $this->hasItemSchema()
-            && $this->itemSchema?->isOption();
+            && ($this->itemSchema?->isOption() ?? false);
     }
 
     public function isScalar() : bool {
-        return in_array($this->type, JsonSchemaType::JSON_SCALAR_TYPES)
+        return $this->type->isScalar()
             && !$this->hasEnumValues();
     }
 }

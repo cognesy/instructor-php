@@ -7,12 +7,13 @@ use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesValidation
 {
+    /** @var callable(mixed): ValidationResult|null */
     private $validator;
 
     public function validate(): ValidationResult {
         $failedValidations = [];
         // call validator if defined
-        if ($this->hasValidator()) {
+        if ($this->hasValidator() && is_callable($this->validator)) {
             $result = ($this->validator)($this);
             if ($result->isInvalid()) {
                 return $result;
@@ -34,6 +35,9 @@ trait HandlesValidation
         return ValidationResult::merge($failedValidations, $message);
     }
 
+    /**
+     * @param callable(mixed): ValidationResult $validator
+     */
     public function validator(callable $validator) : self {
         $this->validator = $validator;
         return $this;

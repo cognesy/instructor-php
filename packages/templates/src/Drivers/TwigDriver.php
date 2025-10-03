@@ -79,7 +79,11 @@ class TwigDriver implements CanHandleTemplate
                 if (pathinfo($name, PATHINFO_EXTENSION) === '') {
                     $name .= $this->fileExtension;
                 }
-                return parent::findTemplate($name, $throw);
+                $result = parent::findTemplate($name, $throw);
+                if ($result === null) {
+                    throw new \RuntimeException("Template not found: $name");
+                }
+                return $result;
             }
         };
 

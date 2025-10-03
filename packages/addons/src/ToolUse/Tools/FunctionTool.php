@@ -7,8 +7,12 @@ use Cognesy\Dynamic\StructureFactory;
 
 class FunctionTool extends BaseTool
 {
+    /** @var Closure(mixed...): mixed */
     private Closure $callback;
 
+    /**
+     * @param Closure(mixed...): mixed $callback
+     */
     private function __construct(
         string $name,
         string $description,
@@ -20,6 +24,9 @@ class FunctionTool extends BaseTool
         $this->callback = $callback;
     }
 
+    /**
+     * @param callable(mixed...): mixed $function
+     */
     public static function fromCallable(callable $function): self {
         $structure = StructureFactory::fromCallable($function);
         return new self(
@@ -32,6 +39,9 @@ class FunctionTool extends BaseTool
         );
     }
 
+    /**
+     * @return Closure(mixed...): mixed
+     */
     public function function(): Closure {
         return $this->callback;
     }

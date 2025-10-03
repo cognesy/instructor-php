@@ -79,7 +79,6 @@ class TemplateProvider
             TemplateEngineType::Twig => $this->getTwig($config),
             TemplateEngineType::Blade => $this->getBladeOne($config),
             TemplateEngineType::Arrowpipe => new ArrowpipeDriver($config),
-            default => throw new InvalidArgumentException("Unknown driver: {$config->templateEngine->value}"),
         };
     }
 

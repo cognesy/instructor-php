@@ -16,7 +16,7 @@ class HttpRequestBody
     ) {
         $this->body = match (true) {
             is_string($body) => $body,
-            is_array($body) => json_encode($body),
+            is_array($body) => json_encode($body) ?: '',
             default => ''
         };
     }

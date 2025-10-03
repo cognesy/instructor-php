@@ -35,6 +35,9 @@ final readonly class Sections
         return new Sections(...array_merge($this->sections, $sections));
     }
 
+    /**
+     * @param callable(Section): bool $callback
+     */
     public function remove(callable $callback): Sections {
         return $this->filter(fn(Section $s) => !$callback($s));
     }
@@ -63,6 +66,9 @@ final readonly class Sections
         return $this->sections;
     }
 
+    /**
+     * @return iterable<Section>
+     */
     public function each(): iterable {
         foreach ($this->sections as $section) {
             yield $section;
@@ -79,14 +85,28 @@ final readonly class Sections
 
     // CONVERSIONS and TRANSFORMATIONS //////////////////////////
 
+    /**
+     * @template T
+     * @param callable(Section): T $callback
+     * @return array<T>
+     */
     public function map(callable $callback): array {
         return array_map($callback, $this->sections);
     }
 
+    /**
+     * @param callable(Section): bool $callback
+     */
     public function filter(callable $callback): Sections {
         return new Sections(...array_filter($this->sections, $callback));
     }
 
+    /**
+     * @template T
+     * @param callable(T, Section): T $callback
+     * @param T $initial
+     * @return T
+     */
     public function reduce(callable $callback, mixed $initial = null): mixed {
         return array_reduce($this->sections, $callback, $initial);
     }
