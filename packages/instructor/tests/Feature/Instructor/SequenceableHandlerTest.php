@@ -87,7 +87,7 @@ test('processes content streamed character by character', function() {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     // We should get an update for each complete item
     expect($updates)->toHaveCount(3)
@@ -132,7 +132,7 @@ test('processes multiple items per chunk', function() {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     // We should get updates for each chunk that adds items
     expect($updates)->toHaveCount(4)
@@ -183,7 +183,7 @@ test('processes streaming markdown with json into sequence correctly', function 
 
     // Process the stream
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     // Verify sequence updates occurred correctly
     expect($updates)->toHaveCount(2)
@@ -257,7 +257,7 @@ test('handles malformed json in stream gracefully', function () {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     // Should only have processed the valid first item
     expect($updates)->toHaveCount(1)
@@ -288,7 +288,7 @@ test('processes concatenated json blocks in markdown stream', function () {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     expect($updates)->toHaveCount(2)
         ->and($updates[0])->toHaveCount(1)
@@ -324,7 +324,7 @@ test('handles empty and whitespace chunks in stream', function () {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     expect($updates)->toHaveCount(1)
         ->and($updates[0])->toHaveCount(1)
@@ -357,7 +357,7 @@ test('processes multiple items arriving in single chunk', function() {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     // Should get two separate updates, one per item
     expect($updates)->toHaveCount(2)
@@ -397,7 +397,7 @@ test('processes items arriving across multiple chunks', function() {
         }));
 
     $stream = createStreamingGenerator($chunks);
-    $results = iterator_to_array($this->generator->getPartialResponses($stream, $responseModel));
+    $results = iterator_to_array($this->generator->makePartialResponses($stream, $responseModel));
 
     // Should get four separate updates, one per item
     expect($updates)->toHaveCount(4)

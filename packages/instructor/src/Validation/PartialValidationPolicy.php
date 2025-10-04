@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Validation;
 
+use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
@@ -23,28 +24,27 @@ class PartialValidationPolicy
     public function validatePartialResponse(
         string $partialResponseText,
         ResponseModel $responseModel,
-        bool $preventJsonSchema,
-        bool $matchToExpectedFields
+        PartialsGeneratorConfig $config,
     ) : Result {
         return $this->makePartialValidationPipeline(
                 $partialResponseText,
                 $responseModel,
-                $preventJsonSchema,
-                $matchToExpectedFields
+                $config,
             )
             ->executeWith(ProcessingState::with($partialResponseText))
             ->result();
     }
 
-    public function makePartialValidationPipeline(
+    // INTERNAL ////////////////////////////////////////////////////////
+
+    private function makePartialValidationPipeline(
         string $partialResponseText,
         ResponseModel $responseModel,
-        bool $preventJsonSchema,
-        bool $matchToExpectedFields
+        PartialsGeneratorConfig $config,
     ) : Pipeline {
         return Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn(string $text) => $this->preventJsonSchemaResponse($preventJsonSchema, $text))
-            ->through(fn(string $text) => $this->detectNonMatchingJson($matchToExpectedFields, $text, $responseModel))
+            ->through(fn(string $text) => $this->preventJsonSchemaResponse($config->preventJsonSchema, $text))
+            ->through(fn(string $text) => $this->detectNonMatchingJson($config->matchToExpectedFields, $text, $responseModel))
             ->onFailure(fn(CanCarryState $state) => throw new JsonParsingException(
                 message: (string) $state->result()->error(),
                 json: $partialResponseText,
@@ -110,4 +110,3 @@ class PartialValidationPolicy
         return Arrays::isSubset($decodedKeys, $propertyNames);
     }
 }
-

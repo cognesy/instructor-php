@@ -23,10 +23,10 @@ class ResponseDeserializer
         private StructuredOutputConfig $config,
     ) {}
 
-    public function deserialize(string $json, ResponseModel $responseModel, ?string $toolName = null) : Result {
+    public function deserialize(string $json, ResponseModel $responseModel) : Result {
         $result = match(true) {
             $this->canDeserializeSelf($responseModel) => $this->deserializeSelf(
-                $json, $responseModel->instance(), $toolName
+                $json, $responseModel->instance(), $responseModel->toolName()
             ),
             default => $this->deserializeAny($json, $responseModel)
         };

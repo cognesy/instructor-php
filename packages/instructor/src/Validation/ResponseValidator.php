@@ -15,8 +15,6 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseValidator
 {
-    use Traits\ResponseValidator\HandlesMutation;
-
     public function __construct(
         private EventDispatcherInterface $events,
         /** @var CanValidateObject[]|class-string[] $validators */
@@ -41,6 +39,18 @@ class ResponseValidator
             $validation->isInvalid() => Result::failure($validation->getErrorMessage()),
             default => Result::success($response)
         };
+    }
+
+    /** @param CanValidateObject[] $validators */
+    public function appendValidators(array $validators) : self {
+        $this->validators = array_merge($this->validators, $validators);
+        return $this;
+    }
+
+    /** @param CanValidateObject[] $validators */
+    public function setValidators(array $validators) : self {
+        $this->validators = $validators;
+        return $this;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////

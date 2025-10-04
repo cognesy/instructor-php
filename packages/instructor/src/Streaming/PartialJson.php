@@ -46,6 +46,10 @@ final class PartialJson
         return $this->normalized === '';
     }
 
+    public function equals(PartialJson $partialJson) : bool {
+        return $this->normalized === $partialJson->normalized;
+    }
+
     // TRANSFORMATIONS /////////////////////////////////////////
 
     public function finalized(): string {

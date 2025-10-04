@@ -61,7 +61,7 @@ describe('PartialsGenerator', function () {
             yield new PartialInferenceResponse(toolName: 'fn');
         })();
 
-        iterator_to_array($gen->getPartialResponses($stream, $rm));
+        iterator_to_array($gen->makePartialResponses($stream, $rm));
 
         // Check event presence and relative ordering
         $startedIdx = array_search(StreamedToolCallStarted::class, $eventsLog, true);
@@ -99,7 +99,7 @@ describe('PartialsGenerator', function () {
             yield new PartialInferenceResponse(contentDelta: "\n{\"a\":1}");
         })();
 
-        iterator_to_array($gen->getPartialResponses($stream, $rm));
+        iterator_to_array($gen->makePartialResponses($stream, $rm));
 
         // Only the first distinct object should emit PartialResponseGenerated
         expect(count($genEvents))->toBe(1);
@@ -121,7 +121,7 @@ describe('PartialsGenerator', function () {
             yield new PartialInferenceResponse(contentDelta: '{"k":1}');
         })();
 
-        iterator_to_array($gen->getPartialResponses($stream, $rm));
+        iterator_to_array($gen->makePartialResponses($stream, $rm));
 
         $started = array_values(array_filter($log, fn($e) => $e[0] === StreamedToolCallStarted::class));
         $updated = array_values(array_filter($log, fn($e) => $e[0] === StreamedToolCallUpdated::class));
@@ -155,7 +155,7 @@ describe('PartialsGenerator', function () {
             yield new PartialInferenceResponse(contentDelta: '{"y":2}');
         })();
 
-        iterator_to_array($gen->getPartialResponses($stream, $rm));
+        iterator_to_array($gen->makePartialResponses($stream, $rm));
 
         $starts = array_values(array_filter($log, fn($e) => $e[0] === StreamedToolCallStarted::class));
         $completes = array_values(array_filter($log, fn($e) => $e[0] === StreamedToolCallCompleted::class));
@@ -186,7 +186,7 @@ describe('PartialsGenerator', function () {
             yield new PartialInferenceResponse(contentDelta: '{"a":1,"b":2}');
         })();
 
-        iterator_to_array($gen->getPartialResponses($stream, $rm));
+        iterator_to_array($gen->makePartialResponses($stream, $rm));
 
         $updates = array_values(array_filter($log, fn($e) => $e[0] === StreamedToolCallUpdated::class));
         expect(count($updates))->toBeGreaterThanOrEqual(2);
@@ -211,7 +211,7 @@ describe('PartialsGenerator', function () {
             // stream ends here, no new toolName
         })();
 
-        iterator_to_array($gen->getPartialResponses($stream, $rm));
+        iterator_to_array($gen->makePartialResponses($stream, $rm));
 
         $completes = array_values(array_filter($log, fn($e) => $e[0] === StreamedToolCallCompleted::class));
         expect(count($completes))->toBeGreaterThanOrEqual(1);

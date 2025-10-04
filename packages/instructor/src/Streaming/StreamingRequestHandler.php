@@ -40,7 +40,7 @@ class StreamingRequestHandler implements CanExecuteStructuredOutput
             assert($responseModel !== null, 'Response model cannot be null');
 
             // Generate and yield partial responses
-            $partialResponseStream = $this->partialsGenerator->getPartialResponses($stream, $responseModel);
+            $partialResponseStream = $this->partialsGenerator->makePartialResponses($stream, $responseModel);
             $partialResponses = PartialInferenceResponseList::empty();
 
             /** @var PartialInferenceResponse $partialResponse */
@@ -57,8 +57,8 @@ class StreamingRequestHandler implements CanExecuteStructuredOutput
             }
 
             // Validate final response
-            $inferenceResponse = $this->partialsGenerator->getCompleteResponse();
-            $partialResponses = $this->partialsGenerator->partialResponses();
+            //$partialResponses = $this->partialsGenerator->partialResponses();
+            $inferenceResponse = InferenceResponseFactory::fromPartialResponses($partialResponses);
             $processingResult = $this->retryHandler->validateResponse(
                 $inferenceResponse,
                 $responseModel,
