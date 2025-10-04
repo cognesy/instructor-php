@@ -70,6 +70,10 @@ class ResponseModel implements CanProvideJsonSchema
         return $this->schema;
     }
 
+    public function config() : StructuredOutputConfig {
+        return $this->config;
+    }
+
     /** @return string[] */
     public function getPropertyNames() : array {
         return $this->schema()->getPropertyNames();

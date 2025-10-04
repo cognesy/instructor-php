@@ -15,6 +15,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseFinished;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -25,16 +26,13 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class PartialsGenerator implements CanGeneratePartials
 {
-    // state
     private PartialObjectAssembler $partialAssembler;
-    // options
     private readonly PartialsGeneratorConfig $config;
 
     public function __construct(
         private ResponseDeserializer $responseDeserializer,
         private ResponseTransformer $responseTransformer,
         private EventDispatcherInterface $events,
-
         ?PartialsGeneratorConfig $config = null,
     ) {
         $this->config = $config ?? new PartialsGeneratorConfig();
@@ -60,74 +58,89 @@ class PartialsGenerator implements CanGeneratePartials
         $partialJson = PartialJson::start();
         $partialObject = PartialObject::empty();
         $lastPartial = null;
+        $isToolsMode = OutputMode::Tools->is($responseModel->config()->outputMode());
 
         /** @var PartialInferenceResponse $partialResponse */
         foreach ($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived(['partial' => $partialResponse->toArray()]));
             $lastPartial = $partialResponse;
-            $toolCallStreamState = $this->handleToolSignalIfAny(
-                $toolCallStreamState,
-                $partialJson,
-                $partialResponse->toolName,
-                $toolName
-            );
-            if ($toolCallStreamState->requiresBufferReset()) {
-                $partialJson = PartialJson::start();
-            }
 
-            $delta = $partialResponse->contentDelta;
-            if (empty($delta)) {
+            if ($isToolsMode) {
+                if ($partialResponse->toolName !== '') {
+                    $toolCallStreamState = $toolCallStreamState->handleSignal($partialResponse->toolName);
+                }
+                $argsDelta = $partialResponse->toolArgs !== '' ? $partialResponse->toolArgs : $partialResponse->contentDelta;
+                if ($argsDelta === '') {
+                    continue;
+                }
+                $this->events->dispatch(new ChunkReceived(['chunk' => $argsDelta]));
+                $toolCallStreamState = $toolCallStreamState->startIfEmpty($toolName);
+                $toolCallStreamState = $toolCallStreamState->appendArgsDelta($argsDelta);
+                $normalized = $toolCallStreamState->normalizedArgs();
+                if ($normalized === '') {
+                    continue;
+                }
+                $partialObject = $this->tryUpdatePartialObject(
+                    responseModel: $responseModel,
+                    partialObject: $partialObject,
+                    partialJson: new PartialJson($normalized, $normalized)
+                );
+                $emittable = $partialObject->emittable();
+                if ($emittable !== null) {
+                    $this->events->dispatch(new PartialResponseGenerated($emittable));
+                    if ($emittable instanceof Sequenceable) {
+                        $sequenceableHandler->update($emittable);
+                    }
+                }
+                yield $partialResponse
+                    ->withValue($emittable ?? null)
+                    ->withContent($toolCallStreamState->rawArgs());
                 continue;
             }
 
+            // Content mode
+            $delta = $partialResponse->contentDelta;
+            if ($delta === '') {
+                continue;
+            }
             $this->events->dispatch(new ChunkReceived(['chunk' => $delta]));
             $partialJson = $this->updatePartialJson($partialJson, $delta);
             if ($partialJson->isEmpty()) {
                 continue;
             }
-
-            $toolCallStreamState = $toolCallStreamState->startIfEmpty($toolName);
-            $toolCallStreamState = $toolCallStreamState->update($toolName, $partialJson->normalized());
-
             $partialObject = $this->tryUpdatePartialObject(
                 responseModel: $responseModel,
                 partialObject: $partialObject,
                 partialJson: $partialJson
             );
-
-            // Emit event and update sequence only when a new emittable object is available
             $emittable = $partialObject->emittable();
             if ($emittable !== null) {
                 $this->events->dispatch(new PartialResponseGenerated($emittable));
-                if (($emittable instanceof Sequenceable)) {
+                if ($emittable instanceof Sequenceable) {
                     $sequenceableHandler->update($emittable);
                 }
             }
-
-            // Always yield partials so content deltas and usage aggregate correctly
             yield $partialResponse
-                ->withValue($emittable)
+                ->withValue($emittable ?? null)
                 ->withContent($partialJson->raw());
         }
         $this->events->dispatch(new StreamedResponseFinished(['partial' => $lastPartial?->toArray() ?? []]));
 
-        // finalize last function call
-        if ($toolCallStreamState->toolCalls()->count() > 0) {
-            // update sequenceable if needed
-            $toolCallStreamState = $toolCallStreamState->finalize(
-                $responseModel->toolName(),
-                $partialJson->finalized(),
-            );
-            $finalPartialJson = new PartialJson($partialJson->finalized(), $partialJson->finalized());
-            $partialObject = $this->tryUpdatePartialObject(
-                responseModel: $responseModel,
-                partialObject: $partialObject,
-                partialJson: $finalPartialJson
-            );
-            $emittable = $partialObject->emittable();
+        // finalize tools mode: complete last call and update sequenceables with finalized args
+        if ($isToolsMode && $toolCallStreamState->hasActive()) {
+            $finalized = $toolCallStreamState->finalizedArgs();
+            $toolCallStreamState = $toolCallStreamState->finalizeActive();
+            if ($finalized !== '') {
+                $partialObject = $this->tryUpdatePartialObject(
+                    responseModel: $responseModel,
+                    partialObject: $partialObject,
+                    partialJson: new PartialJson($finalized, $finalized)
+                );
+                $emittable = $partialObject->emittable();
                 if ($emittable instanceof Sequenceable) {
                     $sequenceableHandler->update($emittable);
                 }
+            }
         }
 
         // finalize sequenceable
@@ -136,23 +149,7 @@ class PartialsGenerator implements CanGeneratePartials
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    private function handleToolSignalIfAny(
-        ToolCallStreamState $partialToolCalls,
-        PartialJson $partialJson,
-        ?string $maybeToolName,
-        string $toolName
-    ): ToolCallStreamState {
-        if (!$maybeToolName) {
-            return $partialToolCalls;
-        }
-        $buffered = match (true) {
-            $partialJson->isEmpty() => null,
-            default => $partialJson->normalized(),
-        };
-        $newPartialToolCalls = $partialToolCalls->handleSignal($maybeToolName, $buffered, $toolName);
-
-        return $newPartialToolCalls;
-    }
+    // Tool signals are handled inline in makePartialResponses for clarity
 
     private function updatePartialJson(PartialJson $partialJson, string $delta): PartialJson {
         $newPartialJson = $partialJson->assemble($delta);
