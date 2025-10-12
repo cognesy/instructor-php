@@ -55,18 +55,16 @@ When a reducer's `step()` method returns `Reduced`, the transduction process sto
 ### Simple Pipeline
 
 ```php
-use Cognesy\Utils\Transducer\Transduce;
-use Cognesy\Utils\Transducer\Transducers\{Map, Filter, TakeN};
-use Cognesy\Utils\Transducer\Sinks\ToArrayReducer;
+use Cognesy\Stream\Sinks\ToArrayReducer;use Cognesy\Stream\Transducers\{Filter};use Cognesy\Stream\Transducers\Map;use Cognesy\Stream\Transducers\TakeN;use Cognesy\Stream\Transformation;
 
-$result = (new Transduce(
+$result = (new Transformation(
     transducers: [
         new Filter(fn($x) => $x > 0),
         new Map(fn($x) => $x * 2),
         new TakeN(5),
     ],
     reducer: new ToArrayReducer(),
-))->applyTo([1, -2, 3, 4, 5, 6, 7]);
+))->executeOn([1, -2, 3, 4, 5, 6, 7]);
 
 // Result: [2, 6, 8, 10, 12]
 ```
@@ -88,7 +86,7 @@ $result = $pipeline
 Manually compose transducers for complex transformations:
 
 ```php
-use Cognesy\Utils\Transducer\Transducers\Compose;
+use Cognesy\Stream\Transducers\Compose;
 
 $composed = Compose::from(
     new Filter(fn($x) => $x > 0),
@@ -115,7 +113,7 @@ These transducers/reducers support early termination:
 ### Example: Finding First Match
 
 ```php
-use Cognesy\Utils\Transducer\Sinks\FindReducer;
+use Cognesy\Stream\Sinks\FindReducer;
 
 $result = (new Transduce(
     transducers: [
@@ -131,7 +129,7 @@ $result = (new Transduce(
 ### Custom Early Termination
 
 ```php
-use Cognesy\Utils\Transducer\Reduced;
+use Cognesy\Stream\Support\Reduced;
 
 class LimitSumReducer implements Reducer {
     public function __construct(private int $maxSum) {}
@@ -209,7 +207,7 @@ new LastReducer()                                       // Get last element
 A flexible reducer that accepts closures:
 
 ```php
-use Cognesy\Utils\Transducer\CallableReducer;
+use Cognesy\Stream\Support\CallableReducer;
 
 $customReducer = new CallableReducer(
     stepFn: fn($acc, $item) => $acc + $item,
@@ -397,8 +395,7 @@ $result = (new Transduce(
 Create custom transducers by implementing the `Transducer` interface:
 
 ```php
-use Cognesy\Utils\Transducer\Contracts\{Transducer, Reducer};
-use Cognesy\Utils\Transducer\CallableReducer;
+use Cognesy\Stream\Contracts\{Transducer};use Cognesy\Stream\Contracts\Reducer;use Cognesy\Stream\Support\CallableReducer;
 
 final readonly class MultiplyBy implements Transducer {
     public function __construct(private int $factor) {}

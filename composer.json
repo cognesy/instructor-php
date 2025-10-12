@@ -38,11 +38,13 @@
       "Cognesy\\Polyglot\\": "packages/polyglot/src/",
       "Cognesy\\Schema\\": "packages/schema/src/",
       "Cognesy\\Setup\\": "packages/setup/src/",
-      "Cognesy\\Stepper\\": "packages/stepper/src/",
+      "Cognesy\\Stream\\": "packages/stream/src/",
       "Cognesy\\Template\\": "packages/templates/src/",
       "Cognesy\\Utils\\": "packages/utils/src/"
     },
-    "files": []
+    "files": [
+      "src/polyfills.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
@@ -57,7 +59,7 @@
       "Cognesy\\Polyglot\\Tests\\": "packages/polyglot/tests/",
       "Cognesy\\Schema\\Tests\\": "packages/schema/tests/",
       "Cognesy\\Setup\\Tests\\": "packages/setup/tests/",
-      "Cognesy\\Stepper\\Tests\\": "packages/stepper/tests/",
+      "Cognesy\\Stream\\Tests\\": "packages/stream/tests/",
       "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
 

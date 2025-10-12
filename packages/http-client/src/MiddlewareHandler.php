@@ -42,15 +42,14 @@ class MiddlewareHandler implements CanHandleHttpRequest
      * Run all middlewares in sequence, then the final driver.
      */
     #[\Override]
-    public function handle(HttpRequest $request): HttpResponse
-    {
+    public function handle(HttpRequest $request): HttpResponse {
         // We'll build a chain in reverse so the first middleware is called first.
         $chainedHandler = array_reduce(
             array_reverse($this->middleware),
             function (CanHandleHttpRequest $next, HttpMiddleware $middleware) {
                 return $this->makeInstance($middleware, $next);
             },
-            $this->driver
+            $this->driver,
         );
 
         // Now $chainedHandler is a single object implementing CanHandleHttp
@@ -61,11 +60,11 @@ class MiddlewareHandler implements CanHandleHttpRequest
     /**
      * Create handler instance with next middleware in the chain
      */
-    private function makeInstance(HttpMiddleware $middleware, CanHandleHttpRequest $next) : CanHandleHttpRequest {
+    private function makeInstance(HttpMiddleware $middleware, CanHandleHttpRequest $next): CanHandleHttpRequest {
         return new class($middleware, $next) implements CanHandleHttpRequest {
             public function __construct(
-                private HttpMiddleware       $middleware,
-                private CanHandleHttpRequest $next
+                private HttpMiddleware $middleware,
+                private CanHandleHttpRequest $next,
             ) {}
 
             #[\Override]

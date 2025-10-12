@@ -91,6 +91,12 @@
       "composer_name": "cognesy/instructor-setup"
     },
     {
+      "local": "packages/stream",
+      "repo": "cognesy/instructor-stream",
+      "github_name": "instructor-stream",
+      "composer_name": "cognesy/instructor-stream"
+    },
+    {
       "local": "packages/tell",
       "repo": "cognesy/instructor-tell",
       "github_name": "instructor-tell",

@@ -31,6 +31,7 @@
         <directory name="packages/polyglot/src" />
         <directory name="packages/schema/src" />
         <directory name="packages/setup/src" />
+        <directory name="packages/stream/src" />
         <directory name="packages/tell/src" />
         <directory name="packages/templates/src" />
         <directory name="packages/utils/src" />

@@ -5,6 +5,7 @@ namespace Cognesy\Http;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Generator;
 
 class PendingHttpResponse
 {
@@ -43,7 +44,11 @@ class PendingHttpResponse
             ->body();
     }
 
-    public function stream(?int $chunkSize = null): \Generator {
+    /**
+     * @param int|null $chunkSize
+     * @return Generator<string>
+     */
+    public function stream(?int $chunkSize = null): Generator {
         yield from $this
             ->makeResponse($this->request->withStreaming(true))
             ->stream($chunkSize);
@@ -51,6 +56,10 @@ class PendingHttpResponse
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////
 
+    /**
+     * @param HttpRequest $request
+     * @return HttpResponse
+     */
     private function makeResponse(HttpRequest $request): HttpResponse {
         if (empty($this->response)) {
             $this->response = $this->driver->handle($request);

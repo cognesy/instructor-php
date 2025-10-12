@@ -20,6 +20,7 @@ parameters:
 		- packages/polyglot/src
 		- packages/schema/src
 		- packages/setup/src
+        - packages/stream/src
 		- packages/tell/src
 		- packages/templates/src
 		- packages/utils/src

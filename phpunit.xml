@@ -26,6 +26,7 @@
             <directory suffix="Test.php">./packages/polyglot/tests/Unit</directory>
             <directory suffix="Test.php">./packages/schema/tests/Unit</directory>
             <directory suffix="Test.php">./packages/setup/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/stream/tests/Unit</directory>
             <directory suffix="Test.php">./packages/tell/tests/Unit</directory>
             <directory suffix="Test.php">./packages/templates/tests/Unit</directory>
             <directory suffix="Test.php">./packages/utils/tests/Unit</directory>
@@ -47,6 +48,7 @@
             <directory suffix="Test.php">./packages/polyglot/tests/Feature</directory>
             <directory suffix="Test.php">./packages/schema/tests/Feature</directory>
             <directory suffix="Test.php">./packages/setup/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/stream/tests/Feature</directory>
             <directory suffix="Test.php">./packages/tell/tests/Feature</directory>
             <directory suffix="Test.php">./packages/templates/tests/Feature</directory>
             <directory suffix="Test.php">./packages/utils/tests/Feature</directory>
@@ -68,6 +70,7 @@
             <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
             <directory suffix="Test.php">./packages/schema/tests/Integration</directory>
             <directory suffix="Test.php">./packages/setup/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/stream/tests/Integration</directory>
             <directory suffix="Test.php">./packages/tell/tests/Integration</directory>
             <directory suffix="Test.php">./packages/templates/tests/Integration</directory>
             <directory suffix="Test.php">./packages/utils/tests/Integration</directory>
@@ -91,6 +94,7 @@
             <directory suffix=".php">./packages/polyglot/src</directory>
             <directory suffix=".php">./packages/schema/src</directory>
             <directory suffix=".php">./packages/setup/src</directory>
+            <directory suffix=".php">./packages/stream/src</directory>
             <directory suffix=".php">./packages/tell/src</directory>
             <directory suffix=".php">./packages/templates/src</directory>
             <directory suffix=".php">./packages/utils/src</directory>
