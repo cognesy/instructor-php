@@ -56,7 +56,7 @@ abstract class StepByStep implements CanExecuteIteratively
 
     /**
      * @param TState $state
-     * @return \Generator<mixed, TState, mixed, mixed>
+     * @return iterable<TState>
      */
     #[\Override]
     public function iterator(object $state): iterable {

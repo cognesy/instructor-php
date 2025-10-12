@@ -24,6 +24,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
     /**
      * @return array<class-string, bool>
      */
+    #[\Override]
     public function getSupportedTypes(?string $format): array
     {
         return [

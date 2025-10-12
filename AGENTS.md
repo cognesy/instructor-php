@@ -18,10 +18,11 @@ Each package in `packages/` may contain:
 
 - Use strict types and type hints for arguments and return values everywhere
 - Do not nest control structures (if, loops) beyond 1 level, exceptionally 2 levels
-- Use `match` for complex conditionals, avoid `if`/`else if` chains or `switch` statements
+- Use `match` for complex conditionals - avoid `if`/`else if` chains or `switch` statements; avoid ternary operators
 - Prefer immutable data structures and functional programming paradigms
 - Avoid using arrays as collections - use dedicated collection classes
-- Avoid exceptions for control flow - do not wrap everything in try/catch
+- Avoid exceptions for control flow - do not wrap everything in try/catch; either let exceptions bubble up or use monadic Cognesy\Utils\Result\Result for error handling if error needs to be handled on the same level
+- Use namespaces and PSR-4 autoloading
 
 # Design Principles
 

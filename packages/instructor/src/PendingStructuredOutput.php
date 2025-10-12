@@ -15,15 +15,18 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
-use Cognesy\Instructor\Streaming\PartialsGenerator;
+use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromJson;
+use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromToolCalls;
 use Cognesy\Instructor\Streaming\StreamingRequestHandler;
 use Cognesy\Instructor\Streaming\StructuredOutputStream;
 use Cognesy\Instructor\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
+use RuntimeException;
 
 /**
  * @template TResponse
@@ -65,7 +68,7 @@ class PendingStructuredOutput
         $this->llmProvider = $llmProvider;
         $this->httpClient = $httpClient;
         $this->syncHandler = $this->makeSyncHandler();
-        $this->streamingHandler = $this->makeStreamingHandler();
+        $this->streamingHandler = $this->makeStreamingHandler($execution->config()->outputMode());
     }
 
     /**
@@ -75,14 +78,14 @@ class PendingStructuredOutput
      */
     public function get() : mixed {
         return match(true) {
-            $this->execution->request()->isStreamed() => $this->stream()->finalValue(),
+            $this->execution->isStreamed() => $this->stream()->finalValue(),
             default => $this->getResponse()->value(),
         };
     }
 
     public function toJsonObject() : Json {
         return match(true) {
-            $this->execution->request()->isStreamed() => $this->stream()->finalResponse()->findJsonData($this->execution->outputMode()),
+            $this->execution->isStreamed() => $this->stream()->finalResponse()->findJsonData($this->execution->outputMode()),
             default => $this->getResponse()->findJsonData($this->execution->outputMode())
         };
     }
@@ -132,7 +135,7 @@ class PendingStructuredOutput
             }
             $response = $this->execution->inferenceResponse();
             if ($response === null) {
-                throw new \RuntimeException('Failed to get inference response');
+                throw new RuntimeException('Failed to get inference response');
             }
             $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
             return $response;
@@ -145,7 +148,7 @@ class PendingStructuredOutput
             }
             $this->cachedResponse = $this->execution->inferenceResponse();
             if ($this->cachedResponse === null) {
-                throw new \RuntimeException('Failed to get inference response');
+                throw new RuntimeException('Failed to get inference response');
             }
         }
 
@@ -167,17 +170,26 @@ class PendingStructuredOutput
         );
     }
 
-    private function makeStreamingHandler(): CanExecuteStructuredOutput {
+    private function makeStreamingHandler(OutputMode $mode): CanExecuteStructuredOutput {
         $inferenceProvider = $this->makeInferenceProvider();
         $retryHandler = $this->makeRetryHandler();
 
-        return new StreamingRequestHandler(
-            inferenceProvider: $inferenceProvider,
-            partialsGenerator: new PartialsGenerator(
+        $partialsGenerator = match($mode) {
+            OutputMode::Tools => new GeneratePartialsFromToolCalls(
                 $this->responseDeserializer,
                 $this->responseTransformer,
                 $this->events,
             ),
+            default => new GeneratePartialsFromJson(
+                $this->responseDeserializer,
+                $this->responseTransformer,
+                $this->events,
+            ),
+        };
+
+        return new StreamingRequestHandler(
+            inferenceProvider: $inferenceProvider,
+            partialsGenerator: $partialsGenerator,
             retryHandler: $retryHandler,
         );
     }

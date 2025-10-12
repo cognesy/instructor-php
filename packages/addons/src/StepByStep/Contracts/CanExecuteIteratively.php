@@ -2,8 +2,6 @@
 
 namespace Cognesy\Addons\StepByStep\Contracts;
 
-use Generator;
-
 /**
  * @template TState of object
  */
@@ -32,7 +30,7 @@ interface CanExecuteIteratively
     /**
      * Create an iterator to traverse through each step.
      * @param TState $state
-     * @return Generator<mixed, TState, mixed, mixed>
+     * @return iterable<TState>
      */
     public function iterator(object $state): iterable;
 }

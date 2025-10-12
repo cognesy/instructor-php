@@ -28,6 +28,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
     /**
      * @return array<class-string, bool>
      */
+    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return [
             DateTimeInterface::class => true,

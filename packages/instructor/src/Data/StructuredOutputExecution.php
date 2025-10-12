@@ -102,6 +102,10 @@ final readonly class StructuredOutputExecution
         return $this->isFinalized;
     }
 
+    public function isStreamed(): bool {
+        return $this->request->isStreamed();
+    }
+
     public function usage(): \Cognesy\Polyglot\Inference\Data\Usage {
         $usage = $this->attempts->usage();
         if (!$this->currentAttempt->isFinalized()) {

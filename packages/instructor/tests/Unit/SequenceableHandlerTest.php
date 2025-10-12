@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Streaming\SequenceableHandler;
+use Cognesy\Instructor\Streaming\SequenceGen\SequenceableEmitter;
 
 class Item { public function __construct(public string $name) {} }
 
@@ -16,7 +16,7 @@ describe('SequenceableHandler', function () {
             return $event;
         });
 
-        $handler = new SequenceableHandler($events);
+        $handler = new SequenceableEmitter($events);
         $seq = Sequence::of(Item::class);
 
         // simulate streaming growth

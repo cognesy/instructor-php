@@ -71,7 +71,7 @@ class StructuredOutputStream
     /**
      * Returns a stream of partial parsed values.
      *
-     * @return \Generator<TResponse>
+     * @return Generator<TResponse>
      */
     public function partials() : \Generator {
         foreach ($this->streamResponses() as $partialResponse) {
@@ -95,6 +95,7 @@ class StructuredOutputStream
     public function finalResponse() : InferenceResponse {
         foreach ($this->streamResponses() as $partialResponse) {
             // Just consume the stream, processStream() handles the updates
+            $tmp = $partialResponse;
         }
         if (is_null($this->lastResponse)) {
             throw new RuntimeException('Expected final InferenceResponse, got null');
@@ -107,9 +108,9 @@ class StructuredOutputStream
      * This method is useful when you want to process only fully updated
      * sequence items, e.g. for visualization or further processing.
      *
-     * @return \Generator<Sequence>
+     * @return Generator<Sequence>
      */
-    public function sequence() : \Generator {
+    public function sequence() : Generator {
         $lastSequence = null;
         $lastSequenceCount = 1;
 

@@ -8,7 +8,7 @@ use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Streaming\PartialsGenerator;
+use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromJson;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Schema\Factories\SchemaFactory;
@@ -55,7 +55,7 @@ beforeEach(function () {
         config: new StructuredOutputConfig(),
     );
 
-    $this->generator = new PartialsGenerator(
+    $this->generator = new GeneratePartialsFromJson(
         $this->deserializer,
         $this->transformer,
         $this->events

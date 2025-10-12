@@ -40,13 +40,4 @@
             <directory name="packages/experimental" />
         </ignoreFiles>
     </projectFiles>
-    <issueHandlers>
-        <MissingOverrideAttribute>
-            <errorLevel type="suppress">
-                <file name="packages/instructor/src/Deserialization/Deserializers/BackedEnumNormalizer.php" />
-                <file name="packages/instructor/src/Deserialization/Deserializers/CustomObjectNormalizer.php" />
-                <file name="packages/instructor/src/Deserialization/Deserializers/FlexibleDateDenormalizer.php" />
-            </errorLevel>
-        </MissingOverrideAttribute>
-    </issueHandlers>
 </psalm>
