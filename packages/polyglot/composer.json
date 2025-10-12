@@ -45,6 +45,6 @@
     },
     "sort-packages": true
   },
-  "minimum-stability": "RC",
+  "minimum-stability": "rc",
   "prefer-stable": true
 }

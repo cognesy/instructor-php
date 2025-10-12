@@ -60,6 +60,6 @@
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },
-  "minimum-stability": "RC",
+  "minimum-stability": "rc",
   "prefer-stable": true
 }

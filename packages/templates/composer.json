@@ -55,6 +55,6 @@
     "eftec/bladeone": "For BladeOne template engine support",
     "twig/twig": "For Twig template engine support"
   },
-  "minimum-stability": "RC",
+  "minimum-stability": "rc",
   "prefer-stable": true
 }
