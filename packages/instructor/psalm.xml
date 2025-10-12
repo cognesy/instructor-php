@@ -14,4 +14,11 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <MissingOverrideAttribute>
+            <errorLevel type="suppress">
+                <file name="src/Deserialization/Deserializers/FlexibleDateDenormalizer.php" />
+            </errorLevel>
+        </MissingOverrideAttribute>
+    </issueHandlers>
 </psalm>
