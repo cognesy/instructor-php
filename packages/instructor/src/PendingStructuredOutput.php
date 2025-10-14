@@ -4,6 +4,7 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\HttpClient;
+use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
@@ -15,9 +16,8 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
-use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromJson;
-use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromToolCalls;
-use Cognesy\Instructor\Streaming\StreamingRequestHandler;
+use Cognesy\Instructor\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Partials\PartialStreamingRequestHandler;
 use Cognesy\Instructor\Streaming\StructuredOutputStream;
 use Cognesy\Instructor\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -27,6 +27,10 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use RuntimeException;
+
+// use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromJson;
+// use Cognesy\Instructor\Streaming\PartialGen\GeneratePartialsFromToolCalls;
+// use Cognesy\Instructor\Streaming\StreamingRequestHandler;
 
 /**
  * @template TResponse
@@ -174,22 +178,29 @@ class PendingStructuredOutput
         $inferenceProvider = $this->makeInferenceProvider();
         $retryHandler = $this->makeRetryHandler();
 
-        $partialsGenerator = match($mode) {
-            OutputMode::Tools => new GeneratePartialsFromToolCalls(
-                $this->responseDeserializer,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            default => new GeneratePartialsFromJson(
-                $this->responseDeserializer,
-                $this->responseTransformer,
-                $this->events,
-            ),
-        };
+//        $partialsGenerator = match($mode) {
+//            OutputMode::Tools => new GeneratePartialsFromToolCalls(
+//                $this->responseDeserializer,
+//                $this->responseTransformer,
+//                $this->events,
+//            ),
+//            default => new GeneratePartialsFromJson(
+//                $this->responseDeserializer,
+//                $this->responseTransformer,
+//                $this->events,
+//            ),
+//        };
 
-        return new StreamingRequestHandler(
+        $partialsFactory = new PartialStreamFactory(
+            deserializer: $this->responseDeserializer,
+            transformer: $this->responseTransformer,
+            events: $this->events,
+            config: new PartialsGeneratorConfig(),
+        );
+
+        return new PartialStreamingRequestHandler(
             inferenceProvider: $inferenceProvider,
-            partialsGenerator: $partialsGenerator,
+            partials: $partialsFactory,
             retryHandler: $retryHandler,
         );
     }

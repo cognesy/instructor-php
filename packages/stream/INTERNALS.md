@@ -363,7 +363,7 @@ final readonly class Reduced {
 if ($shouldTerminate) {
     return new Reduced($accumulator);
 }
-return $this->next->step($accumulator, $value);
+return $this->inner->step($accumulator, $value);
 ```
 
 **Detection** happens in `TransformationExecution::tryProcessNext()`:
@@ -580,7 +580,7 @@ class FilterTransducer implements Transducer {
         return new class($reducer, $this->predicate) implements Reducer {
             public function step(mixed $acc, mixed $val): mixed {
                 if ($this->predicate($val)) {
-                    return $this->next->step($acc, $val);  // Pass through
+                    return $this->inner->step($acc, $val);  // Pass through
                 }
                 return $acc;  // Skip
             }
@@ -658,12 +658,12 @@ final readonly class MyTransducer implements Transducer {
     public function __invoke(Reducer $reducer): Reducer {
         return new class($reducer, /* captured params */) implements Reducer {
             public function __construct(
-                private Reducer $next,
+                private Reducer $inner,
                 // private params
             ) {}
 
             public function init(): mixed {
-                return $this->next->init();
+                return $this->inner->init();
             }
 
             public function step(mixed $accumulator, mixed $value): mixed {
@@ -676,12 +676,12 @@ final readonly class MyTransducer implements Transducer {
                 }
 
                 // Pass to next reducer
-                return $this->next->step($accumulator, $transformed);
+                return $this->inner->step($accumulator, $transformed);
             }
 
             public function complete(mixed $accumulator): mixed {
                 // Optional finalization
-                return $this->next->complete($accumulator);
+                return $this->inner->complete($accumulator);
             }
         };
     }
@@ -939,7 +939,7 @@ public function init(): mixed {
 ✅ **Correct**:
 ```php
 public function init(): mixed {
-    return $this->next->init();  // Forward to next
+    return $this->inner->init();  // Forward to next
 }
 ```
 
@@ -947,13 +947,13 @@ public function init(): mixed {
 
 ❌ **Wrong**:
 ```php
-$result = $this->next->step($acc, $val);
+$result = $this->inner->step($acc, $val);
 return $result->value();  // Crash if not Reduced
 ```
 
 ✅ **Correct**:
 ```php
-$result = $this->next->step($acc, $val);
+$result = $this->inner->step($acc, $val);
 if ($result instanceof Reduced) {
     return $result;  // Propagate upward
 }

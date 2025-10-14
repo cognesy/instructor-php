@@ -85,11 +85,26 @@ return solver();
     
     private function executeProgram(string $code): mixed {
         try {
-            $result = eval($code);
-            return $result;
+            $sanitized = $this->sanitizeCode($code);
+            // Ensure we get a value even if the model forgot to return it explicitly
+            if (strpos($sanitized, 'return') === false) {
+                $sanitized .= "\nreturn (function(){ return function_exists('solver') ? solver() : null; })();";
+            }
+            return eval($sanitized);
         } catch (Throwable $e) {
             throw new Exception("Program execution failed: " . $e->getMessage());
         }
+    }
+
+    private function sanitizeCode(string $code): string {
+        // Strip Markdown fences
+        $code = preg_replace('/^\s*```[a-zA-Z]*\s*/', '', $code);
+        $code = preg_replace('/```\s*$/', '', (string) $code);
+        // Remove PHP open/close tags — eval() expects pure PHP code body
+        $code = str_replace(['<?php', '<?', '?>'], '', (string) $code);
+        // Normalize line endings and trim
+        $code = trim((string) $code);
+        return $code;
     }
     
     private function generatePrediction(mixed $predictedAnswer, array $options, string $query): Prediction {

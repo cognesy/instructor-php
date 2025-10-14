@@ -5,11 +5,11 @@ namespace Cognesy\Stream;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Stream\Contracts\Stream;
 use Cognesy\Stream\Contracts\Transducer;
+use Cognesy\Stream\Iterator\BufferedTransformationIterator;
+use Cognesy\Stream\Iterator\IteratorUtils;
+use Cognesy\Stream\Iterator\TransformationIterator;
 use Cognesy\Stream\Sinks\{ToArrayReducer};
-use Cognesy\Stream\Support\BufferedTransformationIterator;
-use Cognesy\Stream\Support\IteratorUtils;
-use Cognesy\Stream\Support\TransformationIterator;
-use Cognesy\Stream\Transducers\Compose;
+use Cognesy\Stream\Transform\Misc\Transducers\Compose;
 use InvalidArgumentException;
 use Iterator;
 

@@ -69,7 +69,8 @@ final readonly class SequenceState
         return $this->makeListOfSequenceUpdates(
             sequence: $this->sequence,
             lastLength: $this->previousLength,
-            targetLength: $this->length() - 1, // we are not sure if the last item is complete yet
+            // Ensure non-negative target length to avoid infinite popping when sequence is empty
+            targetLength: max(0, $this->length() - 1),
         );
     }
 

@@ -1,0 +1,19 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Stream\Transform\Group\Transducers;
+
+use Cognesy\Stream\Contracts\Reducer;
+use Cognesy\Stream\Contracts\Transducer;
+use Cognesy\Stream\Transform\Group\Decorators\SlidingWindowReducer;
+
+final readonly class SlidingWindow implements Transducer {
+    public function __construct(private int $size) {}
+
+    #[\Override]
+    public function __invoke(Reducer $reducer) : Reducer {
+        return new SlidingWindowReducer(
+            inner: $reducer,
+            size: $this->size,
+        );
+    }
+}

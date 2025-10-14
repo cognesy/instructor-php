@@ -16,8 +16,7 @@
 ### Define & Execute
 
 ```php
-use Cognesy\Stream\Transformation;
-use Cognesy\Stream\Transducers\{Map, Filter, TakeN};
+use Cognesy\Stream\Transform\Filter\Transducers\Filter;use Cognesy\Stream\Transform\Limit\Transducers\TakeN;use Cognesy\Stream\Transform\Map\Transducers\{Map};use Cognesy\Stream\Transformation;
 
 // Define reusable transformation
 $pipeline = Transformation::define(
@@ -37,7 +36,7 @@ $result = $pipeline->executeOn([1,2,3,4,5]);
 ### Custom Sinks
 
 ```php
-use Cognesy\Stream\Sinks\{ToStringReducer, SumReducer, GroupByReducer};
+use Cognesy\Stream\Sinks\{GroupByReducer,Stats\SumReducer,ToStringReducer};
 
 // Collect to string
 $text = Transformation::define(new Map('strtoupper'))
@@ -511,7 +510,7 @@ $unique = $dedupe->executeOn(['Foo', 'foo ', ' bar', '', 'Foo', 'Bar']);
 ## Error Handling
 
 ```php
-use Cognesy\Stream\Transducers\TryCatch;
+use Cognesy\Stream\Transform\Misc\Transducers\TryCatch;
 
 $safe = Transformation::define(
     new Map(fn($x) => json_decode($x, true)),
@@ -538,16 +537,16 @@ class MyTransducer implements Transducer {
             public function __construct(private Reducer $next) {}
 
             public function init(): mixed {
-                return $this->next->init();
+                return $this->inner->init();
             }
 
             public function step(mixed $acc, mixed $val): mixed {
                 // Your transformation logic
-                return $this->next->step($acc, $transformedValue);
+                return $this->inner->step($acc, $transformedValue);
             }
 
             public function complete(mixed $acc): mixed {
-                return $this->next->complete($acc);
+                return $this->inner->complete($acc);
             }
         };
     }

@@ -4,7 +4,7 @@ namespace Cognesy\Stream;
 
 use Cognesy\Stream\Contracts\Stream;
 use Cognesy\Stream\Contracts\Transducer;
-use Cognesy\Stream\Sinks\ToQueueReducer;
+use Cognesy\Stream\Sinks\SideEffect\ToQueueReducer;
 use Iterator;
 use SplQueue;
 

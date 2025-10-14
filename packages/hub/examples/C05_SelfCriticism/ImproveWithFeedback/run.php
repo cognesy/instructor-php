@@ -70,6 +70,12 @@ class SelfRefinePipeline {
     }
 
     public function refine(Response $response, Feedback $feedback) : Response {
+        $feedbackLines = array_map(
+            fn($item) => is_string($item) ? $item : json_encode($item),
+            $feedback->feedback,
+        );
+        $feedbackText = implode("\n", $feedbackLines);
+
         $msg = <<<MSG
             You are an expert Python coder.
 
@@ -78,7 +84,7 @@ class SelfRefinePipeline {
             </response>
 
             <feedback>
-            " . implode("\n", $feedback->feedback) . "
+            {$feedbackText}
             </feedback>
 
             Refine your response.
@@ -87,7 +93,7 @@ class SelfRefinePipeline {
             model: 'gpt-4o',
             responseModel: Response::class,
             messages: [ ['role' => 'user', 'content' => $msg] ],
-        )->get();
+            )->get();
     }
 
     public function stop(Feedback $feedback, History $history) : bool {

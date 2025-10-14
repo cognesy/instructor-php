@@ -3,9 +3,9 @@
 use Cognesy\Stream\Sinks\ToArrayReducer;
 use Cognesy\Stream\Sinks\ToStringReducer;
 use Cognesy\Stream\Sources\Array\ArrayStream;
-use Cognesy\Stream\Transducers\Filter;
-use Cognesy\Stream\Transducers\Map;
-use Cognesy\Stream\Transducers\TakeN;
+use Cognesy\Stream\Transform\Filter\Transducers\Filter;
+use Cognesy\Stream\Transform\Limit\Transducers\TakeN;
+use Cognesy\Stream\Transform\Map\Transducers\Map;
 use Cognesy\Stream\Transformation;
 
 // STATIC FACTORY

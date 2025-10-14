@@ -1,0 +1,48 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Instructor\Partials\ContentMode;
+
+use Cognesy\Instructor\Partials\Data\PartialContext;
+use Cognesy\Instructor\Streaming\PartialGen\PartialJson;
+use Cognesy\Stream\Contracts\Reducer;
+
+class AssembleJsonReducer implements Reducer
+{
+    private PartialJson $state;
+
+    public function __construct(
+        private Reducer $inner,
+    ) {
+        $this->state = PartialJson::start();
+    }
+
+    #[\Override]
+    public function init(): mixed {
+        $this->state = PartialJson::start();
+        return $this->inner->init();
+    }
+
+    #[\Override]
+    public function step(mixed $accumulator, mixed $reducible): mixed {
+        assert($reducible instanceof PartialContext);
+
+        // Accumulate delta into JSON
+        $this->state = $this->state->assemble($reducible->delta);
+
+        // Skip if JSON is empty, unless finishReason present (to propagate completion/usage)
+        if ($this->state->isEmpty()) {
+            if ($reducible->response->finishReason !== '') {
+                return $this->inner->step($accumulator, $reducible);
+            }
+            return $accumulator;
+        }
+
+        // Forward with updated JSON
+        return $this->inner->step($accumulator, $reducible->withJson($this->state));
+    }
+
+    #[\Override]
+    public function complete(mixed $accumulator): mixed {
+        return $this->inner->complete($accumulator);
+    }
+}

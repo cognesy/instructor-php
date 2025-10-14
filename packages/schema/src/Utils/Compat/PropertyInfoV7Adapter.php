@@ -53,8 +53,9 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         if ($type->isIdentifiedBy(TypeIdentifier::BOOL)) { $types[] = 'bool'; }
         if ($type->isIdentifiedBy(TypeIdentifier::ARRAY)) { $types[] = $this->getCollectionOrArrayType($type); }
         if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) {
+            $unwrappedType = $this->unwrapType($type);
             /** @psalm-suppress UndefinedMethod - getClassName() exists on ObjectType */
-            $types[] = $type->getClassName();
+            $types[] = $unwrappedType->getClassName();
         }
         if ($type->isIdentifiedBy(TypeIdentifier::ITERABLE)) { $types[] = $this->getCollectionOrArrayType($type); }
         //if ($type->isIdentifiedBy(TypeIdentifier::NULL)) { $types[] = 'null'; }
@@ -70,6 +71,22 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
             return 'array';
         }
         return $this->arrayTypeToString($valueType);
+    }
+
+    private function unwrapType(Type $type): Type {
+        // Nullable/Wrapper unwrapping for >=7.2
+        if (method_exists(Type::class, 'getBaseType')) {
+            $base = $type->getBaseType();
+            if ($base instanceof Type && $base !== $type) {
+                return $base;
+            }
+        } else {
+            // <7.2: unwrap nested wrappers
+            if ($type instanceof WrappingTypeInterface) {
+                return $type->getWrappedType();
+            }
+        }
+        return $type;
     }
 
     private function resolveCollectionValueType(Type $type): ?Type {
@@ -115,8 +132,9 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         if ($type->isIdentifiedBy(TypeIdentifier::BOOL)) { $types[] = 'bool[]'; }
         if ($type->isIdentifiedBy(TypeIdentifier::ARRAY)) { $types[] = 'array'; }
         if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) {
+            $unwrappedType = $this->unwrapType($type);
             /** @psalm-suppress UndefinedMethod - getClassName() exists on ObjectType */
-            $types[] = $type->getClassName(). '[]';
+            $types[] = $unwrappedType->getClassName(). '[]';
         }
         if ($type->isIdentifiedBy(TypeIdentifier::ITERABLE)) { $types[] = 'array'; }
         //if ($type->isIdentifiedBy(TypeIdentifier::NULL)) { $types[] = 'null'; }

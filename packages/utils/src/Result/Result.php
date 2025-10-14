@@ -211,14 +211,17 @@ abstract readonly class Result
     }
 
     /**
+     * This method ensures that a predicate holds for the success value.
+     * If the predicate fails, it transforms the Result into a Failure using the provided error factory.
+     *
      * @template ENew
-     * @param callable(T):bool $predicate Guard evaluated when the result is successful
-     * @param callable(T):(ENew|Result<T, ENew>) $onFailure Error factory executed when the predicate fails
+     * @param callable(T):bool $predicateFn Guard evaluated when the result is successful
+     * @param callable(T):(ENew|Result<T, ENew>) $onFailureFn Error factory executed when the predicate fails
      * @return Result
      * @psalm-return Result<T, E|ENew>
      * @phpstan-return Result
      */
-    public function ensure(callable $predicate, callable $onFailure): Result {
+    public function ensure(callable $predicateFn, callable $onFailureFn): Result {
         if ($this->isFailure()) {
             // Return a fresh Failure to avoid template-invariance issues when returning $this
             return self::failure($this->error());
@@ -226,10 +229,10 @@ abstract readonly class Result
 
         try {
             $value = $this->unwrap();
-            if ($predicate($value)) {
+            if ($predicateFn($value)) {
                 return $this;
             }
-            $failure = $onFailure($value);
+            $failure = $onFailureFn($value);
             return $failure instanceof Result
                 ? $failure
                 : self::failure($failure);

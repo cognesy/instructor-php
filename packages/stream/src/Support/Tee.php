@@ -2,6 +2,7 @@
 
 namespace Cognesy\Stream\Support;
 
+use Cognesy\Stream\Iterator\IteratorUtils;
 use InvalidArgumentException;
 use Iterator;
 
