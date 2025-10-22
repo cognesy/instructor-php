@@ -4,11 +4,10 @@ namespace Cognesy\Instructor\Config;
 
 use Cognesy\Config\Dsn;
 use Cognesy\Config\Exceptions\ConfigurationException;
-use Cognesy\Instructor\Data\Traits;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Throwable;
 
-final class StructuredOutputConfig
+final readonly class StructuredOutputConfig
 {
     public const CONFIG_GROUP = 'structured';
 
@@ -16,70 +15,74 @@ final class StructuredOutputConfig
         return self::CONFIG_GROUP;
     }
 
-    private OutputMode $outputMode = OutputMode::Tools;
-    private bool $useObjectReferences = false;
-    private int $maxRetries = 0;
-    private string $retryPrompt = "JSON generated incorrectly, fix following errors:\n";
-    private array $modePrompts = [
-        OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
-        OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
-        OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
-        OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
-    ];
-    private string $schemaName = 'default_schema';
-    private string $schemaDescription = '';
-    private string $toolName = 'extracted_data';
-    private string $toolDescription = 'Function call based on user instructions.';
-    private string $outputClass = 'Cognesy\Dynamic\Structure';
-    private bool $defaultToStdClass = false;
-    private string $deserializationErrorPrompt = "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
-    private bool $throwOnTransformationFailure = false;
-
-    private array $chatStructure = [
-        // potentially cached - predefined sections used to construct the script
-        'system',
-        'pre-cached',
-        'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-        'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-        'cached-messages',
-        'post-cached',
-        // never cached
-        'pre-prompt', 'prompt', 'post-prompt',
-        'pre-examples', 'examples', 'post-examples',
-        'pre-messages', 'messages', 'post-messages',
-        'pre-retries', 'retries', 'post-retries',
-    ];
+    private OutputMode $outputMode;
+    private bool $useObjectReferences;
+    private int $maxRetries;
+    private string $retryPrompt;
+    private array $modePrompts;
+    private string $schemaName;
+    private string $schemaDescription;
+    private string $toolName;
+    private string $toolDescription;
+    private string $outputClass;
+    private bool $defaultToStdClass;
+    private string $deserializationErrorPrompt;
+    private bool $throwOnTransformationFailure;
+    private array $chatStructure;
+    public string $streamingDriver;
 
     public function __construct(
         ?OutputMode $outputMode = null,
-        ?string $outputClass = '',
-        ?bool $useObjectReferences = false,
-        ?int $maxRetries = -1,
-        ?string $schemaName = '',
-        ?string $schemaDescription = '',
-        ?string $toolName = '',
-        ?string $toolDescription = '',
-        ?array $modePrompts = [],
-        ?string $retryPrompt = '',
-        ?array $chatStructure = [],
-        ?bool $defaultToStdClass = false,
-        ?string $deserializationErrorPrompt = '',
-        ?bool $throwOnTransformationFailure = false,
+        ?string $outputClass = null,
+        ?bool $useObjectReferences = null,
+        ?int $maxRetries = null,
+        ?string $schemaName = null,
+        ?string $schemaDescription = null,
+        ?string $toolName = null,
+        ?string $toolDescription = null,
+        ?array $modePrompts = null,
+        ?string $retryPrompt = null,
+        ?array $chatStructure = null,
+        ?bool $defaultToStdClass = null,
+        ?string $deserializationErrorPrompt = null,
+        ?bool $throwOnTransformationFailure = null,
     ) {
-        $this->outputMode = $outputMode ?: $this->outputMode;
-        $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
-        $this->maxRetries = ($maxRetries >= 0) ? $maxRetries : $this->maxRetries;
-        $this->retryPrompt = $retryPrompt ?: $this->retryPrompt;
-        $this->modePrompts = $modePrompts ?: $this->modePrompts;
-        $this->schemaName = $schemaName ?: $this->schemaName;
-        $this->schemaDescription = $schemaDescription ?: $this->schemaDescription;
-        $this->toolName = $toolName ?: $this->toolName;
-        $this->toolDescription = $toolDescription ?: $this->toolDescription;
-        $this->chatStructure = $chatStructure ?: $this->chatStructure;
-        $this->outputClass = $outputClass ?: $this->outputClass;
-        $this->defaultToStdClass = $defaultToStdClass ?? $this->defaultToStdClass;
-        $this->deserializationErrorPrompt = $deserializationErrorPrompt ?: $this->deserializationErrorPrompt;
-        $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? $this->throwOnTransformationFailure;
+        $this->streamingDriver = 'partials';
+        $this->outputMode = $outputMode ?: OutputMode::Tools;
+        $this->useObjectReferences = $useObjectReferences ?? false;
+        $this->maxRetries = $maxRetries ?? 0;
+        if ($this->maxRetries < 0) {
+            throw new ConfigurationException("maxRetries cannot be negative, got: {$this->maxRetries}");
+        }
+        $this->retryPrompt = $retryPrompt ?? "JSON generated incorrectly, fix following errors:\n";
+        $this->modePrompts = $modePrompts ?? [
+            OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
+            OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
+            OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
+            OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
+        ];
+        $this->schemaName = $schemaName ?? 'default_schema';
+        $this->schemaDescription = $schemaDescription ?? '';
+        $this->toolName = $toolName ?? 'extracted_data';
+        $this->toolDescription = $toolDescription ?? 'Function call based on user instructions.';
+        $this->chatStructure = $chatStructure ?? [
+            // potentially cached - predefined sections used to construct the script
+            'system',
+            'pre-cached',
+            'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+            'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+            'cached-messages',
+            'post-cached',
+            // never cached
+            'pre-prompt', 'prompt', 'post-prompt',
+            'pre-examples', 'examples', 'post-examples',
+            'pre-messages', 'messages', 'post-messages',
+            'pre-retries', 'retries', 'post-retries',
+        ];
+        $this->outputClass = $outputClass ?? 'Cognesy\Dynamic\Structure';
+        $this->defaultToStdClass = $defaultToStdClass ?? false;
+        $this->deserializationErrorPrompt = $deserializationErrorPrompt ?? "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
+        $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? false;
     }
 
     public function toArray(): array {
@@ -130,25 +133,6 @@ final class StructuredOutputConfig
     public function withOverrides(array $values): self {
         $config = array_merge($this->toArray(), $values);
         return self::fromArray($config);
-    }
-
-    public function clone(): self {
-        return new self(
-            outputMode: $this->outputMode,
-            outputClass: $this->outputClass,
-            useObjectReferences: $this->useObjectReferences,
-            maxRetries: $this->maxRetries,
-            schemaName: $this->schemaName,
-            schemaDescription: $this->schemaDescription,
-            toolName: $this->toolName,
-            toolDescription: $this->toolDescription,
-            modePrompts: $this->modePrompts,
-            retryPrompt: $this->retryPrompt,
-            chatStructure: $this->chatStructure,
-            defaultToStdClass: $this->defaultToStdClass,
-            deserializationErrorPrompt: $this->deserializationErrorPrompt,
-            throwOnTransformationFailure: $this->throwOnTransformationFailure,
-        );
     }
 
     // ACCESSORS ////////////////////////////////////////////////////
@@ -216,57 +200,84 @@ final class StructuredOutputConfig
     // MUTATORS /////////////////////////////////////////////////////
 
     public function withOutputMode(?OutputMode $outputMode): static {
-        $this->outputMode = $outputMode;
-        return $this;
+        return $this->with(outputMode: $outputMode);
     }
 
     public function withMaxRetries(int $maxRetries): static {
-        $this->maxRetries = $maxRetries;
-        return $this;
+        return $this->with(maxRetries: $maxRetries);
     }
 
     public function withSchemaName(string $schemaName): static {
-        $this->schemaName = $schemaName;
-        return $this;
+        return $this->with(schemaName: $schemaName);
     }
 
     public function withToolName(string $toolName): static {
-        $this->toolName = $toolName;
-        return $this;
+        return $this->with(toolName: $toolName);
     }
 
     public function withToolDescription(string $toolDescription): static {
-        $this->toolDescription = $toolDescription;
-        return $this;
+        return $this->with(toolDescription: $toolDescription);
     }
 
     public function withUseObjectReferences(bool $useObjectReferences): static {
-        $this->useObjectReferences = $useObjectReferences;
-        return $this;
+        return $this->with(useObjectReferences: $useObjectReferences);
     }
 
     public function withRetryPrompt(string $retryPrompt): static {
-        $this->retryPrompt = $retryPrompt;
-        return $this;
+        return $this->with(retryPrompt: $retryPrompt);
     }
 
     public function withModePrompt(OutputMode $mode, string $prompt): static {
-        $this->modePrompts[$mode->value] = $prompt;
-        return $this;
+        return $this->withModePrompts(array_merge($this->modePrompts, [
+            $mode->value => $prompt,
+        ]));
     }
 
     public function withModePrompts(array $modePrompts): static {
-        $this->modePrompts = $modePrompts;
-        return $this;
+        return $this->with(modePrompts: $modePrompts);
     }
 
     public function withChatStructure(array $chatStructure): static {
-        $this->chatStructure = $chatStructure;
-        return $this;
+        return $this->with(chatStructure: $chatStructure);
     }
 
     public function withDefaultOutputClass(string $defaultOutputClass): static {
-        $this->outputClass = $defaultOutputClass;
-        return $this;
+        return $this->with(outputClass: $defaultOutputClass);
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////
+
+    public function with(
+        ?OutputMode $outputMode = null,
+        ?string $outputClass = null,
+        ?bool $useObjectReferences = null,
+        ?int $maxRetries = null,
+        ?string $schemaName = null,
+        ?string $schemaDescription = null,
+        ?string $toolName = null,
+        ?string $toolDescription = null,
+        ?array $modePrompts = null,
+        ?string $retryPrompt = null,
+        ?array $chatStructure = null,
+        ?bool $defaultToStdClass = null,
+        ?string $deserializationErrorPrompt = null,
+        ?bool $throwOnTransformationFailure = null,
+    ): self {
+        return new self(
+            outputMode: $outputMode ?? $this->outputMode,
+            outputClass: $outputClass ?? $this->outputClass,
+            useObjectReferences: $useObjectReferences ?? $this->useObjectReferences,
+            maxRetries: $maxRetries ?? $this->maxRetries,
+            schemaName: $schemaName ?? $this->schemaName,
+            schemaDescription: $schemaDescription ?? $this->schemaDescription,
+            toolName: $toolName ?? $this->toolName,
+            toolDescription: $toolDescription ?? $this->toolDescription,
+            modePrompts: $modePrompts ?? $this->modePrompts,
+            retryPrompt: $retryPrompt ?? $this->retryPrompt,
+            chatStructure: $chatStructure ?? $this->chatStructure,
+            defaultToStdClass: $defaultToStdClass ?? $this->defaultToStdClass,
+            deserializationErrorPrompt: $deserializationErrorPrompt ?? $this->deserializationErrorPrompt,
+            throwOnTransformationFailure: $throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
+        );
     }
 }

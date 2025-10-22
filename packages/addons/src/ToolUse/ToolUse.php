@@ -9,6 +9,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
@@ -40,7 +41,7 @@ class ToolUse extends StepByStep
     use HandlesEvents;
 
     private readonly Tools $tools;
-    private readonly ToolExecutor $toolExecutor;
+    private readonly CanExecuteToolCalls $toolExecutor;
     private readonly CanUseTools $driver;
     private readonly ContinuationCriteria $continuationCriteria;
 
@@ -49,6 +50,7 @@ class ToolUse extends StepByStep
      */
     public function __construct(
         Tools $tools,
+        CanExecuteToolCalls $toolExecutor,
         CanApplyProcessors $processors,
         ContinuationCriteria $continuationCriteria,
         CanUseTools $driver,
@@ -62,7 +64,7 @@ class ToolUse extends StepByStep
         $this->driver = $driver;
         $this->events = EventBusResolver::using($events);
         $this->tools = $tools;
-        $this->toolExecutor = (new ToolExecutor($tools))->withEventHandler($this->events);
+        $this->toolExecutor = $toolExecutor;
     }
 
     // INTERNAL /////////////////////////////////////////////
@@ -133,7 +135,7 @@ class ToolUse extends StepByStep
         return $this->tools;
     }
 
-    public function toolExecutor(): ToolExecutor {
+    public function toolExecutor(): CanExecuteToolCalls {
         return $this->toolExecutor;
     }
 
@@ -148,6 +150,7 @@ class ToolUse extends StepByStep
      */
     public function with(
         ?Tools $tools = null,
+        ?CanExecuteToolCalls $toolExecutor = null,
         ?CanApplyProcessors $processors = null,
         ?ContinuationCriteria $continuationCriteria = null,
         ?CanUseTools $driver = null,
@@ -155,6 +158,7 @@ class ToolUse extends StepByStep
     ) : self {
         return new self(
             tools: $tools ?? $this->tools,
+            toolExecutor: $toolExecutor ?? $this->toolExecutor,
             processors: $processors ?? $this->processors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             driver: $driver ?? $this->driver,
@@ -179,11 +183,6 @@ class ToolUse extends StepByStep
         return $this->with(continuationCriteria: new ContinuationCriteria(...$continuationCriteria));
     }
 
-    public function withToolExecutor(ToolExecutor $executor): self {
-        $executor = $executor->withEventHandler($this->events);
-        return $this->with(tools: $executor->tools());
-    }
-
     public function withTools(array|ToolInterface|Tools $tools) : self {
         return $this->with(tools: match(true) {
             is_array($tools) => new Tools(...$tools),
@@ -191,6 +190,10 @@ class ToolUse extends StepByStep
             $tools instanceof Tools => $tools,
             default => new Tools(),
         });
+    }
+
+    public function withToolExecutor(CanExecuteToolCalls $toolExecutor) : self {
+        return $this->with(toolExecutor: $toolExecutor);
     }
 
     // EVENTS ////////////////////////////////////////////

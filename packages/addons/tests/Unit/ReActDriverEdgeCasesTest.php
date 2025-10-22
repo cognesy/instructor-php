@@ -76,8 +76,11 @@ it('records extraction failures inside failure steps (deterministic)', function 
 
     $result = $toolUse->nextStep($state);
 
-    expect($result->status())->toBe(ToolUseStatus::Failed);
+    // ReActDriver handles extraction failures gracefully by creating Error steps
+    // rather than throwing exceptions, so status remains InProgress
+    expect($result->status())->toBe(ToolUseStatus::InProgress);
     expect($result->currentStep()?->hasErrors())->toBeTrue();
+    expect($result->currentStep()?->stepType())->toBe(ToolUseStepType::Error);
     expect($result->currentStep()?->errorsAsString())
         ->toContain('No JSON found');
 });

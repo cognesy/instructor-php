@@ -4,7 +4,7 @@ use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Streaming\StructuredOutputStream;
+use Cognesy\Instructor\StructuredOutputStream;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Tests\Instructor\Support\TestEventDispatcher;

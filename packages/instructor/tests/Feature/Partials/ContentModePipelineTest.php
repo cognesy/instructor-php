@@ -7,9 +7,9 @@ use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregationState;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Partials\Data\AggregatedResponse;
-use Cognesy\Instructor\Partials\PartialStreamFactory;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -91,7 +91,7 @@ test('processes MdJson stream character by character', function() {
     expect($results)->not()->toBeEmpty();
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(ContentModeTestItem::class)
         ->and($last->latestValue->name)->toBe('test')
         ->and($last->latestValue->value)->toBe(42)
@@ -110,7 +110,7 @@ test('processes JsonSchema stream with object', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(ContentModeTestItem::class)
         ->and($last->latestValue->name)->toBe('direct')
         ->and($last->latestValue->value)->toBe(123);
@@ -125,7 +125,7 @@ test('accumulates usage statistics correctly', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->usage->inputTokens)->toBe(10)
         ->and($last->usage->outputTokens)->toBeGreaterThan(0)
         ->and($last->partialCount)->toBeGreaterThan(1);
@@ -174,7 +174,7 @@ test('handles malformed JSON gracefully', function() {
     expect($results)->not()->toBeEmpty();
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class);
+    expect($last)->toBeInstanceOf(AggregationState::class);
     // latestValue may be null if deserialization failed
 });
 
@@ -190,7 +190,7 @@ test('processes sequence of items progressively', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(Sequence::class)
         ->and($last->latestValue->count())->toBe(2);
 });

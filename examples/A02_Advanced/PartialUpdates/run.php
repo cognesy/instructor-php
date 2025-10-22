@@ -43,7 +43,7 @@ class UserDetail
 function partialUpdate($partial) {
     // Clear the screen and move the cursor to the top
     Console::clearScreen();
-
+    echo "Updated partial object received:\n";
     // Display the partial object
     dump($partial);
 
@@ -67,11 +67,11 @@ $text = <<<TEXT
 
 $user = (new StructuredOutput)
     ->using('openai')
-    ->onPartialUpdate(partialUpdate(...))
     ->withMessages($text)
     ->withResponseClass(UserDetail::class)
     ->withOutputMode(OutputMode::Json)
     ->withStreaming()
+    ->onPartialUpdate(partialUpdate(...))
     ->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";

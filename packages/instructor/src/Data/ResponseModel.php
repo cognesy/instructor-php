@@ -105,26 +105,6 @@ class ResponseModel implements CanProvideJsonSchema
 
     // MUTATORS ////////////////////////////////////////////////////////
 
-    public function with(
-        ?OutputMode $mode = null,
-        mixed $instance = null,
-        ?string $toolName = null,
-        ?string $toolDescription = null,
-    ) : static {
-        return (new static(
-            class: $this->class,
-            instance: $instance ?? $this->instance,
-            schema: $this->schema,
-            jsonSchema: $this->jsonSchema,
-            schemaName: $this->schemaName,
-            schemaDescription: $this->schemaDescription,
-            toolName: $toolName ?? $this->toolName,
-            toolDescription: $toolDescription ?? $this->toolDescription,
-            useObjectReferences: $this->useObjectReferences,
-            config: $this->config,
-        ));
-    }
-
     public function withOutputMode(OutputMode $mode) : static {
         return $this->with(mode: $mode);
     }
@@ -218,6 +198,29 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
+
+    private function with(
+        ?OutputMode $mode = null,
+        mixed $instance = null,
+        ?string $toolName = null,
+        ?string $toolDescription = null,
+    ) : static {
+        return new static(
+            class: $this->class,
+            instance: $instance ?? $this->instance,
+            schema: $this->schema,
+            jsonSchema: $this->jsonSchema,
+            schemaName: $this->schemaName,
+            schemaDescription: $this->schemaDescription,
+            toolName: $toolName ?? $this->toolName,
+            toolDescription: $toolDescription ?? $this->toolDescription,
+            useObjectReferences: $this->useObjectReferences,
+            config: match(true) {
+                ($mode === null) => $this->config,
+                default => $this->config->withOutputMode($mode),
+            },
+        );
+    }
 
     private function makeToolCallSchema() : array {
         $schemaFactory = new SchemaFactory(useObjectReferences: $this->useObjectReferences);

@@ -7,13 +7,15 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
+use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
-class ToolExecution
+final readonly class ToolExecution
 {
     private ToolCall $toolCall;
     private Result $result;
+    private string $id;
     private DateTimeImmutable $startedAt;
     private DateTimeImmutable $endedAt;
 
@@ -22,11 +24,13 @@ class ToolExecution
         Result $result,
         DateTimeImmutable $startedAt,
         DateTimeImmutable $endedAt,
+        ?string $id = null,
     ) {
         $this->toolCall = $toolCall;
         $this->result = $result;
         $this->startedAt = $startedAt;
         $this->endedAt = $endedAt;
+        $this->id = $id ?? Uuid::uuid4();
     }
 
     // CONSTRUCTORS ////////////////////////////////////////////
@@ -37,6 +41,7 @@ class ToolExecution
             result: self::makeResult($data),
             startedAt: self::parseDate($data['startedAt'] ?? null),
             endedAt: self::parseDate($data['endedAt'] ?? null),
+            id: $data['id'] ?? null,
         );
     }
 
@@ -44,6 +49,10 @@ class ToolExecution
 
     public function toolCall() : ToolCall {
         return $this->toolCall;
+    }
+
+    public function id() : string {
+        return $this->id;
     }
 
     public function startedAt() : DateTimeImmutable {
@@ -109,11 +118,9 @@ class ToolExecution
         if (array_key_exists('error', $data) && $data['error'] !== null && $data['error'] !== '') {
             return self::makeFailure($data['error']);
         }
-
         if (array_key_exists('result', $data)) {
             return Result::from($data['result']);
         }
-
         return Result::success(null);
     }
 

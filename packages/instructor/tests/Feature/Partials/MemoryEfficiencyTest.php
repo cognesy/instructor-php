@@ -7,8 +7,8 @@ use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Partials\Data\AggregatedResponse;
-use Cognesy\Instructor\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregationState;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -108,7 +108,7 @@ test('maintains O(1) memory with large stream - only latest value retained', fun
 
     // Verify last aggregate has correct state
     $last = end($lastResults);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         // Only one value retained (latest)
         ->and($last->latestValue)->toBeInstanceOf(MemoryEfficiencyTestItem::class)
         // Partial count shows total items processed
@@ -126,7 +126,7 @@ test('accumulates usage across many partials without storing all responses', fun
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         // Usage should be sum of all partials
         ->and($last->usage->inputTokens)->toBe(10) // Same for all
         ->and($last->usage->outputTokens)->toBeGreaterThan(50) // Accumulated
@@ -151,7 +151,7 @@ test('handles stream interruption - aggregate retains state', function() {
         }
     }
 
-    expect($lastAggregate)->toBeInstanceOf(AggregatedResponse::class)
+    expect($lastAggregate)->toBeInstanceOf(AggregationState::class)
         ->and($lastAggregate->partialCount)->toBe($consumed)
         ->and($lastAggregate->latestValue)->not()->toBeNull();
 });
@@ -180,7 +180,7 @@ test('verifies no accumulation of PartialInferenceResponse objects', function() 
     // - finishReason (string|null)
 
     // It should NOT contain an array of all PartialInferenceResponse objects
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(MemoryEfficiencyTestItem::class)
         ->and($last->partialCount)->toBeInt()
         ->and($last->usage)->toBeInstanceOf(Usage::class);
@@ -216,7 +216,7 @@ test('processes continuous stream without memory buildup', function() {
     }
 
     expect($processedCount)->toBeGreaterThan(0)
-        ->and($lastAggregate)->toBeInstanceOf(AggregatedResponse::class)
+        ->and($lastAggregate)->toBeInstanceOf(AggregationState::class)
         ->and($lastAggregate->partialCount)->toBe($processedCount);
 });
 
@@ -240,6 +240,6 @@ test('finishReason is retained through aggregation', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->finishReason)->toBe('stop');
 });

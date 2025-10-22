@@ -4,13 +4,13 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Message;
@@ -69,7 +69,7 @@ it('converts driver exceptions into failure steps', function () {
     $toolUse = ToolUseFactory::default(tools: new Tools());
 
     $failingDriver = new class implements CanUseTools {
-        public function useTools(ToolUseState $state, Tools $tools, ToolExecutor $executor): ToolUseStep
+        public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor): ToolUseStep
         {
             throw new RuntimeException('driver exception');
         }

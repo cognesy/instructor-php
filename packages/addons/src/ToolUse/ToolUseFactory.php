@@ -36,13 +36,14 @@ class ToolUseFactory
         $events = EventBusResolver::using($events);
         $tools = $tools ?? new Tools();
 
-        return new ToolUse(
+        return (new ToolUse(
             tools: $tools,
+            toolExecutor: (new ToolExecutor($tools))->withEventHandler($events),
             processors: $processors ?? self::defaultProcessors(),
             continuationCriteria: $continuationCriteria ?? self::defaultContinuationCriteria(),
             driver: $driver ?? new ToolCallingDriver,
             events: $events,
-        );
+        ));
     }
 
     protected static function defaultProcessors(): CanApplyProcessors {

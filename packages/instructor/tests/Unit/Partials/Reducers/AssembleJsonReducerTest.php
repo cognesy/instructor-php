@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Partials\ContentMode\AssembleJsonReducer;
-use Cognesy\Instructor\Partials\Data\PartialContext;
-use Cognesy\Instructor\Streaming\PartialGen\PartialJson;
+use Cognesy\Instructor\Executors\Partials\ContentMode\AssembleJsonReducer;
+use Cognesy\Instructor\Executors\Partials\ContentMode\PartialJson;
+use Cognesy\Instructor\Executors\Partials\DeltaExtraction\PartialProcessingState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Stream\Contracts\Reducer;
@@ -34,9 +34,9 @@ test('accumulates JSON fragments progressively', function() {
     $reducer->init();
 
     // Feed JSON in parts
-    $ctx1 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"key"');
-    $ctx2 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta(': "va');
-    $ctx3 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('lue"}');
+    $ctx1 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"key"');
+    $ctx2 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta(': "va');
+    $ctx3 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('lue"}');
 
     $reducer->step(null, $ctx1);
     $reducer->step(null, $ctx2);
@@ -65,7 +65,7 @@ test('skips when JSON is empty - does not forward', function() {
     $reducer->init();
 
     // Feed delta that produces empty JSON (e.g., whitespace before JSON starts)
-    $ctx = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('   ');
+    $ctx = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('   ');
 
     $result = $reducer->step([], $ctx);
 
@@ -80,12 +80,12 @@ test('attaches PartialJson to PartialContext', function() {
 
     $reducer->init();
 
-    $ctx = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"test": 1}');
+    $ctx = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"test": 1}');
 
     $reducer->step(null, $ctx);
 
     $result = $collector->collected[0];
-    expect($result)->toBeInstanceOf(PartialContext::class)
+    expect($result)->toBeInstanceOf(PartialProcessingState::class)
         ->and($result->json)->toBeInstanceOf(PartialJson::class)
         ->and($result->delta)->toBe('{"test": 1}');
 });
@@ -97,9 +97,9 @@ test('handles markdown-wrapped JSON extraction', function() {
     $reducer->init();
 
     // Feed markdown with JSON in parts
-    $ctx1 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('Here is data:\n\n```json\n');
-    $ctx2 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"value": 42}');
-    $ctx3 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('\n```\n');
+    $ctx1 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('Here is data:\n\n```json\n');
+    $ctx2 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"value": 42}');
+    $ctx3 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('\n```\n');
 
     $reducer->step(null, $ctx1);
     $reducer->step(null, $ctx2);
@@ -122,9 +122,9 @@ test('state persists across multiple step calls', function() {
 
     // Feed multiple deltas
     $contexts = [
-        PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"a":'),
-        PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('1,'),
-        PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('"b":2}'),
+        PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"a":'),
+        PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('1,'),
+        PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('"b":2}'),
     ];
 
     foreach ($contexts as $ctx) {
@@ -145,7 +145,7 @@ test('init resets JSON accumulation state', function() {
 
     // First stream
     $reducer->init();
-    $ctx1 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"first": 1}');
+    $ctx1 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"first": 1}');
     $reducer->step(null, $ctx1);
 
     expect($collector->collected)->toHaveCount(1);
@@ -154,7 +154,7 @@ test('init resets JSON accumulation state', function() {
     $reducer->init();
     expect($collector->collected)->toBeEmpty();
 
-    $ctx2 = PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"second": 2}');
+    $ctx2 = PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"second": 2}');
     $reducer->step(null, $ctx2);
 
     expect($collector->collected)->toHaveCount(1);
@@ -169,9 +169,9 @@ test('handles empty deltas gracefully', function() {
 
     $reducer->init();
 
-    $reducer->step(null, PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"key"'));
-    $reducer->step(null, PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('')); // Empty
-    $reducer->step(null, PartialContext::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta(': 1}'));
+    $reducer->step(null, PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('{"key"'));
+    $reducer->step(null, PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta('')); // Empty
+    $reducer->step(null, PartialProcessingState::fromResponse(new PartialInferenceResponse(usage: Usage::none()))->withDelta(': 1}'));
 
     // Empty delta still accumulates into JSON state but may or may not forward
     expect($collector->collected)->toBeGreaterThanOrEqual(2); // At least non-empty forwarded
@@ -183,7 +183,7 @@ test('preserves original PartialContext properties', function() {
 
     $reducer->init();
 
-    $original = PartialContext::fromResponse(
+    $original = PartialProcessingState::fromResponse(
         new PartialInferenceResponse(
             contentDelta: 'test',
             finishReason: 'stop',
@@ -194,7 +194,7 @@ test('preserves original PartialContext properties', function() {
     $reducer->step(null, $original);
 
     $result = $collector->collected[0];
-    expect($result)->toBeInstanceOf(PartialContext::class)
+    expect($result)->toBeInstanceOf(PartialProcessingState::class)
         ->and($result->delta)->toBe('{"data": true}')
         ->and($result->response->finishReason)->toBe('stop')
         ->and($result->json)->toBeInstanceOf(PartialJson::class);

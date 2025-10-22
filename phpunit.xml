@@ -75,6 +75,28 @@
             <directory suffix="Test.php">./packages/templates/tests/Integration</directory>
             <directory suffix="Test.php">./packages/utils/tests/Integration</directory>
         </testsuite>
+        <testsuite name="Regression">
+            <directory suffix="Test.php">./packages/addons/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/auxiliary/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/config/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/doctor/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/dynamic/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/evals/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/events/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/experimental/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/http-client/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/hub/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/instructor/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/messages/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/pipeline/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/polyglot/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/schema/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/setup/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/stream/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/tell/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/templates/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/utils/tests/Regression</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

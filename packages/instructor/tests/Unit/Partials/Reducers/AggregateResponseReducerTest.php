@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Partials\Data\AggregatedResponse;
-use Cognesy\Instructor\Partials\Reducers\AggregateResponseReducer;
+use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregateResponseReducer;
+use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregationState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Stream\Contracts\Reducer;
@@ -60,8 +60,8 @@ test('merges PartialInferenceResponse into rolling aggregate', function() {
     $aggregate1 = $collector->collected[0];
     $aggregate2 = $collector->collected[1];
 
-    expect($aggregate1)->toBeInstanceOf(AggregatedResponse::class)
-        ->and($aggregate2)->toBeInstanceOf(AggregatedResponse::class);
+    expect($aggregate1)->toBeInstanceOf(AggregationState::class)
+        ->and($aggregate2)->toBeInstanceOf(AggregationState::class);
 
     // First aggregate: 1 partial
     expect($aggregate1->partialCount)->toBe(1)
@@ -92,7 +92,7 @@ test('maintains O(1) memory - only latest value stored', function() {
     $lastAggregate = end($collector->collected);
 
     // Verify O(1) property: only latest response value retained
-    expect($lastAggregate)->toBeInstanceOf(AggregatedResponse::class)
+    expect($lastAggregate)->toBeInstanceOf(AggregationState::class)
         ->and($lastAggregate->partialCount)->toBe(100) // Counter tracks all
         ->and($lastAggregate->usage->outputTokens)->toBe(5050); // Sum of 1+2+...+100
 });
@@ -182,8 +182,8 @@ test('handles partials with empty and non-empty values', function() {
     $aggregate2 = $collector->collected[1];
 
     // Both aggregates created
-    expect($aggregate1)->toBeInstanceOf(AggregatedResponse::class)
-        ->and($aggregate2)->toBeInstanceOf(AggregatedResponse::class)
+    expect($aggregate1)->toBeInstanceOf(AggregationState::class)
+        ->and($aggregate2)->toBeInstanceOf(AggregationState::class)
         ->and($aggregate2->partialCount)->toBe(2);
 });
 

@@ -16,7 +16,6 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
-use Cognesy\Instructor\Streaming\StructuredOutputStream;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
@@ -178,14 +177,19 @@ class StructuredOutput
             $client = $builder->create();
         }
 
-        return new PendingStructuredOutput(
-            execution: $execution,
+        $executorFactory = new ExecutorFactory(
+            llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,
             responseTransformer: $responseTransformer,
-            llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
             events: $this->events,
             httpClient: $client,
+        );
+
+        return new PendingStructuredOutput(
+            execution: $execution,
+            executorFactory: $executorFactory,
+            events: $this->events,
         );
     }
 

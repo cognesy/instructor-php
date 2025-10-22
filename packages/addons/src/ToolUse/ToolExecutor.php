@@ -5,6 +5,7 @@ namespace Cognesy\Addons\ToolUse;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanAccessAnyState;
+use Cognesy\Addons\ToolUse\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Data\ToolExecution;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
@@ -20,7 +21,7 @@ use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final readonly class ToolExecutor
+final readonly class ToolExecutor implements CanExecuteToolCalls
 {
     private Tools $tools;
     private bool $throwOnToolFailure;
@@ -38,6 +39,7 @@ final readonly class ToolExecutor
 
     // MAIN API /////////////////////////////////////////////
 
+    #[\Override]
     public function useTool(ToolCall $toolCall, ToolUseState $state): ToolExecution {
         $startedAt = new DateTimeImmutable();
         $this->emitToolCallStarted($toolCall, $startedAt);
@@ -58,6 +60,7 @@ final readonly class ToolExecutor
         return $toolExecution;
     }
 
+    #[\Override]
     public function useTools(ToolCalls $toolCalls, ToolUseState $state): ToolExecutions {
         $executions = new ToolExecutions();
         foreach ($toolCalls->all() as $toolCall) {

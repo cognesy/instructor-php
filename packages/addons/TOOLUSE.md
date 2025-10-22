@@ -83,17 +83,7 @@ Notes:
 ## Quick Start (ReAct)
 
 ```php
-use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\ToolUse\Collections\Tools;
-use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
-use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
-use Cognesy\Addons\ToolUse\Tools\FunctionTool;
-use Cognesy\Addons\ToolUse\ToolUseFactory;
-use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\ToolUse\Collections\Tools;use Cognesy\Addons\ToolUse\Data\ToolUseState;use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUseFactory;use Cognesy\Messages\Messages;use Cognesy\Polyglot\Inference\LLMProvider;
 
 $driver = new ReActDriver(
     llm: LLMProvider::using('openai'),
@@ -137,7 +127,6 @@ Notes:
 
 ```php
 $toolExecutor = $toolUse->toolExecutor()->withThrowOnToolFailure(true);
-$toolUse = $toolUse->withToolExecutor($toolExecutor);
 ```
 
 ## Continuation Criteria

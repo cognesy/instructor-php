@@ -43,7 +43,7 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
-use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;

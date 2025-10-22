@@ -4,14 +4,15 @@ namespace Cognesy\Addons\ToolUse\Drivers\ToolCalling;
 
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
 use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
-use Cognesy\Addons\ToolUse\ToolExecutor;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
@@ -62,10 +63,10 @@ class ToolCallingDriver implements CanUseTools
      * @return ToolUseStep Returns an instance of ToolUseStep containing the response, executed tools, follow-up messages, and additional usage data.
      */
     #[\Override]
-    public function useTools(ToolUseState $state, Tools $tools, ToolExecutor $executor) : ToolUseStep {
-        $pending = $this->buildPendingInference($state->messages(), $tools);
-        $response = $pending->response();
-        $executions = $executor->useTools($response->toolCalls(), $state);
+    public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor) : ToolUseStep {
+        $response = $this->getToolCallResponse($state, $tools);
+        $toolCalls = $this->getToolsToCall($response);
+        $executions = $executor->useTools($toolCalls, $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
         return $this->buildStepFromResponse(
             response: $response,
@@ -76,6 +77,14 @@ class ToolCallingDriver implements CanUseTools
     }
 
     // INTERNAL /////////////////////////////////////////////////
+
+    private function getToolCallResponse(ToolUseState $state, Tools $tools) : InferenceResponse {
+        return $this->buildPendingInference($state->messages(), $tools)->response();
+    }
+
+    private function getToolsToCall(InferenceResponse $response): ToolCalls {
+        return $response->toolCalls();
+    }
 
     /** Builds a PendingInference configured for tool-calling. */
     private function buildPendingInference(

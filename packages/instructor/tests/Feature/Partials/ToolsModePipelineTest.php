@@ -7,8 +7,8 @@ use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Partials\Data\AggregatedResponse;
-use Cognesy\Instructor\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregationState;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -100,7 +100,7 @@ test('processes tool call stream with JSON arguments', function() {
     expect($results)->not()->toBeEmpty();
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(ToolsModeTestItem::class)
         ->and($last->latestValue->task)->toBe('Implement feature')
         ->and($last->latestValue->priority)->toBe(5);
@@ -117,7 +117,7 @@ test('handles tool call with complete JSON in single chunk', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(ToolsModeTestItem::class)
         ->and($last->latestValue->task)->toBe('Quick action')
         ->and($last->latestValue->priority)->toBe(1);
@@ -135,7 +135,7 @@ test('handles tool call streamed character by character', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(ToolsModeTestItem::class)
         ->and($last->latestValue->task)->toBe('Test')
         ->and($last->latestValue->priority)->toBe(3)
@@ -153,7 +153,7 @@ test('accumulates usage from tool call stream', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->usage->inputTokens)->toBe(5)
         ->and($last->usage->outputTokens)->toBeGreaterThan(0);
 });
@@ -175,7 +175,7 @@ test('handles tool call with empty arguments chunks', function() {
     $results = iterator_to_array($stream);
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class)
+    expect($last)->toBeInstanceOf(AggregationState::class)
         ->and($last->latestValue)->toBeInstanceOf(ToolsModeTestItem::class)
         ->and($last->latestValue->task)->toBe('Handle empty');
 });
@@ -197,7 +197,7 @@ test('handles tool call with malformed JSON arguments', function() {
     expect($results)->not()->toBeEmpty();
 
     $last = end($results);
-    expect($last)->toBeInstanceOf(AggregatedResponse::class);
+    expect($last)->toBeInstanceOf(AggregationState::class);
     // latestValue may be null if deserialization failed
 });
 

@@ -1,6 +1,6 @@
 ---
-title: 'Inference and tool use'
-docname: 'tool_use'
+title: 'Inference and tool use (ReAct driver)'
+docname: 'tool_use_react'
 ---
 
 ## Overview
@@ -18,8 +18,8 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
-use Cognesy\Addons\ToolUse\Drivers\ReAct\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;

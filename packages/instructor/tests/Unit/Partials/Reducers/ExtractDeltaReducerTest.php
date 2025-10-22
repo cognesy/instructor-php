@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Partials\Data\PartialContext;
-use Cognesy\Instructor\Partials\Reducers\ExtractDeltaReducer;
+use Cognesy\Instructor\Executors\Partials\DeltaExtraction\ExtractDeltaReducer;
+use Cognesy\Instructor\Executors\Partials\DeltaExtraction\PartialProcessingState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -41,7 +41,7 @@ test('extracts contentDelta in JsonSchema mode', function() {
     $reducer->step(null, $partial);
 
     expect($collector->collected)->toHaveCount(1)
-        ->and($collector->collected[0])->toBeInstanceOf(PartialContext::class)
+        ->and($collector->collected[0])->toBeInstanceOf(PartialProcessingState::class)
         ->and($collector->collected[0]->delta)->toBe('{"key": "value"}');
 });
 
@@ -59,7 +59,7 @@ test('extracts contentDelta in MdJson mode', function() {
     $reducer->step(null, $partial);
 
     expect($collector->collected)->toHaveCount(1)
-        ->and($collector->collected[0])->toBeInstanceOf(PartialContext::class)
+        ->and($collector->collected[0])->toBeInstanceOf(PartialProcessingState::class)
         ->and($collector->collected[0]->delta)->toBe('```json\n{"data": 1}\n```');
 });
 
@@ -77,7 +77,7 @@ test('extracts toolArgs in Tools mode', function() {
     $reducer->step(null, $partial);
 
     expect($collector->collected)->toHaveCount(1)
-        ->and($collector->collected[0])->toBeInstanceOf(PartialContext::class)
+        ->and($collector->collected[0])->toBeInstanceOf(PartialProcessingState::class)
         ->and($collector->collected[0]->delta)->toBe('{"param": "value"}');
 });
 
@@ -132,7 +132,7 @@ test('preserves PartialInferenceResponse in PartialContext', function() {
     $reducer->step(null, $partial);
 
     $context = $collector->collected[0];
-    expect($context)->toBeInstanceOf(PartialContext::class)
+    expect($context)->toBeInstanceOf(PartialProcessingState::class)
         ->and($context->response)->toBe($partial)
         ->and($context->response->finishReason)->toBe('stop');
 });

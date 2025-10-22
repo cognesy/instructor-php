@@ -6,7 +6,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Partials\PartialStreamFactory;
+use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
