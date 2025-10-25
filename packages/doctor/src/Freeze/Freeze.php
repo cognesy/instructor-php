@@ -1,28 +1,28 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Cognesy\Doctor\Freeze;
 
-use Cognesy\Doctor\Freeze\Execution\CommandExecutorInterface;
-use Cognesy\Doctor\Freeze\Execution\ExecExecutor;
-use Cognesy\Doctor\Freeze\Execution\ShellExecutor;
+use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Utils\Sandbox\Sandbox;
 
 class Freeze
 {
-    public static function file(string $filePath, ?CommandExecutorInterface $executor = null): FreezeCommand {
-        return new FreezeCommand($filePath, $executor);
+    public static function file(string $filePath, ?CanExecuteCommand $executor = null): FreezeCommand {
+        $exec = $executor ?? self::makeSandbox();
+        return new FreezeCommand($filePath, $exec);
     }
 
-    public static function execute(string $command, ?CommandExecutorInterface $executor = null): FreezeCommand {
-        return (new FreezeCommand(null, $executor))->execute($command);
+    public static function execute(string $command, ?CanExecuteCommand $executor = null): FreezeCommand {
+        $exec = $executor ?? self::makeSandbox();
+        return (new FreezeCommand(null, $exec))->execute($command);
     }
-    
-    public static function withShellExecutor(): CommandExecutorInterface {
-        return new ShellExecutor();
-    }
-    
-    public static function withExecExecutor(): CommandExecutorInterface {
-        return new ExecExecutor();
+
+    // INTERNAL //////////////////////////////////////////////////////////////////////
+
+    private static function makeSandbox() : CanExecuteCommand {
+        $dir = sys_get_temp_dir();
+        $policy = ExecutionPolicy::in($dir)->inheritEnvironment(true);
+        return Sandbox::host($policy);
     }
 }

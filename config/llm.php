@@ -135,6 +135,16 @@ return [
             'contextLength' => 32_000,
             'maxOutputLength' => 4096,
         ],
+        'inception' => [
+            'driver' => 'inception',
+            'apiUrl' => 'https://api.inceptionlabs.ai/v1',
+            'apiKey' => Env::get('INCEPTION_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'model' => 'mercury',
+            'maxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 4096,
+        ],
         'meta' => [
             'driver' => 'meta',
             'apiUrl' => 'https://openrouter.ai/api/v1',

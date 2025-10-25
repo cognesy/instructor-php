@@ -18,6 +18,7 @@ use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiDriver;
 use Cognesy\Polyglot\Inference\Drivers\GeminiOAI\GeminiOAIDriver;
 use Cognesy\Polyglot\Inference\Drivers\Groq\GroqDriver;
 use Cognesy\Polyglot\Inference\Drivers\HuggingFace\HuggingFaceDriver;
+use Cognesy\Polyglot\Inference\Drivers\Inception\InceptionDriver;
 use Cognesy\Polyglot\Inference\Drivers\Meta\MetaDriver;
 use Cognesy\Polyglot\Inference\Drivers\Minimaxi\MinimaxiDriver;
 use Cognesy\Polyglot\Inference\Drivers\Mistral\MistralDriver;
@@ -109,6 +110,7 @@ class InferenceDriverFactory
             'gemini-oai' => fn($config, $httpClient, $events) => new GeminiOAIDriver($config, $httpClient, $events),
             'groq' => fn($config, $httpClient, $events) => new GroqDriver($config, $httpClient, $events),
             'huggingface' => fn($config, $httpClient, $events) => new HuggingFaceDriver($config, $httpClient, $events),
+            'inception' => fn($config, $httpClient, $events) => new InceptionDriver($config, $httpClient, $events),
             'meta' => fn($config, $httpClient, $events) => new MetaDriver($config, $httpClient, $events),
             'minimaxi' => fn($config, $httpClient, $events) => new MinimaxiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new MistralDriver($config, $httpClient, $events),

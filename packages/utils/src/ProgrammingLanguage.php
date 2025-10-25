@@ -2,28 +2,49 @@
 
 namespace Cognesy\Utils;
 
-class ProgrammingLanguage {
+enum ProgrammingLanguage : string
+{
+    case Bash = 'bash';
+    case C = 'c';
+    case Cpp = 'cpp';
+    case Go = 'go';
+    case Java = 'java';
+    case JavaScript = 'javascript';
+    case Lua = 'lua';
+    case Perl = 'perl';
+    case Php = 'php';
+    case Python = 'python';
+    case Ruby = 'ruby';
+    case Shell = 'shell';
+    case SQL = 'sql';
+    case TypeScript = 'typeScript';
+
+    public function extension(): string {
+        return self::fileExtension($this->value);
+    }
+
     public static function fileExtension(string $language) : string {
         return match ($language) {
-            'python' => 'py',
-            'javascript' => 'js',
-            'typescript' => 'ts',
-            'java' => 'java',
-            'csharp' => 'cs',
-            'ruby' => 'rb',
-            'php' => 'php',
-            'go' => 'go',
+            'bash', 'sh' => 'sh',
             'c' => 'c',
             'cpp' => 'cpp',
-            'rust' => 'rs',
-            'bash', 'sh' => 'sh',
-            'html' => 'html',
+            'csharp' => 'cs',
             'css' => 'css',
-            'sql' => 'sql',
-            'lua' => 'lua',
-            'haskell' => 'hs',
-            'perl' => 'pl',
             'dockerfile' => 'dockerfile',
+            'go' => 'go',
+            'haskell' => 'hs',
+            'html' => 'html',
+            'java' => 'java',
+            'javascript' => 'js',
+            'lua' => 'lua',
+            'perl' => 'pl',
+            'php' => 'php',
+            'python' => 'py',
+            'ruby' => 'rb',
+            'rust' => 'rs',
+            'shell' => 'sh',
+            'sql' => 'sql',
+            'typescript' => 'ts',
             'yaml', 'yml' => 'yml',
             default => $language,
         };
@@ -45,20 +66,20 @@ class ProgrammingLanguage {
 
     public static function fileTemplate(string $language) : string {
         return match($language) {
+            'bash' => "# @doctest id=%s\n%s\n",
+            'c' => "// @doctest id=%s\n%s\n",
+            'cpp' => "// @doctest id=%s\n%s\n",
+            'cs' => "// @doctest id=%s\n%s\n",
+            'csharp' => "// @doctest id=%s\n%s\n",
+            'go' => "// @doctest id=%s\n%s\n",
+            'java' => "// @doctest id=%s\n%s\n",
+            'javascript' => "// @doctest id=%s\n%s\n",
             'php' => "// @doctest id=%s\n%s\n",
             'python' => "# @doctest id=%s\n%s\n",
             'ruby' => "# @doctest id=%s\n%s\n",
-            'bash' => "# @doctest id=%s\n%s\n",
-            'sh' => "# @doctest id=%s\n%s\n",
-            'javascript' => "// @doctest id=%s\n%s\n",
-            'java' => "// @doctest id=%s\n%s\n",
-            'csharp' => "// @doctest id=%s\n%s\n",
-            'go' => "// @doctest id=%s\n%s\n",
-            'c' => "// @doctest id=%s\n%s\n",
-            'cpp' => "// @doctest id=%s\n%s\n",
-            'typescript' => "// @doctest id=%s\n%s\n",
-            'cs' => "// @doctest id=%s\n%s\n",
             'rust' => "// @doctest id=%s\n%s\n",
+            'sh' => "# @doctest id=%s\n%s\n",
+            'typescript' => "// @doctest id=%s\n%s\n",
             default => "// @doctest id=%s\n%s\n",
         };
     }

@@ -57,34 +57,12 @@ class MakeLessonImage extends Command
         }
 
         try {
-            $output->writeln("<info>Trying different execution strategies...</info>");
-            
-            // Try ShellExecutor first
-            $output->writeln("<info>Attempting with ShellExecutor...</info>");
-            $result = Freeze::file($sourcePath, Freeze::withShellExecutor())
+            $result = Freeze::file($sourcePath)
                 ->output($outputPath)
                 ->run();
 
             if ($result->failed()) {
-                $output->writeln("<comment>ShellExecutor failed, trying ExecExecutor...</comment>");
-                
-                // Try ExecExecutor
-                $result = Freeze::file($sourcePath, Freeze::withExecExecutor())
-                    ->output($outputPath)
-                    ->run();
-                
-                if ($result->failed()) {
-                    $output->writeln("<comment>ExecExecutor failed, trying SymfonyProcess...</comment>");
-                    
-                    // Fall back to default SymfonyProcess
-                    $result = Freeze::file($sourcePath)
-                        ->output($outputPath)
-                        ->run();
-                }
-            }
-
-            if ($result->failed()) {
-                $output->writeln("<error>All execution strategies failed!</error>");
+                $output->writeln("<error>Freeze execution failed</error>");
                 $output->writeln("<error>Command: {$result->command}</error>");
                 $output->writeln("<error>Error: {$result->errorOutput}</error>");
                 $output->writeln("<error>Output: {$result->output}</error>");

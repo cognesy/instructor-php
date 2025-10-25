@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Doctor\Freeze;
 
-use Cognesy\Doctor\Freeze\Execution\CommandExecutorInterface;
-use Cognesy\Doctor\Freeze\Execution\ExecExecutor;
-use Cognesy\Doctor\Freeze\Execution\ShellExecutor;
-use Cognesy\Doctor\Freeze\Execution\SymfonyProcessExecutor;
+use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Utils\Sandbox\Drivers\HostSandbox;
 
 class FreezeCommand
 {
@@ -31,11 +30,18 @@ class FreezeCommand
     private ?string $margin = null;
     private ?string $lines = null;
     
-    private CommandExecutorInterface $executor;
+    private CanExecuteCommand $executor;
 
-    public function __construct(?string $filePath = null, ?CommandExecutorInterface $executor = null) {
+    public function __construct(?string $filePath = null, ?CanExecuteCommand $executor = null) {
         $this->filePath = $filePath;
-        $this->executor = $executor ?? new SymfonyProcessExecutor();
+        // Executor is no longer used; kept for backward compatibility
+        if ($executor !== null) {
+            $this->executor = $executor;
+        } else {
+            $dir = sys_get_temp_dir();
+            $policy = ExecutionPolicy::in($dir)->inheritEnvironment(true);
+            $this->executor = new HostSandbox($policy);
+        }
     }
 
     public function execute(string $command): self {
@@ -128,22 +134,41 @@ class FreezeCommand
         return $this;
     }
 
-    public function setExecutor(CommandExecutorInterface $executor): self {
+    public function setExecutor(CanExecuteCommand $executor): self {
         $this->executor = $executor;
         return $this;
     }
 
     public function run(): FreezeResult {
+        // Ensure file/output paths are absolute to avoid cwd differences in Sandbox Host driver
+        $cwd = getcwd() ?: null;
+        if (!empty($this->filePath) && $cwd !== null && !str_starts_with((string)$this->filePath, '/')) {
+            $abs = $cwd . '/' . $this->filePath;
+            $real = realpath($abs);
+            $this->filePath = $real !== false ? $real : $abs;
+        }
+        if (!empty($this->output) && $cwd !== null && !str_starts_with((string)$this->output, '/')) {
+            $this->output = $cwd . '/' . $this->output;
+        }
+
         $commandArray = $this->buildCommandArray();
-        $commandString = $this->buildCommandString();
-        
-        $result = $this->executor->execute($commandArray, $commandString);
+
+        try {
+            $exec = $this->executor->execute($commandArray);
+            $success = $exec->success();
+            $output = $success ? $exec->stdout() : '';
+            $error = $success ? '' : $exec->combinedOutput();
+        } catch (\Throwable $e) {
+            $success = false;
+            $output = '';
+            $error = $e->getMessage();
+        }
 
         return new FreezeResult(
-            success: $result->success,
-            output: $result->output,
-            errorOutput: $result->errorOutput,
-            command: $result->command,
+            success: $success,
+            output: $output,
+            errorOutput: $error,
+            command: $this->buildCommandString(),
             outputPath: $this->output,
         );
     }
