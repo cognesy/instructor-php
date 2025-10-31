@@ -13,12 +13,12 @@ final readonly class ChatSteps extends Steps
     }
 
     public static function fromArray(array $data): self {
-        $steps = array_map(fn(array $stepData) => ChatStep::fromArray($stepData), $data);
+        $steps = array_map(static fn(array $stepData) => ChatStep::fromArray($stepData), $data);
         return new self(...$steps);
     }
 
     public function toArray(): array {
-        return array_map(fn(ChatStep $step) => $step->toArray(), $this->all());
+        return array_map(static fn(ChatStep $step) => $step->toArray(), $this->all());
     }
 
     #[\Override]

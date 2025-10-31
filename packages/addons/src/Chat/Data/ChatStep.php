@@ -3,14 +3,14 @@
 namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Exceptions\ChatException;
-use Cognesy\Addons\StepByStep\Step\Contracts\HasStepChatCompletion;
+use Cognesy\Addons\Chat\Step\HandlesChatCompletion;
+use Cognesy\Addons\Chat\Step\HasChatCompletion;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepErrors;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMessages;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMetadata;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepUsage;
 use Cognesy\Addons\StepByStep\Step\StepInfo;
-use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepChatCompletion;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepErrors;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepInfo;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepMessages;
@@ -27,14 +27,14 @@ use Throwable;
  * @implements HasStepErrors<Throwable>
  */
 final readonly class ChatStep implements
-    HasStepChatCompletion,
+    HasChatCompletion,
     HasStepErrors,
     HasStepInfo,
     HasStepMessages,
     HasStepMetadata,
     HasStepUsage
 {
-    use HandlesStepChatCompletion;
+    use HandlesChatCompletion;
     use HandlesStepErrors;
     use HandlesStepInfo;
     use HandlesStepMessages;
@@ -77,7 +77,7 @@ final readonly class ChatStep implements
             'finishReason' => $this->finishReason?->value,
             'meta' => $this->metadata,
             'errors' => array_map(
-                fn(Throwable $error): array => [
+                static fn(Throwable $error): array => [
                     'message' => $error->getMessage(),
                     'class' => get_class($error),
                 ],
@@ -139,7 +139,6 @@ final readonly class ChatStep implements
                 // fall through to default below
             }
         }
-
         return new ChatException($message);
     }
 }

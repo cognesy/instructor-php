@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Chat\Data\Chat;
 use Cognesy\Addons\Chat\Participants\ExternalParticipant;
 use Cognesy\Addons\Chat\Participants\LLMParticipant;
 use Cognesy\Messages\Message;
@@ -48,7 +48,7 @@ it('encapsulates compiled context and transcript in ChatStep collections', funct
         ['role' => 'assistant', 'content' => 'Hello, world!'],
     ]);
 
-    $step = new ChatStep(
+    $step = new Chat(
         participantName: 'assistant',
         inputMessages: $input,
         outputMessages: $output,

@@ -448,7 +448,7 @@ The Chat system provides comprehensive event monitoring throughout the conversat
 // ChatParticipantSelected
 ['participantName' => 'assistant', 'participantClass' => 'LLMParticipant', 'state' => $state->toArray()]
 
-// ChatCompleted
+// CollaborationCompleted
 ['state' => $state->toArray(), 'reason' => 'has no next turn']
 ```
 
@@ -529,9 +529,9 @@ expect($state2->messages()->toArray()[1]['content'])->toBe('How can I help?');
 When testing Chat state management directly, use the `AppendStepMessages` processor:
 
 ```php
-use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Data\ChatStep;use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;use Cognesy\Messages\Message;use Cognesy\Messages\Messages;
+use Cognesy\Addons\Chat\Data\ChatState;use Cognesy\Addons\Chat\Data\Chat;use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;use Cognesy\Messages\Message;use Cognesy\Messages\Messages;
 
-function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $processor): ChatState {
+function applyStep(ChatState $state, Chat $step, AppendStepMessages $processor): ChatState {
     $stateWithStep = $state
         ->withAddedStep($step)
         ->withCurrentStep($step);
@@ -543,7 +543,7 @@ function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $process
 $state = new ChatState();
 $processor = new AppendStepMessages();
 
-$step = new ChatStep(
+$step = new Chat(
     participantName: 'assistant',
     outputMessages: new Messages(new Message('assistant', 'Hello!')),
     meta: []

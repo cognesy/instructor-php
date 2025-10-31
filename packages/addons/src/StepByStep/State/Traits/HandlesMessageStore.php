@@ -7,7 +7,7 @@ use Cognesy\Messages\MessageStore\MessageStore;
 
 trait HandlesMessageStore
 {
-    const DEFAULT_SECTION = 'messages';
+    public const DEFAULT_SECTION = 'messages';
 
     protected readonly MessageStore $store;
 

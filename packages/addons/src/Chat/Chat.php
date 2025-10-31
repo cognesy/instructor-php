@@ -46,12 +46,12 @@ class Chat extends StepByStep
      * @param CanApplyProcessors<ChatState> $processors
      */
     public function __construct(
-        Participants $participants,
+        Participants             $participants,
         CanChooseNextParticipant $nextParticipantSelector,
-        CanApplyProcessors $processors,
-        ContinuationCriteria $continuationCriteria,
-        ?CanHandleEvents $events = null,
-        bool $forceThrowOnFailure = true,
+        CanApplyProcessors       $processors,
+        ContinuationCriteria     $continuationCriteria,
+        ?CanHandleEvents         $events = null,
+        bool                     $forceThrowOnFailure = true,
     ) {
         parent::__construct($processors);
 
@@ -88,7 +88,7 @@ class Chat extends StepByStep
     #[\Override]
     protected function applyStep(object $state, object $nextStep): ChatState {
         assert($state instanceof ChatState);
-        assert($nextStep instanceof ChatStep);
+        assert($nextStep instanceof Chat);
         $newState = $state
             ->withAddedStep($nextStep)
             ->withCurrentStep($nextStep);
@@ -116,7 +116,7 @@ class Chat extends StepByStep
         $failure = $error instanceof ChatException
             ? $error
             : ChatException::fromThrowable($error);
-        $failureStep = ChatStep::failure(
+        $failureStep = Chat::failure(
             error: $failure,
             participantName: $state->currentStep()?->participantName() ?? '?',
             inputMessages: $state->messages(),

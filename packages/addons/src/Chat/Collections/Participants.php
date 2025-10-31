@@ -36,6 +36,6 @@ final class Participants
 
     /** @return string[] */
     public function names(): array {
-        return array_map(fn(CanParticipateInChat $p) => $p->name(), $this->participants);
+        return array_map(static fn(CanParticipateInChat $p) => $p->name(), $this->participants);
     }
 }

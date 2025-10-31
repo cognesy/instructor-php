@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\ChatStep;
+use Cognesy\Addons\Chat\Data\Chat;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
-function applyStep(ChatState $state, ChatStep $step, AppendStepMessages $processor): ChatState {
+function applyStep(ChatState $state, Chat $step, AppendStepMessages $processor): ChatState {
     $stateWithStep = $state
         ->withAddedStep($step)
         ->withCurrentStep($step);
@@ -27,13 +27,13 @@ it('appends steps correctly and maintains step history', function () {
     $state = new ChatState();
     $processor = new AppendStepMessages();
 
-    $step1 = new ChatStep(
+    $step1 = new Chat(
         participantName: 'user',
         outputMessages: new Messages(new Message('user', 'Hello')),
         metadata: []
     );
 
-    $step2 = new ChatStep(
+    $step2 = new Chat(
         participantName: 'assistant',
         outputMessages: new Messages(new Message('assistant', 'Hi there!')),
         metadata: []
@@ -67,7 +67,7 @@ it('appends steps correctly and maintains step history', function () {
 it('maintains immutability when appending steps', function () {
     $state = new ChatState();
     $processor = new AppendStepMessages();
-    $step = new ChatStep(
+    $step = new Chat(
         participantName: 'user',
         outputMessages: new Messages(new Message('user', 'Test')),
         metadata: []
@@ -89,7 +89,7 @@ it('correctly builds conversation messages from multiple steps', function () {
     $state = new ChatState();
     $processor = new AppendStepMessages();
 
-    $userStep = new ChatStep(
+    $userStep = new Chat(
         participantName: 'user',
         outputMessages: new Messages(
             new Message('user', 'What is AI?'),
@@ -97,7 +97,7 @@ it('correctly builds conversation messages from multiple steps', function () {
         metadata: []
     );
 
-    $assistantStep = new ChatStep(
+    $assistantStep = new Chat(
         participantName: 'assistant',
         outputMessages: new Messages(
             new Message('assistant', 'AI stands for Artificial Intelligence.'),
@@ -105,7 +105,7 @@ it('correctly builds conversation messages from multiple steps', function () {
         metadata: []
     );
 
-    $followUpStep = new ChatStep(
+    $followUpStep = new Chat(
         participantName: 'user',
         outputMessages: new Messages(
             new Message('user', 'Can you explain more?'),
@@ -133,7 +133,7 @@ it('handles steps with multiple messages correctly', function () {
     $state = new ChatState();
     $processor = new AppendStepMessages();
 
-    $multiMessageStep = new ChatStep(
+    $multiMessageStep = new Chat(
         participantName: 'assistant',
         outputMessages: new Messages(
             new Message('assistant', 'First response.'),
@@ -156,7 +156,7 @@ it('preserves step metadata throughout state transitions', function () {
     $state = new ChatState();
 
     $metadata = ['timestamp' => '2024-01-01', 'source' => 'test'];
-    $step = new ChatStep(
+    $step = new Chat(
         participantName: 'user',
         outputMessages: new Messages(new Message('user', 'Test')),
         metadata: $metadata
@@ -173,7 +173,7 @@ it('captures participant errors inside failure steps', function () {
     $messages = Messages::fromString('hello there');
     $error = new RuntimeException('participant blew up');
 
-    $failureStep = ChatStep::failure(
+    $failureStep = Chat::failure(
         error: $error,
         participantName: 'assistant',
         inputMessages: $messages,

@@ -3,13 +3,13 @@
 namespace Cognesy\Addons\Chat\Data;
 
 use Cognesy\Addons\Chat\Collections\ChatSteps;
+use Cognesy\Addons\Chat\State\HandlesChatSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMetadata;
 use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
 use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
 use Cognesy\Addons\StepByStep\State\StateInfo;
-use Cognesy\Addons\StepByStep\State\Traits\HandlesChatSteps;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesMessageStore;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
@@ -28,13 +28,12 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
     use HandlesUsage;
 
     public function __construct(
-        ?ChatSteps $steps = null,
-        ?ChatStep $currentStep = null,
-
+        ?ChatSteps          $steps = null,
+        ?ChatStep           $currentStep = null,
         Metadata|array|null $variables = null,
-        ?Usage $usage = null,
-        ?MessageStore $store = null,
-        ?StateInfo $stateInfo = null,
+        ?Usage              $usage = null,
+        ?MessageStore       $store = null,
+        ?StateInfo          $stateInfo = null,
     ) {
         $this->steps = $steps ?? new ChatSteps();
         $this->currentStep = $currentStep;
@@ -53,14 +52,14 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
     // MUTATORS /////////////////////////////////////////////////
 
     public function with(
-        ?ChatSteps $steps = null,
-        ?ChatStep $currentStep = null,
-        ?Metadata $variables = null,
-        ?Usage $usage = null,
+        ?ChatSteps    $steps = null,
+        ?ChatStep     $currentStep = null,
+        ?Metadata     $variables = null,
+        ?Usage        $usage = null,
         ?MessageStore $store = null,
-        ?StateInfo $stateInfo = null,
-    ): static {
-        return new static(
+        ?StateInfo    $stateInfo = null,
+    ): self {
+        return new self(
             steps: $steps ?? $this->steps,
             currentStep: $currentStep ?? $this->currentStep,
             variables: $variables ?? $this->metadata,
@@ -74,7 +73,7 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
 
     public function toArray() : array {
         return [
-            'steps' => array_map(fn(ChatStep $s) => $s->toArray(), $this->steps->all()),
+            'steps' => array_map(static fn(ChatStep $s) => $s->toArray(), $this->steps->all()),
             'currentStep' => $this->currentStep?->toArray(),
             'metadata' => $this->metadata->toArray(),
             'usage' => $this->usage->toArray(),
@@ -85,7 +84,7 @@ final readonly class ChatState implements HasSteps, HasMetadata, HasMessageStore
 
     public static function fromArray(array $data) : self {
         return new self(
-            steps: isset($data['steps']) ? new ChatSteps(...array_map(fn(array $s) => ChatStep::fromArray($s), $data['steps'])) : null,
+            steps: isset($data['steps']) ? new ChatSteps(...array_map(static fn(array $s) => ChatStep::fromArray($s), $data['steps'])) : null,
             currentStep: isset($data['currentStep']) ? ChatStep::fromArray($data['currentStep']) : null,
             variables: isset($data['metadata']) ? new Metadata($data['metadata']) : null,
             usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
