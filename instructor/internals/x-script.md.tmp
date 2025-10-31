@@ -1,0 +1,176 @@
+// TODO: generated - needs revision
+
+## `MessageStore` Class
+
+### Overview
+
+The MessageStore class serves as a flexible and dynamic container for managing, hydrating, and rendering sets of message sequences before they are translated to the native format of any supported LLM API.
+
+
+### Key Concepts
+
+ - MessageStore: The main container holding one or more Sections.
+ - Section: Contain sets of OpenAI-style messages exchanged between the user and the AI assistant.
+ - Message: Represent individual message entries with a role (user or assistant) and content (which can be a string or an object).
+
+
+### Features
+
+ - Flexibility: Adapt and manage conversation structures for different LLM API providers.
+ - Dynamic Reordering: Rearrange sections dynamically as needed.
+ - Template Functionality: Use MessageStore as a template for complex, multi-turn prompts with dynamic parameters.
+ - Multimodal Support: Include objects like images in chat entries for processing using LLM's multimodal capabilities.
+
+
+### Basic Usage
+
+#### Creating a MessageStore
+
+```php
+<?php
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\Section;
+
+// Create sections
+$section1 = new Section('introduction');
+$section2 = new Section('qna');
+
+// Initialize MessageStore with sections
+$store = new MessageStore($section1, $section2);
+```
+
+#### Accessing and Manipulating Sections
+
+```php
+<?php
+// Check if a section exists
+$hasIntroduction = $store->hasSection('introduction');
+
+// Retrieve a section by name
+$introSection = $store->section('introduction');
+
+// Get all section names
+$sectionNames = $store->sectionNames();
+```
+
+#### Converting to Messages
+
+```php
+<?php
+
+// Convert MessageStore to Messages
+$messages = $store->toMessages();
+```
+
+
+### Advanced Usage
+
+#### Dynamic Parameters Injection
+
+```php
+<?php
+use Cognesy\Messages\MessageStore\MessageStoreParameters;
+
+// Create and set parameters
+$parameters = new MessageStoreParameters(['userName' => 'John Doe']);
+$store->withParameters($parameters);
+
+// Set individual parameter
+$store->setParameter('userRole', 'admin');
+
+// Unset a parameter
+$store->unsetParameter('userRole');
+```
+
+
+#### Using Templates within Sections
+
+```php
+<?php
+// Create a section with template content
+$templateSection = new Section('template_section');
+$templateSection->appendMessages(Messages::fromString('Hello, {{userName}}!'));
+
+// Add section to MessageStore and set parameters
+$store->appendSection($templateSection);
+$store->setParameter('userName', 'John Doe');
+
+// Convert MessageStore to Messages with template rendered
+$messages = $store->toMessages();
+?>
+```
+
+### Customization
+
+#### Creating MessageStore from an Array
+
+```php
+<?php
+use Cognesy\Messages\MessageStore\MessageStore;
+
+$sectionsArray = [
+    'introduction' => 'Welcome to the session.',
+    'qna' => ['What is your name?', 'My name is AI.']
+];
+
+// Create MessageStore from array
+$storeFromArray = (new MessageStore)->fromArray($sectionsArray);
+```
+
+#### Merging and Overriding MessageStores
+
+```php
+<?php
+// Merge another MessageStore into the current one
+$store->mergeMessageStore($anotherMessageStore);
+
+// Override the current MessageStore with another one
+$store->overrideMessageStore($anotherMessageStore);
+```
+
+#### Reordering Sections
+
+```php
+<?php
+// Reorder sections
+$orderedMessageStore = $store->reorder(['qna', 'introduction']);
+
+// Reverse the order of sections
+$reversedMessageStore = $store->reverse();
+```
+
+### Internal Mechanics
+
+The MessageStore class uses several internal traits to handle various aspects of its functionality:
+
+ - HandlesAccess: Methods for accessing and querying sections.
+ - HandlesParameters: Methods for managing parameters.
+ - HandlesConversion: Methods for converting Script to various formats.
+ - HandlesCreation: Methods for creating Script instances from arrays or other Scripts.
+ - HandlesMutation: Methods for mutating sections and parameters.
+ - HandlesReordering: Methods for reordering and reversing sections.
+ - HandlesTransformation: Methods for transforming Scripts into different structures.
+
+#### Example: Complex Conversation Template
+
+```php
+<?php
+use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Messages\MessageStore\MessageStoreParameters;
+use Cognesy\Messages\MessageStore\Section;
+
+// Define sections
+$intro = (new Section('introduction'))
+    ->appendMessages(Messages::fromString('Hello, welcome to our service.'));
+$qna = (new Section('qna'))
+    ->appendMessages(Messages::fromString('What is your name?'))
+    ->appendMessages(Messages::fromString('My name is <|userName|>.'));
+
+// Create Script
+$store = new MessageStore($intro, $qna);
+
+// Set dynamic parameters
+$parameters = new MessageStoreParameters(['userName' => 'Alice']);
+$store->withParams($parameters);
+
+```
