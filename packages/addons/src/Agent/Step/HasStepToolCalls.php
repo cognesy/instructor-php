@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Step;
 
-use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
+use Cognesy\Addons\Agent\Enums\AgentStepType;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -17,5 +17,5 @@ interface HasStepToolCalls
 
     public function inferenceResponse(): ?InferenceResponse;
 
-    public function stepType(): ToolUseStepType;
+    public function stepType(): AgentStepType;
 }

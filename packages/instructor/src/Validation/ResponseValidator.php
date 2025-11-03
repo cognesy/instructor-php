@@ -28,6 +28,7 @@ class ResponseValidator implements CanValidateResponse
     /**
      * Validate deserialized response object
      */
+    #[\Override]
     public function validate(object $response, ResponseModel $responseModel) : Result {
         $validation = match(true) {
             $response instanceof CanValidateSelf => $this->validateSelf($response),

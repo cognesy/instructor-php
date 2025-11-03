@@ -24,6 +24,7 @@ final class ProcRunner implements CanRunProcess
      * @param list<string> $argv
      * @param array<string,string> $env
      */
+    #[\Override]
     public function run(array $argv, string $cwd, array $env, ?string $stdin): ExecResult {
         [$proc, $pipes] = $this->openProcess($argv, $cwd, $env);
         $this->initPipes($pipes, $stdin);
@@ -54,9 +55,14 @@ final class ProcRunner implements CanRunProcess
         return new StreamAggregator(stdoutCap: $this->stdoutCap, stderrCap: $this->stderrCap);
     }
 
+    /**
+     * @param resource $proc
+     * @param array<int,resource> $pipes
+     */
     private function pollLoop($proc, array $pipes, StreamAggregator $agg): bool {
         $timedOut = false;
-        $pid = (int) (proc_get_status($proc)['pid'] ?? 0);
+        $status = proc_get_status($proc);
+        $pid = $status['pid'];
         while (true) {
             $status = proc_get_status($proc);
             if ($this->tracker->shouldTerminate()) {
@@ -81,6 +87,10 @@ final class ProcRunner implements CanRunProcess
         }
     }
 
+    /**
+     * @param resource $proc
+     * @param array<int,resource> $pipes
+     */
     private function finalize($proc, array $pipes, StreamAggregator $agg, bool $timedOut): ExecResult {
         $agg->appendOut((string)stream_get_contents($pipes[1]));
         $agg->appendErr((string)stream_get_contents($pipes[2]));

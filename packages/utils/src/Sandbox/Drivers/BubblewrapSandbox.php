@@ -23,10 +23,12 @@ final class BubblewrapSandbox implements CanExecuteCommand
         $this->bwrapBin = $bwrapBin ?? $this->findBwrapPath() ?? 'bwrap';
     }
 
+    #[\Override]
     public function policy(): ExecutionPolicy {
         return $this->policy;
     }
 
+    #[\Override]
     public function execute(array $argv, ?string $stdin = null): ExecResult {
         return $this->run($argv, $stdin);
     }
@@ -34,7 +36,7 @@ final class BubblewrapSandbox implements CanExecuteCommand
     // INTERNAL ///////////////////////////////////////////////////////////
 
     private function run(array $argv, ?string $stdin): ExecResult {
-        if (!is_string($this->bwrapBin) || $this->bwrapBin === '') {
+        if ($this->bwrapBin === '') {
             throw new \RuntimeException('bubblewrap not found');
         }
         $workDir = Workdir::create($this->policy);

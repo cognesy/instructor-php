@@ -43,7 +43,7 @@ final readonly class Sandbox
         ?string $image = null,
         ?string $dockerBin = null
     ): CanExecuteCommand {
-        return new DockerSandbox($policy, $image, $dockerBin);
+        return new DockerSandbox($policy, $image ?? 'alpine:3', $dockerBin);
     }
 
     public static function podman(
@@ -51,7 +51,7 @@ final readonly class Sandbox
         ?string $image = null,
         ?string $podmanBin = null,
     ) : CanExecuteCommand {
-        return new PodmanSandbox($policy, $image, $podmanBin);
+        return new PodmanSandbox($policy, $image ?? 'alpine:3', $podmanBin);
     }
 
     public static function firejail(

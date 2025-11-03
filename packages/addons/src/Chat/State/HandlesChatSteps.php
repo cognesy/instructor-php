@@ -13,18 +13,20 @@ trait HandlesChatSteps
     // MUTATORS /////////////////////////////////////////////////
 
     /**
-     * @param object<ChatStep> $step
+     * @param ChatStep $step
      */
     public function withAddedStep(object $step): static {
         assert($step instanceof ChatStep);
-        /** @var object<ChatStep> $step */
         return $this->with(steps: $this->steps->withAddedSteps($step));
     }
 
     /**
-     * @param object<ChatStep> ...$step
+     * @param ChatStep ...$step
      */
     public function withAddedSteps(object ...$step): static {
+        foreach ($step as $s) {
+            assert($s instanceof ChatStep);
+        }
         return $this->with(steps: $this->steps->withAddedSteps(...$step));
     }
 

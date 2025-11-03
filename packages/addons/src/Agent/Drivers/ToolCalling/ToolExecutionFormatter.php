@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Agent\Drivers\ToolCalling;
 
 use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Data\ToolExecution;
+use Cognesy\Addons\Agent\Data\AgentExecution;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -22,7 +22,7 @@ class ToolExecutionFormatter
         return $messages;
     }
 
-    protected function toolExecutionMessages(ToolExecution $toolExecution) : Messages {
+    protected function toolExecutionMessages(AgentExecution $toolExecution) : Messages {
         $messages = Messages::empty();
         $messages = $messages->appendMessage($this->toolInvocationMessage($toolExecution->toolCall()));
         $messages = $messages->appendMessage($this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));

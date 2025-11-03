@@ -6,7 +6,6 @@ use Cognesy\Utils\Sandbox\Data\Mount;
 
 final class ContainerCommandBuilder
 {
-    private string $runtime; // docker|podman
     private string $runtimeBin;
     private string $image = '';
     private bool $networkEnabled = false;
@@ -28,17 +27,16 @@ final class ContainerCommandBuilder
     /** @var list<string> */
     private array $innerArgv = [];
 
-    private function __construct(string $runtimeBin, string $runtime) {
+    private function __construct(string $runtimeBin) {
         $this->runtimeBin = $runtimeBin;
-        $this->runtime = $runtime;
     }
 
     public static function docker(string $bin = 'docker'): self {
-        return new self($bin, 'docker');
+        return new self($bin);
     }
 
     public static function podman(string $bin = 'podman'): self {
-        return new self($bin, 'podman');
+        return new self($bin);
     }
 
     public function withImage(string $image): self {

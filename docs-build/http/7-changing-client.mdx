@@ -14,6 +14,31 @@ One of the core features of the Instructor HTTP client API is its ability to sea
 
 The library includes several built-in drivers that adapt various HTTP client libraries to the unified interface used by Instructor:
 
+### CurlDriver (Default)
+
+The `CurlDriver` provides integration with PHP's native cURL extension, offering zero-dependency HTTP client functionality.
+
+**Key Features**:
+- No external dependencies required
+- Uses native PHP cURL extension
+- HTTP/1.1 and HTTP/2 support (automatic negotiation)
+- Full header parsing and capture
+- Streaming response support
+- Concurrent request pooling via curl_multi
+- Built-in SSL verification
+- Automatic redirect following
+- Works out of the box
+
+**Best For**:
+- Quick start without additional dependencies
+- Lightweight applications
+- Environments where adding dependencies is difficult
+- Projects that need reliable HTTP client immediately
+- High-performance concurrent requests
+
+**Requirements**:
+- PHP cURL extension (typically included by default)
+
 ### GuzzleDriver
 
 The `GuzzleDriver` provides integration with the popular [Guzzle HTTP client](https://docs.guzzlephp.org/).
@@ -94,6 +119,9 @@ You can switch between the available client implementations in several ways:
 The simplest approach is to specify the client when creating the `HttpClient` instance:
 
 ```php
+// Use native cURL (default)
+$curlClient = HttpClient::using('curl');
+
 // Use Guzzle (assuming it's configured in config/http.php)
 $guzzleClient = HttpClient::using('guzzle');
 
@@ -102,7 +130,7 @@ $symfonyClient = HttpClient::using('symfony');
 
 // Use Laravel
 $laravelClient = HttpClient::using('laravel');
-// @doctest id="25fc"
+// @doctest id="718f"
 ```
 
 The client name must correspond to a configuration entry in your `config/http.php` file.
@@ -114,19 +142,19 @@ If you don't specify a client, the default one from your configuration will be u
 ```php
 // Uses the default client specified in config/http.php
 $client = HttpClient::default();
-// @doctest id="41e2"
+// @doctest id="688f"
 ```
 
 The default client is specified in the `config/http.php` file:
 
 ```php
 return [
-    'defaultClient' => 'guzzle',
+    'defaultClient' => 'curl',  // Native cURL driver (no dependencies)
     'clients' => [
         // Client configurations...
     ],
 ];
-// @doctest id="54d7"
+// @doctest id="80c7"
 ```
 
 ### Switching at Runtime
@@ -139,7 +167,7 @@ $defaultClient = HttpClient::default();
 $symfonyClient = HttpClient::using('symfony');
 $laravelClient = HttpClient::using('laravel');
 $customClient = HttpClient::using('http-ollama');
-// @doctest id="7b36"
+// @doctest id="d987"
 ```
 
 Note: HttpClient instances are immutable, so you create new instances rather than switching configurations at runtime.
@@ -159,7 +187,7 @@ $client = HttpClient::using('guzzle');
 // Create with default client and custom event dispatcher
 $events = new EventDispatcher();
 $client = (new HttpClientBuilder())->withEventBus($events)->create();
-// @doctest id="e2f0"
+// @doctest id="6c0b"
 ```
 
 ## Client-Specific Configuration
@@ -200,7 +228,7 @@ return [
         ],
     ],
 ];
-// @doctest id="d839"
+// @doctest id="dcd8"
 ```
 
 ### Multiple Configurations for the Same Client Type
@@ -244,7 +272,7 @@ You can define multiple configurations for the same client type, each with diffe
         'failOnError' => true,
     ],
 ],
-// @doctest id="0d63"
+// @doctest id="c389"
 ```
 
 Then you can select the appropriate configuration based on your needs:
@@ -261,7 +289,7 @@ $streamingClient = HttpClient::using('guzzle-streaming');
 
 // For AI model requests
 $aiClient = HttpClient::using('http-ollama');
-// @doctest id="d8f3"
+// @doctest id="436a"
 ```
 
 ### Common Configuration Parameters
@@ -379,7 +407,7 @@ function generateAiResponse($prompt) {
         throw $e;
     }
 }
-// @doctest id="5afa"
+// @doctest id="fea0"
 ```
 
 ## Considerations for Switching Clients

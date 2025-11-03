@@ -1,9 +1,19 @@
 <?php
 
 return [
-    'defaultPreset' => 'guzzle',
+    'defaultPreset' => 'curl',
 
     'presets' => [
+        'curl' => [
+            'driver' => 'curl',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 256,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
         'guzzle' => [
             'driver' => 'guzzle',
             'connectTimeout' => 3,

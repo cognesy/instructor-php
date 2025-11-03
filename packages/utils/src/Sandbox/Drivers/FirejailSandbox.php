@@ -23,10 +23,12 @@ final class FirejailSandbox implements CanExecuteCommand
         $this->firejailBin = $firejailBin ?? $this->findFirejailPath() ?? 'firejail';
     }
 
+    #[\Override]
     public function policy(): ExecutionPolicy {
         return $this->policy;
     }
 
+    #[\Override]
     public function execute(array $argv, ?string $stdin = null): ExecResult {
         return $this->run($argv, $stdin);
     }
@@ -34,7 +36,7 @@ final class FirejailSandbox implements CanExecuteCommand
     // INTERNAL ///////////////////////////////////////////////////////////
 
     private function run(array $argv, ?string $stdin): ExecResult {
-        if (!is_string($this->firejailBin) || $this->firejailBin === '') {
+        if ($this->firejailBin === '') {
             throw new \RuntimeException('Firejail binary not found');
         }
         $workDir = Workdir::create($this->policy);

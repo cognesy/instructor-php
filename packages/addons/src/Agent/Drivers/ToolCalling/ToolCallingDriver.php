@@ -6,7 +6,7 @@ use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Contracts\CanUseTools;
-use Cognesy\Addons\Agent\Data\ToolUseState;
+use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
 use Cognesy\Http\HttpClient;
@@ -57,13 +57,13 @@ class ToolCallingDriver implements CanUseTools
     }
 
     /**
-     * Executes tool usage within a given context and returns the result as a ToolUseStep.
+     * Executes tool usage within a given context and returns the result as a AgentStep.
      *
-     * @param ToolUseState $state The context containing messages, tools, and other related information required for tool usage.
-     * @return AgentStep Returns an instance of ToolUseStep containing the response, executed tools, follow-up messages, and additional usage data.
+     * @param AgentState $state The context containing messages, tools, and other related information required for tool usage.
+     * @return AgentStep Returns an instance of AgentStep containing the response, executed tools, follow-up messages, and additional usage data.
      */
     #[\Override]
-    public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentStep {
+    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentStep {
         $response = $this->getToolCallResponse($state, $tools);
         $toolCalls = $this->getToolsToCall($response);
         $executions = $executor->useTools($toolCalls, $state);
@@ -78,7 +78,7 @@ class ToolCallingDriver implements CanUseTools
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function getToolCallResponse(ToolUseState $state, Tools $tools) : InferenceResponse {
+    private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
         return $this->buildPendingInference($state->messages(), $tools)->response();
     }
 
@@ -111,7 +111,7 @@ class ToolCallingDriver implements CanUseTools
         return $inference->create();
     }
 
-    /** Builds the final ToolUseStep from inference response and executions. */
+    /** Builds the final AgentStep from inference response and executions. */
     private function buildStepFromResponse(
         InferenceResponse $response,
         ToolExecutions $executions,

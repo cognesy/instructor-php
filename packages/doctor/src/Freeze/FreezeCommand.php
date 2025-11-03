@@ -151,12 +151,12 @@ class FreezeCommand
 
         // Ensure file/output paths are absolute to avoid cwd differences in Sandbox Host driver
         $cwd = getcwd() ?: null;
-        if (!empty($this->filePath) && $cwd !== null && !str_starts_with((string)$this->filePath, '/')) {
+        if (!empty($this->filePath) && $cwd !== null && !str_starts_with($this->filePath, '/')) {
             $abs = $cwd . '/' . $this->filePath;
             $real = realpath($abs);
             $this->filePath = $real !== false ? $real : $abs;
         }
-        if (!empty($this->output) && $cwd !== null && !str_starts_with((string)$this->output, '/')) {
+        if (!empty($this->output) && $cwd !== null && !str_starts_with($this->output, '/')) {
             $this->output = $cwd . '/' . $this->output;
         }
 

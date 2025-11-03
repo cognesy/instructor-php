@@ -23,6 +23,7 @@ class ResponseTransformer implements CanTransformResponse
         private StructuredOutputConfig $config,
     ) {}
 
+    #[\Override]
     public function transform(mixed $data, ResponseModel $responseModel) : Result {
         return match(true) {
             $data instanceof CanTransformSelf => $this->transformSelf($data),

@@ -5,6 +5,8 @@ namespace Cognesy\Http;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
+use Cognesy\Http\Drivers\Curl\CurlDriver;
+use Cognesy\Http\Drivers\Curl\CurlPool;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
@@ -56,7 +58,7 @@ class HttpClientDriverFactory
         ?object $clientInstance = null,
     ): CanHandleHttpRequest {
         $config = $config ?? new HttpClientConfig();
-        $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'guzzle')]);
+        $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
 
@@ -85,7 +87,7 @@ class HttpClientDriverFactory
         ?string $driver = null,
     ): CanHandleRequestPool {
         $config = $config ?? new HttpClientConfig();
-        $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'guzzle')]);
+        $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
         $poolClosure = $this->defaultPoolHandlers()[$name] ?? null;
 
@@ -105,6 +107,11 @@ class HttpClientDriverFactory
      */
     private function defaultDrivers() : array {
         return [
+            'curl' => fn($config, $events, $clientInstance) => new CurlDriver(
+                config: $config,
+                events: $events,
+                clientInstance: $clientInstance,
+            ),
             'guzzle' => fn($config, $events, $clientInstance) => new GuzzleDriver(
                 config: $config,
                 events: $events,
@@ -130,6 +137,10 @@ class HttpClientDriverFactory
      */
     private function defaultPoolHandlers(): array {
         return [
+            'curl' => fn($config, $events) => new CurlPool(
+                config: $config,
+                events: $events,
+            ),
             'guzzle' => fn($config, $events) => new GuzzlePool(
                 config: $config,
                 client: new \GuzzleHttp\Client(),

@@ -42,11 +42,5 @@
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
-        <MissingOverrideAttribute>
-            <errorLevel type="suppress">
-                <file name="packages/instructor/src/Deserialization/Deserializers/FlexibleDateDenormalizer.php" />
-                <file name="packages/instructor/src/Deserialization/Deserializers/BackedEnumNormalizer.php" />
-            </errorLevel>
-        </MissingOverrideAttribute>
     </issueHandlers>
 </psalm>

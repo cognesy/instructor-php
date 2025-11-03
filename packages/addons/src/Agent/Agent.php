@@ -78,7 +78,7 @@ class Agent extends StepByStep
     #[\Override]
     protected function makeNextStep(object $state): AgentStep {
         assert($state instanceof AgentState);
-        $this->emitToolUseStepStarted($state);
+        $this->emitAgentStepStarted($state);
         return $this->driver->useTools(
             state: $state,
             tools: $this->tools,
@@ -93,21 +93,21 @@ class Agent extends StepByStep
         $newState = $state
             ->withAddedStep($nextStep)
             ->withCurrentStep($nextStep);
-        $this->emitToolUseStateUpdated($newState);
+        $this->emitAgentStateUpdated($newState);
         return $newState;
     }
 
     #[\Override]
     protected function onNoNextStep(object $state): AgentState {
         assert($state instanceof AgentState);
-        $this->emitToolUseFinished($state);
+        $this->emitAgentFinished($state);
         return $state;
     }
 
     #[\Override]
     protected function onStepCompleted(object $state): AgentState {
         assert($state instanceof AgentState);
-        $this->emitToolUseStepCompleted($state);
+        $this->emitAgentStepCompleted($state);
         return $state;
     }
 
@@ -125,7 +125,7 @@ class Agent extends StepByStep
             state: $state->withStatus(AgentStatus::Failed),
             nextStep: $failureStep,
         );
-        $this->emitToolUseFailed($failedState, $failure);
+        $this->emitAgentFailed($failedState, $failure);
         return $failedState;
     }
 
@@ -156,10 +156,12 @@ class Agent extends StepByStep
         ?CanUseTools $driver = null,
         ?CanHandleEvents $events = null,
     ) : self {
+        /** @var CanApplyProcessors<AgentState> $resolvedProcessors */
+        $resolvedProcessors = $processors ?? $this->processors;
         return new self(
             tools: $tools ?? $this->tools,
             toolExecutor: $toolExecutor ?? $this->toolExecutor,
-            processors: $processors ?? $this->processors,
+            processors: $resolvedProcessors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             driver: $driver ?? $this->driver,
             events: $events ?? $this->events,
@@ -198,7 +200,7 @@ class Agent extends StepByStep
 
     // EVENTS ////////////////////////////////////////////
 
-    private function emitToolUseFinished(AgentState $state) : void {
+    private function emitAgentFinished(AgentState $state) : void {
         $this->events->dispatch(new AgentFinished([
             'status' => $state->status()->value,
             'steps' => $state->stepCount(),
@@ -207,7 +209,7 @@ class Agent extends StepByStep
         ]));
     }
 
-    private function emitToolUseStepStarted(AgentState $state) : void {
+    private function emitAgentStepStarted(AgentState $state) : void {
         $this->events->dispatch(new AgentStepStarted([
             'step' => $state->stepCount() + 1,
             'messages' => $state->messages()->count(),
@@ -215,7 +217,7 @@ class Agent extends StepByStep
         ]));
     }
 
-    private function emitToolUseStepCompleted(AgentState $state) : void {
+    private function emitAgentStepCompleted(AgentState $state) : void {
         $this->events->dispatch(new AgentStepCompleted([
             'step' => $state->stepCount(),
             'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
@@ -226,14 +228,14 @@ class Agent extends StepByStep
         ]));
     }
 
-    private function emitToolUseStateUpdated(AgentState $state) : void {
+    private function emitAgentStateUpdated(AgentState $state) : void {
         $this->events->dispatch(new AgentStateUpdated([
             'state' => $state->toArray(),
             'step' => $state->currentStep()?->toArray() ?? [],
         ]));
     }
 
-    private function emitToolUseFailed(AgentState $failedState, AgentException $exception) : void {
+    private function emitAgentFailed(AgentState $failedState, AgentException $exception) : void {
         $this->events->dispatch(new AgentFailed([
             'error' => $exception->getMessage(),
             'status' => $failedState->status()->value,

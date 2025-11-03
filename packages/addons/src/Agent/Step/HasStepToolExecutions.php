@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Step;
 
-use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Messages\Messages;
 use Throwable;
 

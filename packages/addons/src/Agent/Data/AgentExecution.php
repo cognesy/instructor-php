@@ -11,7 +11,7 @@ use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
-final readonly class ToolExecution
+final readonly class AgentExecution
 {
     private ToolCall $toolCall;
     private Result $result;
@@ -35,8 +35,8 @@ final readonly class ToolExecution
 
     // CONSTRUCTORS ////////////////////////////////////////////
 
-    public static function fromArray(array $data) : ToolExecution {
-        return new ToolExecution(
+    public static function fromArray(array $data) : AgentExecution {
+        return new AgentExecution(
             toolCall: self::hydrateToolCall($data),
             result: self::makeResult($data),
             startedAt: self::parseDate($data['startedAt'] ?? null),

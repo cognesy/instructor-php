@@ -13,18 +13,20 @@ trait HandlesCollaborationSteps
     // MUTATORS /////////////////////////////////////////////////
 
     /**
-     * @param object<CollaborationStep> $step
+     * @param CollaborationStep $step
      */
     public function withAddedStep(object $step): static {
         assert($step instanceof CollaborationStep);
-        /** @var object<CollaborationStep> $step */
         return $this->with(steps: $this->steps->withAddedSteps($step));
     }
 
     /**
-     * @param object<CollaborationStep> ...$step
+     * @param CollaborationStep ...$step
      */
     public function withAddedSteps(object ...$step): static {
+        foreach ($step as $s) {
+            assert($s instanceof CollaborationStep);
+        }
         return $this->with(steps: $this->steps->withAddedSteps(...$step));
     }
 

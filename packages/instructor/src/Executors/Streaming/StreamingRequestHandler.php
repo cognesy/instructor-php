@@ -3,11 +3,11 @@
 namespace Cognesy\Instructor\Executors\Streaming;
 
 use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
-use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RetryHandler;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Executors\Contracts\CanGeneratePartials;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;

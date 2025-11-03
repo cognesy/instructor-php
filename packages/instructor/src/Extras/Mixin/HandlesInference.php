@@ -16,8 +16,8 @@ trait HandlesInference {
         int          $maxRetries = 2,
         array        $options = [],
         OutputMode   $mode = OutputMode::Tools,
-        string       $toolName = '',
-        string       $toolDescription = '',
+        ?string      $toolName = null,
+        ?string      $toolDescription = null,
         string       $retryPrompt = '',
         ?LLMProvider $llm = null,
     ) : mixed {

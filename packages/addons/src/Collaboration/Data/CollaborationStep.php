@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Collaboration\Data;
 
 use Cognesy\Addons\Collaboration\Exceptions\CollaborationException;
 use Cognesy\Addons\Collaboration\Step\HandlesCollaborationCompletion;
-use Cognesy\Addons\StepByStep\Step\Contracts\HasCollaborationCompletion;
+use Cognesy\Addons\Collaboration\Step\HasCollaborationCompletion;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepErrors;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMessages;

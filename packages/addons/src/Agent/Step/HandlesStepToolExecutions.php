@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\Agent\Step;
 
-use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
-use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
-use Cognesy\Addons\ToolUse\Exceptions\ToolExecutionException;
+use Cognesy\Addons\Agent\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -34,7 +34,7 @@ trait HandlesStepToolExecutions
             toolCalls: new ToolCalls(),
             toolExecutions: new ToolExecutions(),
             inferenceResponse: null,
-            stepType: ToolUseStepType::Error,
+            stepType: AgentStepType::Error,
             errors: [$normalized],
         );
     }

@@ -62,7 +62,7 @@ final class ProcUtils
         @proc_terminate($proc, 15);
         usleep(100_000);
         $status = proc_get_status($proc);
-        if (!is_array($status) || !$status['running']) {
+        if (!$status['running']) {
             return;
         }
         if ($pid > 0 && function_exists('posix_kill')) {

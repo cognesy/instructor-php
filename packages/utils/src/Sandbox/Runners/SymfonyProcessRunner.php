@@ -24,6 +24,7 @@ final class SymfonyProcessRunner implements CanRunProcess
      * @param list<string> $argv
      * @param array<string,string> $env
      */
+    #[\Override]
     public function run(array $argv, string $cwd, array $env, ?string $stdin): ExecResult {
         $process = $this->makeProcess($argv, $cwd, $env, $stdin);
         $agg = new StreamAggregator(stdoutCap: $this->stdoutCap, stderrCap: $this->stderrCap);
@@ -47,6 +48,9 @@ final class SymfonyProcessRunner implements CanRunProcess
         return $process;
     }
 
+    /**
+     * @return callable(string, string): void
+     */
     private function makeProcessCallback(StreamAggregator $agg): callable {
         return function (string $type, string $buffer) use ($agg): void {
             if ($buffer !== '') {

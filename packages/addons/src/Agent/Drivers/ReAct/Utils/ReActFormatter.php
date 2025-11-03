@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Drivers\ReAct\Utils;
 
-use Cognesy\Addons\Agent\Data\ToolExecution;
+use Cognesy\Addons\Agent\Data\AgentExecution;
 use Cognesy\Addons\Agent\Drivers\ReAct\Contracts\Decision;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -21,7 +21,7 @@ final class ReActFormatter
         return new Message(role: 'assistant', content: $content);
     }
 
-    public function observationMessage(ToolExecution $execution) : Message {
+    public function observationMessage(AgentExecution $execution) : Message {
         $content = match (true) {
             $execution->hasError() => 'Observation: ERROR - ' . ($execution->error()?->getMessage() ?? ''),
             default => 'Observation: ' . Json::encode($execution->value()),

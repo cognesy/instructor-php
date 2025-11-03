@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Step;
 
-use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
+use Cognesy\Addons\Agent\Enums\AgentStepType;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -11,7 +11,7 @@ trait HandlesStepToolCalls
 {
     private readonly ToolCalls $toolCalls;
     private readonly InferenceResponse $inferenceResponse;
-    private readonly ToolUseStepType $stepType;
+    private readonly AgentStepType $stepType;
 
     public function toolCalls(): ToolCalls {
         return $this->toolCalls;
@@ -29,7 +29,7 @@ trait HandlesStepToolCalls
         return $this->inferenceResponse;
     }
 
-    public function stepType(): ToolUseStepType {
+    public function stepType(): AgentStepType {
         return $this->stepType;
     }
 }

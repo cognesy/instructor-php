@@ -24,10 +24,12 @@ final class PodmanSandbox implements CanExecuteCommand
         $this->podmanBin = $podmanBin ?? $this->findPodmanPath() ?? 'podman';
     }
 
+    #[\Override]
     public function policy(): ExecutionPolicy {
         return $this->policy;
     }
 
+    #[\Override]
     public function execute(array $argv, ?string $stdin = null): ExecResult {
         return $this->run($argv, $stdin);
     }
@@ -35,7 +37,7 @@ final class PodmanSandbox implements CanExecuteCommand
     // INTERNAL ///////////////////////////////////////////////////////////
 
     private function run(array $argv, ?string $stdin): ExecResult {
-        if (!is_string($this->podmanBin) || $this->podmanBin === '') {
+        if ($this->podmanBin === '') {
             throw new \RuntimeException('Podman binary not found');
         }
 

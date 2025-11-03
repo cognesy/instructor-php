@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Contracts;
+namespace Cognesy\Instructor\Executors\Contracts;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;

@@ -7,7 +7,7 @@ use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\CanAccessAnyState;
 use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
-use Cognesy\Addons\Agent\Data\ToolExecution;
+use Cognesy\Addons\Agent\Data\AgentExecution;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Events\ToolCallCompleted;
 use Cognesy\Addons\Agent\Events\ToolCallStarted;
@@ -40,12 +40,12 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
     // MAIN API /////////////////////////////////////////////
 
     #[\Override]
-    public function useTool(ToolCall $toolCall, AgentState $state): ToolExecution {
+    public function useTool(ToolCall $toolCall, AgentState $state): AgentExecution {
         $startedAt = new DateTimeImmutable();
         $this->emitToolCallStarted($toolCall, $startedAt);
         $result = $this->execute($toolCall, $state);
         $endedAt = new DateTimeImmutable();
-        $toolExecution = new ToolExecution(
+        $toolExecution = new AgentExecution(
             toolCall: $toolCall,
             result: $result,
             startedAt: $startedAt,
@@ -172,7 +172,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         ]));
     }
 
-    private function emitToolCallCompleted(ToolExecution $toolExecution): void {
+    private function emitToolCallCompleted(AgentExecution $toolExecution): void {
         $error = null;
         if ($toolExecution->result()->isFailure()) {
             $errorValue = $toolExecution->result()->error();

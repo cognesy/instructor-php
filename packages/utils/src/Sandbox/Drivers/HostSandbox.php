@@ -14,10 +14,12 @@ final class HostSandbox implements CanExecuteCommand
 {
     public function __construct(private readonly ExecutionPolicy $policy) {}
 
+    #[\Override]
     public function policy(): ExecutionPolicy {
         return $this->policy;
     }
 
+    #[\Override]
     public function execute(array $argv, ?string $stdin = null): ExecResult {
         return $this->tryExecute($argv, $stdin);
     }

@@ -4,6 +4,7 @@ namespace Cognesy\Addons\Chat;
 
 use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Data\ChatState;
+use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Selectors\RoundRobin\RoundRobinSelector;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
@@ -39,7 +40,7 @@ class ChatFactory
                 new StepsLimit(16, static fn(ChatState $state): int => $state->stepCount()),
                 new TokenUsageLimit(4096, static fn(ChatState $state): int => $state->usage()->total()),
                 new ErrorPresenceCheck(static fn(ChatState $state): bool => $state->currentStep()?->hasErrors() ?? false),
-                new RetryLimit(2, static fn(ChatState $state) => $state->steps(), static fn(Chat $step): bool => $step->hasErrors()),
+                new RetryLimit(2, static fn(ChatState $state) => $state->steps(), static fn(ChatStep $step): bool => $step->hasErrors()),
             ),
             events: $events,
         );

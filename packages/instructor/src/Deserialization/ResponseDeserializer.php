@@ -24,6 +24,7 @@ class ResponseDeserializer implements CanDeserializeResponse
         private StructuredOutputConfig $config,
     ) {}
 
+    #[\Override]
     public function deserialize(string $text, ResponseModel $responseModel) : Result {
         $result = match(true) {
             $this->canDeserializeSelf($responseModel) => $this->deserializeSelf(

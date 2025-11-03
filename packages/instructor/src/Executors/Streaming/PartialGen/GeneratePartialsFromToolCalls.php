@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Executors\Streaming\PartialGen;
 
-use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
@@ -14,6 +13,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
+use Cognesy\Instructor\Executors\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Executors\Streaming\SequenceGen\SequenceableEmitter;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;

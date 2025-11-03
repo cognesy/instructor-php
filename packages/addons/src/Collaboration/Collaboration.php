@@ -118,7 +118,7 @@ class Collaboration extends StepByStep
             : CollaborationException::fromThrowable($error);
         $failureStep = CollaborationStep::failure(
             error: $failure,
-            collaboratorName: $state->currentStep()?->participantName() ?? '?',
+            collaboratorName: $state->currentStep()?->collaboratorName() ?? '?',
             inputMessages: $state->messages(),
         );
         $failedState = $this->applyStep(
@@ -144,10 +144,12 @@ class Collaboration extends StepByStep
         ?ContinuationCriteria      $continuationCriteria = null,
         ?CanHandleEvents           $events = null,
     ): Collaboration {
+        /** @var CanApplyProcessors<CollaborationState> $resolvedProcessors */
+        $resolvedProcessors = $processors ?? $this->processors;
         return new Collaboration(
             collaborators: $collaborators ?? $this->collaborators,
             nextCollaboratorSelector: $nextCollaboratorSelector ?? $this->nextCollaboratorSelector,
-            processors: $processors ?? $this->processors,
+            processors: $resolvedProcessors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             events: EventBusResolver::using($events),
         );

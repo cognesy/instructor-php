@@ -6,8 +6,8 @@ use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Contracts\CanUseTools;
-use Cognesy\Addons\Agent\Data\ToolExecution;
-use Cognesy\Addons\Agent\Data\ToolUseState;
+use Cognesy\Addons\Agent\Data\AgentExecution;
+use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Addons\Agent\Drivers\ReAct\Actions\MakeToolCalls;
@@ -66,7 +66,7 @@ final class ReActDriver implements CanUseTools
     }
 
     #[\Override]
-    public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
+    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
         $messages = $state->messages();
         $system = $this->buildSystemPrompt($tools);
         $extraction = Result::try(fn() => $this->extractDecision($messages, $system));
@@ -156,7 +156,7 @@ final class ReActDriver implements CanUseTools
         $formatter = new ReActFormatter();
         $error = new \RuntimeException($validation->getErrorMessage());
         $messagesErr = $formatter->decisionExtractionErrorMessages($error);
-        $exec = new ToolExecution(
+        $exec = new AgentExecution(
             new ToolCall('decision_validation', []),
             Result::failure($error),
             new \DateTimeImmutable(),
@@ -178,7 +178,7 @@ final class ReActDriver implements CanUseTools
     private function buildExtractionFailureStep(\Throwable $e, Messages $context): AgentStep {
         $formatter = new ReActFormatter();
         $messagesErr = $formatter->decisionExtractionErrorMessages($e);
-        $exec = new ToolExecution(
+        $exec = new AgentExecution(
             new ToolCall('decision_extraction', []),
             Result::failure($e),
             new \DateTimeImmutable(),

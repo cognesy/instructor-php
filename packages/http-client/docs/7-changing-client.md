@@ -13,6 +13,31 @@ One of the core features of the Instructor HTTP client API is its ability to sea
 
 The library includes several built-in drivers that adapt various HTTP client libraries to the unified interface used by Instructor:
 
+### CurlDriver (Default)
+
+The `CurlDriver` provides integration with PHP's native cURL extension, offering zero-dependency HTTP client functionality.
+
+**Key Features**:
+- No external dependencies required
+- Uses native PHP cURL extension
+- HTTP/1.1 and HTTP/2 support (automatic negotiation)
+- Full header parsing and capture
+- Streaming response support
+- Concurrent request pooling via curl_multi
+- Built-in SSL verification
+- Automatic redirect following
+- Works out of the box
+
+**Best For**:
+- Quick start without additional dependencies
+- Lightweight applications
+- Environments where adding dependencies is difficult
+- Projects that need reliable HTTP client immediately
+- High-performance concurrent requests
+
+**Requirements**:
+- PHP cURL extension (typically included by default)
+
 ### GuzzleDriver
 
 The `GuzzleDriver` provides integration with the popular [Guzzle HTTP client](https://docs.guzzlephp.org/).
@@ -93,6 +118,9 @@ You can switch between the available client implementations in several ways:
 The simplest approach is to specify the client when creating the `HttpClient` instance:
 
 ```php
+// Use native cURL (default)
+$curlClient = HttpClient::using('curl');
+
 // Use Guzzle (assuming it's configured in config/http.php)
 $guzzleClient = HttpClient::using('guzzle');
 
@@ -118,7 +146,7 @@ The default client is specified in the `config/http.php` file:
 
 ```php
 return [
-    'defaultClient' => 'guzzle',
+    'defaultClient' => 'curl',  // Native cURL driver (no dependencies)
     'clients' => [
         // Client configurations...
     ],
