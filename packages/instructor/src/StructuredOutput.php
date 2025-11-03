@@ -19,6 +19,7 @@ use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Messages\Message;
@@ -165,6 +166,7 @@ class StructuredOutput
             transformers: $this->transformers ?: [],
             config: $config,
         );
+        $partialResponseValidator = new PartialValidation(new Config\PartialsGeneratorConfig());
 
         // Ensure HttpClient is available; build default if not provided
         if ($this->httpClient !== null) {
@@ -181,6 +183,7 @@ class StructuredOutput
             llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,
+            partialResponseValidator: $partialResponseValidator,
             responseTransformer: $responseTransformer,
             events: $this->events,
             httpClient: $client,

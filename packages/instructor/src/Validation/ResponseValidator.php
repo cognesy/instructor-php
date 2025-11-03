@@ -3,17 +3,19 @@
 namespace Cognesy\Instructor\Validation;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class ResponseValidator
+class ResponseValidator implements CanValidateResponse
 {
     public function __construct(
         private EventDispatcherInterface $events,
@@ -26,7 +28,7 @@ class ResponseValidator
     /**
      * Validate deserialized response object
      */
-    public function validate(object $response) : Result {
+    public function validate(object $response, ResponseModel $responseModel) : Result {
         $validation = match(true) {
             $response instanceof CanValidateSelf => $this->validateSelf($response),
             default => $this->validateObject($response)

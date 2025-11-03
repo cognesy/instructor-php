@@ -88,7 +88,7 @@ class Chat extends StepByStep
     #[\Override]
     protected function applyStep(object $state, object $nextStep): ChatState {
         assert($state instanceof ChatState);
-        assert($nextStep instanceof Chat);
+        assert($nextStep instanceof ChatStep);
         $newState = $state
             ->withAddedStep($nextStep)
             ->withCurrentStep($nextStep);
@@ -116,7 +116,7 @@ class Chat extends StepByStep
         $failure = $error instanceof ChatException
             ? $error
             : ChatException::fromThrowable($error);
-        $failureStep = Chat::failure(
+        $failureStep = ChatStep::failure(
             error: $failure,
             participantName: $state->currentStep()?->participantName() ?? '?',
             inputMessages: $state->messages(),

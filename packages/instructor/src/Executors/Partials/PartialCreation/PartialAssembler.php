@@ -2,25 +2,28 @@
 
 namespace Cognesy\Instructor\Executors\Partials\PartialCreation;
 
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Executors\Partials\ContentMode\PartialJson;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\PartialValidation;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
 final class PartialAssembler
 {
-    private PartialValidation $validation;
+    private CanDeserializeResponse $deserializer;
+    private CanValidatePartialResponse $validator;
+    private CanTransformResponse $transformer;
 
     public function __construct(
-        private ResponseDeserializer $deserializer,
-        private ResponseTransformer $transformer,
-        private PartialsGeneratorConfig $config,
+        CanDeserializeResponse $deserializer,
+        CanValidatePartialResponse $validator,
+        CanTransformResponse $transformer,
     ) {
-        $this->validation = new PartialValidation();
+        $this->deserializer = $deserializer;
+        $this->validator = $validator;
+        $this->transformer = $transformer;
     }
 
     public function makeWith(
@@ -31,10 +34,9 @@ final class PartialAssembler
         $normalized = $partialJson->normalized();
 
         try {
-            $validationResult = $this->validation->validatePartialResponse(
+            $validationResult = $this->validator->validatePartialResponse(
                 $normalized,
                 $responseModel,
-                $this->config,
             );
         } catch (Throwable $e) {
             $failure = Result::failure($e->getMessage());
@@ -50,7 +52,7 @@ final class PartialAssembler
             return $state->with($state->hash(), null, $deserialized);
         }
 
-        $transformed = $this->transformer->transform($deserialized->unwrap());
+        $transformed = $this->transformer->transform($deserialized->unwrap(), $responseModel);
         if ($transformed->isFailure()) {
             return $state->with($state->hash(), null, $transformed);
         }

@@ -4,11 +4,11 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
@@ -25,9 +25,9 @@ use Throwable;
 class ResponseGenerator implements CanGenerateResponse
 {
     public function __construct(
-        private ResponseDeserializer $responseDeserializer,
-        private ResponseValidator $responseValidator,
-        private ResponseTransformer $responseTransformer,
+        private CanDeserializeResponse $responseDeserializer,
+        private CanValidateResponse $responseValidator,
+        private CanTransformResponse $responseTransformer,
         private EventDispatcherInterface $events,
     ) {}
 
@@ -42,14 +42,14 @@ class ResponseGenerator implements CanGenerateResponse
 
     private function makeResponsePipeline(ResponseModel $responseModel) : Pipeline {
         return Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn($responseJson) => match(true) {
-                ($responseJson === '') => Result::failure('No JSON found in the response'),
-                default => Result::success($responseJson)
+            ->through(fn($responseContent) => match(true) {
+                ($responseContent === '') => Result::failure('No JSON found in the response'),
+                default => Result::success($responseContent)
             })
-            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
-            ->through(fn($object) => $this->responseValidator->validate($object))
-            ->through(fn($object) => $this->responseTransformer->transform($object))
-            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
+            ->through(fn($responseContent) => $this->responseDeserializer->deserialize($responseContent, $responseModel))
+            ->through(fn($responseObject) => $this->responseValidator->validate($responseObject, $responseModel))
+            ->through(fn($responseObject) => $this->responseTransformer->transform($responseObject, $responseModel))
+            ->tap(fn($responseObject) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($responseObject)])))
             ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
             ->finally(fn(CanCarryState $state) => match(true) {
                 $state->isSuccess() => $state->result(),

@@ -29,11 +29,16 @@ class FreezeCommand
     private ?string $padding = null;
     private ?string $margin = null;
     private ?string $lines = null;
-    
+
+    // Store original paths for display in command string
+    private ?string $originalFilePath = null;
+    private ?string $originalOutput = null;
+
     private CanExecuteCommand $executor;
 
     public function __construct(?string $filePath = null, ?CanExecuteCommand $executor = null) {
         $this->filePath = $filePath;
+        $this->originalFilePath = $filePath;
         // Executor is no longer used; kept for backward compatibility
         if ($executor !== null) {
             $this->executor = $executor;
@@ -51,6 +56,7 @@ class FreezeCommand
 
     public function output(string $path): self {
         $this->output = $path;
+        $this->originalOutput = $path;
         return $this;
     }
 
@@ -140,6 +146,9 @@ class FreezeCommand
     }
 
     public function run(): FreezeResult {
+        // Build command string with original paths before converting to absolute
+        $commandString = $this->buildCommandString();
+
         // Ensure file/output paths are absolute to avoid cwd differences in Sandbox Host driver
         $cwd = getcwd() ?: null;
         if (!empty($this->filePath) && $cwd !== null && !str_starts_with((string)$this->filePath, '/')) {
@@ -168,8 +177,8 @@ class FreezeCommand
             success: $success,
             output: $output,
             errorOutput: $error,
-            command: $this->buildCommandString(),
-            outputPath: $this->output,
+            command: $commandString,
+            outputPath: $this->originalOutput,
         );
     }
 
@@ -280,14 +289,30 @@ class FreezeCommand
     }
 
     public function buildCommandString(): string {
+        // Build command array with original paths for display
+        $displayFilePath = $this->filePath;
+        $displayOutput = $this->output;
+
+        // Temporarily use original paths
+        if ($this->originalFilePath !== null) {
+            $this->filePath = $this->originalFilePath;
+        }
+        if ($this->originalOutput !== null) {
+            $this->output = $this->originalOutput;
+        }
+
         $commandArray = $this->buildCommandArray();
-        
+
+        // Restore actual paths
+        $this->filePath = $displayFilePath;
+        $this->output = $displayOutput;
+
         // Escape arguments for shell execution (except 'freeze' and file path)
         $escapedParts = [];
         foreach ($commandArray as $index => $part) {
             if ($index === 0) {
                 $escapedParts[] = $part; // Don't escape 'freeze'
-            } else if ($index === 1 && !empty($this->filePath) && empty($this->executeCommand)) {
+            } else if ($index === 1 && !empty($this->originalFilePath) && empty($this->executeCommand)) {
                 $escapedParts[] = $part; // Don't escape file path when it's first argument
             } else if (str_starts_with($part, '--') || str_starts_with($part, '-')) {
                 $escapedParts[] = $part; // Don't escape flag names
@@ -295,7 +320,7 @@ class FreezeCommand
                 $escapedParts[] = escapeshellarg($part); // Escape values
             }
         }
-        
+
         return implode(' ', $escapedParts);
     }
 

@@ -2,11 +2,10 @@
 
 namespace Cognesy\Instructor\Executors\Streaming\PartialGen;
 
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialJsonReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
@@ -14,7 +13,8 @@ use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseFinished;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Executors\Streaming\SequenceGen\SequenceableEmitter;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -22,19 +22,17 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class GeneratePartialsFromJson implements CanGeneratePartials
 {
     private AssemblePartialObject $partialAssembler;
-    private readonly PartialsGeneratorConfig $config;
 
     public function __construct(
-        private ResponseDeserializer $responseDeserializer,
-        private ResponseTransformer $responseTransformer,
+        private CanDeserializeResponse $responseDeserializer,
+        private CanValidatePartialResponse $partialValidator,
+        private CanTransformResponse $responseTransformer,
         private EventDispatcherInterface $events,
-        ?PartialsGeneratorConfig $config = null,
     ) {
-        $this->config = $config ?? new PartialsGeneratorConfig();
         $this->partialAssembler = new AssemblePartialObject(
             deserializer: $this->responseDeserializer,
+            validator: $this->partialValidator,
             transformer: $this->responseTransformer,
-            config: $this->config,
         );
     }
 

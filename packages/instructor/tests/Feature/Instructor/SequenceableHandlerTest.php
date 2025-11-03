@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
@@ -10,6 +11,7 @@ use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Executors\Streaming\PartialGen\GeneratePartialsFromJson;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
@@ -49,6 +51,7 @@ beforeEach(function () {
         [SymfonyDeserializer::class],
         new StructuredOutputConfig(),
     );
+    $this->validator = new PartialValidation(new PartialsGeneratorConfig());
     $this->transformer = new ResponseTransformer(
         events: $this->events,
         transformers: [],
@@ -57,6 +60,7 @@ beforeEach(function () {
 
     $this->generator = new GeneratePartialsFromJson(
         $this->deserializer,
+        $this->validator,
         $this->transformer,
         $this->events
     );

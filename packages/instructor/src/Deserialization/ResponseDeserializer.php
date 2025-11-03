@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Deserialization;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
@@ -15,7 +16,7 @@ use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class ResponseDeserializer
+class ResponseDeserializer implements CanDeserializeResponse
 {
     public function __construct(
         private EventDispatcherInterface $events,
@@ -23,12 +24,12 @@ class ResponseDeserializer
         private StructuredOutputConfig $config,
     ) {}
 
-    public function deserialize(string $json, ResponseModel $responseModel) : Result {
+    public function deserialize(string $text, ResponseModel $responseModel) : Result {
         $result = match(true) {
             $this->canDeserializeSelf($responseModel) => $this->deserializeSelf(
-                $json, $responseModel->instance(), $responseModel->toolName()
+                $text, $responseModel->instance(), $responseModel->toolName()
             ),
-            default => $this->deserializeAny($json, $responseModel)
+            default => $this->deserializeAny($text, $responseModel)
         };
         $this->events->dispatch(match(true) {
             $result->isFailure() => new ResponseDeserializationFailed(['error' => (string) $result->error()]),

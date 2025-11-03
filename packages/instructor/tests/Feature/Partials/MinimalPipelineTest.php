@@ -8,6 +8,7 @@ use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -27,12 +28,13 @@ test('minimal pipeline processes single chunk', function() {
     $partialsConfig = new PartialsGeneratorConfig();
 
     $deserializer = new ResponseDeserializer($events, [SymfonyDeserializer::class], $config);
+    $validator = new PartialValidation($partialsConfig);
     $transformer = new ResponseTransformer(events: $events, transformers: [], config: $config);
     $factory = new PartialStreamFactory(
         deserializer: $deserializer,
+        validator: $validator,
         transformer: $transformer,
         events: $events,
-        config: $partialsConfig,
     );
 
     $schemaFactory = new SchemaFactory(useObjectReferences: $config->useObjectReferences());

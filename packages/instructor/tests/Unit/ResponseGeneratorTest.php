@@ -17,8 +17,8 @@ use Cognesy\Utils\Result\Result;
 // Lightweight fakes for pipeline dependencies
 class FakeDeserializer extends ResponseDeserializer {
     public function __construct($events, $config) { parent::__construct($events, [], $config); }
-    public function deserialize(string $json, ResponseModel $responseModel, ?string $toolName = null) : Result {
-        return Result::success((object)['ok' => true, 'json' => $json]);
+    public function deserialize(string $text, ResponseModel $responseModel, ?string $toolName = null) : Result {
+        return Result::success((object)['ok' => true, 'json' => $text]);
     }
 }
 class FakeValidator extends ResponseValidator {

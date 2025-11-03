@@ -147,7 +147,10 @@ class RequestMaterializer implements CanMaterializeRequest
         $messages = [];
         /** @var StructuredOutputAttempt $attempt */
         foreach($execution->attempts() as $attempt) {
-            $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
+            $messages[] = [
+                'role' => 'assistant',
+                'content' => $attempt->inferenceResponse()?->content() ?? ''
+            ];
             $retryFeedback = $execution->config()->retryPrompt()
                 . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];

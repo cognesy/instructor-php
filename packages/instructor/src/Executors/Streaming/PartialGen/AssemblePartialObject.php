@@ -2,25 +2,20 @@
 
 namespace Cognesy\Instructor\Executors\Streaming\PartialGen;
 
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\PartialValidation;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
 final class AssemblePartialObject
 {
-    private PartialValidation $validation;
-
     public function __construct(
-        private ResponseDeserializer $deserializer,
-        private ResponseTransformer $transformer,
-        private PartialsGeneratorConfig $config,
-    ) {
-        $this->validation = new PartialValidation();
-    }
+        private CanDeserializeResponse $deserializer,
+        private CanValidatePartialResponse $validator,
+        private CanTransformResponse $transformer,
+    ) {}
 
     public function makeWith(
         PartialObject $state,
@@ -30,10 +25,9 @@ final class AssemblePartialObject
         $normalized = $partialJson->normalized();
 
         try {
-            $validationResult = $this->validation->validatePartialResponse(
+            $validationResult = $this->validator->validatePartialResponse(
                 $normalized,
                 $responseModel,
-                $this->config,
             );
         } catch (Throwable $e) {
             $failure = Result::failure($e->getMessage());
@@ -49,7 +43,7 @@ final class AssemblePartialObject
             return $state->with($state->hash(), null, $deserialized);
         }
 
-        $transformed = $this->transformer->transform($deserialized->unwrap());
+        $transformed = $this->transformer->transform($deserialized->unwrap(), $responseModel);
         if ($transformed->isFailure()) {
             return $state->with($state->hash(), null, $transformed);
         }

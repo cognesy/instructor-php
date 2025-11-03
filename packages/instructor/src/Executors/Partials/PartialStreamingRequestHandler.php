@@ -23,7 +23,7 @@ final class PartialStreamingRequestHandler implements CanExecuteStructuredOutput
     public function __construct(
         private readonly InferenceProvider $inferenceProvider,
         private readonly PartialStreamFactory $partials,
-        private readonly CanGenerateResponse $processor,
+        private readonly CanGenerateResponse $responseGenerator,
         private readonly RetryHandler $retryHandler,
     ) {}
 
@@ -72,7 +72,7 @@ final class PartialStreamingRequestHandler implements CanExecuteStructuredOutput
             }
 
             // Process final response for this attempt
-            $processingResult = $this->processor->makeResponse($finalInference, $responseModel, $mode);
+            $processingResult = $this->responseGenerator->makeResponse($finalInference, $responseModel, $mode);
 
             // On failure, record and prepare for retry
             if ($processingResult->isFailure()) {

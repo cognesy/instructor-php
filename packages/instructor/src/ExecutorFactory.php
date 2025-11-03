@@ -4,7 +4,6 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
@@ -13,28 +12,46 @@ use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\RetryHandler;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
 use Cognesy\Instructor\Executors\Partials\PartialStreamingRequestHandler;
 use Cognesy\Instructor\Executors\Streaming\PartialGen\GeneratePartialsFromJson;
 use Cognesy\Instructor\Executors\Streaming\PartialGen\GeneratePartialsFromToolCalls;
 use Cognesy\Instructor\Executors\Streaming\StreamingRequestHandler;
 use Cognesy\Instructor\Executors\Sync\SyncRequestHandler;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class ExecutorFactory
 {
+    private readonly LLMProvider $llmProvider;
+    private readonly CanDeserializeResponse $responseDeserializer;
+    private readonly CanValidateResponse $responseValidator;
+    private readonly CanValidatePartialResponse $partialResponseValidator;
+    private readonly CanTransformResponse $responseTransformer;
+    private readonly CanHandleEvents $events;
+    private readonly ?HttpClient $httpClient;
+
     public function __construct(
-        private readonly LLMProvider $llmProvider,
-        private readonly ResponseDeserializer $responseDeserializer,
-        private readonly ResponseValidator $responseValidator,
-        private readonly ResponseTransformer $responseTransformer,
-        private readonly CanHandleEvents $events,
-        private readonly ?HttpClient $httpClient = null,
-    ) {}
+        LLMProvider $llmProvider,
+        CanDeserializeResponse $responseDeserializer,
+        CanValidateResponse $responseValidator,
+        CanValidatePartialResponse $partialResponseValidator,
+        CanTransformResponse $responseTransformer,
+        CanHandleEvents $events,
+        ?HttpClient $httpClient = null,
+    ) {
+        $this->llmProvider = $llmProvider;
+        $this->responseDeserializer = $responseDeserializer;
+        $this->responseValidator = $responseValidator;
+        $this->partialResponseValidator = $partialResponseValidator;
+        $this->responseTransformer = $responseTransformer;
+        $this->events = $events;
+        $this->httpClient = $httpClient;
+    }
 
     public function makeExecutor(StructuredOutputExecution $execution) : CanExecuteStructuredOutput {
         return match(true) {
@@ -43,7 +60,6 @@ class ExecutorFactory
                 processor: $this->makeResponseProcessor(),
                 retryHandler: $this->makeRetryHandler(),
                 config: $execution->config(),
-                partialsConfig: new PartialsGeneratorConfig(),
             ),
             default => $this->makeSyncHandler(
                 inferenceProvider: $this->makeInferenceProvider(),
@@ -72,14 +88,12 @@ class ExecutorFactory
         CanGenerateResponse $processor,
         RetryHandler $retryHandler,
         StructuredOutputConfig $config,
-        PartialsGeneratorConfig $partialsConfig,
     ): CanExecuteStructuredOutput {
         return match($config->streamingDriver) {
             'partials' => $this->makeTransducerHandler(
                 inferenceProvider: $inferenceProvider,
                 processor: $processor,
                 retryHandler: $retryHandler,
-                config: $partialsConfig,
             ),
             'generator' => $this->makeGeneratorHandler(
                 inferenceProvider: $inferenceProvider,
@@ -99,11 +113,13 @@ class ExecutorFactory
         $partialsGenerator = match($config->outputMode()) {
             OutputMode::Tools => new GeneratePartialsFromToolCalls(
                 $this->responseDeserializer,
+                $this->partialResponseValidator,
                 $this->responseTransformer,
                 $this->events,
             ),
             default => new GeneratePartialsFromJson(
                 $this->responseDeserializer,
+                $this->partialResponseValidator,
                 $this->responseTransformer,
                 $this->events,
             ),
@@ -120,18 +136,17 @@ class ExecutorFactory
         InferenceProvider $inferenceProvider,
         CanGenerateResponse $processor,
         RetryHandler $retryHandler,
-        PartialsGeneratorConfig $config,
     ) : CanExecuteStructuredOutput {
         $partialsFactory = new PartialStreamFactory(
             deserializer: $this->responseDeserializer,
+            validator: $this->partialResponseValidator,
             transformer: $this->responseTransformer,
             events: $this->events,
-            config: $config,
         );
         return new PartialStreamingRequestHandler(
             inferenceProvider: $inferenceProvider,
             partials: $partialsFactory,
-            processor: $processor,
+            responseGenerator: $processor,
             retryHandler: $retryHandler,
         );
     }

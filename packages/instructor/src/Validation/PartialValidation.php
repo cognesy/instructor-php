@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Validation;
 
 use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Pipeline\Enums\ErrorStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
@@ -19,17 +20,24 @@ use Exception;
  * - prevent JSON Schema-shaped responses when strict JSON object data is expected
  * - ensure keys match expected ResponseModel (subset check, tolerant for partials)
  */
-class PartialValidation
+class PartialValidation implements CanValidatePartialResponse
 {
+    private PartialsGeneratorConfig $config;
+
+    public function __construct(
+        PartialsGeneratorConfig $config
+    ) {
+        $this->config = $config;
+    }
+
     public function validatePartialResponse(
         string $partialResponseText,
         ResponseModel $responseModel,
-        PartialsGeneratorConfig $config,
     ) : Result {
         return $this->makePartialValidationPipeline(
                 $partialResponseText,
                 $responseModel,
-                $config,
+                $this->config,
             )
             ->executeWith(ProcessingState::with($partialResponseText))
             ->result();

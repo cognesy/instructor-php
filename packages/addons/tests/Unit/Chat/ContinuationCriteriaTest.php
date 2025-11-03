@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Chat\Data\ChatState;
-use Cognesy\Addons\Chat\Data\Chat;
+use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
@@ -37,8 +37,8 @@ it('stops when steps limit reached', function () {
     $crit = new StepsLimit(2, fn(ChatState $s) => $s->steps()->count());
     expect($crit->canContinue($state))->toBeTrue();
     // simulate two steps
-    $state = $state->withAddedStep(new Chat('participant-a'));
-    $state = $state->withAddedStep(new Chat('participant-b'));
+    $state = $state->withAddedStep(new ChatStep('participant-a'));
+    $state = $state->withAddedStep(new ChatStep('participant-b'));
     expect($crit->canContinue($state))->toBeFalse();
 });
 

@@ -2,9 +2,8 @@
 
 namespace Cognesy\Instructor\Executors\Partials;
 
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Executors\Partials\ContentMode\AssembleJson;
 use Cognesy\Instructor\Executors\Partials\DeltaExtraction\ExtractDelta;
 use Cognesy\Instructor\Executors\Partials\EventDispatching\EventDispatchingStream;
@@ -14,7 +13,8 @@ use Cognesy\Instructor\Executors\Partials\PartialEmission\EnrichResponse;
 use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregateResponse;
 use Cognesy\Instructor\Executors\Partials\Sequence\UpdateSequence;
 use Cognesy\Instructor\Executors\Partials\ToolCallMode\HandleToolCallSignals;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Stream\Transformation;
 use Cognesy\Stream\TransformationStream;
@@ -26,12 +26,22 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class PartialStreamFactory
 {
+    private CanDeserializeResponse $deserializer;
+    private CanValidatePartialResponse $validator;
+    private CanTransformResponse $transformer;
+    private EventDispatcherInterface $events;
+
     public function __construct(
-        private ResponseDeserializer $deserializer,
-        private ResponseTransformer $transformer,
-        private EventDispatcherInterface $events,
-        private PartialsGeneratorConfig $config,
-    ) {}
+        CanDeserializeResponse $deserializer,
+        CanValidatePartialResponse $validator,
+        CanTransformResponse $transformer,
+        EventDispatcherInterface $events,
+    ) {
+        $this->deserializer = $deserializer;
+        $this->validator = $validator;
+        $this->transformer = $transformer;
+        $this->events = $events;
+    }
 
     // FACTORY METHODS /////////////////////////////////////////////////
 
@@ -110,8 +120,8 @@ final readonly class PartialStreamFactory
     private function createAssembler(): PartialAssembler {
         return new PartialAssembler(
             deserializer: $this->deserializer,
+            validator: $this->validator,
             transformer: $this->transformer,
-            config: $this->config,
         );
     }
 }

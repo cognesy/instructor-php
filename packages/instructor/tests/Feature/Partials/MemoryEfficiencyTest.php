@@ -10,6 +10,7 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
 use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregationState;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -70,6 +71,8 @@ beforeEach(function () {
         $this->config,
     );
 
+    $this->validator = new PartialValidation($this->partialsConfig);
+
     $this->transformer = new ResponseTransformer(
         events: $this->events,
         transformers: [],
@@ -78,9 +81,9 @@ beforeEach(function () {
 
     $this->factory = new PartialStreamFactory(
         deserializer: $this->deserializer,
+        validator: $this->validator,
         transformer: $this->transformer,
         events: $this->events,
-        config: $this->partialsConfig,
     );
 });
 

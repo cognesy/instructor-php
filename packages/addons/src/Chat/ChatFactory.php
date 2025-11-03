@@ -3,7 +3,6 @@
 namespace Cognesy\Addons\Chat;
 
 use Cognesy\Addons\Chat\Collections\Participants;
-use Cognesy\Addons\Chat\Data\Chat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Selectors\RoundRobin\RoundRobinSelector;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;

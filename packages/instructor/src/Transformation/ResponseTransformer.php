@@ -2,20 +2,20 @@
 namespace Cognesy\Instructor\Transformation;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Response\ResponseTransformationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Transformation\Exceptions\ResponseTransformationException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class ResponseTransformer
+class ResponseTransformer implements CanTransformResponse
 {
-    use Traits\ResponseTransformer\HandlesMutation;
-
     public function __construct(
         private EventDispatcherInterface $events,
         /** @var array<CanTransformData|class-string<CanTransformData>> $transformers */
@@ -23,11 +23,23 @@ class ResponseTransformer
         private StructuredOutputConfig $config,
     ) {}
 
-    public function transform(mixed $data) : Result {
+    public function transform(mixed $data, ResponseModel $responseModel) : Result {
         return match(true) {
             $data instanceof CanTransformSelf => $this->transformSelf($data),
             default => $this->transformData($data),
         };
+    }
+
+    /** @param CanTransformData[] $transformers */
+    public function appendTransformers(array $transformers) : self {
+        $this->transformers = array_merge($this->transformers, $transformers);
+        return $this;
+    }
+
+    /** @param CanTransformData[] $transformers */
+    public function setTransformers(array $transformers) : self {
+        $this->transformers = $transformers;
+        return $this;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
