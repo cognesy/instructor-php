@@ -179,7 +179,7 @@ class StructuredOutputStream
      */
     private function streamResponses(): Generator {
         /** @var StructuredOutputExecution $execution */
-        foreach ($this->stream as $execution) {
+        foreach ($this->getStream($this->execution) as $execution) {
             $response = $execution->inferenceResponse();
             if ($response === null) {
                 continue;

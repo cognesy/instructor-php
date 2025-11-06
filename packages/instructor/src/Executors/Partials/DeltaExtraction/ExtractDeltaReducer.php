@@ -22,16 +22,14 @@ class ExtractDeltaReducer implements Reducer
             default => $reducible->contentDelta,
         };
 
-        // Forward when there is something meaningful to observe:
-        // - non-empty delta
-        // - OR finish signal
-        // - OR driver-provided value (pre-deserialized)
-        if ($delta === '' && $reducible->finishReason === '' && !$reducible->hasValue()) {
+        if ($this->shouldSkip($reducible, $delta)) {
             return $accumulator;
         }
 
-        $context = PartialProcessingState::fromResponse($reducible)->withDelta($delta);
-        return $this->inner->step($accumulator, $context);
+        return $this->inner->step(
+            accumulator: $accumulator,
+            reducible: PartialProcessingState::fromResponse($reducible)->withDelta($delta),
+        );
     }
 
     #[\Override]
@@ -42,5 +40,13 @@ class ExtractDeltaReducer implements Reducer
     #[\Override]
     public function complete(mixed $accumulator): mixed {
         return $this->inner->complete($accumulator);
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////
+
+    private function shouldSkip(PartialInferenceResponse $reducible, string $delta) : bool {
+        return $delta === ''
+            && $reducible->finishReason === ''
+            && !$reducible->hasValue();
     }
 }

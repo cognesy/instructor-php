@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Executors\Partials\EventDispatching;
+namespace Cognesy\Instructor\Executors\Partials;
 
 use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;

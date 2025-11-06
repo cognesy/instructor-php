@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Executors\Partials\ContentMode;
+namespace Cognesy\Instructor\Executors\Partials\JsonMode;
 
 use Cognesy\Instructor\Executors\Partials\DeltaExtraction\PartialProcessingState;
 use Cognesy\Stream\Contracts\Reducer;
@@ -12,12 +12,12 @@ class AssembleJsonReducer implements Reducer
     public function __construct(
         private Reducer $inner,
     ) {
-        $this->state = PartialJson::start();
+        $this->state = PartialJson::initial();
     }
 
     #[\Override]
     public function init(): mixed {
-        $this->state = PartialJson::start();
+        $this->state = PartialJson::initial();
         return $this->inner->init();
     }
 

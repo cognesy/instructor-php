@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Executors\Partials\DeltaExtraction;
 
-use Cognesy\Instructor\Executors\Partials\ContentMode\PartialJson;
+use Cognesy\Instructor\Executors\Partials\JsonMode\PartialJson;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Throwable;
 
@@ -36,14 +36,6 @@ final readonly class PartialProcessingState
         return new self(response: $response);
     }
 
-    public static function error(PartialInferenceResponse $response, string|Throwable $message): self {
-        return new self(
-            response: $response,
-            isError: true,
-            errorMessage: $message instanceof Throwable ? $message->getMessage() : $message,
-        );
-    }
-
     // ACCESSORS /////////////////////////////////////////////////////
 
     public function hasJson(): bool {
@@ -68,7 +60,7 @@ final readonly class PartialProcessingState
         return $this->with(object: $object);
     }
 
-    public function markForEmit(): self {
+    public function markForEmission(): self {
         return $this->with(shouldEmit: true);
     }
 

@@ -4,9 +4,8 @@ namespace Cognesy\Instructor\Executors\Partials;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\Executors\Partials\ContentMode\AssembleJson;
 use Cognesy\Instructor\Executors\Partials\DeltaExtraction\ExtractDelta;
-use Cognesy\Instructor\Executors\Partials\EventDispatching\EventDispatchingStream;
+use Cognesy\Instructor\Executors\Partials\JsonMode\AssembleJson;
 use Cognesy\Instructor\Executors\Partials\PartialCreation\DeserializeAndDeduplicate;
 use Cognesy\Instructor\Executors\Partials\PartialCreation\PartialAssembler;
 use Cognesy\Instructor\Executors\Partials\PartialEmission\EnrichResponse;

@@ -60,7 +60,7 @@ class DeserializeAndDeduplicateReducer implements Reducer
         // Success - mark for emission
         return $this->inner->step($accumulator, $reducible
             ->withObject($emittable)
-            ->markForEmit(),
+            ->markForEmission(),
         );
     }
 

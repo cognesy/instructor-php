@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Executors\Partials\PartialCreation;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\Executors\Partials\ContentMode\PartialJson;
+use Cognesy\Instructor\Executors\Partials\JsonMode\PartialJson;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Utils\Result\Result;

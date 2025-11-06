@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Executors\Partials\ContentMode\AssembleJsonReducer;
-use Cognesy\Instructor\Executors\Partials\ContentMode\PartialJson;
 use Cognesy\Instructor\Executors\Partials\DeltaExtraction\PartialProcessingState;
+use Cognesy\Instructor\Executors\Partials\JsonMode\AssembleJsonReducer;
+use Cognesy\Instructor\Executors\Partials\JsonMode\PartialJson;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Stream\Contracts\Reducer;

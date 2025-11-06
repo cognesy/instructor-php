@@ -117,6 +117,7 @@
     "monolog/monolog": "^3.0",
     "nikic/iter": "^2.4",
     "pestphp/pest": "^2.0",
+    "phpbench/phpbench": "^1.4",
     "phpstan/phpstan": "^1.11",
     "phpstan/phpstan-strict-rules": "^1.6",
     "psr/http-factory-implementation": "*",

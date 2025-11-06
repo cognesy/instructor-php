@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Executors\Partials\ContentMode;
+namespace Cognesy\Instructor\Executors\Partials\JsonMode;
 
 use Cognesy\Utils\Json\Json;
 
@@ -11,9 +11,13 @@ final class PartialJson
         private string $normalized
     ) {}
 
-    public static function start(): self {
+    // CONSTRUCTORS ////////////////////////////////////////////////////////////////
+
+    public static function initial(): self {
         return new self('', '');
     }
+
+    // MUTATORS ////////////////////////////////////////////////////////////////////
 
     public function assemble(string $delta): self {
         if (trim($delta) === '') {
@@ -21,6 +25,8 @@ final class PartialJson
         }
         return $this->appendChunk($delta);
     }
+
+    // ACCESSORS ///////////////////////////////////////////////////////////////////
 
     public function raw(): string {
         return $this->raw;
@@ -38,9 +44,11 @@ final class PartialJson
         return $this->normalized === $partialJson->normalized;
     }
 
-    public function finalized(): string {
-        return Json::fromString($this->raw)->toString();
-    }
+//    public function finalized(): string {
+//        return Json::fromString($this->raw)->toString();
+//    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////////
 
     private function appendChunk(string $delta): self {
         $raw = $this->raw . $delta;

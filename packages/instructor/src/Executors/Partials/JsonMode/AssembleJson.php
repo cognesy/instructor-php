@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Executors\Partials\ContentMode;
+namespace Cognesy\Instructor\Executors\Partials\JsonMode;
 
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Stream\Contracts\Transducer;
