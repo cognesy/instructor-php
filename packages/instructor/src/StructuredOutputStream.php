@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
+use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
@@ -21,7 +21,7 @@ use RuntimeException;
  */
 class StructuredOutputStream
 {
-    private CanExecuteStructuredOutput $requestHandler;
+    private CanHandleStructuredOutputAttempts $attemptHandler;
     private EventDispatcherInterface $events;
 
     private Generator $stream;
@@ -38,13 +38,13 @@ class StructuredOutputStream
      */
     public function __construct(
         StructuredOutputExecution $execution,
-        CanExecuteStructuredOutput $requestHandler,
+        CanHandleStructuredOutputAttempts $attemptHandler,
         EventDispatcherInterface $events,
     ) {
         $this->cacheProcessedResponse = true;
 
         $this->execution = $execution;
-        $this->requestHandler = $requestHandler;
+        $this->attemptHandler = $attemptHandler;
         $this->events = $events;
         $this->stream = $this->getStream($execution);
     }
@@ -214,15 +214,11 @@ class StructuredOutputStream
      * @return Generator<StructuredOutputExecution>
      */
     private function streamWithoutCaching(StructuredOutputExecution $execution): Generator {
-        $executionUpdates = $this->requestHandler->nextUpdate($execution);
-        $last = null;
-        foreach ($executionUpdates as $chunk) {
-            $last = $chunk;
-            yield $chunk;
+        while ($this->attemptHandler->hasNext($execution)) {
+            $execution = $this->attemptHandler->nextUpdate($execution);
+            yield $execution;
         }
-        if ($last !== null) {
-            $this->execution = $last;
-        }
+        $this->execution = $execution;
     }
 
     /**
@@ -245,15 +241,11 @@ class StructuredOutputStream
      */
     private function buildAndCacheStream(StructuredOutputExecution $execution): Generator {
         $this->cachedResponseStream = [];
-        $executionUpdates = $this->requestHandler->nextUpdate($execution);
-        $last = null;
-        foreach ($executionUpdates as $chunk) {
-            $this->cachedResponseStream[] = $chunk;
-            $last = $chunk;
-            yield $chunk;
+        while ($this->attemptHandler->hasNext($execution)) {
+            $execution = $this->attemptHandler->nextUpdate($execution);
+            $this->cachedResponseStream[] = $execution;
+            yield $execution;
         }
-        if ($last !== null) {
-            $this->execution = $last;
-        }
+        $this->execution = $execution;
     }
 }

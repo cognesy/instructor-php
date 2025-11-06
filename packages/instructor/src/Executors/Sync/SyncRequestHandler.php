@@ -10,7 +10,17 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Utils\Result\Result;
 use Generator;
+use JetBrains\PhpStorm\Deprecated;
 
+/**
+ * @deprecated Replaced by SyncUpdateGenerator + AttemptIterator pattern.
+ * This handler embeds retry logic, which is now extracted to AttemptIterator + DefaultRetryPolicy.
+ * Will be removed in future version after refactoring is complete and tested.
+ */
+#[Deprecated(
+    reason: 'Use SyncUpdateGenerator + AttemptIterator instead',
+    replacement: '%class%\\Executors\\Sync\\SyncUpdateGenerator with Core\\AttemptIterator'
+)]
 class SyncRequestHandler implements CanExecuteStructuredOutput
 {
     private ResponseNormalizer $normalizer;

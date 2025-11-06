@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
+use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
@@ -20,7 +20,7 @@ class PendingStructuredOutput
     use HandlesResultTypecasting;
 
     private readonly CanHandleEvents $events;
-    private readonly CanExecuteStructuredOutput $requestHandler;
+    private readonly CanHandleStructuredOutputAttempts $attemptHandler;
     private readonly ExecutorFactory $executorFactory;
     private StructuredOutputExecution $execution;
     private readonly bool $cacheProcessedResponse;
@@ -34,7 +34,7 @@ class PendingStructuredOutput
         $this->cacheProcessedResponse = true;
         $this->execution = $execution;
         $this->executorFactory = $executorFactory;
-        $this->requestHandler = $executorFactory->makeExecutor($execution);
+        $this->attemptHandler = $executorFactory->makeExecutor($execution);
         $this->events = $events;
     }
 
@@ -94,8 +94,8 @@ class PendingStructuredOutput
 
         // RESPONSE CACHING = IS DISABLED
         if (!$this->cacheProcessedResponse) {
-            foreach ($this->requestHandler->nextUpdate($this->execution) as $exec) {
-                $this->execution = $exec;
+            while ($this->attemptHandler->hasNext($this->execution)) {
+                $this->execution = $this->attemptHandler->nextUpdate($this->execution);
             }
             $response = $this->execution->inferenceResponse();
             if ($response === null) {
@@ -107,8 +107,8 @@ class PendingStructuredOutput
 
         // RESPONSE CACHING = IS ENABLED
         if ($this->cachedResponse === null) {
-            foreach ($this->requestHandler->nextUpdate($this->execution) as $exec) {
-                $this->execution = $exec;
+            while ($this->attemptHandler->hasNext($this->execution)) {
+                $this->execution = $this->attemptHandler->nextUpdate($this->execution);
             }
             $this->cachedResponse = $this->execution->inferenceResponse();
             if ($this->cachedResponse === null) {

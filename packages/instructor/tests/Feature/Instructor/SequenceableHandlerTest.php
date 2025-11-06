@@ -30,17 +30,6 @@ function createStreamingGenerator(array $chunks): Generator {
     }
 }
 
-function makeResponseModel($sequence): ResponseModel {
-    $config = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory(useObjectReferences: $config->useObjectReferences());
-    $events = new EventDispatcher();
-    return (new ResponseModelFactory(
-        toolCallBuilder: new ToolCallBuilder($schemaFactory),
-        schemaFactory: $schemaFactory,
-        config: $config,
-        events: $events,
-    ))->fromAny($sequence);
-}
 
 beforeEach(function () {
     $this->events = Mockery::mock(EventDispatcher::class);
@@ -78,7 +67,7 @@ test('processes content streamed character by character', function() {
     $chunks = str_split($jsonString);
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $updates = [];
     $this->events->shouldReceive('dispatch')
@@ -123,7 +112,7 @@ test('processes multiple items per chunk', function() {
     ];
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $updates = [];
     $this->events->shouldReceive('dispatch')
@@ -172,7 +161,7 @@ test('processes streaming markdown with json into sequence correctly', function 
 
     // Set up response model for a sequence of SimpleItem
     $sequence = Sequence::of(SimpleItem::class, 'TestSequence', 'A test sequence');
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     // Track sequence updates
     $updates = [];
@@ -211,7 +200,7 @@ test('processes streaming markdown with json into sequence correctly', function 
 //    ];
 //
 //    $sequence = Sequence::of(SimpleItem::class, 'TestSequence', 'A test sequence');
-//    $responseModel = makeResponseModel($sequence);
+//    $responseModel = makeAnyResponseModel($sequence);
 //
 //    $updates = [];
 //    $this->events->shouldReceive('dispatch')
@@ -248,7 +237,7 @@ test('handles malformed json in stream gracefully', function () {
     ];
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $updates = [];
     $this->events->shouldReceive('dispatch')
@@ -279,7 +268,7 @@ test('processes concatenated json blocks in markdown stream', function () {
     ];
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $updates = [];
     $this->events->shouldReceive('dispatch')
@@ -315,7 +304,7 @@ test('handles empty and whitespace chunks in stream', function () {
     ];
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $updates = [];
     $this->events->shouldReceive('dispatch')
@@ -346,7 +335,7 @@ test('processes multiple items arriving in single chunk', function() {
     ];
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $dispatchCount = 0;
     $updates = [];
@@ -388,7 +377,7 @@ test('processes items arriving across multiple chunks', function() {
     ];
 
     $sequence = Sequence::of(SimpleItem::class);
-    $responseModel = makeResponseModel($sequence);
+    $responseModel = makeAnyResponseModel($sequence);
 
     $updates = [];
     $this->events->shouldReceive('dispatch')

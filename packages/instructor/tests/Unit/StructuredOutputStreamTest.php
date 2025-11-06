@@ -4,9 +4,8 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Instructor\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
-require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
 
 class StreamUserStruct { public int $age; public string $name; }
 

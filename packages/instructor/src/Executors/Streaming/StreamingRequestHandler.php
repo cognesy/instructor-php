@@ -13,13 +13,23 @@ use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
 use Generator;
+use JetBrains\PhpStorm\Deprecated;
 
+/**
+ * @deprecated Replaced by StreamingUpdatesGenerator + AttemptIterator pattern.
+ * This handler embeds retry logic, which is now extracted to AttemptIterator + DefaultRetryPolicy.
+ * Will be removed in future version after refactoring is complete and tested.
+ */
+#[Deprecated(
+    reason: 'Use StreamingUpdatesGenerator + AttemptIterator instead',
+    replacement: '%class%\\Executors\\Streaming\\StreamingUpdatesGenerator with Core\\AttemptIterator'
+)]
 class StreamingRequestHandler implements CanExecuteStructuredOutput
 {
     public function __construct(
         private InferenceProvider $inferenceProvider,
         private CanGeneratePartials $partialsGenerator,
-        private CanGenerateResponse $processor,
+        private CanGenerateResponse $responseGenerator,
         private RetryHandler $retryHandler,
     ) {}
 
@@ -61,7 +71,7 @@ class StreamingRequestHandler implements CanExecuteStructuredOutput
             // Validate final response
             //$partialResponses = $this->partialsGenerator->partialResponses();
             $inferenceResponse = InferenceResponseFactory::fromPartialResponses($partialResponses);
-            $processingResult = $this->processor->process($inferenceResponse, $responseModel, $execution->outputMode());
+            $processingResult = $this->responseGenerator->makeResponse($inferenceResponse, $responseModel, $execution->outputMode());
 
             // Handle validation errors
             if ($processingResult->isFailure()) {

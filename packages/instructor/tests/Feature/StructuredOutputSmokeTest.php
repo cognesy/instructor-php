@@ -9,7 +9,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Instructor\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 // Simple DTOs
 class SmokeUser { public int $age; public string $name; }

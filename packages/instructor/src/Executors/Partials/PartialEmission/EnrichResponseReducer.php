@@ -27,7 +27,10 @@ class EnrichResponseReducer implements Reducer
                 cacheReadTokens: $u->cacheReadTokens,
                 reasoningTokens: $u->reasoningTokens,
             );
-            $forward = $reducible->response->with(usage: $forwardUsage)->withValue($reducible->response->value());
+            $forward = $reducible->response
+                ->with(usage: $forwardUsage)
+                ->withValue($reducible->response->value())
+                ->withContent($reducible->json?->raw() ?? ''); // IMPORTANT: Set accumulated content
             return $this->inner->step($accumulator, $forward);
         }
 

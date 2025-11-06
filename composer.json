@@ -86,7 +86,8 @@
     },
     "files": [
       "packages/addons/tests/Examples/Call/test_functions.php",
-      "packages/instructor/tests/Examples/Call/test_functions.php"
+      "packages/instructor/tests/Examples/Call/test_functions.php",
+      "packages/instructor/tests/Support/TestHelpers.php"
     ]
   },
   "authors": [

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
+use Cognesy\Instructor\Data\StructuredOutputAttempt;
+use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution as PgExec;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest as PgReq;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse as PgResp;
@@ -21,7 +21,7 @@ it('reports success for latest finalized attempt (instructor)', function () {
     );
 
     expect($exec->isSuccessful())->toBeTrue()
-        ->and($exec->isFailedFinal())->toBeFalse()
+        ->and($exec->isFinalFailed())->toBeFalse()
         ->and($exec->errors())->toBe([])
         ->and($exec->currentErrors())->toBe([]);
 });
@@ -39,7 +39,7 @@ it('reports failure for latest finalized attempt (instructor)', function () {
     );
 
     expect($exec->isSuccessful())->toBeFalse()
-        ->and($exec->isFailedFinal())->toBeTrue()
+        ->and($exec->isFinalFailed())->toBeTrue()
         ->and($exec->errors())->not()->toBe([]);
 });
 
@@ -56,5 +56,5 @@ it('aggregates current errors and exposes currentErrors() (instructor)', functio
     expect($exec->currentErrors())->toBe(['e1'])
         ->and($exec->errors())->toBe(['e1'])
         ->and($exec->isSuccessful())->toBeFalse()
-        ->and($exec->isFailedFinal())->toBeFalse();
+        ->and($exec->isFinalFailed())->toBeFalse();
 });

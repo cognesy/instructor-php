@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
-use Cognesy\Instructor\Contracts\CanExecuteStructuredOutput;
+use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutputStream;
@@ -11,11 +11,28 @@ use Tests\Instructor\Support\TestEventDispatcher;
 
 require_once __DIR__ . '/../Support/TestEventDispatcher.php';
 
-// Minimal stub to feed a predefined generator of execution updates
-class FakeRequestHandlerForSequence implements CanExecuteStructuredOutput {
+// Minimal stub to feed a predefined sequence of execution updates
+class FakeAttemptHandlerForSequence implements CanHandleStructuredOutputAttempts {
     private \Generator $gen;
+    private bool $started = false;
+
     public function __construct(\Generator $gen) { $this->gen = $gen; }
-    public function nextUpdate(StructuredOutputExecution $execution): \Generator { yield from $this->gen; }
+
+    public function hasNext(StructuredOutputExecution $execution): bool {
+        if (!$this->started) {
+            return true;
+        }
+        return $this->gen->valid();
+    }
+
+    public function nextUpdate(StructuredOutputExecution $execution): StructuredOutputExecution {
+        if (!$this->started) {
+            $this->started = true;
+        }
+        $current = $this->gen->current();
+        $this->gen->next();
+        return $current;
+    }
 }
 
 it('yields sequence updates only when new items complete and dispatches events', function () {
@@ -71,7 +88,7 @@ it('yields sequence updates only when new items complete and dispatches events',
         );
     })();
 
-    $handler = new FakeRequestHandlerForSequence($generator);
+    $handler = new FakeAttemptHandlerForSequence($generator);
     $stream = new StructuredOutputStream($initial, $handler, $dispatcher);
 
     $updates = iterator_to_array($stream->sequence());

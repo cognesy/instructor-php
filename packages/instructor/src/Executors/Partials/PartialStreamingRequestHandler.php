@@ -12,12 +12,21 @@ use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Utils\Result\Result;
 use Generator;
+use JetBrains\PhpStorm\Deprecated;
 
 /**
+ * @deprecated Replaced by PartialStreamingUpdateGenerator + AttemptIterator pattern.
+ * This handler embeds retry logic, which is now extracted to AttemptIterator + DefaultRetryPolicy.
+ * Will be removed in future version after refactoring is complete and tested.
+ *
  * Streams LLM responses using the new Partials pipeline.
  * Bridges InferenceProvider with PartialStreamFactory and yields
  * StructuredOutputExecution updates compatible with existing consumers.
  */
+#[Deprecated(
+    reason: 'Use PartialStreamingUpdateGenerator + AttemptIterator instead',
+    replacement: '%class%\\Executors\\Partials\\PartialStreamingUpdateGenerator with Core\\AttemptIterator'
+)]
 final class PartialStreamingRequestHandler implements CanExecuteStructuredOutput
 {
     public function __construct(
@@ -27,6 +36,7 @@ final class PartialStreamingRequestHandler implements CanExecuteStructuredOutput
         private readonly RetryHandler $retryHandler,
     ) {}
 
+    /** @return Generator<StructuredOutputExecution> **/
     #[\Override]
     public function nextUpdate(StructuredOutputExecution $execution): Generator {
         $responseModel = $execution->responseModel();

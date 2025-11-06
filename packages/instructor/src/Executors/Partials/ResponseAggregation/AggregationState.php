@@ -6,6 +6,7 @@ use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Json\Json;
 
 /**
  * Rolling aggregate that maintains summary state without storing all partials.
@@ -78,7 +79,7 @@ final readonly class AggregationState
         // operate on content to succeed.
         $content = $this->content;
         if ($content === '' && $this->latestValue !== null) {
-            $content = \Cognesy\Utils\Json\Json::encode($this->latestValue);
+            $content = Json::encode($this->latestValue);
         }
 
         return new InferenceResponse(

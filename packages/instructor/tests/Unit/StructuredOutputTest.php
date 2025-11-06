@@ -5,9 +5,8 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Instructor\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
-require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
 
 // Simple response class for deserialization
 class TestUserStruct {
