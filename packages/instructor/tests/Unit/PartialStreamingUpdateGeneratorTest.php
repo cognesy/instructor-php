@@ -136,7 +136,7 @@ it('processes streaming chunks sequentially', function () {
     // Last update should have exhausted stream
     $lastUpdate = end($updates);
     expect($lastUpdate->attemptState())->not->toBeNull();
-    expect($lastUpdate->attemptState()->isStreamExhausted())->toBeTrue();
+    expect($lastUpdate->attemptState()->hasMoreChunks())->toBeFalse();
 });
 
 it('preserves attempt identity across chunks', function () {

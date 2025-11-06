@@ -43,15 +43,15 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
         }
 
         // Already made request - no more updates (sync = single chunk)
-        return !$state->isStreamExhausted();
+        return $state->hasMoreChunks();
     }
 
     #[\Override]
     public function nextChunk(StructuredOutputExecution $execution): StructuredOutputExecution {
         $state = $execution->attemptState();
 
-        // Should not be called if already exhausted within the same attempt
-        if ($state !== null && $state->isStreamExhausted()) {
+        // Should not be called if no more chunks within the same attempt
+        if ($state !== null && !$state->hasMoreChunks()) {
             return $execution;
         }
 

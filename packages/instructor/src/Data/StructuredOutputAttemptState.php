@@ -91,10 +91,6 @@ final readonly class StructuredOutputAttemptState
         return $this->partialIndex;
     }
 
-    public function isStreamExhausted(): bool {
-        return $this->streamExhausted;
-    }
-
     public function lastInference(): ?InferenceResponse {
         return $this->lastInference;
     }

@@ -328,7 +328,7 @@ it('hasNext returns false when execution is finalized', function () {
     expect($execution->isFinalized())->toBeTrue();
 });
 
-it('clears streaming state between attempts', function () {
+it('clears attempt state between attempts', function () {
     // First attempt fails, second succeeds
     $driver = new FakeInferenceDriver(
         streamBatches: [
@@ -391,8 +391,8 @@ it('clears streaming state between attempts', function () {
         $stateTransitions[] = $execution->isCurrentlyStreaming() ? 'streaming' : 'not-streaming';
     }
 
-    // Should see pattern: streaming → not-streaming (after first attempt fails)
-    // → streaming again (second attempt starts) → not-streaming (finalized)
+    // Should see pattern: attempt-active → not-active (after first attempt fails)
+    // → attempt-active again (second attempt starts) → not-active (finalized)
     expect($stateTransitions)->toContain('streaming');
     expect($stateTransitions)->toContain('not-streaming');
 });

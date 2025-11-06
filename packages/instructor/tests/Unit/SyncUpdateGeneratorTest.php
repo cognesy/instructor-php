@@ -57,7 +57,7 @@ it('makes single inference request and marks as exhausted', function () {
             config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)
         );
 
-    // Before first call: hasNext is true, no streaming state
+    // Before first call: hasNext is true, no attempt state
     expect($generator->hasNext($execution))->toBeTrue();
     expect($execution->attemptState())->toBeNull();
 
@@ -65,7 +65,7 @@ it('makes single inference request and marks as exhausted', function () {
     $updated = $generator->nextChunk($execution);
 
     expect($updated->attemptState())->not->toBeNull();
-    expect($updated->attemptState()->isStreamExhausted())->toBeTrue();
+    expect($updated->attemptState()->hasMoreChunks())->toBeFalse();
     expect($updated->isCurrentlyStreaming())->toBeFalse();
     expect($updated->inferenceResponse())->not->toBeNull();
     expect($updated->inferenceResponse()->content())->toBe('{"name":"Alice","age":30}');
@@ -105,7 +105,7 @@ it('returns single chunk with empty partials list', function () {
 
     $updated = $generator->nextChunk($execution);
 
-    // Sync execution has no partials (check streaming state has empty partials)
+    // Sync execution has no partials (check attempt state has empty partials)
     expect($updated->attemptState())->not->toBeNull();
     expect($updated->attemptState()->accumulatedPartials())->toBeEmpty();
     expect($updated->inferenceResponse())->not->toBeNull();
