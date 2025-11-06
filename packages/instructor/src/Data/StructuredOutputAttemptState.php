@@ -63,6 +63,22 @@ final readonly class StructuredOutputAttemptState
         );
     }
 
+    /**
+     * Factory for a single-chunk (sync) attempt state:
+     * - Sets phase to provided value (default Done)
+     * - Records the single inference and partials
+     * - Marks as exhausted to indicate no more chunks in this attempt
+     */
+    public static function fromSingleChunk(
+        InferenceResponse $inference,
+        PartialInferenceResponseList $partials,
+        AttemptPhase $phase = AttemptPhase::Done,
+    ): self {
+        return self::empty()
+            ->withPhase($phase)
+            ->withNextChunk($inference, $partials, true);
+    }
+
     public function attemptPhase(): AttemptPhase {
         return $this->attemptPhase;
     }

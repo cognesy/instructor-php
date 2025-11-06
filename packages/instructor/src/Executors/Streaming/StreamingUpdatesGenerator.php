@@ -109,7 +109,6 @@ final readonly class StreamingUpdatesGenerator implements CanStreamStructuredOut
         $stream->next();
 
         // Check if stream is exhausted AFTER advancing (on same iterator instance)
-        // IMPORTANT: Cannot call getIterator() again - generators can't be rewound!
         $isExhausted = !$stream->valid();
 
         // Accumulate partials

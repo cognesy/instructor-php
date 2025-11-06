@@ -126,10 +126,11 @@ final class ToolCallStreamState
 
     // Handle a new tool signal: finalize current (if args present) and start a new active tool
     public function handleSignal(string $signaledName): self {
-        // If duplicate start without any args yet, ignore
-        if ($this->hasActive() && $this->rawArgs === '' && $this->activeName === $signaledName) {
+        // If signal refers to the same active tool, keep buffering (do not finalize)
+        if ($this->hasActive() && $this->activeName === $signaledName) {
             return $this->with(toolCalls: $this->toolCalls, requiresBufferReset: false, activeName: $this->activeName, rawArgs: $this->rawArgs);
         }
+        // Switching to a different tool: finalize current (if any), then start new
         $state = $this;
         if ($state->hasActive() && $state->rawArgs !== '') {
             $state = $state->finalizeActive();

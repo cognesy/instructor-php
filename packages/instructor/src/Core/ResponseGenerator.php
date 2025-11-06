@@ -33,6 +33,10 @@ class ResponseGenerator implements CanGenerateResponse
 
     #[\Override]
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
+        // Fast-path: if a fully processed value is already present, accept it.
+        if ($response->hasValue()) {
+            return Result::success($response->value());
+        }
         $pipeline = $this->makeResponsePipeline($responseModel);
         $json = $response->findJsonData($mode)->toString();
         return $pipeline->executeWith(ProcessingState::with($json))->result();

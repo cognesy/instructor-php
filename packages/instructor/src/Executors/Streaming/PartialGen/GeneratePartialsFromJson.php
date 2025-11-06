@@ -55,6 +55,17 @@ class GeneratePartialsFromJson implements CanGeneratePartials
             $this->events->dispatch(new StreamedResponseReceived(['partial' => $partialResponse->toArray()]));
             $lastPartial = $partialResponse;
 
+            // Pass-through for pre-valued partials (e.g., tests providing emittable snapshots)
+            if ($partialResponse->hasValue()) {
+                $emittable = $partialResponse->value();
+                $this->events->dispatch(new PartialResponseGenerated($emittable));
+                if ($emittable instanceof Sequenceable) {
+                    $sequenceableHandler->update($emittable);
+                }
+                yield $partialResponse; // value already set upstream
+                continue;
+            }
+
             // Content mode
             $delta = $partialResponse->contentDelta;
             if ($delta === '') {

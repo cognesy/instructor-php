@@ -41,7 +41,7 @@ $response2 = $inference->with(
 
 echo "Response 2: " . $response2->content() . "\n";
 echo "Tokens from cache: " . $response2->usage()->cacheReadTokens . "\n";
-// @doctest id="88af"
+// @doctest id="7b63"
 ```
 
 ### Provider Support for Context Caching
@@ -90,5 +90,5 @@ foreach ($questions as $index => $question) {
     echo "Answer: " . $response->content() . "\n";
     echo "Tokens from cache: " . $response->usage()->cacheReadTokens . "\n\n";
 }
-// @doctest id="461b"
+// @doctest id="a35b"
 ```

@@ -117,12 +117,18 @@ final readonly class StructuredOutputExecution
     }
 
     /**
-     * Check if execution is currently in active streaming state.
+     * Check if there is an active attempt in progress (sync or streaming).
      */
-    public function isCurrentlyStreaming(): bool {
+    public function isAttemptActive(): bool {
         return $this->attemptState !== null
             && $this->attemptState->hasMoreChunks();
     }
+
+    /**
+     * Backward-compat alias for older code/tests.
+     * Prefer isAttemptActive().
+     */
+    public function isCurrentlyStreaming(): bool { return $this->isAttemptActive(); }
 
     public function usage(): \Cognesy\Polyglot\Inference\Data\Usage {
         $usage = $this->attempts->usage();

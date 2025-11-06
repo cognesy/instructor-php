@@ -62,10 +62,11 @@ class PartialJsonParser
                 if ($this->onExtraToken !== null && $reminding && !$this->skipExtraTokens) {
                     ($this->onExtraToken)($json, $data, $reminding);
                 }
-                return match(true) {
-                    is_string($data) => [],
-                    default => $data,
-                };
+                // Ensure we only return array|object to satisfy the return type
+                if (is_array($data) || is_object($data)) {
+                    return $data;
+                }
+                return [];
             } catch (Exception $e) {
                 throw new JsonParsingException('Unexpected error: ' . $e->getMessage());
             }

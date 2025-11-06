@@ -15,7 +15,7 @@ This document provides a step-by-step refactoring plan to achieve the target arc
 - [x] Attempt orchestrator created (`AttemptIterator`)
 - [x] Default retry policy created (`DefaultRetryPolicy`)
 - [x] Adapter in place (`IterativeToGeneratorAdapter`)
-- [x] Streaming state infrastructure (`StructuredOutputStreamingState`)
+- [x] Attempt state infrastructure (`StructuredOutputAttemptState`)
 
 ## Phase 1: Foundation (NEW WORK)
 
@@ -79,18 +79,15 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
         // Make single synchronous inference request
         $inference = $this->inferenceProvider->getInference($execution)->response();
 
-        // Create streaming state marked as exhausted (single chunk pattern)
-        $streamingState = StructuredOutputAttemptState::empty()
-            ->withPhase(AttemptPhase::Done)
-            ->withNextChunk(
-                inference: $inference,
-                partials: PartialInferenceResponseList::empty(),
-                exhausted: true,
-            );
+        // Create attempt state marked as exhausted (single chunk pattern)
+        $attemptState = StructuredOutputAttemptState::fromSingleChunk(
+            inference: $inference,
+            partials: PartialInferenceResponseList::empty(),
+        );
 
         // Update execution with inference and mark stream exhausted
         return $execution
-            ->withAttemptState($streamingState)
+            ->withAttemptState($attemptState)
             ->withCurrentAttempt(
                 inferenceResponse: $inference,
                 partialInferenceResponses: PartialInferenceResponseList::empty(),

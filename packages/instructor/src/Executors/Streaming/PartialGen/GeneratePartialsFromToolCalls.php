@@ -63,6 +63,17 @@ class GeneratePartialsFromToolCalls implements CanGeneratePartials
             $this->events->dispatch(new StreamedResponseReceived(['partial' => $partialResponse->toArray()]));
             $lastPartial = $partialResponse;
 
+            // Pass-through for pre-valued partials (e.g., tests providing emittable snapshots)
+            if ($partialResponse->hasValue()) {
+                $emittable = $partialResponse->value();
+                $this->events->dispatch(new PartialResponseGenerated($emittable));
+                if ($emittable instanceof Sequenceable) {
+                    $sequenceableHandler->update($emittable);
+                }
+                yield $partialResponse; // value already set upstream
+                continue;
+            }
+
             if ($partialResponse->toolName !== '') {
                 $toolCallStreamState = $toolCallStreamState->handleSignal($partialResponse->toolName);
             }
@@ -106,8 +117,15 @@ class GeneratePartialsFromToolCalls implements CanGeneratePartials
                     partialJson: new PartialJson($finalized, $finalized)
                 );
                 $emittable = $partialObject->emittable();
+                $finalObject = $partialObject->result()->isSuccess() ? $partialObject->result()->unwrap() : null;
                 if ($emittable instanceof Sequenceable) {
                     $sequenceableHandler->update($emittable);
+                }
+                // Emit final partial snapshot with the actual final object (even if not emittable)
+                if ($finalObject !== null) {
+                    yield ($lastPartial ?? new PartialInferenceResponse())
+                        ->withValue($finalObject)
+                        ->withContent($finalized);
                 }
             }
         }

@@ -61,14 +61,13 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
         // Normalize content based on output mode (extract JSON, handle tool calls, etc.)
         $inference = $this->normalizer->normalizeContent($inference, $execution->outputMode());
 
-        // Create streaming state marked as exhausted (single chunk pattern)
-        $attemptState = StructuredOutputAttemptState::empty()
-            ->withPhase(AttemptPhase::Done)
-            ->withNextChunk(
-                $inference,
-                PartialInferenceResponseList::empty(),
-                true,
-            );
+        // Single-chunk attempt; set AttemptState so iterator can finalize;
+        // clearing happens on finalize/failure to start a fresh attempt.
+        $attemptState = StructuredOutputAttemptState::fromSingleChunk(
+            $inference,
+            PartialInferenceResponseList::empty(),
+            AttemptPhase::Done,
+        );
 
         // Update execution with inference and mark stream exhausted
         return $execution

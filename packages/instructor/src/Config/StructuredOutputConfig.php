@@ -47,7 +47,7 @@ final readonly class StructuredOutputConfig
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
     ) {
-        $this->streamingDriver = 'partials';
+        $this->streamingDriver = 'legacy'; // 'legacy'
         $this->outputMode = $outputMode ?: OutputMode::Tools;
         $this->useObjectReferences = $useObjectReferences ?? false;
         $this->maxRetries = $maxRetries ?? 0;

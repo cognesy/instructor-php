@@ -67,10 +67,10 @@ Pluggable retry policy interface (DDD policy object).
 
 ### State Management
 
-#### `StructuredOutputStreamingState`
-Ephemeral state for active streaming session (non-serializable).
+#### `StructuredOutputAttemptState`
+Ephemeral state for an in-flight attempt (sync or streaming), non-serializable.
 
-**Location**: `packages/instructor/src/Data/StructuredOutputStreamingState.php`
+**Location**: `packages/instructor/src/Data/StructuredOutputAttemptState.php`
 
 **Fields**:
 - `attemptPhase: AttemptPhase` - Current phase (Init, Streaming, Validating, Done)
@@ -93,12 +93,13 @@ Main execution state (persistent, serializable except streamingState).
 **Location**: `packages/instructor/src/Data/StructuredOutputExecution.php`
 
 **New Fields**:
-- `streamingState: ?StructuredOutputStreamingState` - Ephemeral streaming state
+- `attemptState: ?StructuredOutputAttemptState` - Ephemeral attempt state
 
 **New Methods**:
-- `streamingState(): ?StructuredOutputStreamingState` - Get streaming state
-- `withStreamingState(?StructuredOutputStreamingState): self` - Update streaming state
-- `isCurrentlyStreaming(): bool` - Check if actively streaming
+- `attemptState(): ?StructuredOutputAttemptState` - Get attempt state
+- `withAttemptState(?StructuredOutputAttemptState): self` - Update attempt state
+- `isAttemptActive(): bool` - Check if an attempt is in progress
+- `isCurrentlyStreaming(): bool` - Backward-compatible alias for `isAttemptActive()`
 
 ### Implementations
 
@@ -274,7 +275,7 @@ Both stream and attempt iterators use compatible contracts, allowing composition
 
 ## State Lifecycle
 
-### Stream-Level State (`StructuredOutputStreamingState`)
+### Stream-Level State (`StructuredOutputAttemptState`)
 ```
 null → empty() → withStream() → Streaming → withNextChunk() × N → withExhausted() → null
       ↑                                                                              ↓
@@ -303,7 +304,7 @@ Initial → withCurrentAttempt() × N → [Validate] → Success: withSuccessful
 ## Migration Path
 
 ### Phase 1: Foundation ✅ COMPLETE
-- ✅ `StructuredOutputStreamingState` with helper methods
+- ✅ `StructuredOutputAttemptState` with helper methods
 - ✅ Integration with `StructuredOutputExecution`
 - ✅ `CanDetermineRetry` interface
 - ✅ `DefaultRetryPolicy` implementation

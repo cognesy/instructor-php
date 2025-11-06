@@ -110,9 +110,9 @@ AttemptIterator(
 
 ### 3. Explicit State Management
 
-**Ephemeral streaming state:**
+**Ephemeral attempt state:**
 ```php
-StructuredOutputStreamingState (non-serializable)
+StructuredOutputAttemptState (non-serializable)
 ├── attemptPhase: AttemptPhase
 ├── stream: ?Iterator
 ├── partialIndex: int
@@ -125,12 +125,12 @@ StructuredOutputStreamingState (non-serializable)
 
 **Persistent execution state:**
 ```php
-StructuredOutputExecution (serializable except streamingState)
+StructuredOutputExecution (serializable except attemptState)
 ├── request
 ├── responseModel
 ├── attemptCount
 ├── maxRetries
-├── streamingState: ?StructuredOutputStreamingState  // Ephemeral
+├── attemptState: ?StructuredOutputAttemptState  // Ephemeral
 └── ... other fields
 ```
 
@@ -162,7 +162,7 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
     ) {}
 
     public function hasNext(StructuredOutputExecution $execution): bool {
-        $state = $execution->streamingState();
+        $state = $execution->attemptState();
 
         // Not started yet - can make request
         if ($state === null) {
@@ -178,12 +178,12 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
         $inference = $this->inferenceProvider->getInference($execution)->response();
 
         // Mark as exhausted immediately (single chunk)
-        $state = StructuredOutputStreamingState::empty()
+        $state = StructuredOutputAttemptState::empty()
             ->withPhase(AttemptPhase::Done)
             ->withNextChunk($inference, PartialInferenceResponseList::empty(), true);
 
         return $execution
-            ->withStreamingState($state)
+            ->withAttemptState($state)
             ->withCurrentAttempt(
                 inferenceResponse: $inference,
                 partialInferenceResponses: PartialInferenceResponseList::empty(),
@@ -355,7 +355,7 @@ Replaced by `DefaultRetryPolicy` (implements `CanDetermineRetry`).
 
 ### 2. Explicit Attempt Tracking
 - No hidden retry logic in generator functions
-- Clear state management (`StructuredOutputStreamingState`)
+- Clear state management (`StructuredOutputAttemptState`)
 - Obvious when attempts start/end
 
 ### 3. Better Error Handling

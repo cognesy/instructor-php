@@ -9,7 +9,7 @@
 4. ✅ Refactored `ExecutorFactory` to unified pattern (both sync/streaming use `AttemptIterator`)
 5. ✅ Deleted `IterativeToGeneratorAdapter`
 6. ✅ Marked legacy handlers as deprecated
-7. ✅ Fixed infinite loop bug (streaming state cleared properly with `StructuredOutputStreamingState::cleared()`)
+7. ✅ Fixed infinite loop bug (attempt state cleared properly with `StructuredOutputAttemptState::cleared()`)
 8. ✅ Fixed sync execution immediate finalization
 
 ### Test Results
@@ -44,7 +44,7 @@ Structured output recovery attempts limit reached after 3 attempt(s)...
 
 **Problem:** Test calls non-existent method `partialInferenceResponses()` on `StructuredOutputExecution`
 
-**Status:** Already fixed by accessing via `streamingState()->accumulatedPartials()`
+**Status:** Already fixed by accessing via `attemptState()->accumulatedPartials()`
 
 ### 3. Retry Event Test (1 test failing)
 **Location:** `packages/instructor/tests/Regression/RetryFailureEventsTest.php`
@@ -74,8 +74,8 @@ return new AttemptIterator($streamIterator, $responseGenerator, $retryPolicy);
 ### Key Fixes Applied
 1. **Infinite Loop Fix:**
    ```php
-   // Before: streamingState: null (doesn't work with null coalescing in with())
-   // After: streamingState: StructuredOutputStreamingState::cleared()
+   // Before: attemptState: null (doesn't work with null coalescing in with())
+   // After: attemptState: StructuredOutputAttemptState::cleared()
    ```
 
 2. **Sync Immediate Finalization:**
@@ -124,7 +124,7 @@ rm packages/instructor/src/Contracts/CanExecuteStructuredOutput.php
 
 ### Created
 - `packages/instructor/src/Executors/Sync/SyncUpdateGenerator.php`
-- `packages/instructor/src/Data/StructuredOutputStreamingState::cleared()` (static method)
+- `packages/instructor/src/Data/StructuredOutputAttemptState::cleared()` (static method)
 - `packages/instructor/tests/Unit/SyncUpdateGeneratorTest.php`
 - `packages/instructor/TARGET_ARCHITECTURE.md`
 - `packages/instructor/REFACTORING_PLAN.md`
@@ -135,7 +135,7 @@ rm packages/instructor/src/Contracts/CanExecuteStructuredOutput.php
 - `packages/instructor/src/ExecutorFactory.php`
 - `packages/instructor/src/Core/AttemptIterator.php`
 - `packages/instructor/src/Data/StructuredOutputExecution.php`
-- `packages/instructor/src/Data/StructuredOutputStreamingState.php`
+- `packages/instructor/src/Data/StructuredOutputAttemptState.php`
 - `packages/instructor/tests/Unit/StructuredOutputStreamSequenceTest.php`
 - `packages/instructor/ITERATIVE_EXECUTION.md`
 

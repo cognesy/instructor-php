@@ -40,8 +40,8 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
             return false;
         }
 
-        // Currently streaming an attempt
-        if ($execution->isCurrentlyStreaming()) {
+        // Currently processing an attempt
+        if ($execution->isAttemptActive()) {
             return $this->streamIterator->hasNext($execution);
         }
 
@@ -51,8 +51,8 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
 
     #[\Override]
     public function nextUpdate(StructuredOutputExecution $execution): StructuredOutputExecution {
-        // If currently streaming, delegate to stream iterator
-        if ($execution->isCurrentlyStreaming()) {
+        // If attempt is active, delegate to stream iterator
+        if ($execution->isAttemptActive()) {
             $updated = $this->streamIterator->nextChunk($execution);
 
             // Check if stream just finished
@@ -75,7 +75,7 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
         StructuredOutputExecution $before,
         StructuredOutputExecution $after,
     ): bool {
-        return $before->isCurrentlyStreaming() && !$after->isCurrentlyStreaming();
+        return $before->isAttemptActive() && !$after->isAttemptActive();
     }
 
     /**
@@ -87,8 +87,8 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
         // (stream iterator will create fresh streaming state)
         $updated = $this->streamIterator->nextChunk($execution);
 
-        // Check if stream finished immediately (e.g., sync single-chunk execution)
-        if (!$updated->isCurrentlyStreaming()) {
+        // Check if attempt finished immediately (e.g., sync single-chunk execution)
+        if (!$updated->isAttemptActive()) {
             return $this->finalizeAttempt($updated);
         }
 
