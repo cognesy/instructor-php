@@ -26,6 +26,8 @@ Development and maintenance automation scripts:
 - `composer-*-all.sh` - Composer operations across packages
 - `create-package.php` - Generate new package structure
 
+- More details in `SCRIPTS.md` file.
+
 ### `docs/`
 Documentation website skeleton and root-level files. These are merged with documentation files from `./packages/*/docs/` to build the complete documentation distribution in `./docs-build/`.
 
@@ -51,6 +53,7 @@ Default configuration files for various components (debug, HTTP, LLM, prompts, s
 ### Documentation
 - `README.md` - Main project documentation and getting started guide
 - `CONTRIBUTOR_GUIDE.md` - Comprehensive guide for contributors and developers
+- `SCRIPTS.md` - Overview of the available scripts
 - `LICENSE` - Project license information
 
 ### Configuration
