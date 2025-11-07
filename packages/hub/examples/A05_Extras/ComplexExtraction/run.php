@@ -107,10 +107,11 @@ $events = $structuredOutput
         model: 'gpt-4o',
         options: [
             'max_tokens' => 2048,
-            'stream' => true,
         ],
         mode: OutputMode::Tools
     )
+    ->withDebugPreset('on')
+    ->withStreaming()
     ->get();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";

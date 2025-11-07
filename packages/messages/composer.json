@@ -25,7 +25,7 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^1.11"
+    "cognesy/instructor-utils": "^1.12"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
