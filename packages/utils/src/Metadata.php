@@ -34,6 +34,11 @@ final readonly class Metadata
         return new self($newMetadata);
     }
 
+    public function withMergedData(array $data): Metadata {
+        $newMetadata = array_merge($this->metadata, $data);
+        return new self($newMetadata);
+    }
+
     // ACCESSORS ////////////////////////////////////////////////
 
     public function get(string $key, mixed $default = null): mixed {

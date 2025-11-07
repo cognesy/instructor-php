@@ -91,6 +91,11 @@ final class TransformationStream implements Stream
                 yield $queue->dequeue();
             }
         }
+        // Completion phase: allow reducers to flush final values (e.g., finalize sequences)
+        $transduction->completed();
+        while (!$queue->isEmpty()) {
+            yield $queue->dequeue();
+        }
     }
 
     private function execution(): TransformationExecution {

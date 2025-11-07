@@ -56,7 +56,7 @@ $receipt = (new StructuredOutput)->using('anthropic')->with(
     messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',
-    model: 'claude-3-5-sonnet-20240620',
+    model: 'claude-haiku-4-5',
     mode: OutputMode::Json,
     options: ['max_tokens' => 4096]
 )->get();

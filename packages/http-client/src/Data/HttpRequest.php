@@ -2,6 +2,10 @@
 
 namespace Cognesy\Http\Data;
 
+use Cognesy\Utils\Metadata;
+use Cognesy\Utils\Uuid;
+use DateTimeImmutable;
+
 /**
  * Class HttpRequest
  *
@@ -9,6 +13,11 @@ namespace Cognesy\Http\Data;
  */
 class HttpRequest
 {
+    public readonly string $id;
+    public readonly DateTimeImmutable $createdAt;
+    public DateTimeImmutable $updatedAt;
+    public Metadata $metadata;
+
     private HttpRequestBody $body;
 
     /**
@@ -26,9 +35,20 @@ class HttpRequest
         public array $headers,
         string|array $body,
         public array $options,
+        //
+        ?string $id = null,
+        ?string $createdAt = null,
+        ?string $updatedAt = null,
+        ?Metadata $metadata = null,
     ) {
         $this->body = new HttpRequestBody($body);
+        $this->id = $id ?? Uuid::uuid4();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->updatedAt = $updatedAt ?? new DateTimeImmutable();
+        $this->metadata = $metadata ?? Metadata::empty();
     }
+
+    // ACCESSORS ////////////////////////////////////////////////////////////////////
 
     /**
      * Get the request URL
@@ -79,6 +99,8 @@ class HttpRequest
         return $this->options['stream'] ?? false;
     }
 
+    // MUTATORS /////////////////////////////////////////////////////////////////////
+
     /**
      * Set the request URL
      *
@@ -87,8 +109,11 @@ class HttpRequest
      */
     public function withStreaming(bool $streaming) : self {
         $this->options['stream'] = $streaming;
+        $this->updatedAt = new DateTimeImmutable();
         return $this;
     }
+
+    // SERIALIZATION ////////////////////////////////////////////////////////////////
 
     public function toArray() : array {
         return [
@@ -97,6 +122,11 @@ class HttpRequest
             'headers' => $this->headers,
             'body' => $this->body->toArray(),
             'options' => $this->options,
+            //
+            'id' => $this->id,
+            'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
+            'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
+            'metadata' => $this->metadata,
         ];
     }
 }

@@ -50,6 +50,10 @@ class CurlDriver implements CanHandleHttpRequest
         $startTime = microtime(true);
         $this->dispatchRequestSent($request);
 
+        if ($request->isStreamed()) {
+            return $this->handleStreaming($request, $startTime);
+        }
+
         $curl = curl_init();
 
         try {
@@ -102,7 +106,7 @@ class CurlDriver implements CanHandleHttpRequest
             curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
         }
 
-        // Return response body
+        // Return response body (non-streaming)
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         // Capture response headers via callback
@@ -149,6 +153,118 @@ class CurlDriver implements CanHandleHttpRequest
 
         // HTTP version - try HTTP/2 if available, fallback to HTTP/1.1
         curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+    }
+
+    private function handleStreaming(HttpRequest $request, float $startTime): HttpResponse {
+        $curl = curl_init();
+
+        // Per-request containers shared with callbacks
+        $this->responseHeaders = [];
+        $statusCode = 0;
+        $queue = new \SplQueue();
+
+        // URL and method
+        curl_setopt($curl, CURLOPT_URL, $request->url());
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($request->method()));
+
+        // Headers
+        $headers = [];
+        foreach ($request->headers() as $name => $value) {
+            $headers[] = is_array($value)
+                ? "{$name}: " . implode(', ', $value)
+                : "{$name}: {$value}";
+        }
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+        // Body
+        $body = $request->body()->toString();
+        if (!empty($body)) {
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+        }
+
+        // Streaming mode: do not buffer full body
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, false);
+
+        // Write callback: enqueue incoming chunks
+        curl_setopt($curl, CURLOPT_WRITEFUNCTION, function($ch, $data) use ($queue) {
+            if ($data !== '') {
+                $queue->enqueue($data);
+            }
+            return strlen($data);
+        });
+
+        // Header callback: capture status and headers
+        curl_setopt($curl, CURLOPT_HEADERFUNCTION, function($ch, $headerLine) use (&$statusCode) {
+            $length = strlen($headerLine);
+            $line = trim($headerLine);
+            if ($line === '') {
+                return $length;
+            }
+            if (str_starts_with($line, 'HTTP/')) {
+                $parts = explode(' ', $line);
+                if (count($parts) >= 2) {
+                    $code = (int) $parts[1];
+                    if ($code > 0) {
+                        $statusCode = $code;
+                    }
+                }
+                return $length;
+            }
+            $parts = explode(':', $line, 2);
+            if (count($parts) === 2) {
+                $name = trim($parts[0]);
+                $value = trim($parts[1]);
+                if (!isset($this->responseHeaders[$name])) {
+                    $this->responseHeaders[$name] = [];
+                }
+                $this->responseHeaders[$name][] = $value;
+            }
+            return $length;
+        });
+
+        // Redirects
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_MAXREDIRS, 5);
+
+        // Timeouts
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->config->connectTimeout ?? 3);
+        curl_setopt($curl, CURLOPT_TIMEOUT, $this->config->requestTimeout ?? 30);
+
+        // SSL
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+
+        // HTTP/2 if available
+        curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+
+        // Prepare multi handle
+        $multi = curl_multi_init();
+        curl_multi_add_handle($multi, $curl);
+
+        // Prime: drive until we have status or short timeout to allow tests to read statusCode()
+        $active = 1;
+        $startPrime = microtime(true);
+        while ($active > 0 && $statusCode === 0 && (microtime(true) - $startPrime) < 0.2) {
+            $status = curl_multi_exec($multi, $active);
+            if ($status !== CURLM_OK) {
+                break;
+            }
+            if ($active > 0) {
+                curl_multi_select($multi, 0.05);
+            }
+        }
+
+        return new CurlStreamingHttpResponse(
+            curl: $curl,
+            multi: $multi,
+            queue: $queue,
+            events: $this->events,
+            request: $request,
+            config: $this->config,
+            headers: $this->responseHeaders,
+            statusCode: $statusCode,
+            streamChunkSize: $this->config->streamChunkSize ?? 256,
+        );
     }
 
     private function executeCurl(CurlHandle $curl, HttpRequest $request, float $startTime): string {
