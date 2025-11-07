@@ -54,7 +54,10 @@ $customClient = (new HttpClientBuilder)
 $config = new LLMConfig(
     apiUrl  : 'https://api.deepseek.com',
     apiKey  : Env::get('DEEPSEEK_API_KEY'),
-    endpoint: '/chat/completions', model: 'deepseek-chat', maxTokens: 128, driver: 'deepseek',
+    endpoint: '/chat/completions',
+    model: 'deepseek-chat',
+    maxTokens: 128,
+    driver: 'deepseek',
 );
 
 // Call inference API with custom client and configuration

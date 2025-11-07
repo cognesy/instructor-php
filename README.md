@@ -58,12 +58,13 @@ Instructor offers out-of-the-box support for the following LLM providers:
 - Anthropic
 - Azure OpenAI
 - Cerebras
-- Cohere (v1 and v2)
+- Cohere (v2 OpenAI compatible)
 - Deepseek
 - Fireworks
 - Google Gemini (native and OpenAI compatible)
 - Groq
 - HuggingFace
+- Inception
 - Minimaxi
 - Mistral
 - Moonshot / Kimi
@@ -72,7 +73,6 @@ Instructor offers out-of-the-box support for the following LLM providers:
 - OpenRouter
 - Perplexity
 - Sambanova
-- Together AI
 - xAI / Grok
 
 For usage examples, check Hub section or `examples` directory in the code repository.
@@ -210,15 +210,65 @@ Additionally, you can use `OutputMode::Text` to get LLM to generate text output 
 - `OutputMode::Unrestricted` - generate unrestricted output based on inputs provided by the user (with no enforcement of specific output format)
 
 
+## Unified LLM API
+
+Instructor ecosystem uses [Polyglot](https://github.com/cognesy/instructor-polyglot) as an unified inference API layer supporting 20+ LLM providers.
+
+Polyglot takes care of translation of familiar OpenAI chat completion API conventions into LLM provider specific idioms / APIs, so you can easily switch between LLM providers without rewriting your LLM connectivity code.
+
+### Example (using sync API)
+
+```php
+$answer = (new Inference)
+    ->using('openai') // specify LLM connection preset (defined in config)
+    ->with(messages: 'What is capital of Germany')
+    ->get();
+
+echo $answer;
+```
+
+### Example (using streaming API)
+
+```php
+$stream = (new Inference)
+    ->using('anthropic') // specify LLM connection preset (defined in config)
+    ->withMessages([['role' => 'user', 'content' => 'Describe capital of Brasil']])
+    ->withOptions(['max_tokens' => 256])
+    ->withStreaming()
+    ->stream()
+    ->responses();
+
+foreach ($stream as $partial) {
+    echo $partial->contentDelta;
+}
+```
+
+### Example (customize LLM connection)
+
+```php
+$config = new LLMConfig(
+    apiUrl  : 'https://api.deepseek.com',
+    apiKey  : Env::get('DEEPSEEK_API_KEY'),
+    endpoint: '/chat/completions',
+    model: 'deepseek-chat',
+    maxTokens: 128,
+    driver: 'deepseek',
+);
+
+$answer = (new Inference)
+    ->withConfig($config)
+    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
+    ->withOptions(['max_tokens' => 64])
+    ->withStreaming()
+    ->get();
+
+echo $answer;
+```
 
 
 ## Documentation
 
 Check out the [documentation website](https://docs.instructorphp.com/) for more details and examples of how to use Instructor for PHP.
-
-
-
-
 
 
 
