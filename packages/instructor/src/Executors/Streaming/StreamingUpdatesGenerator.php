@@ -7,7 +7,7 @@ use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Data\StructuredOutputAttemptState;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\AttemptPhase;
-use Cognesy\Instructor\Executors\Contracts\CanGeneratePartials;
+use Cognesy\Instructor\Executors\Streaming\Contracts\CanGeneratePartials;
 use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Executors\Contracts;
+namespace Cognesy\Instructor\Executors\Streaming\Contracts;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -11,7 +11,7 @@ interface CanGeneratePartials
     /**
      * @param Generator<PartialInferenceResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Generator<mixed>
+     * @return Iterable<mixed>
      */
     public function makePartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable;
 }

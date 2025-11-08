@@ -11,7 +11,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseFinished;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
-use Cognesy\Instructor\Executors\Contracts\CanGeneratePartials;
+use Cognesy\Instructor\Executors\Streaming\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Executors\Streaming\SequenceGen\SequenceableEmitter;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
