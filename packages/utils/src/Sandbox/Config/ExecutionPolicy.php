@@ -132,7 +132,7 @@ final class ExecutionPolicy
 
     // Internal //////////////////////////////////////////////////////////////
 
-    private function with(
+    public function with(
         ?string $baseDir = null,
         ?int $timeoutSeconds = null,
         ?int $idleTimeoutSeconds = null,

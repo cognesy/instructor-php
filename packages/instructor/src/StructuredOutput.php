@@ -179,7 +179,7 @@ class StructuredOutput
             $client = $builder->create();
         }
 
-        $executorFactory = new ExecutorFactory(
+        $executorFactory = new ResponseIteratorFactory(
             llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,

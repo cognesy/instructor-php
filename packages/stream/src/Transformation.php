@@ -126,7 +126,7 @@ final readonly class Transformation implements Transducer
 
     // INTERNAL //////////////////////////////////////////////////////////
 
-    private function with(
+    public function with(
         ?array $transducers = null,
         ?Reducer $sink = null,
         ?iterable $source = null,

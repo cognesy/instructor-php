@@ -1,33 +1,113 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
+/**
+ * Streaming Driver Performance Benchmark
+ *
+ * Compares performance of three streaming implementations:
+ *
+ * 1. CLEAN - Transducer-based pipeline with minimal memory footprint
+ *    - Uses functional composition and immutable data structures
+ *    - Constant O(1) memory overhead per stream
+ *    - Single source of truth for content accumulation (buffer-only)
+ *    - New default as of v1.12.0
+ *    - Architecture documented in: packages/instructor/STREAMING.md
+ *
+ * 2. LEGACY - Original implementation using stateful reducers
+ *    - Older architecture maintained for compatibility
+ *    - More memory accumulation with dual content tracking
+ *    - Will be deprecated in future versions
+ *
+ * 3. PARTIALS - Partial JSON extraction streaming
+ *    - Intermediate implementation between Legacy and Clean
+ *    - Different accumulation strategy than Clean
+ *    - Uses partial JSON parsing but not transducers
+ *
+ * Each driver is tested in:
+ * - STREAMING mode: Process 1KB response as ~30 SSE chunks (realistic simulation)
+ * - SYNC mode: Process complete 1KB response at once (baseline comparison)
+ *
+ * ## How to Run
+ *
+ * All benchmarks:
+ *   composer bench
+ *
+ * All streaming driver benchmarks:
+ *   composer bench -- --filter=StructuredOutputStreamingBench
+ *
+ * Specific driver streaming:
+ *   composer bench -- --filter=benchCleanStream1KB
+ *   composer bench -- --filter=benchLegacyStream1KB
+ *   composer bench -- --filter=benchPartialsStream1KB
+ *
+ * Specific driver sync:
+ *   composer bench -- --filter=benchCleanSync1KB
+ *   composer bench -- --filter=benchLegacySync1KB
+ *   composer bench -- --filter=benchPartialsSync1KB
+ *
+ * Compare all streaming drivers:
+ *   composer bench -- --filter="benchCleanStream1KB|benchLegacyStream1KB|benchPartialsStream1KB"
+ *
+ * With memory profiling:
+ *   composer bench -- --filter=StructuredOutputStreamingBench --profile
+ *
+ * ## Expected Results
+ *
+ * Time (lower is better):
+ * - Clean should be fastest in streaming (10-30% faster than Legacy)
+ * - Sync modes should be similar across all drivers (< 5% difference)
+ * - Partials should be between Clean and Legacy
+ *
+ * Memory (lower is better):
+ * - Clean: Lowest memory usage (~constant overhead)
+ * - Partials: Medium memory usage
+ * - Legacy: Highest memory usage (accumulates more state)
+ *
+ * ## Interpreting Results
+ *
+ * PHPBench output format:
+ *   benchmark          subject              revs  iter  mem_peak  time_avg  time_dev
+ *   ----------------------------------------------------------------------------------
+ *   CleanStream1KB     benchCleanStream1KB  200   5    2.5mb     0.5ms     ±0.1%
+ *
+ * - revs: Number of times operation repeats per iteration
+ * - iter: Number of iterations (5 in this benchmark)
+ * - mem_peak: Peak memory usage
+ * - time_avg: Average time per operation
+ * - time_dev: Standard deviation (lower = more consistent)
+ *
+ * Look for:
+ * 1. Clean should have lowest time_avg in streaming benchmarks
+ * 2. Clean should have lowest mem_peak across all benchmarks
+ * 3. All drivers should have similar performance in sync mode
+ *
+ * ## Benchmark Summary
+ *
+ * | Method                     | Driver   | Mode      | Purpose                    |
+ * |----------------------------|----------|-----------|----------------------------|
+ * | benchCleanStream1KB        | Clean    | Streaming | Test Clean streaming perf  |
+ * | benchLegacyStream1KB       | Legacy   | Streaming | Test Legacy streaming perf |
+ * | benchPartialsStream1KB     | Partials | Streaming | Test Partials stream perf  |
+ * | benchCleanSync1KB          | Clean    | Sync      | Baseline for Clean         |
+ * | benchLegacySync1KB         | Legacy   | Sync      | Baseline for Legacy        |
+ * | benchPartialsSync1KB       | Partials | Sync      | Baseline for Partials      |
+ */
+
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Core\InferenceProvider;
-use Cognesy\Instructor\Core\RequestMaterializer;
-use Cognesy\Instructor\Creation\ResponseModelFactory;
-use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Executors\Partials\PartialStreamFactory;
-use Cognesy\Instructor\Executors\Partials\PartialStreamingUpdateGenerator;
-use Cognesy\Instructor\Executors\Streaming\PartialGen\GeneratePartialsFromJson;
-use Cognesy\Instructor\Executors\Streaming\StreamingUpdatesGenerator;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\PartialValidation;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
 
 final class StructuredOutputStreamingBench
 {
+    /**
+     * Generate 1KB stream split into multiple SSE chunks.
+     * Simulates realistic LLM streaming response.
+     */
     private function make1KBStream(): array
     {
         $open = '{"list":[';
@@ -53,6 +133,10 @@ final class StructuredOutputStreamingBench
         return $chunks;
     }
 
+    /**
+     * Generate 1KB JSON response as complete string.
+     * Used for sync mode baseline testing.
+     */
     private function make1KBJson(): string
     {
         $content = '{"list":[';
@@ -72,17 +156,24 @@ final class StructuredOutputStreamingBench
         return new Sequence(\stdClass::class);
     }
 
+    // ============================================================================
+    // STREAMING BENCHMARKS (1KB response)
+    // ============================================================================
+
     /**
+     * Clean driver - transducer-based streaming with low memory footprint
+     *
      * @Revs(200)
      * @Iterations(5)
      * @Warmup(2)
      */
-    public function benchPartialsStream1KB(): void
+    public function benchCleanStream1KB(): void
     {
         $driver = new FakeInferenceDriver(streamBatches: [ $this->make1KBStream() ]);
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'clean'))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModelForSequence(),
@@ -94,6 +185,8 @@ final class StructuredOutputStreamingBench
     }
 
     /**
+     * Legacy driver - original streaming implementation
+     *
      * @Revs(200)
      * @Iterations(5)
      * @Warmup(2)
@@ -101,54 +194,111 @@ final class StructuredOutputStreamingBench
     public function benchLegacyStream1KB(): void
     {
         $driver = new FakeInferenceDriver(streamBatches: [ $this->make1KBStream() ]);
-        $events = new EventDispatcher();
-        $llm = LLMProvider::new()->withDriver($driver);
 
-        $cfg = new StructuredOutputConfig();
-        $schemaFactory = new SchemaFactory(useObjectReferences: $cfg->useObjectReferences());
-        $responseFactory = new ResponseModelFactory(new ToolCallBuilder($schemaFactory), $schemaFactory, $cfg, $events);
-        $responseModel = $responseFactory->fromAny($this->responseModelForSequence());
-
-        $inferenceProvider = new InferenceProvider($llm, new RequestMaterializer(), $events);
-
-        $partialsGenerator = new GeneratePartialsFromJson(
-            responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], $cfg),
-            partialValidator: new PartialValidation(new \Cognesy\Instructor\Config\PartialsGeneratorConfig()),
-            responseTransformer: new ResponseTransformer($events, [], $cfg),
-            events: $events
-        );
-
-        $generator = new StreamingUpdatesGenerator(
-            inferenceProvider: $inferenceProvider,
-            partialsGenerator: $partialsGenerator
-        );
-
-        $execution = (new StructuredOutputExecution())
+        $so = (new StructuredOutput)
+            ->withDriver($driver)
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'legacy'))
             ->with(
-                request: (new StructuredOutputRequest())
-                    ->withMessages([[ 'role' => 'user', 'content' => 'Emit seq' ]])
-                    ->withStreamed(true),
-                responseModel: $responseModel,
-                config: (new StructuredOutputConfig())->with(outputMode: OutputMode::Json)
+                messages: 'Emit sequence',
+                responseModel: $this->responseModelForSequence(),
+                mode: OutputMode::Json,
             );
 
-        while ($generator->hasNext($execution)) {
-            $execution = $generator->nextChunk($execution);
-        }
+        $stream = $so->stream();
+        $result = $stream->finalValue();
     }
 
     /**
+     * Partials driver - partial JSON extraction streaming
+     *
      * @Revs(200)
      * @Iterations(5)
      * @Warmup(2)
      */
-    public function benchSync1KB(): void
+    public function benchPartialsStream1KB(): void
+    {
+        $driver = new FakeInferenceDriver(streamBatches: [ $this->make1KBStream() ]);
+
+        $so = (new StructuredOutput)
+            ->withDriver($driver)
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'partials'))
+            ->with(
+                messages: 'Emit sequence',
+                responseModel: $this->responseModelForSequence(),
+                mode: OutputMode::Json,
+            );
+
+        $stream = $so->stream();
+        $result = $stream->finalValue();
+    }
+
+    // ============================================================================
+    // SYNC BENCHMARKS (1KB response) - baseline for comparison
+    // ============================================================================
+
+    /**
+     * Sync mode with Clean driver config (no actual streaming)
+     *
+     * @Revs(200)
+     * @Iterations(5)
+     * @Warmup(2)
+     */
+    public function benchCleanSync1KB(): void
     {
         $json = $this->make1KBJson();
         $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'clean'))
+            ->with(
+                messages: 'Emit sequence',
+                responseModel: $this->responseModelForSequence(),
+                mode: OutputMode::Json,
+            );
+
+        $result = $so->get();
+    }
+
+    /**
+     * Sync mode with Legacy driver config (no actual streaming)
+     *
+     * @Revs(200)
+     * @Iterations(5)
+     * @Warmup(2)
+     */
+    public function benchLegacySync1KB(): void
+    {
+        $json = $this->make1KBJson();
+        $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
+
+        $so = (new StructuredOutput)
+            ->withDriver($driver)
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'legacy'))
+            ->with(
+                messages: 'Emit sequence',
+                responseModel: $this->responseModelForSequence(),
+                mode: OutputMode::Json,
+            );
+
+        $result = $so->get();
+    }
+
+    /**
+     * Sync mode with Partials driver config (no actual streaming)
+     *
+     * @Revs(200)
+     * @Iterations(5)
+     * @Warmup(2)
+     */
+    public function benchPartialsSync1KB(): void
+    {
+        $json = $this->make1KBJson();
+        $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
+
+        $so = (new StructuredOutput)
+            ->withDriver($driver)
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'partials'))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModelForSequence(),

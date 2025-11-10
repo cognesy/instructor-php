@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Executors\Partials\DeltaExtraction\ExtractDeltaReducer;
-use Cognesy\Instructor\Executors\Partials\DeltaExtraction\PartialProcessingState;
+use Cognesy\Instructor\ResponseIterators\Partials\DeltaExtraction\ExtractDeltaReducer;
+use Cognesy\Instructor\ResponseIterators\Partials\DeltaExtraction\PartialProcessingState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

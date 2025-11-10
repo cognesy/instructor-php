@@ -169,7 +169,7 @@ final readonly class StructuredOutputAttemptState
 
     // INTERNAL //////////////////////////////////////////////////////////
 
-    private function with(
+    public function with(
         ?AttemptPhase $attemptPhase = null,
         ?Iterator $stream = null,
         ?int $partialIndex = null,

@@ -29,7 +29,7 @@ final readonly class StructuredOutputConfig
     private string $deserializationErrorPrompt;
     private bool $throwOnTransformationFailure;
     private array $chatStructure;
-    public string $streamingDriver;
+    public string $responseIterator;
 
     public function __construct(
         ?OutputMode $outputMode = null,
@@ -46,8 +46,9 @@ final readonly class StructuredOutputConfig
         ?bool $defaultToStdClass = null,
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
+        ?string $responseIterator = null,
     ) {
-        $this->streamingDriver = 'partials'; // 'legacy'
+        $this->responseIterator = $responseIterator ?? 'clean'; // 'partials', 'legacy', 'clean'
         $this->outputMode = $outputMode ?: OutputMode::Tools;
         $this->useObjectReferences = $useObjectReferences ?? false;
         $this->maxRetries = $maxRetries ?? 0;
@@ -101,6 +102,7 @@ final readonly class StructuredOutputConfig
             'defaultToStdClass' => $this->defaultToStdClass,
             'deserializationErrorPrompt' => $this->deserializationErrorPrompt,
             'throwOnTransformationFailure' => $this->throwOnTransformationFailure,
+            'responseIterator' => $this->responseIterator,
         ];
     }
 
@@ -197,6 +199,10 @@ final readonly class StructuredOutputConfig
         return $this->throwOnTransformationFailure;
     }
 
+    public function responseIterator(): string {
+        return $this->responseIterator;
+    }
+
     // MUTATORS /////////////////////////////////////////////////////
 
     public function withOutputMode(?OutputMode $outputMode): static {
@@ -245,6 +251,10 @@ final readonly class StructuredOutputConfig
         return $this->with(outputClass: $defaultOutputClass);
     }
 
+    public function withResponseIterator(string $responseIterator): static {
+        return $this->with(responseIterator: $responseIterator);
+    }
+
     // INTERNAL ////////////////////////////////////////////////////
 
     public function with(
@@ -262,6 +272,7 @@ final readonly class StructuredOutputConfig
         ?bool $defaultToStdClass = null,
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
+        ?string $responseIterator = null,
     ): self {
         return new self(
             outputMode: $outputMode ?? $this->outputMode,
@@ -278,6 +289,7 @@ final readonly class StructuredOutputConfig
             defaultToStdClass: $defaultToStdClass ?? $this->defaultToStdClass,
             deserializationErrorPrompt: $deserializationErrorPrompt ?? $this->deserializationErrorPrompt,
             throwOnTransformationFailure: $throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
+            responseIterator: $responseIterator ?? $this->responseIterator,
         );
     }
 }

@@ -21,14 +21,14 @@ class PendingStructuredOutput
 
     private readonly CanHandleEvents $events;
     private readonly CanHandleStructuredOutputAttempts $attemptHandler;
-    private readonly ExecutorFactory $executorFactory;
+    private readonly ResponseIteratorFactory $executorFactory;
     private StructuredOutputExecution $execution;
     private readonly bool $cacheProcessedResponse;
     private ?InferenceResponse $cachedResponse = null;
 
     public function __construct(
         StructuredOutputExecution $execution,
-        ExecutorFactory $executorFactory,
+        ResponseIteratorFactory $executorFactory,
         CanHandleEvents $events,
     ) {
         $this->cacheProcessedResponse = true;

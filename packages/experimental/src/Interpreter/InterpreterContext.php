@@ -31,7 +31,7 @@ final readonly class InterpreterContext
 
     // INTERNAL //////////////////////////////////////////
 
-    private function with(
+    public function with(
         ?array $environment = null,
         ?array $log = null,
     ) : self {

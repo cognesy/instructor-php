@@ -68,7 +68,7 @@ final class TransformationStream implements Stream
 
     // INTERNAL /////////////////////////////////////////////////////////////
 
-    private function with(
+    public function with(
         ?iterable $input = null,
         ?Transformation $transformation = null,
         ?TransformationExecution $execution = null,

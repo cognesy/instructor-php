@@ -199,7 +199,7 @@ class ResponseModel implements CanProvideJsonSchema
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    private function with(
+    public function with(
         ?OutputMode $mode = null,
         mixed $instance = null,
         ?string $toolName = null,

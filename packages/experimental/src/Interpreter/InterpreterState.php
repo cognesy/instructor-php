@@ -65,7 +65,7 @@ final readonly class InterpreterState
 
     // INTERNAL //////////////////////////////////////////
 
-    private function with(
+    public function with(
         mixed $value = null,
         ?InterpreterContext $context = null,
         ?bool $isError = null,

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregateResponseReducer;
-use Cognesy\Instructor\Executors\Partials\ResponseAggregation\AggregationState;
+use Cognesy\Instructor\ResponseIterators\Partials\ResponseAggregation\AggregateResponseReducer;
+use Cognesy\Instructor\ResponseIterators\Partials\ResponseAggregation\AggregationState;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Stream\Contracts\Reducer;

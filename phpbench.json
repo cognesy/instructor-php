@@ -1,0 +1,11 @@
+{
+    "$schema": "./vendor/phpbench/phpbench/phpbench.schema.json",
+    "runner.bootstrap": "vendor/autoload.php",
+    "runner.path": "packages/instructor/tests/Benchmarks",
+    "runner.file_pattern": "*Bench.php",
+    "report.generators": {
+        "default": {
+            "extends": "aggregate"
+        }
+    }
+}

@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
@@ -130,7 +131,7 @@ final readonly class StructuredOutputExecution
      */
     public function isCurrentlyStreaming(): bool { return $this->isAttemptActive(); }
 
-    public function usage(): \Cognesy\Polyglot\Inference\Data\Usage {
+    public function usage(): Usage {
         $usage = $this->attempts->usage();
         if (!$this->currentAttempt->isFinalized()) {
             // include partial usage from current attempt (partials only)
