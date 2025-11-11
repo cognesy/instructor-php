@@ -8,8 +8,8 @@ use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamFactory;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamingUpdateGenerator;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\PartialValidation;
@@ -49,7 +49,7 @@ it('does not buffer whole stream on init in partials pipeline', function () {
         events: $events,
     );
 
-    $streamGen = new PartialStreamingUpdateGenerator(
+    $streamGen = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory,
     );

@@ -9,20 +9,20 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
 use Cognesy\Instructor\Contracts\CanStreamStructuredOutputUpdates;
 use Cognesy\Instructor\Core\AttemptIterator;
-use Cognesy\Instructor\Core\DefaultRetryPolicy;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\ResponseIterators\Clean\CleanStreamFactory;
-use Cognesy\Instructor\ResponseIterators\Clean\CleanStreamingUpdateGenerator;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamFactory;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamingUpdateGenerator;
-use Cognesy\Instructor\ResponseIterators\Streaming\PartialGen\GeneratePartialsFromJson;
-use Cognesy\Instructor\ResponseIterators\Streaming\PartialGen\GeneratePartialsFromToolCalls;
-use Cognesy\Instructor\ResponseIterators\Streaming\StreamingUpdatesGenerator;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
+use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromJson;
+use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromToolCalls;
+use Cognesy\Instructor\ResponseIterators\GeneratorBased\StreamingUpdatesGenerator;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
+use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
@@ -82,22 +82,22 @@ class ResponseIteratorFactory
         $pipeline = $execution->config()->responseIterator;
 
         return match($pipeline) {
-            'clean' => $this->makeCleanStreamingIterator(),
+            'modular' => $this->makeModularStreamingIterator(),
             'partials' => $this->makePartialStreamingIterator(),
             'legacy' => $this->makeLegacyStreamingIterator($execution),
-            default => $this->makeCleanStreamingIterator(),
+            default => $this->makeModularStreamingIterator(),
         };
     }
 
-    private function makeCleanStreamingIterator(): CanStreamStructuredOutputUpdates {
-        $cleanFactory = new CleanStreamFactory(
+    private function makeModularStreamingIterator(): CanStreamStructuredOutputUpdates {
+        $cleanFactory = new ModularStreamFactory(
             deserializer: $this->responseDeserializer,
             validator: $this->partialResponseValidator,
             transformer: $this->responseTransformer,
             events: $this->events,
         );
 
-        return new CleanStreamingUpdateGenerator(
+        return new ModularUpdateGenerator(
             inferenceProvider: $this->makeInferenceProvider(),
             factory: $cleanFactory,
         );
@@ -111,7 +111,7 @@ class ResponseIteratorFactory
             events: $this->events,
         );
 
-        return new PartialStreamingUpdateGenerator(
+        return new PartialUpdateGenerator(
             inferenceProvider: $this->makeInferenceProvider(),
             partials: $partialsFactory,
         );

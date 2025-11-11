@@ -48,7 +48,7 @@ final readonly class StructuredOutputConfig
         ?bool $throwOnTransformationFailure = null,
         ?string $responseIterator = null,
     ) {
-        $this->responseIterator = $responseIterator ?? 'clean'; // 'partials', 'legacy', 'clean'
+        $this->responseIterator = $responseIterator ?? 'modular'; // 'partials', 'legacy', 'modular'
         $this->outputMode = $outputMode ?: OutputMode::Tools;
         $this->useObjectReferences = $useObjectReferences ?? false;
         $this->maxRetries = $maxRetries ?? 0;

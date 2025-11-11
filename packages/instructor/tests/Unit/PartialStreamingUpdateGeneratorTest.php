@@ -10,8 +10,8 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamFactory;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamingUpdateGenerator;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\PartialValidation;
@@ -59,7 +59,7 @@ it('initializes stream on first call', function () {
         events: $events
     );
 
-    $generator = new PartialStreamingUpdateGenerator(
+    $generator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -110,7 +110,7 @@ it('processes streaming chunks sequentially', function () {
         events: $events
     );
 
-    $generator = new PartialStreamingUpdateGenerator(
+    $generator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -165,7 +165,7 @@ it('preserves attempt identity across chunks', function () {
         events: $events
     );
 
-    $generator = new PartialStreamingUpdateGenerator(
+    $generator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -222,7 +222,7 @@ it('returns false for hasNext when stream is exhausted', function () {
         events: $events
     );
 
-    $generator = new PartialStreamingUpdateGenerator(
+    $generator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );

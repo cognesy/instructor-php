@@ -6,6 +6,7 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 
 /**
  * Processes streamed chunks within a single attempt and returns updated execution snapshots.
+ *
  * Implementations must NOT perform validation or retries.
  */
 interface CanStreamStructuredOutputUpdates

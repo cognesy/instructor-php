@@ -68,6 +68,8 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
         return $this->startNewAttempt($execution);
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
     /**
      * Check if stream transitioned from active to exhausted.
      */

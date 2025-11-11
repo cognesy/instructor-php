@@ -1,0 +1,98 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
+
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Stream\Contracts\Reducer;
+
+/**
+ * Extracts content delta from PartialInferenceResponse and accumulates it into a buffer.
+ *
+ * Chooses buffer type based on OutputMode (Tools, JSON, Text, etc.).
+ * Buffer accumulates all deltas across chunks - single source of truth.
+ *
+ * Converts raw PartialInferenceResponse into PartialFrame.
+ */
+final class ExtractDeltaReducer implements Reducer
+{
+    private int $frameIndex = 0;
+    private ContentBuffer $accumulatedBuffer;
+
+    public function __construct(
+        private readonly Reducer $inner,
+        private readonly OutputMode $mode,
+    ) {
+        $this->accumulatedBuffer = $this->createEmptyBuffer();
+    }
+
+    #[\Override]
+    public function init(): mixed {
+        $this->frameIndex = 0;
+        $this->accumulatedBuffer = $this->createEmptyBuffer();
+        return $this->inner->init();
+    }
+
+    #[\Override]
+    public function step(mixed $accumulator, mixed $reducible): mixed {
+        assert($reducible instanceof PartialInferenceResponse);
+
+        // Extract delta based on mode
+        $delta = match ($this->mode) {
+            OutputMode::Tools => $reducible->toolArgs ?: $reducible->contentDelta,
+            default => $reducible->contentDelta,
+        };
+
+        // Skip empty deltas without finish/value
+        if ($this->shouldSkip($reducible, $delta)) {
+            return $accumulator;
+        }
+
+        // Always accumulate delta into persistent buffer across chunks
+        // Buffer is single source of truth for accumulated content
+        if ($delta !== '') {
+            $this->accumulatedBuffer = $this->accumulatedBuffer->assemble($delta);
+        }
+
+        // Create frame from response with accumulated buffer
+        $frame = $this->createFrame($reducible, $this->frameIndex++, $this->accumulatedBuffer);
+
+        return $this->inner->step($accumulator, $frame);
+    }
+
+    #[\Override]
+    public function complete(mixed $accumulator): mixed {
+        return $this->inner->complete($accumulator);
+    }
+
+    // INTERNAL //////////////////////////////////////////////////////////////
+
+    private function createEmptyBuffer(): ContentBuffer {
+        return match ($this->mode) {
+            OutputMode::Tools => \Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer::empty(),
+            default => \Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer::empty(),
+        };
+    }
+
+    private function createFrame(
+        PartialInferenceResponse $response,
+        int $index,
+        ContentBuffer $buffer
+    ): PartialFrame {
+        return new PartialFrame(
+            source: $response,
+            buffer: $buffer,
+            object: \Cognesy\Utils\Result\Result::success(null),
+            emission: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\Emission::None,
+            metadata: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\FrameMetadata::at($index),
+        );
+    }
+
+    private function shouldSkip(PartialInferenceResponse $reducible, string $delta): bool {
+        return $delta === ''
+            && $reducible->finishReason === ''
+            && !$reducible->hasValue();
+    }
+}

@@ -1,8 +1,8 @@
-# Streaming Architecture - Clean Executor
+# Streaming Architecture - Clean response iterator
 
 ## Overview
 
-The Clean executor provides low-latency, memory-efficient streaming extraction of structured data from LLM responses. Built on transducer-based pipelines, it processes Server-Sent Events (SSE) chunks as they arrive, progressively deserializing partial objects without buffering the entire response.
+The Clean response iterator provides low-latency, memory-efficient streaming extraction of structured data from LLM responses. Built on transducer-based pipelines, it processes Server-Sent Events (SSE) chunks as they arrive, progressively deserializing partial objects without buffering the entire response.
 
 ### Purpose
 
@@ -13,7 +13,7 @@ Instructor-PHP extracts structured data from unstructured LLM outputs. While bat
 - **Event-driven UX**: Enable real-time UI updates for better user experience
 - **Sequence extraction**: Handle lists/arrays that stream item-by-item
 
-The Clean executor addresses these requirements through a functional pipeline architecture.
+The Clean response iterator addresses these requirements through a functional pipeline architecture.
 
 ## Core Concepts
 
@@ -148,7 +148,7 @@ PartialInferenceResponse (SSE chunk)
 
 #### ExtractDelta
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Pipeline/ExtractDeltaReducer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Pipeline/ExtractDeltaReducer.php`
 
 **Responsibility**: Entry point - extract content delta from SSE chunk and accumulate into buffer.
 
@@ -181,7 +181,7 @@ public function step(mixed $accumulator, mixed $reducible): mixed {
 
 #### DeserializeAndDeduplicate
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Pipeline/DeserializeAndDeduplicateReducer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Pipeline/DeserializeAndDeduplicateReducer.php`
 
 **Responsibility**: Convert buffer content to validated, transformed objects with deduplication.
 
@@ -225,7 +225,7 @@ public function step(mixed $accumulator, mixed $reducible): mixed {
 
 #### UpdateSequence
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Pipeline/UpdateSequenceReducer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Pipeline/UpdateSequenceReducer.php`
 
 **Responsibility**: Track sequence (array/collection) item updates for progressive list rendering.
 
@@ -239,7 +239,7 @@ public function step(mixed $accumulator, mixed $reducible): mixed {
 
 #### EventTapTransducer
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Events/EventTapTransducer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Events/EventTapTransducer.php`
 
 **Responsibility**: Side-effect stage - dispatch domain events for observers.
 
@@ -285,7 +285,7 @@ public function step(mixed $accumulator, mixed $reducible): mixed {
 
 #### EnrichResponse
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Pipeline/EnrichResponseReducer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Pipeline/EnrichResponseReducer.php`
 
 **Responsibility**: Convert internal `PartialFrame` back to `PartialInferenceResponse` for consumers.
 
@@ -293,7 +293,7 @@ public function step(mixed $accumulator, mixed $reducible): mixed {
 
 #### AggregateStream
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Aggregation/AggregateStream.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Aggregation/AggregateStream.php`
 
 **Responsibility**: Terminal stage - accumulate stream into observable `StreamAggregate`.
 
@@ -324,7 +324,7 @@ foreach ($stream as $aggregate) {
 
 #### PartialFrame
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Domain/PartialFrame.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Domain/PartialFrame.php`
 
 Internal pipeline data structure. Immutable value object with `with*()` methods for transformations:
 
@@ -337,7 +337,7 @@ $frame = $frame
 
 #### ContentHash
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Domain/ContentHash.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Domain/ContentHash.php`
 
 Value object for deduplication. Hashes object content using `serialize()`:
 
@@ -359,7 +359,7 @@ final readonly class ContentHash {
 
 #### DeduplicationState
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Domain/DeduplicationState.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Domain/DeduplicationState.php`
 
 Tracks last emitted content hash:
 
@@ -380,7 +380,7 @@ final readonly class DeduplicationState {
 
 #### SequenceTracker / SequenceUpdateList
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Domain/`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Domain/`
 
 Track changes in sequences (arrays/collections):
 
@@ -398,7 +398,7 @@ Used when object implements `Sequenceable` interface.
 
 #### ToolCallTracker
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Domain/ToolCallTracker.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Domain/ToolCallTracker.php`
 
 State machine for tool call lifecycle:
 
@@ -422,7 +422,7 @@ States: `NotStarted` → `InProgress` → `Completed`
 
 #### ContentBuffer Interface
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/ContentBuffer/ContentBuffer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/ContentBuffer/ContentBuffer.php`
 
 The abstraction that enables format flexibility:
 
@@ -437,7 +437,7 @@ interface ContentBuffer {
 
 #### JsonBuffer
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/ContentBuffer/JsonBuffer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/ContentBuffer/JsonBuffer.php`
 
 Handles JSON content with partial parsing:
 
@@ -468,7 +468,7 @@ public function assemble(string $delta): self {
 
 #### ToolsBuffer
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/ContentBuffer/ToolsBuffer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/ContentBuffer/ToolsBuffer.php`
 
 Specialized for tool call arguments (always JSON):
 
@@ -493,7 +493,7 @@ public function assemble(string $delta): self {
 
 #### TextBuffer
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/ContentBuffer/TextBuffer.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/ContentBuffer/TextBuffer.php`
 
 Simple text accumulation with trimming:
 
@@ -513,7 +513,7 @@ Used for text output modes.
 
 #### Emission
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/Enums/Emission.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/Enums/Emission.php`
 
 Signals whether frame should be emitted to observers:
 
@@ -531,7 +531,7 @@ Controls `PartialResponseGenerated` event dispatch.
 
 #### CleanStreamFactory
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/CleanStreamFactory.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/CleanStreamFactory.php`
 
 Composes the pipeline:
 
@@ -644,7 +644,7 @@ ice", "age": 3
 
 ### Entry Point: CleanStreamingUpdateGenerator
 
-**Location**: `packages/instructor/src/ResponseIterators/Clean/CleanStreamingUpdateGenerator.php`
+**Location**: `packages/instructor/src/ResponseIterators/ModularPipeline/CleanStreamingUpdateGenerator.php`
 
 Used by `Instructor` class for streaming mode:
 
@@ -676,7 +676,7 @@ interface InferenceDriver {
 - `OutputMode::JsonSchema`, `Json`, `MdJson` → Structured output
 - `OutputMode::Text` → Plain text
 
-Clean executor adapts to each mode via buffer selection.
+Clean response iterator adapts to each mode via buffer selection.
 
 ### Integration with Deserialization
 
@@ -1290,7 +1290,7 @@ $instructor->respondStream(...);
 
 ## Conclusion
 
-The Clean executor provides a robust, extensible foundation for streaming structured extraction. Its transducer-based architecture enables:
+The Clean response iterator provides a robust, extensible foundation for streaming structured extraction. Its transducer-based architecture enables:
 
 - **Low latency**: Process chunks as they arrive
 - **Low memory**: Constant overhead per stream

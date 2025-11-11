@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\ResponseIterators\Streaming\SequenceGen\SequenceableEmitter;
+use Cognesy\Instructor\ResponseIterators\GeneratorBased\SequenceGen\SequenceableEmitter;
 
 class Item { public function __construct(public string $name) {} }
 

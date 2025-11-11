@@ -8,6 +8,7 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
@@ -56,7 +57,7 @@ class Inference
     }
 
     /**
-     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver
+     * @param string|callable(LLMConfig, HttpClient, EventDispatcherInterface): CanHandleInference $driver
      */
     public static function registerDriver(string $name, string|callable $driver): void {
         InferenceDriverFactory::registerDriver($name, $driver);

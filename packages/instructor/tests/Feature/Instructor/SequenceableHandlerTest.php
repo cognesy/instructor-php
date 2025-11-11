@@ -7,7 +7,7 @@ use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\ResponseIterators\Streaming\PartialGen\GeneratePartialsFromJson;
+use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromJson;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;

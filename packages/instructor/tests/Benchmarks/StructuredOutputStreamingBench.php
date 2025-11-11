@@ -55,11 +55,11 @@
  * Time (lower is better):
  * - Clean should be fastest in streaming (10-30% faster than Legacy)
  * - Sync modes should be similar across all drivers (< 5% difference)
- * - Partials should be between Clean and Legacy
+ * - DecoratedPipeline should be between Clean and Legacy
  *
  * Memory (lower is better):
  * - Clean: Lowest memory usage (~constant overhead)
- * - Partials: Medium memory usage
+ * - DecoratedPipeline: Medium memory usage
  * - Legacy: Highest memory usage (accumulates more state)
  *
  * ## Interpreting Results
@@ -86,10 +86,10 @@
  * |----------------------------|----------|-----------|----------------------------|
  * | benchCleanStream1KB        | Clean    | Streaming | Test Clean streaming perf  |
  * | benchLegacyStream1KB       | Legacy   | Streaming | Test Legacy streaming perf |
- * | benchPartialsStream1KB     | Partials | Streaming | Test Partials stream perf  |
+ * | benchPartialsStream1KB     | DecoratedPipeline | Streaming | Test DecoratedPipeline stream perf  |
  * | benchCleanSync1KB          | Clean    | Sync      | Baseline for Clean         |
  * | benchLegacySync1KB         | Legacy   | Sync      | Baseline for Legacy        |
- * | benchPartialsSync1KB       | Partials | Sync      | Baseline for Partials      |
+ * | benchPartialsSync1KB       | DecoratedPipeline | Sync      | Baseline for DecoratedPipeline      |
  */
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
@@ -173,7 +173,7 @@ final class StructuredOutputStreamingBench
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'clean'))
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModelForSequence(),
@@ -209,7 +209,7 @@ final class StructuredOutputStreamingBench
     }
 
     /**
-     * Partials driver - partial JSON extraction streaming
+     * DecoratedPipeline driver - partial JSON extraction streaming
      *
      * @Revs(200)
      * @Iterations(5)
@@ -250,7 +250,7 @@ final class StructuredOutputStreamingBench
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'clean'))
+            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModelForSequence(),
@@ -285,7 +285,7 @@ final class StructuredOutputStreamingBench
     }
 
     /**
-     * Sync mode with Partials driver config (no actual streaming)
+     * Sync mode with DecoratedPipeline driver config (no actual streaming)
      *
      * @Revs(200)
      * @Iterations(5)

@@ -137,7 +137,7 @@ Each benchmark explicitly sets the streaming driver:
 ```php
 $so = (new StructuredOutput)
     ->withDriver($driver)
-    ->withConfig((new StructuredOutputConfig())->with(streamingDriver: 'clean'))
+    ->withConfig((new StructuredOutputConfig())->with(streamingDriver: 'modular'))
     ->with(...);
 ```
 

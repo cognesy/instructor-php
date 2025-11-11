@@ -46,7 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
-// @doctest id="3d28"
+// @doctest id="6940"
 ```
 
 !!! note
@@ -70,7 +70,7 @@ $structuredOutput = (new StructuredOutput)
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
     ->withStreaming(true)               // Enable streaming
-// @doctest id="49f5"
+// @doctest id="e51c"
 ```
 
 ### Response Model Configuration
@@ -80,7 +80,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
     ->withResponseJsonSchema($schema)   // Set JSON schema directly
-// @doctest id="ee87"
+// @doctest id="8f74"
 ```
 
 ### Configuration and Behavior
@@ -93,7 +93,7 @@ $structuredOutput = (new StructuredOutput)
     ->withRetryPrompt($prompt)          // Set retry prompt
     ->withConfig($config)               // Set configuration object
     ->withConfigPreset($preset)         // Use configuration preset
-// @doctest id="691d"
+// @doctest id="2f80"
 ```
 
 ### LLM Provider Configuration
@@ -105,7 +105,7 @@ $structuredOutput = (new StructuredOutput)
     ->withLLMConfig($config)            // Set LLM configuration
     ->withDriver($driver)               // Set inference driver
     ->withHttpClient($client)           // Set HTTP client
-// @doctest id="f810"
+// @doctest id="f083"
 ```
 
 ### Processing Overrides
@@ -114,7 +114,7 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
-// @doctest id="2305"
+// @doctest id="43c8"
 ```
 
 
@@ -142,7 +142,7 @@ $llmResponse = $structuredOutput->response();
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
-// @doctest id="72b0"
+// @doctest id="e1d4"
 ```
 
 ### Pending Execution with `create()`
@@ -167,7 +167,7 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
-// @doctest id="ade1"
+// @doctest id="29dc"
 ```
 
 ### Response Types Explained
@@ -194,7 +194,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="f3f0"
+// @doctest id="1d95"
 ```
 
 
@@ -232,7 +232,7 @@ $translation = (new StructuredOutput)->with(
     )
     ->get();
 ?>
-// @doctest id="5709"
+// @doctest id="8200"
 ```
 
 
@@ -263,7 +263,7 @@ $person = $stream->lastUpdate()
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
-// @doctest id="1883"
+// @doctest id="4a7a"
 ```
 
 
@@ -296,7 +296,7 @@ $stream = $structuredOutput->stream();     // Get streaming interface
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
-// @doctest id="6f22"
+// @doctest id="6d2c"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result

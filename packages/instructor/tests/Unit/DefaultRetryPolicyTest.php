@@ -1,18 +1,13 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Core\DefaultRetryPolicy;
-use Cognesy\Instructor\Creation\ResponseModelFactory;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
+use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Utils\Result\Result;
 
 class RetryPolicyTestModel {

@@ -4,7 +4,6 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\AttemptIterator;
-use Cognesy\Instructor\Core\DefaultRetryPolicy;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
@@ -14,8 +13,9 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamFactory;
-use Cognesy\Instructor\ResponseIterators\Partials\PartialStreamingUpdateGenerator;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
+use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
+use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\PartialValidation;
@@ -64,7 +64,7 @@ it('processes successful streaming attempt end-to-end', function () {
         events: $events
     );
 
-    $streamIterator = new PartialStreamingUpdateGenerator(
+    $streamIterator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -143,7 +143,7 @@ it('retries on validation failure when retries available', function () {
         events: $events
     );
 
-    $streamIterator = new PartialStreamingUpdateGenerator(
+    $streamIterator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -224,7 +224,7 @@ it('throws exception when max retries exceeded', function () {
         events: $events
     );
 
-    $streamIterator = new PartialStreamingUpdateGenerator(
+    $streamIterator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -289,7 +289,7 @@ it('hasNext returns false when execution is finalized', function () {
         events: $events
     );
 
-    $streamIterator = new PartialStreamingUpdateGenerator(
+    $streamIterator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
@@ -353,7 +353,7 @@ it('clears attempt state between attempts', function () {
         events: $events
     );
 
-    $streamIterator = new PartialStreamingUpdateGenerator(
+    $streamIterator = new PartialUpdateGenerator(
         inferenceProvider: $inferenceProvider,
         partials: $partialsFactory
     );
