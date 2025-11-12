@@ -7,7 +7,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\ContentHash;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\DeduplicationState;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\Emission;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Stream\Contracts\Reducer;
@@ -51,7 +51,7 @@ final class DeserializeAndDeduplicateReducer implements Reducer
         if ($reducible->source->hasValue()) {
             $frame = $reducible
                 ->withObject(Result::success($reducible->source->value()))
-                ->withEmission(Emission::DriverValue);
+                ->withEmission(EmissionType::DriverValue);
             return $this->inner->step($accumulator, $frame);
         }
 
@@ -88,7 +88,7 @@ final class DeserializeAndDeduplicateReducer implements Reducer
         $this->state = $this->state->withHash(ContentHash::of($dedupKey));
         $frame = $reducible
             ->withObject($result)
-            ->withEmission(Emission::ObjectReady);
+            ->withEmission(EmissionType::ObjectReady);
 
         return $this->inner->step($accumulator, $frame);
     }

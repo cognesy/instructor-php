@@ -3,11 +3,13 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
+use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -41,7 +43,7 @@ class StructuredOutputStream
         CanHandleStructuredOutputAttempts $attemptHandler,
         EventDispatcherInterface $events,
     ) {
-        $this->cacheProcessedResponse = true;
+        $this->cacheProcessedResponse = false;
 
         $this->execution = $execution;
         $this->attemptHandler = $attemptHandler;
@@ -74,10 +76,53 @@ class StructuredOutputStream
      *
      * @return Generator<TResponse>
      */
-    public function partials() : \Generator {
+    public function partials() : Generator {
         foreach ($this->streamResponses() as $partialResponse) {
             $result = $partialResponse->value();
             yield $result;
+        }
+    }
+
+    /**
+     * Returns single update for each completed item of the sequence.
+     * This method is useful when you want to process only fully updated
+     * sequence items, e.g. for visualization or further processing.
+     *
+     * @return Generator<Sequence>
+     */
+    public function sequence(): Generator {
+        $tracker = SequenceTracker::empty();
+
+        foreach ($this->streamResponses() as $partialResponse) {
+            $value = $partialResponse->value();
+            if (!($value instanceof Sequenceable)) {
+                throw new Exception('Expected Sequenceable, got ' . get_class($value));
+            }
+
+            $tracker = $tracker->update($value);
+            $pending = $tracker->pending();
+            foreach ($pending as $completedSequence) {
+                yield $completedSequence;
+            }
+            $tracker = $tracker->advance();
+        }
+
+        // Finalize - yield remaining completed items
+        $finalUpdates = $tracker->finalize();
+        foreach ($finalUpdates as $nextFinalItem) {
+            yield $nextFinalItem;
+        }
+    }
+
+    /**
+     * Returns a generator of streamed LLM responses (partials) and final response,
+     * which contain more detailed information, including usage data.
+     *
+     * @return Generator<PartialInferenceResponse|InferenceResponse>
+     */
+    public function responses() : Generator {
+        foreach ($this->streamResponses() as $partialResponse) {
+            yield $partialResponse;
         }
     }
 
@@ -105,64 +150,6 @@ class StructuredOutputStream
     }
 
     /**
-     * Returns single update for each completed item of the sequence.
-     * This method is useful when you want to process only fully updated
-     * sequence items, e.g. for visualization or further processing.
-     *
-     * @return Generator<Sequence>
-     */
-    public function sequence() : Generator {
-        $lastSequence = null;
-        $lastCount = 0;
-
-        foreach ($this->streamResponses() as $partialResponse) {
-            $update = $partialResponse->value();
-            if (!($update instanceof Sequence)) {
-                throw new Exception('Expected a sequence update, got ' . get_class($update));
-            }
-
-            $newCount = $update->count();
-            if ($newCount > $lastCount) {
-                // Yield intermediate snapshots for each completed item
-                $start = max(1, $lastCount);
-                for ($c = $start; $c < $newCount; $c++) {
-                    /** @var Sequence $snap */
-                    $snap = clone $update;
-                    $snap->list = array_slice($update->list, 0, $c);
-                    /** @phpstan-ignore-next-line */
-                    yield clone $snap;
-                }
-                $lastCount = $newCount;
-            }
-            // keep a snapshot to avoid later mutations affecting yielded values
-            $lastSequence = clone $update;
-        }
-        if (!is_null($lastSequence)) {
-            /** @phpstan-ignore-next-line */
-            yield clone $lastSequence;
-        }
-    }
-
-    /**
-     * Returns a generator of streamed LLM responses (partials) and final response,
-     * which contain more detailed information, including usage data.
-     *
-     * @return Generator<PartialInferenceResponse|InferenceResponse>
-     */
-    public function responses() : Generator {
-        foreach ($this->streamResponses() as $partialResponse) {
-            yield $partialResponse;
-        }
-    }
-
-    /**
-     * Convenience: aggregated usage for the last response seen on the stream.
-     */
-    public function usage() : Usage {
-        return $this->execution->usage();
-    }
-
-    /**
      * Returns raw stream for custom processing.
      * Processing with this method does not trigger any events or dispatch any notifications.
      * It also does not update usage data on the stream object.
@@ -171,6 +158,13 @@ class StructuredOutputStream
      */
     public function getIterator() : Generator {
         return $this->stream;
+    }
+
+    /**
+     * Convenience: aggregated usage for the last response seen on the stream.
+     */
+    public function usage() : Usage {
+        return $this->execution->usage();
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////
@@ -189,11 +183,11 @@ class StructuredOutputStream
                 continue;
             }
             $this->lastResponse = $execution->inferenceResponse();
-            $this->events->dispatch(new StructuredOutputResponseUpdated(['partial' => json_encode($response->value())]));
+            $this->events->dispatch(new StructuredOutputResponseUpdated(['response' => $response]));
             yield $response;
         }
         if ($this->lastResponse !== null) {
-            $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($this->lastResponse->value())]));
+            $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $this->lastResponse]));
         }
     }
 
@@ -253,3 +247,4 @@ class StructuredOutputStream
         $this->execution = $execution;
     }
 }
+

@@ -48,7 +48,7 @@ class InferenceRequest {
     public function toArray(): array { ... }
     public function withCacheApplied(): self { ... }
 }
-// @doctest id="737a"
+// @doctest id="8f56"
 ```
 
 
@@ -74,7 +74,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
     public function stream(): InferenceStream { ... }
     public function response(): InferenceResponse { ... }
 }
-// @doctest id="3bf2"
+// @doctest id="51e8"
 ```
 
 For streaming responses, the `InferenceStream` class provides methods to process the stream:
@@ -95,7 +95,7 @@ class InferenceStream {
     public function final(): ?InferenceResponse { ... }
     public function onPartialResponse(callable $callback): self { ... }
 }
-// @doctest id="737f"
+// @doctest id="fe55"
 ```
 
 
@@ -122,5 +122,5 @@ class EmbeddingsResponse {
     public function totalTokens(): int { ... }
     public function split(int $index): array { ... }
 }
-// @doctest id="1475"
+// @doctest id="ae74"
 ```

@@ -85,7 +85,7 @@ final class ExtractDeltaReducer implements Reducer
             source: $response,
             buffer: $buffer,
             object: \Cognesy\Utils\Result\Result::success(null),
-            emission: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\Emission::None,
+            emissionType: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType::None,
             metadata: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\FrameMetadata::at($index),
         );
     }

@@ -142,35 +142,22 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
     private function makePartialResponses(iterable $stream): Generator {
-        $accumulation = ContentAccumulation::empty();
-
+        $priorResponse = null;
         /** @var PartialInferenceResponse $partialResponse */
         foreach ($stream as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
-
-            $accumulation = $accumulation->withPartialResponse($partialResponse);
-            $enrichedResponse = $this->enrichResponse($partialResponse, $accumulation);
-            $this->notifyOnPartialResponse($enrichedResponse);
-
-            yield $enrichedResponse;
+            if ($priorResponse !== null) {
+                $partialResponse = $partialResponse->withAccumulatedContent($priorResponse);
+            }
+            $this->notifyOnPartialResponse($partialResponse);
+            yield $partialResponse;
+            // we need this to accumulate some fields (content, finish reason, reasoning content)
+            $priorResponse = $partialResponse;
         }
 
         $this->finalizeStream();
-    }
-
-    /**
-     * Enriches partial response with accumulated content and finish reason.
-     */
-    private function enrichResponse(
-        PartialInferenceResponse $partialResponse,
-        ContentAccumulation $accumulation
-    ): PartialInferenceResponse {
-        return $partialResponse
-            ->withContent($accumulation->content)
-            ->withReasoningContent($accumulation->reasoningContent)
-            ->withFinishReason($accumulation->finishReason);
     }
 
     /**

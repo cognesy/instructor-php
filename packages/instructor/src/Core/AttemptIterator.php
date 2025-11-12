@@ -28,44 +28,30 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 final readonly class AttemptIterator implements CanHandleStructuredOutputAttempts
 {
     public function __construct(
-        private CanStreamStructuredOutputUpdates $streamIterator,  // Composable!
+        private CanStreamStructuredOutputUpdates $streamIterator,
         private CanGenerateResponse $responseGenerator,
-        private CanDetermineRetry $retryPolicy,  // Pluggable!
+        private CanDetermineRetry $retryPolicy,
     ) {}
 
     #[\Override]
     public function hasNext(StructuredOutputExecution $execution): bool {
-        // Finalized = done
-        if ($execution->isFinalized()) {
-            return false;
-        }
-
-        // Currently processing an attempt
-        if ($execution->isAttemptActive()) {
-            return $this->streamIterator->hasNext($execution);
-        }
-
-        // Can start new attempt if not max retries
-        return !$execution->maxRetriesReached();
+        return match(true) {
+            $execution->isFinalized() => false,
+            $execution->isAttemptActive() => $this->streamIterator->hasNext($execution),
+            default => !$execution->maxRetriesReached(),
+        };
     }
 
     #[\Override]
     public function nextUpdate(StructuredOutputExecution $execution): StructuredOutputExecution {
-        // If attempt is active, delegate to stream iterator
-        if ($execution->isAttemptActive()) {
-            $updated = $this->streamIterator->nextChunk($execution);
-
-            // Check if stream just finished
-            if ($this->didStreamJustFinish($execution, $updated)) {
-                // Stream exhausted - validate and decide retry
-                return $this->finalizeAttempt($updated);
-            }
-
-            return $updated;
+        if (!$execution->isAttemptActive()) {
+            return $this->startNewAttempt($execution);
         }
-
-        // No active stream - start new attempt
-        return $this->startNewAttempt($execution);
+        $updated = $this->streamIterator->nextChunk($execution);
+        return match(true) {
+            $this->didStreamJustFinish($execution, $updated) => $this->finalizeAttempt($updated),
+            default => $updated,
+        };
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
@@ -85,16 +71,11 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
      * Delegates to stream iterator.
      */
     private function startNewAttempt(StructuredOutputExecution $execution): StructuredOutputExecution {
-        // Delegate to stream iterator to initialize stream
-        // (stream iterator will create fresh streaming state)
         $updated = $this->streamIterator->nextChunk($execution);
-
-        // Check if attempt finished immediately (e.g., sync single-chunk execution)
-        if (!$updated->isAttemptActive()) {
-            return $this->finalizeAttempt($updated);
-        }
-
-        return $updated;
+        return match(true) {
+            !$updated->isAttemptActive() => $this->finalizeAttempt($updated),
+            default => $updated,
+        };
     }
 
     /**

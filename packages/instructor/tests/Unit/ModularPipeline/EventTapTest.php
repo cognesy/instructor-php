@@ -3,7 +3,7 @@
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\Emission;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Events\EventTap;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -79,7 +79,7 @@ test('dispatches PartialResponseGenerated for ObjectReady emission', function() 
     $frame = PartialFrame::fromResponse(
         new PartialInferenceResponse(usage: Usage::none())
     )->withObject(Result::success($object))
-     ->withEmission(Emission::ObjectReady);
+     ->withEmission(EmissionType::ObjectReady);
 
     $reducer->step(null, $frame);
 
@@ -102,7 +102,7 @@ test('does not dispatch PartialResponseGenerated for None emission', function() 
 
     $frame = PartialFrame::fromResponse(
         new PartialInferenceResponse(usage: Usage::none())
-    )->withEmission(Emission::None);
+    )->withEmission(EmissionType::None);
 
     $reducer->step(null, $frame);
 

@@ -8,7 +8,7 @@ namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums;
  * Replaces boolean flags with exhaustive cases, making control flow
  * self-documenting and eliminating implicit branching.
  */
-enum Emission
+enum EmissionType
 {
     /**
      * Do not emit this frame (no changes, intermediate state).

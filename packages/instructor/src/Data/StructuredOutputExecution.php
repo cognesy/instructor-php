@@ -175,11 +175,11 @@ final readonly class StructuredOutputExecution
         if ($last === null) {
             return false;
         }
-        $resp = $last->inferenceResponse();
-        if ($last->hasErrors() || $resp === null) {
+        $response = $last->inferenceResponse();
+        if ($last->hasErrors() || $response === null) {
             return false;
         }
-        return !$resp->hasFinishedWithFailure();
+        return !$response->hasFinishedWithFailure();
     }
 
     /**
@@ -193,8 +193,8 @@ final readonly class StructuredOutputExecution
         if ($last->hasErrors()) {
             return true;
         }
-        $resp = $last->inferenceResponse();
-        return $resp !== null && $resp->hasFinishedWithFailure();
+        $response = $last->inferenceResponse();
+        return $response !== null && $response->hasFinishedWithFailure();
     }
 
     // MUTATORS //////////////////////////////////////////////////////////

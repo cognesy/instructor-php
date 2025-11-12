@@ -49,27 +49,16 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
     #[\Override]
     public function nextChunk(StructuredOutputExecution $execution): StructuredOutputExecution {
         $state = $execution->attemptState();
-
-        // Should not be called if no more chunks within the same attempt
         if ($state !== null && !$state->hasMoreChunks()) {
             return $execution;
         }
-
-        // Make single synchronous inference request
         $inference = $this->inferenceProvider->getInference($execution)->response();
-
-        // Normalize content based on output mode (extract JSON, handle tool calls, etc.)
         $inference = $this->normalizer->normalizeContent($inference, $execution->outputMode());
-
-        // Single-chunk attempt; set AttemptState so iterator can finalize;
-        // clearing happens on finalize/failure to start a fresh attempt.
         $attemptState = StructuredOutputAttemptState::fromSingleChunk(
             $inference,
             PartialInferenceResponseList::empty(),
             AttemptPhase::Done,
         );
-
-        // Update execution with inference and mark stream exhausted
         return $execution
             ->withAttemptState($attemptState)
             ->withCurrentAttempt(

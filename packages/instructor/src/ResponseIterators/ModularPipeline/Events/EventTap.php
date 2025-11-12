@@ -15,7 +15,7 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggre
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\ToolCallTracker;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\Emission;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Stream\Contracts\Reducer;
 
 /**
@@ -102,11 +102,11 @@ final class EventTap implements Reducer
         }
 
         // Emission events based on Emission case
-        match ($frame->emission) {
-            Emission::ObjectReady => $this->dispatchObjectReady($frame),
-            Emission::FinishOnly => $this->dispatchFinishOnly($frame),
-            Emission::DriverValue => $this->dispatchDriverValue($frame),
-            Emission::None => null,
+        match ($frame->emissionType) {
+            EmissionType::ObjectReady => $this->dispatchObjectReady($frame),
+            EmissionType::FinishOnly => $this->dispatchFinishOnly($frame),
+            EmissionType::DriverValue => $this->dispatchDriverValue($frame),
+            EmissionType::None => null,
         };
 
         // Sequence tracking and events

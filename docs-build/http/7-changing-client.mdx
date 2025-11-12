@@ -130,7 +130,7 @@ $symfonyClient = HttpClient::using('symfony');
 
 // Use Laravel
 $laravelClient = HttpClient::using('laravel');
-// @doctest id="0e74"
+// @doctest id="d7c0"
 ```
 
 The client name must correspond to a configuration entry in your `config/http.php` file.
@@ -142,7 +142,7 @@ If you don't specify a client, the default one from your configuration will be u
 ```php
 // Uses the default client specified in config/http.php
 $client = HttpClient::default();
-// @doctest id="276d"
+// @doctest id="8503"
 ```
 
 The default client is specified in the `config/http.php` file:
@@ -154,7 +154,7 @@ return [
         // Client configurations...
     ],
 ];
-// @doctest id="41ba"
+// @doctest id="77ad"
 ```
 
 ### Switching at Runtime
@@ -167,7 +167,7 @@ $defaultClient = HttpClient::default();
 $symfonyClient = HttpClient::using('symfony');
 $laravelClient = HttpClient::using('laravel');
 $customClient = HttpClient::using('http-ollama');
-// @doctest id="d1d2"
+// @doctest id="cb9c"
 ```
 
 Note: HttpClient instances are immutable, so you create new instances rather than switching configurations at runtime.
@@ -187,7 +187,7 @@ $client = HttpClient::using('guzzle');
 // Create with default client and custom event dispatcher
 $events = new EventDispatcher();
 $client = (new HttpClientBuilder())->withEventBus($events)->create();
-// @doctest id="cc9f"
+// @doctest id="90d8"
 ```
 
 ## Client-Specific Configuration
@@ -228,7 +228,7 @@ return [
         ],
     ],
 ];
-// @doctest id="56e0"
+// @doctest id="5e3c"
 ```
 
 ### Multiple Configurations for the Same Client Type
@@ -272,7 +272,7 @@ You can define multiple configurations for the same client type, each with diffe
         'failOnError' => true,
     ],
 ],
-// @doctest id="2f17"
+// @doctest id="e46b"
 ```
 
 Then you can select the appropriate configuration based on your needs:
@@ -289,7 +289,7 @@ $streamingClient = HttpClient::using('guzzle-streaming');
 
 // For AI model requests
 $aiClient = HttpClient::using('http-ollama');
-// @doctest id="a189"
+// @doctest id="e9b7"
 ```
 
 ### Common Configuration Parameters
@@ -407,7 +407,7 @@ function generateAiResponse($prompt) {
         throw $e;
     }
 }
-// @doctest id="4ec3"
+// @doctest id="8bd4"
 ```
 
 ## Considerations for Switching Clients

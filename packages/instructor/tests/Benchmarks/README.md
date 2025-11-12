@@ -1,5 +1,65 @@
 # Performance Benchmarks
 
+## Quick Start
+
+### Memory Diagnostics (Fastest - Start Here!)
+
+Quick memory profiling to identify memory consumption issues:
+
+```bash
+# Run all diagnostics
+./run-memory-diagnostics.sh
+
+# Or run directly with PHP
+php MemoryDiagnostics.php
+
+# Specific tests
+./run-memory-diagnostics.sh sync-stream   # Sync vs Stream comparison
+./run-memory-diagnostics.sh layers        # Layer isolation
+./run-memory-diagnostics.sh pipeline      # Pipeline checkpoints
+```
+
+**What it measures:**
+- **Sync vs Stream**: Memory difference between modes (should be ~0%)
+- **Layer Isolation**: Which component uses memory (HTTP/Polyglot/Instructor)
+- **Pipeline Checkpoints**: Step-by-step memory allocation points
+
+**Expected Results:**
+```
+TEST 1: Sync vs Stream Memory Comparison
+  Sync:   6.00 MB (614x payload)
+  Stream: 6.00 MB (614x payload)
+  Diff:   0.00 MB (+0.0%)
+  ✅ Stream and Sync use similar memory
+
+TEST 2: Layer Isolation
+  Layer 1 (Chunks):          0.00 MB
+  Layer 2 (Driver):          0.00 MB
+  Layer 3 (Iteration):       0.00 MB
+  Layer 4 (Full Pipeline):   12.00 MB
+  ✅ Memory distributed across layers
+
+TEST 3: Pipeline Memory Checkpoints
+  Shows memory at each pipeline stage
+```
+
+**When to use:**
+- Before/after optimization to verify improvements
+- When investigating memory issues
+- As part of performance regression testing
+
+### Detailed Memory Analysis
+
+For deep analysis of specific payloads:
+
+```bash
+# Standalone analyzer with CSV output
+php MemoryAnalyzer.php
+php MemoryAnalyzer.php 10KB  # Specific payload size
+```
+
+---
+
 ## Streaming Driver Benchmark
 
 The `StructuredOutputStreamingBench` compares performance of three streaming driver implementations:

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain;
 
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\Emission;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
 
@@ -31,7 +31,7 @@ final readonly class PartialFrame
         public Result $object,  // Result<mixed> - Success or Failure
 
         // Emission control
-        public Emission $emission,
+        public EmissionType $emissionType,
 
         // Metadata
         public FrameMetadata $metadata,
@@ -47,7 +47,7 @@ final readonly class PartialFrame
             source: $response,
             buffer: JsonBuffer::empty(),
             object: Result::success(null),
-            emission: Emission::None,
+            emissionType: EmissionType::None,
             metadata: FrameMetadata::at($index),
         );
     }
@@ -63,7 +63,7 @@ final readonly class PartialFrame
     }
 
     public function shouldEmit(): bool {
-        return $this->emission->shouldEmit();
+        return $this->emissionType->shouldEmit();
     }
 
     public function isError(): bool {
@@ -77,7 +77,7 @@ final readonly class PartialFrame
             source: $this->source,
             buffer: $buffer,
             object: $this->object,
-            emission: $this->emission,
+            emissionType: $this->emissionType,
             metadata: $this->metadata,
         );
     }
@@ -87,17 +87,17 @@ final readonly class PartialFrame
             source: $this->source,
             buffer: $this->buffer,
             object: $result,
-            emission: $this->emission,
+            emissionType: $this->emissionType,
             metadata: $this->metadata,
         );
     }
 
-    public function withEmission(Emission $emission): self {
+    public function withEmission(EmissionType $emission): self {
         return new self(
             source: $this->source,
             buffer: $this->buffer,
             object: $this->object,
-            emission: $emission,
+            emissionType: $emission,
             metadata: $this->metadata,
         );
     }
@@ -107,7 +107,7 @@ final readonly class PartialFrame
             source: $this->source,
             buffer: $this->buffer,
             object: $this->object,
-            emission: $this->emission,
+            emissionType: $this->emissionType,
             metadata: $metadata,
         );
     }

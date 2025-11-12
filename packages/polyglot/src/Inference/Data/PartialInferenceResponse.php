@@ -153,6 +153,15 @@ class PartialInferenceResponse
         return $this;
     }
 
+    public function withAccumulatedContent(PartialInferenceResponse $partialResponse) : self {
+        $this->content = $this->content . $partialResponse->contentDelta;
+        $this->reasoningContent = $this->reasoningContent . $partialResponse->reasoningContentDelta;
+        $this->finishReason = ($partialResponse->finishReason !== '')
+            ? $partialResponse->finishReason
+            : $this->finishReason;
+        return $this;
+    }
+
     // TRANSFORMATIONS //////////////////////////////////////////////
 
     public function json(): string {

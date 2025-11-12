@@ -6,10 +6,11 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 final readonly class StructuredOutputResponse
 {
+    private InferenceResponse $inferenceResponse;
+
     private string $raw;
     private array $decoded;
     private mixed $deserialized;
-    private InferenceResponse $inferenceResponse;
 
     public function __construct(
         ?InferenceResponse $inferenceResponse = null,
@@ -80,7 +81,7 @@ final readonly class StructuredOutputResponse
             'inferenceResponse' => $this->inferenceResponse->toArray(),
             'raw' => $this->raw,
             'decoded' => $this->decoded,
-            'deserialized' => $this->deserialized, // TODO: maybe this should not be deserialized?
+            'deserialized' => $this->deserialized,
         ];
     }
 
@@ -91,7 +92,7 @@ final readonly class StructuredOutputResponse
                 : null,
             raw: $data['raw'] ?? '',
             decoded: $data['decoded'] ?? [],
-            deserialized: $data['deserialized'] ?? null, // TODO: maybe this should be deserialized via main SO flow?
+            deserialized: $data['deserialized'] ?? null,
         );
     }
 }
