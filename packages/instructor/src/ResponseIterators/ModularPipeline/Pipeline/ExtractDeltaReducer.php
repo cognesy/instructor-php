@@ -3,10 +3,15 @@
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
 
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\FrameMetadata;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
+use Cognesy\Utils\Result\Result;
 
 /**
  * Extracts content delta from PartialInferenceResponse and accumulates it into a buffer.
@@ -71,8 +76,8 @@ final class ExtractDeltaReducer implements Reducer
 
     private function createEmptyBuffer(): ContentBuffer {
         return match ($this->mode) {
-            OutputMode::Tools => \Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer::empty(),
-            default => \Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer::empty(),
+            OutputMode::Tools => ToolsBuffer::empty(),
+            default => JsonBuffer::empty(),
         };
     }
 
@@ -84,15 +89,15 @@ final class ExtractDeltaReducer implements Reducer
         return new PartialFrame(
             source: $response,
             buffer: $buffer,
-            object: \Cognesy\Utils\Result\Result::success(null),
-            emissionType: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType::None,
-            metadata: \Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\FrameMetadata::at($index),
+            object: Result::success(null),
+            emissionType: EmissionType::None,
+            metadata: FrameMetadata::at($index),
         );
     }
 
     private function shouldSkip(PartialInferenceResponse $reducible, string $delta): bool {
         return $delta === ''
-            && $reducible->finishReason === ''
+            && $reducible->finishReason() === ''
             && !$reducible->hasValue();
     }
 }

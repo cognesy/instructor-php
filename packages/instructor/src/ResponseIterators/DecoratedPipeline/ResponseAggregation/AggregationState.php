@@ -49,7 +49,7 @@ final readonly class AggregationState
             usage: $this->usage->withAccumulated($partial->usage()),
             latestValue: $partial->value() ?? $this->latestValue,
             partialCount: $this->partialCount + 1,
-            finishReason: $partial->finishReason ?: $this->finishReason,
+            finishReason: $partial->finishReason() ?: $this->finishReason,
             partials: $this->partials,
         );
     }
@@ -67,6 +67,10 @@ final readonly class AggregationState
 
     public function partials(): PartialInferenceResponseList {
         return $this->partials;
+    }
+
+    public function finishReason(): ?string {
+        return $this->finishReason;
     }
 
     /**

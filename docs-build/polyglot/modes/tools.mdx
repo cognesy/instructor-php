@@ -136,7 +136,7 @@ function simulateWeatherApi(string $location, string $unit): array {
         'humidity' => 65,
     ];
 }
-// @doctest id="74a9"
+// @doctest id="a13c"
 ```
 
 ## Controlling Tool Usage
@@ -178,7 +178,7 @@ $noToolResponse = $inference->with(
     toolChoice: 'none',
     mode: OutputMode::Tools
 )->response();
-// @doctest id="d861"
+// @doctest id="36c0"
 ```
 
 
@@ -234,8 +234,8 @@ foreach ($stream as $partialResponse) {
     }
 
     // Check for finish reason
-    if (!empty($partialResponse->finishReason)) {
-        echo "\nFinished with reason: {$partialResponse->finishReason}\n";
+    if (!empty($partialResponse->finishReason())) {
+        echo "\nFinished with reason: {$partialResponse->finishReason()}\n";
     }
 }
 
@@ -250,7 +250,7 @@ if (!empty($toolName) && !empty($toolArgs)) {
         echo "Error parsing tool arguments: " . $e->getMessage() . "\n";
     }
 }
-// @doctest id="893f"
+// @doctest id="edc4"
 ```
 
 

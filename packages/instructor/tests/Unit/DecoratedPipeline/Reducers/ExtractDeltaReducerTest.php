@@ -134,7 +134,7 @@ test('preserves PartialInferenceResponse in PartialContext', function() {
     $context = $collector->collected[0];
     expect($context)->toBeInstanceOf(PartialProcessingState::class)
         ->and($context->response)->toBe($partial)
-        ->and($context->response->finishReason)->toBe('stop');
+        ->and($context->response->finishReason())->toBe('stop');
 });
 
 test('handles multiple consecutive deltas', function() {

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 
 use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpResponseData;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
@@ -19,12 +20,12 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
             toolCalls: $this->makeToolCalls($data),
             reasoningContent: $data['choices'][0]['message']['reasoning_content'] ?? '',
             usage: $this->usageFormat->fromData($data),
-            responseData: $data,
+            responseData: HttpResponseData::fromHttpResponse($response),
         );
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
+    public function fromStreamResponse(string $eventBody, ?HttpResponse $response = null): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;
@@ -37,7 +38,7 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
-            responseData: $data,
+            responseData: $response ? HttpResponseData::fromHttpResponse($response) : HttpResponseData::empty(),
         );
     }
 }

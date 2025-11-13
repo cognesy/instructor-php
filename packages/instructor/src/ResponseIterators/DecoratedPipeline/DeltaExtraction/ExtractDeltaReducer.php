@@ -46,7 +46,7 @@ class ExtractDeltaReducer implements Reducer
 
     private function shouldSkip(PartialInferenceResponse $reducible, string $delta) : bool {
         return $delta === ''
-            && $reducible->finishReason === ''
+            && $reducible->finishReason() === ''
             && !$reducible->hasValue();
     }
 }

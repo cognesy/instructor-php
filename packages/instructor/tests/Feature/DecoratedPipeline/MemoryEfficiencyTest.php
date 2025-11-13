@@ -244,5 +244,5 @@ test('finishReason is retained through aggregation', function() {
 
     $last = end($results);
     expect($last)->toBeInstanceOf(AggregationState::class)
-        ->and($last->finishReason)->toBe('stop');
+        ->and($last->finishReason())->toBe('stop');
 });

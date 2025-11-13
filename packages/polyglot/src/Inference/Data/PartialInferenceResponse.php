@@ -2,10 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
+use Cognesy\Http\Data\HttpResponseData;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
+/** @deprecated */
 class PartialInferenceResponse
 {
     public readonly string $id;
@@ -13,9 +15,10 @@ class PartialInferenceResponse
     public readonly DateTimeImmutable $updatedAt;
 
     private mixed $value = null; // data extracted from response or tool calls
+
     private string $content; // full content accumulated from deltas
     private string $reasoningContent; // full reasoning content accumulated from deltas
-    public string $finishReason;
+    private string $finishReason;
 
     public readonly string $contentDelta;
     public readonly string $reasoningContentDelta;
@@ -24,7 +27,7 @@ class PartialInferenceResponse
     public readonly string $toolArgs;
 
     public ?Usage $usage;
-    public array $responseData;
+    public ?HttpResponseData $responseData;
 
     public function __construct(
         ?string $contentDelta = null,
@@ -34,7 +37,7 @@ class PartialInferenceResponse
         ?string $toolArgs = null,
         ?string $finishReason = null,
         ?Usage $usage = null,
-        ?array $responseData = null,
+        ?HttpResponseData $responseData = null,
         //
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -47,7 +50,7 @@ class PartialInferenceResponse
         $this->toolArgs = $toolArgs ?? '';
         $this->finishReason = $finishReason ?? '';
         $this->usage = $usage ?? new Usage();
-        $this->responseData = $responseData ?? [];
+        $this->responseData = $responseData ?? HttpResponseData::empty();
         $this->content = '';
         $this->reasoningContent = '';
         //
@@ -80,6 +83,10 @@ class PartialInferenceResponse
 
     public function toolArgs(): string {
         return $this->toolArgs ?? '';
+    }
+
+    public function finishReason(): string {
+        return $this->finishReason ?? '';
     }
 
     // HAS/IS ///////////////////////////////////////////////////////
@@ -115,7 +122,7 @@ class PartialInferenceResponse
         ?string $toolArgs = null,
         ?string $finishReason = null,
         ?Usage $usage = null,
-        ?array $responseData = null,
+        ?HttpResponseData $responseData = null,
     ): self {
         return new self(
             contentDelta: $contentDelta ?? $this->contentDelta,
@@ -198,7 +205,7 @@ class PartialInferenceResponse
             toolArgs: $data['tool_args'] ?? '',
             finishReason: $data['finish_reason'] ?? '',
             usage: isset($data['usage']) && is_array($data['usage']) ? Usage::fromArray($data['usage']) : null,
-            responseData: $data['response_data'] ?? [],
+            responseData: HttpResponseData::fromArray($data['response_data'] ?? []),
             id: $data['id'] ?? null,
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null

@@ -144,7 +144,7 @@ test('captures finishReason from partials', function() {
 
     $lastAggregate = end($collector->collected);
 
-    expect($lastAggregate->finishReason)->toBe('stop');
+    expect($lastAggregate->finishReason())->toBe('stop');
 });
 
 test('increments partialCount for each step', function() {

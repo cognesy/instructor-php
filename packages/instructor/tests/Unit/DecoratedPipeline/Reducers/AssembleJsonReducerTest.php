@@ -196,6 +196,6 @@ test('preserves original PartialContext properties', function() {
     $result = $collector->collected[0];
     expect($result)->toBeInstanceOf(PartialProcessingState::class)
         ->and($result->delta)->toBe('{"data": true}')
-        ->and($result->response->finishReason)->toBe('stop')
+        ->and($result->response->finishReason())->toBe('stop')
         ->and($result->json)->toBeInstanceOf(PartialJson::class);
 });

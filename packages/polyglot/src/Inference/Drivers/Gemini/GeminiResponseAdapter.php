@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
 use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpResponseData;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
@@ -26,12 +27,12 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->usageFormat->fromData($data),
-            responseData: $data,
+            responseData: HttpResponseData::fromHttpResponse($response),
         );
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
+    public function fromStreamResponse(string $eventBody, ?HttpResponse $response = null): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if (empty($data)) {
             return null;
@@ -43,7 +44,7 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             usage: $this->usageFormat->fromData($data),
-            responseData: $data,
+            responseData: $response ? HttpResponseData::fromHttpResponse($response) : HttpResponseData::empty(),
         );
     }
 

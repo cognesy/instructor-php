@@ -90,7 +90,7 @@ test('captures finish reason', function() {
 
     $result = $reducer->step($aggregate, $partial);
 
-    expect($result->finishReason)->toBe('stop');
+    expect($result->finishReason())->toBe('stop');
 });
 
 test('accumulates partials when enabled', function() {
@@ -196,5 +196,5 @@ test('preserves last non-null finish reason', function() {
     $aggregate = $reducer->step($aggregate, $partial2);
     $aggregate = $reducer->step($aggregate, $partial3);
 
-    expect($aggregate->finishReason)->toBe('stop');
+    expect($aggregate->finishReason())->toBe('stop');
 });

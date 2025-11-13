@@ -30,7 +30,7 @@ class AssembleJsonReducer implements Reducer
 
         // Skip if JSON is empty, unless finishReason present OR driver provided value.
         if ($this->state->isEmpty()) {
-            if ($reducible->response->finishReason !== '' || $reducible->response->hasValue()) {
+            if ($reducible->response->finishReason() !== '' || $reducible->response->hasValue()) {
                 // Forward unchanged so downstream can emit/aggregate based on existing value/usage.
                 return $this->inner->step($accumulator, $reducible);
             }

@@ -30,6 +30,7 @@ class MockHttp
         $mockResponse->shouldReceive('statusCode')->andReturn(200);
         $mockResponse->shouldReceive('headers')->andReturn([]);
         $mockResponse->shouldReceive('body')->andReturnUsing(...$list);
+        $mockResponse->shouldReceive('isStreamed')->andReturn(false);
         $mockResponse->shouldReceive('stream')->andReturn($mockResponse);
 
         return $mockHttp;

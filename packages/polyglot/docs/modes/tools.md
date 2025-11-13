@@ -233,8 +233,8 @@ foreach ($stream as $partialResponse) {
     }
 
     // Check for finish reason
-    if (!empty($partialResponse->finishReason)) {
-        echo "\nFinished with reason: {$partialResponse->finishReason}\n";
+    if (!empty($partialResponse->finishReason())) {
+        echo "\nFinished with reason: {$partialResponse->finishReason()}\n";
     }
 }
 

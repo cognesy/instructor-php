@@ -64,7 +64,7 @@ final readonly class StreamAggregate
         return new self(
             content: $nextContent,
             latestValue: $partial->value() ?? $this->latestValue,
-            finishReason: $partial->finishReason ?: $this->finishReason,
+            finishReason: $partial->finishReason() ?: $this->finishReason,
             usage: $this->usage->withAccumulated($partial->usage()),
             frameCount: $this->frameCount + 1,
             partials: $partials,
@@ -76,6 +76,10 @@ final readonly class StreamAggregate
      */
     public function partials(): PartialInferenceResponseList {
         return $this->partials ?? PartialInferenceResponseList::empty();
+    }
+
+    public function finishReason(): ?string {
+        return $this->finishReason;
     }
 
     /**

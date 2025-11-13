@@ -288,7 +288,7 @@ test('stream handles finish reason', function() {
     $final = end($results);
 
     expect($final)->toBeInstanceOf(\Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate::class)
-        ->and($final->finishReason)->toBe('stop');
+        ->and($final->finishReason())->toBe('stop');
 })->skip('Integration test - better suited for Feature tests with FakeInferenceDriver');
 
 test('factory uses provided deserializer', function() {

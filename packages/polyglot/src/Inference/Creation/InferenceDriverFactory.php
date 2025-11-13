@@ -90,7 +90,7 @@ class InferenceDriverFactory
 
     /**
      * Returns factory to create LLM driver instance
-     * @return (callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanHandleInference)|null
+     * @return (callable(LLMConfig, HttpClient, EventDispatcherInterface): CanHandleInference)|null
      */
     protected function getBundledDriver(string $name) : ?callable {
        return $this->bundledDrivers[$name] ?? null;

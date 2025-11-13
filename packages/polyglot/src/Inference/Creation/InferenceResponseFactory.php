@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Creation;
 
+use Cognesy\Http\Data\HttpResponseData;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -15,13 +16,14 @@ class InferenceResponseFactory
             $response = self::applyPartialResponse($partialResponse, $response);
         }
         $toolCalls = ToolCalls::fromArray(self::makeTools($partialResponses));
+        $responseData = $partialResponses->first()?->responseData ?? HttpResponseData::empty();
         return new InferenceResponse(
             content: $response->content(),
             finishReason: $response->finishReason()->value,
             toolCalls: $toolCalls,
             reasoningContent: $response->reasoningContent(),
             usage: $response->usage(),
-            responseData: $response->responseData(),
+            responseData: $responseData,
             isPartial: $response->isPartial(),
         );
     }
@@ -65,19 +67,15 @@ class InferenceResponseFactory
         $newContent = $response->content() . ($partialResponse->contentDelta ?? '');
         $newReasoningContent = $response->reasoningContent() . ($partialResponse->reasoningContentDelta ?? '');
         $newUsage = $response->usage()->withAccumulated($partialResponse->usage());
-        $newResponseData = match(true) {
-            empty($partialResponse->responseData) => $response->responseData(),
-            default => array_merge($response->responseData(), $partialResponse->responseData),
-        };
         $newFinishReason = match(true) {
-            !empty($partialResponse->finishReason) => $partialResponse->finishReason,
+            !empty($partialResponse->finishReason()) => $partialResponse->finishReason(),
             default => $response->finishReason()->value,
         };
         // once we have a finish reason, we are no longer partial
         // yet - it does not mean streaming is finished
         // we can still receive extra chunks - e.g. with usage data
         $newIsPartial = match(true) {
-            !empty($partialResponse->finishReason) => false,
+            !empty($partialResponse->finishReason()) => false,
             default => $response->isPartial(),
         };
         return $response->with(
@@ -85,7 +83,7 @@ class InferenceResponseFactory
             finishReason: $newFinishReason,
             reasoningContent: $newReasoningContent,
             usage: $newUsage,
-            responseData: $newResponseData,
+            responseData: $response->responseData(),
             isPartial: $newIsPartial,
         );
     }

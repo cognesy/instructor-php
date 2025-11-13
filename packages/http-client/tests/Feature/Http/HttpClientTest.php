@@ -85,7 +85,7 @@ test('HTTP client with middleware', function() {
         public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
         {
             // Add a test header to the request
-            $request->headers['X-Test'] = 'Modified by middleware';
+            $request->withHeader('X-Test', 'Modified by middleware');
             return $next->handle($request);
         }
     });

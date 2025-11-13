@@ -18,30 +18,30 @@ class HttpRequest
     public DateTimeImmutable $updatedAt;
     public Metadata $metadata;
 
+    private string $url;
+    private string $method;
+    private array $headers;
+    private array $options;
     private HttpRequestBody $body;
 
-    /**
-     * HttpRequest constructor.
-     *
-     * @param string $url
-     * @param string $method
-     * @param array $headers
-     * @param array $body
-     * @param array $options
-     */
     public function __construct(
-        public string $url,
-        public string $method,
-        public array $headers,
+        string $url,
+        string $method,
+        array $headers,
         string|array $body,
-        public array $options,
+        array $options,
         //
         ?string $id = null,
-        ?string $createdAt = null,
-        ?string $updatedAt = null,
+        ?DateTimeImmutable $createdAt = null,
+        ?DateTimeImmutable $updatedAt = null,
         ?Metadata $metadata = null,
     ) {
+        $this->url = $url;
+        $this->method = $method;
+        $this->headers = $headers;
+        $this->options = $options;
         $this->body = new HttpRequestBody($body);
+        //
         $this->id = $id ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? new DateTimeImmutable();
@@ -61,8 +61,6 @@ class HttpRequest
 
     /**
      * Get the request method
-     *
-     * @return string
      */
     public function method() : string {
         return $this->method;
@@ -70,17 +68,16 @@ class HttpRequest
 
     /**
      * Get the request headers
-     *
-     * @return array
      */
-    public function headers() : array {
-        return $this->headers;
+    public function headers(?string $key = null) : mixed {
+        return match(true) {
+            ($key !== null) => $this->headers[$key] ?? [],
+            default => $this->headers
+        };
     }
 
     /**
      * Get the request body
-     *
-     * @return HttpRequestBody
      */
     public function body() : HttpRequestBody {
         return $this->body;
@@ -92,8 +89,6 @@ class HttpRequest
 
     /**
      * Check if the request is streamed
-     *
-     * @return bool
      */
     public function isStreamed() : bool {
         return $this->options['stream'] ?? false;
@@ -101,11 +96,13 @@ class HttpRequest
 
     // MUTATORS /////////////////////////////////////////////////////////////////////
 
+    public function withHeader(string $key, string $value) : self {
+        $this->headers[$key] = $value;
+        return $this;
+    }
+
     /**
      * Set the request URL
-     *
-     * @param string $url
-     * @return $this
      */
     public function withStreaming(bool $streaming) : self {
         $this->options['stream'] = $streaming;
@@ -128,5 +125,19 @@ class HttpRequest
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'metadata' => $this->metadata,
         ];
+    }
+
+    public static function fromArray(array $data): HttpRequest {
+        return new self(
+            url: $data['url'],
+            method: $data['method'],
+            headers: $data['headers'],
+            body: $data['body'],
+            options: $data['options'],
+            id: $data['id'],
+            createdAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['createdAt']),
+            updatedAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['updatedAt']),
+            metadata: Metadata::fromArray($data['metadata']),
+        );
     }
 }

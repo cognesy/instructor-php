@@ -91,7 +91,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
         );
         try {
             foreach($reader->eventsFrom($httpResponse->stream()) as $eventBody) {
-                $partialResponse = $this->responseTranslator->fromStreamResponse($eventBody);
+                $partialResponse = $this->responseTranslator->fromStreamResponse($eventBody, $httpResponse);
                 if ($partialResponse === null) {
                     continue;
                 }

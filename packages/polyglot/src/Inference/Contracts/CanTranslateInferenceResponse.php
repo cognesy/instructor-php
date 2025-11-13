@@ -9,6 +9,6 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 interface CanTranslateInferenceResponse
 {
     public function fromResponse(HttpResponse $response): ?InferenceResponse;
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;
+    public function fromStreamResponse(string $eventBody, ?HttpResponse $response = null): ?PartialInferenceResponse;
     public function toEventBody(string $data): string|bool;
 }

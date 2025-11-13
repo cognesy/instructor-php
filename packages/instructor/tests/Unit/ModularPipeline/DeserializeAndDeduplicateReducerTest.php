@@ -109,7 +109,7 @@ test('deserializes valid JSON and marks for emission', function() {
 
     expect($collector->collected)->toHaveCount(1)
         ->and($collector->collected[0]->hasObject())->toBeTrue()
-        ->and($collector->collected[0]->emission)->toBe(EmissionType::ObjectReady);
+        ->and($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady);
 });
 
 test('skips frames without content', function() {
@@ -153,7 +153,7 @@ test('handles deserialization failure', function() {
 
     expect($collector->collected)->toHaveCount(1)
         ->and($collector->collected[0]->isError())->toBeTrue()
-        ->and($collector->collected[0]->emission)->toBe(EmissionType::None);
+        ->and($collector->collected[0]->emissionType)->toBe(EmissionType::None);
 });
 
 test('handles validation failure', function() {
@@ -202,8 +202,8 @@ test('deduplicates identical objects', function() {
     $reducer->step(null, $frame2);
 
     // First should emit, second should not
-    expect($collector->collected[0]->emission)->toBe(EmissionType::ObjectReady)
-        ->and($collector->collected[1]->emission)->toBe(EmissionType::None);
+    expect($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady)
+        ->and($collector->collected[1]->emissionType)->toBe(EmissionType::None);
 });
 
 test('emits when object changes', function() {
@@ -231,8 +231,8 @@ test('emits when object changes', function() {
     $reducer->step(null, $frame2);
 
     // Both should emit
-    expect($collector->collected[0]->emission)->toBe(EmissionType::ObjectReady)
-        ->and($collector->collected[1]->emission)->toBe(EmissionType::ObjectReady);
+    expect($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady)
+        ->and($collector->collected[1]->emissionType)->toBe(EmissionType::ObjectReady);
 });
 
 test('init resets deduplication state', function() {
@@ -251,7 +251,7 @@ test('init resets deduplication state', function() {
         ->withBuffer(JsonBuffer::empty()->assemble('{"key": "value"}'));
     $reducer->step(null, $frame1);
 
-    expect($collector->collected[0]->emission)->toBe(EmissionType::ObjectReady);
+    expect($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady);
 
     // Reset for second stream
     $reducer->init();
@@ -262,7 +262,7 @@ test('init resets deduplication state', function() {
         ->withBuffer(JsonBuffer::empty()->assemble('{"key": "value"}'));
     $reducer->step(null, $frame2);
 
-    expect($collector->collected[0]->emission)->toBe(EmissionType::ObjectReady);
+    expect($collector->collected[0]->emissionType)->toBe(EmissionType::ObjectReady);
 });
 
 test('preserves frame metadata through transformation', function() {
@@ -305,5 +305,5 @@ test('forwards errors without updating dedup state', function() {
     // Should forward with error, no emission
     expect($collector->collected)->toHaveCount(1)
         ->and($collector->collected[0]->isError())->toBeTrue()
-        ->and($collector->collected[0]->emission)->toBe(EmissionType::None);
+        ->and($collector->collected[0]->emissionType)->toBe(EmissionType::None);
 });

@@ -46,16 +46,31 @@ final readonly class ToolCall
 
     // MUTATORS ////////////////////////////////////////////////////
 
+    public function with(
+        ?string $id = null,
+        ?string $name = null,
+        ?array $args = null,
+    ) : self {
+        return new self(
+            name: $name ?? $this->name,
+            args: $args ?? $this->arguments,
+            id: $id ?? $this->id,
+        );
+    }
+
     public function withId(string $id) : self {
-        return new self($this->name, $this->arguments, $id);
+        return $this->with(id: $id);
     }
 
     public function withName(string $name) : self {
-        return new self($name, $this->arguments, $this->id);
+        return $this->with(name: $name);
     }
 
-    public function withArgs(array $args) : self {
-        return new self($this->name, $args, $this->id);
+    public function withArgs(string|array $args) : self {
+        return $this->with(args: match(true) {
+            is_array($args) => $args,
+            is_string($args) => Json::fromString($args)->toArray(),
+        });
     }
 
     // ACCESSORS ///////////////////////////////////////////////////
@@ -94,6 +109,8 @@ final readonly class ToolCall
         return [
             'name' => $this->name,
             'arguments' => $this->arguments,
+            //
+            'id' => $this->id,
         ];
     }
 
@@ -119,13 +136,5 @@ final readonly class ToolCall
         }
         
         return $this->name . "(" . implode(', ', $argStrings) . ")";
-    }
-
-    public function clone() : self {
-        return new self(
-            name: $this->name,
-            args: $this->arguments,
-            id: $this->id
-        );
     }
 }

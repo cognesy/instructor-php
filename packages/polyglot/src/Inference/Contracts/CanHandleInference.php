@@ -13,10 +13,8 @@ interface CanHandleInference
     public function makeResponseFor(InferenceRequest $request) : InferenceResponse;
     /** @return iterable<PartialInferenceResponse> */
     public function makeStreamResponsesFor(InferenceRequest $request): iterable;
-
     public function toHttpRequest(InferenceRequest $request): HttpRequest;
     public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse;
-
     /** @return iterable<PartialInferenceResponse> */
     public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable;
 }

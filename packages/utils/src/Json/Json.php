@@ -19,11 +19,10 @@ class Json
     }
 
     public static function fromString(string $text) : Json {
-        if (empty(trim($text))) {
-            return new Json('');
-        }
-        $json = (new JsonParser)->findCompleteJson($text);
-        return new Json($json);
+        return match(true) {
+            empty(trim($text)) => new Json(''),
+            default => new Json((new JsonParser)->findCompleteJson($text)),
+        };
     }
 
     public static function fromArray(array $array) : Json {
@@ -31,11 +30,10 @@ class Json
     }
 
     public static function fromPartial(string $text) : Json {
-        if (empty(trim($text))) {
-            return new Json('');
-        }
-        $json = (new JsonParser)->findPartialJson($text);
-        return new Json($json);
+        return match(true) {
+            empty(trim($text)) => new Json(''),
+            default => new Json((new JsonParser)->findPartialJson($text)),
+        };
     }
 
     public function isEmpty() : bool {

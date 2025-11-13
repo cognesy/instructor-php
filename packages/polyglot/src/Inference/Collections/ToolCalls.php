@@ -168,14 +168,6 @@ final readonly class ToolCalls
         return implode(" | ", $parts);
     }
 
-    public function clone() : self {
-        $clonedToolCalls = [];
-        foreach ($this->toolCalls as $toolCall) {
-            $clonedToolCalls[] = $toolCall->clone();
-        }
-        return new ToolCalls(...$clonedToolCalls);
-    }
-
     // INTERNAL ////////////////////////////////////////////////////
 
     private static function makeArgs(string|array $args): array {

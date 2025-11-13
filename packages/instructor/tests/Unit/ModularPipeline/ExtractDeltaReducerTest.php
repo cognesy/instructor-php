@@ -153,7 +153,7 @@ test('preserves PartialInferenceResponse in frame', function() {
     $frame = $collector->collected[0];
     expect($frame)->toBeInstanceOf(PartialFrame::class)
         ->and($frame->source)->toBe($partial)
-        ->and($frame->source->finishReason)->toBe('stop');
+        ->and($frame->source->finishReason())->toBe('stop');
 });
 
 test('handles multiple consecutive deltas', function() {
