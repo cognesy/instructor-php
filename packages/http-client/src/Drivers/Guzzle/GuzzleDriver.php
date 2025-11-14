@@ -4,8 +4,8 @@ namespace Cognesy\Http\Drivers\Guzzle;
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
@@ -14,10 +14,10 @@ use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException as GuzzleConnectException;
-use GuzzleHttp\Exception\GuzzleException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -42,30 +42,26 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     #[\Override]
     public function handle(HttpRequest $request) : HttpResponse {
-        $startTime = microtime(true);
         $this->dispatchRequestSent($request);
         try {
-            $response = $this->performHttpCall($request);
+            $rawResponse = $this->performHttpCall($request);
         } catch (GuzzleConnectException $e) {
-            $this->handleConnectionException($e, $request, $startTime);
-        } catch (GuzzleException $e) {
-            $this->handleNetworkException($e, $request, $startTime);
+            $this->handleConnectionException($e, $request);
+        } catch (Exception $e) {
+            $this->handleNetworkException($e, $request);
         }
-        $this->validateStatusCodeOrFail($response, $request, $startTime);
-        $this->dispatchResponseReceived($response);
-        return $this->buildHttpResponse($response, $request);
+
+        $httpResponse = $this->buildHttpResponse($rawResponse, $request);
+        if ($this->config->failOnError && $httpResponse->statusCode() >= 400) {
+            $httpException = HttpExceptionFactory::fromStatusCode($httpResponse->statusCode(), $request, $httpResponse);
+            $this->dispatchStatusCodeFailed($httpResponse->statusCode(), $request);
+            throw $httpException;
+        }
+        $this->dispatchResponseReceived($httpResponse);
+        return $httpResponse;
     }
 
-    // INTERNAL /////////////////////////////////////////////
-
-    private function dispatchRequestSent(HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-        ]));
-    }
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
 
     private function performHttpCall(HttpRequest $request) : ResponseInterface {
         return $this->client->request($request->method(), $request->url(), [
@@ -78,78 +74,67 @@ class GuzzleDriver implements CanHandleHttpRequest
         ]);
     }
 
-    private function handleConnectionException(GuzzleConnectException $e, HttpRequest $request, float $startTime): never {
-        $duration = microtime(true) - $startTime;
+    private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): HttpResponse {
+        return (new PsrHttpResponseAdapter(
+            response: $response,
+            stream: $response->getBody(),
+            events: $this->events,
+            isStreamed: $request->isStreamed(),
+            streamChunkSize: $this->config->streamChunkSize,
+        ))->toHttpResponse();
+    }
+
+    // exception handling
+
+    private function handleConnectionException(GuzzleConnectException $e, HttpRequest $request): never {
         $message = $e->getMessage();
 
         $httpException = str_contains($message, 'timeout') || str_contains($message, 'timed out')
-            ? new TimeoutException($message, $request, $duration, $e)
-            : new ConnectionException($message, $request, $duration, $e);
+            ? new TimeoutException($message, $request, null, $e)
+            : new ConnectionException($message, $request, null, $e);
 
-        $this->dispatchRequestFailed($httpException, $request, $duration);
+        $this->dispatchRequestFailed($httpException, $request);
         throw $httpException;
     }
 
-    private function handleNetworkException(GuzzleException $e, HttpRequest $request, float $startTime): never {
-        $duration = microtime(true) - $startTime;
-        $httpException = new NetworkException($e->getMessage(), $request, null, $duration, $e);
-
-        $this->dispatchRequestFailed($httpException, $request, $duration);
+    private function handleNetworkException(Exception $e, HttpRequest $request): never {
+        $httpException = new NetworkException($e->getMessage(), $request, null, null, $e);
+        $this->dispatchRequestFailed($httpException, $request);
         throw $httpException;
     }
 
-    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request, float $duration): void {
+    // event dispatching
+
+    private function dispatchRequestSent(HttpRequest $request): void {
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+        ]));
+    }
+
+    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'statusCode' => $statusCode,
+        ]));
+    }
+
+    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
             'errors' => $exception->getMessage(),
-            'duration' => $duration,
         ]));
     }
 
-    private function validateStatusCodeOrFail(ResponseInterface $response, HttpRequest $request, float $startTime): void {
-        if (!$this->config->failOnError || $response->getStatusCode() < 400) {
-            return;
-        }
-
-        $duration = microtime(true) - $startTime;
-        $httpResponse = $this->buildHttpResponse($response, $request);
-
-        $httpException = HttpExceptionFactory::fromStatusCode(
-            $response->getStatusCode(),
-            $request,
-            $httpResponse,
-            $duration
-        );
-
-        $this->dispatchStatusCodeFailed($response->getStatusCode(), $request, $duration);
-        throw $httpException;
-    }
-
-    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request, float $duration): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'statusCode' => $statusCode,
-            'duration' => $duration,
-        ]));
-    }
-
-    private function dispatchResponseReceived(ResponseInterface $response): void {
+    private function dispatchResponseReceived(HttpResponse $response): void {
         $this->events->dispatch(new HttpResponseReceived([
-            'statusCode' => $response->getStatusCode()
+            'statusCode' => $response->statusCode()
         ]));
-    }
-
-    private function buildHttpResponse(ResponseInterface $response, HttpRequest $request): PsrHttpResponse {
-        return new PsrHttpResponse(
-            response: $response,
-            stream: $response->getBody(),
-            events: $this->events,
-            isStreamed: $request->isStreamed(),
-            streamChunkSize: $this->config->streamChunkSize,
-        );
     }
 }

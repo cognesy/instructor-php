@@ -2,8 +2,9 @@
 
 namespace Cognesy\Http\Drivers\Mock;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 
 /**
  * Fluent expectation builder for MockHttpDriver.
@@ -166,7 +167,7 @@ class MockExpectation
     // Responses //////////////////////////////////////////////////////////
 
     /**
-     * @param HttpResponse|(callable(HttpRequest): HttpResponse) $response
+     * @param CanAdaptHttpResponse|(callable(HttpRequest): CanAdaptHttpResponse) $response
      */
     public function reply(HttpResponse|callable $response): MockHttpDriver {
         $compiled = [
@@ -178,19 +179,19 @@ class MockExpectation
     }
 
     public function replyJson(array|string|\JsonSerializable $data, int $status = 200, array $headers = []): MockHttpDriver {
-        return $this->reply(MockHttpResponse::json($data, $status, $headers));
+        return $this->reply(MockHttpResponseFactory::json($data, $status, $headers));
     }
 
     public function replyText(string $text, int $status = 200, array $headers = []): MockHttpDriver {
-        return $this->reply(MockHttpResponse::success($status, $headers, $text));
+        return $this->reply(MockHttpResponseFactory::success($status, $headers, $text));
     }
 
     public function replyStreamChunks(array $chunks, int $status = 200, array $headers = []): MockHttpDriver {
-        return $this->reply(MockHttpResponse::streaming($status, $headers, $chunks));
+        return $this->reply(MockHttpResponseFactory::streaming($status, $headers, $chunks));
     }
 
     public function replySSEFromJson(array $payloads, bool $addDone = true, int $status = 200, array $headers = []): MockHttpDriver {
-        return $this->reply(MockHttpResponse::sse($payloads, $addDone, $status, $headers));
+        return $this->reply(MockHttpResponseFactory::sse($payloads, $addDone, $status, $headers));
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////

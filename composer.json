@@ -128,7 +128,8 @@
     "symfony/http-client": "^7.0",
     "toolkit/cli-utils": "^2.0",
     "twig/twig": "^3.0",
-    "vimeo/psalm": "^6.0"
+    "vimeo/psalm": "^6.0",
+      "ext-http": "*"
   },
   "config": {
     "allow-plugins": {

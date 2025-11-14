@@ -21,19 +21,13 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class LaravelPool implements CanHandleRequestPool
 {
     protected HttpFactory $factory;
-    protected ?PendingRequest $basePendingRequest = null;
 
     public function __construct(
         HttpFactory|PendingRequest|null $clientInstance,
         protected EventDispatcherInterface $events,
         protected HttpClientConfig $config,
     ) {
-        /** @phpstan-ignore-next-line */
-        match (true) {
-            $clientInstance instanceof HttpFactory => $this->factory = $clientInstance,
-            $clientInstance instanceof PendingRequest => $this->setupFromPendingRequest($clientInstance),
-            default => $this->factory = new HttpFactory(),
-        };
+        $this->factory = $this->resolveFactory($clientInstance);
     }
 
     #[\Override]
@@ -74,17 +68,6 @@ class LaravelPool implements CanHandleRequestPool
         return $poolRequests;
     }
 
-    private function setupFromPendingRequest(PendingRequest $pendingRequest): void {
-        // Extract factory using reflection (protected property)
-        $reflection = new \ReflectionClass($pendingRequest);
-        $factoryProperty = $reflection->getProperty('factory');
-        $factoryProperty->setAccessible(true);
-        $this->factory = $factoryProperty->getValue($pendingRequest);
-        
-        // Store base configured PendingRequest for cloning
-        $this->basePendingRequest = $pendingRequest;
-    }
-
     private function createPoolRequest(Pool $pool, HttpRequest $request) {
         /** @phpstan-ignore-next-line */
         $poolRequest = $pool->withOptions([
@@ -93,18 +76,23 @@ class LaravelPool implements CanHandleRequestPool
             'headers' => $request->headers(),
         ]);
 
-        // Apply base PendingRequest configuration if available
-        if ($this->basePendingRequest) {
-            // Note: Pool requests inherit from the factory that created the pool,
-            // so the base configuration from PendingRequest should already be applied
-            // through the factory that was extracted in setupFromPendingRequest
-        }
-
         /** @phpstan-ignore-next-line */
         return $poolRequest->{strtolower($request->method())}(
             $request->url(),
             $request->method() === 'GET' ? [] : $request->body()->toArray(),
         );
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function resolveFactory(HttpFactory|PendingRequest|null $clientInstance): HttpFactory {
+        return match (true) {
+            $clientInstance instanceof HttpFactory => $clientInstance,
+            $clientInstance instanceof PendingRequest => throw new InvalidArgumentException(
+                'Laravel pool requires Illuminate\Http\Client\Factory. PendingRequest is not supported for pooling.'
+            ),
+            default => new HttpFactory(),
+        };
     }
 
     private function processBatchResponses(array $batchResponses): array {
@@ -122,7 +110,7 @@ class LaravelPool implements CanHandleRequestPool
 
     private function handleSuccessfulResponse(Response $response): Result {
         $this->events->dispatch(new HttpResponseReceived($response->status()));
-        return Result::success(new LaravelHttpResponse(
+        return Result::success(new LaravelHttpResponseAdapter(
             response: $response,
             events: $this->events,
             streaming: false,

@@ -1,12 +1,12 @@
 <?php
 
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiUsageFormat;
 
 it('parses Gemini response into normalized InferenceResponse', function () {
     $adapter = new GeminiResponseAdapter(new GeminiUsageFormat());
-    $response = MockHttpResponse::json([
+    $response = MockHttpResponseFactory::json([
         'candidates' => [[
             'content' => ['parts' => [['text' => 'Hi!']]],
             'finishReason' => 'STOP',

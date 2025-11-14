@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Gemini\GeminiUsageFormat;
 
@@ -19,7 +19,7 @@ it('Gemini native: parses final response content and tool calls deterministicall
         ]],
         'usageMetadata' => ['promptTokenCount' => 1, 'candidatesTokenCount' => 2, 'totalTokenCount' => 3]
     ];
-    $httpResp = MockHttpResponse::json($data);
+    $httpResp = MockHttpResponseFactory::json($data);
 
     $res = $adapter->fromResponse($httpResp);
     expect($res->content())->toContain('Hello');

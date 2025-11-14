@@ -2,7 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -14,7 +15,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  *
  * Implements HttpResponse contract for Symfony HTTP client
  */
-class SymfonyHttpResponse implements HttpResponse
+class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
 {
     private ResponseInterface $response;
     private HttpClientInterface $client;
@@ -34,33 +35,20 @@ class SymfonyHttpResponse implements HttpResponse
         $this->isStreamed = $isStreamed;
     }
 
-    /**
-     * Get the response status code
-     *
-     * @return int
-     */
     #[\Override]
-    public function statusCode(): int {
-        return $this->response->getStatusCode();
+    public function toHttpResponse() : HttpResponse {
+        return new HttpResponse(
+            statusCode: $this->response->getStatusCode(false), // false = don't throw on error codes
+            body: $this->isStreamed ? '' : $this->body(),
+            headers: $this->response->getHeaders(false), // false = don't throw on error codes
+            isStreamed: $this->isStreamed,
+            stream: $this->stream(),
+        );
     }
 
-    /**
-     * Get the response headers
-     *
-     * @return array<string, list<string>>
-     */
-    #[\Override]
-    public function headers(): array {
-        return $this->response->getHeaders();
-    }
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Get the response content
-     *
-     * @return string
-     */
-    #[\Override]
-    public function body(): string {
+    private function body(): string {
         // workaround to handle connect timeout: https://github.com/symfony/symfony/pull/57811
         /** @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
@@ -73,13 +61,7 @@ class SymfonyHttpResponse implements HttpResponse
         return $this->response->getContent(false); // false = don't throw on error codes
     }
 
-    /**
-     * Read chunks of the stream
-     *
-     * @return \Generator<string>
-     */
-    #[\Override]
-    public function stream(?int $chunkSize = null): \Generator {
+    private function stream(?int $chunkSize = null): \Generator {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout()) {
                 continue;
@@ -88,10 +70,5 @@ class SymfonyHttpResponse implements HttpResponse
             $this->events->dispatch(new HttpResponseChunkReceived($chunk));
             yield $chunk;
         }
-    }
-
-    #[\Override]
-    public function isStreamed(): bool {
-        return $this->isStreamed;
     }
 }

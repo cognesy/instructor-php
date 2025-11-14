@@ -2,7 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Curl;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -10,7 +11,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * HTTP response implementation for native cURL driver
  */
-class CurlHttpResponse implements HttpResponse
+class CurlHttpResponseAdapter implements CanAdaptHttpResponse
 {
     private int $statusCode;
     private array $headers;
@@ -36,27 +37,19 @@ class CurlHttpResponse implements HttpResponse
     }
 
     #[\Override]
-    public function statusCode(): int {
-        return $this->statusCode;
+    public function toHttpResponse() : HttpResponse {
+        return new HttpResponse(
+            statusCode: $this->statusCode,
+            body: $this->body,
+            headers: $this->headers,
+            isStreamed: $this->isStreamed,
+            stream: $this->stream(),
+        );
     }
 
-    #[\Override]
-    public function headers(): array {
-        return $this->headers;
-    }
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    #[\Override]
-    public function body(): string {
-        return $this->body;
-    }
-
-    #[\Override]
-    public function isStreamed(): bool {
-        return $this->isStreamed;
-    }
-
-    #[\Override]
-    public function stream(?int $chunkSize = null): Generator {
+    private function stream(?int $chunkSize = null): Generator {
         $chunkSize = $chunkSize ?? $this->streamChunkSize;
         $offset = 0;
         $bodyLength = strlen($this->body);

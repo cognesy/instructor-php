@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\EventSource\Listeners;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 
 interface CanListenToHttpEvents
 {

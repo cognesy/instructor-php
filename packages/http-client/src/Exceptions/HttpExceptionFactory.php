@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Exceptions;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use InvalidArgumentException;
 use Throwable;
 
@@ -16,12 +16,12 @@ class HttpExceptionFactory
         ?float $duration = null,
         ?Throwable $previous = null,
     ): HttpRequestException {
-        return match(true) {
+        return match (true) {
             $statusCode >= 400 && $statusCode < 500 => new HttpClientErrorException(
-                $statusCode, $request, $response, $duration, $previous
+                $statusCode, $request, $response, $duration, $previous,
             ),
             $statusCode >= 500 => new ServerErrorException(
-                $statusCode, $request, $response, $duration, $previous
+                $statusCode, $request, $response, $duration, $previous,
             ),
             default => throw new InvalidArgumentException("Invalid HTTP status code: {$statusCode}"),
         };

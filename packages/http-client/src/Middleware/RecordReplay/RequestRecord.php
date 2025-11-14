@@ -2,9 +2,9 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 
 class RequestRecord
 {
@@ -80,7 +80,7 @@ class RequestRecord
 
     public function toResponse(bool $isStreaming = false): HttpResponse {
         // Non-streaming records should always return non-streaming responses
-        return MockHttpResponse::success(
+        return MockHttpResponseFactory::success(
             $this->responseData['statusCode'] ?? 200,
             $this->responseData['headers'] ?? [],
             $this->responseData['body'] ?? '',

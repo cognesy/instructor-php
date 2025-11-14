@@ -2,7 +2,7 @@
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 
 beforeEach(function() {
     $this->driver = new MockHttpDriver();
@@ -10,7 +10,7 @@ beforeEach(function() {
 
 test('can return predefined response', function() {
     // Arrange
-    $expectedResponse = MockHttpResponse::success(body: '{"result": true}');
+    $expectedResponse = MockHttpResponseFactory::success(body: '{"result": true}');
 
     $this->driver->addResponse(
         $expectedResponse,
@@ -38,7 +38,7 @@ test('can return predefined response', function() {
 test('can match requests by callback', function() {
     // Arrange
     $this->driver->addResponse(
-        MockHttpResponse::success(body: '{"users": []}'),
+        MockHttpResponseFactory::success(body: '{"users": []}'),
         fn($url) => str_contains($url, 'users'),
         'GET'
     );
@@ -61,7 +61,7 @@ test('can match requests by callback', function() {
 test('can match requests by json body', function() {
     // Arrange
     $this->driver->addResponse(
-        MockHttpResponse::success(body: '{"success": true}'),
+        MockHttpResponseFactory::success(body: '{"success": true}'),
         null,
         'POST',
         fn($body) => str_contains($body, '"name":"John"')
@@ -84,7 +84,7 @@ test('can match requests by json body', function() {
 
 test('tracks received requests', function() {
     // Arrange
-    $response = MockHttpResponse::success();
+    $response = MockHttpResponseFactory::success();
     $this->driver->addResponse($response, null, null, null); // Match any request
 
     $request1 = new HttpRequest('https://api.example.com/users', 'GET', [], '', []);
@@ -108,7 +108,7 @@ test('generates dynamic responses', function() {
         function(HttpRequest $request) {
             $url = $request->url();
             $id = substr($url, strrpos($url, '/') + 1);
-            return MockHttpResponse::success(
+            return MockHttpResponseFactory::success(
                 body: json_encode(['id' => $id, 'name' => 'User ' . $id])
             );
         },
@@ -135,7 +135,7 @@ test('handles streaming responses', function() {
     $chunks = ['{"id":"123",', '"name":"User', ' 123"}'];
 
     $this->driver->addResponse(
-        MockHttpResponse::streaming(chunks: $chunks),
+        MockHttpResponseFactory::streaming(chunks: $chunks),
         'https://api.example.com/stream'
     );
 
@@ -163,7 +163,7 @@ test('handles streaming responses', function() {
 test('throws exception when no matching response', function() {
     // Arrange
     $this->driver->addResponse(
-        MockHttpResponse::success(),
+        MockHttpResponseFactory::success(),
         'https://api.example.com/endpoint',
         'GET'
     );

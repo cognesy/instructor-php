@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Creation;
 
-use Cognesy\Http\Data\HttpResponseData;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -16,14 +16,13 @@ class InferenceResponseFactory
             $response = self::applyPartialResponse($partialResponse, $response);
         }
         $toolCalls = ToolCalls::fromArray(self::makeTools($partialResponses));
-        $responseData = $partialResponses->first()?->responseData ?? HttpResponseData::empty();
         return new InferenceResponse(
             content: $response->content(),
             finishReason: $response->finishReason()->value,
             toolCalls: $toolCalls,
             reasoningContent: $response->reasoningContent(),
             usage: $response->usage(),
-            responseData: $responseData,
+            responseData: $partialResponses->first()?->responseData ?? HttpResponse::empty(),
             isPartial: $response->isPartial(),
         );
     }

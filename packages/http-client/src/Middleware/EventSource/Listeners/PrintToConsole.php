@@ -3,8 +3,8 @@
 namespace Cognesy\Http\Middleware\EventSource\Listeners;
 
 use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
 use DateTimeImmutable;

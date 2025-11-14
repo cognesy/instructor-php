@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicUsageFormat;
 
@@ -17,7 +17,7 @@ it('Anthropic: parses content, reasoning, and tool calls deterministically', fun
         'usage' => ['input_tokens' => 1, 'output_tokens' => 2],
     ];
 
-    $res = $adapter->fromResponse(MockHttpResponse::json($data));
+    $res = $adapter->fromResponse(MockHttpResponseFactory::json($data));
     expect($res->content())->toBe('Hello');
     expect(trim($res->reasoningContent()))->toBe('Reasoning...');
     expect($res->hasToolCalls())->toBeTrue();

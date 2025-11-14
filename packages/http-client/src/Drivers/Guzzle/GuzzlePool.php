@@ -100,7 +100,7 @@ class GuzzlePool implements CanHandleRequestPool
         if ($this->events === null) {
             throw new \RuntimeException('Event dispatcher is required for pooled requests');
         }
-        return Result::success(new PsrHttpResponse(
+        return Result::success(new PsrHttpResponseAdapter(
             response: $response,
             stream: $response->getBody(),
             events: $this->events,
@@ -112,20 +112,29 @@ class GuzzlePool implements CanHandleRequestPool
     /**
      * @param mixed $reason
      */
-    private function handleRejectedResponse($reason): Failure {
+    private function handleRejectedResponse(mixed $reason): Failure {
         if ($this->config->failOnError) {
-            $errorMessage = is_string($reason) ? $reason : 'Unknown error';
+            $errorMessage = match(true) {
+                is_string($reason) => $reason,
+                $reason instanceof \Throwable => $reason->getMessage(),
+                default => 'Unknown error',
+            };
             throw new HttpRequestException($errorMessage);
         }
         // TODO: we don't know how to handle this atm
-        //        $this->events->dispatch(new HttpRequestFailed([
-        //            'url' => $request->url(),
-        //            'method' => $request->method(),
-        //            'headers' => $request->headers(),
-        //            'body' => $request->body()->toArray(),
-        //            'errors' => $e->getMessage(),
-        //        ]));
-        return Result::failure($reason);
+//        $this->events->dispatch(new HttpRequestFailed([
+//            'url' => $request->url(),
+//            'method' => $request->method(),
+//            'headers' => $request->headers(),
+//            'body' => $request->body()->toArray(),
+//            'errors' => $e->getMessage(),
+//        ]));
+        $errorMessage = match(true) {
+            is_string($reason) => $reason,
+            $reason instanceof \Throwable => $reason->getMessage(),
+            default => 'Unknown error',
+        };
+        return Result::failure($errorMessage);
     }
 
     private function dispatchRequestEvent(HttpRequest $request): void {

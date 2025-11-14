@@ -3,9 +3,9 @@
 namespace Middleware\CachingMiddleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseAdapter;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
 use Psr\SimpleCache\CacheInterface;
 
@@ -35,7 +35,7 @@ class CachingMiddleware extends BaseMiddleware
             $cachedData = $this->cache->get($cacheKey);
 
             // Create a response from the cached data
-            return new MockHttpResponse(
+            return new MockHttpResponseAdapter(
                 statusCode: $cachedData['status_code'],
                 headers: $cachedData['headers'],
                 body: $cachedData['body']

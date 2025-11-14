@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
@@ -13,8 +13,8 @@ use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsFailed;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 
 class BaseEmbedDriver implements CanHandleVectorization

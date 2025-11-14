@@ -2,10 +2,10 @@
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Http\HttpClientBuilder;
 
 beforeEach(function() {
@@ -33,7 +33,7 @@ afterEach(function() {
 test('HTTP client with mock driver', function() {
     // Arrange
     $mockDriver = new MockHttpDriver();
-    $expectedResponse = MockHttpResponse::success(body: '{"success":true}');
+    $expectedResponse = MockHttpResponseFactory::success(body: '{"success":true}');
 
     $mockDriver->addResponse(
         $expectedResponse,
@@ -70,7 +70,7 @@ test('HTTP client with mock driver', function() {
 test('HTTP client with middleware', function() {
     // Arrange
     $mockDriver = new MockHttpDriver();
-    $expectedResponse = MockHttpResponse::success(body: '{"id":123}');
+    $expectedResponse = MockHttpResponseFactory::success(body: '{"id":123}');
 
     $mockDriver->addResponse(
         $expectedResponse,

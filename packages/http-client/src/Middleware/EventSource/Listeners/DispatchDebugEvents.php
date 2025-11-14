@@ -3,8 +3,8 @@
 namespace Cognesy\Http\Middleware\EventSource\Listeners;
 
 use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\DebugRequestBodyUsed;
 use Cognesy\Http\Events\DebugRequestHeadersUsed;
 use Cognesy\Http\Events\DebugRequestURLUsed;

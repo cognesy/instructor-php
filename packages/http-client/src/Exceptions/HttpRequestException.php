@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Exceptions;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Exception;
 use Throwable;
 
@@ -26,47 +26,41 @@ class HttpRequestException extends Exception
         parent::__construct($this->formatMessage($message), 0, $previous);
     }
 
-    public function getRequest(): ?HttpRequest
-    {
+    public function getRequest(): ?HttpRequest {
         return $this->request;
     }
 
-    public function getResponse(): ?HttpResponse
-    {
+    public function getResponse(): ?HttpResponse {
         return $this->response;
     }
 
-    public function getDuration(): ?float
-    {
+    public function getDuration(): ?float {
         return $this->duration;
     }
 
-    public function isRetriable(): bool
-    {
+    public function isRetriable(): bool {
         return false; // Conservative default
     }
 
-    public function getStatusCode(): ?int
-    {
+    public function getStatusCode(): ?int {
         return $this->response?->statusCode();
     }
 
-    protected function formatMessage(string $message): string
-    {
+    protected function formatMessage(string $message): string {
         $parts = [$message];
-        
+
         if ($this->request) {
             $parts[] = sprintf('Request: %s %s', $this->request->method(), $this->request->url());
         }
-        
+
         if ($this->response) {
             $parts[] = sprintf('Status: %d', $this->response->statusCode());
         }
-        
+
         if ($this->duration) {
             $parts[] = sprintf('Duration: %.2fs', $this->duration);
         }
-        
+
         return implode('. ', $parts);
     }
 }

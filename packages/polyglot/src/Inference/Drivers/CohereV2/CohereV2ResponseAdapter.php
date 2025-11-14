@@ -2,8 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 
-use Cognesy\Http\Contracts\HttpResponse;
-use Cognesy\Http\Data\HttpResponseData;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -21,12 +20,12 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->usageFormat->fromData($data),
-            responseData: HttpResponseData::fromHttpResponse($response),
+            responseData: $response,
         );
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody, ?HttpResponse $response = null): ?PartialInferenceResponse {
+    public function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if (empty($data)) {
             return null;
@@ -38,7 +37,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
             toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
             finishReason: $data['delta']['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
-            responseData: $response ? HttpResponseData::fromHttpResponse($response) : HttpResponseData::empty(),
+            responseData: $responseData,
         );
     }
 

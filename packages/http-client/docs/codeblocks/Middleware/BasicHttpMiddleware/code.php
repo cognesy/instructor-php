@@ -4,8 +4,8 @@ namespace Middleware\BasicHttpMiddleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 
 class LoggingMiddleware implements HttpMiddleware
 {

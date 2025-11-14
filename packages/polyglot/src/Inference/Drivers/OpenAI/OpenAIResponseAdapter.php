@@ -2,8 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
-use Cognesy\Http\Contracts\HttpResponse;
-use Cognesy\Http\Data\HttpResponseData;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
@@ -26,12 +25,12 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->usageFormat->fromData($data),
-            responseData: HttpResponseData::fromHttpResponse($response),
+            responseData: $response,
         );
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody, ?HttpResponse $response = null): ?PartialInferenceResponse {
+    public function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;
@@ -43,7 +42,7 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
-            responseData: $response ? HttpResponseData::fromHttpResponse($response) : HttpResponseData::empty(),
+            responseData: $responseData,
         );
     }
 

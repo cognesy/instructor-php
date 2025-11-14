@@ -33,7 +33,7 @@ namespace YourNamespace\Http\Drivers;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
@@ -64,7 +64,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request
      */
-    public function handle(HttpRequest $request): HttpResponse
+    public function handle(HttpRequest $request): CanAdaptHttpResponse
     {
         $url = $request->url();
         $headers = $request->headers();
@@ -137,10 +137,10 @@ You also need to create a response adapter that implements the `HttpResponse` in
 ```php
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Generator;
 
-class YourHttpResponse implements HttpResponse
+class YourHttpResponse implements CanAdaptHttpResponse
 {
     /**
      * Constructor
@@ -235,7 +235,7 @@ namespace YourNamespace\Http\Drivers;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
@@ -258,7 +258,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request
      */
-    public function handle(HttpRequest $request): HttpResponse
+    public function handle(HttpRequest $request): CanAdaptHttpResponse
     {
         $url = $request->url();
         $headers = $request->headers();
@@ -452,10 +452,10 @@ And here's the corresponding response adapter:
 ```php
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Generator;
 
-class CurlHttpResponse implements HttpResponse
+class CurlHttpResponse implements CanAdaptHttpResponse
 {
     private $stream;
     private $tempFile;

@@ -2,7 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -13,7 +14,7 @@ use Psr\Http\Message\StreamInterface;
  *
  * Implements HttpResponse contract for PSR-compatible HTTP client
  */
-class PsrHttpResponse implements HttpResponse
+class PsrHttpResponseAdapter implements CanAdaptHttpResponse
 {
     private ResponseInterface $response;
     private StreamInterface $stream;
@@ -36,13 +37,20 @@ class PsrHttpResponse implements HttpResponse
         $this->streamChunkSize = $streamChunkSize;
     }
 
-    /**
-     * Get the response status code
-     *
-     * @return int
-     */
     #[\Override]
-    public function statusCode(): int {
+    public function toHttpResponse() : HttpResponse {
+        return new HttpResponse(
+            statusCode: $this->response->getStatusCode(),
+            body: $this->isStreamed ? '' : $this->body(),
+            headers: $this->response->getHeaders(),
+            isStreamed: $this->isStreamed,
+            stream: $this->stream(),
+        );
+    }
+
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
+
+    private function statusCode(): int {
         return $this->response->getStatusCode();
     }
 
@@ -51,8 +59,7 @@ class PsrHttpResponse implements HttpResponse
      *
      * @return array<string, array<string>>
      */
-    #[\Override]
-    public function headers(): array {
+    private function headers(): array {
         return $this->response->getHeaders();
     }
 
@@ -61,11 +68,13 @@ class PsrHttpResponse implements HttpResponse
      *
      * @return string
      */
-    #[\Override]
-    public function body(): string {
+    private function body(): string {
         if ($this->cachedBody === null) {
             $body = $this->response->getBody();
-            $body->rewind(); // Rewind to ensure we read from the beginning
+            // Only rewind if the stream is seekable (non-streaming responses)
+            if ($body->isSeekable()) {
+                $body->rewind();
+            }
             $this->cachedBody = $body->getContents();
         }
         return $this->cachedBody;
@@ -76,8 +85,7 @@ class PsrHttpResponse implements HttpResponse
      *
      * @return \Generator<string>
      */
-    #[\Override]
-    public function stream(?int $chunkSize = null): \Generator {
+    private function stream(?int $chunkSize = null): \Generator {
         while (!$this->stream->eof()) {
             $chunk = $this->stream->read($chunkSize ?? $this->streamChunkSize);
             $this->events->dispatch(new HttpResponseChunkReceived($chunk));
@@ -85,8 +93,7 @@ class PsrHttpResponse implements HttpResponse
         }
     }
 
-    #[\Override]
-    public function isStreamed(): bool {
+    private function isStreamed(): bool {
         return $this->isStreamed;
     }
 }

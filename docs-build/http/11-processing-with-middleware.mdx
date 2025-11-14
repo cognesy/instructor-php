@@ -70,7 +70,7 @@ $client->withMiddleware(new class implements HttpMiddleware {
         return $response;
     }
 });
-// @doctest id="5318"
+// @doctest id="7068"
 ```
 
 This approach is concise but less reusable than defining a named class.
@@ -131,7 +131,7 @@ Then add the middleware to your client:
 ```php
 $client = new HttpClient();
 $client->withMiddleware(new JsonStreamMiddleware());
-// @doctest id="7ae2"
+// @doctest id="3b46"
 ```
 
 ### Response Decoration for Transforming Content
@@ -169,7 +169,7 @@ class XmlToJsonDecorator extends BaseResponseDecorator
         return $headers;
     }
 }
-// @doctest id="b009"
+// @doctest id="4aab"
 ```
 
 And the corresponding middleware:
@@ -179,13 +179,13 @@ And the corresponding middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class XmlToJsonMiddleware extends BaseMiddleware
 {
     protected function shouldDecorateResponse(
         HttpRequest $request,
-        HttpResponse $response
+        CanAdaptHttpResponse $response
     ): bool {
         // Only transform XML responses
         return isset($response->headers()['Content-Type']) &&
@@ -194,12 +194,12 @@ class XmlToJsonMiddleware extends BaseMiddleware
 
     protected function toResponse(
         HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
+        CanAdaptHttpResponse $response
+    ): CanAdaptHttpResponse {
         return new XmlToJsonDecorator($request, $response);
     }
 }
-// @doctest id="15b8"
+// @doctest id="e85b"
 ```
 
 ## Advanced Middleware Examples
@@ -215,7 +215,7 @@ This middleware collects analytics data about HTTP requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class AnalyticsMiddleware extends BaseMiddleware
 {
@@ -234,8 +234,8 @@ class AnalyticsMiddleware extends BaseMiddleware
 
     protected function afterRequest(
         HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
+        CanAdaptHttpResponse $response
+    ): CanAdaptHttpResponse {
         $endTime = microtime(true);
         $duration = round(($endTime - $this->startTime) * 1000, 2);
 
@@ -257,7 +257,7 @@ class AnalyticsMiddleware extends BaseMiddleware
         return $response;
     }
 }
-// @doctest id="0715"
+// @doctest id="293d"
 ```
 
 ### Circuit Breaker Middleware
@@ -269,7 +269,7 @@ This middleware implements the circuit breaker pattern to prevent repeated calls
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponseAdapter;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class CircuitBreakerMiddleware extends BaseMiddleware
 {
@@ -283,7 +283,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
         $this->resetTimeout = $resetTimeout;
     }
 
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): CanAdaptHttpResponse
     {
         $hostname = parse_url($request->url(), PHP_URL_HOST);
 
@@ -308,7 +308,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
                 $circuit['state'] = 'HALF_OPEN';
             } else {
                 // Circuit is still open, return error response
-                return new MockHttpResponse(
+                return new MockHttpResponseAdapter(
                     statusCode: 503,
                     headers: ['Content-Type' => 'application/json'],
                     body: json_encode([
@@ -347,7 +347,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
         }
     }
 }
-// @doctest id="14cc"
+// @doctest id="507e"
 ```
 
 ### Conditional Middleware
@@ -361,7 +361,7 @@ namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 
 class ConditionalMiddleware implements HttpMiddleware
@@ -375,7 +375,7 @@ class ConditionalMiddleware implements HttpMiddleware
         $this->condition = $condition;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): CanAdaptHttpResponse
     {
         // Check if the condition is met
         if (($this->condition)($request)) {
@@ -387,7 +387,7 @@ class ConditionalMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="16c8"
+// @doctest id="1731"
 ```
 
 Usage example:
@@ -401,7 +401,7 @@ $conditionalCaching = new ConditionalMiddleware(
 );
 
 $client->withMiddleware($conditionalCaching);
-// @doctest id="cdda"
+// @doctest id="15ff"
 ```
 
 ### Request ID Middleware
@@ -454,7 +454,7 @@ class RequestIdMiddleware extends BaseMiddleware
         return $response;
     }
 }
-// @doctest id="0dc2"
+// @doctest id="9f94"
 ```
 
 ### OpenTelemetry Tracing Middleware
@@ -537,7 +537,7 @@ class TracingMiddleware extends BaseMiddleware
         }
     }
 }
-// @doctest id="737f"
+// @doctest id="a897"
 ```
 
 ### Customizing Middleware for LLM APIs
@@ -643,7 +643,7 @@ class LlmStreamingMiddleware extends BaseMiddleware
         };
     }
 }
-// @doctest id="f502"
+// @doctest id="1052"
 ```
 
 ### Combining Multiple Middleware Components
@@ -687,7 +687,7 @@ $client->withMiddleware(
 
 // Now the client is ready to use with a complete middleware pipeline
 $response = $client->withRequest($request)->get();
-// @doctest id="441b"
+// @doctest id="ecbd"
 ```
 
 With this setup, requests and responses flow through the middleware in the following order:

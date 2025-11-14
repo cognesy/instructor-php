@@ -3,6 +3,7 @@
 namespace Cognesy\Http\Contracts;
 
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 
 /**
  * Interface HttpMiddleware

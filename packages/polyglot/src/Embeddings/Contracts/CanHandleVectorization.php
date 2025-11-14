@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 

@@ -2,7 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Laravel;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Illuminate\Http\Client\Response;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -12,7 +13,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * Implements HttpResponse contract for Laravel HTTP client
  */
-class LaravelHttpResponse implements HttpResponse
+class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
 {
     private Response $response;
     private EventDispatcherInterface $events;
@@ -32,7 +33,19 @@ class LaravelHttpResponse implements HttpResponse
     }
 
     #[\Override]
-    public function statusCode(): int {
+    public function toHttpResponse() : HttpResponse {
+        return new HttpResponse(
+            statusCode: $this->response->status(),
+            body: $this->streaming ? '' : $this->body(),
+            headers: $this->response->headers(),
+            isStreamed: $this->isStreamed(),
+            stream: $this->stream(),
+        );
+    }
+
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
+
+    private function statusCode(): int {
         return $this->response->status();
     }
 
@@ -41,18 +54,15 @@ class LaravelHttpResponse implements HttpResponse
      *
      * @return array<string, string>
      */
-    #[\Override]
-    public function headers(): array {
+    private function headers(): array {
         return $this->response->headers();
     }
 
-    #[\Override]
-    public function body(): string {
+    private function body(): string {
         return $this->response->body();
     }
 
-    #[\Override]
-    public function isStreamed(): bool {
+    private function isStreamed(): bool {
         return $this->streaming;
     }
 
@@ -62,8 +72,7 @@ class LaravelHttpResponse implements HttpResponse
      * @param int|null $chunkSize
      * @return \Generator<string>
      */
-    #[\Override]
-    public function stream(?int $chunkSize = null): \Generator {
+    private function stream(?int $chunkSize = null): \Generator {
         //if (!$this->streaming) {
         //    $chunk = $this->body();
         //    $this->events->dispatch(new HttpResponseChunkReceived($chunk));

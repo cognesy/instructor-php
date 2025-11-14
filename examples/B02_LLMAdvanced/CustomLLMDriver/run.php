@@ -15,9 +15,9 @@ or overriding an existing driver bundled with Polyglot.
 require 'examples/boot.php';
 
 use Cognesy\Config\Env;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
@@ -29,7 +29,7 @@ Inference::registerDriver(
     name: 'custom-driver',
     driver: fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
         #[\Override]
-        protected function makeHttpResponse(\Cognesy\Http\Data\HttpRequest $request): HttpResponse {
+        protected function makeHttpResponse(HttpRequest $request): HttpResponse {
             // some extra functionality to demonstrate our driver is being used
             echo ">>> Handling request...\n";
             return parent::makeHttpResponse($request);

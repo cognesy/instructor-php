@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
@@ -19,6 +19,7 @@ use Cognesy\Polyglot\Inference\Streaming\EventStreamReader;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
+use Throwable;
 
 abstract class BaseInferenceDriver implements CanHandleInference
 {
@@ -34,9 +35,8 @@ abstract class BaseInferenceDriver implements CanHandleInference
     /** @phpstan-ignore-next-line */
     protected CanTranslateInferenceResponse $responseTranslator;
 
-
     #[\Override]
-    public function makeResponseFor(InferenceRequest $request) : InferenceResponse {
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse {
         $httpRequest = $this->toHttpRequest($request);
         $httpResponse = $this->makeHttpResponse($httpRequest);
         return $this->httpResponseToInference($httpResponse);
@@ -66,13 +66,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
                 throw new RuntimeException('Failed to translate HTTP response to InferenceResponse');
             }
         } catch (Exception $e) {
-            $this->events->dispatch(new InferenceFailed([
-                'context' => 'Failed to process response',
-                'exception' => $e->getMessage(),
-                'statusCode' => $httpResponse->statusCode(),
-                'headers' => $httpResponse->headers(),
-                'body' => $httpResponse->body(),
-            ]));
+            $this->dispatchInferenceProcessingFailed($httpResponse, $e);
             throw $e;
         }
 
@@ -90,7 +84,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
             parser: $this->toEventBody(...),
         );
         try {
-            foreach($reader->eventsFrom($httpResponse->stream()) as $eventBody) {
+            foreach ($reader->eventsFrom($httpResponse->stream()) as $eventBody) {
                 $partialResponse = $this->responseTranslator->fromStreamResponse($eventBody, $httpResponse);
                 if ($partialResponse === null) {
                     continue;
@@ -98,13 +92,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
                 yield $partialResponse;
             }
         } catch (Exception $e) {
-            $this->events->dispatch(new InferenceFailed([
-                'context' => 'Failed to process streamed response',
-                'exception' => $e->getMessage(),
-                'statusCode' => $httpResponse->statusCode(),
-                'headers' => $httpResponse->headers(),
-                'body' => $httpResponse->body(),
-            ]));
+            $this->dispatchInferenceStreamFailed($httpResponse, $e);
             throw $e;
         }
     }
@@ -114,22 +102,13 @@ abstract class BaseInferenceDriver implements CanHandleInference
     protected function makeHttpResponse(HttpRequest $request): HttpResponse {
         try {
             $httpResponse = $this->httpClient->withRequest($request)->get();
-        } catch(Exception $e) {
-            $this->events->dispatch(new InferenceFailed([
-                'context' => 'HTTP request sending failed',
-                'exception' => $e->getMessage(),
-                'request' => $request->toArray(),
-            ]));
+        } catch (Exception $e) {
+            $this->dispatchInferenceSendingFailed($request, $e);
             throw $e;
         }
 
         if ($httpResponse->statusCode() >= 400) {
-            $this->events->dispatch(new InferenceFailed([
-                'context' => 'HTTP response received with error status',
-                'statusCode' => $httpResponse->statusCode(),
-                'headers' => $httpResponse->headers(),
-                'body' => $httpResponse->body(),
-            ]));
+            $this->dispatchInferenceResponseFailed($httpResponse);
             throw new RuntimeException('HTTP request failed with status code ' . $httpResponse->statusCode());
         }
         return $httpResponse;
@@ -137,5 +116,44 @@ abstract class BaseInferenceDriver implements CanHandleInference
 
     protected function toEventBody(string $data): string|bool {
         return $this->responseTranslator->toEventBody($data);
+    }
+
+    // EVENTS //////////////////////////////////////////////////
+
+    private function dispatchInferenceResponseFailed(HttpResponse $httpResponse): void {
+        $this->events->dispatch(new InferenceFailed([
+            'context' => 'HTTP response received with error status',
+            'statusCode' => $httpResponse->statusCode(),
+            'headers' => $httpResponse->headers(),
+            'body' => $httpResponse->body(),
+        ]));
+    }
+
+    private function dispatchInferenceSendingFailed(HttpRequest $request, Throwable $source): void {
+        $this->events->dispatch(new InferenceFailed([
+            'context' => 'HTTP request sending failed',
+            'exception' => $source->getMessage(),
+            'request' => $request->toArray(),
+        ]));
+    }
+
+    private function dispatchInferenceStreamFailed(HttpResponse $response, Exception $e): void {
+        $this->events->dispatch(new InferenceFailed([
+            'context' => 'Failed to process streamed response',
+            'exception' => $e->getMessage(),
+            'statusCode' => $response->statusCode(),
+            'headers' => $response->headers(),
+            'body' => $response->body(),
+        ]));
+    }
+
+    private function dispatchInferenceProcessingFailed(HttpResponse $httpResponse, Exception $e): void {
+        $this->events->dispatch(new InferenceFailed([
+            'context' => 'Failed to process response',
+            'exception' => $e->getMessage(),
+            'statusCode' => $httpResponse->statusCode(),
+            'headers' => $httpResponse->headers(),
+            'body' => $httpResponse->body(),
+        ]));
     }
 }

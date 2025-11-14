@@ -30,4 +30,6 @@ interface BufferedStreamInterface extends \IteratorAggregate
      * Check if source stream is fully consumed.
      */
     public function isCompleted(): bool;
+
+    public function receivedData() : array;
 }

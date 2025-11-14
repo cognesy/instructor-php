@@ -1,12 +1,12 @@
 <?php
 
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
 
 it('parses OpenAI response into normalized InferenceResponse', function () {
     $adapter = new OpenAIResponseAdapter(new OpenAIUsageFormat());
-    $response = MockHttpResponse::json([
+    $response = MockHttpResponseFactory::json([
         'choices' => [[
             'message' => ['content' => 'Hello!'],
             'finish_reason' => 'stop'

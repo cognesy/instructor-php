@@ -84,7 +84,7 @@ You can extend Polyglot's HTTP layer by creating custom middleware:
 ```php
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class YourCustomMiddleware extends BaseMiddleware {
     protected function beforeRequest(HttpRequest $request): void {
@@ -93,8 +93,8 @@ class YourCustomMiddleware extends BaseMiddleware {
 
     protected function afterRequest(
         HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
+        CanAdaptHttpResponse $response
+    ): CanAdaptHttpResponse {
         // Modify the response after it's received
         return $response;
     }

@@ -4,8 +4,8 @@ namespace Cognesy\Http\Drivers\Laravel;
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
@@ -35,11 +35,13 @@ class LaravelDriver implements CanHandleHttpRequest
     ) {
         $this->config = $config;
         $this->events = $events;
-        
+        // Always initialize a safe default factory
+        $this->factory = new HttpFactory();
+
         match (true) {
             $clientInstance instanceof HttpFactory => $this->factory = $clientInstance,
-            $clientInstance instanceof PendingRequest => $this->setupFromPendingRequest($clientInstance),
-            $clientInstance === null => $this->factory = new HttpFactory(),
+            $clientInstance instanceof PendingRequest => $this->basePendingRequest = $clientInstance,
+            $clientInstance === null => null,
             default => throw new \InvalidArgumentException(
                 'Client instance must be an instance of Illuminate\Http\Client\Factory or Illuminate\Http\Client\PendingRequest'
             )
@@ -48,119 +50,46 @@ class LaravelDriver implements CanHandleHttpRequest
 
     #[\Override]
     public function handle(HttpRequest $request): HttpResponse {
-        $startTime = microtime(true);
         $this->dispatchRequestSent($request);
+
         try {
             $response = $this->performHttpCall($request);
         } catch (LaravelConnectionException $e) {
-            $this->handleConnectionException($e, $request, $startTime);
+            $this->handleConnectionException($e, $request);
         } catch (\Exception $e) {
-            $this->handleNetworkException($e, $request, $startTime);
+            $this->handleNetworkException($e, $request);
         }
-        $this->validateStatusCodeOrFail($response, $request, $startTime);
-        $this->dispatchResponseReceived($response);
-        return $this->buildHttpResponse($response, $request);
+
+        $httpResponse = $this->buildHttpResponse($response, $request);
+
+        if ($this->config->failOnError && $response->status() >= 400) {
+            $httpException = HttpExceptionFactory::fromStatusCode(
+                $response->status(),
+                $request,
+                $httpResponse,
+            );
+            $this->dispatchStatusCodeFailed($response->status(), $request);
+            throw $httpException;
+        }
+
+        $this->dispatchResponseReceived($httpResponse);
+        return $httpResponse;
     }
 
-    // INTERNAL /////////////////////////////////////////////
-
-    private function dispatchRequestSent(HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-        ]));
-    }
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
 
     private function performHttpCall(HttpRequest $request): Response {
         $pendingRequest = $this->createPendingRequest($request->headers(), $request->isStreamed());
         return $this->sendRequest($pendingRequest, $request->method(), $request->url(), $request->body()->toArray());
     }
 
-    private function handleConnectionException(LaravelConnectionException $e, HttpRequest $request, float $startTime): never {
-        $duration = microtime(true) - $startTime;
-        $message = $e->getMessage();
-
-        $httpException = str_contains($message, 'timed out') || str_contains($message, 'cURL error 28')
-            ? new TimeoutException($message, $request, $duration, $e)
-            : new ConnectionException($message, $request, $duration, $e);
-
-        $this->dispatchRequestFailed($httpException, $request, $duration);
-        throw $httpException;
-    }
-
-    private function handleNetworkException(\Exception $e, HttpRequest $request, float $startTime): never {
-        $duration = microtime(true) - $startTime;
-        $httpException = new NetworkException($e->getMessage(), $request, null, $duration, $e);
-
-        $this->dispatchRequestFailed($httpException, $request, $duration);
-        throw $httpException;
-    }
-
-    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request, float $duration): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $exception->getMessage(),
-            'duration' => $duration,
-        ]));
-    }
-
-    private function validateStatusCodeOrFail(Response $response, HttpRequest $request, float $startTime): void {
-        if (!$this->config->failOnError || $response->status() < 400) {
-            return;
-        }
-
-        $duration = microtime(true) - $startTime;
-        $httpResponse = $this->buildHttpResponse($response, $request);
-
-        $httpException = HttpExceptionFactory::fromStatusCode(
-            $response->status(),
-            $request,
-            $httpResponse,
-            $duration
-        );
-
-        $this->dispatchStatusCodeFailed($response->status(), $request, $duration);
-        throw $httpException;
-    }
-
-    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request, float $duration): void {
-        $this->events->dispatch(new HttpRequestFailed([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'statusCode' => $statusCode,
-            'duration' => $duration,
-        ]));
-    }
-
-    private function dispatchResponseReceived(Response $response): void {
-        $this->events->dispatch(new HttpResponseReceived([
-            'statusCode' => $response->status()
-        ]));
-    }
-
-    private function buildHttpResponse(Response $response, HttpRequest $request): LaravelHttpResponse {
-        return new LaravelHttpResponse(
+    private function buildHttpResponse(Response $response, HttpRequest $request): HttpResponse {
+        return (new LaravelHttpResponseAdapter(
             response: $response,
             events: $this->events,
             streaming: $request->isStreamed(),
             streamChunkSize: $this->config->streamChunkSize,
-        );
-    }
-
-    private function setupFromPendingRequest(PendingRequest $pendingRequest): void {
-        // Extract factory using reflection (protected property)
-        $reflection = new \ReflectionClass($pendingRequest);
-        $factoryProperty = $reflection->getProperty('factory');
-        $factoryProperty->setAccessible(true);
-        $this->factory = $factoryProperty->getValue($pendingRequest);
-        
-        // Store base configured PendingRequest for cloning
-        $this->basePendingRequest = $pendingRequest;
+        ))->toHttpResponse();
     }
 
     private function createPendingRequest(array $headers, bool $streaming): PendingRequest {
@@ -179,7 +108,6 @@ class LaravelDriver implements CanHandleHttpRequest
         }
         
         // Fallback to Factory-based creation (existing logic)
-        /** @phpstan-ignore-next-line */
         $pendingRequest = $this->factory
             ->timeout($this->config->requestTimeout)
             ->connectTimeout($this->config->connectTimeout)
@@ -202,5 +130,59 @@ class LaravelDriver implements CanHandleHttpRequest
             'DELETE' => $pendingRequest->delete($url, $body),
             default => throw new InvalidArgumentException("Unsupported HTTP method: {$method}")
         };
+    }
+
+    // exception handling
+
+    private function handleConnectionException(LaravelConnectionException $e, HttpRequest $request): never {
+        $message = $e->getMessage();
+
+        $httpException = str_contains($message, 'timed out') || str_contains($message, 'cURL error 28')
+            ? new TimeoutException($message, $request, null, $e)
+            : new ConnectionException($message, $request, null, $e);
+
+        $this->dispatchRequestFailed($httpException, $request);
+        throw $httpException;
+    }
+
+    private function handleNetworkException(\Exception $e, HttpRequest $request): never {
+        $httpException = new NetworkException($e->getMessage(), $request, null, null, $e);
+        $this->dispatchRequestFailed($httpException, $request);
+        throw $httpException;
+    }
+
+    // event dispatching
+
+    private function dispatchRequestSent(HttpRequest $request): void {
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+        ]));
+    }
+
+    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'statusCode' => $statusCode,
+        ]));
+    }
+
+    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+            'errors' => $exception->getMessage(),
+        ]));
+    }
+
+    private function dispatchResponseReceived(HttpResponse $response): void {
+        $this->events->dispatch(new HttpResponseReceived([
+            'statusCode' => $response->statusCode()
+        ]));
     }
 }

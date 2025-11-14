@@ -2,12 +2,11 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Http\Data\HttpResponseData;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
-/** @deprecated */
 class PartialInferenceResponse
 {
     public readonly string $id;
@@ -27,7 +26,7 @@ class PartialInferenceResponse
     public readonly string $toolArgs;
 
     public ?Usage $usage;
-    public ?HttpResponseData $responseData;
+    public ?HttpResponse $responseData;
 
     public function __construct(
         ?string $contentDelta = null,
@@ -37,7 +36,7 @@ class PartialInferenceResponse
         ?string $toolArgs = null,
         ?string $finishReason = null,
         ?Usage $usage = null,
-        ?HttpResponseData $responseData = null,
+        ?HttpResponse $responseData = null,
         //
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -50,7 +49,7 @@ class PartialInferenceResponse
         $this->toolArgs = $toolArgs ?? '';
         $this->finishReason = $finishReason ?? '';
         $this->usage = $usage ?? new Usage();
-        $this->responseData = $responseData ?? HttpResponseData::empty();
+        $this->responseData = $responseData ?? HttpResponse::empty();
         $this->content = '';
         $this->reasoningContent = '';
         //
@@ -122,7 +121,7 @@ class PartialInferenceResponse
         ?string $toolArgs = null,
         ?string $finishReason = null,
         ?Usage $usage = null,
-        ?HttpResponseData $responseData = null,
+        ?HttpResponse $responseData = null,
     ): self {
         return new self(
             contentDelta: $contentDelta ?? $this->contentDelta,
@@ -160,12 +159,27 @@ class PartialInferenceResponse
         return $this;
     }
 
-    public function withAccumulatedContent(PartialInferenceResponse $partialResponse) : self {
-        $this->content = $this->content . $partialResponse->contentDelta;
-        $this->reasoningContent = $this->reasoningContent . $partialResponse->reasoningContentDelta;
-        $this->finishReason = ($partialResponse->finishReason !== '')
-            ? $partialResponse->finishReason
-            : $this->finishReason;
+    public function withAccumulatedContent(PartialInferenceResponse $previous) : self {
+        // Accumulate content using previous full content if available,
+        // otherwise fall back to previous delta; then append current delta.
+        $baseContent = $previous->content() !== ''
+            ? $previous->content()
+            : ($previous->contentDelta ?? '');
+        $this->content = $baseContent . ($this->contentDelta ?? '');
+
+        // Accumulate reasoning content similarly
+        $baseReasoning = $previous->reasoningContent() !== ''
+            ? $previous->reasoningContent()
+            : ($previous->reasoningContentDelta ?? '');
+        $this->reasoningContent = $baseReasoning . ($this->reasoningContentDelta ?? '');
+
+        // Prefer current finishReason if provided, otherwise carry over previous
+        $this->finishReason = $this->finishReason !== ''
+            ? $this->finishReason
+            : ($previous->finishReason() ?: $this->finishReason);
+
+        // Accumulate usage counters
+        $this->usage = $this->usage->withAccumulated($previous->usage);
         return $this;
     }
 
@@ -205,7 +219,7 @@ class PartialInferenceResponse
             toolArgs: $data['tool_args'] ?? '',
             finishReason: $data['finish_reason'] ?? '',
             usage: isset($data['usage']) && is_array($data['usage']) ? Usage::fromArray($data['usage']) : null,
-            responseData: HttpResponseData::fromArray($data['response_data'] ?? []),
+            responseData: HttpResponse::fromArray($data['response_data'] ?? []),
             id: $data['id'] ?? null,
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null

@@ -1,43 +1,38 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\PendingHttpResponse;
-use Mockery;
 
 class MockHttp
 {
     static public function get(array $args) : HttpClient {
-        $mockHttp = Mockery::mock(HttpClient::class);
-        $mockResponse = Mockery::mock(HttpResponse::class);
-        $mockPending = Mockery::mock(PendingHttpResponse::class);
+        $driver = new MockHttpDriver();
 
-        $list = [];
-        foreach ($args as $arg) {
-            $list[] = self::makeFunc($arg);
+        // If there's only one response, make it unlimited (for test reuse)
+        // If there are multiple responses, make them sequential (for retry testing)
+        $isSequential = count($args) > 1;
+
+        foreach ($args as $json) {
+            $responseBody = json_encode(self::mockOpenAIResponse($json));
+            $expectation = $driver->expect();
+
+            if ($isSequential) {
+                $expectation->times(1);  // Sequential: each response used once
+            }
+
+            $expectation->reply(new HttpResponse(
+                statusCode: 200,
+                body: $responseBody,
+                headers: ['content-type' => 'application/json'],
+                isStreamed: false,
+                stream: null
+            ));
         }
 
-        $mockHttp->shouldReceive('create')->andReturn($mockPending);
-        $mockHttp->shouldReceive('with')->andReturn($mockResponse);
-        $mockHttp->shouldReceive('withRequest')->andReturn($mockPending);
-        $mockHttp->shouldReceive('get')->andReturn($mockResponse);
-        $mockHttp->shouldReceive('withDebug')->andReturn($mockHttp);
-
-        $mockPending->shouldReceive('get')->andReturn($mockResponse);
-
-        $mockResponse->shouldReceive('statusCode')->andReturn(200);
-        $mockResponse->shouldReceive('headers')->andReturn([]);
-        $mockResponse->shouldReceive('body')->andReturnUsing(...$list);
-        $mockResponse->shouldReceive('isStreamed')->andReturn(false);
-        $mockResponse->shouldReceive('stream')->andReturn($mockResponse);
-
-        return $mockHttp;
-    }
-
-    static private function makeFunc(string $json) {
-        return fn() => json_encode(self::mockOpenAIResponse($json));
+        return new HttpClient(driver: $driver);
     }
 
     static private function mockOpenAIResponse(string $json) : array {

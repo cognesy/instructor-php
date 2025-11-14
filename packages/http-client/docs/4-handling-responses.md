@@ -32,7 +32,7 @@ When you send a request using the `HttpClient::handle()` method, it returns an i
 ```php
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 
 // Create a new HTTP client
 $client = HttpClient::default();
@@ -264,9 +264,9 @@ If a request fails, you might want to retry it. Here's a simple implementation o
 
 ```php
 use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 
-function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?HttpResponse {
+function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?CanAdaptHttpResponse {
     $attempts = 0;
 
     while ($attempts < $maxRetries) {

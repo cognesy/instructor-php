@@ -72,7 +72,7 @@ $mock->on()
 ## Legacy addResponse (Still Supported)
 
 ```php
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseAdapter;
 
 $mock->addResponse(
     MockHttpResponse::json(['ok' => true]),

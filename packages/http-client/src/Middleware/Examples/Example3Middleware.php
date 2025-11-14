@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\Examples;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 abstract class Example3Middleware extends BaseMiddleware

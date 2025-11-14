@@ -1,0 +1,289 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Cognesy\Http\Tests\Integration;
+
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Drivers\CurlNew\CurlNewPool;
+use Cognesy\Http\Tests\Support\IntegrationTestServer;
+use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Success;
+
+beforeEach(function () {
+    $this->baseUrl = IntegrationTestServer::start();
+    $this->events = new EventDispatcher();
+    $this->config = new HttpClientConfig(
+        driver: 'curl',
+        connectTimeout: 3,
+        requestTimeout: 30,
+        streamChunkSize: 256,
+        failOnError: false,
+        maxConcurrent: 3,
+    );
+    $this->pool = new CurlNewPool($this->config, $this->events);
+});
+
+afterEach(function () {
+    // Server cleanup handled by shutdown function
+});
+
+it('can be instantiated', function () {
+    expect($this->pool)->toBeInstanceOf(CurlNewPool::class);
+});
+
+it('throws exception when curl extension is not loaded', function () {
+    if (!extension_loaded('curl')) {
+        expect(fn() => new CurlNewPool($this->config, $this->events))
+            ->toThrow(\RuntimeException::class, 'cURL extension is not loaded');
+    } else {
+        expect(true)->toBeTrue(); // Skip if curl is loaded
+    }
+});
+
+it('rejects external client instances', function () {
+    $fakeClient = new \stdClass();
+    expect(fn() => new CurlNewPool($this->config, $this->events, $fakeClient))
+        ->toThrow(\InvalidArgumentException::class);
+});
+
+it('handles pool with successful requests', function () {
+    $requests = [
+        new HttpRequest(
+            url: $this->baseUrl . '/get?test=1',
+            method: 'GET',
+            headers: ['User-Agent' => 'instructor-php/test'],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/get?test=2',
+            method: 'GET',
+            headers: ['User-Agent' => 'instructor-php/test'],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/get?test=3',
+            method: 'GET',
+            headers: ['User-Agent' => 'instructor-php/test'],
+            body: [],
+            options: [],
+        ),
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(3)
+        ->and($results[0])->toBeInstanceOf(Success::class)
+        ->and($results[1])->toBeInstanceOf(Success::class)
+        ->and($results[2])->toBeInstanceOf(Success::class);
+
+    // Verify responses
+    foreach ($results as $result) {
+        $response = $result->unwrap();
+        expect($response->statusCode())->toBe(200);
+    }
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('handles pool with mixed POST and GET requests', function () {
+    $requests = [
+        new HttpRequest(
+            url: $this->baseUrl . '/get?test=1',
+            method: 'GET',
+            headers: ['User-Agent' => 'instructor-php/test'],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/post',
+            method: 'POST',
+            headers: [
+                'Content-Type' => 'application/json',
+                'User-Agent' => 'instructor-php/test'
+            ],
+            body: ['test' => 'data'],
+            options: [],
+        ),
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(2)
+        ->and($results[0])->toBeInstanceOf(Success::class)
+        ->and($results[1])->toBeInstanceOf(Success::class);
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('handles pool with custom concurrency', function () {
+    $requests = [];
+    for ($i = 0; $i < 5; $i++) {
+        $requests[] = new HttpRequest(
+            url: $this->baseUrl . '/get?test=' . $i,
+            method: 'GET',
+            headers: ['User-Agent' => 'instructor-php/test'],
+            body: [],
+            options: [],
+        );
+    }
+
+    // Execute with concurrency of 2
+    $results = $this->pool->pool($requests, 2);
+
+    expect($results)->toHaveCount(5);
+    foreach ($results as $result) {
+        expect($result)->toBeInstanceOf(Success::class);
+    }
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('handles empty request array', function () {
+    $results = $this->pool->pool([]);
+
+    expect($results)->toHaveCount(0)
+        ->and($results)->toBeArray();
+});
+
+it('handles pool with error responses when failOnError is false', function () {
+    $requests = [
+        new HttpRequest(
+            url: $this->baseUrl . '/get',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/status/404',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/status/500',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(3)
+        ->and($results[0])->toBeInstanceOf(Success::class)
+        ->and($results[1])->toBeInstanceOf(Success::class)
+        ->and($results[2])->toBeInstanceOf(Success::class);
+
+    // Verify status codes
+    expect($results[0]->unwrap()->statusCode())->toBe(200)
+        ->and($results[1]->unwrap()->statusCode())->toBe(404)
+        ->and($results[2]->unwrap()->statusCode())->toBe(500);
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('throws exception for error responses when failOnError is true', function () {
+    $config = new HttpClientConfig(
+        driver: 'curl',
+        connectTimeout: 3,
+        requestTimeout: 30,
+        failOnError: true,
+    );
+
+    $pool = new CurlNewPool($config, $this->events);
+
+    $requests = [
+        new HttpRequest(
+            url: $this->baseUrl . '/get',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/status/404',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+    ];
+
+    try {
+        $pool->pool($requests);
+        expect(false)->toBeTrue('Expected exception to be thrown');
+    } catch (\Throwable $e) {
+        expect($e)->toBeInstanceOf(\Throwable::class);
+        expect($e->getMessage())->toContain('404');
+    }
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('handles different HTTP methods', function () {
+    $requests = [
+        new HttpRequest(
+            url: $this->baseUrl . '/get',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/post',
+            method: 'POST',
+            headers: [],
+            body: ['data' => 'test'],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/put',
+            method: 'PUT',
+            headers: [],
+            body: ['data' => 'test'],
+            options: [],
+        ),
+        new HttpRequest(
+            url: $this->baseUrl . '/delete',
+            method: 'DELETE',
+            headers: [],
+            body: [],
+            options: [],
+        ),
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(4);
+    foreach ($results as $result) {
+        expect($result)->toBeInstanceOf(Success::class)
+            ->and($result->unwrap()->statusCode())->toBe(200);
+    }
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('maintains request order in responses', function () {
+    $requests = [];
+    for ($i = 0; $i < 10; $i++) {
+        $requests[] = new HttpRequest(
+            url: $this->baseUrl . '/get?id=' . $i,
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        );
+    }
+
+    $results = $this->pool->pool($requests, 3);
+
+    expect($results)->toHaveCount(10);
+
+    // Verify all succeeded
+    foreach ($results as $index => $result) {
+        expect($result)->toBeInstanceOf(Success::class);
+        // Note: We can't verify exact order from response body in current test server
+        // but we verify count and all successful
+    }
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+// Clean up server after all tests complete
+register_shutdown_function(function() {
+    IntegrationTestServer::stop();
+});

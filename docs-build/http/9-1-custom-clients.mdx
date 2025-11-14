@@ -24,7 +24,7 @@ interface CanHandleHttpRequest
 {
     public function handle(HttpClientRequest $request): HttpResponse;
 }
-// @doctest id="1955"
+// @doctest id="008f"
 ```
 
 Here's a template for creating a custom HTTP client driver:
@@ -35,7 +35,7 @@ namespace YourNamespace\Http\Drivers;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
@@ -66,7 +66,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request
      */
-    public function handle(HttpRequest $request): HttpResponse
+    public function handle(HttpRequest $request): CanAdaptHttpResponse
     {
         $url = $request->url();
         $headers = $request->headers();
@@ -130,7 +130,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
         ]);
     }
 }
-// @doctest id="bea1"
+// @doctest id="c8ce"
 ```
 
 ### Creating a Response Adapter
@@ -140,10 +140,10 @@ You also need to create a response adapter that implements the `HttpResponse` in
 ```php
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Generator;
 
-class YourHttpResponse implements HttpResponse
+class YourHttpResponse implements CanAdaptHttpResponse
 {
     /**
      * Constructor
@@ -196,7 +196,7 @@ class YourHttpResponse implements HttpResponse
         }
     }
 }
-// @doctest id="dbbe"
+// @doctest id="c754"
 ```
 
 ### Using Your Custom HTTP Client Driver
@@ -227,7 +227,7 @@ $client = (new HttpClientBuilder())->withDriver($customDriver)->create();
 
 // Use the client as usual
 $response = $client->withRequest(new HttpRequest(/* ... */))->get();
-// @doctest id="ab33"
+// @doctest id="7188"
 ```
 
 ### Real-World Example: Creating a cURL Driver
@@ -240,7 +240,7 @@ namespace YourNamespace\Http\Drivers;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
@@ -263,7 +263,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request
      */
-    public function handle(HttpRequest $request): HttpResponse
+    public function handle(HttpRequest $request): CanAdaptHttpResponse
     {
         $url = $request->url();
         $headers = $request->headers();
@@ -450,7 +450,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
         }
     }
 }
-// @doctest id="6376"
+// @doctest id="ec6c"
 ```
 
 And here's the corresponding response adapter:
@@ -458,10 +458,10 @@ And here's the corresponding response adapter:
 ```php
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Generator;
 
-class CurlHttpResponse implements HttpResponse
+class CurlHttpResponse implements CanAdaptHttpResponse
 {
     private $stream;
     private $tempFile;
@@ -547,7 +547,7 @@ class CurlHttpResponse implements HttpResponse
         }
     }
 }
-// @doctest id="80a1"
+// @doctest id="c370"
 ```
 
 ## Registering Custom HTTP Client Drivers
@@ -563,7 +563,7 @@ $customDriver = new CustomHttpDriver($config);
 $client = (new HttpClientBuilder())
     ->withDriver($customDriver)
     ->create();
-// @doctest id="3520"
+// @doctest id="8d8f"
 ```
 
 ## Adding Custom HTTP Client to Configuration
@@ -588,7 +588,7 @@ Use your custom driver in the HTTP client configuration file (`config/http-clien
         ],
     ],
 // ...
-// @doctest id="01b8"
+// @doctest id="214c"
 ```
 
 ## Using Your Custom HTTP Client
@@ -600,7 +600,7 @@ use Cognesy\Http\HttpClient;
 
 // Create a client with your custom driver
 $client = HttpClient::using('my-custom-client');
-// @doctest id="a3c6"
+// @doctest id="4a3d"
 ```
 
 ## Using Custom HTTP Clients in Configuration Files
@@ -623,5 +623,5 @@ Or you can refer to it in your LLM connections configuration:
             // Select your HTTP configuration via HttpClientBuilder
         ],
     // ...
-// @doctest id="8ce0"
+// @doctest id="3965"
 ```

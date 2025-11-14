@@ -39,6 +39,18 @@ case "$TEST" in
         echo "Running: Pipeline checkpoints"
         php MemoryDiagnostics.php pipeline
         ;;
+    streaming|stream-flow)
+        echo "Running: Real streaming flow"
+        php MemoryDiagnostics.php streaming
+        ;;
+    growth|pattern)
+        echo "Running: Memory growth pattern"
+        php MemoryDiagnostics.php growth
+        ;;
+    invariants)
+        echo "Running: Streaming invariants"
+        php MemoryDiagnostics.php invariants
+        ;;
     standalone)
         echo "Running: Standalone memory analyzer"
         php MemoryAnalyzer.php
@@ -51,6 +63,9 @@ case "$TEST" in
         echo "  sync-stream   Sync vs Stream memory comparison"
         echo "  layers        Layer isolation (which component uses memory)"
         echo "  pipeline      Pipeline memory checkpoints"
+        echo "  streaming     Real streaming flow (HTTP → Inference)"
+        echo "  growth        Memory growth pattern detection (O(n) vs O(n²))"
+        echo "  invariants    Streaming invariants verification"
         echo "  standalone    Detailed standalone analyzer"
         echo "  help          Show this help"
         echo ""

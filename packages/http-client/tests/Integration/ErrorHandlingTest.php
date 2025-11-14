@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Integration;
-
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Drivers\Curl\CurlDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
@@ -14,6 +13,7 @@ use Cognesy\Http\Exceptions\ServerErrorException;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class ErrorHandlingTest extends TestCase
 {
@@ -34,6 +34,7 @@ class ErrorHandlingTest extends TestCase
     public static function driverProvider(): array
     {
         return [
+            ['curl'],
             ['guzzle'],
             ['laravel'], 
             ['symfony'],
@@ -43,9 +44,10 @@ class ErrorHandlingTest extends TestCase
     private function createDriver(string $type): object
     {
         $config = new HttpClientConfig(failOnError: true);
-        $events = new \Symfony\Component\EventDispatcher\EventDispatcher();
+        $events = new EventDispatcher();
         
         return match($type) {
+            'curl' => new CurlDriver($config, $events),
             'guzzle' => new GuzzleDriver($config, $events),
             'laravel' => new LaravelDriver($config, $events),
             'symfony' => new SymfonyDriver($config, $events),
@@ -68,7 +70,7 @@ class ErrorHandlingTest extends TestCase
             expect($e->getStatusCode())->toBe(404);
             expect($e->isRetriable())->toBeFalse();
             expect($e->getRequest())->toBe($request);
-            expect($e->getDuration())->toBeGreaterThan(0);
+            // Duration is no longer asserted; drivers no longer track it
         }
     }
 
@@ -87,7 +89,7 @@ class ErrorHandlingTest extends TestCase
             expect($e->getStatusCode())->toBe(500);
             expect($e->isRetriable())->toBeTrue();
             expect($e->getRequest())->toBe($request);
-            expect($e->getDuration())->toBeGreaterThan(0);
+            // Duration is no longer asserted; drivers no longer track it
         }
     }
 
@@ -114,9 +116,10 @@ class ErrorHandlingTest extends TestCase
     public function test_drivers_do_not_throw_when_fail_on_error_disabled(string $driverType)
     {
         $config = new HttpClientConfig(failOnError: false);
-        $events = new \Symfony\Component\EventDispatcher\EventDispatcher();
+        $events = new EventDispatcher();
         
         $driver = match($driverType) {
+            'curl' => new CurlDriver($config, $events),
             'guzzle' => new GuzzleDriver($config, $events),
             'laravel' => new LaravelDriver($config, $events),
             'symfony' => new SymfonyDriver($config, $events),
@@ -156,7 +159,7 @@ class ErrorHandlingTest extends TestCase
         } catch (HttpRequestException $e) {
             // All new exceptions should be catchable as HttpRequestException
             expect($e->getRequest())->toBe($request);
-            expect($e->getDuration())->toBeGreaterThan(0);
+            // Duration is no longer asserted; drivers no longer track it
         }
     }
 
@@ -187,7 +190,7 @@ class ErrorHandlingTest extends TestCase
             expect($message)->toContain('HTTP 404 Client Error');
             expect($message)->toContain('GET ' . $this->baseUrl . '/status/404');
             expect($message)->toContain('Status: 404');
-            expect($message)->toContain('Duration:');
+            // Drivers no longer include duration in messages
         }
     }
 
@@ -203,8 +206,7 @@ class ErrorHandlingTest extends TestCase
             expect($e->getRequest())->toBe($request);
             expect($e->getResponse())->not->toBeNull();
             expect($e->getStatusCode())->toBe(500);
-            expect($e->getDuration())->toBeFloat();
-            expect($e->getDuration())->toBeGreaterThan(0);
+            // Duration is optional; do not assert on it
             expect($e->isRetriable())->toBeTrue();
         }
     }

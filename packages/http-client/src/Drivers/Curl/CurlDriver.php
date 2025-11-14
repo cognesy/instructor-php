@@ -3,9 +3,10 @@
 namespace Cognesy\Http\Drivers\Curl;
 
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
@@ -47,25 +48,24 @@ class CurlDriver implements CanHandleHttpRequest
 
     #[\Override]
     public function handle(HttpRequest $request): HttpResponse {
-        $startTime = microtime(true);
         $this->dispatchRequestSent($request);
 
         if ($request->isStreamed()) {
-            return $this->handleStreaming($request, $startTime);
+            return $this->handleStreaming($request)->toHttpResponse();
         }
 
         $curl = curl_init();
 
         try {
             $this->configureCurl($curl, $request);
-            $responseBody = $this->executeCurl($curl, $request, $startTime);
+            $responseBody = $this->executeCurl($curl, $request);
             $statusCode = $this->getStatusCode($curl);
             $headers = $this->parseHeaders($curl);
 
-            $this->validateStatusCodeOrFail($statusCode, $responseBody, $request, $startTime);
+            $this->validateStatusCodeOrFail($statusCode, $responseBody, $request);
             $this->dispatchResponseReceived($statusCode);
 
-            return $this->buildHttpResponse($statusCode, $headers, $responseBody, $request);
+            return $this->buildHttpResponseAdapter($statusCode, $headers, $responseBody, $request)->toHttpResponse();
         } finally {
             curl_close($curl);
         }
@@ -155,7 +155,7 @@ class CurlDriver implements CanHandleHttpRequest
         curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
     }
 
-    private function handleStreaming(HttpRequest $request, float $startTime): HttpResponse {
+    private function handleStreaming(HttpRequest $request): CanAdaptHttpResponse {
         $curl = curl_init();
 
         // Per-request containers shared with callbacks
@@ -254,7 +254,7 @@ class CurlDriver implements CanHandleHttpRequest
             }
         }
 
-        return new CurlStreamingHttpResponse(
+        return new CurlStreamingHttpResponseAdapter(
             curl: $curl,
             multi: $multi,
             queue: $queue,
@@ -267,14 +267,14 @@ class CurlDriver implements CanHandleHttpRequest
         );
     }
 
-    private function executeCurl(CurlHandle $curl, HttpRequest $request, float $startTime): string {
+    private function executeCurl(CurlHandle $curl, HttpRequest $request): string {
         // Reset headers for this request
         $this->responseHeaders = [];
 
         $response = curl_exec($curl);
 
         if ($response === false) {
-            $this->handleCurlError($curl, $request, $startTime);
+            $this->handleCurlError($curl, $request);
         }
 
         // Response body is already separated (CURLOPT_HEADER is not set)
@@ -283,25 +283,24 @@ class CurlDriver implements CanHandleHttpRequest
         return $response;
     }
 
-    private function handleCurlError(CurlHandle $curl, HttpRequest $request, float $startTime): never {
-        $duration = microtime(true) - $startTime;
+    private function handleCurlError(CurlHandle $curl, HttpRequest $request): never {
         $errorCode = curl_errno($curl);
         $errorMessage = curl_error($curl);
 
         // Determine exception type based on error code
         $httpException = match (true) {
             in_array($errorCode, [CURLE_OPERATION_TIMEDOUT, CURLE_OPERATION_TIMEOUTED])
-                => new TimeoutException($errorMessage, $request, $duration),
+                => new TimeoutException($errorMessage, $request, null),
             in_array($errorCode, [
                 CURLE_COULDNT_CONNECT,
                 CURLE_COULDNT_RESOLVE_HOST,
                 CURLE_COULDNT_RESOLVE_PROXY,
                 CURLE_SSL_CONNECT_ERROR,
-            ]) => new ConnectionException($errorMessage, $request, $duration),
-            default => new NetworkException($errorMessage, $request, null, $duration),
+            ]) => new ConnectionException($errorMessage, $request, null),
+            default => new NetworkException($errorMessage, $request, null, null),
         };
 
-        $this->dispatchRequestFailed($httpException, $request, $duration);
+        $this->dispatchRequestFailed($httpException, $request);
         throw $httpException;
     }
 
@@ -314,50 +313,45 @@ class CurlDriver implements CanHandleHttpRequest
         return $this->responseHeaders;
     }
 
-    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request, float $duration): void {
+    private function dispatchRequestFailed(HttpRequestException $exception, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
             'body' => $request->body()->toArray(),
             'errors' => $exception->getMessage(),
-            'duration' => $duration,
         ]));
     }
 
-    private function validateStatusCodeOrFail(int $statusCode, string $responseBody, HttpRequest $request, float $startTime): void {
+    private function validateStatusCodeOrFail(int $statusCode, string $responseBody, HttpRequest $request): void {
         if (!$this->config->failOnError || $statusCode < 400) {
             return;
         }
 
-        $duration = microtime(true) - $startTime;
-
         // Create a temporary response for the exception
-        $tempResponse = new CurlHttpResponse(
+        $tempResponse = new HttpResponse(
             statusCode: $statusCode,
-            headers: [],
             body: $responseBody,
+            headers: [],
             isStreamed: false,
-            events: $this->events,
         );
 
         $httpException = HttpExceptionFactory::fromStatusCode(
             $statusCode,
             $request,
             $tempResponse,
-            $duration
+            null
         );
 
-        $this->dispatchStatusCodeFailed($statusCode, $request, $duration);
+        $this->dispatchStatusCodeFailed($statusCode, $request);
         throw $httpException;
     }
 
-    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request, float $duration): void {
+    private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
             'url' => $request->url(),
             'method' => $request->method(),
             'statusCode' => $statusCode,
-            'duration' => $duration,
         ]));
     }
 
@@ -367,8 +361,8 @@ class CurlDriver implements CanHandleHttpRequest
         ]));
     }
 
-    private function buildHttpResponse(int $statusCode, array $headers, string $body, HttpRequest $request): HttpResponse {
-        return new CurlHttpResponse(
+    private function buildHttpResponseAdapter(int $statusCode, array $headers, string $body, HttpRequest $request): CanAdaptHttpResponse {
+        return new CurlHttpResponseAdapter(
             statusCode: $statusCode,
             headers: $headers,
             body: $body,

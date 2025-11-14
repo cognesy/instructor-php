@@ -3,13 +3,17 @@
 namespace Cognesy\Http\Drivers\Curl;
 
 use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
+use CurlHandle;
+use CurlMultiHandle;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use SplQueue;
 
 /**
  * Streaming HttpResponse backed by PHP cURL multi API.
@@ -17,14 +21,14 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * Owns the cURL handles for the lifetime of the stream and cleans them up
  * once the transfer completes.
  */
-class CurlStreamingHttpResponse implements HttpResponse
+class CurlStreamingHttpResponseAdapter implements CanAdaptHttpResponse
 {
-    /** @var \CurlHandle */
+    /** @var CurlHandle */
     private $curl;
-    /** @var \CurlMultiHandle */
+    /** @var CurlMultiHandle */
     private $multi;
-    /** @var \SplQueue<string> */
-    private \SplQueue $queue;
+    /** @var SplQueue<string> */
+    private SplQueue $queue;
     private EventDispatcherInterface $events;
     private HttpRequest $request;
     private HttpClientConfig $config;
@@ -39,9 +43,9 @@ class CurlStreamingHttpResponse implements HttpResponse
      * @param array<string, array<string>> $headers
      */
     public function __construct(
-        \CurlHandle $curl,
-        \CurlMultiHandle $multi,
-        \SplQueue $queue,
+        CurlHandle $curl,
+        CurlMultiHandle $multi,
+        SplQueue $queue,
         EventDispatcherInterface $events,
         HttpRequest $request,
         HttpClientConfig $config,
@@ -61,7 +65,19 @@ class CurlStreamingHttpResponse implements HttpResponse
     }
 
     #[\Override]
-    public function statusCode(): int {
+    public function toHttpResponse() : HttpResponse {
+        return new HttpResponse(
+            statusCode: $this->statusCode(),
+            body: '', // Don't consume stream eagerly for streaming responses
+            headers: $this->headers,
+            isStreamed: true,
+            stream: $this->stream(),
+        );
+    }
+
+    // INTERNAL //////////////////////////////////////////////////////////////////////////
+
+    private function statusCode(): int {
         $code = $this->statusCode;
         if ($code > 0) {
             return $code;
@@ -85,16 +101,7 @@ class CurlStreamingHttpResponse implements HttpResponse
         return (int) curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    #[\Override]
-    public function headers(): array {
-        return $this->headers;
-    }
-
-    #[\Override]
-    public function body(): string {
+    private function body(): string {
         if ($this->completed) {
             return $this->bufferedBody;
         }
@@ -104,18 +111,7 @@ class CurlStreamingHttpResponse implements HttpResponse
         return $this->bufferedBody;
     }
 
-    #[\Override]
-    public function isStreamed(): bool {
-        return true;
-    }
-
-    /**
-     * Drive the transfer and yield chunks as they arrive.
-     *
-     * @return Generator<string>
-     */
-    #[\Override]
-    public function stream(?int $chunkSize = null): Generator {
+    private function stream(?int $chunkSize = null): Generator {
         $active = 1;
         while (true) {
             while (!$this->queue->isEmpty()) {
@@ -154,7 +150,7 @@ class CurlStreamingHttpResponse implements HttpResponse
             return;
         }
 
-        $response = new CurlHttpResponse(
+        $response = new CurlHttpResponseAdapter(
             statusCode: $code,
             headers: $this->headers,
             body: $this->bufferedBody,

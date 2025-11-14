@@ -192,7 +192,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
             if ($error !== null) {
                 $responses[$index] = $this->handleError($error);
             } else {
-                $responses[$index] = Result::success(new SymfonyHttpResponse(
+                $responses[$index] = Result::success(new SymfonyHttpResponseAdapter(
                     client: $this->client,
                     response: $response,
                     events: $this->events,

@@ -51,6 +51,8 @@ final class BufferedStream implements BufferedStreamInterface
         );
     }
 
+    // PUBLIC API //////////////////////////////////////////////////
+
     public function getIterator(): \Traversable {
         return match (true) {
             $this->isCompleted => $this->iterateCached(),
@@ -60,6 +62,10 @@ final class BufferedStream implements BufferedStreamInterface
 
     public function isCompleted(): bool {
         return $this->isCompleted;
+    }
+
+    public function receivedData(): array {
+        return $this->chunks;
     }
 
     // INTERNAL ////////////////////////////////////////////////////

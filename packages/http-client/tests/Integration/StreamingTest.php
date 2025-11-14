@@ -2,16 +2,17 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Curl\CurlDriver;
+use Cognesy\Http\Drivers\CurlNew\CurlNewDriver;
+use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
-use Illuminate\Http\Client\Factory as HttpFactory;
 use GuzzleHttp\Client;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Symfony\Component\HttpClient\HttpClient;
 
 beforeEach(function() {
@@ -34,6 +35,7 @@ function createStreamingDriver(string $type, HttpClientConfig $config, EventDisp
         'laravel' => new LaravelDriver($config, $events, new HttpFactory()),
         'symfony' => new SymfonyDriver($config, $events, HttpClient::create()),
         'curl' => new CurlDriver($config, $events),
+        'curl_new' => new CurlNewDriver($config, $events),
         default => throw new InvalidArgumentException("Unknown driver type: $type")
     };
 }

@@ -2,15 +2,15 @@
 
 namespace Cognesy\Http\Middleware\EventSource;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
 
 class EventSourceResponseDecorator extends BaseResponseDecorator
 {
     public function __construct(
-        HttpRequest            $request,
-        HttpResponse           $response,
+        HttpRequest $request,
+        HttpResponse $response,
         private readonly array $listeners,
     ) {
         parent::__construct($request, $response);
@@ -19,7 +19,7 @@ class EventSourceResponseDecorator extends BaseResponseDecorator
     #[\Override]
     public function stream(?int $chunkSize = null): \Generator {
         $buffer = '';
-        foreach ($this->response->stream($chunkSize) as $chunk) {
+        foreach ($this->response->stream() as $chunk) {
             $buffer = $this->handleChunk($buffer, $chunk);
             yield $chunk;
         }

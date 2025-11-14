@@ -1,12 +1,12 @@
 <?php
 
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicUsageFormat;
 
 it('parses Anthropic response into normalized InferenceResponse', function () {
     $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
-    $response = MockHttpResponse::json([
+    $response = MockHttpResponseFactory::json([
         'content' => [[ 'type' => 'text', 'text' => 'Hi!' ]],
         'stop_reason' => 'end_turn',
         'usage' => ['input_tokens' => 5, 'output_tokens' => 2],

@@ -2,8 +2,8 @@
 
 namespace Troubleshooting\CustomLogging;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
 use Psr\Log\LoggerInterface;
 

@@ -2,11 +2,11 @@
 
 namespace Cognesy\Http\Data;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Stream\BufferedStream;
 use Cognesy\Http\Stream\BufferedStreamInterface;
+use Generator;
 
-class HttpResponseData
+class HttpResponse
 {
     private int $statusCode;
     private string $body;
@@ -14,8 +14,9 @@ class HttpResponseData
     private array $headers;
 
     private BufferedStreamInterface $stream;
+    private string $streamChunkSeparator = '';
 
-    private function __construct(
+    public function __construct(
         int $statusCode,
         string $body,
         array $headers,
@@ -26,7 +27,7 @@ class HttpResponseData
         $this->body = $body;
         $this->headers = $headers;
         $this->isStreamed = $isStreamed;
-        $this->stream = match(true) {
+        $this->stream = match (true) {
             ($stream === null) => BufferedStream::empty(),
             ($stream instanceof BufferedStreamInterface) => $stream,
             (is_array($stream) === true) => BufferedStream::fromArray($stream),
@@ -34,18 +35,7 @@ class HttpResponseData
         };
     }
 
-    public static function fromHttpResponse(HttpResponse $response) : self {
-        $isStreamed = $response->isStreamed();
-        return new self(
-            statusCode: $response->statusCode(),
-            body: $response->body(),
-            headers: $response->headers(),
-            isStreamed: $isStreamed,
-            stream: $isStreamed ? $response->stream() : null,
-        );
-    }
-
-    public static function empty() : self {
+    public static function empty(): self {
         return new self(
             statusCode: 0,
             body: '',
@@ -66,7 +56,10 @@ class HttpResponseData
     }
 
     public function body(): string {
-        return $this->body;
+        return match (true) {
+            $this->isStreamed => $this->receivedContent(),
+            default => $this->body,
+        };
     }
 
     public function isStreamed(): bool {
@@ -80,15 +73,17 @@ class HttpResponseData
     /**
      * Read chunks of the stream
      *
-     * @return iterable<string>
+     * @return Generator<string>
      */
-    public function stream(): iterable {
-        return $this->stream;
+    public function stream(): Generator {
+        foreach ($this->stream as $data) {
+            yield $this->toChunk($data);
+        }
     }
 
     // SERIALIZATION //////////////////////////////////////////////////
 
-    public static function fromArray(array $data) : self {
+    public static function fromArray(array $data): self {
         return new self(
             statusCode: $data['statusCode'],
             body: $data['body'],
@@ -110,11 +105,19 @@ class HttpResponseData
 
     // INTERNAL ///////////////////////////////////////////////////////
 
-    private function allChunks() : array {
+    protected function toChunk(string $data): string {
+        return $data;
+    }
+
+    private function allChunks(): array {
         $chunks = [];
         foreach ($this->stream as $chunk) {
             $chunks[] = $chunk;
         }
         return $chunks;
+    }
+
+    private function receivedContent(): string {
+        return implode($this->streamChunkSeparator, $this->stream->receivedData());
     }
 }

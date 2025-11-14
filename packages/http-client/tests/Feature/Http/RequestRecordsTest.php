@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Http\Middleware\RecordReplay\RequestRecords;
 
 beforeEach(function() {
@@ -30,7 +30,7 @@ test('saves a recorded HTTP interaction', function() {
         []
     );
     
-    $response = MockHttpResponse::success(body: '{"id":123}');
+    $response = MockHttpResponseFactory::success(body: '{"id":123}');
     
     // Act
     $filename = $this->records->save($request, $response);
@@ -60,7 +60,7 @@ test('finds a recorded HTTP interaction', function() {
         []
     );
     
-    $response = MockHttpResponse::success(body: '{"id":123}');
+    $response = MockHttpResponseFactory::success(body: '{"id":123}');
     
     // Save the recording
     $this->records->save($request, $response);
@@ -101,7 +101,7 @@ test('deletes a recorded HTTP interaction', function() {
         []
     );
     
-    $response = MockHttpResponse::success(body: '{"id":123}');
+    $response = MockHttpResponseFactory::success(body: '{"id":123}');
     
     // Save the recording
     $this->records->save($request, $response);
@@ -123,7 +123,7 @@ test('clears all recordings', function() {
         new HttpRequest('https://api.example.com/comments', 'GET', [], '', [])
     ];
     
-    $response = MockHttpResponse::success(body: '{"result": true}');
+    $response = MockHttpResponseFactory::success(body: '{"result": true}');
     
     // Save multiple recordings
     foreach ($requests as $request) {
@@ -148,7 +148,7 @@ test('retrieves all recordings', function() {
         new HttpRequest('https://api.example.com/comments', 'GET', [], '', [])
     ];
     
-    $response = MockHttpResponse::success(body: '{"result": true}');
+    $response = MockHttpResponseFactory::success(body: '{"result": true}');
     
     // Save multiple recordings
     foreach ($requests as $request) {
@@ -177,7 +177,7 @@ test('changes storage directory', function() {
         []
     );
     
-    $response = MockHttpResponse::success(body: '{"id":123}');
+    $response = MockHttpResponseFactory::success(body: '{"id":123}');
     
     // Save a recording in the original directory
     $this->records->save($request, $response);

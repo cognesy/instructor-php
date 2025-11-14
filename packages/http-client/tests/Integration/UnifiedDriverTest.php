@@ -2,13 +2,13 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
-use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
+use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Illuminate\Http\Client\Factory as HttpFactory;
 
 beforeEach(function() {
@@ -52,7 +52,7 @@ test('driver handles basic HTTP operations', function (string $method) {
     $driver = createDriver('mock', $this->config, $this->events);
     
     // Set up mock response
-    $expectedResponse = MockHttpResponse::success(
+    $expectedResponse = MockHttpResponseFactory::success(
         body: json_encode(['method' => $method, 'test' => 'success'])
     );
     
@@ -81,9 +81,9 @@ test('driver handles different status codes', function (int $statusCode) {
     $driver = createDriver('mock', $this->config, $this->events);
     
     $mockResponse = match($statusCode) {
-        200 => MockHttpResponse::success(body: '{"status": "ok"}'),
-        404 => MockHttpResponse::error(statusCode: 404, body: '{"error": "not found"}'),
-        500 => MockHttpResponse::error(statusCode: 500, body: '{"error": "server error"}')
+        200 => MockHttpResponseFactory::success(body: '{"status": "ok"}'),
+        404 => MockHttpResponseFactory::error(statusCode: 404, body: '{"error": "not found"}'),
+        500 => MockHttpResponseFactory::error(statusCode: 500, body: '{"error": "server error"}')
     };
     
     $testUrl = "https://test.example.com/status/{$statusCode}";
@@ -107,7 +107,7 @@ test('driver handles custom headers', function () {
         'Content-Type' => 'application/json'
     ];
     
-    $expectedResponse = MockHttpResponse::success(
+    $expectedResponse = MockHttpResponseFactory::success(
         body: json_encode(['headers' => $customHeaders])
     );
     
@@ -127,7 +127,7 @@ test('driver handles custom headers', function () {
 test('driver provides consistent response interface', function () {
     $driver = createDriver('mock', $this->config, $this->events);
     
-    $expectedResponse = MockHttpResponse::success(body: '{"consistent": true}');
+    $expectedResponse = MockHttpResponseFactory::success(body: '{"consistent": true}');
     $testUrl = 'https://test.example.com/consistent';
     
     $driver->addResponse($expectedResponse, $testUrl, 'GET');

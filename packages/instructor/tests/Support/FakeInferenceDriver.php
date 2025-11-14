@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Tests\Support;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -27,14 +27,12 @@ class FakeInferenceDriver implements CanHandleInference
      * @param InferenceResponse[] $responses
      * @param array<int, PartialInferenceResponse[]> $streamBatches
      */
-    public function __construct(array $responses = [], array $streamBatches = [])
-    {
+    public function __construct(array $responses = [], array $streamBatches = []) {
         $this->responses = $responses;
         $this->streamBatches = $streamBatches;
     }
 
-    public function makeResponseFor(InferenceRequest $request): InferenceResponse
-    {
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse {
         $this->responseCalls++;
         if (!empty($this->responses)) {
             return array_shift($this->responses);
@@ -43,8 +41,7 @@ class FakeInferenceDriver implements CanHandleInference
     }
 
     /** @return iterable<PartialInferenceResponse> */
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable
-    {
+    public function makeStreamResponsesFor(InferenceRequest $request): iterable {
         $this->streamCalls++;
         $batch = !empty($this->streamBatches) ? array_shift($this->streamBatches) : [];
         foreach ($batch as $item) {
@@ -52,8 +49,7 @@ class FakeInferenceDriver implements CanHandleInference
         }
     }
 
-    public function toHttpRequest(InferenceRequest $request): HttpRequest
-    {
+    public function toHttpRequest(InferenceRequest $request): HttpRequest {
         return new HttpRequest(
             url: 'https://mock.local/llm',
             method: 'POST',
@@ -63,14 +59,12 @@ class FakeInferenceDriver implements CanHandleInference
         );
     }
 
-    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse
-    {
+    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
         return new InferenceResponse(content: '');
     }
 
     /** @return iterable<PartialInferenceResponse> */
-    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable
-    {
+    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
         if (!empty($this->streamBatches)) {
             foreach ($this->streamBatches[0] as $item) {
                 yield $item;

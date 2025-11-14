@@ -2,19 +2,18 @@
 
 namespace Cognesy\Http\Drivers\Curl;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Utils\Result\Result;
-use CurlMultiHandle;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 
 /**
  * Pool handler for concurrent HTTP requests using curl_multi
@@ -29,7 +28,7 @@ class CurlPool implements CanHandleRequestPool
         EventDispatcherInterface $events,
     ) {
         if (!extension_loaded('curl')) {
-            throw new \RuntimeException('cURL extension is not loaded');
+            throw new RuntimeException('cURL extension is not loaded');
         }
 
         $this->config = $config;
@@ -50,110 +49,37 @@ class CurlPool implements CanHandleRequestPool
         }
 
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent ?? 5;
+
         $responses = [];
         $handles = [];
         $requestMap = [];
-
-        // Create curl multi handle
-        $multiHandle = curl_multi_init();
-
-        // Add initial batch of requests
-        $activeRequests = 0;
         $requestQueue = array_values($requests);
         $queueIndex = 0;
 
-        // Initialize first batch
-        while ($queueIndex < count($requestQueue) && $activeRequests < $maxConcurrent) {
-            $request = $requestQueue[$queueIndex];
-            $handle = $this->createCurlHandle($request);
+        $multiHandle = $this->initMultiHandle();
+        $activeRequests = $this->initializeFirstBatch(
+            multiHandle: $multiHandle,
+            requestQueue: $requestQueue,
+            queueIndex: $queueIndex,
+            maxConcurrent: $maxConcurrent,
+            handles: $handles,
+            requestMap: $requestMap,
+        );
 
-            curl_multi_add_handle($multiHandle, $handle);
-            $handleId = spl_object_id($handle);
-            $handles[$handleId] = $handle;
-            $requestMap[$handleId] = [
-                'request' => $request,
-                'index' => $queueIndex,
-                'startTime' => microtime(true),
-            ];
+        $this->runEventLoop(
+            multiHandle: $multiHandle,
+            responses: $responses,
+            handles: $handles,
+            requestMap: $requestMap,
+            requestQueue: $requestQueue,
+            queueIndex: $queueIndex,
+            activeRequests: $activeRequests,
+            maxConcurrent: $maxConcurrent,
+        );
 
-            $this->dispatchRequestSent($request);
-            $activeRequests++;
-            $queueIndex++;
-        }
+        $this->cleanupMultiHandle($multiHandle);
 
-        // Process requests
-        do {
-            // Execute handles
-            $status = curl_multi_exec($multiHandle, $stillRunning);
-
-            if ($status !== CURLM_OK) {
-                break;
-            }
-
-            // Check for completed requests
-            while ($info = curl_multi_info_read($multiHandle)) {
-                if ($info['msg'] === CURLMSG_DONE) {
-                    $handle = $info['handle'];
-                    $handleId = spl_object_id($handle);
-                    $requestData = $requestMap[$handleId];
-
-                    try {
-                        $response = $this->processCompletedHandle(
-                            $handle,
-                            $requestData['request'],
-                            $requestData['startTime']
-                        );
-                        // Wrap successful response in Result::success
-                        $responses[$requestData['index']] = Result::success($response);
-                    } catch (\Throwable $e) {
-                        // Wrap exception in Result::failure if not failing on error
-                        if ($this->config->failOnError) {
-                            throw $e;
-                        }
-                        $responses[$requestData['index']] = Result::failure($e);
-                    }
-
-                    // Remove completed handle
-                    curl_multi_remove_handle($multiHandle, $handle);
-                    curl_close($handle);
-                    unset($handles[$handleId]);
-                    unset($requestMap[$handleId]);
-                    $activeRequests--;
-
-                    // Add next request from queue if available
-                    if ($queueIndex < count($requestQueue)) {
-                        $nextRequest = $requestQueue[$queueIndex];
-                        $nextHandle = $this->createCurlHandle($nextRequest);
-
-                        curl_multi_add_handle($multiHandle, $nextHandle);
-                        $nextHandleId = spl_object_id($nextHandle);
-                        $handles[$nextHandleId] = $nextHandle;
-                        $requestMap[$nextHandleId] = [
-                            'request' => $nextRequest,
-                            'index' => $queueIndex,
-                            'startTime' => microtime(true),
-                        ];
-
-                        $this->dispatchRequestSent($nextRequest);
-                        $activeRequests++;
-                        $queueIndex++;
-                    }
-                }
-            }
-
-            // Wait for activity with timeout
-            if ($stillRunning) {
-                curl_multi_select($multiHandle, 0.1);
-            }
-        } while ($stillRunning > 0);
-
-        // Clean up
-        curl_multi_close($multiHandle);
-
-        // Sort responses by original request order
-        ksort($responses);
-
-        return array_values($responses);
+        return $this->finalizeResponses($responses);
     }
 
     // INTERNAL /////////////////////////////////////////////
@@ -225,15 +151,14 @@ class CurlPool implements CanHandleRequestPool
         return $curl;
     }
 
-    private function processCompletedHandle(\CurlHandle $handle, HttpRequest $request, float $startTime): HttpResponse {
-        $duration = microtime(true) - $startTime;
+    private function processCompletedHandle(\CurlHandle $handle, HttpRequest $request): HttpResponse {
 
         // Check for curl errors
         $errno = curl_errno($handle);
         if ($errno !== 0) {
             $error = curl_error($handle);
-            $this->dispatchRequestFailed($error, $request, $duration);
-            throw new NetworkException($error, $request, null, $duration);
+            $this->dispatchRequestFailed($error, $request);
+            throw new NetworkException($error, $request, null, null);
         }
 
         // Get response data
@@ -245,14 +170,14 @@ class CurlPool implements CanHandleRequestPool
         $headers = $this->extractHeadersFromInfo($handle);
 
         // Create response object
-        $response = new CurlHttpResponse(
+        $response = (new CurlHttpResponseAdapter(
             statusCode: $statusCode,
             headers: $headers,
             body: $body ?: '',
             isStreamed: false,
             events: $this->events,
             streamChunkSize: $this->config->streamChunkSize ?? 256,
-        );
+        ))->toHttpResponse();
 
         // Check if status indicates failure
         if ($statusCode >= 400) {
@@ -260,10 +185,9 @@ class CurlPool implements CanHandleRequestPool
                 $statusCode,
                 $request,
                 $response,
-                $duration
             );
 
-            $this->dispatchRequestFailed($exception->getMessage(), $request, $duration);
+            $this->dispatchRequestFailed($exception->getMessage(), $request);
 
             // Always throw so it gets wrapped in Result::failure
             // The caller will decide whether to re-throw based on failOnError
@@ -272,6 +196,212 @@ class CurlPool implements CanHandleRequestPool
 
         $this->dispatchResponseReceived($statusCode);
         return $response;
+    }
+
+    // MODULARIZED INTERNALS /////////////////////////////////////////////
+
+    /**
+     * @return \CurlMultiHandle
+     */
+    private function initMultiHandle(): \CurlMultiHandle {
+        /** @var \CurlMultiHandle $multi */
+        $multi = curl_multi_init();
+        return $multi;
+    }
+
+    /**
+     * Initialize the first batch up to max concurrency.
+     *
+     * @param array<HttpRequest> $requestQueue
+     * @param array<int, \CurlHandle> $handles
+     * @param array<int, array{request: HttpRequest, index: int}> $requestMap
+     */
+    private function initializeFirstBatch(
+        \CurlMultiHandle $multiHandle,
+        array $requestQueue,
+        int &$queueIndex,
+        int $maxConcurrent,
+        array &$handles,
+        array &$requestMap,
+    ): int {
+        $activeRequests = 0;
+
+        while ($queueIndex < count($requestQueue) && $activeRequests < $maxConcurrent) {
+            $request = $requestQueue[$queueIndex];
+            $this->attachRequest(
+                multiHandle: $multiHandle,
+                request: $request,
+                requestIndex: $queueIndex,
+                handles: $handles,
+                requestMap: $requestMap,
+            );
+            $activeRequests++;
+            $queueIndex++;
+        }
+
+        return $activeRequests;
+    }
+
+    /**
+     * Main event loop running curl_multi and processing finished handles.
+     *
+     * @param array<int, Result> $responses
+     * @param array<int, \CurlHandle> $handles
+     * @param array<int, array{request: HttpRequest, index: int}> $requestMap
+     * @param array<HttpRequest> $requestQueue
+     */
+    private function runEventLoop(
+        \CurlMultiHandle $multiHandle,
+        array &$responses,
+        array &$handles,
+        array &$requestMap,
+        array $requestQueue,
+        int &$queueIndex,
+        int &$activeRequests,
+        int $maxConcurrent,
+    ): void {
+        do {
+            $status = curl_multi_exec($multiHandle, $stillRunning);
+            if ($status !== CURLM_OK) {
+                break;
+            }
+
+            $this->drainCompleted(
+                multiHandle: $multiHandle,
+                responses: $responses,
+                handles: $handles,
+                requestMap: $requestMap,
+                requestQueue: $requestQueue,
+                queueIndex: $queueIndex,
+                activeRequests: $activeRequests,
+                maxConcurrent: $maxConcurrent,
+            );
+
+            if ($stillRunning) {
+                curl_multi_select($multiHandle, 0.1);
+            }
+        } while ($stillRunning > 0);
+    }
+
+    /**
+     * Read finished transfers and process their results, then enqueue next requests.
+     *
+     * @param array<int, Result> $responses
+     * @param array<int, \CurlHandle> $handles
+     * @param array<int, array{request: HttpRequest, index: int}> $requestMap
+     * @param array<HttpRequest> $requestQueue
+     */
+    private function drainCompleted(
+        \CurlMultiHandle $multiHandle,
+        array &$responses,
+        array &$handles,
+        array &$requestMap,
+        array $requestQueue,
+        int &$queueIndex,
+        int &$activeRequests,
+        int $maxConcurrent,
+    ): void {
+        while ($info = curl_multi_info_read($multiHandle)) {
+            if ($info['msg'] !== CURLMSG_DONE) {
+                continue;
+            }
+
+            /** @var \CurlHandle $handle */
+            $handle = $info['handle'];
+            $handleId = spl_object_id($handle);
+            $requestData = $requestMap[$handleId];
+
+            try {
+                $response = $this->processCompletedHandle(
+                    $handle,
+                    $requestData['request'],
+                );
+                $responses[$requestData['index']] = Result::success($response);
+            } catch (\Throwable $e) {
+                if ($this->config->failOnError) {
+                    throw $e;
+                }
+                $responses[$requestData['index']] = Result::failure($e);
+            }
+
+            $this->detachHandle($multiHandle, $handle, $handles, $requestMap);
+            $activeRequests--;
+
+            if ($queueIndex < count($requestQueue) && $activeRequests < $maxConcurrent) {
+                $nextRequest = $requestQueue[$queueIndex];
+                $this->attachRequest(
+                    multiHandle: $multiHandle,
+                    request: $nextRequest,
+                    requestIndex: $queueIndex,
+                    handles: $handles,
+                    requestMap: $requestMap,
+                );
+                $activeRequests++;
+                $queueIndex++;
+            }
+        }
+    }
+
+    /**
+     * Attach a request to the multi handle and update bookkeeping.
+     *
+     * @param array<int, \CurlHandle> $handles
+     * @param array<int, array{request: HttpRequest, index: int}> $requestMap
+     */
+    private function attachRequest(
+        \CurlMultiHandle $multiHandle,
+        HttpRequest $request,
+        int $requestIndex,
+        array &$handles,
+        array &$requestMap,
+    ): void {
+        $handle = $this->createCurlHandle($request);
+        curl_multi_add_handle($multiHandle, $handle);
+
+        $handleId = spl_object_id($handle);
+        $handles[$handleId] = $handle;
+        $requestMap[$handleId] = [
+            'request' => $request,
+            'index' => $requestIndex,
+        ];
+
+        $this->dispatchRequestSent($request);
+    }
+
+    /**
+     * Remove handle from multi and local bookkeeping.
+     *
+     * @param array<int, \CurlHandle> $handles
+     * @param array<int, array{request: HttpRequest, index: int}> $requestMap
+     */
+    private function detachHandle(
+        \CurlMultiHandle $multiHandle,
+        \CurlHandle $handle,
+        array &$handles,
+        array &$requestMap,
+    ): void {
+        curl_multi_remove_handle($multiHandle, $handle);
+        curl_close($handle);
+        $handleId = spl_object_id($handle);
+        unset($handles[$handleId], $requestMap[$handleId]);
+    }
+
+    /**
+     * Close multi handle.
+     */
+    private function cleanupMultiHandle(\CurlMultiHandle $multiHandle): void {
+        curl_multi_close($multiHandle);
+    }
+
+    /**
+     * Normalize and sort responses by original order.
+     *
+     * @param array<int, Result> $responses
+     * @return array<int, Result>
+     */
+    private function finalizeResponses(array $responses): array {
+        ksort($responses);
+        return array_values($responses);
     }
 
     private function extractHeadersFromInfo(\CurlHandle $handle): array {
@@ -298,12 +428,11 @@ class CurlPool implements CanHandleRequestPool
         ]));
     }
 
-    private function dispatchRequestFailed(string $error, HttpRequest $request, float $duration): void {
+    private function dispatchRequestFailed(string $error, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
             'url' => $request->url(),
             'method' => $request->method(),
             'errors' => $error,
-            'duration' => $duration,
         ]));
     }
 }

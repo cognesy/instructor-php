@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Exceptions;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Throwable;
 
 class HttpClientErrorException extends HttpRequestException
@@ -22,12 +22,11 @@ class HttpClientErrorException extends HttpRequestException
         parent::__construct($message, $request, $response, $duration, $previous);
     }
 
-    private function buildMessage(int $statusCode, ?HttpResponse $response): string
-    {
+    private function buildMessage(int $statusCode, ?HttpResponse $response): string {
         $message = sprintf('HTTP %d Client Error', $statusCode);
 
         if ($response?->body()) {
-            $body = $response->body();
+            $body = $response?->body();
             // Try to extract error message from JSON response
             $decoded = json_decode($body, true);
             if (is_array($decoded) && isset($decoded['error'])) {
@@ -42,16 +41,14 @@ class HttpClientErrorException extends HttpRequestException
 
         return $message;
     }
-    
+
     #[\Override]
-    public function getStatusCode(): ?int
-    {
+    public function getStatusCode(): ?int {
         return $this->statusCode;
     }
-    
+
     #[\Override]
-    public function isRetriable(): bool
-    {
+    public function isRetriable(): bool {
         return $this->statusCode === 429; // Only 429 Too Many Requests is retriable
     }
 }

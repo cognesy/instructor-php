@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Tests\Support;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -22,30 +22,25 @@ class ProbeStreamDriver implements CanHandleInference
         private ?InferenceResponse $syncResponse = null,
     ) {}
 
-    public function makeResponseFor(InferenceRequest $request): InferenceResponse
-    {
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse {
         $this->responseCalls++;
         return $this->syncResponse ?? new InferenceResponse(content: '');
     }
 
-    public function makeStreamResponsesFor(InferenceRequest $request): iterable
-    {
+    public function makeStreamResponsesFor(InferenceRequest $request): iterable {
         $this->streamCalls++;
         return $this->iterator; // single live iterator instance
     }
 
-    public function toHttpRequest(InferenceRequest $request): HttpRequest
-    {
+    public function toHttpRequest(InferenceRequest $request): HttpRequest {
         return new HttpRequest(url: 'mock://probe', method: 'POST');
     }
 
-    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse
-    {
+    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
         return $this->syncResponse ?? new InferenceResponse(content: '');
     }
 
-    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable
-    {
+    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
         return $this->iterator;
     }
 }

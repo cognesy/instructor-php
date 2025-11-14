@@ -168,13 +168,13 @@ And the corresponding middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class XmlToJsonMiddleware extends BaseMiddleware
 {
     protected function shouldDecorateResponse(
         HttpRequest $request,
-        HttpResponse $response
+        CanAdaptHttpResponse $response
     ): bool {
         // Only transform XML responses
         return isset($response->headers()['Content-Type']) &&
@@ -183,8 +183,8 @@ class XmlToJsonMiddleware extends BaseMiddleware
 
     protected function toResponse(
         HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
+        CanAdaptHttpResponse $response
+    ): CanAdaptHttpResponse {
         return new XmlToJsonDecorator($request, $response);
     }
 }
@@ -203,7 +203,7 @@ This middleware collects analytics data about HTTP requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class AnalyticsMiddleware extends BaseMiddleware
 {
@@ -222,8 +222,8 @@ class AnalyticsMiddleware extends BaseMiddleware
 
     protected function afterRequest(
         HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
+        CanAdaptHttpResponse $response
+    ): CanAdaptHttpResponse {
         $endTime = microtime(true);
         $duration = round(($endTime - $this->startTime) * 1000, 2);
 
@@ -256,7 +256,7 @@ This middleware implements the circuit breaker pattern to prevent repeated calls
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\CanAdaptHttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponseAdapter;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class CircuitBreakerMiddleware extends BaseMiddleware
 {
@@ -270,7 +270,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
         $this->resetTimeout = $resetTimeout;
     }
 
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): CanAdaptHttpResponse
     {
         $hostname = parse_url($request->url(), PHP_URL_HOST);
 
@@ -295,7 +295,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
                 $circuit['state'] = 'HALF_OPEN';
             } else {
                 // Circuit is still open, return error response
-                return new MockHttpResponse(
+                return new MockHttpResponseAdapter(
                     statusCode: 503,
                     headers: ['Content-Type' => 'application/json'],
                     body: json_encode([
@@ -347,7 +347,7 @@ namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 
 class ConditionalMiddleware implements HttpMiddleware
@@ -361,7 +361,7 @@ class ConditionalMiddleware implements HttpMiddleware
         $this->condition = $condition;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): CanAdaptHttpResponse
     {
         // Check if the condition is met
         if (($this->condition)($request)) {

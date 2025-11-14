@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\Mock\MockHttpResponse;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
 
 test('creates from streamed HTTP interaction', function() {
@@ -15,7 +15,7 @@ test('creates from streamed HTTP interaction', function() {
     );
     
     $chunks = ['{"part1":', '"value1",', '"part2":"value2"}'];
-    $response = MockHttpResponse::streaming(chunks: $chunks);
+    $response = MockHttpResponseFactory::streaming(chunks: $chunks);
     
     // Act
     $record = StreamedRequestRecord::fromStreamedInteraction($request, $response);
@@ -41,7 +41,7 @@ test('converts streamed record to and from JSON', function() {
     );
     
     $chunks = ['{"part1":', '"value1",', '"part2":"value2"}'];
-    $response = MockHttpResponse::streaming(chunks: $chunks);
+    $response = MockHttpResponseFactory::streaming(chunks: $chunks);
     
     // Act
     $original = StreamedRequestRecord::fromStreamedInteraction($request, $response);
@@ -66,7 +66,7 @@ test('creates streaming response from record', function() {
     );
     
     $chunks = ['{"part1":', '"value1",', '"part2":"value2"}'];
-    $originalResponse = MockHttpResponse::streaming(chunks: $chunks);
+    $originalResponse = MockHttpResponseFactory::streaming(chunks: $chunks);
     $record = StreamedRequestRecord::fromStreamedInteraction($request, $originalResponse);
     
     // Act - Get a streaming response
@@ -107,8 +107,8 @@ test('factory method creates correct record type', function() {
     );
     
     $chunks = ['{"id":', '123', '}'];
-    $streamResponse = MockHttpResponse::streaming(chunks: $chunks);
-    $normalResponse = MockHttpResponse::success(body: '{"id":123}');
+    $streamResponse = MockHttpResponseFactory::streaming(chunks: $chunks);
+    $normalResponse = MockHttpResponseFactory::success(body: '{"id":123}');
     
     // Act
     $streamRecord = StreamedRequestRecord::createAppropriateRecord($streamRequest, $streamResponse);

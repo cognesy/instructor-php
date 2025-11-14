@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
@@ -41,11 +41,8 @@ class PendingEmbeddings
     }
 
     public function makeResponse() : EmbeddingsResponse {
-        /** @var HttpResponse $httpResponse */
-        $httpResponse = $this->driver->handle($this->request);
-        $this->httpResponse = $httpResponse;
-        $responseBody = $this->httpResponse->body();
-        $data = Json::decode($responseBody) ?? [];
+        $this->httpResponse = $this->driver->handle($this->request);
+        $data = Json::decode($this->httpResponse->body()) ?? [];
         $response = $this->driver->fromData($data);
         if ($response === null) {
             throw new \RuntimeException('Failed to create embeddings response from data');

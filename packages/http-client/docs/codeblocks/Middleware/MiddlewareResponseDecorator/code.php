@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Middleware\MiddlewareResponseDecorator;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
 use Generator;
 
@@ -13,13 +13,12 @@ class JsonStreamDecorator extends BaseResponseDecorator
 
     public function __construct(
         HttpRequest $request,
-        HttpResponse $response
+        HttpResponse $response,
     ) {
         parent::__construct($request, $response);
     }
 
-    public function stream(int $chunkSize = 1): Generator
-    {
+    public function stream(int $chunkSize = 1): Generator {
         foreach ($this->response->stream($chunkSize) as $chunk) {
             // Add the chunk to our buffer
             $this->buffer .= $chunk;
@@ -32,8 +31,7 @@ class JsonStreamDecorator extends BaseResponseDecorator
         }
     }
 
-    private function processBuffer(): void
-    {
+    private function processBuffer(): void {
         // Keep processing until we can't find any more complete JSON objects
         while (($jsonEnd = strpos($this->buffer, '}')) !== false) {
             // Try to find the start of the JSON object

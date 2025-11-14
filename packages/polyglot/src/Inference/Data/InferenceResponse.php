@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Http\Data\HttpResponseData;
+use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -27,7 +27,7 @@ final readonly class InferenceResponse
 
     private ToolCalls $toolCalls;
     private Usage $usage;
-    private HttpResponseData $responseData;
+    private HttpResponse $responseData;
 
     private bool $isPartial;
 
@@ -37,7 +37,7 @@ final readonly class InferenceResponse
         ?ToolCalls $toolCalls = null,
         string $reasoningContent = '',
         ?Usage $usage = null,
-        ?HttpResponseData $responseData = null,
+        ?HttpResponse $responseData = null,
         bool $isPartial = false,
         mixed $value = null, // processed / transformed value
         //
@@ -54,7 +54,7 @@ final readonly class InferenceResponse
         $this->finishReason = $finishReason;
         $this->toolCalls = $toolCalls ?? new ToolCalls();
         $this->reasoningContent = $reasoningContent;
-        $this->responseData = $responseData ?? HttpResponseData::empty();
+        $this->responseData = $responseData ?? HttpResponse::empty();
         $this->usage = $usage ?? new Usage();
 
         $this->isPartial = $isPartial;
@@ -94,7 +94,7 @@ final readonly class InferenceResponse
         return $this->isPartial;
     }
 
-    public function responseData(): HttpResponseData {
+    public function responseData(): HttpResponse {
         return $this->responseData;
     }
 
@@ -146,7 +146,7 @@ final readonly class InferenceResponse
         ?ToolCalls $toolCalls = null,
         ?string $reasoningContent = null,
         ?Usage $usage = null,
-        ?HttpResponseData $responseData = null,
+        ?HttpResponse $responseData = null,
         ?bool $isPartial = null,
         mixed $value = null,
     ): self {
@@ -204,7 +204,7 @@ final readonly class InferenceResponse
             toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
             reasoningContent: $data['reasoningContent'] ?? '',
             usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
-            responseData: HttpResponseData::fromArray($data['responseData'] ?? []),
+            responseData: HttpResponse::fromArray($data['responseData'] ?? []),
             isPartial: $data['isPartial'] ?? false,
             //
             id: $data['id'] ?? null,
