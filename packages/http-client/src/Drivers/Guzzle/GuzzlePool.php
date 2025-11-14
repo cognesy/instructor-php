@@ -3,12 +3,15 @@
 namespace Cognesy\Http\Drivers\Guzzle;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Utils\Collection\ArrayList;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use GuzzleHttp\ClientInterface;
@@ -31,18 +34,18 @@ class GuzzlePool implements CanHandleRequestPool
     /**
      * Handles a pool of HTTP requests concurrently.
      *
-     * @param HttpRequest[] $requests Array of HttpRequest objects to be processed.
+     * @param HttpRequestList $requests Collection of HttpRequest objects to be processed.
      * @param int|null $maxConcurrent Maximum number of concurrent requests, defaults to config value.
-     * @return array Array of results for each request, in the same order as the input.
+     * @return HttpResponseList Collection of results for each request, in the same order as the input.
      * @throws HttpRequestException If any request fails and failOnError is true.
      */
     #[\Override]
-    public function pool(array $requests, ?int $maxConcurrent = null): array {
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
         $responses = [];
         $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;
 
         $pool = new Pool($this->client,
-            $this->createRequestGenerator($requests)(),
+            $this->createRequestGenerator($requests->all())(),
             $this->createPoolConfiguration($responses, $concurrency)
         );
 
@@ -148,9 +151,9 @@ class GuzzlePool implements CanHandleRequestPool
         }
     }
 
-    private function normalizeResponses(array $responses): array {
+    private function normalizeResponses(array $responses): HttpResponseList {
         ksort($responses);
-        return array_values($responses);
+        return HttpResponseList::fromArray(array_values($responses));
     }
 
     private function isStreamed(ResponseInterface $response) : bool {

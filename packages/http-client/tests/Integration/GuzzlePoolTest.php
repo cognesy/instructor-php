@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
@@ -18,19 +19,19 @@ use GuzzleHttp\Psr7\Response;
 beforeEach(function() {
     // Start local test server for consistent URL handling
     $this->baseUrl = IntegrationTestServer::start();
-    
+
     $this->mockHandler = new MockHandler();
     $handlerStack = HandlerStack::create($this->mockHandler);
     $this->client = new Client(['handler' => $handlerStack]);
     $this->events = new EventDispatcher();
-    
+
     $this->config = new HttpClientConfig(
         driver: 'guzzle',
         maxConcurrent: 3,
         poolTimeout: 30,
         failOnError: false
     );
-    
+
     $this->pool = new GuzzlePool($this->config, $this->client, $this->events);
 });
 
@@ -46,18 +47,19 @@ test('pool with successful requests', function() {
         new Response(200, [], 'Response 3')
     );
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
-    expect($results[2])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[2])->toBeInstanceOf(Success::class);
 });
 
 test('pool with mixed results', function() {
@@ -66,16 +68,17 @@ test('pool with mixed results', function() {
         new RequestException('Network error', new Request('GET', $this->baseUrl . '/get?test=2'))
     );
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Failure::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Failure::class);
 });
 
 test('pool with fail on error true', function() {
@@ -97,10 +100,10 @@ test('pool with fail on error true', function() {
         new RequestException('Network error', new Request('GET', $this->baseUrl . '/get?test=2'))
     );
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     expect(fn() => $pool->pool($requests))
         ->toThrow(HttpRequestException::class);
@@ -112,16 +115,17 @@ test('pool with custom concurrency', function() {
         new Response(200, [], 'Response 2')
     );
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests, 1);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
 });
 
 test('pool with streamed response', function() {
@@ -129,14 +133,15 @@ test('pool with streamed response', function() {
         new Response(200, ['Content-Type' => 'text/event-stream'], 'data: test\n\n')
     );
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/stream/5', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 test('pool with post request', function() {
@@ -144,28 +149,26 @@ test('pool with post request', function() {
         new Response(201, [], 'Created')
     );
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/post', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 test('pool with empty request array', function() {
-    $results = $this->pool->pool([]);
+    $results = $this->pool->pool(HttpRequestList::empty());
 
     expect($results)->toHaveCount(0);
-    expect($results)->toBeArray();
 });
 
 test('pool with invalid request type', function() {
-    $requests = ['invalid-request'];
-    
-    expect(fn() => $this->pool->pool($requests))
-        ->toThrow(InvalidArgumentException::class, 'Invalid request type in pool');
+    expect(fn() => HttpRequestList::of('invalid-request'))
+        ->toThrow(\TypeError::class);
 });
 
 // Clean up server after all tests complete

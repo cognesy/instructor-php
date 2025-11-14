@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Laravel;
 
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
@@ -31,13 +33,13 @@ class LaravelPool implements CanHandleRequestPool
     }
 
     #[\Override]
-    public function pool(array $requests, ?int $maxConcurrent = null): array {
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
         if ($maxConcurrent < 1) {
             throw new \InvalidArgumentException('Max concurrent must be at least 1');
         }
         $responses = [];
-        $batches = array_chunk($requests, $maxConcurrent);
+        $batches = array_chunk($requests->all(), $maxConcurrent);
 
         foreach ($batches as $batch) {
             $batchResponses = $this->processBatch($batch);
@@ -47,7 +49,7 @@ class LaravelPool implements CanHandleRequestPool
             }
         }
 
-        return $responses;
+        return HttpResponseList::fromArray($responses);
     }
 
     private function processBatch(array $batch): array {

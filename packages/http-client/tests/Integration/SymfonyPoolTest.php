@@ -2,6 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Symfony\SymfonyPool;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -48,18 +49,19 @@ test('pool with successful requests', function() {
         new MockResponse('Response 3', ['http_code' => 200])
     ];
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
-    expect($results[2])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[2])->toBeInstanceOf(Success::class);
 });
 
 test('pool with error handling', function() {
@@ -68,14 +70,15 @@ test('pool with error handling', function() {
         new MockResponse('Not Found', ['http_code' => 404])
     ];
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/status/404', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Failure::class);
+    expect($resultArray[0])->toBeInstanceOf(Failure::class);
 });
 
 test('pool with fail on error true', function() {
@@ -94,10 +97,10 @@ test('pool with fail on error true', function() {
 
     $pool = new SymfonyPool($this->mockClient, $config, $this->events);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     expect(fn() => $pool->pool($requests))
         ->toThrow(HttpRequestException::class);
@@ -110,16 +113,17 @@ test('pool processes all requests', function() {
         new MockResponse('Response 2', ['http_code' => 200])
     ];
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
 });
 
 test('pool with streamed response', function() {
@@ -131,14 +135,15 @@ test('pool with streamed response', function() {
         ])
     ];
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/stream/5', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 test('pool with post request', function() {
@@ -147,28 +152,29 @@ test('pool with post request', function() {
         new MockResponse('Created', ['http_code' => 201])
     ];
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/post', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 test('pool with empty request array', function() {
-    $results = $this->pool->pool([]);
+    $results = $this->pool->pool(HttpRequestList::empty());
 
-    expect($results)->toHaveCount(0);
-    expect($results)->toBeArray();
-});
+    expect($results)->toHaveCount(0);});
 
 test('pool with invalid request type', function() {
     $requests = ['invalid-request'];
     
-    expect(fn() => $this->pool->pool($requests))
-        ->toThrow(InvalidArgumentException::class, 'Invalid request type in pool');
+    expect(fn() => HttpRequestList::of(...$requests))
+        ->toThrow(\TypeError::class);
+    expect(fn() => HttpRequestList::of(...$requests))
+        ->toThrow(\TypeError::class);
 });
 
 test('pool with timeout handling', function() {
@@ -186,14 +192,16 @@ test('pool with timeout handling', function() {
 
     $pool = new SymfonyPool($this->mockClient, $config, $this->events);
 
-    $requests = [
-        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
-    ];
+    $requests = HttpRequestList::of(
+        new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], [])
+    );
 
     $results = $pool->pool($requests);
+    $resultArray = $results->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 test('pool with client error status code', function() {
@@ -203,16 +211,17 @@ test('pool with client error status code', function() {
         new MockResponse('Unauthorized', ['http_code' => 401])
     ];
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Failure::class);
-    expect($results[1])->toBeInstanceOf(Failure::class);
+    expect($resultArray[0])->toBeInstanceOf(Failure::class);
+    expect($resultArray[1])->toBeInstanceOf(Failure::class);
 });
 
 // Clean up server after all tests complete

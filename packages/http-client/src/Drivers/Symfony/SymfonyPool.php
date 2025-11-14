@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
@@ -27,10 +29,10 @@ readonly class SymfonyPool implements CanHandleRequestPool
     ) {}
 
     #[\Override]
-    public function pool(array $requests, ?int $maxConcurrent = null): array {
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
         $responses = [];
-        $httpResponses = $this->prepareHttpResponses($requests);
+        $httpResponses = $this->prepareHttpResponses($requests->all());
         try {
             $this->processHttpResponses($httpResponses, $responses, $maxConcurrent);
         } catch (Exception $e) {
@@ -214,7 +216,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
         };
     }
 
-    private function handlePoolException(Exception $e, array $httpResponses): array {
+    private function handlePoolException(Exception $e, array $httpResponses): HttpResponseList {
         if ($this->config->failOnError) {
             throw new HttpRequestException($e->getMessage());
         }
@@ -223,7 +225,7 @@ readonly class SymfonyPool implements CanHandleRequestPool
         foreach ($httpResponses as $index => $_) {
             $responses[$index] = Result::failure($e);
         }
-        return $responses;
+        return HttpResponseList::fromArray($responses);
     }
 
     private function isPoolComplete(array $responses, int $totalRequests, int $maxConcurrent): bool {
@@ -239,9 +241,9 @@ readonly class SymfonyPool implements CanHandleRequestPool
         ]));
     }
 
-    private function normalizeResponses(array $responses): array {
+    private function normalizeResponses(array $responses): HttpResponseList {
         ksort($responses);
-        return array_values($responses);
+        return HttpResponseList::fromArray(array_values($responses));
     }
 
     private function isStreamed(ResponseInterface $response): bool {

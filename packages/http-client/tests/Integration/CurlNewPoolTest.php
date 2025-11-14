@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Http\Tests\Integration;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\CurlNew\CurlNewPool;
@@ -50,7 +51,7 @@ it('rejects external client instances', function () {
 });
 
 it('handles pool with successful requests', function () {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest(
             url: $this->baseUrl . '/get?test=1',
             method: 'GET',
@@ -72,14 +73,15 @@ it('handles pool with successful requests', function () {
             body: [],
             options: [],
         ),
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3)
-        ->and($results[0])->toBeInstanceOf(Success::class)
-        ->and($results[1])->toBeInstanceOf(Success::class)
-        ->and($results[2])->toBeInstanceOf(Success::class);
+        ->and($resultArray[0])->toBeInstanceOf(Success::class)
+        ->and($resultArray[1])->toBeInstanceOf(Success::class)
+        ->and($resultArray[2])->toBeInstanceOf(Success::class);
 
     // Verify responses
     foreach ($results as $result) {
@@ -89,7 +91,7 @@ it('handles pool with successful requests', function () {
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('handles pool with mixed POST and GET requests', function () {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest(
             url: $this->baseUrl . '/get?test=1',
             method: 'GET',
@@ -107,13 +109,14 @@ it('handles pool with mixed POST and GET requests', function () {
             body: ['test' => 'data'],
             options: [],
         ),
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2)
-        ->and($results[0])->toBeInstanceOf(Success::class)
-        ->and($results[1])->toBeInstanceOf(Success::class);
+        ->and($resultArray[0])->toBeInstanceOf(Success::class)
+        ->and($resultArray[1])->toBeInstanceOf(Success::class);
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('handles pool with custom concurrency', function () {
@@ -129,7 +132,7 @@ it('handles pool with custom concurrency', function () {
     }
 
     // Execute with concurrency of 2
-    $results = $this->pool->pool($requests, 2);
+    $results = $this->pool->pool(HttpRequestList::fromArray($requests), 2);
 
     expect($results)->toHaveCount(5);
     foreach ($results as $result) {
@@ -138,14 +141,13 @@ it('handles pool with custom concurrency', function () {
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('handles empty request array', function () {
-    $results = $this->pool->pool([]);
+    $results = $this->pool->pool(HttpRequestList::empty());
 
-    expect($results)->toHaveCount(0)
-        ->and($results)->toBeArray();
+    expect($results)->toHaveCount(0);
 });
 
 it('handles pool with error responses when failOnError is false', function () {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest(
             url: $this->baseUrl . '/get',
             method: 'GET',
@@ -167,19 +169,20 @@ it('handles pool with error responses when failOnError is false', function () {
             body: [],
             options: [],
         ),
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3)
-        ->and($results[0])->toBeInstanceOf(Success::class)
-        ->and($results[1])->toBeInstanceOf(Success::class)
-        ->and($results[2])->toBeInstanceOf(Success::class);
+        ->and($resultArray[0])->toBeInstanceOf(Success::class)
+        ->and($resultArray[1])->toBeInstanceOf(Success::class)
+        ->and($resultArray[2])->toBeInstanceOf(Success::class);
 
     // Verify status codes
-    expect($results[0]->unwrap()->statusCode())->toBe(200)
-        ->and($results[1]->unwrap()->statusCode())->toBe(404)
-        ->and($results[2]->unwrap()->statusCode())->toBe(500);
+    expect($resultArray[0]->unwrap()->statusCode())->toBe(200)
+        ->and($resultArray[1]->unwrap()->statusCode())->toBe(404)
+        ->and($resultArray[2]->unwrap()->statusCode())->toBe(500);
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('throws exception for error responses when failOnError is true', function () {
@@ -192,7 +195,7 @@ it('throws exception for error responses when failOnError is true', function () 
 
     $pool = new CurlNewPool($config, $this->events);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest(
             url: $this->baseUrl . '/get',
             method: 'GET',
@@ -207,7 +210,7 @@ it('throws exception for error responses when failOnError is true', function () 
             body: [],
             options: [],
         ),
-    ];
+    );
 
     try {
         $pool->pool($requests);
@@ -219,7 +222,7 @@ it('throws exception for error responses when failOnError is true', function () 
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('handles different HTTP methods', function () {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest(
             url: $this->baseUrl . '/get',
             method: 'GET',
@@ -248,7 +251,7 @@ it('handles different HTTP methods', function () {
             body: [],
             options: [],
         ),
-    ];
+    );
 
     $results = $this->pool->pool($requests);
 
@@ -271,7 +274,7 @@ it('maintains request order in responses', function () {
         );
     }
 
-    $results = $this->pool->pool($requests, 3);
+    $results = $this->pool->pool(HttpRequestList::fromArray($requests), 3);
 
     expect($results)->toHaveCount(10);
 
@@ -302,7 +305,7 @@ it('executes multiple delayed requests within reasonable time', function () {
 
     // Execute with concurrency of 2
     $start = microtime(true);
-    $results = $this->pool->pool($requests, 2);
+    $results = $this->pool->pool(HttpRequestList::fromArray($requests), 2);
     $duration = microtime(true) - $start;
 
     // Verify all succeeded
@@ -331,7 +334,7 @@ it('handles a small batch of delayed requests with configured concurrency', func
 
     // Execute with concurrency of 3
     $start = microtime(true);
-    $results = $this->pool->pool($requests, 3);
+    $results = $this->pool->pool(HttpRequestList::fromArray($requests), 3);
     $duration = microtime(true) - $start;
 
     // Verify all succeeded

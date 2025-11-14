@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Drivers\Curl;
 
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
@@ -38,14 +40,14 @@ class CurlPool implements CanHandleRequestPool
     /**
      * Handle a pool of HTTP requests concurrently using curl_multi
      *
-     * @param array<HttpRequest> $requests
+     * @param HttpRequestList $requests
      * @param int|null $maxConcurrent
-     * @return array<Result> Array of Result objects (Success or Failure)
+     * @return HttpResponseList Collection of Result objects (Success or Failure)
      */
     #[\Override]
-    public function pool(array $requests, ?int $maxConcurrent = null): array {
-        if (empty($requests)) {
-            return [];
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
+        if ($requests->isEmpty()) {
+            return HttpResponseList::empty();
         }
 
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent ?? 5;
@@ -53,7 +55,7 @@ class CurlPool implements CanHandleRequestPool
         $responses = [];
         $handles = [];
         $requestMap = [];
-        $requestQueue = array_values($requests);
+        $requestQueue = array_values($requests->all());
         $queueIndex = 0;
 
         $multiHandle = $this->initMultiHandle();
@@ -397,11 +399,11 @@ class CurlPool implements CanHandleRequestPool
      * Normalize and sort responses by original order.
      *
      * @param array<int, Result> $responses
-     * @return array<int, Result>
+     * @return HttpResponseList
      */
-    private function finalizeResponses(array $responses): array {
+    private function finalizeResponses(array $responses): HttpResponseList {
         ksort($responses);
-        return array_values($responses);
+        return HttpResponseList::fromArray(array_values($responses));
     }
 
     private function extractHeadersFromInfo(\CurlHandle $handle): array {

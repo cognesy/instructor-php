@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\PendingHttpPool;
 use Cognesy\Utils\Result\Success;
@@ -19,10 +20,10 @@ afterEach(function() {
 });
 
 test('PendingHttpPool can be created with requests', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
-        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
-    ];
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
 
@@ -30,14 +31,15 @@ test('PendingHttpPool can be created with requests', function() {
 });
 
 test('PendingHttpPool all() executes all requests', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
-        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
-    ];
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     $results = $pendingPool->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
     foreach ($results as $result) {
@@ -46,120 +48,127 @@ test('PendingHttpPool all() executes all requests', function() {
 });
 
 test('PendingHttpPool all() respects maxConcurrent parameter', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
-        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
-    ];
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     
     // Test with maxConcurrent=2
     $results = $pendingPool->all(maxConcurrent: 2);
+    $resultArray = $results->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
-    expect($results[2])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[2])->toBeInstanceOf(Success::class);
 });
 
 test('PendingHttpPool all() with no maxConcurrent uses default', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
-        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
-    ];
+        new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     $results = $pendingPool->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
 });
 
 test('PendingHttpPool can be reused multiple times', function() {
-    $requests = [
-        new HttpRequest($this->baseUrl . '/get?test=reuse', 'GET', [], [], []),
-    ];
+    $requests = HttpRequestList::of(
+        new HttpRequest($this->baseUrl . '/get?test=reuse', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     
     // Execute first time
     $results1 = $pendingPool->all();
     expect($results1)->toHaveCount(1);
-    expect($results1[0])->toBeInstanceOf(Success::class);
+    expect($results1->all()[0])->toBeInstanceOf(Success::class);
     
     // Execute second time
     $results2 = $pendingPool->all();
     expect($results2)->toHaveCount(1);
-    expect($results2[0])->toBeInstanceOf(Success::class);
+    expect($results2->all()[0])->toBeInstanceOf(Success::class);
 });
 
 test('PendingHttpPool handles empty requests array', function() {
-    $pendingPool = $this->client->withPool([]);
+    $pendingPool = $this->client->withPool(HttpRequestList::empty());
     $results = $pendingPool->all();
+    $resultArray = $results->all();
 
-    expect($results)->toHaveCount(0);
-    expect($results)->toBeArray();
-});
+    expect($results)->toHaveCount(0);});
 
 test('PendingHttpPool handles mixed success and failure results', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get', 'GET', [], [], []),
-        new HttpRequest($this->baseUrl . '/status/500', 'GET', [], [], []),
-    ];
+        new HttpRequest($this->baseUrl . '/status/500', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     $results = $pendingPool->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Failure::class); // 500 status should fail
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Failure::class); // 500 status should fail
 });
 
 test('PendingHttpPool with POST requests', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/post', 'POST', [], ['key1' => 'value1'], []),
-        new HttpRequest($this->baseUrl . '/post', 'POST', [], ['key2' => 'value2'], []),
-    ];
+        new HttpRequest($this->baseUrl . '/post', 'POST', [], ['key2' => 'value2'], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     $results = $pendingPool->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
 });
 
 test('PendingHttpPool concurrent execution performance', function() {
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
-        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], []),
-    ];
+        new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
+    );
 
     $pendingPool = $this->client->withPool($requests);
     
     // Test concurrent execution
     $results = $pendingPool->all(maxConcurrent: 3);
+    $resultArray = $results->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
-    expect($results[2])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[2])->toBeInstanceOf(Success::class);
 });
 
 test('PendingHttpPool works with different HTTP client drivers', function() {
-    $requests = [
-        new HttpRequest($this->baseUrl . '/get?driver=test', 'GET', [], [], []),
-    ];
+    $requests = HttpRequestList::of(
+        new HttpRequest($this->baseUrl . '/get?driver=test', 'GET', [], [], [])
+    );
 
     $guzzleClient = HttpClient::using('guzzle');
     $pendingPool = $guzzleClient->withPool($requests);
     $results = $pendingPool->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 // Clean up server after all tests complete

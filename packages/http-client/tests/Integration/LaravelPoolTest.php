@@ -2,6 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Laravel\LaravelPool;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -52,18 +53,19 @@ test('pool with successful requests', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
-    expect($results[2])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[2])->toBeInstanceOf(Success::class);
 });
 
 test('pool with failed responses', function() {
@@ -77,16 +79,17 @@ test('pool with failed responses', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Failure::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Failure::class);
 });
 
 test('pool with exception responses', function() {
@@ -100,16 +103,17 @@ test('pool with exception responses', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(2);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Failure::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Failure::class);
 });
 
 test('pool with fail on error true', function() {
@@ -133,10 +137,10 @@ test('pool with fail on error true', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], [])
-    ];
+    );
 
     expect(fn() => $pool->pool($requests))
         ->toThrow(HttpRequestException::class);
@@ -167,18 +171,20 @@ test('pool with batched requests', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses1, $responses2);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=2', 'GET', [], [], []),
         new HttpRequest($this->baseUrl . '/get?test=3', 'GET', [], [], [])
-    ];
+    );
 
     $results = $pool->pool($requests);
+    $resultArray = $results->all();
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(3);
-    expect($results[0])->toBeInstanceOf(Success::class);
-    expect($results[1])->toBeInstanceOf(Success::class);
-    expect($results[2])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[1])->toBeInstanceOf(Success::class);
+    expect($resultArray[2])->toBeInstanceOf(Success::class);
 });
 
 test('pool with post request', function() {
@@ -191,36 +197,27 @@ test('pool with post request', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/post', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
-    ];
+    );
 
     $results = $this->pool->pool($requests);
+    $resultArray = $results->all();
 
     expect($results)->toHaveCount(1);
-    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($resultArray[0])->toBeInstanceOf(Success::class);
 });
 
 test('pool with empty request array', function() {
-    $results = $this->pool->pool([]);
+    $results = $this->pool->pool(HttpRequestList::empty());
 
-    expect($results)->toHaveCount(0);
-    expect($results)->toBeArray();
-});
+    expect($results)->toHaveCount(0);});
 
 test('pool with invalid request type', function() {
-    $this->factory->shouldReceive('pool')
-        ->once()
-        ->with(Mockery::type('callable'))
-        ->andReturnUsing(function($callback) {
-            $pool = Mockery::mock(Pool::class);
-            return $callback($pool);
-        });
-
     $requests = ['invalid-request'];
-    
-    expect(fn() => $this->pool->pool($requests))
-        ->toThrow(InvalidArgumentException::class, 'Invalid request type in pool');
+
+    expect(fn() => HttpRequestList::of(...$requests))
+        ->toThrow(\TypeError::class);
 });
 
 test('pool with exception in fail on error mode', function() {
@@ -243,9 +240,9 @@ test('pool with exception in fail on error mode', function() {
         ->with(Mockery::type('callable'))
         ->andReturn($responses);
 
-    $requests = [
+    $requests = HttpRequestList::of(
         new HttpRequest($this->baseUrl . '/get?test=1', 'GET', [], [], [])
-    ];
+    );
 
     expect(fn() => $pool->pool($requests))
         ->toThrow(Exception::class, 'Connection failed');

@@ -5,6 +5,8 @@ namespace Cognesy\Http;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
@@ -84,11 +86,11 @@ class HttpClient
     /**
      * Handles a pool of HTTP requests concurrently using the configured driver.
      *
-     * @param HttpRequest[] $requests Array of HttpRequest objects to be processed
+     * @param HttpRequestList $requests Collection of HttpRequest objects to be processed
      * @param int|null $maxConcurrent Maximum number of concurrent requests
-     * @return array Array of Result objects containing HttpResponse or exceptions
+     * @return HttpResponseList Collection of Result objects containing HttpResponse or exceptions
      */
-    public function pool(array $requests, ?int $maxConcurrent = null): array {
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
         $poolHandler = $this->driverFactory->makePoolHandler($this->getConfigFromDriver());
         return $poolHandler->pool($requests, $maxConcurrent);
     }
@@ -96,10 +98,10 @@ class HttpClient
     /**
      * Creates a pending pool that can be executed later with deferred execution.
      *
-     * @param HttpRequest[] $requests Array of HttpRequest objects to be processed
+     * @param HttpRequestList $requests Collection of HttpRequest objects to be processed
      * @return PendingHttpPool Deferred pool execution object
      */
-    public function withPool(array $requests): PendingHttpPool {
+    public function withPool(HttpRequestList $requests): PendingHttpPool {
         $poolHandler = $this->driverFactory->makePoolHandler($this->getConfigFromDriver());
         return new PendingHttpPool($requests, $poolHandler);
     }

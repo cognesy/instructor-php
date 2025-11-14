@@ -2,24 +2,21 @@
 
 namespace Cognesy\Http;
 
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Deferred pool execution for HTTP requests.
  * Holds requests and pool handler but doesn't execute until methods are called.
  */
-class PendingHttpPool
+final readonly class PendingHttpPool
 {
-    /** @var HttpRequest[] */
-    private readonly array $requests;
-    private readonly CanHandleRequestPool $poolHandler;
+    private HttpRequestList $requests;
+    private CanHandleRequestPool $poolHandler;
 
-    /**
-     * @param HttpRequest[] $requests
-     */
     public function __construct(
-        array $requests,
+        HttpRequestList $requests,
         CanHandleRequestPool $poolHandler,
     ) {
         $this->requests = $requests;
@@ -28,11 +25,11 @@ class PendingHttpPool
 
     /**
      * Execute all requests in the pool concurrently.
-     * 
+     *
      * @param int|null $maxConcurrent Maximum number of concurrent requests
-     * @return array Array of Result objects containing HttpResponse or exceptions
+     * @return HttpResponseList Collection of Result objects containing HttpResponse or exceptions
      */
-    public function all(?int $maxConcurrent = null): array {
+    public function all(?int $maxConcurrent = null): HttpResponseList {
         return $this->poolHandler->pool($this->requests, $maxConcurrent);
     }
 }

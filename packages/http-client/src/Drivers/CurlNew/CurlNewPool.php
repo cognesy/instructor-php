@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Drivers\CurlNew;
 
+use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use InvalidArgumentException;
@@ -52,16 +54,16 @@ final class CurlNewPool implements CanHandleRequestPool
     }
 
     #[\Override]
-    public function pool(array $requests, ?int $maxConcurrent = null): array {
-        if (empty($requests)) {
-            return [];
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
+        if ($requests->isEmpty()) {
+            return HttpResponseList::empty();
         }
 
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent ?? 5;
 
         // Create execution state
         $state = new PoolState(
-            requests: $requests,
+            requests: $requests->all(),
             maxConcurrent: $maxConcurrent,
             activeTransfers: new ActiveTransfers(),
             responses: new PoolResponses(),
@@ -77,6 +79,6 @@ final class CurlNewPool implements CanHandleRequestPool
         }
 
         // Return responses in original request order
-        return $state->responses->finalize();
+        return HttpResponseList::fromArray($state->responses->finalize());
     }
 }
