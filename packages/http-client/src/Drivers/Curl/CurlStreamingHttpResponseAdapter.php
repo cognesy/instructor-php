@@ -105,13 +105,13 @@ class CurlStreamingHttpResponseAdapter implements CanAdaptHttpResponse
         if ($this->completed) {
             return $this->bufferedBody;
         }
-        foreach ($this->stream($this->streamChunkSize) as $chunk) {
+        foreach ($this->stream() as $chunk) {
             $this->bufferedBody .= $chunk;
         }
         return $this->bufferedBody;
     }
 
-    private function stream(?int $chunkSize = null): Generator {
+    private function stream(): Generator {
         $active = 1;
         while (true) {
             while (!$this->queue->isEmpty()) {

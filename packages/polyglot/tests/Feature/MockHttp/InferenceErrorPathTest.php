@@ -1,8 +1,8 @@
 <?php
 
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Inference\Inference;
 

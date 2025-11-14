@@ -8,18 +8,16 @@ use Cognesy\Http\Data\HttpResponse;
 /**
  * Class BaseResponseDecorator
  *
- * A base class for convenient decoration of HttpResponse objects
- * by overriding only the methods you need to change:
- * - statusCode() for the HTTP status code
- * - headers() for the HTTP headers
- * - contents() for the full response body
- * - streamContents() for streaming response chunks
- * - toChunk() to transform each chunk in a streamed response
+ * A base class for convenient decoration of HttpResponse objects by
+ * transforming the stream at construction time. This aligns with
+ * HttpResponse being a concrete data object with a buffered stream.
+ *
+ * Subclasses can override one of:
+ * - chunkMap(string $chunk): string  // simple 1:1 per-chunk transform
+ * - transformStream(iterable $source): iterable<string> // advanced pipeline
  */
 class BaseResponseDecorator extends HttpResponse
 {
-    private bool $isStreaming = true;
-
     public function __construct(
         protected HttpRequest $request,
         protected HttpResponse $response,
@@ -28,74 +26,29 @@ class BaseResponseDecorator extends HttpResponse
             statusCode: $response->statusCode(),
             body: $response->body(),
             headers: $response->headers(),
-            isStreamed: $this->isStreamed(),
-            stream: $response->stream(),
+            isStreamed: $response->isStreamed(),
+            stream: $this->transformStream($response->stream()),
         );
-    }
-
-    /**
-     * Get the response status code
-     *
-     * @return int
-     */
-    #[\Override]
-    public function statusCode(): int {
-        return $this->response->statusCode();
-    }
-
-    /**
-     * Get the response headers
-     *
-     * @return array
-     */
-    #[\Override]
-    public function headers(): array {
-        return $this->response->headers();
-    }
-
-    /**
-     * Get the response content
-     *
-     * @return string
-     */
-    #[\Override]
-    public function body(): string {
-        return $this->response->body();
-    }
-
-    /**
-     * Read chunks of the stream
-     *
-     * @param int|null $chunkSize
-     * @return \Generator<string>
-     */
-    #[\Override]
-    public function stream(): \Generator {
-        foreach ($this->response->stream() as $chunk) {
-            yield $this->toChunk($chunk);
-        }
-        $this->isStreaming = false;
-    }
-
-    #[\Override]
-    public function isStreamed(): bool {
-        return $this->response->isStreamed();
-    }
-
-    #[\Override]
-    public function isStreaming(): bool {
-        return $this->isStreaming;
     }
 
     // INTERNAL ///////////////////////////////////////////////////
 
     /**
-     * Transform a chunk of streamed response content
-     *
-     * @param string $chunk
-     * @return string
+     * Transform single chunk of data.
      */
-    protected function toChunk(string $chunk): string {
-        return $chunk;
+    protected function toChunk(string $data): string {
+        return $data;
+    }
+
+    /**
+     * Transform the source stream into a new iterable. Default maps per chunk.
+     *
+     * @param iterable<string> $source
+     * @return iterable<string>
+     */
+    protected function transformStream(iterable $source): iterable {
+        foreach ($source as $chunk) {
+            yield $this->toChunk($chunk);
+        }
     }
 }

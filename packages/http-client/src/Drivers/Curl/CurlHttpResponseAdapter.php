@@ -49,8 +49,8 @@ class CurlHttpResponseAdapter implements CanAdaptHttpResponse
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    private function stream(?int $chunkSize = null): Generator {
-        $chunkSize = $chunkSize ?? $this->streamChunkSize;
+    private function stream(): Generator {
+        $chunkSize = $this->streamChunkSize;
         $offset = 0;
         $bodyLength = strlen($this->body);
 

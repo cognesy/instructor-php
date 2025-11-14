@@ -2,12 +2,13 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
-// EmbeddingsRequested dispatched by driver; avoid duplicate here
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
+
+// EmbeddingsRequested dispatched by driver; avoid duplicate here
 
 trait HandlesInvocation
 {

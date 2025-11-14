@@ -7,17 +7,4 @@ use Cognesy\Http\Data\HttpResponse;
 interface CanAdaptHttpResponse
 {
     public function toHttpResponse() : HttpResponse;
-
-//    public function statusCode(): int;
-//    public function headers(): array;
-//    public function body(): string;
-//    public function isStreamed(): bool;
-//
-//    /**
-//     * Read chunks of the stream
-//     *
-//     * @param int|null $chunkSize
-//     * @return \Generator<string>
-//     */
-//    public function stream(?int $chunkSize = null): \Generator;
 }

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\Extras\Sequence\Sequence as SequenceModel;
 use Cognesy\Instructor\StructuredOutput;
 use PHPUnit\Framework\TestCase;

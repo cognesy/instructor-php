@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Polyglot\Inference\Inference;
 

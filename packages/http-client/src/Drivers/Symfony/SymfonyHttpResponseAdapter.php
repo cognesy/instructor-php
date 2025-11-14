@@ -61,7 +61,7 @@ class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
         return $this->response->getContent(false); // false = don't throw on error codes
     }
 
-    private function stream(?int $chunkSize = null): \Generator {
+    private function stream(): \Generator {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout()) {
                 continue;

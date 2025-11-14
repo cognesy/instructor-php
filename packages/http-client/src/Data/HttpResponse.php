@@ -3,7 +3,7 @@
 namespace Cognesy\Http\Data;
 
 use Cognesy\Http\Stream\BufferedStream;
-use Cognesy\Http\Stream\BufferedStreamInterface;
+use Cognesy\Http\Stream\StreamInterface;
 use Generator;
 
 class HttpResponse
@@ -13,7 +13,7 @@ class HttpResponse
     private bool $isStreamed;
     private array $headers;
 
-    private BufferedStreamInterface $stream;
+    private StreamInterface $stream;
     private string $streamChunkSeparator = '';
 
     public function __construct(
@@ -21,7 +21,7 @@ class HttpResponse
         string $body,
         array $headers,
         bool $isStreamed,
-        null|iterable|BufferedStreamInterface $stream = null,
+        null|iterable|StreamInterface $stream = null,
     ) {
         $this->statusCode = $statusCode;
         $this->body = $body;
@@ -29,7 +29,7 @@ class HttpResponse
         $this->isStreamed = $isStreamed;
         $this->stream = match (true) {
             ($stream === null) => BufferedStream::empty(),
-            ($stream instanceof BufferedStreamInterface) => $stream,
+            ($stream instanceof StreamInterface) => $stream,
             (is_array($stream) === true) => BufferedStream::fromArray($stream),
             default => BufferedStream::fromStream($stream),
         };

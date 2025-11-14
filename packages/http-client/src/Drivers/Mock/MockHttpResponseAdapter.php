@@ -98,7 +98,7 @@ class MockHttpResponseAdapter implements CanAdaptHttpResponse
      * @param int|null $chunkSize Not used in mock implementation, included for interface compatibility
      * @return \Generator<string>
      */
-    private function stream(?int $chunkSize = null): \Generator {
+    private function stream(): \Generator {
         foreach ($this->chunks as $chunk) {
             $this->events?->dispatch(new HttpResponseChunkReceived($chunk));
             yield $chunk;

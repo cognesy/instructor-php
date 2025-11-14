@@ -77,7 +77,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         return $this->bufferedBody;
     }
 
-    public function stream(?int $chunkSize = null): Generator {
+    public function stream(): Generator {
         $active = 1;
 
         while (true) {

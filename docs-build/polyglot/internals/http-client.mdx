@@ -17,7 +17,7 @@ The `HttpClient` class provides a unified interface for HTTP requests:
 ```php
 namespace Cognesy\Http;
 
-class HttpClient implements CanHandleHttpRequest {
+use Cognesy\Http\Middleware\MiddlewareStack;class HttpClient implements CanHandleHttpRequest {
     public function __construct(
         string $client = '',
         ?HttpClientConfig $config = null,
@@ -38,7 +38,7 @@ class HttpClient implements CanHandleHttpRequest {
     public function handle(HttpClientRequest $request): HttpResponse { ... }
     public function middleware(): MiddlewareStack { ... }
 }
-// @doctest id="8b72"
+// @doctest id="5048"
 ```
 
 
@@ -76,7 +76,7 @@ interface HttpResponse {
     public function stream(int $chunkSize = 1): Generator;
     public function original(): mixed;
 }
-// @doctest id="63f4"
+// @doctest id="7d19"
 ```
 
 
@@ -139,5 +139,5 @@ class MiddlewareStack {
         CanHandleHttpRequest $handler
     ): HttpResponse { ... }
 }
-// @doctest id="d107"
+// @doctest id="9293"
 ```

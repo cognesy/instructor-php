@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http;
+namespace Cognesy\Http\Creation;
 
 use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
@@ -14,10 +14,11 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Events\HttpClientBuilt;
-use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
 use Cognesy\Http\Middleware\EventSource\Listeners\DispatchDebugEvents;
 use Cognesy\Http\Middleware\EventSource\Listeners\PrintToConsole;
+use Cognesy\Http\Middleware\MiddlewareStack;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -240,7 +241,6 @@ final class HttpClientBuilder
 
     private function makeDebugStack(DebugConfig $debugConfig) : MiddlewareStack {
         $stack = new MiddlewareStack($this->events);
-        $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
         $eventSource = (new EventSourceMiddleware(true))->withListeners(
             new PrintToConsole($debugConfig),
             new DispatchDebugEvents($debugConfig, $this->events),
@@ -250,8 +250,6 @@ final class HttpClientBuilder
     }
 
     private function makeDefaultStack() : MiddlewareStack {
-        $stack = new MiddlewareStack($this->events);
-        $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-        return $stack;
+        return new MiddlewareStack($this->events);
     }
 }

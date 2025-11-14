@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\Inference\Traits;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;

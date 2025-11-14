@@ -14,7 +14,7 @@ namespace Cognesy\Http\Stream;
  *
  * Thread-safe: source consumed once, buffer is append-only.
  */
-final class BufferedStream implements BufferedStreamInterface
+final class BufferedStream implements StreamInterface
 {
     /** @var list<string> */
     private array $chunks;
@@ -31,16 +31,18 @@ final class BufferedStream implements BufferedStreamInterface
         $this->chunks = $chunks;
     }
 
-    public static function fromStream(iterable $source): self {
-        return new self(
-            source: $source,
-        );
-    }
+    // CONSTRUCTORS ////////////////////////////////////////////////
 
     public static function empty() : self {
         return new self(
             isCompleted: true,
             chunks: [],
+        );
+    }
+
+    public static function fromStream(iterable $source): self {
+        return new self(
+            source: $source,
         );
     }
 

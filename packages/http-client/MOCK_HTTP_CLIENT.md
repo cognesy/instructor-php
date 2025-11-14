@@ -1,13 +1,13 @@
 # Mock HttpClient Cheatsheet
 
-Pragmatic, dense guide for building HTTP/REST and LLM API tests without network calls. Uses `HttpClientBuilder` + `MockHttpDriver` and `MockHttpResponse`. Includes streaming/SSE helpers and a fluent expectation DSL.
+Pragmatic, dense guide for building HTTP/REST and LLM API tests without network calls. Uses `HttpClientBuilder` + `MockHttpDriver` and `MockHttpResponseFactory`. Includes streaming/SSE helpers and a fluent expectation DSL.
 
 ## Quick Start
 
 - Create a mock-backed client:
 
 ```php
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;
 
 $http = (new HttpClientBuilder())
     ->withMock(function ($mock) {
@@ -19,8 +19,8 @@ $http = (new HttpClientBuilder())
 - Or construct directly:
 
 ```php
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\HttpClientBuilder;
 
 $mock = new MockHttpDriver();
 $http = (new HttpClientBuilder())->withDriver($mock)->create();
@@ -28,7 +28,7 @@ $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
 ## Fluent Expectations (Recommended)
 
-Use `on()`/`expect()` to define matchers, then a reply. Expectations are checked in the order they’re defined.
+Use `on()`/`expect()` to define matchers, then a reply. Expectations are checked in the order they're defined.
 
 ```php
 $mock->on()
@@ -72,23 +72,23 @@ $mock->on()
 ## Legacy addResponse (Still Supported)
 
 ```php
-use Cognesy\Http\Drivers\Mock\MockHttpResponseAdapter;
+use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 
 $mock->addResponse(
-    MockHttpResponse::json(['ok' => true]),
+    MockHttpResponseFactory::json(['ok' => true]),
     url: 'https://example.com',
     method: 'GET',
     body: null
 );
 ```
 
-## MockHttpResponse Helpers
+## MockHttpResponseFactory Helpers
 
-- `MockHttpResponse::json($data, $status=200, $headers=[])`
-- `MockHttpResponse::success($status=200, $headers=[], $body='')`
-- `MockHttpResponse::error($status=500, $headers=[], $body='')`
-- `MockHttpResponse::streaming($status=200, $headers=[], array $chunks)`
-- `MockHttpResponse::sse(array $payloads, bool $addDone=true, $status=200, $headers=[])`
+- `MockHttpResponseFactory::json($data, $status=200, $headers=[])`
+- `MockHttpResponseFactory::success($status=200, $headers=[], $body='')`
+- `MockHttpResponseFactory::error($status=500, $headers=[], $body='')`
+- `MockHttpResponseFactory::streaming($status=200, $headers=[], array $chunks)`
+- `MockHttpResponseFactory::sse(array $payloads, bool $addDone=true, $status=200, $headers=[])`
 
 SSE encodes each payload as `"data: {json}\n\n"` and appends `"data: [DONE]\n\n"` if `$addDone` is true.
 
@@ -99,6 +99,34 @@ $last = $mock->getLastRequest();
 $all  = $mock->getReceivedRequests();
 $mock->reset();           // clear received requests
 $mock->clearResponses();  // clear both expectations and legacy responses
+```
+
+## Pool Requests (Note)
+
+The `MockHttpDriver` does **not** implement pool functionality (`CanHandleRequestPool`). Pool-based tests should either:
+- Mock individual sequential requests (the pool will call `handle()` multiple times)
+- Use a different driver for integration tests that require actual concurrent execution
+- Test pool logic separately from HTTP mocking concerns
+
+If you need to test code that uses `HttpClient::pool()` or `HttpClient::withPool()`, the mock driver will handle each request in the pool individually through the standard `handle()` method. The mock simply needs expectations for each request in sequence.
+
+Example with sequential pool requests:
+
+```php
+use Cognesy\Http\Collections\HttpRequestList;
+
+$mock->on()->post('https://api.example.com/batch/1')->replyJson(['result' => 1]);
+$mock->on()->post('https://api.example.com/batch/2')->replyJson(['result' => 2]);
+$mock->on()->post('https://api.example.com/batch/3')->replyJson(['result' => 3]);
+
+$requests = HttpRequestList::of(
+    new HttpRequest('https://api.example.com/batch/1', 'POST'),
+    new HttpRequest('https://api.example.com/batch/2', 'POST'),
+    new HttpRequest('https://api.example.com/batch/3', 'POST'),
+);
+
+// This will call handle() for each request - mock doesn't execute concurrently
+$results = $http->pool($requests);
 ```
 
 ## Using With Polyglot (LLMs)
@@ -204,7 +232,7 @@ $mock->on()
     ->reply(function ($request) {
         $body = json_decode($request->body()->toString(), true) ?: [];
         $text = $body['messages'][0]['content'] ?? 'default';
-        return MockHttpResponse::json(['choices' => [[
+        return MockHttpResponseFactory::json(['choices' => [[
             'message' => ['content' => strtoupper($text)],
         ]]]);
     });
@@ -224,8 +252,30 @@ $mock->on()
   - Loosen matchers using `withJsonSubset`, `urlStartsWith`, header predicates
 - Streaming not triggering: ensure your code sets request `options['stream'] = true` (Polyglot does this in `PendingHttpResponse->stream()`)
 - Multiple matches: expectations are evaluated in definition order; use `times()` to consume only N matches
+- Pool requests not working: Remember mock driver doesn't implement concurrent pools - it processes each request sequentially via `handle()`
 
-## Notes
+## API Changes (Latest)
 
-- The record–replay middleware exists but requires a rewrite for robust streaming and deterministic matching; prefer the fluent mock for new tests.
+**Breaking Changes from Previous Versions:**
+- Pool methods now accept/return typed collections (`HttpRequestList`/`HttpResponseList`) instead of raw arrays
+- `MockHttpResponse` renamed to `MockHttpResponseFactory` for clarity
+- Pool functionality is not implemented in mock driver - sequential handling only
+
+**Migration Example:**
+```php
+// Old (pre-collections):
+$results = $http->pool([$request1, $request2]);
+$first = $results[0];
+
+// New (with collections):
+use Cognesy\Http\Collections\HttpRequestList;
+
+$requests = HttpRequestList::of($request1, $request2);
+$results = $http->pool($requests);
+$first = $results->all()[0];
+// or iterate:
+foreach ($results as $result) {
+    // $result is a Result object
+}
+```
 

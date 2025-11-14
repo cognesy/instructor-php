@@ -83,19 +83,16 @@ $ctx = $httpLayer->applyTo(Context::empty());
 Minimal standalone bootstrap
 
 ```php
-use Cognesy\Utils\Context\Context;
-use Cognesy\Utils\Context\Layer;
-use Cognesy\Config\{ConfigResolver, ConfigPresets};
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Config\{ConfigPresets,ConfigResolver};use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Utils\Context\Context;use Cognesy\Utils\Context\Layer;
 
 $base = Layer::provides(Psr\EventDispatcher\EventDispatcherInterface::class, new EventDispatcher('app'))
   ->merge(Layer::provides(Cognesy\Config\Contracts\CanProvideConfig::class, ConfigResolver::default()))
   ->merge(Layer::providesFrom(ConfigPresets::class, fn($c) => ConfigPresets::using($c->get(Cognesy\Config\Contracts\CanProvideConfig::class))));
 
-$http = Layer::providesFrom(Cognesy\Http\HttpClientBuilder::class, fn($c) => new Cognesy\Http\HttpClientBuilder(
+$http = Layer::providesFrom(\Cognesy\Http\Creation\HttpClientBuilder::class, fn($c) => new \Cognesy\Http\Creation\HttpClientBuilder(
     events: $c->get(Psr\EventDispatcher\EventDispatcherInterface::class),
     configProvider: $c->get(Cognesy\Config\Contracts\CanProvideConfig::class),
-))->merge(Layer::providesFrom(Cognesy\Http\HttpClient::class, fn($c) => $c->get(Cognesy\Http\HttpClientBuilder::class)->create()));
+))->merge(Layer::providesFrom(Cognesy\Http\HttpClient::class, fn($c) => $c->get(\Cognesy\Http\Creation\HttpClientBuilder::class)->create()));
 
 $ctx = $base->merge($http)->applyTo(Context::empty());
 ```
@@ -290,20 +287,18 @@ Prefer exposing typed Layers that assemble factory/builder instances, then pass 
 - HttpClientBuilder
 
 ```php
-use Cognesy\Utils\Context\{Context, Layer};
-use Cognesy\Config\Contracts\CanProvideConfig;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Config\Contracts\CanProvideConfig;use Cognesy\Utils\Context\{Context,Layer};use Psr\EventDispatcher\EventDispatcherInterface;
 
 $httpLayer = Layer::providesFrom(
-    Cognesy\Http\HttpClientBuilder::class,
-    fn(Context $c) => new Cognesy\Http\HttpClientBuilder(
+    \Cognesy\Http\Creation\HttpClientBuilder::class,
+    fn(Context $c) => new \Cognesy\Http\Creation\HttpClientBuilder(
         events: $c->get(EventDispatcherInterface::class),
         configProvider: $c->get(CanProvideConfig::class),
     )
 );
 
 $ctx = $httpLayer->applyTo(Context::empty());
-$builder = $ctx->get(Cognesy\Http\HttpClientBuilder::class);
+$builder = $ctx->get(\Cognesy\Http\Creation\HttpClientBuilder::class);
 $client = $builder->create();
 ```
 
@@ -313,8 +308,8 @@ $client = $builder->create();
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 $layer = Layer::providesFrom(
-    Cognesy\Http\HttpClientDriverFactory::class,
-    fn(Context $c) => new Cognesy\Http\HttpClientDriverFactory(
+    \Cognesy\Http\Creation\HttpClientDriverFactory::class,
+    fn(Context $c) => new \Cognesy\Http\Creation\HttpClientDriverFactory(
         $c->get(EventDispatcherInterface::class)
     )
 );
@@ -374,8 +369,7 @@ When to depend on which:
 Blueprint: default client from layers
 
 ```php
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;use Cognesy\Http\HttpClient;
 
 $clientLayer = Layer::providesFrom(HttpClient::class, fn(Context $c) =>
     $c->get(HttpClientBuilder::class)->create()
@@ -446,7 +440,7 @@ $backup  = $ctx->getKey($backupKey);
 Pooling
 
 ```php
-$factory = $ctx->get(Cognesy\Http\HttpClientDriverFactory::class);
+$factory = $ctx->get(\Cognesy\Http\Creation\HttpClientDriverFactory::class);
 $pool = $factory->makePoolHandler(); // uses config-selected driver
 ```
 
@@ -461,7 +455,7 @@ $testCtx = $eventsLayer
   ->applyTo(Context::empty());
 
 // Use mock driver
-$http = $testCtx->get(Cognesy\Http\HttpClientBuilder::class)
+$http = $testCtx->get(\Cognesy\Http\Creation\HttpClientBuilder::class)
     ->withMock(fn($m) => $m->expect('GET', '/ping')->andReturn(200, 'ok'))
     ->create();
 ```
@@ -533,7 +527,7 @@ use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Creation\InferenceDri
 $inferenceLayers = $eventsLayer
   ->merge($configLayer)
   ->merge($httpLayer) // provides HttpClientBuilder
-  ->merge(Layer::providesFrom(HttpClient::class, fn(Context $c) => $c->get(Cognesy\Http\HttpClientBuilder::class)->create()))
+  ->merge(Layer::providesFrom(HttpClient::class, fn(Context $c) => $c->get(\Cognesy\Http\Creation\HttpClientBuilder::class)->create()))
   ->merge(Layer::providesFrom(InferenceDriverFactory::class, fn(Context $c) => new InferenceDriverFactory($c->get(Psr\EventDispatcher\EventDispatcherInterface::class))))
   ->merge($llmProviderLayer);
 ```

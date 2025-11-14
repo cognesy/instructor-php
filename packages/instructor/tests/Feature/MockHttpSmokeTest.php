@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 
 class MockUser { public int $age; public string $name; }

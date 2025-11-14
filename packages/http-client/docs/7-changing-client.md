@@ -172,7 +172,7 @@ Note: HttpClient instances are immutable, so you create new instances rather tha
 The `HttpClient` class provides a static `make` method as an alternative to the constructor:
 
 ```php
-use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientBuilder;
 
 // Create with specific client using builder
 $client = (new HttpClientBuilder())->withPreset('guzzle')->create();

@@ -7,10 +7,12 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
-use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Http\Creation\HttpClientDriverFactory;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Middleware\MiddlewareStack;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

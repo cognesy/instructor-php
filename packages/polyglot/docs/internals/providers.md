@@ -33,7 +33,7 @@ $provider = LLMProvider::new()
     ->withConfig($customConfig);
 
 // Create the final driver using a factory and injected HTTP client
-$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($events))
     ->makeDriver($config, $httpClient);
@@ -67,7 +67,7 @@ $provider = EmbeddingsProvider::new()
     ->withConfig($customConfig);
 
 // Create the final driver using a factory and injected HTTP client
-$httpClient = (new \Cognesy\Http\HttpClientBuilder())->create();
+$httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
     ->makeDriver($config, $httpClient);

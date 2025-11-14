@@ -548,8 +548,7 @@ class CurlHttpResponse implements CanAdaptHttpResponse
 To use your custom driver, you can register it with the driver factory or use it directly with the HttpClientBuilder:
 
 ```php
-use Cognesy\Http\HttpClientBuilder;
-use YourNamespace\Http\Drivers\CustomHttpDriver;
+use Cognesy\Http\Creation\HttpClientBuilder;use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Use your custom driver directly with the builder
 $customDriver = new CustomHttpDriver($config);

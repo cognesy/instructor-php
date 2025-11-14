@@ -1,7 +1,7 @@
 <?php
 
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
-use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 it('OpenAI embeddings golden: multiple inputs + usage', function () {

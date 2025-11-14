@@ -85,9 +85,9 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
      *
      * @return \Generator<string>
      */
-    private function stream(?int $chunkSize = null): \Generator {
+    private function stream(): \Generator {
         while (!$this->stream->eof()) {
-            $chunk = $this->stream->read($chunkSize ?? $this->streamChunkSize);
+            $chunk = $this->stream->read($this->streamChunkSize);
             $this->events->dispatch(new HttpResponseChunkReceived($chunk));
             yield $chunk;
         }

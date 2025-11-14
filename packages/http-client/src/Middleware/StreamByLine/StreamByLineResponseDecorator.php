@@ -28,10 +28,13 @@ class StreamByLineResponseDecorator extends BaseResponseDecorator
         );
     }
 
-    #[\Override]
-    public function stream(?int $chunkSize = null): \Generator
-    {
-        $stream = $this->response->stream($chunkSize);
-        yield from $this->eventStreamReader->eventsFrom($stream);
+    /**
+     * Transform underlying stream into event-stream chunks using EventStreamReader.
+     *
+     * @param iterable<string> $source
+     * @return iterable<string>
+     */
+    protected function transformStream(iterable $source): iterable {
+        yield from $this->eventStreamReader->eventsFrom($source);
     }
 }

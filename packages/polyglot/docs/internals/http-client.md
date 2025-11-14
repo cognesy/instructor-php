@@ -17,7 +17,7 @@ The `HttpClient` class provides a unified interface for HTTP requests:
 ```php
 namespace Cognesy\Http;
 
-class HttpClient implements CanHandleHttpRequest {
+use Cognesy\Http\Middleware\MiddlewareStack;class HttpClient implements CanHandleHttpRequest {
     public function __construct(
         string $client = '',
         ?HttpClientConfig $config = null,

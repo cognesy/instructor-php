@@ -2,11 +2,11 @@
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
-use Cognesy\Http\HttpClientBuilder;
 
 beforeEach(function() {
     $this->testStorageDir = sys_get_temp_dir() . '/http_test_recordings';

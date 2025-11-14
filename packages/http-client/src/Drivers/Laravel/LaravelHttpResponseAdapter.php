@@ -67,12 +67,11 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
     }
 
     /**
-     * Read chunks of the stream
+     * Read chunks of the stream using configured chunk size.
      *
-     * @param int|null $chunkSize
      * @return \Generator<string>
      */
-    private function stream(?int $chunkSize = null): \Generator {
+    private function stream(): \Generator {
         //if (!$this->streaming) {
         //    $chunk = $this->body();
         //    $this->events->dispatch(new HttpResponseChunkReceived($chunk));
@@ -82,7 +81,7 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
 
         $stream = $this->response->toPsrResponse()->getBody();
         while (!$stream->eof()) {
-            $chunk = $stream->read($chunkSize ?? $this->streamChunkSize);
+            $chunk = $stream->read($this->streamChunkSize);
             $this->events->dispatch(new HttpResponseChunkReceived($chunk));
             yield $chunk;
         }
