@@ -9,11 +9,8 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\ConnectionException;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Http\Exceptions\NetworkException;
-use Cognesy\Http\Exceptions\TimeoutException;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -34,6 +31,7 @@ use Throwable;
 final class CurlNewDriver implements CanHandleHttpRequest
 {
     private readonly CurlFactory $factory;
+    private readonly CurlErrorMapper $errorMapper;
 
     public function __construct(
         private readonly HttpClientConfig $config,
@@ -49,6 +47,7 @@ final class CurlNewDriver implements CanHandleHttpRequest
         }
 
         $this->factory = new CurlFactory($config);
+        $this->errorMapper = new CurlErrorMapper();
     }
 
     #[\Override]
@@ -127,20 +126,11 @@ final class CurlNewDriver implements CanHandleHttpRequest
     }
 
     private function handleError(CurlHandle $handle, HttpRequest $request): never {
-        $errorCode = $handle->errorCode();
-        $errorMessage = $handle->error() ?? 'Unknown error';
-
-        $exception = match (true) {
-            in_array($errorCode, [CURLE_OPERATION_TIMEDOUT, CURLE_OPERATION_TIMEOUTED])
-                => new TimeoutException($errorMessage, $request, null),
-            in_array($errorCode, [
-                CURLE_COULDNT_CONNECT,
-                CURLE_COULDNT_RESOLVE_HOST,
-                CURLE_COULDNT_RESOLVE_PROXY,
-                CURLE_SSL_CONNECT_ERROR,
-            ]) => new ConnectionException($errorMessage, $request, null),
-            default => new NetworkException($errorMessage, $request, null, null),
-        };
+        $exception = $this->errorMapper->mapError(
+            $handle->errorCode(),
+            $handle->error() ?? 'Unknown error',
+            $request,
+        );
 
         $this->dispatchRequestFailed($exception, $request);
         throw $exception;

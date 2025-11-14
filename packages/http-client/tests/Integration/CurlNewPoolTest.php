@@ -283,6 +283,69 @@ it('maintains request order in responses', function () {
     }
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
+it('executes multiple delayed requests within reasonable time', function () {
+    // Note: PHP built-in server used in tests is single-threaded,
+    // so end-to-end timings will appear sequential regardless of client concurrency.
+    // Keep the test lightweight to avoid slowing CI.
+
+    // Create 2 requests that each take 1 second
+    $requests = [];
+    for ($i = 0; $i < 2; $i++) {
+        $requests[] = new HttpRequest(
+            url: $this->baseUrl . '/delay/1',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        );
+    }
+
+    // Execute with concurrency of 2
+    $start = microtime(true);
+    $results = $this->pool->pool($requests, 2);
+    $duration = microtime(true) - $start;
+
+    // Verify all succeeded
+    expect($results)->toHaveCount(2);
+    foreach ($results as $result) {
+        expect($result)->toBeInstanceOf(Success::class);
+    }
+
+    // Single-threaded server yields ~2s total here. Keep generous bounds to avoid flaky CI.
+    expect($duration)->toBeLessThan(3.0)
+        ->and($duration)->toBeGreaterThan(0.9);
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
+it('handles a small batch of delayed requests with configured concurrency', function () {
+    // Keep this test lightweight as well: 3x /delay/1
+    $requests = [];
+    for ($i = 0; $i < 3; $i++) {
+        $requests[] = new HttpRequest(
+            url: $this->baseUrl . '/delay/1',
+            method: 'GET',
+            headers: [],
+            body: [],
+            options: [],
+        );
+    }
+
+    // Execute with concurrency of 3
+    $start = microtime(true);
+    $results = $this->pool->pool($requests, 3);
+    $duration = microtime(true) - $start;
+
+    // Verify all succeeded
+    expect($results)->toHaveCount(3);
+    foreach ($results as $result) {
+        expect($result)->toBeInstanceOf(Success::class);
+    }
+
+    // Single-threaded server yields ~3s total for 3 delayed requests.
+    // Use wide bounds to keep CI stable and fast.
+    expect($duration)->toBeLessThan(4.0)
+        ->and($duration)->toBeGreaterThan(0.9);
+})->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
+
 // Clean up server after all tests complete
 register_shutdown_function(function() {
     IntegrationTestServer::stop();
