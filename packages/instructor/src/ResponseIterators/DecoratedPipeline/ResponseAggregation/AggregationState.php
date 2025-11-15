@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\ResponseIterators\DecoratedPipeline\ResponseAggregation;
 
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -25,7 +24,7 @@ final readonly class AggregationState
         public mixed $latestValue,        // Most recent deserialized value
         public int $partialCount,         // Number of partials processed
         public ?string $finishReason,     // LLM finish reason (if completed)
-        public PartialInferenceResponseList $partials, // Optional accumulated partials
+        public PartialInferenceResponse $partial, // Optional accumulated partials
     ) {}
 
     public static function empty(): self {
@@ -35,7 +34,7 @@ final readonly class AggregationState
             latestValue: null,
             partialCount: 0,
             finishReason: null,
-            partials: PartialInferenceResponseList::empty(),
+            partial: PartialInferenceResponse::empty(),
         );
     }
 
@@ -50,7 +49,7 @@ final readonly class AggregationState
             latestValue: $partial->value() ?? $this->latestValue,
             partialCount: $this->partialCount + 1,
             finishReason: $partial->finishReason() ?: $this->finishReason,
-            partials: $this->partials,
+            partial: $this->partial,
         );
     }
 
@@ -61,12 +60,12 @@ final readonly class AggregationState
             latestValue: $this->latestValue,
             partialCount: $this->partialCount,
             finishReason: $this->finishReason,
-            partials: $this->partials->withNewPartialResponse($partial),
+            partial: $this->partial->withAccumulatedContent($partial),
         );
     }
 
-    public function partials(): PartialInferenceResponseList {
-        return $this->partials;
+    public function partial(): PartialInferenceResponse {
+        return $this->partial;
     }
 
     public function finishReason(): ?string {

@@ -77,6 +77,7 @@ final readonly class StreamingUpdatesGenerator implements CanStreamStructuredOut
             $inferenceStream,
             $responseModel
         );
+        //$iterator = fn() => yield from $partialStream;
 
         // Create streaming state with initialized stream
         $attemptState = StructuredOutputAttemptState::empty()
@@ -111,23 +112,22 @@ final readonly class StreamingUpdatesGenerator implements CanStreamStructuredOut
         // Check if stream is exhausted AFTER advancing (on same iterator instance)
         $isExhausted = !$stream->valid();
 
-        // Accumulate partials
-        $accumulatedPartials = $state->accumulatedPartials()
-            ->withNewPartialResponse($partial);
+        // Accumulate partials locally for Instructor state
+        $accumulatedPartial = $state->accumulatedPartial()->withAccumulatedContent($partial);
 
         // Build aggregate inference from all partials so far
-        $inference = InferenceResponseFactory::fromPartialResponses($accumulatedPartials)
+        $inference = InferenceResponseFactory::fromAccumulatedPartial($accumulatedPartial)
             ->withValue($partial->value());
 
         // Update streaming state with processed chunk
-        $newState = $state->withNextChunk($inference, $accumulatedPartials, $isExhausted);
+        $newState = $state->withNextChunk($inference, $accumulatedPartial, $isExhausted);
 
         // Update execution with current attempt data
         return $execution
             ->withAttemptState($newState)
             ->withCurrentAttempt(
                 inferenceResponse: $inference,
-                partialInferenceResponses: $accumulatedPartials,
+                partialInferenceResponse: $accumulatedPartial,
                 errors: $execution->currentErrors(), // Preserve existing errors
             );
     }

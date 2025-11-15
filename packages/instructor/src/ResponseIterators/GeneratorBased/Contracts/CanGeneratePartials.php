@@ -11,7 +11,7 @@ interface CanGeneratePartials
     /**
      * @param Generator<PartialInferenceResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Iterable<mixed>
+     * @return iterable<mixed>
      */
-    public function makePartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable;
+    public function makePartialResponses(Generator $stream, ResponseModel $responseModel) : iterable;
 }

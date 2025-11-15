@@ -64,7 +64,7 @@ final class EventDispatchingStream implements IteratorAggregate
         // When aggregation is enabled, we no longer see raw PartialInferenceResponse
         // items here. If partial accumulation is turned on, use the last appended
         // partial to dispatch events exactly as before (preserves legacy behavior).
-        $last = $aggregate->partials()->last();
+        $last = $aggregate->partial();
         if ($last !== null) {
             return $this->collectResponseEvents($last);
         }

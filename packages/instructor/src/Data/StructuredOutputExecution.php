@@ -4,10 +4,10 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Uuid;
@@ -93,10 +93,6 @@ final readonly class StructuredOutputExecution
         return $this->currentAttempt->inferenceResponse();
     }
 
-    public function partialResponses(): PartialInferenceResponseList {
-        return $this->currentAttempt->partialResponses();
-    }
-
     public function lastFinalizedAttempt(): ?StructuredOutputAttempt {
         return $this->attempts->last();
     }
@@ -135,10 +131,8 @@ final readonly class StructuredOutputExecution
         $usage = $this->attempts->usage();
         if (!$this->currentAttempt->isFinalized()) {
             // include partial usage from current attempt (partials only)
-            $partials = $this->currentAttempt->partialResponses();
-            foreach ($partials->all() as $partial) {
-                $usage = $usage->withAccumulated($partial->usage());
-            }
+            $partial = $this->currentAttempt->partialResponse();
+            $usage = $usage->withAccumulated($partial?->usage() ?? Usage::none());
         }
         return $usage;
     }
@@ -204,14 +198,14 @@ final readonly class StructuredOutputExecution
     }
 
     public function withCurrentAttempt(
-        InferenceResponse $inferenceResponse,
-        PartialInferenceResponseList $partialInferenceResponses,
+        ?InferenceResponse $inferenceResponse,
+        ?PartialInferenceResponse $partialInferenceResponse,
         array $errors
     ) : self {
         $existingExecution = $this->currentAttempt->inferenceExecution();
         $inferenceAttempt = new InferenceAttempt(
             response: $inferenceResponse,
-            partialResponses: $partialInferenceResponses,
+            accumulatedPartial: $partialInferenceResponse,
             isFinalized: false,
             errors: $errors,
         );
@@ -231,7 +225,7 @@ final readonly class StructuredOutputExecution
 
     public function withFailedAttempt(
         InferenceResponse $inferenceResponse,
-        ?PartialInferenceResponseList $partialInferenceResponses = null,
+        ?PartialInferenceResponse $partialInferenceResponse = null,
         mixed $returnedValue = null,
         array $errors = [],
     ): self {
@@ -241,7 +235,7 @@ final readonly class StructuredOutputExecution
         $inferenceExecution = new InferenceExecution();
         $inferenceAttempt = InferenceAttempt::fromFailedResponse(
             response: $inferenceResponse,
-            partialResponses: $partialInferenceResponses,
+            accumulatedPartial: $partialInferenceResponse,
             errors: $errors,
         );
         $inferenceExecution = $inferenceExecution->with(
@@ -272,7 +266,7 @@ final readonly class StructuredOutputExecution
 
     public function withSuccessfulAttempt(
         InferenceResponse $inferenceResponse,
-        ?PartialInferenceResponseList $partialInferenceResponses = null,
+        ?PartialInferenceResponse $partialInferenceResponse = null,
         mixed $returnedValue = null,
     ): self {
         if ($this->isFinalized && !$this->currentAttempt->hasErrors()) {
@@ -280,8 +274,8 @@ final readonly class StructuredOutputExecution
         }
         $existingExecution = $this->currentAttempt->inferenceExecution();
         $inferenceAttempt = InferenceAttempt::fromResponse($inferenceResponse);
-        if ($partialInferenceResponses !== null && !$partialInferenceResponses->isEmpty()) {
-            $inferenceAttempt = $inferenceAttempt->with(partialResponses: $partialInferenceResponses);
+        if ($partialInferenceResponse !== null) {
+            $inferenceAttempt = $inferenceAttempt->with(accumulatedPartial: $partialInferenceResponse);
         }
         $inferenceExecution = $existingExecution->with(
             currentAttempt: $inferenceAttempt,

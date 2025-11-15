@@ -7,7 +7,7 @@ use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Data\StructuredOutputAttemptState;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\AttemptPhase;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 /**
  * Stream iterator for synchronous (non-streaming) execution.
@@ -56,14 +56,14 @@ final readonly class SyncUpdateGenerator implements CanStreamStructuredOutputUpd
         $inference = $this->normalizer->normalizeContent($inference, $execution->outputMode());
         $attemptState = StructuredOutputAttemptState::fromSingleChunk(
             $inference,
-            PartialInferenceResponseList::empty(),
+            PartialInferenceResponse::empty(),
             AttemptPhase::Done,
         );
         return $execution
             ->withAttemptState($attemptState)
             ->withCurrentAttempt(
                 inferenceResponse: $inference,
-                partialInferenceResponses: PartialInferenceResponseList::empty(),
+                partialInferenceResponse: PartialInferenceResponse::empty(),
                 errors: $execution->currentErrors(),
             );
     }

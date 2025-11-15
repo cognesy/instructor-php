@@ -90,7 +90,7 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
         assert($streamState !== null, 'Streaming state must exist when finalizing');
 
         $finalInference = $streamState->lastInference() ?? InferenceResponse::empty();
-        $partials = $streamState->accumulatedPartials();
+        $partial = $streamState->accumulatedPartial();
 
         // Validate response
         $validationResult = $this->responseGenerator->makeResponse(
@@ -105,7 +105,7 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
 
             return $execution->withSuccessfulAttempt(
                 inferenceResponse: $finalInference->withValue($finalValue),
-                partialInferenceResponses: $partials,
+                partialInferenceResponse: $partial,
                 returnedValue: $finalValue,
             );
         }
@@ -115,7 +115,7 @@ final readonly class AttemptIterator implements CanHandleStructuredOutputAttempt
             $execution,
             $validationResult,
             $finalInference,
-            $partials,
+            $partial,
         );
 
         // Decide on retry using UPDATED execution (includes this failure)

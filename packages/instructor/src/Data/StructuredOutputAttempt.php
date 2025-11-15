@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
@@ -70,8 +70,8 @@ readonly final class StructuredOutputAttempt
         return $this->inferenceExecution->response();
     }
 
-    public function partialResponses(): PartialInferenceResponseList {
-        return $this->inferenceExecution->partialResponses();
+    public function partialResponse(): PartialInferenceResponse {
+        return $this->inferenceExecution->partialResponse();
     }
 
     public function inferenceExecution(): InferenceExecution {

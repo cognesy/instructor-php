@@ -162,7 +162,7 @@ class CurlStreamingHttpResponseAdapter implements CanAdaptHttpResponse
         $exception = HttpExceptionFactory::fromStatusCode(
             $code,
             $this->request,
-            $response,
+            $response->toHttpResponse(),
             0.0
         );
         throw $exception;

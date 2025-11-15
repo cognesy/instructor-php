@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
@@ -27,6 +28,15 @@ class PartialInferenceResponse
 
     public ?Usage $usage;
     public ?HttpResponse $responseData;
+
+    // INTERNAL STATE FOR ACCUMULATION ///////////////////////////////////
+    // Accumulate tool calls across streaming deltas without materializing
+    // thousands of PartialInferenceResponse objects. We store raw args
+    // JSON strings and convert to ToolCalls lazily on access.
+    // keys: either "id:<toolId>" or synthetic "name:<toolName>#<n>" when id is missing
+    private array $tools = [];
+    private int $toolsCount = 0;
+    private string $lastToolKey = '';
 
     public function __construct(
         ?string $contentDelta = null,
@@ -56,6 +66,10 @@ class PartialInferenceResponse
         $this->id = $id ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
+    }
+
+    public static function empty() : self {
+        return new self();
     }
 
     // PUBLIC ////////////////////////////////////////////////
@@ -180,7 +194,113 @@ class PartialInferenceResponse
 
         // Accumulate usage counters
         $this->usage = $this->usage->withAccumulated($previous->usage);
+
+        // Preserve first HttpResponse (buffered SSE stream reference)
+        // Prefer non-default previous response when available.
+        if ($previous->responseData instanceof HttpResponse) {
+            // HttpResponse::empty() has statusCode 0; prefer any non-zero previous
+            $prevStatus = $previous->responseData->statusCode();
+            if ($prevStatus > 0) {
+                $this->responseData = $previous->responseData;
+            }
+        }
+
+        // Accumulate tool calls across deltas
+        // Merge previous accumulated tools/state
+        $this->tools = $previous->tools;
+        $this->toolsCount = $previous->toolsCount;
+        $this->lastToolKey = $previous->lastToolKey;
+
+        // Determine if there is a tool delta in the current chunk
+        $hasToolDelta = ($this->toolId !== '') || ($this->toolName !== '') || ($this->toolArgs !== '');
+        if ($hasToolDelta) {
+            $key = $this->lastToolKey;
+
+            if ($this->toolId !== '') {
+                // Prefer explicit id when provided
+                $candidate = 'id:' . $this->toolId;
+                if ($candidate !== $this->lastToolKey || !isset($this->tools[$candidate])) {
+                    // New tool call by id
+                    $this->toolsCount += 1;
+                    $this->tools[$candidate] = [
+                        'id' => $this->toolId,
+                        'name' => $this->toolName, // may be empty on first delta
+                        'args' => '',
+                    ];
+                } elseif ($this->toolName !== '') {
+                    // Update name if arrives later
+                    $this->tools[$candidate]['name'] = $this->toolName;
+                }
+                $key = $candidate;
+            } elseif ($this->toolName !== '') {
+                // Start a new tool entry when name changes, otherwise continue last
+                $currentName = '';
+                if ($this->lastToolKey !== '' && isset($this->tools[$this->lastToolKey])) {
+                    $currentName = $this->tools[$this->lastToolKey]['name'] ?? '';
+                }
+                if ($currentName === '' || $currentName !== $this->toolName) {
+                    $this->toolsCount += 1;
+                    $key = 'name:' . $this->toolName . '#' . $this->toolsCount;
+                    $this->tools[$key] = [
+                        'id' => '',
+                        'name' => $this->toolName,
+                        'args' => '',
+                    ];
+                } else {
+                    // Same name continues
+                    $key = $this->lastToolKey;
+                }
+            } else {
+                // No id or name provided -> continuation of last tool
+                $key = $this->lastToolKey;
+            }
+
+            // Update last key
+            $this->lastToolKey = $key;
+
+            // Append args delta if provided
+            if ($this->toolArgs !== '' && $key !== '' && isset($this->tools[$key])) {
+                $this->tools[$key]['args'] .= $this->toolArgs;
+            }
+        }
         return $this;
+    }
+
+    /**
+     * Get accumulated ToolCalls converted from internal tool deltas.
+     */
+    public function toolCalls(): ToolCalls {
+        if (empty($this->tools)) {
+            return ToolCalls::empty();
+        }
+        $items = [];
+        foreach ($this->tools as $entry) {
+            $items[] = [
+                'id' => $entry['id'] ?? '',
+                'name' => $entry['name'] ?? '',
+                'arguments' => $entry['args'] ?? '',
+            ];
+        }
+        return ToolCalls::fromArray($items);
+    }
+
+    // INTERNAL //////////////////////////////////////////////////////////
+
+    private function resolveToolKey(string $toolId, string $toolName): string {
+        if ($toolId !== '') {
+            return 'id:' . $toolId;
+        }
+        // If tool name matches the last tool, reuse the same key to append args
+        $name = $toolName !== '' ? $toolName : ($this->tools[$this->lastToolKey]['name'] ?? '');
+        if ($this->lastToolKey !== '' && isset($this->tools[$this->lastToolKey])) {
+            $lastToolName = $this->tools[$this->lastToolKey]['name'] ?? '';
+            if ($lastToolName === $name) {
+                return $this->lastToolKey;
+            }
+        }
+        // New tool - generate new key with sequence
+        $seq = $this->toolsCount + 1;
+        return 'name:' . $name . '#' . $seq;
     }
 
     // TRANSFORMATIONS //////////////////////////////////////////////

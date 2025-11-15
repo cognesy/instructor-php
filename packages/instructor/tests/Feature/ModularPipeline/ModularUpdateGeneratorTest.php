@@ -16,7 +16,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\PartialValidation;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -189,14 +188,15 @@ test('nextChunk accumulates partials in execution', function() {
 
     // Process first chunk
     $execution = $generator->nextChunk($execution);
-    $partials1 = $execution->currentAttempt()->partialResponses();
+    $partial1 = $execution->currentAttempt()->inferenceExecution()->partialResponse();
 
     // Process second chunk
     $execution = $generator->nextChunk($execution);
-    $partials2 = $execution->currentAttempt()->partialResponses();
+    $partial2 = $execution->currentAttempt()->inferenceExecution()->partialResponse();
 
-    // Should have more partials after second chunk
-    expect($partials2)->not()->toBeNull();
+    // Should have accumulated content from both chunks
+    expect($partial2)->not()->toBeNull()
+        ->and($partial2->content())->toBe('{"test": "value"}');
 });
 
 test('nextChunk marks stream as exhausted when no more chunks', function() {
@@ -238,7 +238,7 @@ test('preserves existing errors in execution', function() {
     $execution = makeModularUpdateGeneratorExecution($responseModel, $config)
         ->withCurrentAttempt(
             inferenceResponse: new InferenceResponse(content: ''),
-            partialInferenceResponses: PartialInferenceResponseList::empty(),
+            partialInferenceResponse: PartialInferenceResponse::empty(),
             errors: ['existing error'],
         );
 

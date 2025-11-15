@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Enums\AttemptPhase;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Iterator;
 use IteratorAggregate;
 
@@ -24,7 +24,7 @@ final readonly class StructuredOutputAttemptState
      * @param int $partialIndex Count of processed chunks for the current attempt
      * @param bool $streamExhausted Whether the stream has been fully consumed
      * @param InferenceResponse|null $lastInference Last aggregated inference response observed
-     * @param PartialInferenceResponseList $accumulatedPartials Accumulated partial responses so far
+     * @param PartialInferenceResponse $accumulatedPartial Accumulated partial response so far
      */
     public function __construct(
         private AttemptPhase $attemptPhase,
@@ -32,7 +32,7 @@ final readonly class StructuredOutputAttemptState
         private int $partialIndex,
         private bool $streamExhausted,
         private ?InferenceResponse $lastInference,
-        private PartialInferenceResponseList $accumulatedPartials,
+        private PartialInferenceResponse $accumulatedPartial,
     ) {}
 
     // ACCESSORS /////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ final readonly class StructuredOutputAttemptState
             partialIndex: 0,
             streamExhausted: false,
             lastInference: null,
-            accumulatedPartials: PartialInferenceResponseList::empty(),
+            accumulatedPartial: PartialInferenceResponse::empty(),
         );
     }
 
@@ -59,7 +59,7 @@ final readonly class StructuredOutputAttemptState
             partialIndex: 0,
             streamExhausted: true,
             lastInference: null,
-            accumulatedPartials: PartialInferenceResponseList::empty(),
+            accumulatedPartial: PartialInferenceResponse::empty(),
         );
     }
 
@@ -71,12 +71,12 @@ final readonly class StructuredOutputAttemptState
      */
     public static function fromSingleChunk(
         InferenceResponse $inference,
-        PartialInferenceResponseList $partials,
+        PartialInferenceResponse $partial,
         AttemptPhase $phase = AttemptPhase::Done,
     ): self {
         return self::empty()
             ->withPhase($phase)
-            ->withNextChunk($inference, $partials, true);
+            ->withNextChunk($inference, $partial, true);
     }
 
     public function attemptPhase(): AttemptPhase {
@@ -95,8 +95,8 @@ final readonly class StructuredOutputAttemptState
         return $this->lastInference;
     }
 
-    public function accumulatedPartials(): PartialInferenceResponseList {
-        return $this->accumulatedPartials;
+    public function accumulatedPartial(): PartialInferenceResponse {
+        return $this->accumulatedPartial;
     }
 
     /**
@@ -149,14 +149,14 @@ final readonly class StructuredOutputAttemptState
      */
     public function withNextChunk(
         InferenceResponse $inference,
-        PartialInferenceResponseList $partials,
+        PartialInferenceResponse $partial,
         bool $isExhausted,
     ): self {
         return $this->with(
             partialIndex: $this->partialIndex + 1,
             streamExhausted: $isExhausted,
             lastInference: $inference,
-            accumulatedPartials: $partials,
+            accumulatedPartial: $partial,
         );
     }
 
@@ -175,7 +175,7 @@ final readonly class StructuredOutputAttemptState
         ?int $partialIndex = null,
         ?bool $streamExhausted = null,
         ?InferenceResponse $lastInference = null,
-        ?PartialInferenceResponseList $accumulatedPartials = null,
+        ?PartialInferenceResponse $accumulatedPartial = null,
     ): self {
         return new self(
             attemptPhase: $attemptPhase ?? $this->attemptPhase,
@@ -183,7 +183,7 @@ final readonly class StructuredOutputAttemptState
             partialIndex: $partialIndex ?? $this->partialIndex,
             streamExhausted: $streamExhausted ?? $this->streamExhausted,
             lastInference: $lastInference ?? $this->lastInference,
-            accumulatedPartials: $accumulatedPartials ?? $this->accumulatedPartials,
+            accumulatedPartial: $accumulatedPartial ?? $this->accumulatedPartial,
         );
     }
 }

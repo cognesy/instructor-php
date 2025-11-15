@@ -20,7 +20,7 @@ it('reports failure for latest finalized attempt', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
     $exec = $exec->withFailedResponse(
         response: new InferenceResponse(usage: new Usage()),
-        partialResponses: null,
+        partialResponse: null,
         errors: 'boom'
     );
 
@@ -34,7 +34,7 @@ it('aggregates current errors and exposes currentErrors()', function () {
     // Create an in-flight attempt with errors (not finalized)
     $attempt = new InferenceAttempt(
         response: null,
-        partialResponses: null,
+        accumulatedPartial: null,
         isFinalized: false,
         errors: ['e1']
     );

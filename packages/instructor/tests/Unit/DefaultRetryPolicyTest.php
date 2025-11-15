@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
 
 class RetryPolicyTestModel {
@@ -22,7 +23,7 @@ it('should allow retry when max retries not reached', function () {
     $execution = (new StructuredOutputExecution())
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
-            config: (new \Cognesy\Instructor\Config\StructuredOutputConfig())->with(maxRetries: 2)
+            config: (new StructuredOutputConfig())->with(maxRetries: 2)
         );
 
     $validationResult = Result::failure('Validation failed');
@@ -39,7 +40,7 @@ it('should not allow retry when max retries reached', function () {
     $execution = (new StructuredOutputExecution())
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
-            config: (new \Cognesy\Instructor\Config\StructuredOutputConfig())->with(maxRetries: 1)
+            config: (new StructuredOutputConfig())->with(maxRetries: 1)
         );
 
     // Simulate TWO failed attempts to exceed maxRetries=1
@@ -71,14 +72,14 @@ it('records failure and dispatches event', function () {
     $execution = (new StructuredOutputExecution())
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
-            config: (new \Cognesy\Instructor\Config\StructuredOutputConfig())->with(maxRetries: 2)
+            config: (new StructuredOutputConfig())->with(maxRetries: 2)
         );
 
     $validationResult = Result::failure('Validation failed');
     $inference = new InferenceResponse(content: '{"value": "not a number"}');
-    $partials = PartialInferenceResponseList::empty();
+    $partial = PartialInferenceResponse::empty();
 
-    $updated = $policy->recordFailure($execution, $validationResult, $inference, $partials);
+    $updated = $policy->recordFailure($execution, $validationResult, $inference, $partial);
 
     expect($eventFired)->toBeTrue();
     expect($updated->attemptCount())->toBe(1);
@@ -93,7 +94,7 @@ it('prepareRetry returns execution unchanged by default', function () {
     $execution = (new StructuredOutputExecution())
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
-            config: (new \Cognesy\Instructor\Config\StructuredOutputConfig())->with(maxRetries: 2)
+            config: (new StructuredOutputConfig())->with(maxRetries: 2)
         );
 
     $prepared = $policy->prepareRetry($execution);
@@ -108,7 +109,7 @@ it('finalizeOrThrow returns value on success', function () {
     $execution = (new StructuredOutputExecution())
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
-            config: (new \Cognesy\Instructor\Config\StructuredOutputConfig())->with(maxRetries: 2)
+            config: (new StructuredOutputConfig())->with(maxRetries: 2)
         );
 
     $testObject = new RetryPolicyTestModel();
@@ -134,7 +135,7 @@ it('finalizeOrThrow throws exception on failure and dispatches event', function 
     $execution = (new StructuredOutputExecution())
         ->with(
             responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
-            config: (new \Cognesy\Instructor\Config\StructuredOutputConfig())->with(maxRetries: 1)
+            config: (new StructuredOutputConfig())->with(maxRetries: 1)
         );
 
     // Record a failed attempt

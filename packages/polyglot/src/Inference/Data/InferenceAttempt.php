@@ -2,7 +2,6 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
@@ -15,7 +14,7 @@ class InferenceAttempt
     public readonly DateTimeImmutable $updatedAt;
 
     private ?InferenceResponse $response;
-    private ?PartialInferenceResponseList $partialResponses;
+    private ?PartialInferenceResponse $accumulatedPartial;
 
     private array $errors;
     private ?bool $isFinalized = null;
@@ -24,7 +23,7 @@ class InferenceAttempt
 
     public function __construct(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponseList $partialResponses = null,
+        ?PartialInferenceResponse $accumulatedPartial = null,
         ?bool $isFinalized = null,
         ?array $errors = null,
         //
@@ -37,7 +36,7 @@ class InferenceAttempt
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
         $this->response = $response;
-        $this->partialResponses = $partialResponses;
+        $this->accumulatedPartial = $accumulatedPartial;
         $this->isFinalized = $isFinalized;
         $this->errors = $errors ?? [];
     }
@@ -48,22 +47,27 @@ class InferenceAttempt
 
     public static function fromFailedResponse(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponseList $partialResponses = null,
+        ?PartialInferenceResponse $accumulatedPartial = null,
         array $errors = [],
     ) : self {
         return new self(
             response: $response,
-            partialResponses: $partialResponses,
+            accumulatedPartial: $accumulatedPartial,
             isFinalized: true,
             errors: $errors,
         );
     }
 
-    public static function fromPartialResponses(PartialInferenceResponseList $partialResponses, bool $isFinalized = false) : self {
-        $response = $isFinalized ? InferenceResponseFactory::fromPartialResponses($partialResponses) : null;
+    public static function fromPartialResponses(PartialInferenceResponse $accumulatedPartial, bool $isFinalized = false) : self {
+        // Backward compatibility: accept list, keep only the last aggregated partial
+        $response = null;
+        if ($isFinalized) {
+            // Legacy finalization path via list-based factory
+            $response = InferenceResponseFactory::fromAccumulatedPartial($accumulatedPartial);
+        }
         return new self(
             response: $response,
-            partialResponses: $partialResponses,
+            accumulatedPartial: $accumulatedPartial,
             isFinalized: $isFinalized
         );
     }
@@ -74,9 +78,20 @@ class InferenceAttempt
         return $this->response;
     }
 
-    public function partialResponses(): ?PartialInferenceResponseList {
-        return $this->partialResponses;
+    public function partialResponse(): ?PartialInferenceResponse {
+        return $this->accumulatedPartial;
     }
+
+//    /**
+//     * Deprecated shim for compatibility; returns a list with single aggregated partial.
+//     * @deprecated Use partialResponse() instead.
+//     */
+//    public function partialResponses(): ?PartialInferenceResponseList {
+//        if ($this->accumulatedPartial === null) {
+//            return PartialInferenceResponseList::empty();
+//        }
+//        return PartialInferenceResponseList::of($this->accumulatedPartial);
+//    }
 
     public function errors(): array {
         return $this->errors;
@@ -91,7 +106,7 @@ class InferenceAttempt
     }
 
     public function hasPartialResponses(): bool {
-        return $this->partialResponses !== null && !$this->partialResponses->isEmpty();
+        return $this->accumulatedPartial !== null;
     }
 
     public function hasErrors(): bool {
@@ -109,29 +124,24 @@ class InferenceAttempt
     }
 
     public function usage(): Usage {
-        $usage = Usage::none();
-        if ($this->response !== null) {
-            $usage = $this->response->usage();
-        }
-        if ($this->partialResponses !== null && !$this->partialResponses->isEmpty()) {
-            foreach ($this->partialResponses->all() as $partial) {
-                $usage = $usage->withAccumulated($partial->usage());
-            }
-        }
-        return $usage;
+        return match (true) {
+            $this->response !== null => $this->response->usage(),
+            $this->accumulatedPartial !== null => $this->accumulatedPartial->usage(),
+            default => Usage::none(),
+        };
     }
 
     // MUTATORS //////////////////////////////////////////////////////////
 
     public function with(
         ?InferenceResponse $response = null,
-        ?PartialInferenceResponseList $partialResponses = null,
+        ?PartialInferenceResponse $accumulatedPartial = null,
         ?bool $isFinalized = null,
         ?array $errors = null
     ): self {
         return new self(
             response: $response ?? $this->response,
-            partialResponses: $partialResponses ?? $this->partialResponses,
+            accumulatedPartial: $accumulatedPartial ?? $this->accumulatedPartial,
             isFinalized: $isFinalized ?? $this->isFinalized,
             errors: $errors ?? $this->errors,
             id: $this->id,
@@ -148,31 +158,45 @@ class InferenceAttempt
     }
 
     public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
-        $partialResponses = $this->partialResponses ?? PartialInferenceResponseList::empty();
+        // If we already have a partial and incoming looks like a delta (no accumulated content),
+        // accumulate to keep usage/content correct in non-stream test paths.
+        if ($this->accumulatedPartial !== null
+            && !$partialResponse->hasContent()
+            && !$partialResponse->hasReasoningContent()
+        ) {
+            $partialResponse = $partialResponse->withAccumulatedContent($this->accumulatedPartial);
+        }
         return $this->with(
-            partialResponses: $partialResponses->withNewPartialResponse($partialResponse),
+            accumulatedPartial: $partialResponse,
             isFinalized: false,
         );
     }
 
     public function withFinalizedPartialResponse(): self {
-        $partials = $this->partialResponses ?? PartialInferenceResponseList::empty();
+        // Prefer accumulated single partial when available
+        if ($this->accumulatedPartial !== null) {
+            return $this->with(
+                response: InferenceResponseFactory::fromAccumulatedPartial($this->accumulatedPartial),
+                isFinalized: true
+            );
+        }
+        $partial = $this->partialResponse() ?? PartialInferenceResponse::empty();
         return $this->with(
-            response: InferenceResponseFactory::fromPartialResponses($partials),
+            response: InferenceResponseFactory::fromAccumulatedPartial($partial),
             isFinalized: true
         );
     }
 
     public function withFailedResponse(
         InferenceResponse $response,
-        ?PartialInferenceResponseList $partialResponses,
+        ?PartialInferenceResponse $partialResponse,
         string|Throwable $error
     ): self {
         $errors = $this->errors ?? [];
         $errors[] = $error;
         return $this->with(
             response: $response,
-            partialResponses: $partialResponses ?? $this->partialResponses,
+            accumulatedPartial: $partialResponse ?? $this->accumulatedPartial,
             isFinalized: true,
             errors: $errors,
         );
@@ -186,7 +210,6 @@ class InferenceAttempt
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'response' => $this->response?->toArray(),
-            'partialResponses' => $this->partialResponses?->toArray(),
             'isFinalized' => $this->isFinalized,
             'errors' => $this->errorsToStringArray($this->errors),
         ];
@@ -195,7 +218,6 @@ class InferenceAttempt
     public static function fromArray(array $data) : self {
         return new self(
             response: InferenceResponse::fromArray($data['response'] ?? []),
-            partialResponses: PartialInferenceResponseList::fromArray($data['partialResponses'] ?? []),
             isFinalized: $data['isFinalized'] ?? null,
             errors: $data['errors'] ?? [],
             id: $data['id'] ?? null,

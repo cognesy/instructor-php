@@ -121,7 +121,7 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
         // Update streaming state with processed chunk
         $newState = $state->withNextChunk(
             $inference,
-            $aggregate->partials(),
+            $aggregate->partial(),
             $isExhausted,
         );
 
@@ -130,7 +130,7 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
             ->withAttemptState($newState)
             ->withCurrentAttempt(
                 inferenceResponse: $inference,
-                partialInferenceResponses: $aggregate->partials(),
+                partialInferenceResponse: $aggregate->partial(),
                 errors: $execution->currentErrors(), // Preserve existing errors
             );
     }

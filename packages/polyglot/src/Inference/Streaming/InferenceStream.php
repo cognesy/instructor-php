@@ -94,12 +94,13 @@ class InferenceStream
      * @return array<PartialInferenceResponse> An array of all partial LLM responses.
      */
     public function all(): array {
+        $responses = [];
         if ($this->execution->response() === null) {
             foreach ($this->makePartialResponses($this->stream) as $partialResponse) {
-                $tmp = $partialResponse;
+                $responses[] = $partialResponse;
             }
         }
-        return $this->execution->partialResponses()->all();
+        return $responses;
     }
 
     /**
@@ -110,7 +111,7 @@ class InferenceStream
      */
     public function final(): ?InferenceResponse {
         if ($this->execution->response() === null) {
-            if (!$this->execution->partialResponses()->isEmpty()) {
+            if ($this->execution->partialResponse()) {
                 $this->execution = $this->execution->withFinalizedPartialResponse();
             } else {
                 foreach ($this->makePartialResponses($this->stream) as $_) {}
@@ -142,15 +143,14 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
     private function makePartialResponses(iterable $stream): Generator {
-        $priorResponse = null;
+        $priorResponse = PartialInferenceResponse::empty();
         /** @var PartialInferenceResponse $partialResponse */
         foreach ($stream as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
-            if ($priorResponse !== null) {
-                $partialResponse = $partialResponse->withAccumulatedContent($priorResponse);
-            }
+            // Always enrich with accumulated content/state (tools, usage, content)
+            $partialResponse = $partialResponse->withAccumulatedContent($priorResponse);
             $this->notifyOnPartialResponse($partialResponse);
             yield $partialResponse;
             // we need this to accumulate some fields (content, finish reason, reasoning content)

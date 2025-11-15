@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation;
 
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -34,7 +33,7 @@ final readonly class StreamAggregate
         public ?string $finishReason,
         public Usage $usage,
         public int $frameCount,
-        public ?PartialInferenceResponseList $partials,
+        public ?PartialInferenceResponse $partial,
     ) {}
 
     public static function empty(bool $trackPartials = false): self {
@@ -44,7 +43,7 @@ final readonly class StreamAggregate
             finishReason: null,
             usage: Usage::none(),
             frameCount: 0,
-            partials: $trackPartials ? PartialInferenceResponseList::empty() : null,
+            partial: $trackPartials ? PartialInferenceResponse::empty() : null,
         );
     }
 
@@ -54,28 +53,38 @@ final readonly class StreamAggregate
      * Updates latest content/value and cumulative counters.
      */
     public function merge(PartialInferenceResponse $partial): self {
-        $partials = $this->partials?->withNewPartialResponse($partial);
+        // Accumulate partial if tracking is enabled
+        $newPartial = null;
+        if ($this->partial !== null) {
+            $newPartial = $partial->withAccumulatedContent($this->partial);
+        }
 
-        // Prefer provided content; if missing, accumulate using contentDelta
-        $nextContent = $partial->content() !== ''
-            ? $partial->content()
+        // Prefer accumulated content from partial; if missing or not tracking, accumulate using contentDelta
+        $nextContent = $newPartial?->content() !== '' && $newPartial !== null
+            ? $newPartial->content()
             : ($this->content . ($partial->contentDelta ?? ''));
+
+        // Usage: if tracking partials, withAccumulatedContent already accumulated usage in $newPartial,
+        // so use that directly. Otherwise, accumulate from $partial.
+        $nextUsage = $newPartial !== null
+            ? $newPartial->usage()
+            : $this->usage->withAccumulated($partial->usage());
 
         return new self(
             content: $nextContent,
             latestValue: $partial->value() ?? $this->latestValue,
             finishReason: $partial->finishReason() ?: $this->finishReason,
-            usage: $this->usage->withAccumulated($partial->usage()),
+            usage: $nextUsage,
             frameCount: $this->frameCount + 1,
-            partials: $partials,
+            partial: $newPartial,
         );
     }
 
     /**
      * Get partials list (empty if not tracking).
      */
-    public function partials(): PartialInferenceResponseList {
-        return $this->partials ?? PartialInferenceResponseList::empty();
+    public function partial(): PartialInferenceResponse {
+        return $this->partial ?? PartialInferenceResponse::empty();
     }
 
     public function finishReason(): ?string {
@@ -89,14 +98,8 @@ final readonly class StreamAggregate
         $content = $this->content;
 
         // Reconstruct from partials if still empty
-        if ($content === '' && $this->partials() !== null) {
-            $combined = '';
-            foreach ($this->partials() as $p) {
-                $combined .= $p->contentDelta;
-            }
-            if ($combined !== '') {
-                $content = $combined;
-            }
+        if ($content === '' && ($this->partial !== null)) {
+            $content = $this->partial->content();
         }
 
         // As a last resort, synthesize from value

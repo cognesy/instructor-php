@@ -1,10 +1,10 @@
 <?php
 
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
@@ -54,13 +54,12 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         json_encode(['choices' => [['delta' => ['content' => 'lo']]]]),
         json_encode(['choices' => [[ 'delta' => [ 'tool_calls' => [[ 'id' => 'c1', 'function' => [ 'name' => 'search', 'arguments' => '{"q":"Hello"}' ] ]] ] ]]]),
     ];
-    $partials = [];
+    $acc = PartialInferenceResponse::empty();
     foreach ($chunks as $e) {
         $p = $resAdapter->fromStreamResponse($e);
-        if ($p) { $partials[] = $p; }
+        if ($p) { $acc = $p->withAccumulatedContent($acc); }
     }
-    $list = PartialInferenceResponseList::of(...$partials);
-    $final = InferenceResponseFactory::fromPartialResponses($list);
+    $final = InferenceResponseFactory::fromAccumulatedPartial($acc);
     expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
     $tool = $final->toolCalls()->first();
     expect($tool->name())->toBe('search');

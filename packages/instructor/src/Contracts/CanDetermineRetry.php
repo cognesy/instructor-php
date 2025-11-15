@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\StructuredOutputExecution;
-use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
 
 /**
@@ -36,14 +36,14 @@ interface CanDetermineRetry
      * @param StructuredOutputExecution $execution Current execution
      * @param Result $validationResult Failed validation
      * @param InferenceResponse $inference Final inference from failed attempt
-     * @param PartialInferenceResponseList $partials Partials collected during attempt
+     * @param PartialInferenceResponse $partial Partial accumulated during attempt
      * @return StructuredOutputExecution Updated execution with failed attempt recorded
      */
     public function recordFailure(
         StructuredOutputExecution $execution,
         Result $validationResult,
         InferenceResponse $inference,
-        PartialInferenceResponseList $partials,
+        PartialInferenceResponse $partial,
     ): StructuredOutputExecution;
 
     /**
