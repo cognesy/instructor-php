@@ -20,11 +20,11 @@ class Usage
 
     public static function fromArray(array $value) : self {
         return new self(
-            inputTokens: $value['input'] ?? 0,
-            outputTokens: $value['output'] ?? 0,
-            cacheWriteTokens: $value['cacheWrite'] ?? 0,
-            cacheReadTokens: $value['cacheRead'] ?? 0,
-            reasoningTokens: $value['reasoning'] ?? 0,
+            inputTokens: (int) ($value['input'] ?? 0),
+            outputTokens: (int) ($value['output'] ?? 0),
+            cacheWriteTokens: (int) ($value['cacheWrite'] ?? 0),
+            cacheReadTokens: (int) ($value['cacheRead'] ?? 0),
+            reasoningTokens: (int) ($value['reasoning'] ?? 0),
         );
     }
 
@@ -65,11 +65,11 @@ class Usage
     // MUTATORS ///////////////////////////////////////////////////////////
 
     public function accumulate(Usage $usage) : self {
-        $this->inputTokens += $usage->inputTokens;
-        $this->outputTokens += $usage->outputTokens;
-        $this->cacheWriteTokens += $usage->cacheWriteTokens;
-        $this->cacheReadTokens += $usage->cacheReadTokens;
-        $this->reasoningTokens += $usage->reasoningTokens;
+        $this->inputTokens = (int) ($this->inputTokens + (int) $usage->inputTokens);
+        $this->outputTokens = (int) ($this->outputTokens + (int) $usage->outputTokens);
+        $this->cacheWriteTokens = (int) ($this->cacheWriteTokens + (int) $usage->cacheWriteTokens);
+        $this->cacheReadTokens = (int) ($this->cacheReadTokens + (int) $usage->cacheReadTokens);
+        $this->reasoningTokens = (int) ($this->reasoningTokens + (int) $usage->reasoningTokens);
         return $this;
     }
 

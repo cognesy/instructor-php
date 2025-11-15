@@ -104,13 +104,13 @@ $events = $structuredOutput
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         options: [
             'max_tokens' => 2048,
         ],
-        mode: OutputMode::Tools
+        mode: OutputMode::Tools,
     )
-    ->withDebugPreset('on')
+    //->withDebugPreset('on')
     ->withStreaming()
     ->get();
 

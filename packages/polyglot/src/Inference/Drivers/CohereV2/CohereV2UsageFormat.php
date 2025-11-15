@@ -10,12 +10,12 @@ class CohereV2UsageFormat implements CanMapUsage
     #[\Override]
     public function fromData(array $data) : Usage {
         return new Usage(
-            inputTokens: $data['usage']['billed_units']['input_tokens']
+            inputTokens: (int) ($data['usage']['billed_units']['input_tokens']
                 ?? $data['delta']['usage']['billed_units']['input_tokens']
-                ?? 0,
-            outputTokens: $data['usage']['billed_units']['output_tokens']
+                ?? 0),
+            outputTokens: (int) ($data['usage']['billed_units']['output_tokens']
                 ?? $data['delta']['usage']['billed_units']['output_tokens']
-                ?? 0,
+                ?? 0),
             cacheWriteTokens: 0,
             cacheReadTokens: 0,
             reasoningTokens: 0,

@@ -10,8 +10,8 @@ class GeminiUsageFormat implements CanMapUsage
     #[\Override]
     public function fromData(array $data) : Usage {
         return new Usage(
-            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
+            inputTokens: (int) ($data['usageMetadata']['promptTokenCount'] ?? 0),
+            outputTokens: (int) ($data['usageMetadata']['candidatesTokenCount'] ?? 0),
             cacheWriteTokens: 0,
             cacheReadTokens: 0,
             reasoningTokens: 0,

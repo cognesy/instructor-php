@@ -10,8 +10,8 @@ class GeminiUsageFormat implements CanMapUsage
     #[\Override]
     public function fromData(array $data): Usage {
         return new Usage(
-            inputTokens: $data['input_tokens'] ?? 0,
-            outputTokens: $data['output_tokens'] ?? 0,
+            inputTokens: (int) ($data['input_tokens'] ?? 0),
+            outputTokens: (int) ($data['output_tokens'] ?? 0),
         );
     }
 }

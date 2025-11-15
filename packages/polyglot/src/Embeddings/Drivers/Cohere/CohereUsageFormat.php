@@ -10,8 +10,8 @@ class CohereUsageFormat implements CanMapUsage
     #[\Override]
     public function fromData(array $data): Usage {
         return new Usage(
-            inputTokens: $data['meta']['billed_units']['input_tokens'] ?? 0,
-            outputTokens: $data['meta']['billed_units']['output_tokens'] ?? 0,
+            inputTokens: (int) ($data['meta']['billed_units']['input_tokens'] ?? 0),
+            outputTokens: (int) ($data['meta']['billed_units']['output_tokens'] ?? 0),
         );
     }
 }
