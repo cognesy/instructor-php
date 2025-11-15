@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl\Pool;
 
 use Cognesy\Utils\Result\Result;
 

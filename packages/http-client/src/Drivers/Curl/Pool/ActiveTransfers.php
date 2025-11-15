@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl\Pool;
+
+use Cognesy\Http\Drivers\Curl\CurlHandle;
 
 /**
  * Collection of active HTTP transfers in curl_multi

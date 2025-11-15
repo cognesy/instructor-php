@@ -7,7 +7,7 @@ namespace Cognesy\Http\Tests\Integration;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\CurlNew\CurlNewDriver;
+use Cognesy\Http\Drivers\Curl\CurlDriver;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 
 beforeEach(function () {
@@ -20,7 +20,7 @@ beforeEach(function () {
         streamChunkSize: 256,
         failOnError: false,
     );
-    $this->driver = new CurlNewDriver($this->config, $this->events);
+    $this->driver = new CurlDriver($this->config, $this->events);
 });
 
 afterEach(function () {
@@ -28,12 +28,12 @@ afterEach(function () {
 });
 
 it('can be instantiated', function () {
-    expect($this->driver)->toBeInstanceOf(CurlNewDriver::class);
+    expect($this->driver)->toBeInstanceOf(CurlDriver::class);
 });
 
 it('throws exception when curl extension is not loaded', function () {
     if (!extension_loaded('curl')) {
-        expect(fn() => new CurlNewDriver($this->config, $this->events))
+        expect(fn() => new CurlDriver($this->config, $this->events))
             ->toThrow(\RuntimeException::class, 'cURL extension is not loaded');
     } else {
         expect(true)->toBeTrue(); // Skip if curl is loaded
@@ -42,7 +42,7 @@ it('throws exception when curl extension is not loaded', function () {
 
 it('rejects external client instances', function () {
     $fakeClient = new \stdClass();
-    expect(fn() => new CurlNewDriver($this->config, $this->events, $fakeClient))
+    expect(fn() => new CurlDriver($this->config, $this->events, $fakeClient))
         ->toThrow(\InvalidArgumentException::class);
 });
 

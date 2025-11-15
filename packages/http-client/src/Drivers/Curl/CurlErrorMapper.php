@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl;
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\ConnectionException;
@@ -12,8 +12,8 @@ use Cognesy\Http\Exceptions\TimeoutException;
  * Maps curl error codes to domain-specific HTTP exceptions
  *
  * Centralizes the logic for translating curl errno values into
- * appropriate exception types. Shared between CurlNewDriver and
- * CurlNewPool to ensure consistent error semantics.
+ * appropriate exception types. Shared between CurlDriver and
+ * CurlPool to ensure consistent error semantics.
  */
 final class CurlErrorMapper
 {

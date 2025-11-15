@@ -1,15 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl\Pool;
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Drivers\Curl\CurlErrorMapper;
+use Cognesy\Http\Drivers\Curl\CurlFactory;
+use Cognesy\Http\Drivers\Curl\HeaderParser;
 use Cognesy\Http\Exceptions\HttpExceptionFactory;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Result;
 use CurlMultiHandle;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use function Cognesy\Http\Drivers\Curl\curl_multi_wait;
 
 /**
  * Robust curl_multi event loop runner
@@ -131,7 +135,25 @@ final class CurlMultiRunner
             // Process completion
             try {
                 $response = $this->createResponse($transfer);
-                $state->responses->set($transfer->index, Result::success($response));
+
+                // For pools, check status code and create Failure for error responses
+                // regardless of failOnError setting (which only controls throwing)
+                if ($response->statusCode() >= 400) {
+                    $exception = HttpExceptionFactory::fromStatusCode(
+                        $response->statusCode(),
+                        $transfer->request,
+                        $response,
+                        null
+                    );
+
+                    if ($this->config->failOnError) {
+                        throw $exception;
+                    }
+
+                    $state->responses->set($transfer->index, Result::failure($exception));
+                } else {
+                    $state->responses->set($transfer->index, Result::success($response));
+                }
             } catch (\Throwable $e) {
                 if ($this->config->failOnError) {
                     throw $e;

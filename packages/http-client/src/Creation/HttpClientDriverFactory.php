@@ -2,11 +2,12 @@
 
 namespace Cognesy\Http\Creation;
 
+use Closure;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Drivers\Curl\CurlDriver;
-use Cognesy\Http\Drivers\Curl\CurlPool;
+use Cognesy\Http\Drivers\Curl\Pool\CurlPool;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
@@ -14,8 +15,11 @@ use Cognesy\Http\Drivers\Laravel\LaravelPool;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyPool;
 use Cognesy\Http\Events\HttpDriverBuilt;
+use GuzzleHttp\Client;
+use Illuminate\Http\Client\Factory;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpClient\HttpClient;
 
 class HttpClientDriverFactory
 {
@@ -60,8 +64,8 @@ class HttpClientDriverFactory
         $config = $config ?? new HttpClientConfig();
         $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
-        $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
 
+        $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers($name) ?? null;
         if ($driverClosure === null) {
             throw new InvalidArgumentException("HTTP client driver supported: {$name}");
         }
@@ -89,8 +93,8 @@ class HttpClientDriverFactory
         $config = $config ?? new HttpClientConfig();
         $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
-        $poolClosure = $this->defaultPoolHandlers()[$name] ?? null;
 
+        $poolClosure = $this->defaultPoolHandlers($name) ?? null;
         if ($poolClosure === null) {
             throw new InvalidArgumentException("HTTP pool handler not supported for driver: {$name}");
         }
@@ -105,8 +109,8 @@ class HttpClientDriverFactory
      *
      * @return array An associative array of default drivers with their respective configuration closures.
      */
-    private function defaultDrivers() : array {
-        return [
+    private function defaultDrivers(string $name) : Closure {
+        $drivers = [
             'curl' => fn($config, $events, $clientInstance) => new CurlDriver(
                 config: $config,
                 events: $events,
@@ -128,34 +132,34 @@ class HttpClientDriverFactory
                 clientInstance: $clientInstance,
             ),
         ];
+        return $drivers[$name] ?? throw new InvalidArgumentException("Unknown driver: {$name}");
     }
 
     /**
-     * Returns the default pool handlers available for the HTTP client.
-     *
-     * @return array An associative array of default pool handlers with their respective configuration closures.
+     * Returns the specified pool handler for the HTTP client.
      */
-    private function defaultPoolHandlers(): array {
-        return [
+    private function defaultPoolHandlers(string $name): Closure {
+        $handlers = [
             'curl' => fn($config, $events) => new CurlPool(
                 config: $config,
                 events: $events,
             ),
             'guzzle' => fn($config, $events) => new GuzzlePool(
                 config: $config,
-                client: new \GuzzleHttp\Client(),
+                client: new Client(),
                 events: $events,
             ),
             'symfony' => fn($config, $events) => new SymfonyPool(
-                client: \Symfony\Component\HttpClient\HttpClient::create(),
+                client: HttpClient::create(),
                 config: $config,
                 events: $events,
             ),
             'laravel' => fn($config, $events) => new LaravelPool(
-                clientInstance: new \Illuminate\Http\Client\Factory(),
+                clientInstance: new Factory(),
                 events: $events,
                 config: $config,
             ),
         ];
+        return $handlers[$name] ?? throw new InvalidArgumentException("Unknown pool handler: {$name}");
     }
 }

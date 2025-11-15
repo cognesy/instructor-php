@@ -1,26 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl\Pool;
 
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
+use Cognesy\Http\Drivers\Curl\CurlFactory;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 
 /**
- * CurlNewPool - Clean Pool Implementation for Concurrent Requests
+ * CurlPool - Clean Pool Implementation for Concurrent Requests
  *
  * Orchestrates concurrent HTTP requests using curl_multi with a rolling window strategy.
  *
  * Architecture:
- * - CurlFactory: Handle configuration (shared with CurlNewDriver)
+ * - CurlFactory: Handle configuration (shared with CurlDriver)
  * - CurlMultiRunner: Event loop execution (testable in isolation)
  * - PoolState: Execution state (encapsulates queues and collections)
  * - ActiveTransfers/PoolResponses: Type-safe collections (no arrays-as-collections)
- * - CurlErrorMapper: Error translation (shared with CurlNewDriver)
+ * - CurlErrorMapper: Error translation (shared with CurlDriver)
  *
  * Benefits:
  * - Clear separation of concerns (orchestration vs execution vs state)
@@ -29,7 +30,7 @@ use RuntimeException;
  * - Type-safe collections (no magic array keys)
  * - Minimal parameter passing (state object encapsulates everything)
  */
-final class CurlNewPool implements CanHandleRequestPool
+final class CurlPool implements CanHandleRequestPool
 {
     private readonly CurlMultiRunner $runner;
 
@@ -43,7 +44,7 @@ final class CurlNewPool implements CanHandleRequestPool
         }
 
         if ($clientInstance !== null) {
-            throw new InvalidArgumentException('CurlNewPool does not support external client instances');
+            throw new InvalidArgumentException('CurlPool does not support external client instances');
         }
 
         $this->runner = new CurlMultiRunner(

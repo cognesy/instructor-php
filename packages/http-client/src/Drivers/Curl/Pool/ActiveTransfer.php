@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl\Pool;
 
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Drivers\Curl\CurlHandle;
+use Cognesy\Http\Drivers\Curl\HeaderParser;
 
 /**
  * Value object representing a single active HTTP transfer in curl_multi

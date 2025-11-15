@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Drivers\CurlNew;
+namespace Cognesy\Http\Drivers\Curl\Pool;
 
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Drivers\Curl\CurlHandle;
+use Cognesy\Http\Drivers\Curl\HeaderParser;
 
 /**
  * PoolCurlResponse - Response Adapter for Pooled Requests

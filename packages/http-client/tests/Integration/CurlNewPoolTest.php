@@ -8,9 +8,8 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Drivers\CurlNew\CurlNewPool;
+use Cognesy\Http\Drivers\Curl\Pool\CurlPool;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
-use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
 
 beforeEach(function () {
@@ -24,7 +23,7 @@ beforeEach(function () {
         failOnError: false,
         maxConcurrent: 3,
     );
-    $this->pool = new CurlNewPool($this->config, $this->events);
+    $this->pool = new CurlPool($this->config, $this->events);
 });
 
 afterEach(function () {
@@ -32,12 +31,12 @@ afterEach(function () {
 });
 
 it('can be instantiated', function () {
-    expect($this->pool)->toBeInstanceOf(CurlNewPool::class);
+    expect($this->pool)->toBeInstanceOf(CurlPool::class);
 });
 
 it('throws exception when curl extension is not loaded', function () {
     if (!extension_loaded('curl')) {
-        expect(fn() => new CurlNewPool($this->config, $this->events))
+        expect(fn() => new CurlPool($this->config, $this->events))
             ->toThrow(\RuntimeException::class, 'cURL extension is not loaded');
     } else {
         expect(true)->toBeTrue(); // Skip if curl is loaded
@@ -46,7 +45,7 @@ it('throws exception when curl extension is not loaded', function () {
 
 it('rejects external client instances', function () {
     $fakeClient = new \stdClass();
-    expect(fn() => new CurlNewPool($this->config, $this->events, $fakeClient))
+    expect(fn() => new CurlPool($this->config, $this->events, $fakeClient))
         ->toThrow(\InvalidArgumentException::class);
 });
 
@@ -176,13 +175,13 @@ it('handles pool with error responses when failOnError is false', function () {
 
     expect($results)->toHaveCount(3)
         ->and($resultArray[0])->toBeInstanceOf(Success::class)
-        ->and($resultArray[1])->toBeInstanceOf(Success::class)
-        ->and($resultArray[2])->toBeInstanceOf(Success::class);
+        ->and($resultArray[1])->toBeInstanceOf(\Cognesy\Utils\Result\Failure::class)
+        ->and($resultArray[2])->toBeInstanceOf(\Cognesy\Utils\Result\Failure::class);
 
-    // Verify status codes
-    expect($resultArray[0]->unwrap()->statusCode())->toBe(200)
-        ->and($resultArray[1]->unwrap()->statusCode())->toBe(404)
-        ->and($resultArray[2]->unwrap()->statusCode())->toBe(500);
+    // Verify status codes - successful responses can be unwrapped, failures contain exceptions
+    expect($resultArray[0]->unwrap()->statusCode())->toBe(200);
+    expect($resultArray[1]->error())->toBeInstanceOf(\Cognesy\Http\Exceptions\HttpRequestException::class);
+    expect($resultArray[2]->error())->toBeInstanceOf(\Cognesy\Http\Exceptions\HttpRequestException::class);
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('throws exception for error responses when failOnError is true', function () {
@@ -193,7 +192,7 @@ it('throws exception for error responses when failOnError is true', function () 
         failOnError: true,
     );
 
-    $pool = new CurlNewPool($config, $this->events);
+    $pool = new CurlPool($config, $this->events);
 
     $requests = HttpRequestList::of(
         new HttpRequest(
