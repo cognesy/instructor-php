@@ -4,6 +4,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIBodyFormat;
@@ -59,7 +60,7 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         $p = $resAdapter->fromStreamResponse($e);
         if ($p) { $acc = $p->withAccumulatedContent($acc); }
     }
-    $final = InferenceResponseFactory::fromAccumulatedPartial($acc);
+    $final = InferenceResponse::fromAccumulatedPartial($acc);
     expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();
     $tool = $final->toolCalls()->first();
     expect($tool->name())->toBe('search');

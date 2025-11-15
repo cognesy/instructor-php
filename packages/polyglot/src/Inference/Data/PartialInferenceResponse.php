@@ -188,9 +188,7 @@ class PartialInferenceResponse
         $this->reasoningContent = $baseReasoning . ($this->reasoningContentDelta ?? '');
 
         // Prefer current finishReason if provided, otherwise carry over previous
-        $this->finishReason = $this->finishReason !== ''
-            ? $this->finishReason
-            : ($previous->finishReason() ?: $this->finishReason);
+        $this->finishReason = $this->makeFinishReason($previous);
 
         // Accumulate usage counters
         $this->usage = $this->usage->withAccumulated($previous->usage);
@@ -344,5 +342,14 @@ class PartialInferenceResponse
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null
         );
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////
+
+    private function makeFinishReason(PartialInferenceResponse $previous) : string {
+        if ($this->finishReason !== '') {
+            return $this->finishReason;
+        }
+        return $previous->finishReason();
     }
 }

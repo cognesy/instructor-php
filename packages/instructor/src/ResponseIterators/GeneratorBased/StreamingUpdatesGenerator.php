@@ -9,6 +9,7 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Enums\AttemptPhase;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\Contracts\CanGeneratePartials;
 use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 /**
@@ -116,7 +117,7 @@ final readonly class StreamingUpdatesGenerator implements CanStreamStructuredOut
         $accumulatedPartial = $state->accumulatedPartial()->withAccumulatedContent($partial);
 
         // Build aggregate inference from all partials so far
-        $inference = InferenceResponseFactory::fromAccumulatedPartial($accumulatedPartial)
+        $inference = InferenceResponse::fromAccumulatedPartial($accumulatedPartial)
             ->withValue($partial->value());
 
         // Update streaming state with processed chunk

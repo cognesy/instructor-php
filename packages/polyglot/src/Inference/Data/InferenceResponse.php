@@ -64,6 +64,18 @@ final readonly class InferenceResponse
         return new self();
     }
 
+    public static function fromAccumulatedPartial(PartialInferenceResponse $partial): InferenceResponse {
+        return new InferenceResponse(
+            content: $partial->content(),
+            finishReason: $partial->finishReason(),
+            toolCalls: $partial->toolCalls(),
+            reasoningContent: $partial->reasoningContent(),
+            usage: $partial->usage(),
+            responseData: $partial->responseData,
+            isPartial: false,
+        );
+    }
+
     // ACCESSORS /////////////////////////////////////////////
 
     public function value(): mixed {

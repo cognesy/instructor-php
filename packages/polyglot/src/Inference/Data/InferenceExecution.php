@@ -237,7 +237,7 @@ class InferenceExecution
             $newAttempt = $curr->withFinalizedPartialResponse();
         } else {
             $partial = $curr?->partialResponse() ?? PartialInferenceResponse::empty();
-            $response = InferenceResponseFactory::fromAccumulatedPartial($partial);
+            $response = InferenceResponse::fromAccumulatedPartial($partial);
             $newAttempt = InferenceAttempt::fromResponse($response);
         }
         return $this->with(

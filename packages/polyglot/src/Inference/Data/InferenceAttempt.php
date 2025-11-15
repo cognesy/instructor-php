@@ -63,7 +63,7 @@ class InferenceAttempt
         $response = null;
         if ($isFinalized) {
             // Legacy finalization path via list-based factory
-            $response = InferenceResponseFactory::fromAccumulatedPartial($accumulatedPartial);
+            $response = InferenceResponse::fromAccumulatedPartial($accumulatedPartial);
         }
         return new self(
             response: $response,
@@ -165,13 +165,13 @@ class InferenceAttempt
         // Prefer accumulated single partial when available
         if ($this->accumulatedPartial !== null) {
             return $this->with(
-                response: InferenceResponseFactory::fromAccumulatedPartial($this->accumulatedPartial),
+                response: InferenceResponse::fromAccumulatedPartial($this->accumulatedPartial),
                 isFinalized: true
             );
         }
         $partial = $this->partialResponse() ?? PartialInferenceResponse::empty();
         return $this->with(
-            response: InferenceResponseFactory::fromAccumulatedPartial($partial),
+            response: InferenceResponse::fromAccumulatedPartial($partial),
             isFinalized: true
         );
     }

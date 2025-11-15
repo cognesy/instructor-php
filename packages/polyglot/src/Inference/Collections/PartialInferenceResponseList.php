@@ -8,7 +8,6 @@ use Traversable;
 
 /**
  * @implements \IteratorAggregate<int, PartialInferenceResponse>
- * @deprecated
  */
 final readonly class PartialInferenceResponseList implements \Countable, \IteratorAggregate
 {
