@@ -82,17 +82,6 @@ class InferenceAttempt
         return $this->accumulatedPartial;
     }
 
-//    /**
-//     * Deprecated shim for compatibility; returns a list with single aggregated partial.
-//     * @deprecated Use partialResponse() instead.
-//     */
-//    public function partialResponses(): ?PartialInferenceResponseList {
-//        if ($this->accumulatedPartial === null) {
-//            return PartialInferenceResponseList::empty();
-//        }
-//        return PartialInferenceResponseList::of($this->accumulatedPartial);
-//    }
-
     public function errors(): array {
         return $this->errors;
     }
