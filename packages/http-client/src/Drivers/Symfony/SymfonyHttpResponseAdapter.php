@@ -6,6 +6,7 @@ use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Http\Stream\IterableStream;
 use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -37,12 +38,17 @@ class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
 
     #[\Override]
     public function toHttpResponse() : HttpResponse {
-        return new HttpResponse(
-            statusCode: $this->response->getStatusCode(false), // false = don't throw on error codes
-            body: $this->isStreamed ? '' : $this->body(),
-            headers: $this->response->getHeaders(false), // false = don't throw on error codes
-            isStreamed: $this->isStreamed,
-            stream: $this->stream(),
+        if ($this->isStreamed) {
+            return HttpResponse::streaming(
+                statusCode: $this->response->getStatusCode(false), // false = don't throw on error codes
+                headers: $this->response->getHeaders(false), // false = don't throw on error codes
+                stream: new IterableStream($this->stream()),
+            );
+        }
+        return HttpResponse::sync(
+            statusCode: $this->response->getStatusCode(false),
+            headers: $this->response->getHeaders(false),
+            body: $this->body(),
         );
     }
 

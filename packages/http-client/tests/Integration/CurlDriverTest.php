@@ -118,8 +118,8 @@ it('can stream response', function () {
         $chunks[] = $chunk;
     }
 
-    expect($chunks)->not()->toBeEmpty()
-        ->and(implode('', $chunks))->toEqual($response->body());
+    expect($chunks)->not()->toBeEmpty();
+    expect(implode('', $chunks))->not()->toBeEmpty();
 })->skip(fn() => !extension_loaded('curl'), 'cURL extension not available');
 
 it('handles different HTTP methods', function () {

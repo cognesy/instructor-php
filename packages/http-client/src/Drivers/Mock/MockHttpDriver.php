@@ -258,7 +258,7 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * INTERNAL: Register a compiled expectation (used by MockExpectation::reply()).
      *
-     * @param array{matchers: array<callable(HttpRequest): bool>, times: int|null, response: (callable(HttpRequest): CanAdaptHttpResponse)|CanAdaptHttpResponse} $compiled
+     * @param array{matchers: array<callable(HttpRequest): bool>, times: int|null, response: (callable(HttpRequest): HttpResponse)|HttpResponse} $compiled
      */
     public function registerExpectation(array $compiled): self {
         $this->expectations[] = $compiled;

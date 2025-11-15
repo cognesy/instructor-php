@@ -167,7 +167,7 @@ class MockExpectation
     // Responses //////////////////////////////////////////////////////////
 
     /**
-     * @param CanAdaptHttpResponse|(callable(HttpRequest): CanAdaptHttpResponse) $response
+     * @param HttpResponse|(callable(HttpRequest): HttpResponse) $response
      */
     public function reply(HttpResponse|callable $response): MockHttpDriver {
         $compiled = [

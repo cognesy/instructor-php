@@ -25,8 +25,8 @@ class HttpClientErrorException extends HttpRequestException
     private function buildMessage(int $statusCode, ?HttpResponse $response): string {
         $message = sprintf('HTTP %d Client Error', $statusCode);
 
-        if ($response?->body()) {
-            $body = $response?->body();
+        if ($response !== null && !$response->isStreamed()) {
+            $body = $response->body();
             // Try to extract error message from JSON response
             $decoded = json_decode($body, true);
             if (is_array($decoded) && isset($decoded['error'])) {

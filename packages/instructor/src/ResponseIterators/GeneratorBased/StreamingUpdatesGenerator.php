@@ -74,6 +74,7 @@ final readonly class StreamingUpdatesGenerator implements CanStreamStructuredOut
             ->responses();
 
         // Wrap with partials generator
+        /** @var \Generator<\Cognesy\Polyglot\Inference\Data\PartialInferenceResponse> $partialStream */
         $partialStream = $this->partialsGenerator->makePartialResponses(
             $inferenceStream,
             $responseModel

@@ -23,12 +23,10 @@ class MockHttp
                 $expectation->times(1);  // Sequential: each response used once
             }
 
-            $expectation->reply(new HttpResponse(
+            $expectation->reply(HttpResponse::sync(
                 statusCode: 200,
-                body: $responseBody,
                 headers: ['content-type' => 'application/json'],
-                isStreamed: false,
-                stream: null
+                body: $responseBody,
             ));
         }
 

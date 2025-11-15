@@ -157,7 +157,8 @@ test('handles streaming responses', function() {
     }
 
     expect($receivedChunks)->toBe($chunks);
-    expect($response->body())->toBe(implode('', $chunks));
+    expect($response->isStreamed())->toBeTrue();
+    expect(implode('', $receivedChunks))->toBe(implode('', $chunks));
 });
 
 test('throws exception when no matching response', function() {

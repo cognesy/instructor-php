@@ -76,6 +76,7 @@ final class CustomObjectNormalizer extends AbstractObjectNormalizer
     /**
      * @return array<string, bool>
      */
+    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return ['object' => true];
     }

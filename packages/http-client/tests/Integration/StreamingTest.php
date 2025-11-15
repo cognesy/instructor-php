@@ -8,7 +8,7 @@ use Cognesy\Http\Drivers\Curl\CurlDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
-use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
+use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 use GuzzleHttp\Client;
 use Illuminate\Http\Client\Factory as HttpFactory;
@@ -170,7 +170,7 @@ test('StreamByLine middleware processes streaming data', function () {
     $driver = createStreamingDriver('guzzle', $this->config, $this->events);
     
     // Add StreamByLine middleware with JSON parser
-    $middleware = new StreamByLineMiddleware(
+    $middleware = new StreamSSEsMiddleware(
         parser: function($line) {
             return json_decode(trim($line), true);
         }
@@ -178,7 +178,7 @@ test('StreamByLine middleware processes streaming data', function () {
     
     // Note: This test demonstrates middleware concept
     // Actual integration would require middleware stack setup
-    expect($middleware)->toBeInstanceOf(StreamByLineMiddleware::class);
+    expect($middleware)->toBeInstanceOf(StreamSSEsMiddleware::class);
 });
 
 // Test that streaming works for successful responses

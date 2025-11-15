@@ -2,18 +2,6 @@
 
 namespace Cognesy\Http\Stream;
 
-/**
- * Buffered stream wrapper - lazy consumption with automatic buffering.
- *
- * Wraps any iterable source and automatically buffers chunks as they're consumed.
- * Supports:
- * - Lazy iteration: source consumed on-demand during first iteration
- * - Replay: subsequent iterations read from buffer
- * - Multiple readers: independent cursors into buffered data
- * - Early access: readers can access buffered data before full consumption
- *
- * Thread-safe: source consumed once, buffer is append-only.
- */
 final class BufferedStream implements StreamInterface
 {
     /** @var list<string> */
@@ -30,8 +18,6 @@ final class BufferedStream implements StreamInterface
         $this->isCompleted = $isCompleted;
         $this->chunks = $chunks;
     }
-
-    // CONSTRUCTORS ////////////////////////////////////////////////
 
     public static function empty() : self {
         return new self(
@@ -53,8 +39,7 @@ final class BufferedStream implements StreamInterface
         );
     }
 
-    // PUBLIC API //////////////////////////////////////////////////
-
+    #[\Override]
     public function getIterator(): \Traversable {
         return match (true) {
             $this->isCompleted => $this->iterateCached(),
@@ -62,12 +47,9 @@ final class BufferedStream implements StreamInterface
         };
     }
 
+    #[\Override]
     public function isCompleted(): bool {
         return $this->isCompleted;
-    }
-
-    public function receivedData(): array {
-        return $this->chunks;
     }
 
     // INTERNAL ////////////////////////////////////////////////////

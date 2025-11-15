@@ -13,39 +13,34 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
+use Cognesy\Http\Stream\ArrayStream;
 
 // Scenario: Streamed response where middleware prefixes each chunk
 
 class PrefixChunksMiddleware implements HttpMiddleware
 {
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
-    {
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         // ensure we request streaming
         $request = $request->withStreaming(true);
-
         $response = $next->handle($request);
-
-        // decorate using the new BaseResponseDecorator stream transform
-        return new class($request, $response) extends BaseResponseDecorator {
-            protected function toChunk(string $data): string {
-                return "[CHUNK] " . $data;
-            }
-        };
+        // decorate using composition-based stream transform
+        return BaseResponseDecorator::decorate(
+            $response,
+            fn(string $chunk): string => "[CHUNK] " . $chunk,
+        );
     }
 }
 
 // Mock driver returns SSE-like chunks
 $driver = new MockHttpDriver();
 $driver->addResponse(
-    new HttpResponse(
+    HttpResponse::streaming(
         statusCode: 200,
-        body: '',
         headers: ['Content-Type' => 'text/event-stream'],
-        isStreamed: true,
-        stream: ["hello\n", "world\n", "from\n", "middleware\n"],
+        stream: new ArrayStream(["hello\n", "world\n", "from\n", "middleware\n"]),
     ),
     url: 'https://api.example.local/stream',
-    method: 'GET'
+    method: 'GET',
 );
 
 $client = new HttpClient(driver: $driver);
@@ -63,4 +58,3 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // chunks will be prefixed by middleware
 }
 ?>
-

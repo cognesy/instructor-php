@@ -207,13 +207,11 @@ While this works, processing streaming responses line by line is common enough t
 For many streaming APIs, especially those that send event streams or line-delimited JSON, it's useful to process the response line by line. The library provides the `StreamByLineMiddleware` to simplify this task:
 
 ```php
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
+use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\HttpClient;use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 // Create a client with the StreamByLineMiddleware
 $client = new HttpClient();
-$client->withMiddleware(new StreamByLineMiddleware());
+$client->withMiddleware(new StreamSSEsMiddleware());
 
 // Create a streaming request
 $request = new HttpRequest(
@@ -264,9 +262,7 @@ If your parser returns `null`, that line will be skipped in the stream.
 Here's a practical example of using the `StreamByLineMiddleware` to process streaming responses from the OpenAI API:
 
 ```php
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
+use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\HttpClient;use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 // OpenAI API requires a parser that handles their SSE format
 $openAiParser = function (string $line) {
@@ -293,7 +289,7 @@ $openAiParser = function (string $line) {
 
 // Create a client with the StreamByLineMiddleware
 $client = new HttpClient('guzzle'); // Use Guzzle for better streaming support
-$client->withMiddleware(new StreamByLineMiddleware($openAiParser));
+$client->withMiddleware(new StreamSSEsMiddleware($openAiParser));
 
 // Create a request to OpenAI API
 $request = new HttpRequest(

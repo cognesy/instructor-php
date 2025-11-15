@@ -60,6 +60,6 @@ class EventSourceMiddleware extends BaseMiddleware
 
     #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
-        return new EventSourceResponseDecorator($request, $response, $this->listeners);
+        return EventSourceResponseDecorator::decorate($request, $response, $this->listeners);
     }
 }

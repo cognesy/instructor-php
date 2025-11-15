@@ -171,11 +171,7 @@ class MiddlewareStack
         if (empty($this->stack)) {
             return $driver;
         }
-
-        $eventDispatcher = $this->events instanceof \Cognesy\Events\Dispatchers\EventDispatcher
-            ? $this->events
-            : null;
-        return new MiddlewareHandler($driver, array_values($this->stack), $eventDispatcher);
+        return new MiddlewareHandler($driver, array_values($this->stack), $this->events);
     }
 
     public function toDebugArray(): array {

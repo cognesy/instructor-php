@@ -2,18 +2,22 @@
 
 namespace Cognesy\Http\Stream;
 
+use IteratorAggregate;
+use Traversable;
+
 /**
  * Stream interface
+ *
+ * @extends IteratorAggregate<int, string>
  */
-interface StreamInterface extends \IteratorAggregate
+interface StreamInterface extends IteratorAggregate
 {
-    /** @return \Traversable<string> */
-    public function getIterator(): \Traversable;
+    /** @return Traversable<int, string> */
+    #[\Override]
+    public function getIterator(): Traversable;
 
     /**
      * Check if source stream is fully consumed.
      */
     public function isCompleted(): bool;
-
-    public function receivedData() : array;
 }

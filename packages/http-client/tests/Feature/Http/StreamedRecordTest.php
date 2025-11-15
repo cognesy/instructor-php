@@ -80,11 +80,12 @@ test('creates streaming response from record', function() {
     
     // Assert chunks match
     expect($receivedChunks)->toBe($chunks);
-    
+
     // Act - Get a non-streaming response
     $nonStreamingResponse = $record->toResponse(false);
-    
-    // Assert full body is available
+
+    // Assert response is not streamed and full body is available
+    expect($nonStreamingResponse->isStreamed())->toBeFalse();
     expect($nonStreamingResponse->body())->toBe('{"part1":"value1","part2":"value2"}');
 });
 

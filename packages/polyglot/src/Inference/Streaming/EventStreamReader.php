@@ -34,13 +34,13 @@ class EventStreamReader
     }
 
     /**
-     * Processes data from a generator stream, dispatches events for received and parsed data,
+     * Processes data from an iterable stream, dispatches events for received and parsed data,
      * and yields processed data.
      *
-     * @param Generator $stream The input stream generator providing data to be processed.
+     * @param iterable $stream The input stream iterable providing data to be processed.
      * @return Generator The generator yielding processed data after parsing.
      */
-    public function eventsFrom(Generator $stream): Generator {
+    public function eventsFrom(iterable $stream): Generator {
         foreach ($this->readLines($stream) as $line) {
             $this->events->dispatch(new StreamEventReceived($line));
             $processedData = $this->processLine($line);
@@ -54,12 +54,12 @@ class EventStreamReader
     // INTERNAL //////////////////////////////////////////////
 
     /**
-     * Reads and extracts complete lines from a generator stream.
+     * Reads and extracts complete lines from an iterable stream.
      *
-     * @param Generator $stream The input stream generator providing chunks of data.
+     * @param iterable $stream The input stream iterable providing chunks of data.
      * @return Generator A generator yielding complete lines of data ending with a newline character.
      */
-    protected function readLines(Generator $stream): Generator {
+    protected function readLines(iterable $stream): Generator {
         $buffer = '';
         foreach ($stream as $chunk) {
             $buffer .= $chunk;

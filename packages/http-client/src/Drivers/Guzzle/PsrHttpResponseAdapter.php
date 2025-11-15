@@ -5,6 +5,7 @@ namespace Cognesy\Http\Drivers\Guzzle;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Cognesy\Http\Stream\IterableStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -39,12 +40,17 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
 
     #[\Override]
     public function toHttpResponse() : HttpResponse {
-        return new HttpResponse(
+        if ($this->isStreamed) {
+            return HttpResponse::streaming(
+                statusCode: $this->response->getStatusCode(),
+                headers: $this->response->getHeaders(),
+                stream: new IterableStream($this->stream()),
+            );
+        }
+        return HttpResponse::sync(
             statusCode: $this->response->getStatusCode(),
-            body: $this->isStreamed ? '' : $this->body(),
             headers: $this->response->getHeaders(),
-            isStreamed: $this->isStreamed,
-            stream: $this->stream(),
+            body: $this->body(),
         );
     }
 

@@ -271,10 +271,10 @@ return [
 The `StreamByLineMiddleware` processes streaming responses line by line:
 
 ```php
-use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
+use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 // Add stream by line middleware
-$client->withMiddleware(new StreamByLineMiddleware());
+$client->withMiddleware(new StreamSSEsMiddleware());
 ```
 
 You can customize how lines are processed by providing a parser function:

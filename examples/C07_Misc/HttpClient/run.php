@@ -17,12 +17,10 @@ $client = (new HttpClientBuilder())
     ->withMock(function ($mock) {
         // Respond to a specific request shape
         $mock->addResponse(
-            new HttpResponse(
+            HttpResponse::sync(
                 statusCode: 200,
-                body: json_encode(['ok' => true, 'message' => 'Welcome!']),
                 headers: ['Content-Type' => 'application/json'],
-                isStreamed: false,
-                stream: null,
+                body: json_encode(['ok' => true, 'message' => 'Welcome!']),
             ),
             url: 'https://api.example.local/welcome',
             method: 'GET'

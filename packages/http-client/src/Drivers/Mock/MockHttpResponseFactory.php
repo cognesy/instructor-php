@@ -15,12 +15,17 @@ class MockHttpResponseFactory
      * Static factory to create a successful response
      */
     public static function success(int $statusCode = 200, array $headers = [], string $body = '', array $chunks = []): HttpResponse {
-        return new HttpResponse(
+        if (!empty($chunks)) {
+            return HttpResponse::streaming(
+                statusCode: $statusCode,
+                headers: $headers,
+                stream: new \Cognesy\Http\Stream\ArrayStream($chunks),
+            );
+        }
+        return HttpResponse::sync(
             statusCode: $statusCode,
-            body: $body,
             headers: $headers,
-            isStreamed: is_array($chunks) && count($chunks) > 0,
-            stream: $chunks,
+            body: $body,
         );
     }
 
@@ -28,12 +33,17 @@ class MockHttpResponseFactory
      * Static factory to create an error response
      */
     public static function error(int $statusCode = 500, array $headers = [], string $body = '', array $chunks = []): HttpResponse {
-        return new HttpResponse(
+        if (!empty($chunks)) {
+            return HttpResponse::streaming(
+                statusCode: $statusCode,
+                headers: $headers,
+                stream: new \Cognesy\Http\Stream\ArrayStream($chunks),
+            );
+        }
+        return HttpResponse::sync(
             statusCode: $statusCode,
-            body: $body,
             headers: $headers,
-            isStreamed: is_array($chunks) && count($chunks) > 0,
-            stream: $chunks,
+            body: $body,
         );
     }
 
@@ -41,12 +51,10 @@ class MockHttpResponseFactory
      * Static factory to create a streaming response
      */
     public static function streaming(int $statusCode = 200, array $headers = [], array $chunks = []): HttpResponse {
-        return new HttpResponse(
+        return HttpResponse::streaming(
             statusCode: $statusCode,
-            body: implode('', $chunks),
             headers: $headers,
-            isStreamed: is_array($chunks) && count($chunks) > 0,
-            stream: $chunks,
+            stream: new \Cognesy\Http\Stream\ArrayStream($chunks),
         );
     }
 
@@ -63,12 +71,10 @@ class MockHttpResponseFactory
             $body = '';
         }
         $headers = ['content-type' => 'application/json', ...$headers];
-        return new HttpResponse(
+        return HttpResponse::sync(
             statusCode: $statusCode,
-            body: $body,
             headers: $headers,
-            isStreamed: false,
-            stream: [],
+            body: $body,
         );
     }
 

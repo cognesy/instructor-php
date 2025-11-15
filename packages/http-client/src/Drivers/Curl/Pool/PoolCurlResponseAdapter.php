@@ -37,12 +37,10 @@ final class PoolCurlResponseAdapter implements CanAdaptHttpResponse
             $body = '';
         }
 
-        return new HttpResponse(
+        return HttpResponse::sync(
             statusCode: $this->handle->statusCode(),
-            body: $body,
             headers: $this->headerParser->headers(),
-            isStreamed: false,
-            stream: [],
+            body: $body,
         );
     }
 }

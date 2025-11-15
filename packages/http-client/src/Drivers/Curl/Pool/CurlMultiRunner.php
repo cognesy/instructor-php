@@ -13,14 +13,13 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Result;
 use CurlMultiHandle;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use function Cognesy\Http\Drivers\Curl\curl_multi_wait;
 
 /**
  * Robust curl_multi event loop runner
  *
  * Encapsulates the curl_multi execution loop with proper handling of:
  * - CURLM_CALL_MULTI_PERFORM (continue instead of breaking)
- * - curl_multi_select returning -1 (use curl_multi_wait or usleep)
+ * - curl_multi_select returning -1 (use usleep to avoid busy loop)
  * - Draining all messages from curl_multi_info_read
  * - Rolling window concurrency management
  *
@@ -96,20 +95,16 @@ final class CurlMultiRunner
     /**
      * Wait for curl_multi activity with robust fallback
      *
-     * Handles curl_multi_select returning -1 by using curl_multi_wait
-     * or a short sleep to avoid busy loops.
+     * Handles curl_multi_select returning -1 by using a short sleep
+     * to avoid busy loops.
      */
     private function waitForActivity(CurlMultiHandle $multiHandle): void {
         $selected = curl_multi_select($multiHandle, 0.1);
 
         // curl_multi_select can return -1 on some systems/conditions
-        // Use curl_multi_wait as fallback, or short sleep
+        // Use short sleep to avoid busy loop
         if ($selected === -1) {
-            if (function_exists('curl_multi_wait')) {
-                curl_multi_wait($multiHandle, 0.01);
-            } else {
-                usleep(1000); // 1ms sleep to avoid busy loop
-            }
+            usleep(1000); // 1ms sleep to avoid busy loop
         }
     }
 

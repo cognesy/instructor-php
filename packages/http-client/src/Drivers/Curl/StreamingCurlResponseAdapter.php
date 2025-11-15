@@ -5,6 +5,7 @@ namespace Cognesy\Http\Drivers\Curl;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Cognesy\Http\Stream\IterableStream;
 use CurlMultiHandle;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -36,12 +37,10 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
 
     #[\Override]
     public function toHttpResponse() : HttpResponse {
-        return new HttpResponse(
+        return HttpResponse::streaming(
             statusCode: $this->statusCode(),
-            body: '', // Don't consume stream eagerly for streaming responses
             headers: $this->headers(),
-            isStreamed: true,
-            stream: $this->stream(),
+            stream: new IterableStream($this->stream()),
         );
     }
 

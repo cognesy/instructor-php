@@ -105,9 +105,9 @@ class HttpClientDriverFactory
     // INTERNAL ////////////////////////////////////////////////////
 
     /**
-     * Returns the default drivers available for the HTTP client.
+     * Returns the default driver closure for the specified driver name.
      *
-     * @return array An associative array of default drivers with their respective configuration closures.
+     * @return Closure The driver factory closure for the specified driver.
      */
     private function defaultDrivers(string $name) : Closure {
         $drivers = [

@@ -6,6 +6,7 @@ use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Http\Stream\ArrayStream;
 
 /**
  * MockHttpResponse
@@ -55,12 +56,17 @@ class MockHttpResponseAdapter implements CanAdaptHttpResponse
 
     #[\Override]
     public function toHttpResponse() : HttpResponse {
-        return new HttpResponse(
+        if ($this->isStreamed()) {
+            return HttpResponse::streaming(
+                statusCode: $this->statusCode(),
+                headers: $this->headers(),
+                stream: new ArrayStream($this->chunks),
+            );
+        }
+        return HttpResponse::sync(
             statusCode: $this->statusCode(),
-            body: $this->body(),
             headers: $this->headers(),
-            isStreamed: $this->isStreamed(),
-            stream: $this->stream(),
+            body: $this->body(),
         );
     }
 

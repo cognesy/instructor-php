@@ -2,53 +2,29 @@
 
 namespace Cognesy\Http\Middleware\Base;
 
-use Cognesy\Http\Data\HttpRequest;
+use Closure;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Stream\TransformStream;
 
 /**
- * Class BaseResponseDecorator
+ * BaseResponseDecorator
  *
- * A base class for convenient decoration of HttpResponse objects by
- * transforming the stream at construction time. This aligns with
- * HttpResponse being a concrete data object with a buffered stream.
- *
- * Subclasses can override one of:
- * - chunkMap(string $chunk): string  // simple 1:1 per-chunk transform
- * - transformStream(iterable $source): iterable<string> // advanced pipeline
+ * Composition-based response decoration utility.
+ * Transforms the response stream without subclassing HttpResponse.
  */
-class BaseResponseDecorator extends HttpResponse
+final class BaseResponseDecorator
 {
-    public function __construct(
-        protected HttpRequest $request,
-        protected HttpResponse $response,
-    ) {
-        parent::__construct(
-            statusCode: $response->statusCode(),
-            body: $response->body(),
-            headers: $response->headers(),
-            isStreamed: $response->isStreamed(),
-            stream: $this->transformStream($response->stream()),
-        );
-    }
-
-    // INTERNAL ///////////////////////////////////////////////////
-
     /**
-     * Transform single chunk of data.
-     */
-    protected function toChunk(string $data): string {
-        return $data;
-    }
-
-    /**
-     * Transform the source stream into a new iterable. Default maps per chunk.
+     * Decorate the response by mapping each chunk through a transformer.
      *
-     * @param iterable<string> $source
-     * @return iterable<string>
+     * @param callable(string):string $transformChunk
      */
-    protected function transformStream(iterable $source): iterable {
-        foreach ($source as $chunk) {
-            yield $this->toChunk($chunk);
-        }
+    public static function decorate(HttpResponse $response, callable $transformChunk): HttpResponse {
+        return $response->withStream(
+            new TransformStream(
+                $response->rawStream(),
+                Closure::fromCallable($transformChunk),
+            )
+        );
     }
 }

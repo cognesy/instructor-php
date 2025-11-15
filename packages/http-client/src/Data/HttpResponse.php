@@ -3,8 +3,10 @@
 namespace Cognesy\Http\Data;
 
 use Cognesy\Http\Stream\BufferedStream;
+use Cognesy\Http\Stream\NullStream;
 use Cognesy\Http\Stream\StreamInterface;
 use Generator;
+use LogicException;
 
 class HttpResponse
 {
@@ -14,7 +16,6 @@ class HttpResponse
     private array $headers;
 
     private StreamInterface $stream;
-    private string $streamChunkSeparator = '';
 
     public function __construct(
         int $statusCode,
@@ -35,13 +36,47 @@ class HttpResponse
         };
     }
 
+    /**
+     * Create a synchronous (non-streamed) response.
+     *
+     * @param int $statusCode
+     * @param array<string, string>|array<string, array<string>> $headers
+     * @param string $body
+     */
+    public static function sync(int $statusCode, array $headers, string $body): self {
+        return new self(
+            statusCode: $statusCode,
+            body: $body,
+            headers: $headers,
+            isStreamed: false,
+            stream: NullStream::instance(),
+        );
+    }
+
+    /**
+     * Create a streaming response with a provided stream implementation.
+     *
+     * @param int $statusCode
+     * @param array<string, string>|array<string, array<string>> $headers
+     * @param StreamInterface $stream
+     */
+    public static function streaming(int $statusCode, array $headers, StreamInterface $stream): self {
+        return new self(
+            statusCode: $statusCode,
+            body: '',
+            headers: $headers,
+            isStreamed: true,
+            stream: $stream,
+        );
+    }
+
     public static function empty(): self {
         return new self(
             statusCode: 0,
             body: '',
             headers: [],
             isStreamed: false,
-            stream: BufferedStream::empty(),
+            stream: NullStream::instance(),
         );
     }
 
@@ -57,7 +92,7 @@ class HttpResponse
 
     public function body(): string {
         return match (true) {
-            $this->isStreamed => $this->receivedContent(),
+            $this->isStreamed => throw new LogicException('Cannot access body of streamed response, use stream() instead.'),
             default => $this->body,
         };
     }
@@ -81,6 +116,24 @@ class HttpResponse
         }
     }
 
+    public function rawStream(): StreamInterface {
+        return $this->stream;
+    }
+
+    /**
+     * Return a new HTTP response instance with the same metadata and a replaced stream.
+     * Does not alter the isStreamed flag or the body string.
+     */
+    public function withStream(StreamInterface $stream): self {
+        return new self(
+            statusCode: $this->statusCode,
+            body: $this->body,
+            headers: $this->headers,
+            isStreamed: $this->isStreamed,
+            stream: $stream,
+        );
+    }
+
     // SERIALIZATION //////////////////////////////////////////////////
 
     public static function fromArray(array $data): self {
@@ -89,7 +142,7 @@ class HttpResponse
             body: $data['body'],
             headers: $data['headers'],
             isStreamed: $data['isStreamed'],
-            stream: $data['stream'],
+            // stream is NOT serializable!
         );
     }
 
@@ -99,7 +152,7 @@ class HttpResponse
             'body' => $this->body,
             'headers' => $this->headers,
             'isStreamed' => $this->isStreamed,
-            'stream' => $this->allChunks(),
+            // stream is NOT serializable!
         ];
     }
 
@@ -107,17 +160,5 @@ class HttpResponse
 
     protected function toChunk(string $data): string {
         return $data;
-    }
-
-    private function allChunks(): array {
-        $chunks = [];
-        foreach ($this->stream as $chunk) {
-            $chunks[] = $chunk;
-        }
-        return $chunks;
-    }
-
-    private function receivedContent(): string {
-        return implode($this->streamChunkSeparator, $this->stream->receivedData());
     }
 }

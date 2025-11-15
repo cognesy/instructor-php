@@ -5,6 +5,7 @@ namespace Cognesy\Http\Drivers\Laravel;
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Cognesy\Http\Stream\IterableStream;
 use Illuminate\Http\Client\Response;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -34,12 +35,17 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
 
     #[\Override]
     public function toHttpResponse() : HttpResponse {
-        return new HttpResponse(
+        if ($this->streaming) {
+            return HttpResponse::streaming(
+                statusCode: $this->response->status(),
+                headers: $this->response->headers(),
+                stream: new IterableStream($this->stream()),
+            );
+        }
+        return HttpResponse::sync(
             statusCode: $this->response->status(),
-            body: $this->streaming ? '' : $this->body(),
             headers: $this->response->headers(),
-            isStreamed: $this->isStreamed(),
-            stream: $this->stream(),
+            body: $this->body(),
         );
     }
 

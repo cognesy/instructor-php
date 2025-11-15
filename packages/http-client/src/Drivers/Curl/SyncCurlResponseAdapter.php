@@ -4,6 +4,7 @@ namespace Cognesy\Http\Drivers\Curl;
 
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\Exceptions\NetworkException;
 
 /**
  * SyncCurlResponse - Synchronous Response Adapter
@@ -24,12 +25,10 @@ final class SyncCurlResponseAdapter implements CanAdaptHttpResponse
     #[\Override]
     public function toHttpResponse() : HttpResponse {
         $body = $this->execute();
-        return new HttpResponse(
+        return HttpResponse::sync(
             statusCode: $this->handle->statusCode(),
-            body: $body,
             headers: $this->headerParser->headers(),
-            isStreamed: false,
-            stream: [],
+            body: $body,
         );
     }
 
@@ -38,7 +37,11 @@ final class SyncCurlResponseAdapter implements CanAdaptHttpResponse
     private function execute(): string {
         $body = curl_exec($this->handle->native());
         if ($body === false) {
-            throw new \HttpException('Curl error: ' . curl_error($this->handle->native()));
+            throw new NetworkException('Curl error: ' . curl_error($this->handle->native()));
+        }
+        // curl_exec returns true when CURLOPT_RETURNTRANSFER is not set
+        if ($body === true) {
+            return '';
         }
         return $body;
     }

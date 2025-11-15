@@ -79,7 +79,7 @@ class StreamedRequestRecord extends RequestRecord
             $this->getStatusCode(),
             $this->getResponseHeaders(),
             $this->getResponseBody(),
-            $this->chunks,
+            [], // Don't pass chunks for non-streaming response
         );
     }
 

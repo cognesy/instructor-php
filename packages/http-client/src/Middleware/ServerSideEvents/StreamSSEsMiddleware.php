@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Http\Middleware\StreamByLine;
+namespace Cognesy\Http\Middleware\ServerSideEvents;
 
 use Closure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -10,9 +10,10 @@ use Cognesy\Http\Middleware\Base\BaseMiddleware;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Handles processing of streaming responses by converting raw chunks into properly processed data lines.
+ * Handles processing of streaming responses by converting raw chunks
+ * into properly processed SSE data lines.
  */
-class StreamByLineMiddleware extends BaseMiddleware
+class StreamSSEsMiddleware extends BaseMiddleware
 {
     /** @var Closure(string): (bool|string) */
     protected Closure $parser;
@@ -36,6 +37,6 @@ class StreamByLineMiddleware extends BaseMiddleware
 
     #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
-        return new StreamByLineResponseDecorator($request, $response, $this->parser, $this->events);
+        return ServerSideEventResponseDecorator::decorate($request, $response, $this->parser);
     }
 }
