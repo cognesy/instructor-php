@@ -104,7 +104,7 @@ $events = $structuredOutput
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        model: 'gpt-4o',
+        model: 'gpt-5-nano',
         options: [
             'max_tokens' => 2048,
         ],

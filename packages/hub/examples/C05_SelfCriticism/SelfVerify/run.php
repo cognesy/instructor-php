@@ -30,7 +30,7 @@ class SelfVerifyPipeline {
 
     public function queryCandidate(string $query) : Candidate {
         return (new StructuredOutput)->with(
-            model: 'gpt-4o',
+            model: 'gpt-5-nano',
             responseModel: Candidate::class,
             messages: [ ['role' => 'user', 'content' => "Think step by step: {$query}"] ],
         )->get();
@@ -43,14 +43,14 @@ class SelfVerifyPipeline {
             The answer is {$candidate->month}.
             MSG;
         return (new StructuredOutput)->with(
-            model: 'gpt-4o', responseModel: Rewritten::class,
+            model: 'gpt-5-nano', responseModel: Rewritten::class,
             messages: [ ['role' => 'user', 'content' => $msg] ],
         )->get();
     }
 
     public function verify(string $question) : Verification {
         return (new StructuredOutput)->with(
-            model: 'gpt-4o', responseModel: Verification::class,
+            model: 'gpt-5-nano', responseModel: Verification::class,
             messages: [ ['role' => 'user', 'content' => $question] ],
         )->get();
     }

@@ -67,7 +67,7 @@ $tasks = (new StructuredOutput)
     ->with(
         messages: $text,
         responseModel: Tasks::class,
-        //model: 'gpt-4o',
+        //model: 'gpt-5-nano',
         mode: OutputMode::Json,
     )
     ->get();

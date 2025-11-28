@@ -6,7 +6,8 @@
 
 - Polyglot/Instructor: Add (optional) automatic continuation if the finish reason is 'length' - this will allow to continue the response in the next call, if the model did not finish the response due to length limit
 - Better/cleaner DSL around retries - check back Retry Schedule from EffectPHP
-- Better overall pipeline design & expose it to end-used - make it more modular, so we can plug in different components, e.g. for validation, serialization, transformation, etc.
+- Better overall pipeline design & expose it to end-user - make it more modular, so we can plug in different components, e.g. for validation, serialization, transformation, etc.
+- Better & easier control around structured output request materialization - sections, order, prompt, etc.
 
 ## Better control over underlying prompts
 

@@ -28,6 +28,7 @@ Documentation for the bd/bv issue tracking and graph analysis system.
 - **[bd.md](bd-bv/bd.md)** - Full bd CLI reference
 - **[bv.md](bd-bv/bv.md)** - Full bv TUI and graph analysis reference
 - **[instructions.md](bd-bv/instructions.md)** - Multi-agent collaboration patterns
+- **[file-structure.md](bd-bv/file-structure.md)** - Standard file organization and setup verification
 
 ### development/ - Development Documentation
 

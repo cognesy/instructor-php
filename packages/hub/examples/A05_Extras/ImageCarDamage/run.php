@@ -69,7 +69,7 @@ $assessment = Image::fromFile(__DIR__ . '/car-damage.jpg')
         responseModel: DamageAssessment::class,
         prompt: 'Identify and assess each car damage location and severity separately.',
         connection: 'openai',
-        model: 'gpt-4o',
+        model: 'gpt-5-nano',
         options: ['max_tokens' => 4096]
     );
 

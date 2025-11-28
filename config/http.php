@@ -7,7 +7,7 @@ return [
         'curl' => [
             'driver' => 'curl',
             'connectTimeout' => 3,
-            'requestTimeout' => 30,
+            'requestTimeout' => 60,
             'idleTimeout' => -1,
             'streamChunkSize' => 256,
             'maxConcurrent' => 5,

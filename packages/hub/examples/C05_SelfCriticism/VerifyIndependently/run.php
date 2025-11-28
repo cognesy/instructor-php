@@ -37,7 +37,7 @@ class CoVeVerifier {
 
     private function generateInitialResponse(string $query) : QueryResponse {
         return (new StructuredOutput)->with(
-            model: 'gpt-4o',
+            model: 'gpt-5-nano',
             responseModel: QueryResponse::class,
             messages: [
                 ['role' => 'system', 'content' => 'You are an expert question answering system'],
@@ -48,7 +48,7 @@ class CoVeVerifier {
 
     private function generateVerificationQuestions(string $llmResponse) : ValidationQuestions {
         return (new StructuredOutput)->with(
-            model: 'gpt-4o',
+            model: 'gpt-5-nano',
             responseModel: ValidationQuestions::class,
             messages: [
                 ['role' => 'system', 'content' => 'You generate follow-up questions to validate a response. Focus on key assumptions and facts.'],
@@ -61,7 +61,7 @@ class CoVeVerifier {
         $pairs = [];
         foreach ($questions as $q) {
             $ans = (new StructuredOutput)->with(
-                model: 'gpt-4o',
+                model: 'gpt-5-nano',
                 responseModel: ValidationAnswer::class,
                 messages: [
                     ['role' => 'system', 'content' => 'You answer validation questions precisely.'],
@@ -79,7 +79,7 @@ class CoVeVerifier {
         $joined = implode("\n", $formatted);
 
         return (new StructuredOutput)->with(
-            model: 'gpt-4o',
+            model: 'gpt-5-nano',
             responseModel: FinalResponse::class,
             messages: [
                 ['role' => 'system', 'content' => 'Validate whether the initial answer answers the initial query given Q/A evidence. Return the original if valid; otherwise provide a corrected answer.'],

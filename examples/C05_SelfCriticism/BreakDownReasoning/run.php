@@ -58,7 +58,7 @@ class CumulativeReasoningPipeline {
             Hypothesis: {$hypothesis}
             USR;
         return (new StructuredOutput)->with(
-            model: 'gpt-4o',
+            model: 'gpt-5-nano',
             responseModel: ProposerOutput::class,
             messages: [
                 ['role' => 'system', 'content' => $sys],
@@ -73,7 +73,7 @@ class CumulativeReasoningPipeline {
             $sys = 'Use FOL to determine whether the deduction from two premises to the proposition is valid.';
             $user = "Premises:\n{$p->premise1}\n{$p->premise2}\n\nProposition:\n{$p->proposition}";
             $res = (new StructuredOutput)->with(
-                model: 'gpt-4o',
+                model: 'gpt-5-nano',
                 responseModel: VerifiedProposition::class,
                 messages: [ ['role' => 'system', 'content' => $sys], ['role' => 'user', 'content' => $user] ],
             )->get();
@@ -96,7 +96,7 @@ class CumulativeReasoningPipeline {
             ['role' => 'assistant', 'content' => "Let's think step by step. From the premises, we can deduce the following propositions:\n{$formattedProp}\n\nRecall the Hypothesis: {$hypothesis}"],
         ];
         return (new StructuredOutput)->with(
-            model: 'gpt-4o', responseModel: ReporterOutput::class, messages: $messages,
+            model: 'gpt-5-nano', responseModel: ReporterOutput::class, messages: $messages,
         )->get();
     }
 }
