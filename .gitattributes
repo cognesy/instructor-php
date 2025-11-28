@@ -77,3 +77,6 @@
 /cache/           export-ignore
 /temp/            export-ignore
 /tmp/             export-ignore
+
+# Use bd merge for beads JSONL files
+.beads/issues.jsonl merge=beads
