@@ -67,12 +67,12 @@ final class PodmanSandbox implements CanExecuteCommand
     }
 
     private function buildContainerCommand(string $workDir, array $argv): array {
+        $isWSL2 = $this->isWSL2Environment();
+
         $builder = ContainerCommandBuilder::podman($this->podmanBin)
             ->withImage($this->image)
             ->withNetwork($this->policy->networkEnabled())
             ->withPidsLimit(20)
-            ->withMemory($this->policy->memoryLimit())
-            ->withCpus('0.5')
             ->withReadOnlyRoot(true)
             ->withTmpfs('/tmp:rw,noexec,nodev,nosuid,size=64m')
             ->withNoNewPrivileges(true)
@@ -81,6 +81,17 @@ final class PodmanSandbox implements CanExecuteCommand
             ->mountWorkdir($workDir)
             ->withEnv(EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars()))
             ->withInnerArgv($argv);
+
+        // Add WSL2 compatibility settings
+        if ($isWSL2) {
+            $builder
+                ->addGlobalFlag('--cgroup-manager=cgroupfs')
+                ->withResourceLimits(false); // Skip memory and CPU limits in WSL2
+        } else {
+            $builder
+                ->withMemory($this->policy->memoryLimit())
+                ->withCpus('0.5');
+        }
 
         $index = 0;
         foreach ($this->policy->writablePaths() as $p) {
@@ -116,5 +127,25 @@ final class PodmanSandbox implements CanExecuteCommand
         }
         $extra = ProcUtils::defaultBinPaths();
         return ProcUtils::findOnPath('podman', $extra);
+    }
+
+    private function isWSL2Environment(): bool {
+        // Check for WSL2 environment indicators
+        if (is_file('/proc/version')) {
+            $version = file_get_contents('/proc/version');
+            if ($version !== false && (str_contains($version, 'WSL2') || str_contains($version, 'microsoft'))) {
+                return true;
+            }
+        }
+
+        // Check if cgroup is problematic (WSL2 indicator)
+        if (is_file('/proc/self/cgroup')) {
+            $cgroup = file_get_contents('/proc/self/cgroup');
+            if ($cgroup !== false && trim($cgroup) === '0::/') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

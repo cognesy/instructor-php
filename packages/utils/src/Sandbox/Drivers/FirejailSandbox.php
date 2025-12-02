@@ -68,9 +68,7 @@ final class FirejailSandbox implements CanExecuteCommand
     private function buildCommand(string $workDir, array $innerArgv): array {
         $cmd = [
             $this->firejailBin,
-            '--quiet', '--noprofile',
-            '--private', '--private-dev', '--private-tmp',
-            '--nonewprivs', '--seccomp', '--caps.drop=all',
+            '--noprofile',  // Minimal configuration to debug stdin EBADF
         ];
         if (!$this->policy->networkEnabled()) {
             $cmd[] = '--net=none';

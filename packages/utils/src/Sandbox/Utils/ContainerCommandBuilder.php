@@ -12,6 +12,7 @@ final class ContainerCommandBuilder
     private int $pidsLimit = 20;
     private string $memory = '128M';
     private string $cpus = '0.5';
+    private bool $enableResourceLimits = true;
     private bool $readOnlyRoot = true;
     private string $tmpfs = '/tmp:rw,noexec,nodev,nosuid,size=64m';
     private bool $noNewPrivileges = true;
@@ -26,6 +27,8 @@ final class ContainerCommandBuilder
     private array $env = [];
     /** @var list<string> */
     private array $innerArgv = [];
+    /** @var list<string> */
+    private array $globalFlags = [];
 
     private function __construct(string $runtimeBin) {
         $this->runtimeBin = $runtimeBin;
@@ -116,15 +119,35 @@ final class ContainerCommandBuilder
         return $this;
     }
 
+    /** @param list<string> $flags */
+    public function withGlobalFlags(array $flags): self {
+        $this->globalFlags = $flags;
+        return $this;
+    }
+
+    public function addGlobalFlag(string $flag): self {
+        $this->globalFlags[] = $flag;
+        return $this;
+    }
+
+    public function withResourceLimits(bool $enabled): self {
+        $this->enableResourceLimits = $enabled;
+        return $this;
+    }
+
     /** @return list<string> */
     public function build(): array {
-        $cmd = [$this->runtimeBin, 'run', '--rm'];
+        $cmd = [$this->runtimeBin];
+        $cmd = [...$cmd, ...$this->globalFlags];
+        $cmd = [...$cmd, 'run', '--rm'];
         if (!$this->networkEnabled) {
             $cmd[] = '--network=none';
         }
         $cmd = [...$cmd, '--pids-limit=' . (string)$this->pidsLimit];
-        $cmd = [...$cmd, '--memory', $this->normalizeMemoryForRuntime($this->memory)];
-        $cmd = [...$cmd, '--cpus', $this->cpus];
+        if ($this->enableResourceLimits) {
+            $cmd = [...$cmd, '--memory', $this->normalizeMemoryForRuntime($this->memory)];
+            $cmd = [...$cmd, '--cpus', $this->cpus];
+        }
         if ($this->readOnlyRoot) {
             $cmd[] = '--read-only';
         }

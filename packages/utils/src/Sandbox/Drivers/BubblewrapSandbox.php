@@ -78,10 +78,10 @@ final class BubblewrapSandbox implements CanExecuteCommand
         // Writes are denied unless explicitly re-bound below.
         $cmd = [...$cmd, '--ro-bind', '/', '/'];
 
-        // Bind working directory as writable under /work
-        $cmd = [...$cmd, '--bind', $workDir, '/work'];
-        $cmd = [...$cmd, '--chdir', '/work'];
-        $cmd = [...$cmd, '--tmpfs', '/tmp'];
+        // Bind working directory as writable under /tmp (which already exists)
+        $cmd = [...$cmd, '--bind', $workDir, '/tmp'];
+        $cmd = [...$cmd, '--chdir', '/tmp'];
+        // Note: removed --tmpfs /tmp to avoid conflict with --bind
 
         // Writable mounts: enable write access to configured paths
         $index = 0;

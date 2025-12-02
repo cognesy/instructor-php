@@ -1,0 +1,36 @@
+"id" => "gen-f3IU7TQqctOiphWyedzl87hKj0DK"
+"object" => "chat.completion"
+"created" => 1711216532
+"model" => "google/gemma-7b-it:nitro"
+"choices" => array:1 [
+  0 => array:3 [
+    "index" => 0
+    "message" => array:2 [
+      "role" => "assistant"
+      "content" => """
+        ```json\n
+        {\n
+        "type":"object",\n
+        "title":"User",\n
+        "properties":{\n
+        "age":{"type":"integer"},\n
+        "name":{"type":"string"},\n
+        "username":{"type":"string"},\n
+        "role":{"type":"string","enum":["Guest","User","Admin"]},\n
+        "hobbies":{"type":"array","items":{"type":"string","description":"Correctly extract items of type: string" }}\n
+        },\n
+        "required":["age","name","username","role","hobbies"]\n
+        }\n
+        ```\n
+        \n
+        This extracted JSON data accurately reflects the information about Jason, including his age, name, username, role, and hobbies.
+        """
+    ],
+    "finish_reason" => "stop"
+  ]
+]
+"usage" => array:3 [
+  "prompt_tokens" => 651
+  "completion_tokens" => 160
+  "total_tokens" => 811
+]
