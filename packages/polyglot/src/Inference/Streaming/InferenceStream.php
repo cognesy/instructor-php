@@ -110,12 +110,10 @@ class InferenceStream
      * @return ?InferenceResponse
      */
     public function final(): ?InferenceResponse {
-        if ($this->execution->response() === null) {
-            if ($this->execution->partialResponse()) {
-                $this->execution = $this->execution->withFinalizedPartialResponse();
-            } else {
-                foreach ($this->makePartialResponses($this->stream) as $_) {}
-            }
+        if ($this->execution->response() === null && !$this->execution->isFinalized()) {
+            // Drain the stream to ensure all deltas are processed and the final
+            // response + events are produced even if the caller stopped early.
+            foreach ($this->makePartialResponses($this->stream) as $_) {}
         }
         return $this->execution->response();
     }
@@ -176,6 +174,9 @@ class InferenceStream
      * Finalizes the stream by creating final response and dispatching event.
      */
     private function finalizeStream(): void {
+        if ($this->execution->isFinalized()) {
+            return;
+        }
         $this->execution = $this->execution->withFinalizedPartialResponse();
         $this->events->dispatch(new InferenceResponseCreated($this->execution->response()));
     }

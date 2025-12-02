@@ -64,20 +64,21 @@ class MarkSnippetsRecursively extends Command
 
         try {
             $sourceDir = $this->getRequiredOption($input, 'source-dir');
-            $targetDir = $this->getRequiredOption($input, 'target-dir');
+            $sourceBase = realpath($sourceDir) ?: $sourceDir;
+            $targetDir = Path::canonicalize($this->getRequiredOption($input, 'target-dir'));
             $extensions = $this->parseExtensions($input->getOption('extensions'));
             $isDryRun = $input->getOption('dry-run');
 
             // Discover files
             $io->section('Discovering files...');
-            $files = $this->discoverFiles($sourceDir, $extensions);
+            $files = $this->discoverFiles($sourceBase, $extensions);
 
             if (empty($files)) {
-                $io->warning("No files found with extensions [" . implode(', ', $extensions) . "] in: {$sourceDir}");
+                $io->warning("No files found with extensions [" . implode(', ', $extensions) . "] in: {$sourceBase}");
                 return Command::SUCCESS;
             }
 
-            $this->displayDiscoveryResultsSimple($files, $extensions, $sourceDir, $io);
+            $this->displayDiscoveryResultsSimple($files, $extensions, $sourceBase, $io);
 
             if ($isDryRun) {
                 $io->success('Dry run completed. No files were processed.');
@@ -86,7 +87,7 @@ class MarkSnippetsRecursively extends Command
 
             // Process files
             $io->section('Processing files...');
-            [$ok, $failed, $snippetsTotal] = $this->processFiles($files, $sourceDir, $targetDir, $io);
+            [$ok, $failed, $snippetsTotal] = $this->processFiles($files, $sourceBase, $targetDir, $io);
 
             if ($failed === 0) {
                 $io->success([

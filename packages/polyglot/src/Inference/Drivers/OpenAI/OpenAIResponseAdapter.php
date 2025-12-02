@@ -42,6 +42,7 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
+            usageIsCumulative: true,
             responseData: $responseData,
         );
     }
