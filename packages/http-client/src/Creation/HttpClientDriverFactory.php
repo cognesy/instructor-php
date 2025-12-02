@@ -8,6 +8,8 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Drivers\Curl\CurlDriver;
 use Cognesy\Http\Drivers\Curl\Pool\CurlPool;
+use Cognesy\Http\Drivers\ExtHttp\ExtHttpDriver;
+use Cognesy\Http\Drivers\ExtHttp\ExtHttpPool;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
@@ -116,6 +118,11 @@ class HttpClientDriverFactory
                 events: $events,
                 clientInstance: $clientInstance,
             ),
+            'exthttp' => fn($config, $events, $clientInstance) => new ExtHttpDriver(
+                config: $config,
+                events: $events,
+                clientInstance: $clientInstance,
+            ),
             'guzzle' => fn($config, $events, $clientInstance) => new GuzzleDriver(
                 config: $config,
                 events: $events,
@@ -141,6 +148,10 @@ class HttpClientDriverFactory
     private function defaultPoolHandlers(string $name): Closure {
         $handlers = [
             'curl' => fn($config, $events) => new CurlPool(
+                config: $config,
+                events: $events,
+            ),
+            'exthttp' => fn($config, $events) => new ExtHttpPool(
                 config: $config,
                 events: $events,
             ),

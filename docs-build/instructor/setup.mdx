@@ -17,7 +17,7 @@ You can install Instructor via Composer by running:
 
 ```bash
 composer require cognesy/instructor-php
-# @doctest id="c775"
+# @doctest id="cd4f"
 ```
 
 ### Step 2: Publish Instructor Files to Your Project
@@ -38,7 +38,7 @@ You can publish these files to your project directory by running following comma
   --target-config-dir=<target config dir location>
   --target-prompts-dir=<target prompts dir location>
   --target-env-file=<target .env file location>
-# @doctest id="180e"
+# @doctest id="562a"
 ```
 
 You can also manually copy the required files to your project directory.
@@ -100,7 +100,7 @@ For Laravel applications, it's recommended to align with the framework's directo
     --target-config-dir=config/instructor \
     --target-prompts-dir=resources/prompts \
     --target-env-file=.env
-# @doctest id="f273"
+# @doctest id="17fa"
 ```
 
 This will:
@@ -120,7 +120,7 @@ For Symfony applications, use the standard Symfony directory structure:
     --target-config-dir=config/packages/instructor \
     --target-prompts-dir=resources/instructor/prompts \
     --target-env-file=.env
-# @doctest id="34ae"
+# @doctest id="7193"
 ```
 
 This will:
@@ -136,7 +136,7 @@ For Symfony Flex applications, you may want to create a recipe to automate this 
 You can use environment variables to set the location of configuration files:
 ```
 INSTRUCTOR_CONFIG_PATHS=/path/to/config,another/path
-// @doctest id="12e6"
+// @doctest id="0893"
 ```
 
 This allows you to maintain consistent paths across your application without specifying them in each command.
@@ -152,7 +152,7 @@ manually or automatically using the provided CLI tool.
 
 ```bash
 ./vendor/bin/instructor-setup publish
-# @doctest id="07b0"
+# @doctest id="963c"
 ```
 
 By default, this command will:
@@ -175,7 +175,7 @@ By default, this command will:
     --target-config-dir=./config/instructor \
     --target-prompts-dir=./resources/prompts \
     --target-env-file=.env
-# @doctest id="8504"
+# @doctest id="f700"
 ```
 
 <Note>
@@ -195,7 +195,7 @@ mkdir -p config/instructor
 
 # Copy configuration files
 cp -r vendor/cognesy/instructor-php/config/* config/instructor/
-# @doctest id="8781"
+# @doctest id="e1dd"
 ```
 These files contain LLM API connection settings and Instructor's behavior configuration.
 
@@ -207,7 +207,7 @@ mkdir -p resources/prompts
 
 # Copy prompt templates
 cp -r vendor/cognesy/instructor-php/prompts/* resources/prompts/
-# @doctest id="43c5"
+# @doctest id="4e00"
 ```
 Prompt templates define how Instructor communicates with LLMs for different tasks.
 
@@ -217,7 +217,7 @@ If .env doesn't exist, copy the environment template:
 
 ```bash
 [ ! -f .env ] && cp vendor/cognesy/instructor-php/config/.env-dist .env
-# @doctest id="d3e8"
+# @doctest id="ce0d"
 ```
 
 Add key values to your .env:
@@ -229,5 +229,5 @@ OPENAI_API_KEY=your_api_key
 
 # Set up Instructor configuration path (optional)
 INSTRUCTOR_CONFIG_PATHS='<path/to/config>,<another/path>'
-# @doctest id="3217"
+# @doctest id="13d9"
 ```

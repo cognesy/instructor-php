@@ -44,6 +44,16 @@ return [
             'poolTimeout' => 60,
             'failOnError' => true,
         ],
+        'exthttp' => [
+            'driver' => 'exthttp',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'streamChunkSize' => 256,
+            'maxConcurrent' => 10,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
         'http-ollama' => [
             'driver' => 'guzzle',
             'connectTimeout' => 3,

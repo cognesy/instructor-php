@@ -101,6 +101,7 @@
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-fileinfo": "*",
+    "ext-http": "*",
     "ext-libxml": "*",
     "ext-xmlreader": "*",
     "cebe/markdown": "^1.2",
@@ -109,6 +110,7 @@
     "guzzlehttp/psr7": "^2.0",
     "icanhazstring/composer-unused": "^0.9.0",
     "illuminate/http": "^11.0",
+    "illuminate/support": "^11.47",
     "jetbrains/phpstorm-attributes": "^1.2",
     "league/commonmark": "^2.7",
     "league/html-to-markdown": "^5.1",
@@ -128,8 +130,7 @@
     "symfony/http-client": "^7.0",
     "toolkit/cli-utils": "^2.0",
     "twig/twig": "^3.0",
-    "vimeo/psalm": "^6.0",
-      "ext-http": "*"
+    "vimeo/psalm": "^6.0"
   },
   "config": {
     "allow-plugins": {
