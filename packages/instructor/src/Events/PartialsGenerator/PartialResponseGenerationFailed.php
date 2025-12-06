@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 use Psr\Log\LogLevel;
 
-final class PartialResponseGenerationFailed extends Event
+final class PartialResponseGenerationFailed extends StructuredOutputEvent
 {
     public string $logLevel = LogLevel::WARNING;
 }

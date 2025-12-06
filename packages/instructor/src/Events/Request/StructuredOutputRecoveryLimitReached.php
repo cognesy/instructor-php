@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class StructuredOutputRecoveryLimitReached extends Event {}
+final class StructuredOutputRecoveryLimitReached extends StructuredOutputEvent {}

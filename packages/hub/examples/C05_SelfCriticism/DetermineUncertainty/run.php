@@ -38,7 +38,7 @@ class EvaluateModelOutput {
         return (new StructuredOutput)->with(
             messages: $messages,
             responseModel: SelfCalibration::class,
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
         )->get();
     }
 }

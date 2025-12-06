@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class ResponseConvertedToObject extends Event {}
+final class ResponseConvertedToObject extends StructuredOutputEvent {}

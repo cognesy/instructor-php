@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 use Cognesy\Utils\Json\Json;
 
-final class PartialResponseGenerated extends Event
+final class PartialResponseGenerated extends StructuredOutputEvent
 {
     public function __construct(
         public mixed $partialResponse

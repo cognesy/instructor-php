@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\StructuredOutput;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-class StructuredOutputResponseUpdated extends Event {}
+class StructuredOutputResponseUpdated extends StructuredOutputEvent {}

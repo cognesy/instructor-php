@@ -46,7 +46,7 @@ $user = $structuredOutput->with(
         'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
-    model: 'gpt-5-nano', // set your own value/source
+    model: 'gpt-4o-mini', // set your own value/source
     mode: OutputMode::Json,
 )->get();
 

@@ -1,0 +1,59 @@
+{
+  "name": "cognesy/logging",
+  "description": "Functional logging pipeline for Instructor PHP with framework integrations",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Logging\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Logging\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "psr/log": "^3.0",
+    "cognesy/instructor-events": "^1.1"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0",
+    "monolog/monolog": "^3.0",
+    "illuminate/contracts": "^11.0",
+    "illuminate/support": "^11.0",
+    "symfony/dependency-injection": "^7.0",
+    "symfony/http-kernel": "^7.0",
+    "symfony/event-dispatcher": "^7.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

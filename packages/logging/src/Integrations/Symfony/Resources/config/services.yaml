@@ -1,0 +1,42 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # Core logging services
+  Cognesy\Logging\Factories\SymfonyLoggingFactory:
+    public: true
+
+  # Pipeline components
+  Cognesy\Logging\Pipeline\LoggingPipeline:
+    public: false
+
+  # Filters
+  Cognesy\Logging\Filters\LogLevelFilter:
+    public: false
+
+  Cognesy\Logging\Filters\EventClassFilter:
+    public: false
+
+  Cognesy\Logging\Filters\EventHierarchyFilter:
+    public: false
+
+  # Writers
+  Cognesy\Logging\Writers\PsrLoggerWriter:
+    arguments:
+      $logger: '@logger'
+
+  # Formatters
+  Cognesy\Logging\Formatters\DefaultFormatter:
+    public: false
+
+  Cognesy\Logging\Formatters\MessageTemplateFormatter:
+    public: false
+
+  # Enrichers
+  Cognesy\Logging\Enrichers\BaseEnricher:
+    public: false
+
+  Cognesy\Logging\Enrichers\LazyEnricher:
+    public: false

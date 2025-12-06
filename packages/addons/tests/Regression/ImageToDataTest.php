@@ -74,7 +74,7 @@ it('reproduces the missing messages parameter issue', function () {
         messages: $messages,
         responseModel: DamageAssessmentTest::class,
         prompt: 'Identify and assess damage',
-        model: 'gpt-5-nano',
+        model: 'gpt-4o-mini',
         options: ['max_tokens' => 4096],
         mode: OutputMode::Tools,
     );

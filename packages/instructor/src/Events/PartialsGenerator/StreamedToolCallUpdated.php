@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class StreamedToolCallUpdated extends Event {}
+final class StreamedToolCallUpdated extends StructuredOutputEvent {}

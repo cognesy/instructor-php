@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class ResponseValidationAttempt extends Event {}
+final class ResponseValidationAttempt extends StructuredOutputEvent {}

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class StreamedResponseReceived extends Event {}
+final class StreamedResponseReceived extends StructuredOutputEvent {}

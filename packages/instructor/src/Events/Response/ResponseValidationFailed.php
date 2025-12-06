@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 use Psr\Log\LogLevel;
 
-final class ResponseValidationFailed extends Event
+final class ResponseValidationFailed extends StructuredOutputEvent
 {
     public string $logLevel = LogLevel::WARNING;
 }

@@ -1,0 +1,7 @@
+{
+    "package_name": "cognesy/logging",
+    "namespace": "Cognesy\\Logging",
+    "package_title": "Instructor Logging",
+    "package_description": "Functional logging pipeline for Instructor PHP with framework integrations",
+    "target_directory": "packages/logging"
+}

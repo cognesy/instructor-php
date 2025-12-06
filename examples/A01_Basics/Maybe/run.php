@@ -32,7 +32,7 @@ echo "\nINPUT:\n$text\n";
 $maybeUser = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class),
-    model: 'gpt-5-nano',
+    model: 'gpt-4o-mini',
     mode: OutputMode::MdJson,
 )->get();
 

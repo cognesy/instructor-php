@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class PartialJsonReceived extends Event {}
+final class PartialJsonReceived extends StructuredOutputEvent {}

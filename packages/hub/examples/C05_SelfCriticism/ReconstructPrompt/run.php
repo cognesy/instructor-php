@@ -43,7 +43,7 @@ class ModelResponse {
 class RCoTPipeline {
     public function generateResponse(string $query) : ModelResponse {
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: ModelResponse::class,
             messages: [
                 ['role' => 'system', 'content' => "Generate logical steps before answering."],
@@ -61,7 +61,7 @@ class RCoTPipeline {
             Response: {$response->correct_answer}
             SYS;
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: ReconstructedPrompt::class,
             messages: [ ['role' => 'system', 'content' => $sys] ],
         )->get();
@@ -69,7 +69,7 @@ class RCoTPipeline {
 
     public function deconstructToConditions(string $prompt) : ConditionList {
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: ConditionList::class,
             messages: [
                 ['role' => 'system', 'content' => "List the key conditions required to answer the problem."],
@@ -92,7 +92,7 @@ class RCoTPipeline {
             Determine rough equivalence. If not equivalent, provide targeted feedback.
             SYS;
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: ModelFeedback::class,
             messages: [ ['role' => 'system', 'content' => $sys] ],
         )->get();
@@ -112,7 +112,7 @@ class RCoTPipeline {
             Generate a revised response that addresses the feedback and includes the ignored conditions.
             SYS;
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: ModelResponse::class,
             messages: [ ['role' => 'system', 'content' => $sys] ],
         )->get();

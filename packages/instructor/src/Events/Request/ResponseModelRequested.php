@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class ResponseModelRequested extends Event {}
+final class ResponseModelRequested extends StructuredOutputEvent {}

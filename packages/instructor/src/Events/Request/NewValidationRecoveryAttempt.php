@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class NewValidationRecoveryAttempt extends Event {}
+final class NewValidationRecoveryAttempt extends StructuredOutputEvent {}

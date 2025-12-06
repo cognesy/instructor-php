@@ -31,7 +31,7 @@ public function newProvider(LLMConfig $config, CanHandleHttpRequest $httpClient,
         $events
     );
 }
-// @doctest id="a067"
+// @doctest id="59b5"
 ```
 
 Finally, add your provider to the `make` method's match statement.
@@ -60,7 +60,7 @@ class NewEmbeddingsDriver implements CanVectorize {
     protected function toResponse(array $response): EmbeddingsResponse { ... }
     protected function makeUsage(array $response): Usage { ... }
 }
-// @doctest id="1539"
+// @doctest id="c3d5"
 ```
 
 Then, modify the `Embeddings` class to create your driver:
@@ -74,7 +74,7 @@ protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $htt
         default => throw new InvalidArgumentException("Unknown client: {$config->providerType}"),
     };
 }
-// @doctest id="9f78"
+// @doctest id="4df3"
 ```
 
 
@@ -101,7 +101,7 @@ class YourCustomMiddleware extends BaseMiddleware {
         return $response;
     }
 }
-// @doctest id="6f4e"
+// @doctest id="8379"
 ```
 
 Then, add your middleware to the HTTP client:
@@ -112,5 +112,5 @@ $httpClient->withMiddleware(new YourCustomMiddleware());
 
 $inference = new Inference();
 $inference->withHttpClient($httpClient);
-// @doctest id="eb45"
+// @doctest id="4f61"
 ```

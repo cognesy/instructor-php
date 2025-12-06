@@ -234,7 +234,7 @@ return [
                 'organization' => '',
                 'project' => '',
             ],
-            'model' => 'gpt-5-nano',
+            'model' => 'gpt-4o-mini',
             'maxTokens' => 1024,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,

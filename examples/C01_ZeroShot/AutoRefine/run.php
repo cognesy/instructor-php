@@ -56,7 +56,7 @@ class RefineAndSolve {
         return (new StructuredOutput)->with(
             messages: str_replace('{query}', $query, $this->prompt),
             responseModel: RewrittenTask::class,
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
         )->get();
     }
 }

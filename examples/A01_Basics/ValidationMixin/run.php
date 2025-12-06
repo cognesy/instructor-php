@@ -51,7 +51,7 @@ $user = (new StructuredOutput)
     ->withResponseClass(UserDetails::class)
     ->with(
         messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 18.']],
-        model: 'gpt-5-nano',
+        model: 'gpt-4o-mini',
         maxRetries: 2,
     )->get();
 

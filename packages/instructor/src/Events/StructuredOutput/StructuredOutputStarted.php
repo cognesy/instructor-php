@@ -2,6 +2,6 @@
 
 namespace Cognesy\Instructor\Events\StructuredOutput;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 
-final class StructuredOutputStarted extends Event {}
+final class StructuredOutputStarted extends StructuredOutputEvent {}

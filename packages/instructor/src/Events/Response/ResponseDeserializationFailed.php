@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Events\Event;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 use Psr\Log\LogLevel;
 
-final class ResponseDeserializationFailed extends Event
+final class ResponseDeserializationFailed extends StructuredOutputEvent
 {
     public string $logLevel = LogLevel::WARNING;
 }

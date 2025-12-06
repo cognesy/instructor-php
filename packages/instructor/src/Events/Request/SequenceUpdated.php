@@ -2,11 +2,11 @@
 
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Events\Event;
 use Cognesy\Instructor\Contracts\Sequenceable;
+use Cognesy\Instructor\Events\StructuredOutputEvent;
 use Cognesy\Utils\Json\Json;
 
-final class SequenceUpdated extends Event
+final class SequenceUpdated extends StructuredOutputEvent
 {
     public function __construct(
         public Sequenceable $sequence

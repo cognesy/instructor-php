@@ -45,7 +45,7 @@ class History {
 class SelfRefinePipeline {
     public function generateInitial(string $prompt) : Response {
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: Response::class,
             messages: [ ['role' => 'user', 'content' => $prompt] ],
         )->get();
@@ -63,7 +63,7 @@ class SelfRefinePipeline {
             If the code does not need improvement, set done = True.
             MSG;
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: Feedback::class,
             messages: [ ['role' => 'user', 'content' => $msg] ],
         )->get();
@@ -90,7 +90,7 @@ class SelfRefinePipeline {
             Refine your response.
             MSG;
         return (new StructuredOutput)->with(
-            model: 'gpt-5-nano',
+            model: 'gpt-4o-mini',
             responseModel: Response::class,
             messages: [ ['role' => 'user', 'content' => $msg] ],
             )->get();
