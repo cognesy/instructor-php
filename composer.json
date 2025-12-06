@@ -27,6 +27,7 @@
       "Cognesy\\Addons\\": "packages/addons/src/",
       "Cognesy\\Config\\": "packages/config/src/",
       "Cognesy\\Doctor\\": "packages/doctor/src/",
+      "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
       "Cognesy\\Dynamic\\": "packages/dynamic/src/",
       "Cognesy\\Events\\": "packages/events/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
@@ -101,7 +102,6 @@
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-fileinfo": "*",
-    "ext-http": "*",
     "ext-libxml": "*",
     "ext-xmlreader": "*",
     "cebe/markdown": "^1.2",
@@ -109,6 +109,7 @@
     "guzzlehttp/guzzle": "^7.0",
     "guzzlehttp/psr7": "^2.0",
     "icanhazstring/composer-unused": "^0.9.0",
+    "illuminate/database": "^11.47",
     "illuminate/http": "^11.0",
     "illuminate/support": "^11.47",
     "jetbrains/phpstorm-attributes": "^1.2",
@@ -181,7 +182,8 @@
     "bin/instructor-hub",
     "bin/instructor-docs",
     "bin/tell",
-    "scripts/make-package"
+    "scripts/make-package",
+    "packages/auxiliary/bin/tbd"
   ],
   "suggest": {
     "ext-dom": "Used by Cognesy\\Auxiliary\\Web\\Html for HTML parsing",

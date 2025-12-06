@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
+
+use Cognesy\Auxiliary\Beads\Presentation\Console\TbdApplicationFactory;
+
+$app = (new TbdApplicationFactory())->create();
+exit($app->run());

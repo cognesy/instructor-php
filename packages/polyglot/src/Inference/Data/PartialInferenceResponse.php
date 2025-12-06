@@ -27,6 +27,7 @@ class PartialInferenceResponse
     public readonly string $toolArgs;
 
     public ?Usage $usage;
+    private bool $usageIsCumulative;
     public ?HttpResponse $responseData;
 
     // INTERNAL STATE FOR ACCUMULATION ///////////////////////////////////
@@ -46,6 +47,7 @@ class PartialInferenceResponse
         ?string $toolArgs = null,
         ?string $finishReason = null,
         ?Usage $usage = null,
+        bool $usageIsCumulative = false,
         ?HttpResponse $responseData = null,
         //
         ?string $id = null, // for deserialization
@@ -59,6 +61,7 @@ class PartialInferenceResponse
         $this->toolArgs = $toolArgs ?? '';
         $this->finishReason = $finishReason ?? '';
         $this->usage = $usage ?? new Usage();
+        $this->usageIsCumulative = $usageIsCumulative;
         $this->responseData = $responseData ?? HttpResponse::empty();
         $this->content = '';
         $this->reasoningContent = '';
@@ -88,6 +91,10 @@ class PartialInferenceResponse
 
     public function usage(): Usage {
         return $this->usage ?? new Usage();
+    }
+
+    public function isUsageCumulative(): bool {
+        return $this->usageIsCumulative;
     }
 
     public function toolName(): string {
@@ -135,6 +142,7 @@ class PartialInferenceResponse
         ?string $toolArgs = null,
         ?string $finishReason = null,
         ?Usage $usage = null,
+        ?bool $usageIsCumulative = null,
         ?HttpResponse $responseData = null,
     ): self {
         return new self(
@@ -145,6 +153,7 @@ class PartialInferenceResponse
             toolArgs: $toolArgs ?? $this->toolArgs,
             finishReason: $finishReason ?? $this->finishReason,
             usage: $usage ?? $this->usage,
+            usageIsCumulative: $usageIsCumulative ?? $this->usageIsCumulative,
             responseData: $responseData ?? $this->responseData,
             //
             id: $this->id,
@@ -173,6 +182,11 @@ class PartialInferenceResponse
         return $this;
     }
 
+    public function withUsageCumulative(bool $isCumulative = true): self {
+        $this->usageIsCumulative = $isCumulative;
+        return $this;
+    }
+
     public function withAccumulatedContent(PartialInferenceResponse $previous) : self {
         // Accumulate content using previous full content if available,
         // otherwise fall back to previous delta; then append current delta.
@@ -191,7 +205,9 @@ class PartialInferenceResponse
         $this->finishReason = $this->makeFinishReason($previous);
 
         // Accumulate usage counters
-        $this->usage = $this->usage->withAccumulated($previous->usage);
+        $isCumulative = $this->usageIsCumulative || $previous->usageIsCumulative;
+        $this->usageIsCumulative = $isCumulative;
+        $this->usage = $this->accumulateUsage($previous->usage(), $this->usage(), $isCumulative);
 
         // Preserve first HttpResponse (buffered SSE stream reference)
         // Prefer non-default previous response when available.
@@ -321,6 +337,7 @@ class PartialInferenceResponse
             'tool_args' => $this->toolArgs,
             'finish_reason' => $this->finishReason,
             'usage' => $this->usage?->toArray(),
+            'usage_is_cumulative' => $this->usageIsCumulative,
             'response_data' => $this->responseData,
             'id' => $this->id,
             'created_at' => $this->createdAt->format(DATE_ATOM),
@@ -337,6 +354,7 @@ class PartialInferenceResponse
             toolArgs: $data['tool_args'] ?? '',
             finishReason: $data['finish_reason'] ?? '',
             usage: isset($data['usage']) && is_array($data['usage']) ? Usage::fromArray($data['usage']) : null,
+            usageIsCumulative: (bool) ($data['usage_is_cumulative'] ?? false),
             responseData: HttpResponse::fromArray($data['response_data'] ?? []),
             id: $data['id'] ?? null,
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
@@ -351,5 +369,26 @@ class PartialInferenceResponse
             return $this->finishReason;
         }
         return $previous->finishReason();
+    }
+
+    private function accumulateUsage(Usage $previous, Usage $current, bool $isCumulative): Usage {
+        if ($current->total() === 0) {
+            return Usage::copy($previous);
+        }
+        if ($previous->total() === 0) {
+            return Usage::copy($current);
+        }
+
+        if ($isCumulative) {
+            return new Usage(
+                inputTokens: max($previous->inputTokens, $current->inputTokens),
+                outputTokens: max($previous->outputTokens, $current->outputTokens),
+                cacheWriteTokens: max($previous->cacheWriteTokens, $current->cacheWriteTokens),
+                cacheReadTokens: max($previous->cacheReadTokens, $current->cacheReadTokens),
+                reasoningTokens: max($previous->reasoningTokens, $current->reasoningTokens),
+            );
+        }
+
+        return $current->withAccumulated($previous);
     }
 }

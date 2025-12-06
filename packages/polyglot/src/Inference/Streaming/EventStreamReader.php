@@ -68,6 +68,9 @@ class EventStreamReader
                 $buffer = substr($buffer, $pos + 1);
             }
         }
+        if ($buffer !== '') {
+            yield $buffer;
+        }
     }
 
     /**
