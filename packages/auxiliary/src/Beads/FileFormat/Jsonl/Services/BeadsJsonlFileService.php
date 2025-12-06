@@ -169,6 +169,17 @@ final class BeadsJsonlFileService
     }
 
     /**
+     * Write provided issues to a file (overwrites existing file).
+     *
+     * @param IssueDTO[] $issues
+     */
+    public function writeIssues(string $filePath, array $issues): void
+    {
+        $this->issues = $issues;
+        $this->writeFile($filePath);
+    }
+
+    /**
      * Write issues back to the file they were read from
      *
      * @throws \RuntimeException if no file has been read or if file cannot be written

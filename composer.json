@@ -27,6 +27,7 @@
       "Cognesy\\Addons\\": "packages/addons/src/",
       "Cognesy\\Config\\": "packages/config/src/",
       "Cognesy\\Doctor\\": "packages/doctor/src/",
+      "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
       "Cognesy\\Dynamic\\": "packages/dynamic/src/",
       "Cognesy\\Events\\": "packages/events/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
@@ -181,7 +182,8 @@
     "bin/instructor-hub",
     "bin/instructor-docs",
     "bin/tell",
-    "scripts/make-package"
+    "scripts/make-package",
+    "packages/auxiliary/bin/tbd"
   ],
   "suggest": {
     "ext-dom": "Used by Cognesy\\Auxiliary\\Web\\Html for HTML parsing",
