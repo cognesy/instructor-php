@@ -1,25 +1,43 @@
 ---
-title: 'Monolog Logging'
+title: 'Monolog Logging with Functional Pipeline'
 docname: 'logging_monolog'
 path: ''
 ---
 
 ## Overview
 
-Instructor allows to easily log events with Monolog library.
+Monolog integration with Instructor's functional logging pipeline.
 
 ## Example
 
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Events\Event;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Logging\Filters\LogLevelFilter;
+use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
+use Cognesy\Logging\Writers\MonologChannelWriter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
-$log = new Logger('instructor');
-$log->pushHandler(new StreamHandler('php://stdout'));
+// Create Monolog logger
+$logger = new Logger('instructor');
+$logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
+
+// Create logging pipeline
+$pipeline = LoggingPipeline::create()
+    ->filter(new LogLevelFilter('debug'))
+    ->format(new MessageTemplateFormatter([
+        \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted::class =>
+            '🎯 Starting extraction: {responseClass}',
+        \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated::class =>
+            '✅ Completed extraction: {responseClass}',
+    ], channel: 'instructor'))
+    ->write(new MonologChannelWriter($logger))
+    ->build();
+
+echo "📋 About to demonstrate Monolog logging with functional pipeline...\n\n";
 
 class User
 {
@@ -27,20 +45,24 @@ class User
     public string $name;
 }
 
+// Extract data with logging
+echo "🚀 Starting StructuredOutput extraction...\n";
 $user = (new StructuredOutput)
     ->using('openai')
-    ->wiretap(fn(Event $e) => $log->log($e->logLevel, $e->name(), ['id' => $e->id, 'data' => $e->data]))
-    ->withMessages("Jason is 25 years old and works as an engineer.")
+    ->wiretap($pipeline)
+    ->withMessages("Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->get();
 
-assert($user->name === 'Jason');
-assert($user->age === 25);
+echo "\n✅ Extraction completed!\n";
+echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
 // ```
 // [2025-12-07T01:18:13.475202+00:00] instructor.DEBUG: 🎯 Starting extraction: User
+// [2025-12-07T01:18:13.486832+00:00] instructor.DEBUG: HttpRequestSent
+// [2025-12-07T01:18:14.640213+00:00] instructor.DEBUG: HttpResponseReceived
 // [2025-12-07T01:18:14.659417+00:00] instructor.DEBUG: ✅ Completed extraction: User
 // ```

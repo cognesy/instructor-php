@@ -1,39 +1,45 @@
 ---
-title: 'PSR-3 Logging'
+title: 'PSR-3 Logging with Functional Pipeline'
 docname: 'logging_psr'
 path: ''
 ---
 
 ## Overview
 
-Instructor allows to easily log events with any PSR-3 compliant logging library.
+Simple PSR-3 logging integration using Instructor's functional pipeline.
 
 ## Example
 
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Events\Event;
 use Cognesy\Instructor\StructuredOutput;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerTrait;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
+use Cognesy\Logging\Filters\LogLevelFilter;
+use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
-final class StdoutLogger implements LoggerInterface
-{
-    use LoggerTrait;
+// Create PSR-3 logger
+$logger = new Logger('instructor');
+$logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 
-    #[\Override]
-    public function log($level, $message, array $context = []): void {
-        echo sprintf(
-            "[%s] %s%s\n",
-            strtoupper((string) $level),
-            (string) $message,
-            json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-        );
-    }
-}
+// Create logging pipeline - filters to only StructuredOutput events
+$pipeline = LoggingPipeline::create()
+    ->filter(new LogLevelFilter('debug'))
+    ->format(new MessageTemplateFormatter([
+        \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted::class =>
+            '🎯 [PSR-3] Starting extraction: {responseClass}',
+        \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated::class =>
+            '✅ [PSR-3] Completed extraction: {responseClass}',
+    ], channel: 'instructor'))
+    ->write(new PsrLoggerWriter($logger))
+    ->build();
 
-$logger = new StdoutLogger();
+echo "📋 About to demonstrate PSR-3 logging with functional pipeline...\n\n";
+
+echo "🚀 Starting StructuredOutput extraction...\n";
 
 class User
 {
@@ -41,14 +47,16 @@ class User
     public string $name;
 }
 
+// Extract data with logging
 $user = (new StructuredOutput)
     ->using('openai')
-    ->wiretap(fn(Event $e) => $logger->log($e->logLevel, $e->name(), ['id' => $e->id, 'data' => $e->data]))
-    ->withMessages("Jason is 25 years old and works as an engineer.")
-    ->withResponseClass(User::class)->get();
+    ->wiretap($pipeline)
+    ->withMessages("Jason is 25 years old.")
+    ->withResponseClass(User::class)
+    ->get();
 
-assert($user->name === 'Jason');
-assert($user->age === 25);
+echo "\n✅ Extraction completed!\n";
+echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:

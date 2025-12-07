@@ -24,7 +24,7 @@ class UserDetail
 {
     /** Unique identifier for each user. */
     public int $id;
-    public int $age;
+    public ?int $age;
     public string $name;
     public string $role;
     /**
