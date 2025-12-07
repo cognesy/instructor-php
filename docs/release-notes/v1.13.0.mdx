@@ -1,0 +1,86 @@
+# Release Notes v1.13.0
+
+## 🚀 Major Package Enhancements
+
+**Instructor Package** (`packages/instructor/`)
+
+- **Streaming Response System**: Complete rewrite with three implementation approaches:
+  - Decorated Pipeline with reducer pattern
+  - Generator-Based approach for memory efficiency
+  - Modular Pipeline with transducers
+- **Enhanced Event System**: 30+ new event types covering the full request/response lifecycle
+- **Improved Structured Output**: Better validation, retry handling, and error recovery
+- **Response Iterators**: Advanced partial response generation and aggregation
+- **Tool Call Handling**: Enhanced support for streaming tool call processing
+
+**Polyglot Package** (`packages/polyglot/`)
+
+- **New Inference Drivers**: Added Amazon Bedrock OpenAI-compatible integration
+- **Enhanced Usage Tracking**: Simplified overflow handling and better token management
+- **Improved Response Adapters**: Better provider-specific response handling
+- **Streaming Enhancements**: Improved event stream processing
+
+**New Logging Framework** (`packages/logging/`)
+
+- Comprehensive event logging system for Instructor operations
+- Laravel and Symfony framework integrations
+- Configurable enrichers, filters, and formatters
+- PSR-3 logger compatibility
+- Event hierarchy filtering and log level management
+
+
+## 🛠️ Infrastructure Improvements
+
+**Utils Package** (`packages/utils/`)
+
+- **Sandbox Security**: New sandbox drivers (Bubblewrap, Firejail, Podman)
+- **Enhanced JSON Processing**: Improved JSON utilities with better error handling
+- **Execution Policies**: Configurable security policies for command execution
+
+**Stream Package** (`packages/stream/`)
+
+- Enhanced transformation stream capabilities
+- Better stream processing utilities
+
+**Refactored HTTP Client Package** (`packages/http-client/`)
+
+- Complete HTTP client abstraction layer with multiple driver support
+- Drivers: Guzzle, Symfony, Laravel, cURL, Mock
+- Advanced middleware system for request/response processing
+- Pool/concurrent request handling capabilities
+- Event-driven architecture with Server-Side Events support
+- Record/replay functionality for testing
+- Comprehensive streaming support
+
+**Hub Package** (`packages/hub/`)
+
+- Enhanced command interface with better type safety
+- Improved error handling and output formatting
+- Better execution tracking and status management
+- Enhanced example repository functionality
+
+## 🐛 Quality & Compatibility Fixes
+
+- **Static Analysis Compliance**: Full PHPStan level 8 and Psalm level 1 compliance across all packages
+- **PHP 8.x Compatibility**: Proper `#[Override]` attribute usage where appropriate
+- **CI/CD Improvements**: Better test coverage and build pipeline stability
+- **Type Safety**: Enhanced type hints and return type declarations throughout
+
+## 🔧 Breaking Changes
+
+- Changes in HTTP client APIs
+- Some Instructor streaming APIs have been redesigned for better performance
+
+## 📋 Migration Notes
+
+1. **HTTP Client**: Update API calls to match new interfaces
+2. **Streaming**: Review custom streaming implementations - new APIs may provide better performance
+3. **Logging**: Configure new logging framework if advanced logging features are needed
+
+## 🎯 Key Benefits
+
+- **Better Performance**: Optimized streaming and response processing
+- **Enhanced Developer Experience**: Improved type safety and IDE support
+- **Greater Modularity**: Separated concerns with dedicated packages
+- **Production Ready**: Comprehensive logging and monitoring capabilities
+- **Security Enhanced**: Sandbox execution for secure command processing
