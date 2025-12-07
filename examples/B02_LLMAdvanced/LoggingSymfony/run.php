@@ -74,3 +74,15 @@ try {
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
 }
+
+// TODO: Add "Sample Output" section showing actual log messages
+// Example format:
+// ### Sample Output
+// ```
+// 📋 About to demonstrate Inference logging with Symfony...
+// 🚀 Starting Inference request...
+// [2025-12-07 01:18:13] inference.DEBUG: 🔄 [Symfony] Inference requested: openai/gpt-4o-mini
+// [2025-12-07 01:18:14] inference.DEBUG: ✅ [Symfony] Inference completed: openai/gpt-4o-mini
+// ✅ Inference completed!
+// 📊 Response: The capital of France is Paris.
+// ```

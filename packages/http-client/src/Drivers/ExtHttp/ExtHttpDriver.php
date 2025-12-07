@@ -166,20 +166,20 @@ final class ExtHttpDriver implements CanHandleHttpRequest
         $message = $e->getMessage();
 
         if (str_contains($message, 'timeout') || str_contains($message, 'timed out')) {
-            throw new TimeoutException($message, $request, $e);
+            throw new TimeoutException($message, $request, null, $e);
         }
 
         if (str_contains($message, 'connect') || str_contains($message, 'connection')) {
-            throw new ConnectionException($message, $request, $e);
+            throw new ConnectionException($message, $request, null, $e);
         }
 
-        throw new NetworkException($message, $request, $e);
+        throw new NetworkException($message, $request, null, null, $e);
     }
 
     private function handleInvalidArgumentException(ExtHttpInvalidArgumentException $e, HttpRequest $request): never
     {
         $this->dispatchRequestFailed($request);
-        throw new HttpRequestException($e->getMessage(), $request, $e);
+        throw new HttpRequestException($e->getMessage(), $request, null, null, $e);
     }
 
     // EVENT DISPATCHING /////////////////////////////////////////////////////////////////
@@ -201,6 +201,6 @@ final class ExtHttpDriver implements CanHandleHttpRequest
 
     private function dispatchStatusCodeFailed(int $statusCode, HttpRequest $request): void
     {
-        $this->events->dispatch(new HttpRequestFailed($request, "HTTP {$statusCode}"));
+        $this->events->dispatch(new HttpRequestFailed(['request' => $request, 'message' => "HTTP {$statusCode}"]));
     }
 }

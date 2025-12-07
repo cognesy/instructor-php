@@ -52,7 +52,7 @@ class TbdApplicationFactory
         $app->add(new UpdateCommand(new UpdateAction($store, $clock, $map), $map));
         $app->add(new CloseCommand(new CloseAction($store, $clock)));
         $app->add(new CommentCommand(new CommentAction($store, $clock)));
-        $app->add(new DepAddCommand(new DepAddAction($store, $clock, $map), $map));
+        $app->add(new DepAddCommand(new DepAddAction($store, $clock, $map)));
         $app->add(new DepRemoveCommand(new DepRemoveAction($store, $clock)));
         $app->add(new DepTreeCommand(new DepTreeAction($store), $map));
         $app->add(new CompactCommand(new CompactAction($store)));

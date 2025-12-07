@@ -67,10 +67,7 @@ class HttpClientDriverFactory
         $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
 
-        $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers($name) ?? null;
-        if ($driverClosure === null) {
-            throw new InvalidArgumentException("HTTP client driver supported: {$name}");
-        }
+        $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers($name);
 
         $clientClass = is_null($clientInstance) ? '(auto)' : get_class($clientInstance);
         $this->events->dispatch(new HttpDriverBuilt([
@@ -78,7 +75,7 @@ class HttpClientDriverFactory
             'config' => $config->toArray(),
         ]));
 
-        return $driverClosure(config: $config, clientInstance: $clientInstance, events: $this->events);
+        return $driverClosure($config, $this->events, $clientInstance);
     }
 
     /**
@@ -97,7 +94,7 @@ class HttpClientDriverFactory
         $name = $config->driver;
 
         $poolClosure = $this->defaultPoolHandlers($name);
-        return $poolClosure(config: $config, events: $this->events);
+        return $poolClosure($config, $this->events);
     }
 
     // INTERNAL ////////////////////////////////////////////////////
@@ -105,7 +102,7 @@ class HttpClientDriverFactory
     /**
      * Returns the default driver closure for the specified driver name.
      *
-     * @return Closure The driver factory closure for the specified driver.
+     * @return Closure(HttpClientConfig, EventDispatcherInterface, ?object): CanHandleHttpRequest
      */
     private function defaultDrivers(string $name) : Closure {
         $drivers = [
@@ -140,6 +137,8 @@ class HttpClientDriverFactory
 
     /**
      * Returns the specified pool handler for the HTTP client.
+     *
+     * @return Closure(HttpClientConfig, EventDispatcherInterface): CanHandleRequestPool
      */
     private function defaultPoolHandlers(string $name): Closure {
         $handlers = [

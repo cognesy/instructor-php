@@ -132,7 +132,8 @@ final readonly class StructuredOutputExecution
         if (!$this->currentAttempt->isFinalized()) {
             // include partial usage from current attempt (partials only)
             $partial = $this->currentAttempt->partialResponse();
-            $usage = $usage->withAccumulated($partial?->usage() ?? Usage::none());
+            $partialUsage = $partial !== null ? $partial->usage() : Usage::none();
+            $usage = $usage->withAccumulated($partialUsage);
         }
         return $usage;
     }

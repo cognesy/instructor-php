@@ -111,7 +111,7 @@ final class LaravelLoggingFactory
                     'Starting {responseClass} generation with {model}',
                 \Cognesy\Instructor\Events\ResponseValidationFailed::class =>
                     'Validation failed for {responseClass}: {error}',
-                \Cognesy\HttpClient\Events\HttpRequestSent::class =>
+                \Cognesy\Http\Events\HttpRequestSent::class =>
                     'HTTP {method} {url}',
             ],
         ]);
@@ -127,8 +127,8 @@ final class LaravelLoggingFactory
             'channel' => 'instructor',
             'level' => 'warning',
             'exclude_events' => [
-                \Cognesy\HttpClient\Events\DebugRequestBodyUsed::class,
-                \Cognesy\HttpClient\Events\DebugResponseBodyReceived::class,
+                \Cognesy\Http\Events\DebugRequestBodyUsed::class,
+                \Cognesy\Http\Events\DebugResponseBodyReceived::class,
                 \Cognesy\Instructor\Events\PartialResponseGenerated::class,
             ],
         ]);

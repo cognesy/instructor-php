@@ -68,3 +68,16 @@ try {
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
+
+// TODO: Add "Sample Output" section showing actual log messages
+// Example format:
+// ### Sample Output
+// ```
+// 📋 About to demonstrate Embeddings logging with Laravel...
+// 🚀 Starting Embeddings request...
+// [2025-12-07 01:18:13] embeddings.DEBUG: 🔄 [Laravel] Embeddings requested: openai/text-embedding-3-small
+// [2025-12-07 01:18:14] embeddings.DEBUG: ✅ [Laravel] Embeddings completed: openai/text-embedding-3-small
+// ✅ Embeddings completed!
+// 📊 Generated 2 embedding vectors
+// 📊 Vector dimensions: 1536
+// ```

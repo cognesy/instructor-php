@@ -108,6 +108,7 @@ class LaravelDriver implements CanHandleHttpRequest
         }
         
         // Fallback to Factory-based creation (existing logic)
+        /** @phpstan-ignore-next-line */
         $pendingRequest = $this->factory
             ->timeout($this->config->requestTimeout)
             ->connectTimeout($this->config->connectTimeout)

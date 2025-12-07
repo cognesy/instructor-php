@@ -30,6 +30,14 @@ parameters:
     - packages/*/tests/Support/*
     - packages/experimental
     - examples/
+    # Framework integration files (frameworks not dependencies)
+    - packages/auxiliary/src/Beads/Eloquent/Migrations/*
+    - packages/auxiliary/src/Beads/Eloquent/Models/*
+    - packages/auxiliary/src/Beads/Presentation/BeadsServiceProvider.php
+    - packages/logging/src/Integrations/Laravel/*
+    - packages/logging/src/Integrations/Symfony/*
+    - packages/logging/src/Factories/LaravelLoggingFactory.php
+    - packages/logging/src/Factories/SymfonyLoggingFactory.php
   reportUnmatchedIgnoredErrors: false
   checkMissingCallableSignature: true
   checkUninitializedProperties: true

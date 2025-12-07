@@ -5,6 +5,9 @@ namespace Cognesy\Http\Stream;
 use Closure;
 
 class TransformStream implements StreamInterface {
+    /**
+     * @param Closure(string): string $transformFn
+     */
     public function __construct(
         private StreamInterface $source,
         private Closure $transformFn,

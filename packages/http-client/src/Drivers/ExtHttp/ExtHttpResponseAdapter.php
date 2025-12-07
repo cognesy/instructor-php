@@ -39,16 +39,21 @@ class ExtHttpResponseAdapter implements CanAdaptHttpResponse
     #[\Override]
     public function toHttpResponse(): HttpResponse
     {
+        $statusCode = $this->response->getResponseCode();
+        if ($statusCode === false) {
+            $statusCode = 0; // Fallback for failed requests
+        }
+
         if ($this->isStreamed) {
             return HttpResponse::streaming(
-                statusCode: $this->response->getResponseCode(),
+                statusCode: $statusCode,
                 headers: $this->response->getHeaders(),
                 stream: new IterableStream($this->stream()),
             );
         }
 
         return HttpResponse::sync(
-            statusCode: $this->response->getResponseCode(),
+            statusCode: $statusCode,
             headers: $this->response->getHeaders(),
             body: $this->body(),
         );

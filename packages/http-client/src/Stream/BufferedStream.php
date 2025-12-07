@@ -7,6 +7,7 @@ final class BufferedStream implements StreamInterface
     /** @var list<string> */
     private array $chunks;
     private bool $isCompleted;
+    /** @var iterable<string> */
     private iterable $source;
 
     private function __construct(
@@ -54,10 +55,12 @@ final class BufferedStream implements StreamInterface
 
     // INTERNAL ////////////////////////////////////////////////////
 
+    /** @return \Traversable<string> */
     private function iterateCached(): \Traversable {
         yield from $this->chunks;
     }
 
+    /** @return \Traversable<string> */
     private function iterateIncoming(): \Traversable {
         try {
             foreach ($this->source as $chunk) {

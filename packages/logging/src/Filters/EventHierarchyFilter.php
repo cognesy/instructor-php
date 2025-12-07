@@ -51,7 +51,7 @@ final readonly class EventHierarchyFilter implements EventFilter
     {
         return new self(
             includedClasses: [
-                \Cognesy\HttpClient\Events\HttpEvent::class,
+                \Cognesy\Http\Events\HttpClientEvent::class,
             ]
         );
     }
@@ -75,9 +75,9 @@ final readonly class EventHierarchyFilter implements EventFilter
     {
         return new self(
             excludedClasses: [
-                \Cognesy\HttpClient\Events\DebugRequestBodyUsed::class,
-                \Cognesy\HttpClient\Events\DebugResponseBodyReceived::class,
-                \Cognesy\HttpClient\Events\DebugStreamChunkReceived::class,
+                \Cognesy\Http\Events\DebugRequestBodyUsed::class,
+                \Cognesy\Http\Events\DebugResponseBodyReceived::class,
+                \Cognesy\Http\Events\DebugStreamChunkReceived::class,
             ]
         );
     }

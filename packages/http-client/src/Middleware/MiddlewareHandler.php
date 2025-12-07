@@ -28,7 +28,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
     /**
      * @param CanHandleHttpRequest $driver The actual underlying driver (e.g. GuzzleDriver)
      * @param HttpMiddleware[] $middleware The list of middlewares
-     * @param EventDispatcher|null $events Event dispatcher for middleware events
+     * @param EventDispatcherInterface|null $events Event dispatcher for middleware events
      */
     public function __construct(
         protected CanHandleHttpRequest $driver,

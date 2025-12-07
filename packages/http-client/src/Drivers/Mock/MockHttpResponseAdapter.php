@@ -4,8 +4,6 @@ namespace Cognesy\Http\Drivers\Mock;
 
 use Cognesy\Http\Contracts\CanAdaptHttpResponse;
 use Cognesy\Http\Data\HttpResponse;
-use Cognesy\Http\Events\HttpResponseChunkReceived;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Cognesy\Http\Stream\ArrayStream;
 
 /**
@@ -28,9 +26,6 @@ class MockHttpResponseAdapter implements CanAdaptHttpResponse
     private array $chunks;
     private bool $streaming;
 
-    /** @var EventDispatcherInterface|null Event dispatcher for response events */
-    private ?EventDispatcherInterface $events;
-
     /**
      * Constructor
      * 
@@ -43,15 +38,13 @@ class MockHttpResponseAdapter implements CanAdaptHttpResponse
         int $statusCode = 200,
         array $headers = [],
         string $body = '',
-        array $chunks = [],
-        ?EventDispatcherInterface $events = null
+        array $chunks = []
     ) {
         $this->statusCode = $statusCode;
         $this->headers = $headers;
         $this->body = $body;
         $this->streaming = !empty($chunks);
         $this->chunks = !empty($chunks) ? $chunks : [$body];
-        $this->events = $events;
     }
 
     #[\Override]

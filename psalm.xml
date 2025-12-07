@@ -39,6 +39,10 @@
         <ignoreFiles>
             <directory name="vendor" />
             <directory name="packages/experimental" />
+            <!-- Exclude Laravel-specific files that require Laravel runtime -->
+            <directory name="packages/auxiliary/src/Beads/Eloquent/Migrations" />
+            <directory name="packages/auxiliary/src/Beads/Eloquent/Models" />
+            <file name="packages/auxiliary/src/Beads/Presentation/BeadsServiceProvider.php" />
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>

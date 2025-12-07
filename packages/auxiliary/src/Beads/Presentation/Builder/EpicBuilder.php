@@ -111,6 +111,9 @@ final class EpicBuilder
     /**
      * Add subtask using callback
      */
+    /**
+     * @param callable(SubtaskBuilder): void $callback
+     */
     public function subtask(callable $callback): self
     {
         $builder = new SubtaskBuilder;
@@ -127,7 +130,7 @@ final class EpicBuilder
     /**
      * Add multiple parallel tasks (all block the epic)
      *
-     * @param  array<callable>  $callbacks
+     * @param  array<callable(SubtaskBuilder): void>  $callbacks
      */
     public function parallelTasks(array $callbacks): self
     {
@@ -142,7 +145,7 @@ final class EpicBuilder
      * Add sequential tasks (each blocks the next)
      * Note: Dependencies are handled by bd CLI separately
      *
-     * @param  array<callable>  $callbacks
+     * @param  array<callable(SubtaskBuilder): void>  $callbacks
      */
     public function sequentialTasks(array $callbacks): self
     {

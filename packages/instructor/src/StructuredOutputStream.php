@@ -88,7 +88,7 @@ class StructuredOutputStream
      * This method is useful when you want to process only fully updated
      * sequence items, e.g. for visualization or further processing.
      *
-     * @return Generator<Sequence>
+     * @return Generator<Sequenceable>
      */
     public function sequence(): Generator {
         $tracker = SequenceTracker::empty();

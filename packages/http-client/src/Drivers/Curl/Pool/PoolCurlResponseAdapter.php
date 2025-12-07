@@ -33,7 +33,7 @@ final class PoolCurlResponseAdapter implements CanAdaptHttpResponse
         // For curl_multi, we MUST get the body via curl_multi_getcontent
         // This is different from sync requests where curl_exec returns it
         $body = curl_multi_getcontent($this->handle->native());
-        if ($body === false || $body === null) {
+        if (!is_string($body)) {
             $body = '';
         }
 

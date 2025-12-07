@@ -49,3 +49,11 @@ $user = (new StructuredOutput)
 
 assert($user->name === 'Jason');
 assert($user->age === 25);
+
+// TODO: Add "Sample Output" section showing actual log messages
+// Example format:
+// ### Sample Output
+// ```
+// [2025-12-07T01:18:13.475202+00:00] instructor.DEBUG: 🎯 [PSR-3] Starting extraction: User
+// [2025-12-07T01:18:14.659417+00:00] instructor.DEBUG: ✅ [PSR-3] Completed extraction: User
+// ```

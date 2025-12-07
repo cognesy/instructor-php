@@ -70,3 +70,11 @@ $user = (new StructuredOutput)
 
 echo "\n✅ Extraction completed!\n";
 echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
+
+// TODO: Add "Sample Output" section showing actual log messages
+// Example format:
+// ### Sample Output
+// ```
+// [2025-12-07 01:18:13] instructor.DEBUG: 🔄 [Symfony] Starting extraction: User
+// [2025-12-07 01:18:14] instructor.DEBUG: ✅ [Symfony] Completed extraction: User
+// ```

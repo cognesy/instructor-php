@@ -57,3 +57,11 @@ $user = (new StructuredOutput)
 
 echo "\n✅ Extraction completed!\n";
 echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
+
+// TODO: Add "Sample Output" section showing actual log messages
+// Example format:
+// ### Sample Output
+// ```
+// [2025-12-07T01:18:13.475202+00:00] instructor.DEBUG: 🎯 [PSR-3] Starting extraction: User
+// [2025-12-07T01:18:14.659417+00:00] instructor.DEBUG: ✅ [PSR-3] Completed extraction: User
+// ```

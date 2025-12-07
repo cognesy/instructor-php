@@ -126,7 +126,8 @@ final readonly class HttpResponseList implements \Countable, \IteratorAggregate
 
     /** @param callable(Result): Result $mapper */
     public function map(callable $mapper): self {
-        return new self($this->responses->map($mapper));
+        $mapped = $this->responses->map($mapper);
+        return new self($mapped instanceof ArrayList ? $mapped : ArrayList::fromArray($mapped->toArray()));
     }
 
     // SERIALIZATION ////////////////////////////////////////////////////////////

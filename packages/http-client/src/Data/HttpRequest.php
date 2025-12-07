@@ -135,8 +135,8 @@ class HttpRequest
             body: $data['body'],
             options: $data['options'],
             id: $data['id'],
-            createdAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['createdAt']),
-            updatedAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['updatedAt']),
+            createdAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['createdAt']) ?: null,
+            updatedAt: DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data['updatedAt']) ?: null,
             metadata: Metadata::fromArray($data['metadata']),
         );
     }

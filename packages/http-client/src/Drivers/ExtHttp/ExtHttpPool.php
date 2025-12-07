@@ -52,7 +52,7 @@ class ExtHttpPool implements CanHandleRequestPool
     #[\Override]
     public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList
     {
-        $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;
+        $concurrency = max(1, $maxConcurrent ?? $this->config->maxConcurrent);
         $responses = [];
 
         // Process requests in batches based on concurrency limit

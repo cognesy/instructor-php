@@ -71,7 +71,7 @@ readonly final class StructuredOutputAttempt
     }
 
     public function partialResponse(): PartialInferenceResponse {
-        return $this->inferenceExecution->partialResponse();
+        return $this->inferenceExecution->partialResponse() ?? PartialInferenceResponse::empty();
     }
 
     public function inferenceExecution(): InferenceExecution {
