@@ -27,10 +27,10 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
 
     /**
      * @return array<class-string, bool>
-     * @phpstan-ignore method.childReturnType
-     * @phpstan-ignore method.override
      * @psalm-suppress MethodSignatureMismatch
+     * @phpstan-ignore method.childReturnType
      */
+    /** @psalm-suppress MissingOverrideAttribute */
     public function getSupportedTypes(?string $format): array {
         return [
             DateTimeInterface::class => true,
