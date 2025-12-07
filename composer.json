@@ -168,7 +168,7 @@
     "docs": "@php ./bin/instructor-docs",
     "hub": "php ./bin/instructor-hub",
     "phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
-    "psalm": "@php ./vendor/bin/psalm",
+    "psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
     "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
     "tell": "bin/tell",
     "test": "@php ./vendor/bin/pest --testsuite=Unit,Feature,Regression",
