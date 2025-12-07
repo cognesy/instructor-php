@@ -28,8 +28,9 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
     /**
      * @return array<class-string, bool>
      * @phpstan-ignore method.childReturnType
+     * @psalm-suppress MethodSignatureMismatch Known issue with Symfony version differences
+     * @psalm-suppress MissingReturnType Known issue with Symfony version differences
      */
-    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return [
             DateTimeInterface::class => true,
