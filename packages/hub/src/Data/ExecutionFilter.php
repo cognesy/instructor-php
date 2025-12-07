@@ -47,6 +47,7 @@ class ExecutionFilter implements CanFilterExamples
         return new self($mode);
     }
 
+    #[\Override]
     public function shouldExecute(ExampleExecutionStatus $status): bool
     {
         return match($this->mode) {

@@ -30,7 +30,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
      * @psalm-suppress MethodSignatureMismatch
      * @phpstan-ignore method.childReturnType
      */
-    /** @psalm-suppress MissingOverrideAttribute */
+    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return [
             DateTimeInterface::class => true,
