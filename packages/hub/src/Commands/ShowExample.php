@@ -4,6 +4,7 @@ namespace Cognesy\InstructorHub\Commands;
 
 use Cognesy\InstructorHub\Contracts\CanTrackExecution;
 use Cognesy\InstructorHub\Core\Cli;
+use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Data\ExecutionStatus;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Utils\CliMarkdown;
@@ -71,7 +72,7 @@ class ShowExample extends Command
         return Command::SUCCESS;
     }
 
-    private function showExecutionDetails($example): void
+    private function showExecutionDetails(Example $example): void
     {
         $status = $this->tracker->getStatus($example);
 
@@ -129,8 +130,8 @@ class ShowExample extends Command
             Cli::outln("  Error History:", [Color::BOLD, Color::RED]);
             foreach (array_slice($status->errors, -3) as $i => $error) {
                 Cli::outln("    " . ($i + 1) . ". {$error->type}: {$error->message}", [Color::RED]);
-                if (!empty($error->details)) {
-                    Cli::outln("       " . Cli::limit($error->details, 60), [Color::DARK_GRAY]);
+                if (!empty($error->fullOutput) && $error->fullOutput !== $error->message) {
+                    Cli::outln("       " . Cli::limit($error->fullOutput, 60), [Color::DARK_GRAY]);
                 }
             }
             if (count($status->errors) > 3) {

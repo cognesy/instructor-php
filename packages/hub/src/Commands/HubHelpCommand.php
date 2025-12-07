@@ -26,7 +26,7 @@ class HubHelpCommand extends Command
     {
         $specificCommand = $input->getArgument('command_name');
 
-        if ($specificCommand && $specificCommand !== 'help') {
+        if (is_string($specificCommand) && $specificCommand !== 'help') {
             // Show help for specific command using parent application
             $command = $this->getApplication()->find($specificCommand);
             $command->run(new \Symfony\Component\Console\Input\ArrayInput(['--help' => true]), $output);

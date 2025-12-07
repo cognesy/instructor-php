@@ -90,13 +90,7 @@ class Usage
             );
         }
 
-        // Check if addition would overflow PHP_INT_MAX
-        if ($a > 0 && $b > 0 && $a > PHP_INT_MAX - $b) {
-            throw new \InvalidArgumentException(
-                "Integer overflow detected in {$fieldName}: {$a} + {$b} exceeds PHP_INT_MAX. " .
-                "This indicates a serious bug in token accumulation logic."
-            );
-        }
+        // The overflow check is not needed since we limit tokens to reasonable amounts above
 
         return $a + $b;
     }

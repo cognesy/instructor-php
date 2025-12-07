@@ -5,6 +5,7 @@ namespace Cognesy\InstructorHub\Commands;
 use Cognesy\InstructorHub\Contracts\CanTrackExecution;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\ExecutionStatus;
+use Cognesy\InstructorHub\Data\ExecutionSummary;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -57,7 +58,7 @@ class StatusCommand extends Command
         };
     }
 
-    private function outputTable($summary, bool $detailed, bool $errorsOnly, OutputInterface $output): int
+    private function outputTable(ExecutionSummary $summary, bool $detailed, bool $errorsOnly, OutputInterface $output): int
     {
         // Show summary
         Cli::outln('');
@@ -166,7 +167,7 @@ class StatusCommand extends Command
         $table->render();
     }
 
-    private function outputJson($summary, bool $detailed, bool $errorsOnly): int
+    private function outputJson(ExecutionSummary $summary, bool $detailed, bool $errorsOnly): int
     {
         $data = [
             'summary' => $summary->toArray(),

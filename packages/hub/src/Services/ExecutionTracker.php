@@ -336,7 +336,7 @@ class ExecutionTracker implements CanTrackExecution
     }
 
     /** @param array<ExampleExecutionStatus> $statuses */
-    private function getLastFullRun(array $statuses): ?string
+    private function getLastFullRun(array $statuses): null
     {
         // This would need to track when all examples were run
         // For now, return null
