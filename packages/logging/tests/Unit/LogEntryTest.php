@@ -54,8 +54,8 @@ describe('LogEntry', function () {
 
         expect($entry->isLevel(LogLevel::WARNING))->toBeTrue()
             ->and($entry->isLevel(LogLevel::ERROR))->toBeFalse()
-            ->and($entry->isLevelOrAbove(LogLevel::ERROR))->toBeTrue()
-            ->and($entry->isLevelOrAbove(LogLevel::DEBUG))->toBeFalse();
+            ->and($entry->isLevelOrAbove(LogLevel::ERROR))->toBeFalse()
+            ->and($entry->isLevelOrAbove(LogLevel::DEBUG))->toBeTrue();
     });
 
     it('serializes to JSON', function () {

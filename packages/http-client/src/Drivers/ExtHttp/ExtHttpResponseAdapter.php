@@ -73,7 +73,9 @@ class ExtHttpResponseAdapter implements CanAdaptHttpResponse
     private function stream(): Generator
     {
         $body = $this->response->getBody();
-        $totalSize = (int) $this->response->getHeader('Content-Length', 0);
+        $headers = $this->response->getHeaders();
+        $contentLength = $headers['Content-Length'] ?? $headers['content-length'] ?? '0';
+        $totalSize = is_array($contentLength) ? (int) $contentLength[0] : (int) $contentLength;
         $bytesRead = 0;
 
         // Convert body to string and chunk it
@@ -85,11 +87,11 @@ class ExtHttpResponseAdapter implements CanAdaptHttpResponse
             $bytesRead += strlen($chunk);
 
             // Dispatch chunk received event
-            $this->events->dispatch(new HttpResponseChunkReceived(
-                chunk: $chunk,
-                bytesReceived: $bytesRead,
-                totalBytes: $totalSize > 0 ? $totalSize : $bodyLength,
-            ));
+            $this->events->dispatch(new HttpResponseChunkReceived([
+                'chunk' => $chunk,
+                'bytesReceived' => $bytesRead,
+                'totalBytes' => $totalSize > 0 ? $totalSize : $bodyLength,
+            ]));
 
             yield $chunk;
         }

@@ -86,6 +86,7 @@ class ExtHttpPool implements CanHandleRequestPool
      *
      * @param HttpRequest[] $requests
      * @return array<int, Result>
+     * @psalm-return array<int, Result>
      */
     private function processBatch(array $requests): array
     {
@@ -123,9 +124,18 @@ class ExtHttpPool implements CanHandleRequestPool
         }
 
         // Collect responses
-        $results = array_fill(0, count($requests), null);
+        $results = [];
 
-        foreach ($extHttpRequests as $extHttpRequest) {
+        // Initialize results array with failures for creation errors
+        foreach ($requests as $index => $request) {
+            if (array_key_exists($index, $requestMap) && isset($requestMap[$index]['error'])) {
+                $results[$index] = new Failure($requestMap[$index]['error']);
+            } else {
+                $results[$index] = null; // Will be filled during processing
+            }
+        }
+
+        foreach ($extHttpRequests as $i => $extHttpRequest) {
             if ($extHttpRequest === null) {
                 continue;
             }
@@ -162,15 +172,15 @@ class ExtHttpPool implements CanHandleRequestPool
             }
         }
 
-        // Fill any remaining null slots with failures for requests that had creation errors
+        // Ensure all remaining null slots are filled with failures
         foreach ($results as $index => $result) {
             if ($result === null) {
                 $request = $requests[$index];
-                $error = $requestMap[$index]['error'] ?? new NetworkException('Unknown error processing request', $request);
-                $results[$index] = new Failure($error);
+                $results[$index] = new Failure(new NetworkException('Unknown error processing request', $request));
             }
         }
 
+        /** @psalm-var array<int, Result> $results */
         return $results;
     }
 
@@ -227,7 +237,7 @@ class ExtHttpPool implements CanHandleRequestPool
     {
         $results = [];
         foreach ($requests as $request) {
-            $networkException = new NetworkException($exception->getMessage(), $request, $exception);
+            $networkException = new NetworkException($exception->getMessage(), $request, null, null, $exception);
             $results[] = new Failure($networkException);
         }
         return $results;
