@@ -28,9 +28,9 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
     /**
      * @return array<class-string, bool>
      * @psalm-suppress MethodSignatureMismatch
+     * @psalm-suppress MissingOverrideAttribute
      * @phpstan-ignore method.childReturnType
      */
-    #[\Override]
     public function getSupportedTypes(?string $format): array {
         return [
             DateTimeInterface::class => true,
