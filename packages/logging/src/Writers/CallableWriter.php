@@ -13,6 +13,7 @@ use Cognesy\Logging\LogEntry;
 final readonly class CallableWriter implements LogWriter
 {
     public function __construct(
+        /** @var \Closure(LogEntry): void */
         private \Closure $writer,
     ) {}
 
@@ -21,6 +22,9 @@ final readonly class CallableWriter implements LogWriter
         ($this->writer)($entry);
     }
 
+    /**
+     * @param callable(LogEntry): void $writer
+     */
     public static function create(callable $writer): self
     {
         return new self($writer instanceof \Closure ? $writer : \Closure::fromCallable($writer));

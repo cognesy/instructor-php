@@ -228,45 +228,28 @@ class PartialInferenceResponse
         // Determine if there is a tool delta in the current chunk
         $hasToolDelta = ($this->toolId !== '') || ($this->toolName !== '') || ($this->toolArgs !== '');
         if ($hasToolDelta) {
-            $key = $this->lastToolKey;
+            // Determine the key to use for this tool delta
+            $key = $this->resolveToolKey($this->toolId, $this->toolName);
 
-            if ($this->toolId !== '') {
-                // Prefer explicit id when provided
-                $candidate = 'id:' . $this->toolId;
-                if ($candidate !== $this->lastToolKey || !isset($this->tools[$candidate])) {
-                    // New tool call by id
-                    $this->toolsCount += 1;
-                    $this->tools[$candidate] = [
-                        'id' => $this->toolId,
-                        'name' => $this->toolName, // may be empty on first delta
-                        'args' => '',
-                    ];
-                } elseif ($this->toolName !== '') {
-                    // Update name if arrives later
-                    $this->tools[$candidate]['name'] = $this->toolName;
-                }
-                $key = $candidate;
-            } elseif ($this->toolName !== '') {
-                // Start a new tool entry when name changes, otherwise continue last
-                $currentName = '';
-                if ($this->lastToolKey !== '' && isset($this->tools[$this->lastToolKey])) {
-                    $currentName = $this->tools[$this->lastToolKey]['name'] ?? '';
-                }
-                if ($currentName === '' || $currentName !== $this->toolName) {
-                    $this->toolsCount += 1;
-                    $key = 'name:' . $this->toolName . '#' . $this->toolsCount;
-                    $this->tools[$key] = [
-                        'id' => '',
-                        'name' => $this->toolName,
-                        'args' => '',
-                    ];
-                } else {
-                    // Same name continues
-                    $key = $this->lastToolKey;
-                }
-            } else {
-                // No id or name provided -> continuation of last tool
-                $key = $this->lastToolKey;
+            // Handle tool creation/updating based on the resolved key
+            if ($this->toolId !== '' && ($key !== $this->lastToolKey || !isset($this->tools[$key]))) {
+                // New tool call by id
+                $this->toolsCount += 1;
+                $this->tools[$key] = [
+                    'id' => $this->toolId,
+                    'name' => $this->toolName, // may be empty on first delta
+                    'args' => '',
+                ];
+            } elseif ($this->toolId !== '' && $this->toolName !== '' && isset($this->tools[$key])) {
+                // Update name if arrives later for existing tool
+                $this->tools[$key]['name'] = $this->toolName;
+            } elseif ($this->toolName !== '' && $key !== $this->lastToolKey) {
+                // New tool by name
+                $this->tools[$key] = [
+                    'id' => '',
+                    'name' => $this->toolName,
+                    'args' => '',
+                ];
             }
 
             // Update last key
@@ -300,6 +283,9 @@ class PartialInferenceResponse
 
     // INTERNAL //////////////////////////////////////////////////////////
 
+    /**
+     * Resolve the key to use for tool tracking based on ID or name
+     */
     private function resolveToolKey(string $toolId, string $toolName): string {
         if ($toolId !== '') {
             return 'id:' . $toolId;

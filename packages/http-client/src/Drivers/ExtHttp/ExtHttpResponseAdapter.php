@@ -94,24 +94,4 @@ class ExtHttpResponseAdapter implements CanAdaptHttpResponse
             yield $chunk;
         }
     }
-
-    /**
-     * Get response headers in the format expected by HttpResponse
-     */
-    private function headers(): array
-    {
-        $headers = [];
-
-        // Get all headers from ext-http response
-        foreach ($this->response->getHeaders() as $name => $value) {
-            // ext-http may return headers as arrays or strings
-            if (is_array($value)) {
-                $headers[$name] = $value;
-            } else {
-                $headers[$name] = [$value];
-            }
-        }
-
-        return $headers;
-    }
 }

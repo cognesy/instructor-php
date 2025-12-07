@@ -15,6 +15,7 @@ use Cognesy\Logging\LogContext;
 final readonly class LazyEnricher implements EventEnricher
 {
     public function __construct(
+        /** @var Closure(): array<string, mixed> */
         private Closure $contextProvider,
         private string $contextKey = 'framework',
     ) {}
@@ -32,16 +33,25 @@ final readonly class LazyEnricher implements EventEnricher
         };
     }
 
+    /**
+     * @param Closure(): array<string, mixed> $provider
+     */
     public static function framework(Closure $provider): self
     {
         return new self($provider, 'framework');
     }
 
+    /**
+     * @param Closure(): array<string, mixed> $provider
+     */
     public static function metrics(Closure $provider): self
     {
         return new self($provider, 'metrics');
     }
 
+    /**
+     * @param Closure(): array<string, mixed> $provider
+     */
     public static function user(Closure $provider): self
     {
         return new self($provider, 'user');

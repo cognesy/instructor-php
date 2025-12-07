@@ -60,6 +60,7 @@ final class LoggingPipeline
 
     /**
      * Build the pipeline into a callable that can be used as an event listener
+     * @return callable(Event): void
      */
     public function build(): callable
     {
@@ -126,6 +127,7 @@ final class LoggingPipeline
 
     /**
      * Build and return the pipeline as a simple callable
+     * @return callable(Event): void
      */
     public function __invoke(): callable
     {

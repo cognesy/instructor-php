@@ -38,6 +38,7 @@ class Issue extends Model
 {
     protected $table = 'beads_issues';
 
+    /** @var array<string> */
     protected $fillable = [
         'issue_id',
         'title',
@@ -60,6 +61,7 @@ class Issue extends Model
         'original_size',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'priority' => 'integer',
         'estimated_minutes' => 'integer',

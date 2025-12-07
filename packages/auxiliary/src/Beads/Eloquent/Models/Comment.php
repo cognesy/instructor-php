@@ -19,12 +19,14 @@ class Comment extends Model
 {
     protected $table = 'beads_comments';
 
+    /** @var array<string> */
     protected $fillable = [
         'issue_id',
         'author',
         'text',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

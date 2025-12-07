@@ -63,8 +63,10 @@ final readonly class DependencyService
             $unresolvedBlockers = $blockers->filter(fn (Task $b) => ! $b->isClosed());
 
             // Only include if this is the last blocker
+            $firstBlocker = $unresolvedBlockers->first();
             return $unresolvedBlockers->count() === 1
-                && $unresolvedBlockers->first()?->id()->equals($task->id());
+                && $firstBlocker !== null
+                && $firstBlocker->id()->equals($task->id());
         });
     }
 

@@ -14,6 +14,7 @@ parameters:
     - packages/http-client/src
     - packages/hub/src
     - packages/instructor/src
+    - packages/logging/src
     - packages/messages/src
     - packages/pipeline/src
     - packages/polyglot/src

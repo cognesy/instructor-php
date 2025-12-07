@@ -99,7 +99,7 @@ class UpdateAction
             priority: $priority !== null ? $this->map->priority($priority) : $issue->priority,
             issueType: $issue->issueType,
             createdAt: $issue->createdAt,
-            updatedAt: $this->clock->parse($updatedAt) ?? $this->clock->now(),
+            updatedAt: $this->clock->parse($updatedAt),
             assignee: $assignee ?? $issue->assignee,
             design: $design ?? $issue->design,
             acceptanceCriteria: $acceptanceCriteria ?? $issue->acceptanceCriteria,

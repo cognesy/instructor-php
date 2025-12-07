@@ -57,6 +57,14 @@ final class CurlHandle
         return curl_errno($this->native());
     }
 
+    public function url(): string {
+        return $this->url;
+    }
+
+    public function method(): string {
+        return $this->method;
+    }
+
     public function close(): void {
         if ($this->handle !== null) {
             curl_close($this->handle);

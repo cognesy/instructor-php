@@ -56,14 +56,14 @@ class ExtHttpPool implements CanHandleRequestPool
         $responses = [];
 
         // Process requests in batches based on concurrency limit
-        $requestBatches = $requests->chunk($concurrency);
+        $requestBatches = array_chunk($requests->all(), $concurrency);
 
         foreach ($requestBatches as $batch) {
-            $batchResults = $this->processBatch($batch->all());
+            $batchResults = $this->processBatch($batch);
             $responses = array_merge($responses, $batchResults);
         }
 
-        return HttpResponseList::from($responses);
+        return HttpResponseList::fromArray($responses);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ class ExtHttpPool implements CanHandleRequestPool
      * Process a batch of requests concurrently
      *
      * @param HttpRequest[] $requests
-     * @return Result[]
+     * @return array<int, Result>
      */
     private function processBatch(array $requests): array
     {

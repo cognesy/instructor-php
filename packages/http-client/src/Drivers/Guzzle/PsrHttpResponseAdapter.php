@@ -56,19 +56,6 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    private function statusCode(): int {
-        return $this->response->getStatusCode();
-    }
-
-    /**
-     * Get the response headers
-     *
-     * @return array<string, array<string>>
-     */
-    private function headers(): array {
-        return $this->response->getHeaders();
-    }
-
     /**
      * Get the response content
      *
@@ -97,9 +84,5 @@ class PsrHttpResponseAdapter implements CanAdaptHttpResponse
             $this->events->dispatch(new HttpResponseChunkReceived($chunk));
             yield $chunk;
         }
-    }
-
-    private function isStreamed(): bool {
-        return $this->isStreamed;
     }
 }

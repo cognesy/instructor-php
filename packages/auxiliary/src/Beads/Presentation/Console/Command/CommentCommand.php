@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CommentCommand extends Command
 {
-    protected static $defaultName = 'comment';
-
     public function __construct(
         private readonly CommentAction $action,
     ) {

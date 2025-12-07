@@ -29,7 +29,7 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $event = new TestEvent(LogLevel::INFO, ['test' => 'data']);
+        $event = new PipelineTestEvent(LogLevel::INFO, ['test' => 'data']);
         $pipeline($event);
 
         expect($logged)->toHaveCount(1)
@@ -47,8 +47,8 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $debugEvent = new TestEvent(LogLevel::DEBUG);
-        $errorEvent = new TestEvent(LogLevel::ERROR);
+        $debugEvent = new PipelineTestEvent(LogLevel::DEBUG);
+        $errorEvent = new PipelineTestEvent(LogLevel::ERROR);
 
         $pipeline($debugEvent);
         $pipeline($errorEvent);
@@ -73,9 +73,9 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $allowedInfo = new TestEvent(LogLevel::INFO, ['allowed' => true]);
-        $blockedInfo = new TestEvent(LogLevel::INFO, ['allowed' => false]);
-        $allowedDebug = new TestEvent(LogLevel::DEBUG, ['allowed' => true]);
+        $allowedInfo = new PipelineTestEvent(LogLevel::INFO, ['allowed' => true]);
+        $blockedInfo = new PipelineTestEvent(LogLevel::INFO, ['allowed' => false]);
+        $allowedDebug = new PipelineTestEvent(LogLevel::DEBUG, ['allowed' => true]);
 
         $pipeline($allowedInfo);
         $pipeline($blockedInfo);
@@ -105,7 +105,7 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $event = new TestEvent(LogLevel::INFO);
+        $event = new PipelineTestEvent(LogLevel::INFO);
         $pipeline($event);
 
         expect($logged)->toHaveCount(1)
@@ -135,7 +135,7 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $event = new TestEvent(LogLevel::DEBUG);
+        $event = new PipelineTestEvent(LogLevel::DEBUG);
         $pipeline($event);
 
         expect($logged)->toHaveCount(1)
@@ -156,7 +156,7 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $event = new TestEvent(LogLevel::INFO);
+        $event = new PipelineTestEvent(LogLevel::INFO);
         $pipeline($event);
 
         expect($log1)->toHaveCount(1)
@@ -173,7 +173,7 @@ describe('LoggingPipeline', function () {
             }))
             ->build();
 
-        $event = new TestEvent(LogLevel::WARNING, 'test');
+        $event = new PipelineTestEvent(LogLevel::WARNING, 'test');
         $pipeline($event);
 
         expect($logged)->toHaveCount(1)
@@ -182,7 +182,7 @@ describe('LoggingPipeline', function () {
     });
 });
 
-class TestEvent extends Event
+class PipelineTestEvent extends Event
 {
     public function __construct(string $logLevel = LogLevel::DEBUG, mixed $data = null)
     {

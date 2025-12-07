@@ -51,25 +51,8 @@ class LaravelHttpResponseAdapter implements CanAdaptHttpResponse
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    private function statusCode(): int {
-        return $this->response->status();
-    }
-
-    /**
-     * Get the response headers
-     *
-     * @return array<string, string>
-     */
-    private function headers(): array {
-        return $this->response->headers();
-    }
-
     private function body(): string {
         return $this->response->body();
-    }
-
-    private function isStreamed(): bool {
-        return $this->streaming;
     }
 
     /**

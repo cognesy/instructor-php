@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ReadyCommand extends Command
 {
-    protected static $defaultName = 'ready';
 
     public function __construct(
         private readonly ReadyAction $action,

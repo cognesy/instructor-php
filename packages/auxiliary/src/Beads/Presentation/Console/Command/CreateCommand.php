@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CreateCommand extends Command
 {
-    protected static $defaultName = 'create';
-
     public function __construct(
         private readonly CreateAction $action,
         private readonly TbdInputMapper $map,

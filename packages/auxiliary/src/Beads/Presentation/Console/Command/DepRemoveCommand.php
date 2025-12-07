@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DepRemoveCommand extends Command
 {
-    protected static $defaultName = 'dep:rm';
 
     public function __construct(
         private readonly DepRemoveAction $action,

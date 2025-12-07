@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitCommand extends Command
 {
-    protected static $defaultName = 'init';
 
     public function __construct(
         private readonly InitAction $action,

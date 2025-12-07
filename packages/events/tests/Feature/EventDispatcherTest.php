@@ -18,13 +18,13 @@ test('dispatcher can be initialized with default name', function () {
 // Event Listener Tests
 test('dispatcher can register listeners for events', function () {
     $dispatcher = new EventDispatcher();
-    $eventClass = TestEvent::class;
+    $eventClass = EventDispatcherEventDispatcherTestEvent::class;
     $listener = fn() => null;
 
     $dispatcher->addListener($eventClass, $listener);
 
     // Test getListenersForEvent
-    $event = new TestEvent();
+    $event = new EventDispatcherTestEvent();
     $listeners = iterator_to_array($dispatcher->getListenersForEvent($event));
 
     expect($listeners)->toHaveCount(1);
@@ -37,11 +37,11 @@ test('dispatcher returns listeners for parent event classes', function () {
     $childListener = fn() => null;
 
     // Register listeners
-    $dispatcher->addListener(TestEvent::class, $baseListener);
-    $dispatcher->addListener(ChildTestEvent::class, $childListener);
+    $dispatcher->addListener(EventDispatcherTestEvent::class, $baseListener);
+    $dispatcher->addListener(ChildEventDispatcherTestEvent::class, $childListener);
 
     // Base event should only get base listeners
-    $baseEvent = new TestEvent();
+    $baseEvent = new EventDispatcherTestEvent();
     $baseListeners = iterator_to_array($dispatcher->getListenersForEvent($baseEvent));
     expect($baseListeners)->toHaveCount(1);
     expect($baseListeners[0])->toBe($baseListener);
@@ -67,7 +67,7 @@ test('dispatcher calls listeners with the event', function () {
     $event = new TestEvent(['key' => 'value']);
     $called = false;
 
-    $dispatcher->addListener(TestEvent::class, function (TestEvent $e) use (&$called, $event) {
+    $dispatcher->addListener(EventDispatcherTestEvent::class, function (TestEvent $e) use (&$called, $event) {
         $called = true;
         expect($e)->toBe($event);
         expect($e->data)->toBe(['key' => 'value']);
@@ -84,12 +84,12 @@ test('dispatcher stops propagation when event is stoppable and stopped', functio
     $firstCalled = false;
     $secondCalled = false;
 
-    $dispatcher->addListener(StoppableTestEvent::class, function (StoppableTestEvent $e) use (&$firstCalled) {
+    $dispatcher->addListener(StoppableEventDispatcherTestEvent::class, function (StoppableTestEvent $e) use (&$firstCalled) {
         $firstCalled = true;
         $e->stopPropagation();
     });
 
-    $dispatcher->addListener(StoppableTestEvent::class, function () use (&$secondCalled) {
+    $dispatcher->addListener(StoppableEventDispatcherTestEvent::class, function () use (&$secondCalled) {
         $secondCalled = true;
     });
 
@@ -105,10 +105,10 @@ test('dispatcher forwards events to parent dispatcher', function () {
     $parentDispatcher = new EventDispatcher('parent');
     $childDispatcher = new EventDispatcher('child', $parentDispatcher);
 
-    $event = new TestEvent();
+    $event = new EventDispatcherTestEvent();
     $parentCalled = false;
 
-    $parentDispatcher->addListener(TestEvent::class, function () use (&$parentCalled) {
+    $parentDispatcher->addListener(EventDispatcherTestEvent::class, function () use (&$parentCalled) {
         $parentCalled = true;
     });
 
@@ -124,12 +124,12 @@ test('parent dispatcher is not affected by child event stopping propagation', fu
     $childCalled = false;
     $parentCalled = false;
 
-    $childDispatcher->addListener(StoppableTestEvent::class, function (StoppableTestEvent $e) use (&$childCalled) {
+    $childDispatcher->addListener(StoppableEventDispatcherTestEvent::class, function (StoppableTestEvent $e) use (&$childCalled) {
         $childCalled = true;
         $e->stopPropagation();
     });
 
-    $parentDispatcher->addListener(StoppableTestEvent::class, function () use (&$parentCalled) {
+    $parentDispatcher->addListener(StoppableEventDispatcherTestEvent::class, function () use (&$parentCalled) {
         $parentCalled = true;
     });
 
@@ -160,7 +160,7 @@ test('wiretap receives all dispatched events', function () {
 
 test('multiple wiretaps all receive the same events', function () {
     $dispatcher = new EventDispatcher();
-    $event = new TestEvent();
+    $event = new EventDispatcherTestEvent();
 
     $firstWiretapCalled = false;
     $secondWiretapCalled = false;
@@ -183,7 +183,7 @@ test('multiple wiretaps all receive the same events', function () {
 
 test('wiretap gets events even if there are no regular listeners', function () {
     $dispatcher = new EventDispatcher();
-    $event = new TestEvent();
+    $event = new EventDispatcherTestEvent();
 
     $wiretapCalled = false;
     $dispatcher->addListener('*', function () use (&$wiretapCalled) {
@@ -195,9 +195,9 @@ test('wiretap gets events even if there are no regular listeners', function () {
 });
 
 // Test Helper Classes
-class TestEvent extends Event {}
+class EventDispatcherTestEvent extends Event {}
 
-class ChildTestEvent extends TestEvent {}
+class ChildTestEvent extends EventDispatcherTestEvent {}
 
 class StoppableTestEvent extends Event implements StoppableEventInterface
 {

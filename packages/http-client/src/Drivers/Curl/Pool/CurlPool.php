@@ -82,4 +82,8 @@ final class CurlPool implements CanHandleRequestPool
         // Return responses in original request order
         return HttpResponseList::fromArray($state->responses->finalize());
     }
+
+    public function events(): EventDispatcherInterface {
+        return $this->events;
+    }
 }

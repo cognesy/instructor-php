@@ -13,7 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DepTreeCommand extends Command
 {
-    protected static $defaultName = 'dep:tree';
 
     public function __construct(
         private readonly DepTreeAction $action,

@@ -12,12 +12,14 @@ use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Cognesy\Events\Event;
 
 /**
  * Factory for Laravel-specific logging configuration
  */
 final class LaravelLoggingFactory
 {
+    /** @return callable(Event): void */
     public static function create(Application $app, array $config = []): callable
     {
         $config = array_merge([
@@ -96,6 +98,7 @@ final class LaravelLoggingFactory
 
     /**
      * Quick setup for common Laravel patterns
+     * @return callable(Event): void
      */
     public static function defaultSetup(Application $app): callable
     {
@@ -116,6 +119,7 @@ final class LaravelLoggingFactory
 
     /**
      * Setup for production with minimal logging
+     * @return callable(Event): void
      */
     public static function productionSetup(Application $app): callable
     {

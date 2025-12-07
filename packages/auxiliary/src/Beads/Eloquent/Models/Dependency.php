@@ -23,6 +23,7 @@ class Dependency extends Model
 {
     protected $table = 'beads_dependencies';
 
+    /** @var array<string> */
     protected $fillable = [
         'issue_id',
         'depends_on_id',
@@ -30,6 +31,7 @@ class Dependency extends Model
         'created_by',
     ];
 
+    /** @var array<string, string> */
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

@@ -65,11 +65,11 @@ class Usage
     // MUTATORS ///////////////////////////////////////////////////////////
 
     public function accumulate(Usage $usage) : self {
-        $this->inputTokens = (int) ($this->inputTokens + (int) $usage->inputTokens);
-        $this->outputTokens = (int) ($this->outputTokens + (int) $usage->outputTokens);
-        $this->cacheWriteTokens = (int) ($this->cacheWriteTokens + (int) $usage->cacheWriteTokens);
-        $this->cacheReadTokens = (int) ($this->cacheReadTokens + (int) $usage->cacheReadTokens);
-        $this->reasoningTokens = (int) ($this->reasoningTokens + (int) $usage->reasoningTokens);
+        $this->inputTokens = $this->inputTokens + $usage->inputTokens;
+        $this->outputTokens = $this->outputTokens + $usage->outputTokens;
+        $this->cacheWriteTokens = $this->cacheWriteTokens + $usage->cacheWriteTokens;
+        $this->cacheReadTokens = $this->cacheReadTokens + $usage->cacheReadTokens;
+        $this->reasoningTokens = $this->reasoningTokens + $usage->reasoningTokens;
         return $this;
     }
 

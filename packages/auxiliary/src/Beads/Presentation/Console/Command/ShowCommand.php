@@ -11,7 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ShowCommand extends Command
 {
-    protected static $defaultName = 'show';
 
     public function __construct(
         private readonly ShowAction $action,
@@ -38,7 +37,8 @@ class ShowCommand extends Command
         $issue = $this->action->__invoke($file, $id);
 
         if ($input->getOption('json')) {
-            $output->writeln(json_encode($issue->toArray(), JSON_PRETTY_PRINT));
+            $json = json_encode($issue->toArray(), JSON_PRETTY_PRINT);
+            $output->writeln($json ?: '{}');
             return Command::SUCCESS;
         }
 

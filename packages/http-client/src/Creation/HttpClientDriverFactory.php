@@ -96,11 +96,7 @@ class HttpClientDriverFactory
         $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
 
-        $poolClosure = $this->defaultPoolHandlers($name) ?? null;
-        if ($poolClosure === null) {
-            throw new InvalidArgumentException("HTTP pool handler not supported for driver: {$name}");
-        }
-
+        $poolClosure = $this->defaultPoolHandlers($name);
         return $poolClosure(config: $config, events: $this->events);
     }
 

@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CloseCommand extends Command
 {
-    protected static $defaultName = 'close';
-
     public function __construct(
         private readonly CloseAction $action,
     ) {

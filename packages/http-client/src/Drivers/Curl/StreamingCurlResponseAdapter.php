@@ -111,6 +111,10 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
         return true;
     }
 
+    public function chunkSize(): int {
+        return $this->chunkSize;
+    }
+
     private function primeHandles(): void {
         $active = 1;
         $start = microtime(true);

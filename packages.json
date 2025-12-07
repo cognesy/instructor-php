@@ -61,6 +61,12 @@
       "composer_name": "cognesy/instructor-struct"
     },
     {
+      "local": "packages/logging",
+      "repo": "cognesy/instructor-logging",
+      "github_name": "instructor-logging",
+      "composer_name": "cognesy/instructor-logging"
+    },
+    {
       "local": "packages/messages",
       "repo": "cognesy/instructor-messages",
       "github_name": "instructor-messages",

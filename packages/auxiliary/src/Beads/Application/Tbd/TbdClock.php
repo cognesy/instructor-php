@@ -20,10 +20,10 @@ class TbdClock
         if ($parsed !== false) {
             return $parsed;
         }
-        $fallback = new DateTimeImmutable($value);
-        if ($fallback === false) {
-            throw new RuntimeException("Unable to parse date/time: {$value}");
+        try {
+            return new DateTimeImmutable($value);
+        } catch (\Exception $e) {
+            throw new RuntimeException("Unable to parse date/time: {$value}", 0, $e);
         }
-        return $fallback;
     }
 }

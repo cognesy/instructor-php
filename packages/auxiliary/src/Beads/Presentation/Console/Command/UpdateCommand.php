@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends Command
 {
-    protected static $defaultName = 'update';
 
     public function __construct(
         private readonly UpdateAction $action,

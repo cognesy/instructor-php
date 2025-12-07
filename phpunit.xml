@@ -21,6 +21,7 @@
             <directory suffix="Test.php">./packages/http-client/tests/Unit</directory>
             <directory suffix="Test.php">./packages/hub/tests/Unit</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/logging/tests/Unit</directory>
             <directory suffix="Test.php">./packages/messages/tests/Unit</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Unit</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Unit</directory>
@@ -43,6 +44,7 @@
             <directory suffix="Test.php">./packages/http-client/tests/Feature</directory>
             <directory suffix="Test.php">./packages/hub/tests/Feature</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/logging/tests/Feature</directory>
             <directory suffix="Test.php">./packages/messages/tests/Feature</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Feature</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Feature</directory>
@@ -65,6 +67,7 @@
             <directory suffix="Test.php">./packages/http-client/tests/Integration</directory>
             <directory suffix="Test.php">./packages/hub/tests/Integration</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/logging/tests/Integration</directory>
             <directory suffix="Test.php">./packages/messages/tests/Integration</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Integration</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
@@ -111,6 +114,7 @@
             <directory suffix=".php">./packages/http-client/src</directory>
             <directory suffix=".php">./packages/hub/src</directory>
             <directory suffix=".php">./packages/instructor/src</directory>
+            <directory suffix=".php">./packages/logging/src</directory>
             <directory suffix=".php">./packages/messages/src</directory>
             <directory suffix=".php">./packages/pipeline/src</directory>
             <directory suffix=".php">./packages/polyglot/src</directory>

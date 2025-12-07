@@ -3,7 +3,6 @@
 namespace Cognesy\Auxiliary\Beads\Presentation\Console\Command;
 
 use Cognesy\Auxiliary\Beads\Application\Tbd\Action\DepAddAction;
-use Cognesy\Auxiliary\Beads\Application\Tbd\TbdInputMapper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,11 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DepAddCommand extends Command
 {
-    protected static $defaultName = 'dep:add';
-
     public function __construct(
         private readonly DepAddAction $action,
-        private readonly TbdInputMapper $map,
     ) {
         parent::__construct('dep:add');
     }

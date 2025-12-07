@@ -3,7 +3,6 @@ parameters:
   paths:
     - src
     - tests
-    - src-hub
     - config
   reportUnmatchedIgnoredErrors: false
   checkGenericClassInNonGenericObjectType: false

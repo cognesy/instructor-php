@@ -19,6 +19,7 @@ final class ServerSideEventStream implements StreamInterface
         private StreamInterface $source,
     ) {}
 
+    #[\Override]
     public function getIterator(): \Traversable {
         try {
             foreach ($this->source as $chunk) {
@@ -39,6 +40,7 @@ final class ServerSideEventStream implements StreamInterface
         }
     }
 
+    #[\Override]
     public function isCompleted(): bool {
         return $this->completed && $this->source->isCompleted();
     }

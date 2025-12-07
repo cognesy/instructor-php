@@ -11,8 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CompactCommand extends Command
 {
-    protected static $defaultName = 'compact';
-
     public function __construct(
         private readonly CompactAction $action,
     ) {

@@ -62,7 +62,7 @@ final class SandboxCommandExecutor implements CommandExecutor
                 }
 
                 // Exponential backoff: 100ms, 200ms, 400ms, etc.
-                $exponent = (int) (2 ** ($attempt - 1));
+                $exponent = 2 ** ($attempt - 1);
                 $backoffMs = 100 * $exponent;
                 usleep($backoffMs * 1000);
             }

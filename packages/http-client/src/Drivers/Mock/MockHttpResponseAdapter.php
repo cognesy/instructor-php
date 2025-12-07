@@ -97,17 +97,4 @@ class MockHttpResponseAdapter implements CanAdaptHttpResponse
     private function isStreamed(): bool {
         return $this->streaming;
     }
-
-    /**
-     * Read chunks of the stream
-     *
-     * @param int|null $chunkSize Not used in mock implementation, included for interface compatibility
-     * @return \Generator<string>
-     */
-    private function stream(): \Generator {
-        foreach ($this->chunks as $chunk) {
-            $this->events?->dispatch(new HttpResponseChunkReceived($chunk));
-            yield $chunk;
-        }
-    }
 }
