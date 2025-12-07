@@ -127,7 +127,7 @@
     "phpstan/phpstan-strict-rules": "^1.6",
     "psr/http-factory-implementation": "*",
     "shipmonk/dead-code-detector": "^0.5.1",
-    "spatie/browsershot": "^4.1",
+    "spatie/browsershot": "^5.1",
     "symfony/css-selector": "^7.0",
     "symfony/dom-crawler": "^7.0",
     "symfony/http-client": "^7.0",
