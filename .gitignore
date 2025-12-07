@@ -89,4 +89,8 @@ dev-debug.log
 
 # Task files
 tasks.json
-tasks/ 
+tasks/
+
+# Hub execution tracking
+.hub/
+.instructor-hub/ 

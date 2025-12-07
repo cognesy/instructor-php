@@ -166,7 +166,7 @@
   "scripts": {
     "bench": "@php ./vendor/bin/phpbench run",
     "docs": "@php ./bin/instructor-docs",
-    "hub": "@php ./bin/instructor-hub",
+    "hub": "php ./bin/instructor-hub",
     "phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
     "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",

@@ -59,3 +59,30 @@ it('Gemini native: parses streaming partial with text and tool args', function (
     expect($p2->toolName)->toBe('search');
     expect($p2->toolArgs)->toContain('Hello');
 });
+
+it('Gemini native: sets usageIsCumulative=true for streaming responses with usage data', function () {
+    $adapter = new GeminiResponseAdapter(new GeminiUsageFormat());
+
+    // Test streaming response with usage data
+    $eventWithUsage = json_encode([
+        'candidates' => [[
+            'content' => ['parts' => [['text' => 'Hello']]],
+            'finishReason' => ''
+        ]],
+        'usageMetadata' => ['promptTokenCount' => 120, 'candidatesTokenCount' => 3]
+    ]);
+
+    $partial = $adapter->fromStreamResponse($eventWithUsage);
+    expect($partial)->not->toBeNull();
+    expect($partial->contentDelta)->toBe('Hello');
+
+    // CRITICAL: Verify that usageIsCumulative is set to true
+    // This prevents exponential token growth during accumulation
+    expect($partial->isUsageCumulative())->toBeTrue();
+
+    // Verify usage values are parsed correctly
+    $usage = $partial->usage();
+    expect($usage)->not->toBeNull();
+    expect($usage->inputTokens)->toBe(120);
+    expect($usage->outputTokens)->toBe(3);
+});

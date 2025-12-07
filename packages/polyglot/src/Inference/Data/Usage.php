@@ -65,12 +65,40 @@ class Usage
     // MUTATORS ///////////////////////////////////////////////////////////
 
     public function accumulate(Usage $usage) : self {
-        $this->inputTokens = $this->inputTokens + $usage->inputTokens;
-        $this->outputTokens = $this->outputTokens + $usage->outputTokens;
-        $this->cacheWriteTokens = $this->cacheWriteTokens + $usage->cacheWriteTokens;
-        $this->cacheReadTokens = $this->cacheReadTokens + $usage->cacheReadTokens;
-        $this->reasoningTokens = $this->reasoningTokens + $usage->reasoningTokens;
+        $this->inputTokens = $this->safeAdd($this->inputTokens, $usage->inputTokens, 'inputTokens');
+        $this->outputTokens = $this->safeAdd($this->outputTokens, $usage->outputTokens, 'outputTokens');
+        $this->cacheWriteTokens = $this->safeAdd($this->cacheWriteTokens, $usage->cacheWriteTokens, 'cacheWriteTokens');
+        $this->cacheReadTokens = $this->safeAdd($this->cacheReadTokens, $usage->cacheReadTokens, 'cacheReadTokens');
+        $this->reasoningTokens = $this->safeAdd($this->reasoningTokens, $usage->reasoningTokens, 'reasoningTokens');
         return $this;
+    }
+
+    /**
+     * Safely adds two integers, throwing an exception if the result would overflow
+     *
+     * @throws \InvalidArgumentException When token counts are unrealistically large
+     */
+    private function safeAdd(int $a, int $b, string $fieldName): int {
+        // Reasonable upper limit for token counts (1 million tokens)
+        $maxReasonableTokens = 1_000_000;
+
+        if ($a > $maxReasonableTokens || $b > $maxReasonableTokens) {
+            throw new \InvalidArgumentException(
+                "Unrealistic token count detected in {$fieldName}: {$a} + {$b}. " .
+                "This indicates a bug in token accumulation logic. " .
+                "Token counts should not exceed {$maxReasonableTokens}."
+            );
+        }
+
+        // Check if addition would overflow PHP_INT_MAX
+        if ($a > 0 && $b > 0 && $a > PHP_INT_MAX - $b) {
+            throw new \InvalidArgumentException(
+                "Integer overflow detected in {$fieldName}: {$a} + {$b} exceeds PHP_INT_MAX. " .
+                "This indicates a serious bug in token accumulation logic."
+            );
+        }
+
+        return $a + $b;
     }
 
     public function withAccumulated(Usage $usage) : self {

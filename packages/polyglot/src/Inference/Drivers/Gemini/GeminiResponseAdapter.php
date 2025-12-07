@@ -43,6 +43,7 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             usage: $this->usageFormat->fromData($data),
+            usageIsCumulative: true,
             responseData: $responseData,
         );
     }

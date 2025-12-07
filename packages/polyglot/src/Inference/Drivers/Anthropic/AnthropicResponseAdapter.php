@@ -47,6 +47,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
             usage: $this->usageFormat->fromData($data),
+            usageIsCumulative: true,
             responseData: $responseData,
         );
     }

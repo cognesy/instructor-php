@@ -2,7 +2,6 @@
 
 namespace Cognesy\InstructorHub\Commands;
 
-use Cognesy\InstructorHub\Contracts\CanExecuteExample;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
@@ -10,14 +9,11 @@ use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Exception;
 
-class RunOneExample extends Command
+class RawCommand extends Command
 {
     public function __construct(
-        private CanExecuteExample $runner,
         private ExampleRepository $examples,
     ) {
         parent::__construct();
@@ -27,10 +23,9 @@ class RunOneExample extends Command
     protected function configure(): void
     {
         $this
-            ->setName('run')
-            ->setDescription('Run one example with raw output (default)')
-            ->addArgument('example', InputArgument::REQUIRED, 'Example name or index to run')
-            ->addOption('track', 't', InputOption::VALUE_NONE, 'Run with execution tracking and status persistence');
+            ->setName('raw')
+            ->setDescription('Run example with raw, unbuffered output (perfect for streaming)')
+            ->addArgument('example', InputArgument::REQUIRED, 'Example name or index to run');
     }
 
     #[\Override]
@@ -50,48 +45,9 @@ class RunOneExample extends Command
             return Command::FAILURE;
         }
 
-        $useTracking = $input->getOption('track');
-
-        return $useTracking
-            ? $this->doRun($example)
-            : $this->doRawRun($example);
+        return $this->doRawRun($example);
     }
 
-    public function doRun(Example $example): int
-    {
-        Cli::outln('');
-        Cli::outln("Executing example: {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
-        Cli::outln('');
-
-        $timeStart = microtime(true);
-        $result = $this->runner->execute($example);
-        $timeEnd = microtime(true);
-        $totalTime = $timeEnd - $timeStart;
-
-        if ($result->isSuccessful()) {
-            Cli::out("Status: ", [Color::DARK_GRAY]);
-            Cli::outln("OK", [Color::GREEN, Color::BOLD]);
-        } else {
-            Cli::out("Status: ", [Color::DARK_GRAY]);
-            Cli::outln("ERROR", [Color::RED, Color::BOLD]);
-
-            if ($result->error) {
-                Cli::outln('');
-                Cli::outln("Error: " . Cli::limit($result->error->message, 70), [Color::RED]);
-            }
-        }
-
-        Cli::outln('');
-        Cli::out("Example executed in ", [Color::DARK_GRAY]);
-        Cli::outln(round($totalTime, 2) . " seconds", [Color::BOLD, Color::WHITE]);
-        Cli::outln('');
-
-        return $result->isSuccessful() ? Command::SUCCESS : Command::FAILURE;
-    }
-
-    /**
-     * Execute example with raw, unbuffered output for real-time streaming visualization
-     */
     private function doRawRun(Example $example): int
     {
         Cli::outln('');

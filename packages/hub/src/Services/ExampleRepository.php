@@ -57,6 +57,26 @@ class ExampleRepository {
         return $this->getExample($input);
     }
 
+    /** @return array<Example> */
+    public function getAllExamples() : array {
+        return $this->forEachExample(fn($example) => true);
+    }
+
+    public function getCanonicalIndex(Example $example) : int {
+        $allExamples = $this->getAllExamples();
+        foreach ($allExamples as $index => $ex) {
+            if ($ex->relativePath === $example->relativePath) {
+                return $index;
+            }
+        }
+        throw new \RuntimeException("Example not found in repository: {$example->relativePath}");
+    }
+
+    public function getExampleByCanonicalIndex(int $index) : ?Example {
+        $allExamples = $this->getAllExamples();
+        return $allExamples[$index] ?? null;
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
     /** @return array<string, ExampleGroup> */

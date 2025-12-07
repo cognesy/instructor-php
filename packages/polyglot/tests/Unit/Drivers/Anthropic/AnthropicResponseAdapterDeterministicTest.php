@@ -43,3 +43,27 @@ it('Anthropic: parses streaming text and tool args deltas', function () {
     expect($p2->toolName)->toBe('search');
     expect($p2->toolArgs)->toContain('Hello');
 });
+
+it('Anthropic: sets usageIsCumulative=true for streaming responses with usage data', function () {
+    $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
+
+    // Test streaming response with usage data
+    $eventWithUsage = json_encode([
+        'delta' => ['text' => 'Hello'],
+        'usage' => ['input_tokens' => 100, 'output_tokens' => 2]
+    ]);
+
+    $partial = $adapter->fromStreamResponse($eventWithUsage);
+    expect($partial)->not->toBeNull();
+    expect($partial->contentDelta)->toBe('Hello');
+
+    // CRITICAL: Verify that usageIsCumulative is set to true
+    // This prevents exponential token growth during accumulation
+    expect($partial->isUsageCumulative())->toBeTrue();
+
+    // Verify usage values are parsed correctly
+    $usage = $partial->usage();
+    expect($usage)->not->toBeNull();
+    expect($usage->inputTokens)->toBe(100);
+    expect($usage->outputTokens)->toBe(2);
+});
