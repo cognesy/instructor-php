@@ -37,7 +37,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="9fad"
+// @doctest id="19d2"
 ```
 
 Key methods:
@@ -72,7 +72,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="da80"
+// @doctest id="23c9"
 ```
 
 Key methods:
@@ -134,7 +134,7 @@ interface CanMapRequestBody {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="304f"
+// @doctest id="4f11"
 ```
 
 
@@ -167,7 +167,7 @@ interface EmbedResponseAdapter {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="c3e1"
+// @doctest id="ff22"
 ```
 
 
@@ -193,7 +193,7 @@ class ModularLLMDriver implements CanHandleInference {
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
     public function toEventBody(string $data): string|bool { ... }
 }
-// @doctest id="1e08"
+// @doctest id="8fbe"
 ```
 
 
@@ -222,7 +222,7 @@ class InferenceDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="a775"
+// @doctest id="e8de"
 ```
 
 ### EmbeddingsDriverFactory
@@ -247,5 +247,5 @@ class EmbeddingsDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="cf56"
+// @doctest id="7d6c"
 ```
