@@ -10,19 +10,20 @@ Symfony integration with Instructor's functional logging pipeline.
 
 ## Example
 
+```php
 <?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Logging\Pipeline\LoggingPipeline;
-use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Enrichers\LazyEnricher;
+use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 
 // Mock Symfony container and request
 $container = new Container();
@@ -74,7 +75,7 @@ echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
-// ```
 // [2025-12-07 01:18:13] instructor.DEBUG: 🔄 [Symfony] Starting extraction: User
 // [2025-12-07 01:18:14] instructor.DEBUG: ✅ [Symfony] Completed extraction: User
-// ```
+?>
+```

@@ -1,45 +1,55 @@
 ---
-title: 'PSR-3 Logging with Functional Pipeline'
-docname: 'logging_psr'
+title: 'Laravel Logging Integration'
+docname: 'logging_laravel'
 path: ''
 ---
 
 ## Overview
 
-Simple PSR-3 logging integration using Instructor's functional pipeline.
+Laravel integration with Instructor's functional logging pipeline.
 
 ## Example
 
+```php
 <?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Logging\Pipeline\LoggingPipeline;
+use Cognesy\Logging\Enrichers\LazyEnricher;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Illuminate\Http\Request;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
-// Create PSR-3 logger
+// Mock Laravel request
+$request = Request::create('/api/extract');
+$request->headers->set('X-Request-ID', 'req_' . uniqid());
+
+// Create logger
 $logger = new Logger('instructor');
 $logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 
-// Create logging pipeline - filters to only StructuredOutput events
+// Create pipeline with request context
 $pipeline = LoggingPipeline::create()
-    ->filter(new LogLevelFilter('debug'))
+    ->filter(new LogLevelFilter('debug'))  // Changed to debug to capture more events
+    ->enrich(LazyEnricher::framework(fn() => [
+        'request_id' => $request->headers->get('X-Request-ID'),
+        'route' => '/api/extract',
+    ]))
     ->format(new MessageTemplateFormatter([
         \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted::class =>
-            '🎯 [PSR-3] Starting extraction: {responseClass}',
+            '🎯 [LARAVEL] Starting extraction: {responseClass} (Request: {framework.request_id})',
         \Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated::class =>
-            '✅ [PSR-3] Completed extraction: {responseClass}',
+            '✅ [LARAVEL] Completed extraction: {responseClass} (Request: {framework.request_id})',
     ], channel: 'instructor'))
     ->write(new PsrLoggerWriter($logger))
     ->build();
 
-echo "📋 About to demonstrate PSR-3 logging with functional pipeline...\n\n";
-
-echo "🚀 Starting StructuredOutput extraction...\n";
+echo "🔧 Laravel logging pipeline configured\n";
+echo "📋 About to execute StructuredOutput with logging...\n\n";
 
 class User
 {
@@ -48,6 +58,7 @@ class User
 }
 
 // Extract data with logging
+echo "🚀 Starting StructuredOutput extraction...\n";
 $user = (new StructuredOutput)
     ->using('openai')
     ->wiretap($pipeline)
@@ -61,7 +72,7 @@ echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
-// ```
-// [2025-12-07T01:18:13.475202+00:00] instructor.DEBUG: 🎯 [PSR-3] Starting extraction: User
-// [2025-12-07T01:18:14.659417+00:00] instructor.DEBUG: ✅ [PSR-3] Completed extraction: User
-// ```
+// [2025-12-07 01:18:13] instructor.DEBUG: 🔄 [Laravel] Starting extraction: User
+// [2025-12-07 01:18:14] instructor.DEBUG: ✅ [Laravel] Completed extraction: User
+?>
+```

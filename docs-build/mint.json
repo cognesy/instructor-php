@@ -363,10 +363,6 @@
                 "cookbook/instructor/advanced/custom_prompts",
                 "cookbook/instructor/advanced/custom_llm_with_dsn",
                 "cookbook/instructor/advanced/function_calls",
-                "cookbook/instructor/advanced/logging_laravel",
-                "cookbook/instructor/advanced/logging_monolog",
-                "cookbook/instructor/advanced/logging_psr",
-                "cookbook/instructor/advanced/logging_symfony",
                 "cookbook/instructor/advanced/partials",
                 "cookbook/instructor/advanced/demonstrations",
                 "cookbook/instructor/advanced/scalars",
@@ -379,6 +375,10 @@
             "group": "Cookbook \\ Instructor \\ Troubleshooting",
             "pages": [
                 "cookbook/instructor/troubleshooting/debugging",
+                "cookbook/instructor/troubleshooting/logging_laravel",
+                "cookbook/instructor/troubleshooting/logging_monolog",
+                "cookbook/instructor/troubleshooting/logging_psr",
+                "cookbook/instructor/troubleshooting/logging_symfony",
                 "cookbook/instructor/troubleshooting/on_event",
                 "cookbook/instructor/troubleshooting/settings",
                 "cookbook/instructor/troubleshooting/token_usage_events",
@@ -457,9 +457,6 @@
                 "cookbook/polyglot/llm_advanced/embed_utils",
                 "cookbook/polyglot/llm_advanced/embeddings",
                 "cookbook/polyglot/llm_advanced/http_client",
-                "cookbook/polyglot/llm_advanced/llm_logging_laravel",
-                "cookbook/polyglot/llm_advanced/llm_logging_monolog",
-                "cookbook/polyglot/llm_advanced/llm_logging_symfony",
                 "cookbook/polyglot/llm_advanced/parallel_calls",
                 "cookbook/polyglot/llm_advanced/reasoning_content"
             ]
@@ -467,7 +464,10 @@
         {
             "group": "Cookbook \\ Polyglot \\ LLM Troubleshooting",
             "pages": [
-                "cookbook/polyglot/llm_troubleshooting/http_debug"
+                "cookbook/polyglot/llm_troubleshooting/http_debug",
+                "cookbook/polyglot/llm_troubleshooting/llm_logging_laravel",
+                "cookbook/polyglot/llm_troubleshooting/llm_logging_monolog",
+                "cookbook/polyglot/llm_troubleshooting/llm_logging_symfony"
             ]
         },
         {

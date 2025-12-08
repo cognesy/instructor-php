@@ -10,18 +10,19 @@ Simple Embeddings operation logging with Laravel-style context.
 
 ## Example
 
+```php
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Logging\Pipeline\LoggingPipeline;
-use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Enrichers\LazyEnricher;
+use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Cognesy\Polyglot\Embeddings\Embeddings;
 use Illuminate\Http\Request;
-use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 // Mock Laravel request
 $request = Request::create('/api/embeddings');
@@ -68,11 +69,13 @@ try {
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
+?>
+```
 
+```
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
-// ```
 // 📋 About to demonstrate Embeddings logging with Laravel...
 // 🚀 Starting Embeddings request...
 // [2025-12-07 01:18:13] embeddings.DEBUG: 🔄 [Laravel] Embeddings requested: openai/text-embedding-3-small
@@ -80,4 +83,4 @@ try {
 // ✅ Embeddings completed!
 // 📊 Generated 2 embedding vectors
 // 📊 Vector dimensions: 1536
-// ```
+```

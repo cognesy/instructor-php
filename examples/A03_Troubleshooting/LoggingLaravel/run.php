@@ -10,18 +10,19 @@ Laravel integration with Instructor's functional logging pipeline.
 
 ## Example
 
+```php
 <?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Logging\Pipeline\LoggingPipeline;
-use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Enrichers\LazyEnricher;
+use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
 use Illuminate\Http\Request;
-use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 // Mock Laravel request
 $request = Request::create('/api/extract');
@@ -71,7 +72,7 @@ echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
-// ```
 // [2025-12-07 01:18:13] instructor.DEBUG: 🔄 [Laravel] Starting extraction: User
 // [2025-12-07 01:18:14] instructor.DEBUG: ✅ [Laravel] Completed extraction: User
-// ```
+?>
+```
