@@ -1,6 +1,6 @@
 ---
 title: 'Embeddings Logging with Laravel'
-docname: 'llm_logging_laravel'
+docname: 'llm_logging_laravel_embeddings'
 path: ''
 ---
 
@@ -69,10 +69,7 @@ try {
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
-?>
-```
 
-```
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
@@ -83,4 +80,5 @@ try {
 // ✅ Embeddings completed!
 // 📊 Generated 2 embedding vectors
 // 📊 Vector dimensions: 1536
+?>
 ```
