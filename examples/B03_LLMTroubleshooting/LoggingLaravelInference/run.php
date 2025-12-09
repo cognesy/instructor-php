@@ -1,6 +1,6 @@
 ---
-title: 'Inference Logging with Monolog'
-docname: 'llm_logging_monolog'
+title: 'Inference Logging with Laravel'
+docname: 'llm_logging_laravel_inference'
 path: ''
 ---
 

@@ -53,26 +53,22 @@ $inference = (new Inference)
     ->using('openai')
     ->wiretap($pipeline);
 
-try {
-    echo "🚀 Starting simple Inference to demonstrate logging...\n";
+echo "🚀 Starting simple Inference to demonstrate logging...\n";
 
-    $response = $inference
-        ->withMessages([
-            ['role' => 'user', 'content' => 'What is the capital of France?']
-        ])
-        ->withMaxTokens(50)
-        ->get();
+$response = $inference
+    ->withMessages([
+        ['role' => 'user', 'content' => 'What is the capital of France?']
+    ])
+    ->withMaxTokens(50)
+    ->get();
 
-    echo "\n✅ Inference completed!\n";
+echo "\n✅ Inference completed!\n";
 
-    // Handle response properly - it might be a string or object
-    if (is_string($response)) {
-        echo "📊 Response: " . ($response ?: "Empty response") . "\n";
-    } else {
-        echo "📊 Response: " . ($response->content ?? "Response object has no content property") . "\n";
-    }
-} catch (Exception $e) {
-    echo "❌ Error: " . $e->getMessage() . "\n";
+// Handle response properly - it might be a string or object
+if (is_string($response)) {
+    echo "📊 Response: " . ($response ?: "Empty response") . "\n";
+} else {
+    echo "📊 Response: " . ($response->content ?? "Response object has no content property") . "\n";
 }
 ?>
 ```

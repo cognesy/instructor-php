@@ -54,21 +54,17 @@ $embeddings = (new Embeddings)
     ->using('openai')
     ->wiretap($pipeline);
 
-try {
-    echo "🚀 Starting Embeddings generation...\n";
-    $vectors = $embeddings
-        ->withInputs([
-            "The quick brown fox",
-            "Jumps over the lazy dog"
-        ])
-        ->get();
+echo "🚀 Starting Embeddings generation...\n";
+$vectors = $embeddings
+    ->withInputs([
+        "The quick brown fox",
+        "Jumps over the lazy dog"
+    ])
+    ->get();
 
-    echo "\n✅ Embeddings completed!\n";
-    echo "📊 Generated " . count($vectors->vectors()) . " embedding vectors\n";
-    echo "📊 Vector dimensions: " . count($vectors->first()?->values() ?? []) . "\n";
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-}
+echo "\n✅ Embeddings completed!\n";
+echo "📊 Generated " . count($vectors->vectors()) . " embedding vectors\n";
+echo "📊 Vector dimensions: " . count($vectors->first()?->values() ?? []) . "\n";
 
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
