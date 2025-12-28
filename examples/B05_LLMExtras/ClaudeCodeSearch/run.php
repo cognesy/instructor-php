@@ -19,20 +19,20 @@ reads the code, and explains how validation works.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Dto\ClaudeRequest;
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Dto\StreamEvent\ErrorEvent;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Dto\StreamEvent\MessageEvent;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Dto\StreamEvent\ResultEvent;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Dto\StreamEvent\TextContent;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Dto\StreamEvent\ToolUseContent;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\PermissionMode;
-use Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution\SandboxCommandExecutor;
-use Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution\SandboxDriver;
-use Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution\ExecutionPolicy;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Dto\ClaudeRequest;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\ErrorEvent;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\MessageEvent;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\ResultEvent;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\TextContent;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\ToolUseContent;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\OutputFormat;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
+use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
+use Cognesy\Auxiliary\Agents\Common\Execution\ExecutionPolicy;
 
 // Ensure we're running from monorepo root
 $projectRoot = dirname(__DIR__, 3);
