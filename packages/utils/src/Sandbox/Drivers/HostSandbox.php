@@ -4,13 +4,14 @@ namespace Cognesy\Utils\Sandbox\Drivers;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Utils\Sandbox\Contracts\CanRunProcess;
+use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
 use Cognesy\Utils\Sandbox\Data\ExecResult;
 use Cognesy\Utils\Sandbox\Runners\SymfonyProcessRunner;
 use Cognesy\Utils\Sandbox\Utils\EnvUtils;
 use Cognesy\Utils\Sandbox\Utils\TimeoutTracker;
 use Cognesy\Utils\Sandbox\Utils\Workdir;
 
-final class HostSandbox implements CanExecuteCommand
+final class HostSandbox implements CanStreamCommand
 {
     public function __construct(private readonly ExecutionPolicy $policy) {}
 
@@ -21,23 +22,25 @@ final class HostSandbox implements CanExecuteCommand
 
     #[\Override]
     public function execute(array $argv, ?string $stdin = null): ExecResult {
-        return $this->tryExecute($argv, $stdin);
+        return $this->executeStreaming($argv, null, $stdin);
     }
 
-    // INTERNAL ////////////////////////////////////////////////////////////
-
-    private function tryExecute(array $argv, ?string $stdin): ExecResult {
+    #[\Override]
+    public function executeStreaming(array $argv, ?callable $onOutput, ?string $stdin = null): ExecResult {
         $workDir = Workdir::create($this->policy);
         $env = EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars());
-        $result = $this->makeProcRunner()->run(
+        $result = $this->makeProcRunner()->runStreaming(
             argv: $argv,
             cwd: $workDir,
             env: $env,
             stdin: $stdin,
+            onOutput: $onOutput,
         );
         Workdir::remove($workDir);
         return $result;
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////////
 
     private function makeProcRunner(): CanRunProcess {
         return new SymfonyProcessRunner(

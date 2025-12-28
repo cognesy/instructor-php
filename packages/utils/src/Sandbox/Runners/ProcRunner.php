@@ -8,6 +8,7 @@ use Cognesy\Utils\Sandbox\Data\ExitCodes;
 use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 use Cognesy\Utils\Sandbox\Utils\StreamAggregator;
 use Cognesy\Utils\Sandbox\Utils\TimeoutTracker;
+use Symfony\Component\Process\Process;
 
 final class ProcRunner implements CanRunProcess
 {
@@ -26,10 +27,20 @@ final class ProcRunner implements CanRunProcess
      */
     #[\Override]
     public function run(array $argv, string $cwd, array $env, ?string $stdin): ExecResult {
+        return $this->runStreaming($argv, $cwd, $env, $stdin, null);
+    }
+
+    /**
+     * @param list<string> $argv
+     * @param array<string,string> $env
+     * @param callable(string, string): void|null $onOutput
+     */
+    #[\Override]
+    public function runStreaming(array $argv, string $cwd, array $env, ?string $stdin, ?callable $onOutput): ExecResult {
         [$proc, $pipes] = $this->openProcess($argv, $cwd, $env);
         $this->initPipes($pipes, $stdin);
         $agg = $this->makeAggregator();
-        $timedOut = $this->pollLoop($proc, $pipes, $agg);
+        $timedOut = $this->pollLoop($proc, $pipes, $agg, $onOutput);
         return $this->finalize($proc, $pipes, $agg, $timedOut);
     }
 
@@ -58,8 +69,9 @@ final class ProcRunner implements CanRunProcess
     /**
      * @param resource $proc
      * @param array<int,resource> $pipes
+     * @param callable(string, string): void|null $onOutput
      */
-    private function pollLoop($proc, array $pipes, StreamAggregator $agg): bool {
+    private function pollLoop($proc, array $pipes, StreamAggregator $agg, ?callable $onOutput = null): bool {
         $timedOut = false;
         $status = proc_get_status($proc);
         $pid = $status['pid'];
@@ -70,20 +82,38 @@ final class ProcRunner implements CanRunProcess
                 ProcUtils::terminateProcessGroup($proc, $pid);
                 $status = proc_get_status($proc);
             }
-            $this->readOnce($pipes, $agg);
+            $this->readOnce($pipes, $agg, $onOutput);
             if (!$status['running'] || $timedOut) { break; }
         }
         return $timedOut;
     }
 
-    private function readOnce(array $pipes, StreamAggregator $agg): void {
+    /**
+     * @param array<int,resource> $pipes
+     * @param callable(string, string): void|null $onOutput
+     */
+    private function readOnce(array $pipes, StreamAggregator $agg, ?callable $onOutput = null): void {
         $read = [$pipes[1], $pipes[2]]; $write = null; $except = null;
         @stream_select($read, $write, $except, 0, 100_000);
         foreach ($read as $r) {
             $chunk = (string)stream_get_contents($r, 8192);
-            if ($chunk !== '') { $this->tracker->onActivity(); }
-            if ($r === $pipes[1]) { $agg->appendOut($chunk); continue; }
-            $agg->appendErr($chunk);
+            if ($chunk !== '') {
+                $this->tracker->onActivity();
+
+                // Determine stream type and call external callback
+                $isStdout = ($r === $pipes[1]);
+                if ($isStdout) {
+                    $agg->appendOut($chunk);
+                    if ($onOutput !== null) {
+                        $onOutput(Process::OUT, $chunk);
+                    }
+                } else {
+                    $agg->appendErr($chunk);
+                    if ($onOutput !== null) {
+                        $onOutput(Process::ERR, $chunk);
+                    }
+                }
+            }
         }
     }
 

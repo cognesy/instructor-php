@@ -14,7 +14,8 @@ final class ClaudeCommandBuilder
     public function buildHeadless(ClaudeRequest $request) : CommandSpec {
         $this->validate($request);
 
-        $argv = Argv::of(['claude']);
+        // Use stdbuf to disable output buffering for real-time streaming
+        $argv = Argv::of(['stdbuf', '-o0', 'claude']);
         $argv = $this->appendSessionFlags($argv, $request->continueMostRecent(), $request->resumeSessionId());
         $argv = $argv->with('-p')->with($request->prompt());
         $argv = $this->appendPermissionMode($argv, $request->permissionMode());

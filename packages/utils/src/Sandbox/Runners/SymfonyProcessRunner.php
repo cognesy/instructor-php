@@ -26,10 +26,20 @@ final class SymfonyProcessRunner implements CanRunProcess
      */
     #[\Override]
     public function run(array $argv, string $cwd, array $env, ?string $stdin): ExecResult {
+        return $this->runStreaming($argv, $cwd, $env, $stdin, null);
+    }
+
+    /**
+     * @param list<string> $argv
+     * @param array<string,string> $env
+     * @param callable(string, string): void|null $onOutput
+     */
+    #[\Override]
+    public function runStreaming(array $argv, string $cwd, array $env, ?string $stdin, ?callable $onOutput): ExecResult {
         $process = $this->makeProcess($argv, $cwd, $env, $stdin);
         $agg = new StreamAggregator(stdoutCap: $this->stdoutCap, stderrCap: $this->stderrCap);
         try {
-            $process->run($this->makeProcessCallback($agg));
+            $process->run($this->makeProcessCallback($agg, $onOutput));
         } catch (ProcessTimedOutException) {
             return $this->makeFailureResult($agg, $process);
         }
@@ -51,12 +61,17 @@ final class SymfonyProcessRunner implements CanRunProcess
     /**
      * @return callable(string, string): void
      */
-    private function makeProcessCallback(StreamAggregator $agg): callable {
-        return function (string $type, string $buffer) use ($agg): void {
+    private function makeProcessCallback(StreamAggregator $agg, ?callable $onOutput = null): callable {
+        return function (string $type, string $buffer) use ($agg, $onOutput): void {
             if ($buffer !== '') {
                 $this->tracker->onActivity();
             }
             $agg->consume($type, $buffer);
+
+            // Call external streaming callback if provided
+            if ($onOutput !== null && $buffer !== '') {
+                $onOutput($type, $buffer);
+            }
         };
     }
 

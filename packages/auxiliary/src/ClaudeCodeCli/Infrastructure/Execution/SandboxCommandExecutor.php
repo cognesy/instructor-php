@@ -4,16 +4,17 @@ namespace Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution;
 
 use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Value\CommandSpec;
 use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
 use Cognesy\Utils\Sandbox\Data\ExecResult;
 use Cognesy\Utils\Sandbox\Sandbox;
 use Throwable;
 
 /**
- * Executes claude CLI commands inside instructor-php Sandbox with optional retries.
+ * Executes claude CLI commands inside instructor-php Sandbox with optional retries and streaming support.
  */
 final class SandboxCommandExecutor implements CommandExecutor
 {
-    private CanExecuteCommand $sandbox;
+    private CanStreamCommand $sandbox;
     private ExecutionPolicy $policy;
     private int $maxRetries;
 
@@ -33,12 +34,25 @@ final class SandboxCommandExecutor implements CommandExecutor
 
     #[\Override]
     public function execute(CommandSpec $command) : ExecResult {
+        return $this->executeStreaming($command, null);
+    }
+
+    /**
+     * Execute command with real-time output streaming.
+     *
+     * @param callable(string $type, string $chunk): void|null $onOutput
+     */
+    public function executeStreaming(CommandSpec $command, ?callable $onOutput) : ExecResult {
         $attempt = 0;
         $lastError = null;
 
         while ($attempt <= $this->maxRetries) {
             try {
-                return $this->sandbox->execute($command->argv()->toArray(), $command->stdin());
+                return $this->sandbox->executeStreaming(
+                    $command->argv()->toArray(),
+                    $onOutput,
+                    $command->stdin()
+                );
             } catch (Throwable $error) {
                 $lastError = $error;
                 $attempt++;

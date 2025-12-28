@@ -94,3 +94,6 @@ tasks/
 # Hub execution tracking
 .hub/
 .instructor-hub/ 
+
+# bv (beads viewer) local config and caches
+.bv/

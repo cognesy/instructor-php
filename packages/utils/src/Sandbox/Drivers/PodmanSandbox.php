@@ -2,8 +2,8 @@
 
 namespace Cognesy\Utils\Sandbox\Drivers;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Utils\Sandbox\Contracts\CanRunProcess;
+use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
 use Cognesy\Utils\Sandbox\Data\ExecResult;
 use Cognesy\Utils\Sandbox\Runners\ProcRunner;
 use Cognesy\Utils\Sandbox\Utils\ContainerCommandBuilder;
@@ -12,7 +12,7 @@ use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 use Cognesy\Utils\Sandbox\Utils\TimeoutTracker;
 use Cognesy\Utils\Sandbox\Utils\Workdir;
 
-final class PodmanSandbox implements CanExecuteCommand
+final class PodmanSandbox implements CanStreamCommand
 {
     private readonly string $podmanBin;
 
@@ -31,12 +31,17 @@ final class PodmanSandbox implements CanExecuteCommand
 
     #[\Override]
     public function execute(array $argv, ?string $stdin = null): ExecResult {
-        return $this->run($argv, $stdin);
+        return $this->executeStreaming($argv, null, $stdin);
+    }
+
+    #[\Override]
+    public function executeStreaming(array $argv, ?callable $onOutput, ?string $stdin = null): ExecResult {
+        return $this->run($argv, $onOutput, $stdin);
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
-    private function run(array $argv, ?string $stdin): ExecResult {
+    private function run(array $argv, ?callable $onOutput, ?string $stdin): ExecResult {
         if ($this->podmanBin === '') {
             throw new \RuntimeException('Podman binary not found');
         }
@@ -44,11 +49,12 @@ final class PodmanSandbox implements CanExecuteCommand
         $workDir = Workdir::create($this->policy);
         $cmd = $this->buildContainerCommand($workDir, $argv);
         $env = EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars());
-        $result = $this->makeProcRunner()->run(
+        $result = $this->makeProcRunner()->runStreaming(
             argv: $this->buildLaunch($cmd),
             cwd: getcwd() ?: $workDir,
             env: $env,
             stdin: $stdin,
+            onOutput: $onOutput,
         );
         Workdir::remove($workDir);
         return $result;
