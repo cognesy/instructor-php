@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\OutputFormat;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\Utils\Sandbox\Data\ExecResult;
 
 it('parses json output into decoded objects', function () {

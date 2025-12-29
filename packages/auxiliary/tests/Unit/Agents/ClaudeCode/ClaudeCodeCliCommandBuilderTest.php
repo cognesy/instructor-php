@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Dto\ClaudeRequest;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\InputFormat;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\PermissionMode;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Value\PathList;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Dto\ClaudeRequest;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\InputFormat;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\OutputFormat;
+use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\Auxiliary\Agents\Common\Value\PathList;
 
 it('builds default headless argv', function () {
     $request = new ClaudeRequest(
@@ -17,6 +17,8 @@ it('builds default headless argv', function () {
     $spec = (new ClaudeCommandBuilder())->buildHeadless($request);
 
     expect($spec->argv()->toArray())->toBe([
+        'stdbuf',
+        '-o0',
         'claude',
         '-p',
         'hello',
@@ -41,6 +43,8 @@ it('builds headless argv with options', function () {
     $spec = (new ClaudeCommandBuilder())->buildHeadless($request);
 
     expect($spec->argv()->toArray())->toBe([
+        'stdbuf',
+        '-o0',
         'claude',
         '-p',
         'run tests',
@@ -82,6 +86,8 @@ it('builds with streaming flags, verbose, and permissions tooling', function () 
     $spec = (new ClaudeCommandBuilder())->buildHeadless($request);
 
     expect($spec->argv()->toArray())->toBe([
+        'stdbuf',
+        '-o0',
         'claude',
         '--continue',
         '-p',
@@ -112,6 +118,8 @@ it('builds resume session with dangerous permissions skip', function () {
     $spec = (new ClaudeCommandBuilder())->buildHeadless($request);
 
     expect($spec->argv()->toArray())->toBe([
+        'stdbuf',
+        '-o0',
         'claude',
         '--resume',
         'abc123',
