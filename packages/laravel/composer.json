@@ -1,68 +1,68 @@
 {
-    "name": "cognesy/instructor-laravel",
-    "description": "World-class Laravel integration for Instructor PHP - Structured LLM outputs made simple",
-    "type": "library",
-    "license": "MIT",
-    "keywords": [
-        "laravel",
-        "instructor",
-        "llm",
-        "openai",
-        "anthropic",
-        "structured-output",
-        "ai",
-        "machine-learning",
-        "gpt",
-        "claude"
-    ],
-    "authors": [
-        {
-            "name": "Dariusz Debowczyk",
-            "email": "ddebowczyk@gmail.com"
-        }
-    ],
-    "require": {
-        "php": "^8.2",
-        "cognesy/instructor-php": "^1.13",
-        "illuminate/contracts": "^10.0|^11.0|^12.0",
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "illuminate/console": "^10.0|^11.0|^12.0",
-        "illuminate/http": "^10.0|^11.0|^12.0"
-    },
-    "require-dev": {
-        "orchestra/testbench": "^8.0|^9.0|^10.0",
-        "pestphp/pest": "^2.0|^3.0",
-        "phpstan/phpstan": "^1.10"
-    },
-    "autoload": {
-        "psr-4": {
-            "Cognesy\\Instructor\\Laravel\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cognesy\\Instructor\\Laravel\\Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Cognesy\\Instructor\\Laravel\\InstructorServiceProvider"
-            ],
-            "aliases": {
-                "StructuredOutput": "Cognesy\\Instructor\\Laravel\\Facades\\StructuredOutput",
-                "Inference": "Cognesy\\Instructor\\Laravel\\Facades\\Inference",
-                "Embeddings": "Cognesy\\Instructor\\Laravel\\Facades\\Embeddings",
-                "AgentCtrl": "Cognesy\\Instructor\\Laravel\\Facades\\AgentCtrl"
-            }
-        }
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+  "name": "cognesy/instructor-laravel",
+  "description": "World-class Laravel integration for Instructor PHP - Structured LLM outputs made simple",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "laravel",
+    "instructor",
+    "llm",
+    "openai",
+    "anthropic",
+    "structured-output",
+    "ai",
+    "machine-learning",
+    "gpt",
+    "claude"
+  ],
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-php": "^1.13",
+    "illuminate/contracts": "^10.0|^11.0|^12.0",
+    "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/console": "^10.0|^11.0|^12.0",
+    "illuminate/http": "^10.0|^11.0|^12.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^8.0|^9.0|^10.0",
+    "pestphp/pest": "^2.0|^3.0",
+    "phpstan/phpstan": "^1.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Instructor\\Laravel\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Instructor\\Laravel\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Cognesy\\Instructor\\Laravel\\InstructorServiceProvider"
+      ],
+      "aliases": {
+        "StructuredOutput": "Cognesy\\Instructor\\Laravel\\Facades\\StructuredOutput",
+        "Inference": "Cognesy\\Instructor\\Laravel\\Facades\\Inference",
+        "Embeddings": "Cognesy\\Instructor\\Laravel\\Facades\\Embeddings",
+        "AgentCtrl": "Cognesy\\Instructor\\Laravel\\Facades\\AgentCtrl"
+      }
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

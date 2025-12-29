@@ -1,6 +1,6 @@
 ---
 title: 'Embeddings Logging with Laravel'
-docname: 'llm_logging_laravel'
+docname: 'llm_logging_laravel_embeddings'
 path: ''
 ---
 
@@ -10,18 +10,19 @@ Simple Embeddings operation logging with Laravel-style context.
 
 ## Example
 
+```php
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Logging\Pipeline\LoggingPipeline;
-use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Enrichers\LazyEnricher;
+use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Cognesy\Polyglot\Embeddings\Embeddings;
 use Illuminate\Http\Request;
-use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 // Mock Laravel request
 $request = Request::create('/api/embeddings');
@@ -53,26 +54,21 @@ $embeddings = (new Embeddings)
     ->using('openai')
     ->wiretap($pipeline);
 
-try {
-    echo "🚀 Starting Embeddings generation...\n";
-    $vectors = $embeddings
-        ->withInputs([
-            "The quick brown fox",
-            "Jumps over the lazy dog"
-        ])
-        ->get();
+echo "🚀 Starting Embeddings generation...\n";
+$vectors = $embeddings
+    ->withInputs([
+        "The quick brown fox",
+        "Jumps over the lazy dog"
+    ])
+    ->get();
 
-    echo "\n✅ Embeddings completed!\n";
-    echo "📊 Generated " . count($vectors->vectors()) . " embedding vectors\n";
-    echo "📊 Vector dimensions: " . count($vectors->first()?->values() ?? []) . "\n";
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-}
+echo "\n✅ Embeddings completed!\n";
+echo "📊 Generated " . count($vectors->vectors()) . " embedding vectors\n";
+echo "📊 Vector dimensions: " . count($vectors->first()?->values() ?? []) . "\n";
 
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
-// ```
 // 📋 About to demonstrate Embeddings logging with Laravel...
 // 🚀 Starting Embeddings request...
 // [2025-12-07 01:18:13] embeddings.DEBUG: 🔄 [Laravel] Embeddings requested: openai/text-embedding-3-small
@@ -80,4 +76,5 @@ try {
 // ✅ Embeddings completed!
 // 📊 Generated 2 embedding vectors
 // 📊 Vector dimensions: 1536
-// ```
+?>
+```

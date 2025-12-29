@@ -10,14 +10,15 @@ Simple Inference operation logging using Monolog.
 
 ## Example
 
+```php
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
+use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\MonologChannelWriter;
+use Cognesy\Polyglot\Inference\Inference;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -44,35 +45,26 @@ $inference = (new Inference)
     ->using('openai')
     ->wiretap($pipeline);
 
-try {
-    echo "🚀 Starting Inference request...\n";
-    $response = $inference
-        ->withMessages([
-            ['role' => 'user', 'content' => 'What is the capital of France?']
-        ])
-        ->withMaxTokens(50)
-        ->get();
+echo "🚀 Starting Inference request...\n";
+$response = $inference
+    ->withMessages([
+        ['role' => 'user', 'content' => 'What is the capital of France?']
+    ])
+    ->withMaxTokens(50)
+    ->get();
 
-    echo "\n✅ Inference completed!\n";
+echo "📊 Response: " . ($response ?: "Empty response") . "\n";
+?>
+```
 
-    // Handle response properly - it might be a string or object
-    if (is_string($response)) {
-        echo "📊 Response: " . ($response ?: "Empty response") . "\n";
-    } else {
-        echo "📊 Response: " . ($response->content ?? "Response object has no content property") . "\n";
-    }
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-}
-
+```
 // TODO: Add "Sample Output" section showing actual log messages
 // Example format:
 // ### Sample Output
-// ```
 // 📋 About to demonstrate Inference logging with Monolog...
 // 🚀 Starting Inference request...
 // [2025-12-07T01:18:13.475202+00:00] inference.DEBUG: 🤖 Inference requested: openai/gpt-4o-mini
 // [2025-12-07T01:18:14.659417+00:00] inference.DEBUG: ✅ Inference completed: openai/gpt-4o-mini
 // ✅ Inference completed!
 // 📊 Response: The capital of France is Paris.
-// ```
+```

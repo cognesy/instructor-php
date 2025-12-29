@@ -244,6 +244,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v1.14.0",
                 "release-notes/v1.13.0",
                 "release-notes/v1.12.0",
                 "release-notes/v1.11.0",
@@ -465,7 +466,8 @@
             "group": "Cookbook \\ Polyglot \\ LLM Troubleshooting",
             "pages": [
                 "cookbook/polyglot/llm_troubleshooting/http_debug",
-                "cookbook/polyglot/llm_troubleshooting/llm_logging_laravel",
+                "cookbook/polyglot/llm_troubleshooting/llm_logging_laravel_embeddings",
+                "cookbook/polyglot/llm_troubleshooting/llm_logging_laravel_inference",
                 "cookbook/polyglot/llm_troubleshooting/llm_logging_monolog",
                 "cookbook/polyglot/llm_troubleshooting/llm_logging_symfony"
             ]
@@ -500,9 +502,18 @@
         {
             "group": "Cookbook \\ Polyglot \\ LLM Extras",
             "pages": [
+                "cookbook/polyglot/llm_extras/agent_ctrl_basic",
+                "cookbook/polyglot/llm_extras/agent_ctrl_streaming",
+                "cookbook/polyglot/llm_extras/agent_ctrl_switching",
                 "cookbook/polyglot/llm_extras/chat_with_many_participants",
                 "cookbook/polyglot/llm_extras/chat_with_summary",
+                "cookbook/polyglot/llm_extras/claude_code_basic",
+                "cookbook/polyglot/llm_extras/claude_code_search",
+                "cookbook/polyglot/llm_extras/codex_basic",
+                "cookbook/polyglot/llm_extras/codex_streaming",
                 "cookbook/polyglot/llm_extras/image_data",
+                "cookbook/polyglot/llm_extras/opencode_basic",
+                "cookbook/polyglot/llm_extras/opencode_streaming",
                 "cookbook/polyglot/llm_extras/prompt_templates",
                 "cookbook/polyglot/llm_extras/summary_with_llm",
                 "cookbook/polyglot/llm_extras/tool_use",
