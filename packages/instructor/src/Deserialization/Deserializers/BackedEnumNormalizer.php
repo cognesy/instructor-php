@@ -22,10 +22,14 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
     public const ALLOW_INVALID_VALUES = 'allow_invalid_values';
 
     /**
+     * NOTE: Suppressions required for Symfony 6/7 compatibility.
+     * getSupportedTypes() exists in Symfony 7 but not in Symfony 6, so we cannot use #[\Override].
+     * Do not remove these suppressions.
+     *
      * @return array<class-string, bool>
      * @phpstan-ignore method.childReturnType
-     * @psalm-suppress MissingOverrideAttribute
      */
+    // @psalm-suppress MissingOverrideAttribute
     public function getSupportedTypes(?string $format): array
     {
         return [

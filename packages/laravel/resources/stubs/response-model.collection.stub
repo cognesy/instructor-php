@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+/**
+ * {{ description }}
+ *
+ * This class extracts a collection of items from text.
+ * The items array will contain instances of the nested item class.
+ *
+ * @see https://docs.instructorphp.com/response-models
+ */
+final class {{ class }}
+{
+    /**
+     * @param array<int, {{ class }}Item> $items The extracted items
+     */
+    public function __construct(
+        /** List of extracted items */
+        public readonly array $items,
+    ) {}
+}
+
+/**
+ * Individual item in the collection.
+ */
+final class {{ class }}Item
+{
+    public function __construct(
+        /** The name or title of the item */
+        public readonly string $name,
+
+        /** A brief description of the item */
+        public readonly ?string $description = null,
+    ) {}
+}

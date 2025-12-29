@@ -1,0 +1,117 @@
+# Instructor for Laravel
+
+World-class Laravel integration for [Instructor PHP](https://github.com/cognesy/instructor-php) - the structured output library for LLMs.
+
+## Overview
+
+This package provides seamless integration between Instructor PHP and Laravel, giving you:
+
+- **Laravel Facades** - Use `StructuredOutput::`, `Inference::`, `Embeddings::`, and `AgentCtrl::` facades
+- **Dependency Injection** - Inject services directly into your classes
+- **Testing Fakes** - Mock LLM responses with `StructuredOutput::fake()` and assertions
+- **Laravel HTTP Client** - Uses `Http::` internally, enabling `Http::fake()` in tests
+- **Event Bridge** - Instructor events dispatched to Laravel's event system
+- **Artisan Commands** - Generate response models and test your configuration
+- **Configuration Publishing** - Laravel-style config with environment variables
+
+## Quick Start
+
+### 1. Install the Package
+
+```bash
+composer require cognesy/instructor-laravel
+```
+
+### 2. Configure API Key
+
+Add to your `.env`:
+
+```env
+OPENAI_API_KEY=your-openai-api-key
+```
+
+### 3. Extract Structured Data
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+
+// Define a response model
+final class PersonData
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly int $age,
+    ) {}
+}
+
+// Extract structured data from text
+$person = StructuredOutput::with(
+    messages: 'John Smith is 30 years old',
+    responseModel: PersonData::class,
+)->get();
+
+echo $person->name; // "John Smith"
+echo $person->age;  // 30
+```
+
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [Installation](installation.md) | Detailed installation and setup instructions |
+| [Configuration](configuration.md) | Complete configuration reference |
+| [Facades](facades.md) | Using StructuredOutput, Inference, and Embeddings facades |
+| [Response Models](response-models.md) | Creating and using response models |
+| [Code Agents](agents.md) | Using AgentCtrl for Claude Code, Codex, and OpenCode |
+| [Testing](testing.md) | Testing with fakes and assertions |
+| [Events](events.md) | Event handling and Laravel integration |
+| [Commands](commands.md) | Artisan command reference |
+| [Advanced](advanced.md) | Streaming, validation, and advanced patterns |
+| [Troubleshooting](troubleshooting.md) | Common issues and solutions |
+
+## Example: Complete Workflow
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+use App\ResponseModels\InvoiceData;
+
+class InvoiceProcessor
+{
+    public function extractFromEmail(string $emailBody): InvoiceData
+    {
+        return StructuredOutput::with(
+            messages: $emailBody,
+            responseModel: InvoiceData::class,
+            system: 'Extract invoice details from the email.',
+        )->get();
+    }
+}
+
+// In your test
+public function test_extracts_invoice_data(): void
+{
+    $fake = StructuredOutput::fake([
+        InvoiceData::class => new InvoiceData(
+            invoiceNumber: 'INV-001',
+            amount: 150.00,
+            dueDate: '2024-12-31',
+        ),
+    ]);
+
+    $processor = new InvoiceProcessor();
+    $invoice = $processor->extractFromEmail('Invoice #INV-001...');
+
+    $this->assertEquals('INV-001', $invoice->invoiceNumber);
+    $fake->assertExtracted(InvoiceData::class);
+}
+```
+
+## Requirements
+
+- PHP 8.2+
+- Laravel 10.x, 11.x, or 12.x
+
+## Support
+
+- [GitHub Issues](https://github.com/cognesy/instructor-php/issues)
+- [Documentation](https://docs.instructorphp.com)

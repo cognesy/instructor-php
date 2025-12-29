@@ -1,0 +1,64 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+/**
+ * {{ description }}
+ *
+ * This class demonstrates nested object extraction.
+ * Properties can be other classes that will be recursively extracted.
+ *
+ * @see https://docs.instructorphp.com/response-models
+ */
+final class {{ class }}
+{
+    public function __construct(
+        /** The main title or name */
+        public readonly string $title,
+
+        /** The primary contact person */
+        public readonly {{ class }}Contact $contact,
+
+        /** The physical address */
+        public readonly ?{{ class }}Address $address = null,
+    ) {}
+}
+
+/**
+ * Contact information.
+ */
+final class {{ class }}Contact
+{
+    public function __construct(
+        /** Full name of the contact */
+        public readonly string $name,
+
+        /** Email address */
+        public readonly string $email,
+
+        /** Phone number */
+        public readonly ?string $phone = null,
+    ) {}
+}
+
+/**
+ * Physical address.
+ */
+final class {{ class }}Address
+{
+    public function __construct(
+        /** Street address */
+        public readonly string $street,
+
+        /** City name */
+        public readonly string $city,
+
+        /** Country name */
+        public readonly string $country,
+
+        /** Postal/ZIP code */
+        public readonly ?string $postalCode = null,
+    ) {}
+}

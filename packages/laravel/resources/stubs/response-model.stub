@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+/**
+ * {{ description }}
+ *
+ * This class is used as a response model for Instructor structured output.
+ * Add typed properties with descriptions to guide the LLM extraction.
+ *
+ * @see https://docs.instructorphp.com/response-models
+ */
+final class {{ class }}
+{
+    public function __construct(
+        /** The name of the person */
+        public readonly string $name,
+
+        /** The age of the person in years */
+        public readonly int $age,
+
+        /** Optional email address */
+        public readonly ?string $email = null,
+    ) {}
+}

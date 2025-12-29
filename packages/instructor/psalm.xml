@@ -18,6 +18,7 @@
         <MissingOverrideAttribute>
             <errorLevel type="suppress">
                 <file name="src/Deserialization/Deserializers/FlexibleDateDenormalizer.php" />
+                <file name="src/Deserialization/Deserializers/BackedEnumNormalizer.php" />
             </errorLevel>
         </MissingOverrideAttribute>
     </issueHandlers>

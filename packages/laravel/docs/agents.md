@@ -1,0 +1,483 @@
+# Code Agents
+
+The `AgentCtrl` facade provides a unified interface for invoking CLI-based code agents that can execute code, modify files, and perform complex tasks.
+
+## Supported Agents
+
+| Agent | Description | Use Case |
+|-------|-------------|----------|
+| **Claude Code** | Anthropic's Claude agent with code execution | General coding tasks, file modifications |
+| **Codex** | OpenAI's Codex agent | Code generation and completion |
+| **OpenCode** | Multi-model code agent | Research and coding with model flexibility |
+
+## Quick Start
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+// Execute a task with Claude Code
+$response = AgentCtrl::claudeCode()
+    ->execute('Generate a Laravel migration for a users table with name, email, and password fields');
+
+// Check if successful
+if ($response->isSuccess()) {
+    echo $response->text();
+}
+```
+
+## Agent Selection
+
+### Claude Code
+
+Best for general coding tasks with Anthropic's Claude models:
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+$response = AgentCtrl::claudeCode()
+    ->withModel('claude-opus-4-5')
+    ->inDirectory(base_path())
+    ->withTimeout(300)
+    ->execute('Refactor the User model to use DTOs');
+
+echo $response->text();
+echo "Session ID: " . $response->sessionId;
+```
+
+### Codex
+
+Best for OpenAI-powered code generation:
+
+```php
+$response = AgentCtrl::codex()
+    ->withModel('codex')
+    ->execute('Write unit tests for the UserService class');
+```
+
+### OpenCode
+
+Best for multi-model flexibility:
+
+```php
+$response = AgentCtrl::openCode()
+    ->withModel('anthropic/claude-sonnet-4-5')
+    ->execute('Analyze the codebase architecture');
+```
+
+### Dynamic Selection
+
+Select agent type at runtime:
+
+```php
+use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+
+$agentType = AgentType::from(config('app.default_agent'));
+
+$response = AgentCtrl::make($agentType)
+    ->execute('Generate API documentation');
+```
+
+## Configuration
+
+### Builder Methods
+
+All agents support these configuration methods:
+
+```php
+AgentCtrl::claudeCode()
+    ->withModel('claude-opus-4-5')           // AI model to use
+    ->withTimeout(300)                        // Execution timeout in seconds
+    ->inDirectory('/path/to/project')         // Working directory
+    ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
+    ->withMaxRetries(3)                       // Retry on failure
+    ->execute('Your prompt');
+```
+
+### Laravel Configuration
+
+Configure defaults in `config/instructor.php`:
+
+```php
+'agents' => [
+    // Default timeout for all agents
+    'timeout' => env('INSTRUCTOR_AGENT_TIMEOUT', 300),
+
+    // Default working directory
+    'directory' => env('INSTRUCTOR_AGENT_DIRECTORY'),
+
+    // Default sandbox driver: host, docker, podman, firejail, bubblewrap
+    'sandbox' => env('INSTRUCTOR_AGENT_SANDBOX', 'host'),
+
+    // Claude Code specific
+    'claude_code' => [
+        'model' => env('CLAUDE_CODE_MODEL', 'claude-sonnet-4-20250514'),
+        'timeout' => env('CLAUDE_CODE_TIMEOUT'),
+        'directory' => env('CLAUDE_CODE_DIRECTORY'),
+        'sandbox' => env('CLAUDE_CODE_SANDBOX'),
+    ],
+
+    // Codex specific
+    'codex' => [
+        'model' => env('CODEX_MODEL', 'codex'),
+        'timeout' => env('CODEX_TIMEOUT'),
+    ],
+
+    // OpenCode specific
+    'opencode' => [
+        'model' => env('OPENCODE_MODEL', 'anthropic/claude-sonnet-4-5'),
+        'timeout' => env('OPENCODE_TIMEOUT'),
+    ],
+],
+```
+
+### Environment Variables
+
+```env
+# Default agent settings
+INSTRUCTOR_AGENT_TIMEOUT=300
+INSTRUCTOR_AGENT_DIRECTORY=/path/to/project
+INSTRUCTOR_AGENT_SANDBOX=host
+
+# Claude Code
+CLAUDE_CODE_MODEL=claude-opus-4-5
+
+# Codex
+CODEX_MODEL=codex
+
+# OpenCode
+OPENCODE_MODEL=anthropic/claude-sonnet-4-5
+```
+
+## Streaming
+
+Process output in real-time with streaming callbacks:
+
+```php
+$response = AgentCtrl::claudeCode()
+    ->onText(function (string $text) {
+        // Called as text is generated
+        echo $text;
+    })
+    ->onToolUse(function (string $tool, array $input, ?string $output) {
+        // Called when agent uses a tool
+        echo "Tool: $tool\n";
+        echo "Input: " . json_encode($input) . "\n";
+    })
+    ->onComplete(function (UnifiedResponse $response) {
+        // Called when execution completes
+        echo "\nDone! Exit code: " . $response->exitCode;
+    })
+    ->executeStreaming('Generate a REST API for products');
+```
+
+## Response Object
+
+The `UnifiedResponse` object contains:
+
+```php
+$response = AgentCtrl::claudeCode()->execute('...');
+
+// Main content
+$response->text();           // string - Generated text output
+$response->isSuccess();      // bool - True if exitCode is 0
+
+// Metadata
+$response->exitCode;         // int - Process exit code
+$response->sessionId;        // ?string - Session ID for resuming
+$response->agentType;        // AgentType - Which agent was used
+
+// Usage (when available)
+$response->usage;            // ?TokenUsage - Token statistics
+$response->usage->input;     // int - Input tokens
+$response->usage->output;    // int - Output tokens
+$response->usage->total();   // int - Total tokens
+
+// Cost (when available)
+$response->cost;             // ?float - Cost in USD
+
+// Tool calls
+$response->toolCalls;        // array<ToolCall> - Tools used
+foreach ($response->toolCalls as $call) {
+    $call->tool;             // string - Tool name
+    $call->input;            // array - Tool input
+    $call->output;           // ?string - Tool output
+    $call->isError;          // bool - If tool call failed
+}
+```
+
+## Session Management
+
+Resume previous sessions for continued work:
+
+```php
+// First execution
+$response = AgentCtrl::claudeCode()
+    ->execute('Start refactoring the User model');
+
+$sessionId = $response->sessionId;
+
+// Later: Resume the session
+$response = AgentCtrl::claudeCode()
+    ->resumeSession($sessionId)
+    ->execute('Continue with the Address model');
+```
+
+## Error Handling
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+try {
+    $response = AgentCtrl::claudeCode()
+        ->withTimeout(60)
+        ->execute($prompt);
+
+    if (!$response->isSuccess()) {
+        // Non-zero exit code
+        Log::error('Agent failed', [
+            'exit_code' => $response->exitCode,
+            'output' => $response->text(),
+        ]);
+        return null;
+    }
+
+    // Check for tool errors
+    foreach ($response->toolCalls as $call) {
+        if ($call->isError) {
+            Log::warning('Tool error', [
+                'tool' => $call->tool,
+                'error' => $call->output,
+            ]);
+        }
+    }
+
+    return $response->text();
+
+} catch (\Throwable $e) {
+    // Timeout, sandbox error, etc.
+    Log::error('Agent exception', ['error' => $e->getMessage()]);
+    return null;
+}
+```
+
+## Testing
+
+Use `AgentCtrl::fake()` for testing without actual agent execution:
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+test('generates migration code', function () {
+    // Setup fake with expected responses
+    $fake = AgentCtrl::fake([
+        'Generated migration file: 2024_01_01_create_users_table.php',
+    ]);
+
+    // Execute code under test
+    $result = app(MigrationGenerator::class)->generate('users');
+
+    // Assertions
+    $fake->assertExecuted();
+    $fake->assertExecutedTimes(1);
+    $fake->assertUsedClaudeCode();
+    $fake->assertExecutedWith('migration');
+
+    expect($result)->toContain('users_table');
+});
+
+test('handles multiple agent calls', function () {
+    $fake = AgentCtrl::fake([
+        'First response',
+        'Second response',
+        'Third response',
+    ]);
+
+    // Multiple calls return responses in sequence
+    $first = AgentCtrl::claudeCode()->execute('First');
+    $second = AgentCtrl::claudeCode()->execute('Second');
+
+    expect($first->text())->toBe('First response');
+    expect($second->text())->toBe('Second response');
+
+    $fake->assertExecutedTimes(2);
+});
+
+test('can create custom fake responses', function () {
+    use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+    use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
+
+    $customResponse = AgentCtrlFake::response(
+        text: 'Custom output',
+        exitCode: 0,
+        agentType: AgentType::ClaudeCode,
+        cost: 0.05,
+    );
+
+    $fake = AgentCtrl::fake([$customResponse]);
+
+    $response = AgentCtrl::claudeCode()->execute('Test');
+
+    expect($response->cost)->toBe(0.05);
+});
+```
+
+### Available Assertions
+
+| Method | Description |
+|--------|-------------|
+| `assertExecuted()` | Agent was executed at least once |
+| `assertNotExecuted()` | Agent was never executed |
+| `assertExecutedTimes(n)` | Agent was executed exactly n times |
+| `assertExecutedWith(prompt)` | Prompt contains specific text |
+| `assertAgentType(type)` | Specific agent type was used |
+| `assertUsedClaudeCode()` | Claude Code agent was used |
+| `assertUsedCodex()` | Codex agent was used |
+| `assertUsedOpenCode()` | OpenCode agent was used |
+| `assertStreaming()` | Streaming execution was used |
+| `getExecutions()` | Get all recorded executions |
+| `reset()` | Reset fake state |
+
+## Real-World Examples
+
+### Code Generation Service
+
+```php
+namespace App\Services;
+
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+class CodeGenerationService
+{
+    public function generateMigration(array $schema): string
+    {
+        $prompt = $this->buildMigrationPrompt($schema);
+
+        $response = AgentCtrl::claudeCode()
+            ->inDirectory(database_path('migrations'))
+            ->execute($prompt);
+
+        if (!$response->isSuccess()) {
+            throw new \RuntimeException('Failed to generate migration');
+        }
+
+        return $response->text();
+    }
+
+    public function generateTest(string $className): string
+    {
+        $response = AgentCtrl::claudeCode()
+            ->inDirectory(base_path('tests'))
+            ->execute("Generate comprehensive tests for: $className");
+
+        return $response->text();
+    }
+
+    private function buildMigrationPrompt(array $schema): string
+    {
+        return "Generate a Laravel migration for:\n" . json_encode($schema, JSON_PRETTY_PRINT);
+    }
+}
+```
+
+### Queued Code Generation
+
+```php
+namespace App\Jobs;
+
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class GenerateCodeJob implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(
+        public string $prompt,
+        public string $outputPath,
+    ) {}
+
+    public function handle(): void
+    {
+        $response = AgentCtrl::claudeCode()
+            ->withTimeout(600) // 10 minutes for complex tasks
+            ->inDirectory(dirname($this->outputPath))
+            ->execute($this->prompt);
+
+        if ($response->isSuccess()) {
+            file_put_contents($this->outputPath, $response->text());
+        }
+    }
+}
+
+// Usage
+GenerateCodeJob::dispatch(
+    'Generate a complete CRUD controller for Products',
+    app_path('Http/Controllers/ProductController.php')
+);
+```
+
+### Interactive Code Review
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+use Illuminate\Support\Facades\Log;
+
+class CodeReviewer
+{
+    public function review(string $filePath, callable $onProgress = null): array
+    {
+        $builder = AgentCtrl::claudeCode()
+            ->inDirectory(dirname($filePath));
+
+        if ($onProgress) {
+            $builder->onText($onProgress);
+        }
+
+        $response = $builder->execute(
+            "Review this file for bugs, security issues, and improvements: $filePath"
+        );
+
+        return [
+            'review' => $response->text(),
+            'success' => $response->isSuccess(),
+            'session' => $response->sessionId,
+        ];
+    }
+}
+```
+
+## Sandbox Drivers
+
+Control agent execution isolation:
+
+| Driver | Description | Use Case |
+|--------|-------------|----------|
+| `host` | Direct execution (no isolation) | Development, trusted environments |
+| `docker` | Docker container isolation | Production, untrusted code |
+| `podman` | Podman container isolation | Rootless containers |
+| `firejail` | Linux sandbox | Lightweight isolation |
+| `bubblewrap` | Minimal sandbox | CI/CD environments |
+
+```php
+use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
+
+// Development (direct execution)
+AgentCtrl::claudeCode()
+    ->withSandboxDriver(SandboxDriver::Host)
+    ->execute('...');
+
+// Production (Docker isolation)
+AgentCtrl::claudeCode()
+    ->withSandboxDriver(SandboxDriver::Docker)
+    ->execute('...');
+```
+
+## Best Practices
+
+1. **Set Timeouts**: Always set appropriate timeouts for your use case
+2. **Use Sandbox**: In production, use Docker or other sandbox drivers
+3. **Handle Errors**: Check `isSuccess()` and handle failures gracefully
+4. **Log Sessions**: Store session IDs for debugging and continuation
+5. **Test with Fakes**: Use `AgentCtrl::fake()` in tests to avoid API calls
+6. **Queue Long Tasks**: Use Laravel queues for time-consuming operations

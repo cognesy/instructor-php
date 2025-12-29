@@ -1,0 +1,409 @@
+# Facades
+
+The package provides four main facades for interacting with LLMs and code agents.
+
+## StructuredOutput
+
+The primary facade for extracting structured data from text.
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+
+$person = StructuredOutput::with(
+    messages: 'John Smith is 30 years old',
+    responseModel: PersonData::class,
+)->get();
+```
+
+### With System Prompt
+
+```php
+$person = StructuredOutput::with(
+    messages: 'Process this text: John, age 30',
+    responseModel: PersonData::class,
+    system: 'You are a data extraction assistant.',
+)->get();
+```
+
+### With Examples (Few-Shot Learning)
+
+```php
+$person = StructuredOutput::with(
+    messages: 'Extract: Jane Doe, 25 years',
+    responseModel: PersonData::class,
+    examples: [
+        ['input' => 'Bob is 40', 'output' => new PersonData(name: 'Bob', age: 40)],
+    ],
+)->get();
+```
+
+### Switching Connections
+
+```php
+$person = StructuredOutput::using('anthropic')->with(
+    messages: 'Extract person data...',
+    responseModel: PersonData::class,
+)->get();
+```
+
+### Fluent API
+
+```php
+$person = StructuredOutput::withMessages('John is 30')
+    ->withResponseModel(PersonData::class)
+    ->withModel('gpt-4o')
+    ->withMaxRetries(3)
+    ->get();
+```
+
+### Return Types
+
+```php
+// Get as typed object (default)
+$person = StructuredOutput::with(...)->get();
+
+// Get as string
+$name = StructuredOutput::with(...)->getString();
+
+// Get as integer
+$count = StructuredOutput::with(...)->getInt();
+
+// Get as float
+$price = StructuredOutput::with(...)->getFloat();
+
+// Get as boolean
+$valid = StructuredOutput::with(...)->getBoolean();
+
+// Get as array
+$items = StructuredOutput::with(...)->getArray();
+```
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `using(string $preset)` | Switch to a different connection |
+| `with(...)` | Configure extraction with all parameters |
+| `withMessages(...)` | Set input messages |
+| `withResponseModel(...)` | Set the response model class |
+| `withSystem(string)` | Set system prompt |
+| `withPrompt(string)` | Set user prompt template |
+| `withExamples(array)` | Set few-shot examples |
+| `withModel(string)` | Override the model |
+| `withMaxRetries(int)` | Set max retry attempts |
+| `withOptions(array)` | Set additional options |
+| `withOutputMode(OutputMode)` | Set output mode |
+| `withStreaming(bool)` | Enable streaming |
+| `withValidators(...)` | Add custom validators |
+| `withTransformers(...)` | Add data transformers |
+| `get()` | Execute and return result |
+| `stream()` | Execute and return stream |
+
+---
+
+## Inference
+
+For raw LLM inference without structured output.
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\Inference;
+
+$response = Inference::with(
+    messages: 'What is the capital of France?',
+)->get();
+
+echo $response; // "The capital of France is Paris."
+```
+
+### With System Message
+
+```php
+$response = Inference::with(
+    messages: [
+        ['role' => 'system', 'content' => 'You are a helpful assistant.'],
+        ['role' => 'user', 'content' => 'Hello!'],
+    ],
+)->get();
+```
+
+### JSON Response
+
+```php
+$data = Inference::with(
+    messages: 'List 3 colors as JSON',
+    responseFormat: ['type' => 'json_object'],
+)->asJsonData();
+
+// ['colors' => ['red', 'green', 'blue']]
+```
+
+### Switching Connections
+
+```php
+$response = Inference::using('groq')->with(
+    messages: 'Explain quantum computing',
+)->get();
+```
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `using(string $preset)` | Switch connection |
+| `with(...)` | Configure with all parameters |
+| `withMessages(...)` | Set messages |
+| `withModel(string)` | Override model |
+| `withTools(array)` | Add tool definitions |
+| `withToolChoice(...)` | Set tool choice |
+| `withResponseFormat(array)` | Set response format |
+| `withOptions(array)` | Set options |
+| `withStreaming(bool)` | Enable streaming |
+| `get()` | Execute and return text |
+| `asJson()` | Return as JSON string |
+| `asJsonData()` | Return as array |
+| `response()` | Return full response object |
+| `stream()` | Return stream iterator |
+
+---
+
+## Embeddings
+
+For generating text embeddings (vector representations).
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\Embeddings;
+
+// Get single embedding
+$embedding = Embeddings::withInputs('Hello world')->first();
+// [0.123, -0.456, 0.789, ...]
+
+// Get multiple embeddings
+$embeddings = Embeddings::withInputs([
+    'First text',
+    'Second text',
+])->all();
+```
+
+### Switching Connections
+
+```php
+$embedding = Embeddings::using('ollama')
+    ->withInputs('Local embedding test')
+    ->first();
+```
+
+### With Custom Model
+
+```php
+$embedding = Embeddings::withInputs('Test')
+    ->withModel('text-embedding-3-large')
+    ->first();
+```
+
+### Full Response
+
+```php
+$response = Embeddings::withInputs('Test')->get();
+
+$vectors = $response->embeddings;
+$usage = $response->usage;
+```
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `using(string $preset)` | Switch connection |
+| `withInputs(string\|array)` | Set input text(s) |
+| `withModel(string)` | Override model |
+| `withOptions(array)` | Set options |
+| `first()` | Get first embedding vector |
+| `all()` | Get all embedding vectors |
+| `get()` | Get full response object |
+
+---
+
+## AgentCtrl
+
+For invoking CLI-based code agents (Claude Code, Codex, OpenCode) that can execute code, modify files, and perform complex tasks.
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+// Execute a task with Claude Code
+$response = AgentCtrl::claudeCode()
+    ->execute('Generate a Laravel migration for a users table');
+
+if ($response->isSuccess()) {
+    echo $response->text();
+}
+```
+
+### Agent Selection
+
+```php
+// Claude Code (Anthropic)
+$response = AgentCtrl::claudeCode()
+    ->withModel('claude-opus-4-5')
+    ->execute('Refactor the User model');
+
+// Codex (OpenAI)
+$response = AgentCtrl::codex()
+    ->execute('Write unit tests for UserService');
+
+// OpenCode (Multi-model)
+$response = AgentCtrl::openCode()
+    ->withModel('anthropic/claude-sonnet-4-5')
+    ->execute('Analyze codebase architecture');
+
+// Dynamic selection
+use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+
+$response = AgentCtrl::make(AgentType::ClaudeCode)
+    ->execute('Generate API documentation');
+```
+
+### Configuration
+
+```php
+$response = AgentCtrl::claudeCode()
+    ->withModel('claude-opus-4-5')           // AI model
+    ->withTimeout(300)                        // Timeout in seconds
+    ->inDirectory(base_path())                // Working directory
+    ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
+    ->withMaxRetries(3)                       // Retry on failure
+    ->execute('Your prompt');
+```
+
+### Streaming
+
+```php
+$response = AgentCtrl::claudeCode()
+    ->onText(function (string $text) {
+        echo $text;
+    })
+    ->onToolUse(function (string $tool, array $input, ?string $output) {
+        echo "Tool: $tool\n";
+    })
+    ->onComplete(function (UnifiedResponse $response) {
+        echo "Done! Exit code: " . $response->exitCode;
+    })
+    ->executeStreaming('Generate a REST API');
+```
+
+### Response Object
+
+```php
+$response = AgentCtrl::claudeCode()->execute('...');
+
+// Main content
+$response->text();           // Generated text output
+$response->isSuccess();      // True if exitCode is 0
+
+// Metadata
+$response->exitCode;         // Process exit code
+$response->sessionId;        // Session ID for resuming
+$response->agentType;        // Which agent was used
+
+// Usage & cost
+$response->usage->input;     // Input tokens
+$response->usage->output;    // Output tokens
+$response->cost;             // Cost in USD
+
+// Tool calls
+foreach ($response->toolCalls as $call) {
+    $call->tool;             // Tool name
+    $call->input;            // Tool input
+    $call->output;           // Tool output
+    $call->isError;          // If tool failed
+}
+```
+
+### Session Management
+
+```php
+// First execution
+$response = AgentCtrl::claudeCode()
+    ->execute('Start refactoring the User model');
+
+$sessionId = $response->sessionId;
+
+// Resume later
+$response = AgentCtrl::claudeCode()
+    ->resumeSession($sessionId)
+    ->execute('Continue with the Address model');
+```
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `claudeCode()` | Get Claude Code agent builder |
+| `codex()` | Get Codex agent builder |
+| `openCode()` | Get OpenCode agent builder |
+| `make(AgentType)` | Get agent builder by type |
+| `fake(array $responses)` | Create testing fake |
+| `withModel(string)` | Set AI model |
+| `withTimeout(int)` | Set execution timeout |
+| `inDirectory(string)` | Set working directory |
+| `withSandboxDriver(SandboxDriver)` | Set sandbox isolation |
+| `withMaxRetries(int)` | Set retry count |
+| `onText(callable)` | Stream text callback |
+| `onToolUse(callable)` | Tool use callback |
+| `onComplete(callable)` | Completion callback |
+| `resumeSession(string)` | Resume previous session |
+| `execute(string)` | Execute and return response |
+| `executeStreaming(string)` | Execute with streaming |
+
+---
+
+## Dependency Injection
+
+Instead of facades, you can inject services directly:
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Embeddings\Embeddings;
+
+class MyService
+{
+    public function __construct(
+        private StructuredOutput $structuredOutput,
+        private Inference $inference,
+        private Embeddings $embeddings,
+    ) {}
+
+    public function process(string $text): PersonData
+    {
+        return $this->structuredOutput
+            ->with(messages: $text, responseModel: PersonData::class)
+            ->get();
+    }
+}
+```
+
+This is useful for:
+- Better testability (easier mocking)
+- Explicit dependencies
+- IDE autocompletion
+
+---
+
+## Facade Real-Time Methods
+
+All facades proxy to the underlying service classes. The facades resolve fresh instances from the container, so you can chain methods:
+
+```php
+// Each call gets a fresh instance
+StructuredOutput::using('openai')->with(...)->get();
+StructuredOutput::using('anthropic')->with(...)->get();
+```
