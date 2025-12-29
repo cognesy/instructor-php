@@ -293,7 +293,7 @@ $response = AgentCtrl::claudeCode()
     ->onToolUse(function (string $tool, array $input, ?string $output) {
         echo "Tool: $tool\n";
     })
-    ->onComplete(function (UnifiedResponse $response) {
+    ->onComplete(function (AgentResponse $response) {
         echo "Done! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API');

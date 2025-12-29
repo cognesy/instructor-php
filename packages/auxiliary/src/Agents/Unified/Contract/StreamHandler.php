@@ -3,7 +3,7 @@
 namespace Cognesy\Auxiliary\Agents\Unified\Contract;
 
 use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\UnifiedResponse;
+use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
 
 /**
  * Contract for handling streaming events from an agent.
@@ -23,5 +23,5 @@ interface StreamHandler
     /**
      * Called when the agent completes its response.
      */
-    public function onComplete(UnifiedResponse $response): void;
+    public function onComplete(AgentResponse $response): void;
 }

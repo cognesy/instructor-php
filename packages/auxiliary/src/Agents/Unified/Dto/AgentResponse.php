@@ -7,7 +7,7 @@ use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
 /**
  * Common response format for all CLI-based code agents.
  */
-final readonly class UnifiedResponse
+final readonly class AgentResponse
 {
     /**
      * @param AgentType $agentType The agent type that produced this response

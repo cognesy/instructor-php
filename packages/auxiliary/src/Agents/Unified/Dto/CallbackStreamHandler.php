@@ -15,7 +15,7 @@ final class CallbackStreamHandler implements StreamHandler
     /** @var callable(ToolCall): void|null */
     private $toolUseHandler;
 
-    /** @var callable(UnifiedResponse): void|null */
+    /** @var callable(AgentResponse): void|null */
     private $completeHandler;
 
     public function __construct(
@@ -45,7 +45,7 @@ final class CallbackStreamHandler implements StreamHandler
     }
 
     #[\Override]
-    public function onComplete(UnifiedResponse $response): void
+    public function onComplete(AgentResponse $response): void
     {
         if ($this->completeHandler !== null) {
             ($this->completeHandler)($response);

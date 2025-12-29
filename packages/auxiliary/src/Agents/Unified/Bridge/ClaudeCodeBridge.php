@@ -15,7 +15,7 @@ use Cognesy\Auxiliary\Agents\Common\Value\PathList;
 use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
 use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
 use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\UnifiedResponse;
+use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
 use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
 
 /**
@@ -46,13 +46,13 @@ final class ClaudeCodeBridge implements AgentBridge
     }
 
     #[\Override]
-    public function execute(string $prompt): UnifiedResponse
+    public function execute(string $prompt): AgentResponse
     {
         return $this->executeStreaming($prompt, null);
     }
 
     #[\Override]
-    public function executeStreaming(string $prompt, ?StreamHandler $handler): UnifiedResponse
+    public function executeStreaming(string $prompt, ?StreamHandler $handler): AgentResponse
     {
         $request = $this->buildRequest($prompt);
         $spec = $this->commandBuilder->buildHeadless($request);
@@ -132,7 +132,7 @@ final class ClaudeCodeBridge implements AgentBridge
             }
         }
 
-        return new UnifiedResponse(
+        return new AgentResponse(
             agentType: AgentType::ClaudeCode,
             text: $collectedText,
             exitCode: $execResult->exitCode(),

@@ -8,7 +8,7 @@ The Unified Agent Bridge provides:
 
 - **Fluent Builder API** - Configure agents with typed, IDE-friendly methods
 - **Runtime Switching** - Change agents without code changes
-- **Common Response Format** - Normalized `UnifiedResponse` across all agents
+- **Common Response Format** - Normalized `AgentResponse` across all agents
 - **Streaming Support** - Real-time callbacks for text and tool events
 
 ## Quick Start
@@ -125,7 +125,7 @@ $response = AgentCtrl::make($agentType)
 
 ## Response
 
-All agents return `UnifiedResponse`:
+All agents return `AgentResponse`:
 
 ```php
 $response->agentType;   // AgentType enum
@@ -152,7 +152,7 @@ AgentBridgeBuilder (ClaudeCode|Codex|OpenCode)
     ↓ .build()
 AgentBridge (wraps native components)
     ↓ .execute() or .executeStreaming()
-UnifiedResponse (normalized output)
+AgentResponse (normalized output)
 ```
 
 ## See Also

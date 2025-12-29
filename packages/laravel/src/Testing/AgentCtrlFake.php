@@ -6,7 +6,7 @@ namespace Cognesy\Instructor\Laravel\Testing;
 
 use Cognesy\Auxiliary\Agents\Unified\Dto\TokenUsage;
 use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\UnifiedResponse;
+use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
 use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
 use PHPUnit\Framework\Assert;
 
@@ -33,7 +33,7 @@ class AgentCtrlFake
     private AgentType $agentType = AgentType::ClaudeCode;
 
     /**
-     * @param  array<string|UnifiedResponse>  $responses  Text responses or UnifiedResponse objects
+     * @param  array<string|AgentResponse>  $responses  Text responses or AgentResponse objects
      */
     public function __construct(array $responses = [])
     {
@@ -134,7 +134,7 @@ class AgentCtrlFake
     /**
      * Execute the agent with a prompt (returns fake response).
      */
-    public function execute(string $prompt): UnifiedResponse
+    public function execute(string $prompt): AgentResponse
     {
         $this->executions[] = [
             'prompt' => $prompt,
@@ -151,7 +151,7 @@ class AgentCtrlFake
     /**
      * Execute the agent with streaming (returns fake response).
      */
-    public function executeStreaming(string $prompt): UnifiedResponse
+    public function executeStreaming(string $prompt): AgentResponse
     {
         $this->executions[] = [
             'prompt' => $prompt,
@@ -168,7 +168,7 @@ class AgentCtrlFake
     /**
      * Get the next response from the queue.
      */
-    private function getNextResponse(string $prompt): UnifiedResponse
+    private function getNextResponse(string $prompt): AgentResponse
     {
         $response = $this->responses[$this->callIndex]
             ?? $this->responses[array_key_last($this->responses)]
@@ -176,11 +176,11 @@ class AgentCtrlFake
 
         $this->callIndex++;
 
-        if ($response instanceof UnifiedResponse) {
+        if ($response instanceof AgentResponse) {
             return $response;
         }
 
-        return new UnifiedResponse(
+        return new AgentResponse(
             agentType: $this->agentType,
             text: $response,
             exitCode: 0,
@@ -339,8 +339,8 @@ class AgentCtrlFake
         ?TokenUsage $usage = null,
         ?float $cost = null,
         array $toolCalls = [],
-    ): UnifiedResponse {
-        return new UnifiedResponse(
+    ): AgentResponse {
+        return new AgentResponse(
             agentType: $agentType,
             text: $text,
             exitCode: $exitCode,

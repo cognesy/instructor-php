@@ -7,7 +7,7 @@ use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
 use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridgeBuilder;
 use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
 use Cognesy\Auxiliary\Agents\Unified\Dto\CallbackStreamHandler;
-use Cognesy\Auxiliary\Agents\Unified\Dto\UnifiedResponse;
+use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
 use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
 
 /**
@@ -27,7 +27,7 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     /** @var callable(string, array, ?string): void|null */
     protected $onToolUseCallback = null;
 
-    /** @var callable(UnifiedResponse): void|null */
+    /** @var callable(AgentResponse): void|null */
     protected $onCompleteCallback = null;
 
     abstract public function agentType(): AgentType;
@@ -88,14 +88,14 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     }
 
     #[\Override]
-    public function execute(string $prompt): UnifiedResponse
+    public function execute(string $prompt): AgentResponse
     {
         $bridge = $this->build();
         return $bridge->execute($prompt);
     }
 
     #[\Override]
-    public function executeStreaming(string $prompt): UnifiedResponse
+    public function executeStreaming(string $prompt): AgentResponse
     {
         $bridge = $this->build();
         $handler = $this->buildStreamHandler();

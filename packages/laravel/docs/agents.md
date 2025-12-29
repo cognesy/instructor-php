@@ -163,7 +163,7 @@ $response = AgentCtrl::claudeCode()
         echo "Tool: $tool\n";
         echo "Input: " . json_encode($input) . "\n";
     })
-    ->onComplete(function (UnifiedResponse $response) {
+    ->onComplete(function (AgentResponse $response) {
         // Called when execution completes
         echo "\nDone! Exit code: " . $response->exitCode;
     })
@@ -172,7 +172,7 @@ $response = AgentCtrl::claudeCode()
 
 ## Response Object
 
-The `UnifiedResponse` object contains:
+The `AgentResponse` object contains:
 
 ```php
 $response = AgentCtrl::claudeCode()->execute('...');

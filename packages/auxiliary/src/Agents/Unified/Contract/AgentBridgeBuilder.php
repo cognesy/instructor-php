@@ -3,7 +3,7 @@
 namespace Cognesy\Auxiliary\Agents\Unified\Contract;
 
 use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
-use Cognesy\Auxiliary\Agents\Unified\Dto\UnifiedResponse;
+use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
 
 /**
  * Fluent builder interface for configuring and executing agent bridges.
@@ -51,7 +51,7 @@ interface AgentBridgeBuilder
     /**
      * Set callback for completion events.
      *
-     * @param callable(UnifiedResponse): void $handler
+     * @param callable(AgentResponse): void $handler
      */
     public function onComplete(callable $handler): static;
 
@@ -60,12 +60,12 @@ interface AgentBridgeBuilder
     /**
      * Execute the prompt synchronously.
      */
-    public function execute(string $prompt): UnifiedResponse;
+    public function execute(string $prompt): AgentResponse;
 
     /**
      * Execute the prompt with streaming output.
      */
-    public function executeStreaming(string $prompt): UnifiedResponse;
+    public function executeStreaming(string $prompt): AgentResponse;
 
     /**
      * Build the configured bridge for advanced use cases.
