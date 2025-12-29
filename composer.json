@@ -42,7 +42,8 @@
       "Cognesy\\Setup\\": "packages/setup/src/",
       "Cognesy\\Stream\\": "packages/stream/src/",
       "Cognesy\\Template\\": "packages/templates/src/",
-      "Cognesy\\Utils\\": "packages/utils/src/"
+      "Cognesy\\Utils\\": "packages/utils/src/",
+      "Cognesy\\Instructor\\Laravel\\": "packages/laravel/src/"
     },
     "files": [
       "src/polyfills.php"
@@ -65,6 +66,7 @@
       "Cognesy\\Stream\\Tests\\": "packages/stream/tests/",
       "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
+      "Cognesy\\Instructor\\Laravel\\Tests\\": "packages/laravel/tests/",
 
       "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
       "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",

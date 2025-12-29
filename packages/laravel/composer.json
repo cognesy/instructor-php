@@ -52,7 +52,8 @@
             "aliases": {
                 "StructuredOutput": "Cognesy\\Instructor\\Laravel\\Facades\\StructuredOutput",
                 "Inference": "Cognesy\\Instructor\\Laravel\\Facades\\Inference",
-                "Embeddings": "Cognesy\\Instructor\\Laravel\\Facades\\Embeddings"
+                "Embeddings": "Cognesy\\Instructor\\Laravel\\Facades\\Embeddings",
+                "AgentCtrl": "Cognesy\\Instructor\\Laravel\\Facades\\AgentCtrl"
             }
         }
     },

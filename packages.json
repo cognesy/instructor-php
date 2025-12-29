@@ -119,6 +119,12 @@
       "repo": "cognesy/instructor-utils",
       "github_name": "instructor-utils",
       "composer_name": "cognesy/instructor-utils"
+    },
+    {
+      "local": "packages/laravel",
+      "repo": "cognesy/instructor-laravel",
+      "github_name": "instructor-laravel",
+      "composer_name": "cognesy/instructor-laravel"
     }
   ]
 }
