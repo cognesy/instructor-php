@@ -25,9 +25,12 @@ final class SandboxCommandExecutor implements CommandExecutor
         ExecutionPolicy $policy,
         SandboxDriver $driver = SandboxDriver::Host,
         int $maxRetries = 0,
+        int $timeout = 120,
     ) {
-        $this->policy = $policy;
-        $this->sandbox = $this->makeSandbox($policy, $driver);
+        $this->policy = $timeout !== 120
+            ? $this->withTimeout($policy, $timeout)
+            : $policy;
+        $this->sandbox = $this->makeSandbox($this->policy, $driver);
         $this->maxRetries = max(0, $maxRetries);
     }
 
@@ -35,7 +38,7 @@ final class SandboxCommandExecutor implements CommandExecutor
      * Create default executor (Host sandbox, no retries).
      */
     public static function default(): self {
-        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0);
+        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0, 120);
     }
 
     /**
@@ -43,9 +46,10 @@ final class SandboxCommandExecutor implements CommandExecutor
      */
     public static function forClaudeCode(
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0
+        int $maxRetries = 0,
+        int $timeout = 120,
     ): self {
-        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries);
+        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries, $timeout);
     }
 
     /**
@@ -53,9 +57,10 @@ final class SandboxCommandExecutor implements CommandExecutor
      */
     public static function forCodex(
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0
+        int $maxRetries = 0,
+        int $timeout = 120,
     ): self {
-        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries);
+        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries, $timeout);
     }
 
     /**
@@ -63,9 +68,24 @@ final class SandboxCommandExecutor implements CommandExecutor
      */
     public static function forOpenCode(
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0
+        int $maxRetries = 0,
+        int $timeout = 120,
     ): self {
-        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries);
+        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries, $timeout);
+    }
+
+    /**
+     * Apply custom timeout to an existing policy.
+     */
+    private function withTimeout(ExecutionPolicy $policy, int $timeout): ExecutionPolicy {
+        $baseDir = getcwd() ?: '/tmp';
+        return ExecutionPolicy::custom(
+            timeoutSeconds: $timeout,
+            networkEnabled: true,
+            stdoutLimitBytes: 5 * 1024 * 1024,
+            stderrLimitBytes: 1 * 1024 * 1024,
+            baseDir: $baseDir,
+        );
     }
 
     #[\Override]

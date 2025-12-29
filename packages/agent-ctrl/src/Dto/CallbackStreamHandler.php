@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\Dto;
 
+use Closure;
 use Cognesy\AgentCtrl\Contract\StreamHandler;
 
 /**
@@ -9,19 +10,24 @@ use Cognesy\AgentCtrl\Contract\StreamHandler;
  */
 final class CallbackStreamHandler implements StreamHandler
 {
-    /** @var callable(string): void|null */
-    private $textHandler;
+    /** @var (Closure(string): void)|null */
+    private ?Closure $textHandler;
 
-    /** @var callable(ToolCall): void|null */
-    private $toolUseHandler;
+    /** @var (Closure(ToolCall): void)|null */
+    private ?Closure $toolUseHandler;
 
-    /** @var callable(AgentResponse): void|null */
-    private $completeHandler;
+    /** @var (Closure(AgentResponse): void)|null */
+    private ?Closure $completeHandler;
 
+    /**
+     * @param (Closure(string): void)|null $onText
+     * @param (Closure(ToolCall): void)|null $onToolUse
+     * @param (Closure(AgentResponse): void)|null $onComplete
+     */
     public function __construct(
-        ?callable $onText = null,
-        ?callable $onToolUse = null,
-        ?callable $onComplete = null,
+        ?Closure $onText = null,
+        ?Closure $onToolUse = null,
+        ?Closure $onComplete = null,
     ) {
         $this->textHandler = $onText;
         $this->toolUseHandler = $onToolUse;

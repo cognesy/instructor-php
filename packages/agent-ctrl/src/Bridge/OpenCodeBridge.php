@@ -55,7 +55,7 @@ final class OpenCodeBridge implements AgentBridge
         $request = $this->buildRequest($prompt);
         $spec = $this->commandBuilder->buildRun($request);
 
-        $executor = SandboxCommandExecutor::forOpenCode($this->sandboxDriver, $this->maxRetries);
+        $executor = SandboxCommandExecutor::forOpenCode($this->sandboxDriver, $this->maxRetries, $this->timeout);
 
         $collectedText = '';
         $toolCalls = [];

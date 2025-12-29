@@ -40,10 +40,13 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
 
     /**
      * Disable sandbox for unrestricted access.
+     *
+     * Note: This sets sandbox to DangerFullAccess mode which provides
+     * full filesystem and network access. Use with caution.
      */
     public function disableSandbox(): static
     {
-        $this->sandboxMode = SandboxMode::Off;
+        $this->sandboxMode = SandboxMode::DangerFullAccess;
         return $this;
     }
 

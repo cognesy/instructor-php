@@ -9,12 +9,24 @@ use Cognesy\AgentCtrl\Contract\StreamHandler;
 use Cognesy\AgentCtrl\Dto\CallbackStreamHandler;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\Event\AgentErrorOccurred;
+use Cognesy\AgentCtrl\Event\AgentExecutionCompleted;
+use Cognesy\AgentCtrl\Event\AgentExecutionStarted;
+use Cognesy\AgentCtrl\Event\AgentTextReceived;
+use Cognesy\AgentCtrl\Event\AgentToolUsed;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Traits\HandlesEvents;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 
 /**
  * Base builder with common configuration methods.
  */
 abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
 {
+    use HandlesEvents;
+
     protected ?string $model = null;
     protected int $timeout = 120;
     protected ?string $workingDirectory = null;
@@ -29,6 +41,11 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
 
     /** @var callable(AgentResponse): void|null */
     protected $onCompleteCallback = null;
+
+    public function __construct()
+    {
+        $this->events = EventBusResolver::default();
+    }
 
     abstract public function agentType(): AgentType;
 
@@ -90,38 +107,70 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     #[\Override]
     public function execute(string $prompt): AgentResponse
     {
-        $bridge = $this->build();
-        return $bridge->execute($prompt);
+        $this->dispatch(new AgentExecutionStarted(
+            agentType: $this->agentType(),
+            prompt: $prompt,
+            model: $this->model,
+            workingDirectory: $this->workingDirectory,
+        ));
+
+        try {
+            $bridge = $this->build();
+            $response = $bridge->execute($prompt);
+
+            $this->dispatch(AgentExecutionCompleted::fromResponse($response));
+
+            return $response;
+        } catch (Throwable $e) {
+            $this->dispatch(AgentErrorOccurred::fromException($this->agentType(), $e));
+            throw $e;
+        }
     }
 
     #[\Override]
     public function executeStreaming(string $prompt): AgentResponse
     {
-        $bridge = $this->build();
-        $handler = $this->buildStreamHandler();
-        $response = $bridge->executeStreaming($prompt, $handler);
+        $this->dispatch(new AgentExecutionStarted(
+            agentType: $this->agentType(),
+            prompt: $prompt,
+            model: $this->model,
+            workingDirectory: $this->workingDirectory,
+        ));
 
-        if ($handler !== null) {
-            $handler->onComplete($response);
+        try {
+            $bridge = $this->build();
+            $handler = $this->buildStreamHandler();
+            $response = $bridge->executeStreaming($prompt, $handler);
+
+            if ($handler !== null) {
+                $handler->onComplete($response);
+            }
+
+            $this->dispatch(AgentExecutionCompleted::fromResponse($response));
+
+            return $response;
+        } catch (Throwable $e) {
+            $this->dispatch(AgentErrorOccurred::fromException($this->agentType(), $e));
+            throw $e;
         }
-
-        return $response;
     }
 
     protected function buildStreamHandler(): ?StreamHandler
     {
-        if ($this->onTextCallback === null
-            && $this->onToolUseCallback === null
-            && $this->onCompleteCallback === null
-        ) {
-            return null;
-        }
-
+        // We always want a handler to emit events, even if user didn't provide callbacks
         return new CallbackStreamHandler(
-            onText: $this->onTextCallback,
-            onToolUse: $this->onToolUseCallback !== null
-                ? fn($toolCall) => ($this->onToolUseCallback)($toolCall->tool, $toolCall->input, $toolCall->output)
-                : null,
+            onText: function(string $text): void {
+                $this->dispatch(new AgentTextReceived($this->agentType(), $text));
+                if ($this->onTextCallback !== null) {
+                    ($this->onTextCallback)($text);
+                }
+            },
+            onToolUse: function($toolCall): void {
+                $this->dispatch(AgentToolUsed::fromToolCall($this->agentType(), $toolCall));
+                if ($this->onToolUseCallback !== null) {
+                    ($this->onToolUseCallback)($toolCall->tool, $toolCall->input, $toolCall->output);
+                }
+            },
             onComplete: $this->onCompleteCallback,
         );
     }

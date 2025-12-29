@@ -57,7 +57,7 @@ final class ClaudeCodeBridge implements AgentBridge
         $request = $this->buildRequest($prompt);
         $spec = $this->commandBuilder->buildHeadless($request);
 
-        $executor = SandboxCommandExecutor::forClaudeCode($this->sandboxDriver, $this->maxRetries);
+        $executor = SandboxCommandExecutor::forClaudeCode($this->sandboxDriver, $this->maxRetries, $this->timeout);
 
         $collectedText = '';
         $toolCalls = [];

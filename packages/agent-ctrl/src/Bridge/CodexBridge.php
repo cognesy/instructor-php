@@ -5,20 +5,22 @@ namespace Cognesy\AgentCtrl\Bridge;
 use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 use Cognesy\AgentCtrl\Common\Value\PathList;
+use Cognesy\AgentCtrl\Contract\AgentBridge;
+use Cognesy\AgentCtrl\Contract\StreamHandler;
+use Cognesy\AgentCtrl\Dto\AgentResponse;
+use Cognesy\AgentCtrl\Dto\TokenUsage;
+use Cognesy\AgentCtrl\Dto\ToolCall;
+use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\MessageEvent;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\AgentMessage;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\CommandExecution;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\McpToolCall;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ItemCompletedEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ToolCallEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\AgentCtrl\Contract\AgentBridge;
-use Cognesy\AgentCtrl\Contract\StreamHandler;
-use Cognesy\AgentCtrl\Dto\TokenUsage;
-use Cognesy\AgentCtrl\Dto\ToolCall;
-use Cognesy\AgentCtrl\Dto\AgentResponse;
-use Cognesy\AgentCtrl\Enum\AgentType;
 
 /**
  * Bridge implementation for OpenAI Codex CLI.
@@ -60,7 +62,7 @@ final class CodexBridge implements AgentBridge
         $request = $this->buildRequest($prompt);
         $spec = $this->commandBuilder->buildExec($request);
 
-        $executor = SandboxCommandExecutor::forCodex($this->sandboxDriver, $this->maxRetries);
+        $executor = SandboxCommandExecutor::forCodex($this->sandboxDriver, $this->maxRetries, $this->timeout);
 
         $collectedText = '';
         $toolCalls = [];
@@ -84,21 +86,37 @@ final class CodexBridge implements AgentBridge
 
                 $event = StreamEvent::fromArray($decoded);
 
-                if ($event instanceof MessageEvent) {
-                    $collectedText .= $event->content;
-                    $handler->onText($event->content);
-                }
+                if ($event instanceof ItemCompletedEvent) {
+                    $item = $event->item;
 
-                if ($event instanceof ToolCallEvent) {
-                    $toolCall = new ToolCall(
-                        tool: $event->name,
-                        input: $event->parameters,
-                        output: $event->result,
-                        callId: $event->id,
-                        isError: $event->error !== null,
-                    );
-                    $toolCalls[] = $toolCall;
-                    $handler->onToolUse($toolCall);
+                    if ($item instanceof AgentMessage) {
+                        $collectedText .= $item->text;
+                        $handler->onText($item->text);
+                    }
+
+                    if ($item instanceof McpToolCall) {
+                        $toolCall = new ToolCall(
+                            tool: $item->tool,
+                            input: $item->arguments ?? [],
+                            output: $item->result !== null ? json_encode($item->result) : null,
+                            callId: $item->id,
+                            isError: $item->hasError(),
+                        );
+                        $toolCalls[] = $toolCall;
+                        $handler->onToolUse($toolCall);
+                    }
+
+                    if ($item instanceof CommandExecution) {
+                        $toolCall = new ToolCall(
+                            tool: 'bash',
+                            input: ['command' => $item->command],
+                            output: $item->output,
+                            callId: $item->id,
+                            isError: $item->exitCode !== 0,
+                        );
+                        $toolCalls[] = $toolCall;
+                        $handler->onToolUse($toolCall);
+                    }
                 }
             }
         } : null;
@@ -112,17 +130,32 @@ final class CodexBridge implements AgentBridge
         if ($collectedText === '' && $handler === null) {
             foreach ($response->decoded()->all() as $event) {
                 $streamEvent = StreamEvent::fromArray($event->data());
-                if ($streamEvent instanceof MessageEvent) {
-                    $collectedText .= $streamEvent->content;
-                }
-                if ($streamEvent instanceof ToolCallEvent) {
-                    $toolCalls[] = new ToolCall(
-                        tool: $streamEvent->name,
-                        input: $streamEvent->parameters,
-                        output: $streamEvent->result,
-                        callId: $streamEvent->id,
-                        isError: $streamEvent->error !== null,
-                    );
+                if ($streamEvent instanceof ItemCompletedEvent) {
+                    $item = $streamEvent->item;
+
+                    if ($item instanceof AgentMessage) {
+                        $collectedText .= $item->text;
+                    }
+
+                    if ($item instanceof McpToolCall) {
+                        $toolCalls[] = new ToolCall(
+                            tool: $item->tool,
+                            input: $item->arguments ?? [],
+                            output: $item->result !== null ? json_encode($item->result) : null,
+                            callId: $item->id,
+                            isError: $item->hasError(),
+                        );
+                    }
+
+                    if ($item instanceof CommandExecution) {
+                        $toolCalls[] = new ToolCall(
+                            tool: 'bash',
+                            input: ['command' => $item->command],
+                            output: $item->output,
+                            callId: $item->id,
+                            isError: $item->exitCode !== 0,
+                        );
+                    }
                 }
             }
         }
