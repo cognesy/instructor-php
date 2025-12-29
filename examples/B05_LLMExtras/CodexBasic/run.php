@@ -15,15 +15,15 @@ simple prompts. The OpenAICodex component provides a PHP API for invoking the
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\OpenAICodex\Application\Builder\CodexCommandBuilder;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Application\Dto\CodexRequest;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Dto\StreamEvent\ItemCompletedEvent;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Dto\Item\AgentMessage;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
+use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
+use Cognesy\AgentCtrl\OpenAICodex\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ItemCompletedEvent;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\AgentMessage;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
+use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 
 // Step 1: Create a request with a simple prompt
 $request = new CodexRequest(

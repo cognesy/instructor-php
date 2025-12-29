@@ -15,11 +15,11 @@ simple prompts. The OpenCode component provides a PHP API for invoking the
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\OpenCode\Application\Builder\OpenCodeCommandBuilder;
-use Cognesy\Auxiliary\Agents\OpenCode\Application\Dto\OpenCodeRequest;
-use Cognesy\Auxiliary\Agents\OpenCode\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\OpenCode\Application\Builder\OpenCodeCommandBuilder;
+use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
+use Cognesy\AgentCtrl\OpenCode\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 
 // Step 1: Create a request with a simple prompt
 $request = new OpenCodeRequest(

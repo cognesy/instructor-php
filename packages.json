@@ -7,6 +7,12 @@
       "composer_name": "cognesy/instructor-addons"
     },
     {
+      "local": "packages/agent-ctrl",
+      "repo": "cognesy/agent-ctrl",
+      "github_name": "agent-ctrl",
+      "composer_name": "cognesy/agent-ctrl"
+    },
+    {
       "local": "packages/auxiliary",
       "repo": "cognesy/instructor-aux",
       "github_name": "instructor-aux",

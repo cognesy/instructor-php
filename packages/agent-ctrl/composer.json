@@ -1,0 +1,47 @@
+{
+  "name": "cognesy/agent-ctrl",
+  "description": "Unified CLI bridge for code agents (Claude Code, OpenAI Codex, OpenCode)",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\AgentCtrl\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\AgentCtrl\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-utils": "^1.14"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

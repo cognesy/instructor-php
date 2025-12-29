@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Facades;
 
-use Cognesy\Auxiliary\Agents\AgentCtrl as BaseAgentCtrl;
-use Cognesy\Auxiliary\Agents\Builder\ClaudeCodeBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Builder\CodexBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Builder\OpenCodeBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\AgentCtrl as BaseAgentCtrl;
+use Cognesy\AgentCtrl\Builder\ClaudeCodeBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\CodexBridgeBuilder;
+use Cognesy\AgentCtrl\Builder\OpenCodeBridgeBuilder;
+use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 use Illuminate\Support\Facades\Facade;
 
@@ -125,7 +125,7 @@ class AgentCtrl extends Facade
 
         // Apply sandbox driver if configured
         if ($sandbox = $config['sandbox'] ?? config('instructor.agents.sandbox')) {
-            $sandboxDriver = \Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver::from($sandbox);
+            $sandboxDriver = \Cognesy\AgentCtrl\Common\Enum\SandboxDriver::from($sandbox);
             $builder->withSandboxDriver($sandboxDriver);
         }
 

@@ -1,8 +1,8 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\AgentCtrl;
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Enum\AgentType;
 
 /**
  * Unified Agent - Basic Example
