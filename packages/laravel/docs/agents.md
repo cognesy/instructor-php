@@ -69,7 +69,7 @@ $response = AgentCtrl::openCode()
 Select agent type at runtime:
 
 ```php
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 $agentType = AgentType::from(config('app.default_agent'));
 
@@ -303,7 +303,7 @@ test('handles multiple agent calls', function () {
 });
 
 test('can create custom fake responses', function () {
-    use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+    use Cognesy\Auxiliary\Agents\Enum\AgentType;
     use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 
     $customResponse = AgentCtrlFake::response(

@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified;
+namespace Cognesy\Auxiliary\Agents;
 
-use Cognesy\Auxiliary\Agents\Unified\Builder\ClaudeCodeBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Builder\CodexBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Builder\OpenCodeBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Builder\ClaudeCodeBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Builder\CodexBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Builder\OpenCodeBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Entry point for the unified agent bridge abstraction.

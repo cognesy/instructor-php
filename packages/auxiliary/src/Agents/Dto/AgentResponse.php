@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Dto;
+namespace Cognesy\Auxiliary\Agents\Dto;
 
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Common response format for all CLI-based code agents.

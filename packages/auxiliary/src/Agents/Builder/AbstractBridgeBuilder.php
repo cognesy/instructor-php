@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Builder;
+namespace Cognesy\Auxiliary\Agents\Builder;
 
 use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
-use Cognesy\Auxiliary\Agents\Unified\Dto\CallbackStreamHandler;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridge;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Contract\StreamHandler;
+use Cognesy\Auxiliary\Agents\Dto\CallbackStreamHandler;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Base builder with common configuration methods.

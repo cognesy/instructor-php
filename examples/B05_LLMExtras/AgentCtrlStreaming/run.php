@@ -1,7 +1,7 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\Unified\AgentCtrl;
+use Cognesy\Auxiliary\Agents\AgentCtrl;
 
 /**
  * Unified Agent - Streaming Example

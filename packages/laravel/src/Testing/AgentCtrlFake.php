@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Testing;
 
-use Cognesy\Auxiliary\Agents\Unified\Dto\TokenUsage;
-use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Dto\TokenUsage;
+use Cognesy\Auxiliary\Agents\Dto\ToolCall;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 use PHPUnit\Framework\Assert;
 
 /**

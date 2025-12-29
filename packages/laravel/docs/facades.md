@@ -265,7 +265,7 @@ $response = AgentCtrl::openCode()
     ->execute('Analyze codebase architecture');
 
 // Dynamic selection
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 $response = AgentCtrl::make(AgentType::ClaudeCode)
     ->execute('Generate API documentation');

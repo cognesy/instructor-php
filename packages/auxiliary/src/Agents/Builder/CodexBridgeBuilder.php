@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Builder;
+namespace Cognesy\Auxiliary\Agents\Builder;
 
 use Cognesy\Auxiliary\Agents\Common\Value\PathList;
 use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\Auxiliary\Agents\Unified\Bridge\CodexBridge;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Bridge\CodexBridge;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridge;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Fluent builder for OpenAI Codex CLI bridge.

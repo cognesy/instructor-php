@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Bridge;
+namespace Cognesy\Auxiliary\Agents\Bridge;
 
 use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
 use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
@@ -13,12 +13,12 @@ use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Dto\StreamEvent\ToolCallEvent;
 use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\Auxiliary\Agents\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
-use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
-use Cognesy\Auxiliary\Agents\Unified\Dto\TokenUsage;
-use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridge;
+use Cognesy\Auxiliary\Agents\Contract\StreamHandler;
+use Cognesy\Auxiliary\Agents\Dto\TokenUsage;
+use Cognesy\Auxiliary\Agents\Dto\ToolCall;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Bridge implementation for OpenAI Codex CLI.

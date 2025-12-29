@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Contract;
+namespace Cognesy\Auxiliary\Agents\Contract;
 
-use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Dto\ToolCall;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
 
 /**
  * Contract for handling streaming events from an agent.

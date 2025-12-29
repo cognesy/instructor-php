@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Contract;
+namespace Cognesy\Auxiliary\Agents\Contract;
 
 use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
 
 /**
  * Fluent builder interface for configuring and executing agent bridges.

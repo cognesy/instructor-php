@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Bridge;
+namespace Cognesy\Auxiliary\Agents\Bridge;
 
 use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
 use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
@@ -11,12 +11,12 @@ use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\TextEvent;
 use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\ToolUseEvent;
 use Cognesy\Auxiliary\Agents\OpenCode\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
-use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
-use Cognesy\Auxiliary\Agents\Unified\Dto\TokenUsage;
-use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridge;
+use Cognesy\Auxiliary\Agents\Contract\StreamHandler;
+use Cognesy\Auxiliary\Agents\Dto\TokenUsage;
+use Cognesy\Auxiliary\Agents\Dto\ToolCall;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Bridge implementation for OpenCode CLI.

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Dto;
+namespace Cognesy\Auxiliary\Agents\Dto;
 
 /**
  * Unified token usage across all agent types.

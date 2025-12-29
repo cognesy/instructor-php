@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Facades;
 
-use Cognesy\Auxiliary\Agents\Unified\AgentCtrl as BaseAgentCtrl;
-use Cognesy\Auxiliary\Agents\Unified\Builder\ClaudeCodeBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Builder\CodexBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Builder\OpenCodeBridgeBuilder;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\AgentCtrl as BaseAgentCtrl;
+use Cognesy\Auxiliary\Agents\Builder\ClaudeCodeBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Builder\CodexBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Builder\OpenCodeBridgeBuilder;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 use Illuminate\Support\Facades\Facade;
 

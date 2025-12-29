@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Builder;
+namespace Cognesy\Auxiliary\Agents\Builder;
 
-use Cognesy\Auxiliary\Agents\Unified\Bridge\OpenCodeBridge;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Bridge\OpenCodeBridge;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridge;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Fluent builder for OpenCode CLI bridge.

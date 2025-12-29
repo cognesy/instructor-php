@@ -342,7 +342,7 @@ $fake->assertExecutedTimes(3);
 Create detailed fake responses with metadata:
 
 ```php
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 
 $customResponse = AgentCtrlFake::response(

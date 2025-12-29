@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Dto;
+namespace Cognesy\Auxiliary\Agents\Dto;
 
-use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
+use Cognesy\Auxiliary\Agents\Contract\StreamHandler;
 
 /**
  * Stream handler that delegates to callable callbacks.

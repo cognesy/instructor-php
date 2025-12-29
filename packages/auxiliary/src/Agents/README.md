@@ -16,8 +16,8 @@ The Unified Agent Bridge provides:
 ### Basic Usage
 
 ```php
-use Cognesy\Auxiliary\Agents\Unified\AgentCtrl;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\AgentCtrl;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 // Execute a prompt
 $response = AgentCtrl::make(AgentType::ClaudeCode)

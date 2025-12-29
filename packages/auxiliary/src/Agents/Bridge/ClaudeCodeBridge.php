@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Auxiliary\Agents\Unified\Bridge;
+namespace Cognesy\Auxiliary\Agents\Bridge;
 
 use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
 use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Dto\ClaudeRequest;
@@ -12,11 +12,11 @@ use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
 use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
 use Cognesy\Auxiliary\Agents\Common\Value\PathList;
-use Cognesy\Auxiliary\Agents\Unified\Contract\AgentBridge;
-use Cognesy\Auxiliary\Agents\Unified\Contract\StreamHandler;
-use Cognesy\Auxiliary\Agents\Unified\Dto\ToolCall;
-use Cognesy\Auxiliary\Agents\Unified\Dto\AgentResponse;
-use Cognesy\Auxiliary\Agents\Unified\Enum\AgentType;
+use Cognesy\Auxiliary\Agents\Contract\AgentBridge;
+use Cognesy\Auxiliary\Agents\Contract\StreamHandler;
+use Cognesy\Auxiliary\Agents\Dto\ToolCall;
+use Cognesy\Auxiliary\Agents\Dto\AgentResponse;
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
 
 /**
  * Bridge implementation for Claude Code CLI.
