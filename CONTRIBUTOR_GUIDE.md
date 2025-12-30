@@ -9,6 +9,7 @@ This is a monorepo containing multiple independent packages under the `packages/
 - **Core packages**: `instructor`, `config`, `events`, `messages`, `utils`, `schema`, `templates`
 - **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`
 - **Development tools**: `evals`, `experimental`, `doctor`
+- **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
 - **HTTP client**: `http-client`
 - **Pipeline processing**: `pipeline`
 

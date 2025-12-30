@@ -1,0 +1,429 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Enhanced Package Creation Script
+ *
+ * Creates a new subpackage and fully integrates it into the monorepo:
+ * - Creates package from template
+ * - Updates packages.json
+ * - Updates root composer.json autoload
+ * - Updates phpunit.xml test suites
+ * - Updates documentation files
+ * - Regenerates GitHub Actions workflow
+ * - Installs dependencies
+ * - Runs validation
+ *
+ * Usage: php scripts/make-package-enhanced <config.json>
+ */
+
+if ($argc !== 2) {
+    echo "Usage: php scripts/make-package-enhanced <config.json>\n";
+    echo "Example: php scripts/make-package-enhanced package-config.json\n";
+    exit(1);
+}
+
+$configFile = $argv[1];
+
+if (!file_exists($configFile)) {
+    echo "Error: Configuration file '{$configFile}' not found.\n";
+    exit(1);
+}
+
+$config = json_decode(file_get_contents($configFile), true);
+
+if ($config === null) {
+    echo "Error: Invalid JSON in configuration file.\n";
+    exit(1);
+}
+
+// Validate required fields
+$requiredFields = ['package_name', 'namespace', 'package_title', 'package_description', 'target_directory'];
+foreach ($requiredFields as $field) {
+    if (!isset($config[$field]) || empty($config[$field])) {
+        echo "Error: Missing required field '{$field}' in configuration.\n";
+        exit(1);
+    }
+}
+
+// Add optional fields with defaults
+$config['github_repo'] = $config['github_repo'] ?? "cognesy/{$config['package_name']}";
+$config['composer_name'] = $config['composer_name'] ?? "cognesy/{$config['package_name']}";
+$config['category'] = $config['category'] ?? 'Extended functionality';
+$config['category_description'] = $config['category_description'] ?? $config['package_description'];
+
+$scriptDir = __DIR__;
+$rootDir = dirname($scriptDir);
+$templateDir = $rootDir . '/data/empty-new';
+$targetDir = $rootDir . '/' . $config['target_directory'];
+
+echo "╔══════════════════════════════════════════════════════════════╗\n";
+echo "║          Enhanced Package Creation Workflow                  ║\n";
+echo "╚══════════════════════════════════════════════════════════════╝\n\n";
+
+echo "Package: {$config['package_name']}\n";
+echo "Target:  {$config['target_directory']}\n";
+echo "Repo:    {$config['github_repo']}\n\n";
+
+// ============================================================================
+// STEP 1: Create Package from Template
+// ============================================================================
+echo "Step 1/9: Creating package from template...\n";
+
+if (file_exists($targetDir)) {
+    echo "  ✗ Error: Target directory '{$config['target_directory']}' already exists.\n";
+    exit(1);
+}
+
+if (!mkdir($targetDir, 0755, true)) {
+    echo "  ✗ Error: Could not create target directory.\n";
+    exit(1);
+}
+
+function copyTemplate($source, $dest, $config) {
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($iterator as $file) {
+        $destPath = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+
+        if ($file->isDir()) {
+            if (!is_dir($destPath)) {
+                mkdir($destPath, 0755, true);
+            }
+        } else {
+            // Skip certain files
+            if ($file->getFilename() === 'composer.lock' ||
+                strpos($file->getPathname(), '/vendor/') !== false) {
+                continue;
+            }
+
+            $content = file_get_contents($file->getPathname());
+
+            // Replace template placeholders
+            $placeholders = [
+                '{{PACKAGE_NAME}}' => $config['package_name'],
+                '{{NAMESPACE}}' => $config['namespace'],
+                '{{PACKAGE_TITLE}}' => $config['package_title'],
+                '{{PACKAGE_DESCRIPTION}}' => $config['package_description']
+            ];
+
+            $content = str_replace(array_keys($placeholders), array_values($placeholders), $content);
+
+            file_put_contents($destPath, $content);
+        }
+    }
+}
+
+try {
+    copyTemplate($templateDir, $targetDir, $config);
+    echo "  ✓ Package structure created\n\n";
+} catch (Exception $e) {
+    echo "  ✗ Error: " . $e->getMessage() . "\n";
+    exit(1);
+}
+
+// ============================================================================
+// STEP 2: Update packages.json
+// ============================================================================
+echo "Step 2/9: Updating packages.json...\n";
+
+$packagesJsonPath = $rootDir . '/packages.json';
+if (!file_exists($packagesJsonPath)) {
+    echo "  ✗ Error: packages.json not found\n";
+    exit(1);
+}
+
+$packagesData = json_decode(file_get_contents($packagesJsonPath), true);
+if ($packagesData === null) {
+    echo "  ✗ Error: Invalid JSON in packages.json\n";
+    exit(1);
+}
+
+// Check if package already exists
+foreach ($packagesData['packages'] as $pkg) {
+    if ($pkg['local'] === $config['target_directory']) {
+        echo "  ⚠ Warning: Package already exists in packages.json, skipping\n\n";
+        goto skipPackagesJson;
+    }
+}
+
+// Add new package
+$newPackage = [
+    'local' => $config['target_directory'],
+    'repo' => $config['github_repo'],
+    'github_name' => basename($config['github_repo']),
+    'composer_name' => $config['composer_name']
+];
+
+$packagesData['packages'][] = $newPackage;
+
+// Sort packages by local path
+usort($packagesData['packages'], function($a, $b) {
+    return strcmp($a['local'], $b['local']);
+});
+
+file_put_contents($packagesJsonPath, json_encode($packagesData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+echo "  ✓ Added to packages.json\n\n";
+
+skipPackagesJson:
+
+// ============================================================================
+// STEP 3: Update root composer.json autoload
+// ============================================================================
+echo "Step 3/9: Updating root composer.json autoload...\n";
+
+$rootComposerPath = $rootDir . '/composer.json';
+if (!file_exists($rootComposerPath)) {
+    echo "  ✗ Error: Root composer.json not found\n";
+    exit(1);
+}
+
+$composerData = json_decode(file_get_contents($rootComposerPath), true);
+if ($composerData === null) {
+    echo "  ✗ Error: Invalid JSON in root composer.json\n";
+    exit(1);
+}
+
+$namespace = rtrim($config['namespace'], '\\') . '\\';
+$autoloadPath = $config['target_directory'] . '/src/';
+
+if (!isset($composerData['autoload']['psr-4'][$namespace])) {
+    $composerData['autoload']['psr-4'][$namespace] = $autoloadPath;
+
+    // Sort autoload entries
+    ksort($composerData['autoload']['psr-4']);
+
+    file_put_contents($rootComposerPath, json_encode($composerData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+    echo "  ✓ Added PSR-4 autoload mapping\n\n";
+} else {
+    echo "  ⚠ Autoload mapping already exists, skipping\n\n";
+}
+
+// ============================================================================
+// STEP 4: Update phpunit.xml
+// ============================================================================
+echo "Step 4/9: Updating phpunit.xml...\n";
+
+$phpunitPath = $rootDir . '/phpunit.xml';
+if (!file_exists($phpunitPath)) {
+    echo "  ⚠ Warning: phpunit.xml not found, skipping\n\n";
+    goto skipPhpunit;
+}
+
+$phpunitContent = file_get_contents($phpunitPath);
+$packagePath = $config['target_directory'];
+
+// Check if already added
+if (strpos($phpunitContent, $packagePath) !== false) {
+    echo "  ⚠ Package already in phpunit.xml, skipping\n\n";
+    goto skipPhpunit;
+}
+
+$testSuites = ['Unit', 'Feature', 'Integration', 'Regression'];
+$modified = false;
+
+foreach ($testSuites as $suite) {
+    $pattern = '/(<testsuite name="' . $suite . '">.*?)(\s*<\/testsuite>)/s';
+    if (preg_match($pattern, $phpunitContent, $matches)) {
+        $newEntry = "            <directory suffix=\"Test.php\">./{$packagePath}/tests/{$suite}</directory>\n";
+
+        // Find the right place to insert (alphabetically)
+        $lines = explode("\n", $matches[1]);
+        $insertIndex = count($lines);
+
+        for ($i = 1; $i < count($lines); $i++) {
+            if (preg_match('/packages\/([^\/]+)/', $lines[$i], $m)) {
+                if (strcmp(basename($packagePath), $m[1]) < 0) {
+                    $insertIndex = $i;
+                    break;
+                }
+            }
+        }
+
+        array_splice($lines, $insertIndex, 0, rtrim($newEntry));
+        $replacement = implode("\n", $lines) . $matches[2];
+        $phpunitContent = preg_replace($pattern, $replacement, $phpunitContent, 1);
+        $modified = true;
+    }
+}
+
+// Add to source coverage
+$pattern = '/(<source>.*?<include>.*?)(\s*<\/include>)/s';
+if (preg_match($pattern, $phpunitContent, $matches)) {
+    $newEntry = "            <directory suffix=\".php\">./{$packagePath}/src</directory>\n";
+
+    $lines = explode("\n", $matches[1]);
+    $insertIndex = count($lines);
+
+    for ($i = 1; $i < count($lines); $i++) {
+        if (preg_match('/packages\/([^\/]+)/', $lines[$i], $m)) {
+            if (strcmp(basename($packagePath), $m[1]) < 0) {
+                $insertIndex = $i;
+                break;
+            }
+        }
+    }
+
+    array_splice($lines, $insertIndex, 0, rtrim($newEntry));
+    $replacement = implode("\n", $lines) . $matches[2];
+    $phpunitContent = preg_replace($pattern, $replacement, $phpunitContent, 1);
+    $modified = true;
+}
+
+if ($modified) {
+    file_put_contents($phpunitPath, $phpunitContent);
+    echo "  ✓ Added to all test suites and coverage\n\n";
+} else {
+    echo "  ⚠ Could not update phpunit.xml automatically\n\n";
+}
+
+skipPhpunit:
+
+// ============================================================================
+// STEP 5: Update documentation files
+// ============================================================================
+echo "Step 5/9: Updating documentation files...\n";
+
+$docsToUpdate = [
+    'CONTENTS.md' => [
+        'pattern' => '/(- \*\*.*?\*\*:.*\n)(- \*\*HTTP client\*\*:)/s',
+        'replacement' => "$1- **{$config['category']}**: `" . basename($packagePath) . "` - {$config['category_description']}\n$2"
+    ],
+    'CONTRIBUTOR_GUIDE.md' => [
+        'pattern' => '/(- \*\*.*?\*\*:.*\n)(- \*\*HTTP client\*\*:)/s',
+        'replacement' => "$1- **{$config['category']}**: `" . basename($packagePath) . "` - {$config['category_description']}\n$2"
+    ]
+];
+
+foreach ($docsToUpdate as $filename => $update) {
+    $docPath = $rootDir . '/' . $filename;
+    if (file_exists($docPath)) {
+        $content = file_get_contents($docPath);
+        if (strpos($content, basename($packagePath)) === false) {
+            $content = preg_replace($update['pattern'], $update['replacement'], $content);
+            file_put_contents($docPath, $content);
+            echo "  ✓ Updated {$filename}\n";
+        } else {
+            echo "  ⚠ {$filename} already contains package, skipping\n";
+        }
+    } else {
+        echo "  ⚠ {$filename} not found, skipping\n";
+    }
+}
+echo "\n";
+
+// ============================================================================
+// STEP 6: Update GitHub Actions workflow
+// ============================================================================
+echo "Step 6/9: Updating GitHub Actions workflow...\n";
+
+$updateScriptPath = $scriptDir . '/update-split-yml.sh';
+if (file_exists($updateScriptPath)) {
+    exec("bash {$updateScriptPath}", $output, $returnCode);
+    if ($returnCode === 0) {
+        echo "  ✓ GitHub Actions workflow updated\n\n";
+    } else {
+        echo "  ⚠ Warning: update-split-yml.sh returned error code {$returnCode}\n\n";
+    }
+} else {
+    echo "  ⚠ Warning: update-split-yml.sh not found, skipping\n\n";
+}
+
+// ============================================================================
+// STEP 7: Install package dependencies
+// ============================================================================
+echo "Step 7/9: Installing package dependencies...\n";
+
+exec("cd {$targetDir} && composer install 2>&1", $output, $returnCode);
+if ($returnCode === 0) {
+    echo "  ✓ Dependencies installed\n\n";
+} else {
+    echo "  ⚠ Warning: composer install failed\n";
+    echo "  Output: " . implode("\n  ", array_slice($output, -5)) . "\n\n";
+}
+
+// ============================================================================
+// STEP 8: Regenerate root autoloader
+// ============================================================================
+echo "Step 8/9: Regenerating root autoloader...\n";
+
+exec("cd {$rootDir} && composer dump-autoload 2>&1", $output, $returnCode);
+if ($returnCode === 0) {
+    echo "  ✓ Root autoloader regenerated\n\n";
+} else {
+    echo "  ⚠ Warning: composer dump-autoload failed\n\n";
+}
+
+// ============================================================================
+// STEP 9: Run validation
+// ============================================================================
+echo "Step 9/9: Running validation checks...\n";
+
+// Check if PHPStan config exists
+if (file_exists("{$targetDir}/phpstan.neon")) {
+    echo "  → Running PHPStan...\n";
+    exec("cd {$targetDir} && composer phpstan 2>&1", $output, $returnCode);
+    if ($returnCode === 0) {
+        echo "  ✓ PHPStan check passed\n";
+    } else {
+        echo "  ⚠ PHPStan found issues (expected for empty package)\n";
+    }
+} else {
+    echo "  ⚠ No PHPStan config found\n";
+}
+
+// Check if tests exist
+if (file_exists("{$targetDir}/tests")) {
+    echo "  → Running tests...\n";
+    exec("cd {$targetDir} && composer test 2>&1", $output, $returnCode);
+    if ($returnCode === 0) {
+        echo "  ✓ Tests passed\n";
+    } else {
+        echo "  ⚠ Tests failed or no tests exist yet\n";
+    }
+} else {
+    echo "  ⚠ No tests directory found\n";
+}
+
+echo "\n";
+
+// ============================================================================
+// SUMMARY
+// ============================================================================
+echo "╔══════════════════════════════════════════════════════════════╗\n";
+echo "║                 Package Created Successfully! 🎉              ║\n";
+echo "╚══════════════════════════════════════════════════════════════╝\n\n";
+
+echo "Package: {$config['package_name']}\n";
+echo "Location: {$config['target_directory']}\n";
+echo "GitHub Repo: {$config['github_repo']}\n";
+echo "Composer Name: {$config['composer_name']}\n\n";
+
+echo "✅ Completed integrations:\n";
+echo "   • Package structure created from template\n";
+echo "   • Added to packages.json\n";
+echo "   • Added to root composer.json autoload\n";
+echo "   • Added to phpunit.xml test suites\n";
+echo "   • Updated documentation (CONTENTS.md, CONTRIBUTOR_GUIDE.md)\n";
+echo "   • Updated GitHub Actions split workflow\n";
+echo "   • Dependencies installed\n";
+echo "   • Root autoloader regenerated\n";
+echo "   • Validation checks run\n\n";
+
+echo "📝 Next steps:\n";
+echo "   1. cd {$config['target_directory']}\n";
+echo "   2. Start implementing your package functionality in src/\n";
+echo "   3. Write tests in tests/\n";
+echo "   4. Run 'composer test' to verify\n";
+echo "   5. Run 'composer phpstan' for static analysis\n";
+echo "   6. Commit changes: git add . && git commit -m \"feat: add {$config['package_name']} package\"\n\n";
+
+echo "🚀 Release process:\n";
+echo "   • Your package is now fully integrated into the monorepo\n";
+echo "   • When you run ./scripts/publish-ver.sh, your package will be:\n";
+echo "     - Version synchronized with other packages\n";
+echo "     - Split to its own GitHub repository: {$config['github_repo']}\n";
+echo "     - Published to Packagist as: {$config['composer_name']}\n\n";

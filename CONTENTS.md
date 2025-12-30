@@ -9,6 +9,7 @@ Contains all independent PHP packages that make up the Instructor ecosystem. Eac
 - **Core**: `instructor`, `config`, `events`, `messages`, `utils`, `schema`, `templates`
 - **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`
 - **Development tools**: `evals`, `experimental`, `doctor`
+- **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
 - **HTTP client**: `http-client`
 - **Pipeline processing**: `pipeline`
 

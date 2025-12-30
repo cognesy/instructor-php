@@ -1,0 +1,14 @@
+{
+  "package_name": "example",
+  "namespace": "Example",
+  "package_title": "Example Package",
+  "package_description": "Example functionality for Instructor PHP library",
+  "target_directory": "packages/example",
+
+  "_comment": "Optional fields below - will use sensible defaults if not provided",
+
+  "github_repo": "cognesy/instructor-example",
+  "composer_name": "cognesy/instructor-example",
+  "category": "Extended functionality",
+  "category_description": "Example functionality for demonstrations"
+}

@@ -8,9 +8,9 @@
     },
     {
       "local": "packages/agent-ctrl",
-      "repo": "cognesy/agent-ctrl",
-      "github_name": "agent-ctrl",
-      "composer_name": "cognesy/agent-ctrl"
+      "repo": "cognesy/instructor-agent-ctrl",
+      "github_name": "instructor-agent-ctrl",
+      "composer_name": "cognesy/instructor-agent-ctrl"
     },
     {
       "local": "packages/auxiliary",
