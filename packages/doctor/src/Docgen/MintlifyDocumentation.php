@@ -65,8 +65,8 @@ class MintlifyDocumentation
         $errors = [];
 
         try {
-            $packages = ['instructor', 'polyglot', 'http-client'];
-            $targetDirs = ['docs-build/instructor', 'docs-build/polyglot', 'docs-build/http'];
+            $packages = ['instructor', 'polyglot', 'http-client', 'laravel'];
+            $targetDirs = ['docs-build/instructor', 'docs-build/polyglot', 'docs-build/http', 'docs-build/laravel'];
 
             foreach (array_combine($packages, $targetDirs) as $package => $targetDir) {
                 $result = $this->processPackage($package, $targetDir);

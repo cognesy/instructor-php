@@ -213,6 +213,18 @@ nav:
     - Middleware: http/10-middleware.md
     - Processing with Middleware: http/11-processing-with-middleware.md
     - Troubleshooting: http/12-troubleshooting.md
+  - Laravel:
+    - Overview: laravel/index.md
+    - Installation: laravel/installation.md
+    - Configuration: laravel/configuration.md
+    - Facades: laravel/facades.md
+    - Response Models: laravel/response-models.md
+    - Code Agents: laravel/agents.md
+    - Testing: laravel/testing.md
+    - Events: laravel/events.md
+    - Commands: laravel/commands.md
+    - Advanced: laravel/advanced.md
+    - Troubleshooting: laravel/troubleshooting.md
   - Cookbook:
     - Introduction: cookbook/introduction.md
     - Contributing: cookbook/contributing.md

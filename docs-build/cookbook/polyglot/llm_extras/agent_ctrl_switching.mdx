@@ -1,8 +1,22 @@
+---
+title: 'Agent Ctrl - Runtime Switching'
+docname: 'agent_ctrl_switching'
+---
+
+## Overview
+
+This example demonstrates switching between different AI coding agents at runtime
+using the same AgentCtrl API. The same prompt is sent to multiple agents to
+compare their responses and performance.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\AgentCtrl;
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Enum\AgentType;
 
 /**
  * Unified Agent - Runtime Switching Example
@@ -65,3 +79,14 @@ foreach ($agents as $agentId => $agentName) {
 print(str_repeat("─", 68) . "\n");
 print("This demonstrates runtime agent switching - the same AgentCtrl\n");
 print("API works with different backends (OpenCode, Claude Code, Codex).\n");
+?>
+```
+
+## Key Features
+
+- **Multiple Agent Support**: Switch between OpenCode, Claude Code, and Codex
+- **Unified API**: Same interface regardless of the underlying agent
+- **Performance Comparison**: Measure response times and token usage
+- **Flexible Configuration**: Agent-specific settings (turn limits, parameters)
+- **Error Handling**: Graceful handling of agent-specific failures
+- **Response Analysis**: Compare quality and characteristics of different agents

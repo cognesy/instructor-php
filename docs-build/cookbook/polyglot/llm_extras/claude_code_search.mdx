@@ -19,20 +19,20 @@ reads the code, and explains how validation works.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Dto\ClaudeRequest;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\ErrorEvent;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\MessageEvent;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\ResultEvent;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\TextContent;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Dto\StreamEvent\ToolUseContent;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\PermissionMode;
-use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
-use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
-use Cognesy\Auxiliary\Agents\Common\Execution\ExecutionPolicy;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ErrorEvent;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\MessageEvent;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ResultEvent;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\TextContent;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ToolUseContent;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
+use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
 
 // Ensure we're running from monorepo root
 $projectRoot = dirname(__DIR__, 3);

@@ -1,0 +1,399 @@
+# Troubleshooting
+
+Common issues and their solutions.
+
+## Installation Issues
+
+### Package Not Found
+
+**Error:**
+```
+Package cognesy/instructor-laravel not found
+// @doctest id="aed4"
+```
+
+**Solution:**
+Ensure you have the correct package name and your Composer is up to date:
+
+```bash
+composer clear-cache
+composer require cognesy/instructor-laravel
+# @doctest id="61e2"
+```
+
+### Service Provider Not Registered
+
+**Error:**
+```
+Class 'Cognesy\Instructor\Laravel\Facades\StructuredOutput' not found
+// @doctest id="e6b3"
+```
+
+**Solution:**
+If auto-discovery is disabled, manually register the provider:
+
+```php
+// config/app.php
+'providers' => [
+    Cognesy\Instructor\Laravel\InstructorServiceProvider::class,
+],
+// @doctest id="2317"
+```
+
+Or clear the cached configuration:
+
+```bash
+php artisan config:clear
+php artisan cache:clear
+# @doctest id="47d0"
+```
+
+---
+
+## API Key Issues
+
+### API Key Not Configured
+
+**Error:**
+```
+No API key configured for connection 'openai'
+// @doctest id="91c6"
+```
+
+**Solution:**
+Add your API key to `.env`:
+
+```env
+OPENAI_API_KEY=sk-your-key-here
+// @doctest id="332a"
+```
+
+Then clear config cache:
+
+```bash
+php artisan config:clear
+# @doctest id="4f74"
+```
+
+### Invalid API Key
+
+**Error:**
+```
+401 Unauthorized: Invalid API key
+// @doctest id="b962"
+```
+
+**Solution:**
+1. Verify your API key is correct
+2. Check the key hasn't expired
+3. Ensure the key has the required permissions
+4. Verify there are no extra spaces in `.env`
+
+### Rate Limiting
+
+**Error:**
+```
+429 Too Many Requests
+// @doctest id="6967"
+```
+
+**Solution:**
+1. Implement retry logic with exponential backoff
+2. Upgrade your API plan for higher limits
+3. Add caching to reduce API calls
+
+```php
+use Illuminate\Support\Facades\RateLimiter;
+
+if (RateLimiter::tooManyAttempts('llm-calls', 60)) {
+    throw new TooManyRequestsException();
+}
+
+RateLimiter::hit('llm-calls');
+// @doctest id="01b1"
+```
+
+---
+
+## Extraction Issues
+
+### Response Does Not Match Model
+
+**Error:**
+```
+Failed to deserialize response to PersonData
+// @doctest id="f011"
+```
+
+**Solution:**
+1. Add more descriptive property comments
+2. Provide examples
+3. Increase max retries
+
+```php
+final class PersonData
+{
+    public function __construct(
+        /** The person's full legal name (first and last) */
+        public readonly string $name,
+
+        /** The person's age as a whole number */
+        public readonly int $age,
+    ) {}
+}
+
+$result = StructuredOutput::with(
+    messages: $text,
+    responseModel: PersonData::class,
+    maxRetries: 5,  // Increase retries
+    examples: [...], // Add examples
+)->get();
+// @doctest id="c4e0"
+```
+
+### Validation Failures
+
+**Error:**
+```
+Validation failed after 3 retries
+// @doctest id="3dd0"
+```
+
+**Solution:**
+1. Check your validation constraints aren't too strict
+2. Review the error messages in logs
+3. Adjust the retry prompt
+
+```php
+$result = StructuredOutput::with(
+    messages: $text,
+    responseModel: MyModel::class,
+    maxRetries: 5,
+    retryPrompt: 'Previous response failed: {errors}. Please fix these specific issues.',
+)->get();
+// @doctest id="8d60"
+```
+
+### Null Values for Required Fields
+
+**Problem:** LLM returns null for fields you expected to have values.
+
+**Solution:**
+1. Make the input text clearer
+2. Add better property descriptions
+3. Use system prompts
+
+```php
+$result = StructuredOutput::with(
+    messages: $text,
+    responseModel: MyModel::class,
+    system: 'Extract all available information. If a field is not found in the text, make a reasonable inference based on context.',
+)->get();
+// @doctest id="fbc2"
+```
+
+---
+
+## Timeout Issues
+
+### Request Timeout
+
+**Error:**
+```
+cURL error 28: Operation timed out
+// @doctest id="569e"
+```
+
+**Solution:**
+Increase timeout in configuration:
+
+```php
+// config/instructor.php
+'http' => [
+    'timeout' => 300, // 5 minutes
+    'connect_timeout' => 60,
+],
+// @doctest id="c163"
+```
+
+Or per-request:
+
+```php
+$result = StructuredOutput::withOptions([
+    'timeout' => 300,
+])->with(...)->get();
+// @doctest id="d2c4"
+```
+
+### Streaming Timeout
+
+**Problem:** Streaming requests timeout before completion.
+
+**Solution:**
+```php
+set_time_limit(0); // Disable PHP timeout
+
+$stream = StructuredOutput::with(...)
+    ->withStreaming()
+    ->stream();
+// @doctest id="5696"
+```
+
+---
+
+## Testing Issues
+
+### Fake Not Working
+
+**Problem:** Real API calls are made despite using `fake()`.
+
+**Solution:**
+Ensure you call `fake()` BEFORE any extraction:
+
+```php
+// CORRECT
+$fake = StructuredOutput::fake([...]);
+$result = $myService->extract(); // Uses fake
+
+// WRONG
+$result = $myService->extract(); // Real API call
+$fake = StructuredOutput::fake([...]); // Too late!
+// @doctest id="d2f8"
+```
+
+### Http::fake() Not Mocking
+
+**Problem:** `Http::fake()` doesn't affect Instructor calls.
+
+**Solution:**
+Ensure the HTTP driver is set to 'laravel':
+
+```php
+// config/instructor.php
+'http' => [
+    'driver' => 'laravel',
+],
+// @doctest id="09d8"
+```
+
+---
+
+## Performance Issues
+
+### Slow Responses
+
+**Solutions:**
+1. Use a faster model (e.g., `gpt-4o-mini` instead of `gpt-4o`)
+2. Use Groq for faster inference
+3. Enable response caching
+4. Reduce input size
+
+```php
+// Use faster provider
+$result = StructuredOutput::using('groq')
+    ->with(...)->get();
+
+// Cache responses
+$result = Cache::remember($cacheKey, 3600, fn () =>
+    StructuredOutput::with(...)->get()
+);
+// @doctest id="4a3b"
+```
+
+### High Token Usage
+
+**Solutions:**
+1. Use concise system prompts
+2. Truncate long inputs
+3. Use smaller context windows
+
+```php
+// Truncate long text
+$text = Str::limit($longText, 8000);
+
+$result = StructuredOutput::with(
+    messages: $text,
+    responseModel: MyModel::class,
+    system: 'Extract data. Be concise.', // Short prompt
+)->get();
+// @doctest id="1800"
+```
+
+---
+
+## Memory Issues
+
+### Out of Memory
+
+**Error:**
+```
+Allowed memory size exhausted
+// @doctest id="c249"
+```
+
+**Solution:**
+1. Process in batches
+2. Use streaming for large responses
+3. Increase PHP memory limit
+
+```php
+// Process in chunks
+$documents->chunk(10)->each(function ($chunk) {
+    foreach ($chunk as $doc) {
+        $result = StructuredOutput::with(...)
+            ->get();
+        // Process and free memory
+    }
+    gc_collect_cycles();
+});
+// @doctest id="0b7d"
+```
+
+---
+
+## Common Error Messages
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Connection refused` | API unreachable | Check network/firewall |
+| `Invalid JSON` | Malformed response | Increase retries, simplify model |
+| `Model not found` | Wrong model name | Check model name spelling |
+| `Quota exceeded` | API limit reached | Upgrade plan or wait |
+| `Context length exceeded` | Input too long | Truncate input |
+| `Invalid request` | Malformed request | Check request parameters |
+
+---
+
+## Getting Help
+
+If you're still stuck:
+
+1. **Check the logs:**
+   ```bash
+   tail -f storage/logs/laravel.log
+   ```
+
+2. **Enable debug logging:**
+   ```php
+   // config/instructor.php
+   'logging' => [
+       'enabled' => true,
+       'level' => 'debug',
+   ],
+   ```
+
+3. **Test the API directly:**
+   ```bash
+   php artisan instructor:test --preset=openai
+   ```
+
+4. **Check GitHub issues:**
+   https://github.com/cognesy/instructor-php/issues
+
+5. **Ask for help:**
+   Open a new issue with:
+   - PHP version
+   - Laravel version
+   - Package version
+   - Error message
+   - Minimal reproduction code

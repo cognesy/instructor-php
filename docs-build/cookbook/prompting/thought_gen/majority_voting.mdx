@@ -40,7 +40,7 @@ class MajorityVoting {
     private function generate(string $query, array $options) : ChainOfThoughtResponse {
         $formatted = implode("\n", array_map(fn($k,$v)=>"{$k}: {$v}", array_keys($options), $options));
         $system = <<<TXT
-        You are a world-class AI for complex questions. Choose the single best option.
+        You are an AI assistant for complex questions. Choose the single best option.
         <question>
         {$query}
         </question>

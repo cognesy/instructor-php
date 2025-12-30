@@ -1,8 +1,22 @@
+---
+title: 'Agent Ctrl - Basic Usage'
+docname: 'agent_ctrl_basic'
+---
+
+## Overview
+
+This example demonstrates the simplest use of AgentCtrl to execute a prompt
+against a CLI-based code agent. It shows basic prompt execution with response
+handling and statistics display.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\AgentCtrl;
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Enum\AgentType;
 
 /**
  * Unified Agent - Basic Example
@@ -42,3 +56,12 @@ if ($response->isSuccess()) {
 } else {
     print("ERROR: Request failed with exit code {$response->exitCode}\n");
 }
+?>
+```
+
+## Key Features
+
+- **Simple API**: Single method call to execute prompts
+- **Response Handling**: Comprehensive success/error handling
+- **Statistics**: Detailed usage metrics and cost information
+- **Agent Types**: Support for different CLI agents (OpenCode, Claude Code, Codex)

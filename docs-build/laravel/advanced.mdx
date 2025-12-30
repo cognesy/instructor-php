@@ -1,0 +1,501 @@
+# Advanced Usage
+
+This guide covers advanced patterns and features for power users.
+
+## Streaming
+
+Stream responses for real-time updates:
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+
+$stream = StructuredOutput::with(
+    messages: 'Extract detailed company information from this long document...',
+    responseModel: CompanyData::class,
+)->withStreaming()->stream();
+
+// Handle partial updates
+foreach ($stream->partials() as $partial) {
+    echo "Company: " . ($partial->name ?? 'Loading...') . "\n";
+    echo "Industry: " . ($partial->industry ?? 'Loading...') . "\n";
+    echo "---\n";
+}
+
+// Get final complete result
+$company = $stream->final();
+// @doctest id="f977"
+```
+
+### Streaming with Callbacks
+
+```php
+$result = StructuredOutput::with(
+    messages: 'Extract data...',
+    responseModel: MyModel::class,
+)
+->withStreaming()
+->onPartialUpdate(function ($partial) {
+    // Called on each partial update
+    broadcast(new PartialUpdateEvent($partial));
+})
+->get();
+// @doctest id="db04"
+```
+
+### Streaming Sequences
+
+For extracting multiple items:
+
+```php
+$stream = StructuredOutput::with(
+    messages: 'Extract all products from this catalog...',
+    responseModel: [
+        'type' => 'array',
+        'items' => ProductData::class,
+    ],
+)
+->withStreaming()
+->onSequenceUpdate(function ($items) {
+    // Called as each item is completed
+    foreach ($items as $item) {
+        echo "Found: {$item->name}\n";
+    }
+})
+->stream();
+// @doctest id="8502"
+```
+
+---
+
+## Validation and Retries
+
+### Automatic Validation
+
+Response models are automatically validated. Invalid responses trigger retries:
+
+```php
+use Symfony\Component\Validator\Constraints as Assert;
+
+final class UserData
+{
+    public function __construct(
+        #[Assert\NotBlank]
+        #[Assert\Length(min: 2, max: 100)]
+        public readonly string $name,
+
+        #[Assert\Email]
+        public readonly string $email,
+
+        #[Assert\Range(min: 18, max: 120)]
+        public readonly int $age,
+    ) {}
+}
+
+// Extraction will retry if validation fails
+$user = StructuredOutput::with(
+    messages: 'Extract user from: john doe, email: invalid, age: 5',
+    responseModel: UserData::class,
+    maxRetries: 3,
+)->get();
+// @doctest id="e3d3"
+```
+
+### Custom Validators
+
+```php
+use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+
+class BusinessRulesValidator implements CanValidateObject
+{
+    public function validate(object $object): array
+    {
+        $errors = [];
+
+        if ($object instanceof OrderData) {
+            if ($object->total < $object->minimumOrderValue) {
+                $errors[] = "Order total must be at least {$object->minimumOrderValue}";
+            }
+        }
+
+        return $errors;
+    }
+}
+
+$order = StructuredOutput::with(
+    messages: 'Extract order...',
+    responseModel: OrderData::class,
+)
+->withValidators(BusinessRulesValidator::class)
+->get();
+// @doctest id="8e59"
+```
+
+### Custom Retry Prompt
+
+```php
+$result = StructuredOutput::with(
+    messages: 'Extract data...',
+    responseModel: MyModel::class,
+    maxRetries: 3,
+    retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
+)->get();
+// @doctest id="973a"
+```
+
+---
+
+## Data Transformation
+
+Transform data after extraction:
+
+```php
+use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
+
+class NormalizePhoneNumbers implements CanTransformData
+{
+    public function transform(mixed $data): mixed
+    {
+        if ($data instanceof ContactData) {
+            $data->phone = $this->normalize($data->phone);
+        }
+        return $data;
+    }
+
+    private function normalize(string $phone): string
+    {
+        return preg_replace('/[^0-9+]/', '', $phone);
+    }
+}
+
+$contact = StructuredOutput::with(
+    messages: 'Contact: John, phone: (555) 123-4567',
+    responseModel: ContactData::class,
+)
+->withTransformers(NormalizePhoneNumbers::class)
+->get();
+
+// $contact->phone === '+15551234567'
+// @doctest id="0b74"
+```
+
+---
+
+## Output Modes
+
+Different LLMs support different output modes:
+
+```php
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+
+// JSON Schema mode (recommended for OpenAI)
+$result = StructuredOutput::with(...)
+    ->withOutputMode(OutputMode::JsonSchema)
+    ->get();
+
+// Tool/Function calling mode
+$result = StructuredOutput::with(...)
+    ->withOutputMode(OutputMode::Tools)
+    ->get();
+
+// Simple JSON mode
+$result = StructuredOutput::with(...)
+    ->withOutputMode(OutputMode::Json)
+    ->get();
+
+// Markdown JSON (for Gemini)
+$result = StructuredOutput::with(...)
+    ->withOutputMode(OutputMode::MdJson)
+    ->get();
+// @doctest id="5a1b"
+```
+
+---
+
+## Few-Shot Learning
+
+Provide examples to improve extraction quality:
+
+```php
+$person = StructuredOutput::with(
+    messages: 'Extract: Jane Doe, 25 years old, jane@example.com',
+    responseModel: PersonData::class,
+    examples: [
+        [
+            'input' => 'John Smith is 30 years old and works at john@company.com',
+            'output' => new PersonData(
+                name: 'John Smith',
+                age: 30,
+                email: 'john@company.com',
+            ),
+        ],
+        [
+            'input' => 'Mary Johnson, age 45',
+            'output' => new PersonData(
+                name: 'Mary Johnson',
+                age: 45,
+                email: null,
+            ),
+        ],
+    ],
+)->get();
+// @doctest id="41d3"
+```
+
+---
+
+## System Prompts
+
+Customize the system prompt for specific domains:
+
+```php
+$medical = StructuredOutput::with(
+    messages: $patientNotes,
+    responseModel: MedicalRecord::class,
+    system: <<<'PROMPT'
+        You are a medical records extraction specialist.
+        Extract structured data from clinical notes.
+        Use standard medical terminology.
+        If information is unclear, mark as null rather than guessing.
+        PROMPT,
+)->get();
+// @doctest id="2405"
+```
+
+---
+
+## Tool Descriptions
+
+Customize how the response model is described to the LLM:
+
+```php
+$result = StructuredOutput::with(
+    messages: 'Extract invoice details...',
+    responseModel: InvoiceData::class,
+    toolName: 'extract_invoice',
+    toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
+)->get();
+// @doctest id="c29c"
+```
+
+---
+
+## Multiple Providers
+
+Switch between providers based on task:
+
+```php
+class AIService
+{
+    // Fast, cheap extraction for simple tasks
+    public function quickExtract(string $text, string $model): mixed
+    {
+        return StructuredOutput::using('groq')
+            ->with(messages: $text, responseModel: $model)
+            ->get();
+    }
+
+    // High-quality extraction for complex tasks
+    public function precisionExtract(string $text, string $model): mixed
+    {
+        return StructuredOutput::using('anthropic')
+            ->withModel('claude-3-opus-20240229')
+            ->with(messages: $text, responseModel: $model)
+            ->get();
+    }
+
+    // Local extraction for sensitive data
+    public function privateExtract(string $text, string $model): mixed
+    {
+        return StructuredOutput::using('ollama')
+            ->with(messages: $text, responseModel: $model)
+            ->get();
+    }
+}
+// @doctest id="ee88"
+```
+
+---
+
+## Caching Strategies
+
+### Response Caching
+
+```php
+use Illuminate\Support\Facades\Cache;
+
+class CachedExtractor
+{
+    public function extract(string $text, string $responseModel): mixed
+    {
+        $cacheKey = 'extract:' . md5($text . $responseModel);
+
+        return Cache::remember($cacheKey, 3600, function () use ($text, $responseModel) {
+            return StructuredOutput::with(
+                messages: $text,
+                responseModel: $responseModel,
+            )->get();
+        });
+    }
+}
+// @doctest id="7a70"
+```
+
+### Semantic Caching
+
+```php
+use Cognesy\Instructor\Laravel\Facades\Embeddings;
+
+class SemanticCache
+{
+    public function extractWithCache(string $text, string $responseModel): mixed
+    {
+        // Generate embedding for input
+        $embedding = Embeddings::withInputs($text)->first();
+
+        // Check for similar cached results
+        $cached = $this->findSimilar($embedding);
+        if ($cached) {
+            return $cached;
+        }
+
+        // Extract and cache
+        $result = StructuredOutput::with(
+            messages: $text,
+            responseModel: $responseModel,
+        )->get();
+
+        $this->store($embedding, $result);
+
+        return $result;
+    }
+}
+// @doctest id="8ecd"
+```
+
+---
+
+## Batch Processing
+
+Process multiple items efficiently:
+
+```php
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Bus;
+
+class BatchExtractor
+{
+    public function extractBatch(Collection $documents): Collection
+    {
+        return $documents->map(function ($document) {
+            return StructuredOutput::with(
+                messages: $document->content,
+                responseModel: DocumentData::class,
+            )->get();
+        });
+    }
+
+    // Or with queued jobs for large batches
+    public function extractBatchAsync(Collection $documents): void
+    {
+        $jobs = $documents->map(fn ($doc) => new ExtractDocumentJob($doc));
+
+        Bus::batch($jobs)
+            ->name('Document Extraction')
+            ->dispatch();
+    }
+}
+// @doctest id="51f5"
+```
+
+---
+
+## Error Handling
+
+### Graceful Degradation
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+
+class ResilientExtractor
+{
+    public function extract(string $text): ?PersonData
+    {
+        try {
+            return StructuredOutput::with(
+                messages: $text,
+                responseModel: PersonData::class,
+            )->get();
+        } catch (\Throwable $e) {
+            Log::warning('Extraction failed', [
+                'error' => $e->getMessage(),
+                'text' => substr($text, 0, 100),
+            ]);
+
+            return null;
+        }
+    }
+}
+// @doctest id="0da4"
+```
+
+### Fallback Providers
+
+```php
+class FallbackExtractor
+{
+    private array $providers = ['openai', 'anthropic', 'groq'];
+
+    public function extract(string $text, string $model): mixed
+    {
+        foreach ($this->providers as $provider) {
+            try {
+                return StructuredOutput::using($provider)
+                    ->with(messages: $text, responseModel: $model)
+                    ->get();
+            } catch (\Throwable $e) {
+                Log::warning("Provider {$provider} failed", [
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+        }
+
+        throw new RuntimeException('All providers failed');
+    }
+}
+// @doctest id="c6be"
+```
+
+---
+
+## Performance Optimization
+
+### Reduce Token Usage
+
+```php
+// Be concise in system prompts
+$result = StructuredOutput::with(
+    messages: $text,
+    responseModel: MyModel::class,
+    system: 'Extract data. Be concise.', // Short system prompt
+)->get();
+
+// Use smaller models for simple extractions
+$result = StructuredOutput::withModel('gpt-4o-mini')
+    ->with(messages: $text, responseModel: SimpleModel::class)
+    ->get();
+// @doctest id="1a05"
+```
+
+### Parallel Extraction
+
+```php
+use Illuminate\Support\Facades\Concurrency;
+
+$results = Concurrency::run([
+    fn () => StructuredOutput::with(messages: $text1, responseModel: Model::class)->get(),
+    fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
+    fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
+]);
+// @doctest id="788a"
+```

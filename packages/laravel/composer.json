@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-laravel",
-  "description": "World-class Laravel integration for Instructor PHP - Structured LLM outputs made simple",
+  "description": "Laravel integration for Instructor PHP - Structured LLM outputs made simple",
   "type": "library",
   "license": "MIT",
   "keywords": [

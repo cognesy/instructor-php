@@ -1,6 +1,6 @@
 # Instructor for Laravel
 
-World-class Laravel integration for [Instructor PHP](https://github.com/cognesy/instructor-php) - the structured output library for LLMs.
+Laravel integration for [Instructor PHP](https://github.com/cognesy/instructor-php) - the structured output library for LLMs.
 
 ## Overview
 

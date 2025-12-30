@@ -28,7 +28,7 @@ use Illuminate\Support\ServiceProvider;
 /**
  * Laravel Service Provider for Instructor PHP
  *
- * Provides world-class integration with Laravel, including:
+ * Provides seamless integration with Laravel, including:
  * - Container bindings for Inference, Embeddings, and StructuredOutput
  * - Laravel HTTP client integration (enables Http::fake() in tests)
  * - Event bridge to Laravel's event dispatcher

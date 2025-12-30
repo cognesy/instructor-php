@@ -68,8 +68,8 @@ class MkDocsDocumentation
         $errors = [];
 
         try {
-            $packages = ['instructor', 'polyglot', 'http-client'];
-            $targetDirs = [$this->config->docsTargetDir . '/instructor', $this->config->docsTargetDir . '/polyglot', $this->config->docsTargetDir . '/http'];
+            $packages = ['instructor', 'polyglot', 'http-client', 'laravel'];
+            $targetDirs = [$this->config->docsTargetDir . '/instructor', $this->config->docsTargetDir . '/polyglot', $this->config->docsTargetDir . '/http', $this->config->docsTargetDir . '/laravel'];
 
             foreach (array_combine($packages, $targetDirs) as $package => $targetDir) {
                 $result = $this->processPackage($package, $targetDir);

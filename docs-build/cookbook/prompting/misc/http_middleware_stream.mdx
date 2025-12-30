@@ -3,6 +3,14 @@ title: 'HTTP Middleware (Stream)'
 docname: 'http_middleware_stream'
 ---
 
+## Overview
+
+This example demonstrates HTTP middleware for streaming responses. It shows how
+middleware can transform individual chunks of streamed data as they arrive.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -58,3 +66,11 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // chunks will be prefixed by middleware
 }
 ?>
+```
+
+## Key Features
+
+- **Stream Transformation**: Transform individual data chunks in real-time
+- **Response Decoration**: Apply transformations without modifying core logic
+- **Middleware Chaining**: Compose multiple transformations
+- **Custom Processing**: Apply business logic to streaming data

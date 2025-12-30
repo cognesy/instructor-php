@@ -15,15 +15,15 @@ on the agent's progress.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\OpenCode\Application\Builder\OpenCodeCommandBuilder;
-use Cognesy\Auxiliary\Agents\OpenCode\Application\Dto\OpenCodeRequest;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\StepStartEvent;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\TextEvent;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\ToolUseEvent;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Dto\StreamEvent\StepFinishEvent;
-use Cognesy\Auxiliary\Agents\OpenCode\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\OpenCode\Application\Builder\OpenCodeCommandBuilder;
+use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
+use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StreamEvent;
+use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StepStartEvent;
+use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\TextEvent;
+use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\ToolUseEvent;
+use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StepFinishEvent;
+use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 
 // Create a request - using JSON format for streaming events
 $request = new OpenCodeRequest(

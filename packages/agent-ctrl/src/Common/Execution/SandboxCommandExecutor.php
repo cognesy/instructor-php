@@ -5,6 +5,13 @@ namespace Cognesy\AgentCtrl\Common\Execution;
 use Cognesy\AgentCtrl\Common\Contract\CommandExecutor;
 use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
 use Cognesy\AgentCtrl\Common\Value\CommandSpec;
+use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\Event\ExecutionAttempted;
+use Cognesy\AgentCtrl\Event\ProcessExecutionCompleted;
+use Cognesy\AgentCtrl\Event\SandboxInitialized;
+use Cognesy\AgentCtrl\Event\SandboxPolicyConfigured;
+use Cognesy\AgentCtrl\Event\SandboxReady;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
 use Cognesy\Utils\Sandbox\Data\ExecResult;
@@ -20,25 +27,55 @@ final class SandboxCommandExecutor implements CommandExecutor
     private CanStreamCommand $sandbox;
     private ExecutionPolicy $policy;
     private int $maxRetries;
+    private SandboxDriver $driver;
 
     public function __construct(
         ExecutionPolicy $policy,
         SandboxDriver $driver = SandboxDriver::Host,
         int $maxRetries = 0,
         int $timeout = 120,
+        private ?CanHandleEvents $events = null,
     ) {
+        $setupStart = microtime(true);
+
+        // Configure policy with timing
+        $policyStart = microtime(true);
         $this->policy = $timeout !== 120
             ? $this->withTimeout($policy, $timeout)
             : $policy;
+        $this->driver = $driver;
+        $policyDuration = (microtime(true) - $policyStart) * 1000;
+        $this->dispatch(new SandboxPolicyConfigured(
+            AgentType::ClaudeCode, // Note: This executor is used by all agent types, but events need agent type
+            $driver->value,
+            $timeout,
+            true, // networkEnabled - could be extracted from policy
+            $policyDuration
+        ));
+
+        // Initialize sandbox with timing
+        $initStart = microtime(true);
         $this->sandbox = $this->makeSandbox($this->policy, $driver);
+        $initDuration = (microtime(true) - $initStart) * 1000;
+        $this->dispatch(new SandboxInitialized(AgentType::ClaudeCode, $driver->value, $initDuration));
+
         $this->maxRetries = max(0, $maxRetries);
+
+        // Emit ready event
+        $totalSetupDuration = (microtime(true) - $setupStart) * 1000;
+        $this->dispatch(new SandboxReady(AgentType::ClaudeCode, $driver->value, $totalSetupDuration));
+    }
+
+    private function dispatch(object $event): void
+    {
+        $this->events?->dispatch($event);
     }
 
     /**
      * Create default executor (Host sandbox, no retries).
      */
-    public static function default(): self {
-        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0, 120);
+    public static function default(?CanHandleEvents $events = null): self {
+        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0, 120, $events);
     }
 
     /**
@@ -48,8 +85,9 @@ final class SandboxCommandExecutor implements CommandExecutor
         SandboxDriver $driver = SandboxDriver::Host,
         int $maxRetries = 0,
         int $timeout = 120,
+        ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries, $timeout);
+        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries, $timeout, $events);
     }
 
     /**
@@ -59,8 +97,9 @@ final class SandboxCommandExecutor implements CommandExecutor
         SandboxDriver $driver = SandboxDriver::Host,
         int $maxRetries = 0,
         int $timeout = 120,
+        ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries, $timeout);
+        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries, $timeout, $events);
     }
 
     /**
@@ -70,8 +109,9 @@ final class SandboxCommandExecutor implements CommandExecutor
         SandboxDriver $driver = SandboxDriver::Host,
         int $maxRetries = 0,
         int $timeout = 120,
+        ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries, $timeout);
+        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries, $timeout, $events);
     }
 
     /**
@@ -101,17 +141,49 @@ final class SandboxCommandExecutor implements CommandExecutor
     public function executeStreaming(CommandSpec $command, ?callable $onOutput) : ExecResult {
         $attempt = 0;
         $lastError = null;
+        $executionStart = microtime(true);
 
         while ($attempt <= $this->maxRetries) {
+            $attemptStart = microtime(true);
+            $attempt++;
+
             try {
-                return $this->sandbox->executeStreaming(
+                $result = $this->sandbox->executeStreaming(
                     $command->argv()->toArray(),
                     $onOutput,
                     $command->stdin()
                 );
+
+                $attemptDuration = (microtime(true) - $attemptStart) * 1000;
+                $this->dispatch(new ExecutionAttempted(
+                    AgentType::ClaudeCode,
+                    $attempt,
+                    false, // willRetry = false (success)
+                    $attemptDuration
+                ));
+
+                $totalDuration = (microtime(true) - $executionStart) * 1000;
+                $this->dispatch(new ProcessExecutionCompleted(
+                    AgentType::ClaudeCode,
+                    $attempt,
+                    $totalDuration,
+                    $attempt // successAttempt
+                ));
+
+                return $result;
             } catch (Throwable $error) {
                 $lastError = $error;
-                $attempt++;
+                $attemptDuration = (microtime(true) - $attemptStart) * 1000;
+                $willRetry = $attempt <= $this->maxRetries;
+
+                $this->dispatch(new ExecutionAttempted(
+                    AgentType::ClaudeCode,
+                    $attempt,
+                    $willRetry,
+                    $attemptDuration,
+                    $error->getMessage()
+                ));
+
                 if ($attempt > $this->maxRetries) {
                     break;
                 }

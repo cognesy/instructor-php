@@ -3,6 +3,15 @@ title: 'HTTP Middleware (Hooks + Conditional Decoration)'
 docname: 'http_middleware_hooks'
 ---
 
+## Overview
+
+This example demonstrates HTTP middleware with hooks and conditional response decoration.
+It shows how to use BaseMiddleware to intercept requests, modify responses, and
+conditionally apply stream decorations.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -73,3 +82,12 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // chunks are numbered by middleware
 }
 ?>
+```
+
+## Key Features
+
+- **Request Hooks**: Modify requests before sending
+- **Response Hooks**: Process responses after receiving
+- **Conditional Decoration**: Apply transformations based on response type
+- **Stream Processing**: Transform streamed data chunks in real-time
+- **Middleware Composition**: Layer multiple processing steps

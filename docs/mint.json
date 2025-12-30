@@ -39,6 +39,11 @@
             "group": "HTTP Client"
         },
         {
+            "name": "Laravel",
+            "url": "laravel",
+            "group": "Laravel"
+        },
+        {
             "name": "Cookbook",
             "url": "cookbook",
             "group": "Cookbook"
@@ -267,6 +272,32 @@
                 "http/10-middleware",
                 "http/11-processing-with-middleware",
                 "http/12-troubleshooting"
+            ]
+        },
+        {
+            "group": "Laravel",
+            "pages": [
+                "laravel/index",
+                "laravel/installation",
+                "laravel/configuration"
+            ]
+        },
+        {
+            "group": "Laravel \\ Facades",
+            "pages": [
+                "laravel/facades",
+                "laravel/response-models"
+            ]
+        },
+        {
+            "group": "Laravel \\ Advanced",
+            "pages": [
+                "laravel/agents",
+                "laravel/testing",
+                "laravel/events",
+                "laravel/commands",
+                "laravel/advanced",
+                "laravel/troubleshooting"
             ]
         },
         {

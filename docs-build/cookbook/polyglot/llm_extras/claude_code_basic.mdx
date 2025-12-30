@@ -15,12 +15,12 @@ simple prompts. The ClaudeCodeCli component provides a PHP API for invoking the
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Dto\ClaudeRequest;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\Agents\ClaudeCode\Domain\Enum\PermissionMode;
-use Cognesy\Auxiliary\Agents\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 
 // Step 1: Create a request with a simple prompt
 $request = new ClaudeRequest(
