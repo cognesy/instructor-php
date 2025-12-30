@@ -11,8 +11,55 @@ composer.lock
 .env.local
 .env.*.local
 
-# MCP config file
+# MCP config file (can contain API keys)
 .mcp.json
+
+# Secrets and credentials - NEVER commit these
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+*_rsa
+*_dsa
+*_ecdsa
+*_ed25519
+id_rsa*
+id_dsa*
+*.ppk
+auth.json
+credentials.json
+secrets.json
+secret.json
+*.secret
+*.secrets
+service-account*.json
+gcp-key*.json
+firebase-adminsdk*.json
+
+# Cloud provider credentials
+.aws/
+.azure/
+.gcloud/
+.config/gcloud/
+.kube/config
+
+# Database dumps and backups (may contain sensitive data)
+*.sql
+*.dump
+*.sqlite
+*.db.backup
+backup/
+backups/
+
+# API keys and tokens (various formats)
+*apikey*
+*api-key*
+*api_key*
+*token.txt
+*secret.txt
 
 # Logs and debug files
 *.log
