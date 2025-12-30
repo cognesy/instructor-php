@@ -29,7 +29,7 @@ $user = (new StructuredOutput)
         toolDescription: 'Extract information from provided content',
         mode: OutputMode::Tools)
     ->get();
-// @doctest id="b75b"
+// @doctest id="06e4"
 ```
 
 
@@ -49,7 +49,7 @@ $user = (new StructuredOutput)->with(
     prompt: "\nYour task is to respond correctly with JSON object.",
     mode: OutputMode::Json
 )->get();
-// @doctest id="bd0b"
+// @doctest id="7e64"
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
@@ -91,7 +91,7 @@ $user = $structuredOutput
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema: $jsonSchema\n",
         mode: OutputMode::Json)
     ->get();
-// @doctest id="5a32"
+// @doctest id="cc6d"
 ```
 
 The example above demonstrates how to manually create JSON Schema, but
@@ -119,7 +119,7 @@ $user = (new StructuredOutput)
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
         mode: OutputMode::Json)
     ->get();
-// @doctest id="a73d"
+// @doctest id="6205"
 ```
 
 
@@ -146,7 +146,7 @@ $user = (new StructuredOutput)
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a
-// @doctest id="ae75"
+// @doctest id="ce62"
 ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
         mode: OutputMode::MdJson)
     ->get();

@@ -30,12 +30,12 @@
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-dynamic": "^1.14",
-    "cognesy/instructor-messages": "^1.14",
-    "cognesy/instructor-polyglot": "^1.14",
-    "cognesy/instructor-schema": "^1.14",
-    "cognesy/instructor-struct": "^1.14",
-    "cognesy/instructor-utils": "^1.14"
+    "cognesy/instructor-dynamic": "^1.15",
+    "cognesy/instructor-messages": "^1.15",
+    "cognesy/instructor-polyglot": "^1.15",
+    "cognesy/instructor-schema": "^1.15",
+    "cognesy/instructor-struct": "^1.15",
+    "cognesy/instructor-utils": "^1.15"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

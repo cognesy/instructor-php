@@ -24,6 +24,7 @@ print(str_repeat("─", 68) . "\n\n");
 $agents = [
     'opencode' => 'OpenCode (default model)',
     'claude-code' => 'Claude Code',
+    'codex' => 'Codex',
 ];
 
 foreach ($agents as $agentId => $agentName) {
