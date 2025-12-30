@@ -3,6 +3,8 @@ composer.lock
 
 # Dependencies
 /vendor/
+**/packages/*/vendor/
+**/packages/*/composer.lock
 
 # env files
 .env
@@ -46,9 +48,11 @@ Thumbs.db
 # PHPUnit, Pest, and other test result files
 .phpunit.result.cache
 /.phpunit.result.cache
+packages/*/.phpunit.result.cache
 /tests/_output/
 /tests/_support/_generated/
 /coverage/
+packages/*/coverage/
 
 # Non-distributed files (temporary, experimental, to be archived / removed)
 /archived/
