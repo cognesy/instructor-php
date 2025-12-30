@@ -3,14 +3,6 @@ title: 'HTTP Client – Streaming Basics'
 docname: 'http_client_streaming_basics'
 ---
 
-## Overview
-
-This example demonstrates streaming HTTP responses for real-time data processing.
-It shows how to handle server-sent events (SSE) and incremental data streams.
-
-## Example
-
-```php
 <?php
 require 'examples/boot.php';
 
@@ -48,11 +40,4 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // handle streamed data incrementally
 }
 ?>
-```
 
-## Key Features
-
-- **Streaming Responses**: Handle real-time data as it arrives
-- **Server-Sent Events**: Support for SSE protocol
-- **Memory Efficient**: Process large responses incrementally
-- **Mock Streaming**: Test streaming without real network connections

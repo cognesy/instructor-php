@@ -3,14 +3,6 @@ title: 'HTTP Middleware (Sync)'
 docname: 'http_middleware_sync'
 ---
 
-## Overview
-
-This example demonstrates HTTP middleware for synchronous responses. It shows
-how to modify requests before sending and transform response bodies after receiving.
-
-## Example
-
-```php
 <?php
 require 'examples/boot.php';
 
@@ -73,12 +65,4 @@ $response = $client->withRequest($request)->get();
 echo "Status: {$response->statusCode()}\n";
 echo "Body:   {$response->body()}\n";
 ?>
-```
 
-## Key Features
-
-- **Request Modification**: Add headers, transform body before sending
-- **Response Transformation**: Process and modify response data
-- **JSON Processing**: Parse and manipulate JSON payloads
-- **Synchronous Middleware**: Handle non-streaming responses
-- **Header Management**: Add tracking and debugging headers

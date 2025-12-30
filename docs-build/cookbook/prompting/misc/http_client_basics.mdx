@@ -3,14 +3,6 @@ title: 'HTTP Client – Basics'
 docname: 'http_client_basics'
 ---
 
-## Overview
-
-This example demonstrates the basic usage of the HTTP Client for making simple
-requests with mocked responses.
-
-## Example
-
-```php
 <?php
 require 'examples/boot.php';
 
@@ -50,12 +42,4 @@ echo "Status:  " . $response->statusCode() . "\n";
 echo "Headers: " . json_encode($response->headers()) . "\n";
 echo "Body:    " . $response->body() . "\n";
 ?>
-```
-
-## Key Features
-
-- **Mock HTTP Responses**: Test without real network calls
-- **Request Building**: Fluent API for creating HTTP requests
-- **Response Handling**: Easy access to status, headers, and body
-- **Client Configuration**: Builder pattern for client setup
 

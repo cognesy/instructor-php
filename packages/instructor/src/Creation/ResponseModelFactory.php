@@ -123,7 +123,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
-    private function fromJsonSchemaProvider(mixed $requestedModel) : ResponseModel {
+    private function fromJsonSchemaProvider(object|string $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchemaProvider']));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
@@ -139,7 +139,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription);
     }
 
-    private function fromSchemaProvider(mixed $requestedModel) : ResponseModel {
+    private function fromSchemaProvider(object|string $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchemaProvider']));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);

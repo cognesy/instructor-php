@@ -97,7 +97,7 @@ class StructuredOutput
      * @param string|null $toolDescription A description of the tool to be used in OutputMode::Tools.
      * @param string|null $retryPrompt The prompt to be used during retries.
      * @param OutputMode|null $mode The mode of operation for the request.
-     * @return StructuredOutput<TResponse>
+     *
      * @phpstan-ignore-next-line
      */
     public function with(

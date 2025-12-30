@@ -3,14 +3,6 @@ title: 'HTTP Client – Pool Basics'
 docname: 'http_client_pool_basics'
 ---
 
-## Overview
-
-This example demonstrates parallel request execution using connection pools.
-It shows how to send multiple HTTP requests concurrently with concurrency limits.
-
-## Example
-
-```php
 <?php
 require 'examples/boot.php';
 
@@ -63,12 +55,4 @@ foreach ($results as $i => $result) {
     }
 }
 ?>
-```
-
-## Key Features
-
-- **Parallel Execution**: Send multiple requests concurrently
-- **Concurrency Control**: Limit the number of simultaneous connections
-- **Result Collection**: Aggregate responses and track successes/failures
-- **Error Handling**: Graceful handling of individual request failures
 

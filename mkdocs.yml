@@ -166,6 +166,7 @@ nav:
   -
     Changelog:
       - { Overview: release-notes/versions.md }
+      - { v1.15.0: release-notes/v1.15.0.md }
       - { v1.14.0: release-notes/v1.14.0.md }
       - { v1.13.0: release-notes/v1.13.0.md }
       - { v1.12.0: release-notes/v1.12.0.md }

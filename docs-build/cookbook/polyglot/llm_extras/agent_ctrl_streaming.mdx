@@ -1,17 +1,3 @@
----
-title: 'Agent Ctrl - Streaming Usage'
-docname: 'agent_ctrl_streaming'
----
-
-## Overview
-
-This example demonstrates real-time streaming with tool call visibility using AgentCtrl.
-You can see each step as the agent searches the codebase and processes information
-in real time.
-
-## Example
-
-```php
 <?php
 require 'examples/boot.php';
 
@@ -61,13 +47,3 @@ if ($response->usage) {
 if ($response->cost) {
     print("  Cost: $" . number_format($response->cost, 4) . "\n");
 }
-?>
-```
-
-## Key Features
-
-- **Real-time Streaming**: See AI responses as they are generated
-- **Tool Call Visibility**: Monitor each tool usage during execution
-- **Turn Management**: Control maximum interaction turns
-- **Callback Handlers**: Custom event handling for text and tool usage
-- **Performance Tracking**: Monitor token usage and execution costs

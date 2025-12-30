@@ -10,7 +10,7 @@
 
 ```bash
 composer require cognesy/instructor-laravel
-# @doctest id="a753"
+# @doctest id="985c"
 ```
 
 The package uses Laravel's auto-discovery, so the service provider and facades are registered automatically.
@@ -21,7 +21,7 @@ Publish the configuration file to customize settings:
 
 ```bash
 php artisan vendor:publish --tag=instructor-config
-# @doctest id="39bc"
+# @doctest id="aaae"
 ```
 
 This creates `config/instructor.php` with all available options.
@@ -41,7 +41,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 GEMINI_API_KEY=...
 GROQ_API_KEY=...
 MISTRAL_API_KEY=...
-// @doctest id="8123"
+// @doctest id="6539"
 ```
 
 ## Verify Installation
@@ -50,7 +50,7 @@ Run the installation command to verify everything is configured correctly:
 
 ```bash
 php artisan instructor:install
-# @doctest id="fa17"
+# @doctest id="0cd5"
 ```
 
 This will:
@@ -64,14 +64,14 @@ Test that your API configuration is working:
 
 ```bash
 php artisan instructor:test
-# @doctest id="0967"
+# @doctest id="4d2a"
 ```
 
 Or test a specific connection:
 
 ```bash
 php artisan instructor:test --preset=anthropic
-# @doctest id="0a6f"
+# @doctest id="c566"
 ```
 
 ## Optional: Publish Stubs
@@ -80,7 +80,7 @@ If you want to customize the response model stubs:
 
 ```bash
 php artisan vendor:publish --tag=instructor-stubs
-# @doctest id="90fd"
+# @doctest id="a7d5"
 ```
 
 This publishes stubs to `stubs/instructor/` in your application.
@@ -101,7 +101,7 @@ If you've disabled auto-discovery, manually register the service provider in `co
     'Inference' => Cognesy\Instructor\Laravel\Facades\Inference::class,
     'Embeddings' => Cognesy\Instructor\Laravel\Facades\Embeddings::class,
 ],
-// @doctest id="5dfc"
+// @doctest id="cea8"
 ```
 
 ## Upgrading
@@ -110,7 +110,7 @@ When upgrading to a new version, republish the configuration if there are new op
 
 ```bash
 php artisan vendor:publish --tag=instructor-config --force
-# @doctest id="3b99"
+# @doctest id="e5e6"
 ```
 
 Review the [changelog](https://github.com/cognesy/instructor-php/blob/main/CHANGELOG.md) for breaking changes.
