@@ -58,6 +58,8 @@ class StructuredOutput
     protected array $transformers = [];
     protected array $deserializers = [];
     protected ?CanExtractResponse $extractor = null;
+    /** @var ExtractionStrategy[] */
+    protected array $streamingExtractionStrategies = [];
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
@@ -182,8 +184,10 @@ class StructuredOutput
 
         // Create extractor for array-first pipeline (used when OutputFormat is set or custom extractor provided)
         $extractor = match (true) {
-            $this->extractor !== null => $this->extractor,
-            $outputFormat !== null => new JsonResponseExtractor(),
+            $this->extractor !== null => $this->extractor instanceof JsonResponseExtractor
+                ? $this->extractor->withEvents($this->events)
+                : $this->extractor,
+            $outputFormat !== null => new JsonResponseExtractor(events: $this->events),
             default => null,
         };
 
@@ -207,6 +211,7 @@ class StructuredOutput
             events: $this->events,
             httpClient: $client,
             extractor: $extractor,
+            streamingExtractionStrategies: $this->streamingExtractionStrategies,
         );
 
         return new PendingStructuredOutput(
@@ -253,6 +258,19 @@ class StructuredOutput
      */
     public function withExtractionStrategies(ExtractionStrategy ...$strategies): static {
         $this->extractor = JsonResponseExtractor::withStrategies(...$strategies);
+        return $this;
+    }
+
+    /**
+     * Configure extraction strategies for streaming responses.
+     *
+     * When set, streaming chunks will use these strategies to extract JSON
+     * during the streaming process, before the final response is assembled.
+     *
+     * @param ExtractionStrategy ...$strategies Custom extraction strategies for streaming
+     */
+    public function withStreamingExtractionStrategies(ExtractionStrategy ...$strategies): static {
+        $this->streamingExtractionStrategies = $strategies;
         return $this;
     }
 

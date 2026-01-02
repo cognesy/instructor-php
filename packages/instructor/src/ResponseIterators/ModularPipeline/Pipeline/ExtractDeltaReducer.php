@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
 
+use Closure;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer;
@@ -26,9 +27,15 @@ final class ExtractDeltaReducer implements Reducer
     private int $frameIndex = 0;
     private ContentBuffer $accumulatedBuffer;
 
+    /**
+     * @param Reducer $inner
+     * @param OutputMode $mode
+     * @param Closure|null $bufferFactory Optional factory: fn(OutputMode $mode): ContentBuffer
+     */
     public function __construct(
         private readonly Reducer $inner,
         private readonly OutputMode $mode,
+        private readonly ?Closure $bufferFactory = null,
     ) {
         $this->accumulatedBuffer = $this->createEmptyBuffer();
     }
@@ -75,6 +82,12 @@ final class ExtractDeltaReducer implements Reducer
     // INTERNAL //////////////////////////////////////////////////////////////
 
     private function createEmptyBuffer(): ContentBuffer {
+        // Use custom buffer factory if provided
+        if ($this->bufferFactory !== null) {
+            return ($this->bufferFactory)($this->mode);
+        }
+
+        // Default buffer selection
         return match ($this->mode) {
             OutputMode::Tools => ToolsBuffer::empty(),
             default => JsonBuffer::empty(),

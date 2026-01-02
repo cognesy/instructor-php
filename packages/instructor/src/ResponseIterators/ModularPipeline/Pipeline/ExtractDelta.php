@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
 
+use Closure;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Stream\Contracts\Transducer;
@@ -13,8 +15,13 @@ use Cognesy\Stream\Contracts\Transducer;
  */
 final readonly class ExtractDelta implements Transducer
 {
+    /**
+     * @param OutputMode $mode
+     * @param Closure|null $bufferFactory Optional factory: fn(OutputMode $mode): ContentBuffer
+     */
     public function __construct(
         private OutputMode $mode,
+        private ?Closure $bufferFactory = null,
     ) {}
 
     #[\Override]
@@ -22,6 +29,7 @@ final readonly class ExtractDelta implements Transducer
         return new ExtractDeltaReducer(
             inner: $reducer,
             mode: $this->mode,
+            bufferFactory: $this->bufferFactory,
         );
     }
 }

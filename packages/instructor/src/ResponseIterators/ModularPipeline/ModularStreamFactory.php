@@ -2,11 +2,13 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline;
 
+use Closure;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\AggregateStream;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Events\EventTapTransducer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAndDeduplicate;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\EnrichResponse;
@@ -33,11 +35,19 @@ use IteratorAggregate;
  */
 final readonly class ModularStreamFactory
 {
+    /**
+     * @param CanDeserializeResponse $deserializer
+     * @param CanValidatePartialResponse $validator
+     * @param CanTransformResponse $transformer
+     * @param CanHandleEvents $events
+     * @param Closure|null $bufferFactory Optional factory: fn(OutputMode $mode): ContentBuffer
+     */
     public function __construct(
         private CanDeserializeResponse $deserializer,
         private CanValidatePartialResponse $validator,
         private CanTransformResponse $transformer,
         private CanHandleEvents $events,
+        private ?Closure $bufferFactory = null,
     ) {}
 
     /**
@@ -55,7 +65,7 @@ final readonly class ModularStreamFactory
         // Build pipeline stages (transducers)
         $stages = [
             // 1. Entry: Extract delta and create PartialFrame
-            new ExtractDelta($mode),
+            new ExtractDelta($mode, $this->bufferFactory),
 
             // 2. Objects: Deserialize, validate, transform, deduplicate
             new DeserializeAndDeduplicate(
