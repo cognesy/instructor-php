@@ -19,8 +19,9 @@ use Exception;
  * Used by ResponseModel to derive schema from raw JSON Schema format,
  * when full processing customization is needed.
  *
- * Requires x-php-class field to contain the target class name for each
- * object and enum type, otherwise it will use the default class.
+ * If x-php-class field is provided, it will be used as the target class.
+ * If not provided, objects will be returned as raw arrays without
+ * deserialization to a class instance.
  */
 class JsonSchemaToSchema
 {
@@ -50,10 +51,17 @@ class JsonSchemaToSchema
         if (!$json->isObject()) {
             throw new Exception('Root JSON Schema must be an object');
         }
-        /** @var class-string $class */
-        $class = $json->objectClass() ?? $this->defaultOutputClass;
+        // When JSON schema has explicit x-php-class, use that class for deserialization
+        // When no class is specified, use array type (returns raw arrays via array-first pipeline)
+        /** @var class-string|null $explicitClass */
+        $explicitClass = $json->objectClass();
+
+        $type = ($explicitClass !== null)
+            ? TypeDetails::object($explicitClass)
+            : TypeDetails::array();
+
         return new ObjectSchema(
-            type: TypeDetails::object($class),
+            type: $type,
             name: $customName !== '' ? $customName : ($json->title() ?: $this->defaultToolName),
             description: $customDescription !== '' ? $customDescription : ($json->description() ?: $this->defaultToolDescription),
             properties: $this->makeProperties($json->properties()),
@@ -86,7 +94,8 @@ class JsonSchemaToSchema
     private function makePropertySchema(string $name, JsonSchema $json) : Schema {
         return match (true) {
             $json->isEnum() => $this->makeEnumOrOptionProperty($name, $json),
-            $json->isObject() => $this->makeObjectProperty($name, $json),
+            $json->isObject() && $json->hasObjectClass() => $this->makeObjectProperty($name, $json),
+            $json->isObject() => $this->makeObjectAsArrayProperty($name, $json), // No class = return as array
             $json->isCollection() => $this->makeCollectionProperty($name, $json),
             $json->isArray() => $this->makeArrayProperty($name, $json),
             $json->isScalar() => $this->makeScalarProperty($name, $json),
@@ -219,25 +228,26 @@ class JsonSchemaToSchema
     }
 
     /**
-     * Create object property schema
+     * Create object property schema (with class binding)
      */
     private function makeObjectProperty(string $name, JsonSchema $json) : ObjectSchema {
-        if (!$json->hasObjectClass()) {
-            throw new \Exception('Object must have class specified via x-php-class field');
-        }
-//        return new ObjectSchema(
-//            type:        TypeDetails::object($json->objectClass()),
-//            name:        $name,
-//            description: $json->description(),
-//            properties:  $this->makeProperties($json->properties()),
-//            required:    $json->requiredProperties(),
-//        );
         return new ObjectSchema(
             type:        TypeDetails::fromJson($json),
             name:        $name,
             description: $json->description(),
             properties:  $this->makeProperties($json->properties()),
             required:    $json->requiredProperties(),
+        );
+    }
+
+    /**
+     * Create object as array property schema (no class binding - returns raw array)
+     */
+    private function makeObjectAsArrayProperty(string $name, JsonSchema $json) : ArraySchema {
+        return new ArraySchema(
+            type:        TypeDetails::array(),
+            name:        $name,
+            description: $json->description(),
         );
     }
 

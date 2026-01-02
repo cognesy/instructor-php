@@ -292,7 +292,7 @@ it('throws exception for invalid enum type', function () {
     (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Invalid JSON type: enum in:');
 
-it('throws exception when x-php-class is missing for object', function () {
+it('returns array schema when x-php-class is missing for nested object', function () {
     $jsonSchema = [
         'x-php-class' => 'stdClass',
         'type' => 'object',
@@ -305,8 +305,10 @@ it('throws exception when x-php-class is missing for object', function () {
             ],
         ],
     ];
-    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Object must have class specified via x-php-class field');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
+    // Nested object without x-php-class should become array type
+    expect($schema->properties['objectProperty'])->toBeInstanceOf(\Cognesy\Schema\Data\Schema\ArraySchema::class);
+});
 
 it('throws exception for invalid type in nested schema', function () {
     $jsonSchema = [

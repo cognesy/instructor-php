@@ -27,6 +27,7 @@ use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -155,11 +156,18 @@ class StructuredOutput
             config: $config,
         );
 
-        // Apply OutputFormat to ResponseModel if configured
+        // Apply OutputFormat to ResponseModel
         $outputFormat = $this->getOutputFormat();
-        if ($outputFormat !== null && $execution->responseModel() !== null) {
+        $responseModel = $execution->responseModel();
+
+        // Auto-detect array mode: if no response class is specified, use array output
+        if ($outputFormat === null && $responseModel !== null && $responseModel->returnedClass() === '') {
+            $outputFormat = OutputFormat::array();
+        }
+
+        if ($outputFormat !== null && $responseModel !== null) {
             $execution = $execution->with(
-                responseModel: $execution->responseModel()->withOutputFormat($outputFormat)
+                responseModel: $responseModel->withOutputFormat($outputFormat)
             );
         }
 

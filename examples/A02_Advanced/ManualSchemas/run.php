@@ -75,8 +75,8 @@ $text = <<<TEXT
 
 print("INPUT:\n$text\n\n");
 
-// Use manual schema with StructuredOutput
-$user = StructuredOutput::create()
+// Use manual schema with StructuredOutput - returns array when no class is specified
+$user = (new StructuredOutput)
     ->with(
         messages: $text,
         responseModel: $userSchema,
@@ -84,12 +84,12 @@ $user = StructuredOutput::create()
     ->get();
 
 print("OUTPUT:\n");
-print("Name: " . $user->name . "\n");
-print("Email: " . $user->email . "\n");
-print("Age: " . $user->age . "\n");
-print("Role: " . $user->role . "\n");
-print("Address: " . $user->address->city . ", " . $user->address->zip . "\n");
-print("Skills: " . implode(", ", $user->skills) . "\n");
+print("Name: " . $user['name'] . "\n");
+print("Email: " . $user['email'] . "\n");
+print("Age: " . $user['age'] . "\n");
+print("Role: " . $user['role'] . "\n");
+print("Address: " . $user['address']['city'] . ", " . $user['address']['zip'] . "\n");
+print("Skills: " . implode(", ", $user['skills']) . "\n");
 
 print("\n");
 print("COMPARISON: Manual vs Reflection\n");
@@ -110,9 +110,6 @@ print("- Reflection overhead is a concern\n");
 ```php
 <?php
 require 'examples/boot.php';
-
-use Cognesy\Utils\JsonSchema\JsonSchema;
-use Cognesy\Instructor\StructuredOutput;
 
 // Build schema dynamically based on user input
 function buildDynamicSchema(array $fields): JsonSchema {
@@ -145,7 +142,7 @@ $userFields = [
 
 $schema = buildDynamicSchema($userFields);
 
-$data = StructuredOutput::create()
+$data = (new StructuredOutput)
     ->with(
         messages: 'Extract: Laptop, 2 units at $999.99 each, currently in stock',
         responseModel: $schema,
@@ -153,9 +150,9 @@ $data = StructuredOutput::create()
     ->get();
 
 print("Dynamic extraction result:\n");
-print("Product: " . $data->product . "\n");
-print("Quantity: " . $data->quantity . "\n");
-print("Price: $" . $data->price . "\n");
-print("In Stock: " . ($data->inStock ? 'Yes' : 'No') . "\n");
+print("Product: " . $data['product'] . "\n");
+print("Quantity: " . $data['quantity'] . "\n");
+print("Price: $" . $data['price'] . "\n");
+print("In Stock: " . ($data['inStock'] ? 'Yes' : 'No') . "\n");
 ?>
 ```
