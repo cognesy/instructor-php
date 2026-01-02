@@ -169,6 +169,5 @@ it('VERIFY: iterator selection actually impacts internal execution path', functi
     expect($eventCounts['partials'])->toBeGreaterThan(0);
     expect($eventCounts['legacy'])->toBeGreaterThan(0);
 
-    // Log for debugging
-    dump("Event counts by iterator:", $eventCounts);
+    // Verification passed - all iterators produced events
 })->group('verification', 'iterator-switching', 'internal');
