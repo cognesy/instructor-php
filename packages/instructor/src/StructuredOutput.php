@@ -16,6 +16,8 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
 use Cognesy\Instructor\Extraction\JsonResponseExtractor;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -55,6 +57,7 @@ class StructuredOutput
     protected array $validators = [];
     protected array $transformers = [];
     protected array $deserializers = [];
+    protected ?CanExtractResponse $extractor = null;
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
@@ -177,8 +180,12 @@ class StructuredOutput
         );
         $partialResponseValidator = new PartialValidation(new Config\PartialsGeneratorConfig());
 
-        // Create extractor for array-first pipeline (used when OutputFormat is set)
-        $extractor = ($outputFormat !== null) ? new JsonResponseExtractor() : null;
+        // Create extractor for array-first pipeline (used when OutputFormat is set or custom extractor provided)
+        $extractor = match (true) {
+            $this->extractor !== null => $this->extractor,
+            $outputFormat !== null => new JsonResponseExtractor(),
+            default => null,
+        };
 
         // Ensure HttpClient is available; build default if not provided
         if ($this->httpClient !== null) {
@@ -223,6 +230,29 @@ class StructuredOutput
 
     public function withDeserializers(CanDeserializeClass|string ...$deserializers) : static {
         $this->deserializers = $deserializers;
+        return $this;
+    }
+
+    /**
+     * Use a custom response extractor.
+     *
+     * The extractor transforms raw LLM responses into canonical arrays.
+     * Use this to implement custom extraction logic for special formats.
+     */
+    public function withExtractor(CanExtractResponse $extractor): static {
+        $this->extractor = $extractor;
+        return $this;
+    }
+
+    /**
+     * Configure extraction strategies for the default JsonResponseExtractor.
+     *
+     * Strategies are tried in order until one succeeds.
+     *
+     * @param ExtractionStrategy ...$strategies Custom extraction strategies
+     */
+    public function withExtractionStrategies(ExtractionStrategy ...$strategies): static {
+        $this->extractor = JsonResponseExtractor::withStrategies(...$strategies);
         return $this;
     }
 

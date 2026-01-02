@@ -42,8 +42,9 @@ class ResponseGenerator implements CanGenerateResponse
             return Result::success($response->value());
         }
 
-        // Use array-first pipeline when OutputFormat is set and extractor is available
-        if ($responseModel->outputFormat() !== null && $this->extractor !== null) {
+        // Use array-first pipeline when an extractor is available
+        // (set via withExtractor(), withExtractionStrategies(), or intoArray())
+        if ($this->extractor !== null) {
             return $this->makeArrayFirstResponse($response, $responseModel, $mode);
         }
 
