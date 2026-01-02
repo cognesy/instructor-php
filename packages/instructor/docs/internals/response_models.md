@@ -30,7 +30,53 @@ Instructor requires information on the class of each nested object in your JSON 
 
 This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema. Lack of the information on target class makes it impossible for Instructor to deserialize the data into appropriate, expected type.
 
-Current design uses JSON Schema `$comment` field on property to overcome this information gap. Instructor expects developer to use `$comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+Current design uses JSON Schema `$comment` field (or `x-php-class` field) on property to overcome this information gap. Instructor expects developer to use this field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+
+
+### Important: Arrays as Schema INPUT vs OUTPUT
+
+**Arrays as Schema INPUT ✅**
+
+You can provide an array as `responseModel` to specify the JSON Schema:
+
+```php
+$output = StructuredOutput::create()
+    ->with(
+        responseModel: [
+            'x-php-class' => User::class,  // ← Required for deserialization
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string'],
+                'age' => ['type' => 'integer'],
+            ],
+            'required' => ['name'],
+        ],
+        // ...
+    )
+    ->get();
+```
+
+**Important:** The `x-php-class` field is REQUIRED for InstructorPHP to know which
+class to deserialize the data into.
+
+**Arrays as OUTPUT ❌**
+
+InstructorPHP does NOT return raw arrays. The output is ALWAYS an object:
+
+```php
+$user = StructuredOutput::create()
+    ->with(responseModel: User::class, ...)
+    ->get();
+
+// Result is User object (not array)
+$user->name;   // ✅ Works
+$user['name']; // ❌ Error - not an array
+
+// To get array representation (if needed):
+$array = json_decode(json_encode($user), true);
+```
+
+If you need raw arrays instead of objects, this feature is not currently supported (planned for v1.3+).
 
 
 ## Custom response handling strategy

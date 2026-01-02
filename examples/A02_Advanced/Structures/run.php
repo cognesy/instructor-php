@@ -12,7 +12,9 @@ Use `Structure::define()` to define the structure and pass it to Instructor
 as response model.
 
 If `Structure` instance has been provided as a response model, Instructor
-returns an array in the shape you defined.
+returns a `Structure` object with dynamic properties matching the shape you defined.
+
+You access the data using object property syntax (not array syntax):
 
 See more: [Structures](../../structures.md)
 
@@ -63,15 +65,19 @@ $person = (new StructuredOutput)->with(
 )->get();
 
 print("OUTPUT:\n");
-print("Name: " . $person->name . "\n");
-print("Age: " . $person->age . "\n");
-print("Gender: " . $person->gender . "\n");
-print("Address / city: " . $person->address->city . "\n");
+// Structure returns an object with dynamic properties (NOT an array)
+print("Name: " . $person->name . "\n");              // ✅ Object property access
+print("Age: " . $person->age . "\n");                // ✅ Works
+print("Gender: " . $person->gender . "\n");          // ✅ Works
+print("Address / city: " . $person->address->city . "\n");  // ✅ Nested objects
 print("Address / ZIP: " . $person->address->zip . "\n");
 print("Role: " . $person->role->value . "\n");
 print("Favourite books:\n");
 foreach ($person->favourite_books as $book) {
     print("  - " . $book->title . " by " . $book->author . "\n");
 }
+
+// Note: Array access does NOT work:
+// print($person['name']);  // ❌ Error - Structure is not an array
 ?>
 ```

@@ -1,0 +1,251 @@
+---
+title: 'Manual Schema Building'
+description: 'Build JSON schemas programmatically without reflection'
+---
+
+# Manual Schema Building
+
+While InstructorPHP can automatically generate schemas from PHP classes via reflection,
+you can also build schemas manually using the `JsonSchema` API.
+
+## When to Use Manual Schemas
+
+- **Fine-grained control** over exact JSON Schema output
+- **Dynamic schemas** where structure is determined at runtime
+- **Provider optimization** when you need to tweak schemas for specific LLMs
+- **Legacy integration** when working with existing JSON Schema specifications
+- **Performance** when reflection overhead is a concern
+
+## Available Builder Methods
+
+### Object Schemas
+
+```php
+use Cognesy\Utils\JsonSchema\JsonSchema;
+
+$schema = JsonSchema::object(
+    name: 'User',
+    description: 'User data',
+    properties: [
+        JsonSchema::string(name: 'name', description: 'User name'),
+        JsonSchema::integer(name: 'age', description: 'User age'),
+        JsonSchema::boolean(name: 'active', description: 'Is active'),
+    ],
+    requiredProperties: ['name', 'age'],
+    additionalProperties: false,
+);
+```
+
+### Primitive Schemas
+
+```php
+// String
+JsonSchema::string(
+    name: 'email',
+    description: 'Email address',
+);
+
+// Integer
+JsonSchema::integer(
+    name: 'count',
+    description: 'Number of items',
+);
+
+// Number (float)
+JsonSchema::number(
+    name: 'price',
+    description: 'Product price',
+);
+
+// Boolean
+JsonSchema::boolean(
+    name: 'verified',
+    description: 'Is verified',
+);
+```
+
+### Array Schemas
+
+```php
+// Array with item schema
+JsonSchema::array(
+    name: 'tags',
+    itemSchema: JsonSchema::string(),
+    description: 'List of tags',
+);
+
+// Collection (alias for array)
+JsonSchema::collection(
+    name: 'users',
+    itemSchema: JsonSchema::object(...),
+    description: 'List of users',
+);
+```
+
+### Enum Schemas
+
+```php
+JsonSchema::enum(
+    name: 'status',
+    enumValues: ['pending', 'active', 'completed'],
+    description: 'Order status',
+);
+```
+
+### From Array
+
+```php
+$schema = JsonSchema::fromArray([
+    'type' => 'object',
+    'properties' => [
+        'name' => ['type' => 'string'],
+        'age' => ['type' => 'integer'],
+    ],
+    'required' => ['name'],
+]);
+```
+
+## Fluent Builder Pattern
+
+```php
+$schema = JsonSchema::object('User')
+    ->withProperty(JsonSchema::string('name'))
+    ->withProperty(JsonSchema::integer('age'))
+    ->withRequired(['name']);
+```
+
+## Using Manual Schemas with StructuredOutput
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+// Build schema manually
+$userSchema = JsonSchema::object(
+    name: 'User',
+    properties: [
+        JsonSchema::string(name: 'name'),
+        JsonSchema::integer(name: 'age'),
+    ],
+    requiredProperties: ['name'],
+);
+
+// Use with StructuredOutput
+$user = StructuredOutput::create()
+    ->with(
+        messages: 'Extract user: John Doe, 30 years old',
+        responseModel: $userSchema,
+    )
+    ->get();
+```
+
+## Comparison: Reflection vs Manual
+
+### Reflection (Automatic)
+
+**Pros:**
+- ✅ Concise - just use class name
+- ✅ Single source of truth
+- ✅ IDE support for refactoring
+- ✅ Type-safe
+
+**Cons:**
+- ❌ Less control over schema details
+- ❌ Performance overhead (reflection)
+
+```php
+class User {
+    public function __construct(
+        public string $name,
+        public int $age,
+    ) {}
+}
+
+$user = StructuredOutput::create()
+    ->with(responseModel: User::class, ...)
+    ->get();
+```
+
+### Manual (Explicit)
+
+**Pros:**
+- ✅ Full control over schema
+- ✅ No reflection overhead
+- ✅ Can optimize for specific providers
+- ✅ Runtime schema generation
+
+**Cons:**
+- ❌ More verbose
+- ❌ Duplication with class definition
+- ❌ Manual maintenance
+
+```php
+$schema = JsonSchema::object('User', [
+    JsonSchema::string('name'),
+    JsonSchema::integer('age'),
+], ['name', 'age']);
+
+$user = StructuredOutput::create()
+    ->with(responseModel: $schema, ...)
+    ->get();
+```
+
+## Complex Example
+
+```php
+$orderSchema = JsonSchema::object(
+    name: 'Order',
+    description: 'Customer order',
+    properties: [
+        JsonSchema::string(
+            name: 'orderId',
+            description: 'Unique order identifier'
+        ),
+        JsonSchema::object(
+            name: 'customer',
+            description: 'Customer information',
+            properties: [
+                JsonSchema::string(name: 'name'),
+                JsonSchema::string(name: 'email'),
+            ],
+            requiredProperties: ['name', 'email']
+        ),
+        JsonSchema::collection(
+            name: 'items',
+            description: 'Order line items',
+            itemSchema: JsonSchema::object(
+                name: 'LineItem',
+                properties: [
+                    JsonSchema::string(name: 'product'),
+                    JsonSchema::integer(name: 'quantity'),
+                    JsonSchema::number(name: 'price'),
+                ],
+                requiredProperties: ['product', 'quantity', 'price']
+            )
+        ),
+        JsonSchema::enum(
+            name: 'status',
+            enumValues: ['pending', 'shipped', 'delivered'],
+            description: 'Order status'
+        ),
+    ],
+    requiredProperties: ['orderId', 'customer', 'items', 'status']
+);
+
+$order = StructuredOutput::create()
+    ->with(
+        messages: 'Extract order details from: ...',
+        responseModel: $orderSchema,
+    )
+    ->get();
+```
+
+## Best Practices
+
+1. **Use meaningful descriptions** - LLMs use them to understand context
+2. **Mark required fields explicitly** - Don't rely on defaults
+3. **Keep schemas DRY** - Extract common sub-schemas to variables
+4. **Validate generated JSON Schema** - Use `$schema->toJsonSchema()` to inspect
+
+## Examples
+
+See: `examples/A02_Advanced/ManualSchemas/run.php`
