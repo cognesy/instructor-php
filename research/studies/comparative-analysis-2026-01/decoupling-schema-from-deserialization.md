@@ -544,12 +544,12 @@ public function withResponseObject(object $responseObject): static {
 
 ## Processing Pipeline Changes
 
-### Current Pipeline
+### Current Pipeline (Half-Assed Extraction)
 
 ```
 InferenceResponse
     │
-    ├──▶ findJsonData(mode) ──▶ JSON string
+    ├──▶ findJsonData(mode) ──▶ JSON string    ← Half-assed, scattered logic
     │
     ├──▶ ResponseDeserializer.deserialize(json, responseModel)
     │         │
@@ -564,39 +564,60 @@ InferenceResponse
             └──▶ Final value (object or transformed)
 ```
 
-### New Pipeline
+### New Pipeline (4 Explicit Stages)
 
 ```
 InferenceResponse
     │
-    ├──▶ ResponseExtractor.extract(response, mode)
+    ├──▶ 1. ResponseExtractor.extract(response, mode)      ← NEW: Formalize extraction
     │         │
-    │         └──▶ Canonical Array (intermediate representation)
-    │                    │
-    │                    ├──▶ [asArray mode] ──▶ Return array directly
-    │                    │
-    │                    └──▶ [hydrate mode] ──▶ ResponseHydrator.hydrate(array, spec)
-    │                                                  │
-    │                                                  ├──▶ ArrayHydrator → array
-    │                                                  ├──▶ ObjectHydrator → class instance
-    │                                                  ├──▶ SelfHydrator → self-deserializing
-    │                                                  └──▶ StructureHydrator → Structure
+    │         └──▶ Canonical Array (clean, structured data)
     │
-    ├──▶ ResponseValidator.validate(result, validationSpec)
+    ├──▶ 2. ResponseDeserializer.deserialize(array, responseModel)  ← EXISTING
     │         │
-    │         ├──▶ [array mode] → Schema-based validation (JSON Schema)
+    │         ├──▶ [intoArray] → Return array directly (skip deserialization)
+    │         │
+    │         ├──▶ [intoInstanceOf] → SymfonyDeserializer → class instance
+    │         │
+    │         └──▶ [intoObject] → CanDeserializeSelf → self-deserializing
+    │
+    ├──▶ 3. ResponseValidator.validate(result, responseModel)       ← EXISTING
+    │         │
+    │         ├──▶ [array mode] → Schema-based validation
     │         └──▶ [object mode] → Symfony Validator + custom
     │
-    └──▶ ResponseTransformer.transform(result, transformSpec)
+    └──▶ 4. ResponseTransformer.transform(result, responseModel)    ← EXISTING
             │
             └──▶ Final value
 ```
+
+### The 4 Stages Explained
+
+| Stage | Responsibility | Input | Output |
+|-------|---------------|-------|--------|
+| **ResponseExtractor** | Extract structured fragment from "mess" (text, markdown, HTML, tool calls) | Raw LLM response | Canonical array |
+| **ResponseDeserializer** | Deserialize to target structure | Canonical array | Object or array |
+| **ResponseValidator** | Validate target structure | Object or array | Validated result |
+| **ResponseTransformer** | Transform to final representation | Validated result | Final value |
+
+### Why Formalize ResponseExtractor?
+
+Current `findJsonData()` is scattered across:
+- `InferenceResponse::findJsonData()`
+- `JsonParser::findCompleteJson()`
+- Various extraction strategies (markdown, brackets, etc.)
+
+**Benefits of explicit ResponseExtractor:**
+- Single responsibility for extraction logic
+- Easier to extend (XML, YAML, custom formats)
+- Testable in isolation
+- Clear contract for what "extraction" means
 
 ---
 
 ## Key Changes Summary
 
-### What's NEW (Minimal)
+### What's NEW
 
 ```php
 <?php
@@ -604,8 +625,7 @@ InferenceResponse
 namespace Cognesy\Instructor\Data;
 
 /**
- * OutputFormat - The ONLY new class needed.
- * Simple value object specifying desired output format.
+ * OutputFormat - Simple value object specifying desired output format.
  */
 final readonly class OutputFormat
 {
@@ -625,6 +645,42 @@ final readonly class OutputFormat
     public function isClass(): bool { return $this->type === 'class'; }
     public function isObject(): bool { return $this->type === 'object'; }
 }
+
+namespace Cognesy\Instructor\Extraction;
+
+/**
+ * ResponseExtractor - Formalize extraction from LLM response "mess".
+ * Replaces scattered findJsonData() logic with explicit contract.
+ */
+interface ResponseExtractor
+{
+    /**
+     * Extract structured data from raw LLM response.
+     *
+     * @param InferenceResponse $response Raw LLM response (may contain text, markdown, HTML, etc.)
+     * @param OutputMode $mode How the response was requested (Tools, JsonSchema, Text, etc.)
+     * @return Result<array> Canonical array or failure
+     */
+    public function extract(InferenceResponse $response, OutputMode $mode): Result;
+}
+
+/**
+ * JsonResponseExtractor - Extract JSON from various response formats.
+ * Consolidates: findJsonData(), JsonParser, markdown extraction, bracket matching, etc.
+ */
+class JsonResponseExtractor implements ResponseExtractor
+{
+    public function extract(InferenceResponse $response, OutputMode $mode): Result
+    {
+        // Consolidate all current extraction logic here:
+        // - Direct JSON parsing
+        // - Markdown code block extraction
+        // - Bracket matching
+        // - Smart brace matching
+        // - Tool call extraction
+        // - etc.
+    }
+}
 ```
 
 ### What's MODIFIED (Existing Code)
@@ -637,13 +693,13 @@ class ResponseModel {
     public function outputFormat(): OutputFormat { ... }
 }
 
-// ResponseDeserializer - respect OutputFormat
+// ResponseDeserializer - now receives array (not JSON string)
 class ResponseDeserializer {
-    public function deserialize(string $json, ResponseModel $responseModel): Result {
+    public function deserialize(array $data, ResponseModel $responseModel): Result {
         if ($responseModel->outputFormat()->isArray()) {
-            return Result::try(fn() => json_decode($json, true));  // Skip deserialization
+            return Result::success($data);  // Return array directly
         }
-        // ... existing logic ...
+        // ... existing logic with SymfonyDeserializer::fromArray() ...
     }
 }
 
@@ -657,14 +713,21 @@ trait HandlesRequestBuilder {
 }
 ```
 
+### 4-Stage Pipeline Summary
+
+| Stage | Status | Responsibility |
+|-------|--------|----------------|
+| **ResponseExtractor** | NEW | Extract from "mess" → canonical array |
+| **ResponseDeserializer** | EXISTING | Array → object (or pass-through for array mode) |
+| **ResponseValidator** | EXISTING | Validate structure |
+| **ResponseTransformer** | EXISTING | Transform to final |
+
 ### What we're NOT Creating
 
-- ❌ `SchemaSpecification` interface (existing `CanProvideSchema` / `CanProvideJsonSchema` work)
-- ❌ `ResponseExtractor` interface (existing JSON extraction works)
-- ❌ `HydrationTarget` interface (OutputFormat is simpler)
-- ❌ `ResponseHydrator` interface (existing ResponseDeserializer works)
+- ❌ `ResponseHydrator` interface (ResponseDeserializer already works)
+- ❌ `HydrationSpec` / `HydrationTarget` (OutputFormat is simpler)
 - ❌ `RequestSchema` class (ResponseModel already handles this)
-- ❌ `HydrationSpec` class (OutputFormat covers this)
+- ❌ `SchemaSpecification` interface (existing contracts work)
 
 ---
 
@@ -1025,17 +1088,19 @@ Schema (Internal)  →  Visitor  →  JsonSchema | XmlSchema | Future formats
 - **v2.0:** Deprecate old methods, finalize API, documentation
 - **v3.0:** Remove deprecated methods (optional)
 
-### Files to Create (Minimal!)
-- `packages/instructor/src/Data/OutputFormat.php` - **Only new class needed**
+### Files to Create
+- `packages/instructor/src/Data/OutputFormat.php` - Output format specification
+- `packages/instructor/src/Extraction/ResponseExtractor.php` - Interface
+- `packages/instructor/src/Extraction/JsonResponseExtractor.php` - Consolidate extraction logic
 
-### Files to Modify (Extend Existing)
+### Files to Modify
 - `packages/instructor/src/Traits/HandlesRequestBuilder.php` - Add fluent methods
 - `packages/instructor/src/Data/ResponseModel.php` - Add OutputFormat storage
-- `packages/instructor/src/Deserialization/ResponseDeserializer.php` - Respect OutputFormat
+- `packages/instructor/src/Deserialization/ResponseDeserializer.php` - Receive array, respect OutputFormat
+- `packages/instructor/src/Core/ResponseGenerator.php` - Use ResponseExtractor
 - `packages/instructor/src/PendingStructuredOutput.php` - Wire up new methods
 
 ### Files NOT Created (Avoided Over-Engineering)
 - ~~`RequestSchema.php`~~ - ResponseModel already works
 - ~~`HydrationSpec.php`~~ - OutputFormat is simpler
 - ~~`ResponseHydrator.php`~~ - ResponseDeserializer already works
-- ~~`ResponseExtractor.php`~~ - JSON extraction already works
