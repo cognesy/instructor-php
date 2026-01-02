@@ -51,12 +51,18 @@ jobs:
           - local: 'packages/instructor'
             repo:  'cognesy/instructor-struct'
             name:  'instructor-struct'
+          - local: 'packages/laravel'
+            repo:  'cognesy/instructor-laravel'
+            name:  'instructor-laravel'
           - local: 'packages/logging'
             repo:  'cognesy/instructor-logging'
             name:  'instructor-logging'
           - local: 'packages/messages'
             repo:  'cognesy/instructor-messages'
             name:  'instructor-messages'
+          - local: 'packages/metrics'
+            repo:  'cognesy/instructor-metrics'
+            name:  'instructor-metrics'
           - local: 'packages/pipeline'
             repo:  'cognesy/instructor-pipeline'
             name:  'instructor-pipeline'
@@ -81,9 +87,6 @@ jobs:
           - local: 'packages/utils'
             repo:  'cognesy/instructor-utils'
             name:  'instructor-utils'
-          - local: 'packages/laravel'
-            repo:  'cognesy/instructor-laravel'
-            name:  'instructor-laravel'
     steps:
       - uses: actions/checkout@v4
         with:

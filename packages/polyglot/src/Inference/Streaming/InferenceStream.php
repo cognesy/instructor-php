@@ -7,8 +7,18 @@ use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\Events\InferenceAttemptStatsReported;
+use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
+use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
+use Cognesy\Polyglot\Inference\Events\InferenceExecutionStatsReported;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
+use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
+use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
+use Cognesy\Polyglot\Inference\Stats\InferenceStatsCalculator;
+use DateTimeImmutable;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -29,15 +39,23 @@ class InferenceStream
 
     protected InferenceExecution $execution;
 
+    private ?DateTimeImmutable $startedAt;
+    private bool $firstChunkReceived = false;
+    private ?float $timeToFirstChunkMs = null;
+    private InferenceStatsCalculator $statsCalculator;
+
     public function __construct(
         InferenceExecution $execution,
         CanHandleInference $driver,
         EventDispatcherInterface $eventDispatcher,
+        ?DateTimeImmutable $startedAt = null,
     ) {
         $this->execution = $execution;
         $this->driver = $driver;
         $this->events = $eventDispatcher;
+        $this->startedAt = $startedAt ?? new DateTimeImmutable();
         $this->stream = $driver->makeStreamResponsesFor($execution->request());
+        $this->statsCalculator = new InferenceStatsCalculator();
     }
 
     /**
@@ -147,6 +165,13 @@ class InferenceStream
             if ($partialResponse === null) {
                 continue;
             }
+
+            // Dispatch first chunk event for TTFC measurement
+            if (!$this->firstChunkReceived) {
+                $this->dispatchFirstChunkReceived($partialResponse);
+                $this->firstChunkReceived = true;
+            }
+
             // Always enrich with accumulated content/state (tools, usage, content)
             $partialResponse = $partialResponse->withAccumulatedContent($priorResponse);
             $this->notifyOnPartialResponse($partialResponse);
@@ -156,6 +181,25 @@ class InferenceStream
         }
 
         $this->finalizeStream();
+    }
+
+    /**
+     * Dispatches the first chunk received event for TTFC measurement.
+     */
+    private function dispatchFirstChunkReceived(PartialInferenceResponse $partialResponse): void {
+        $now = new DateTimeImmutable();
+        $startedAt = $this->startedAt ?? $now;
+
+        // Calculate TTFC in milliseconds
+        $interval = $startedAt->diff($now);
+        $this->timeToFirstChunkMs = ($interval->s * 1000) + ($interval->f * 1000);
+
+        $this->events->dispatch(new StreamFirstChunkReceived(
+            executionId: $this->execution->id,
+            requestStartedAt: $startedAt,
+            model: $this->execution->request()->model(),
+            initialContent: $partialResponse->contentDelta,
+        ));
     }
 
     /**
@@ -178,6 +222,79 @@ class InferenceStream
             return;
         }
         $this->execution = $this->execution->withFinalizedPartialResponse();
-        $this->events->dispatch(new InferenceResponseCreated($this->execution->response()));
+        $response = $this->execution->response();
+
+        $this->events->dispatch(new InferenceResponseCreated($response));
+
+        // Dispatch observability events
+        if ($response !== null) {
+            $this->dispatchStreamCompletionEvents($response);
+        }
+    }
+
+    /**
+     * Dispatches observability events when stream is finalized.
+     */
+    private function dispatchStreamCompletionEvents(InferenceResponse $response): void {
+        $usage = $response->usage();
+        $finishReason = $response->finishReason();
+        $isSuccess = !$response->hasFinishedWithFailure();
+        $model = $this->execution->request()->model();
+        $startedAt = $this->startedAt ?? new DateTimeImmutable();
+
+        // Usage event
+        $this->events->dispatch(new InferenceUsageReported(
+            executionId: $this->execution->id,
+            usage: $usage,
+            model: $model,
+            isFinal: true,
+        ));
+
+        // Attempt succeeded event
+        $attemptId = $this->execution->attempts()->last()?->id ?? $this->execution->id;
+        $this->events->dispatch(new InferenceAttemptSucceeded(
+            executionId: $this->execution->id,
+            attemptId: $attemptId,
+            attemptNumber: 1,
+            finishReason: $finishReason,
+            usage: $usage,
+            startedAt: $startedAt,
+        ));
+
+        // Calculate and dispatch attempt stats
+        $attemptStats = $this->statsCalculator->calculateAttemptStatsFromResponse(
+            response: $response,
+            executionId: $this->execution->id,
+            attemptId: $attemptId,
+            attemptNumber: 1,
+            startedAt: $startedAt,
+            timeToFirstChunkMs: $this->timeToFirstChunkMs,
+            model: $model,
+            isStreamed: true,
+        );
+        $this->events->dispatch(new InferenceAttemptStatsReported($attemptStats));
+
+        // Completion event
+        $this->events->dispatch(new InferenceCompleted(
+            executionId: $this->execution->id,
+            isSuccess: $isSuccess,
+            finishReason: $finishReason,
+            usage: $usage,
+            attemptCount: 1,
+            startedAt: $startedAt,
+            response: $response,
+        ));
+
+        // Calculate and dispatch execution stats
+        $executionStats = $this->statsCalculator->calculateExecutionStats(
+            execution: $this->execution,
+            startedAt: $startedAt,
+            timeToFirstChunkMs: $this->timeToFirstChunkMs,
+            model: $model,
+            isStreamed: true,
+            attemptStats: [$attemptStats],
+        );
+        $this->events->dispatch(new InferenceExecutionStatsReported($executionStats));
     }
 }
+

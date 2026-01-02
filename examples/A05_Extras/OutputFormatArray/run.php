@@ -34,9 +34,7 @@ class Person {
 $personArray = (new StructuredOutput)
     ->withResponseClass(Person::class)  // Schema definition
     ->intoArray()                        // Return as array
-    ->with(
-        messages: "Jason is 25 years old and works as a software engineer.",
-    )
+    ->withMessages("Jason is 25 years old and works as a software engineer.")
     ->get();
 
 dump($personArray);

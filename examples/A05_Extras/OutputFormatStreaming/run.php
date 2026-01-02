@@ -32,27 +32,24 @@ class Article {
 
 echo "Streaming article extraction...\n\n";
 
+// Track when chunks arrive to prove streaming
+$startTime = microtime(true);
+$chunkTimes = [];
+
 // Stream extraction and receive final result as array
 $stream = (new StructuredOutput)
     ->withResponseClass(Article::class)
-    ->intoArray()  // Final result will be array
-    ->with(
-        messages: "Extract: 'Introduction to PHP 8.4' by Jane Doe, 1500 words, tags: php, tutorial, programming",
-    )
+    ->intoArray()
+    ->withMessages("Extract: 'Introduction to PHP 8.4' by Jane Doe, 1500 words, tags: php, tutorial, programming")
     ->stream();
 
 // During streaming, partials are objects (for validation)
-$updateCount = 0;
-foreach ($stream->partials() as $partial) {
-    $updateCount++;
-    // Partial updates are still objects during streaming
-    assert(is_object($partial) || is_array($partial));
-    echo "Update #{$updateCount}: " . (is_object($partial) ? get_class($partial) : 'array') . "\n";
+foreach ($stream->responses() as $response) {
+    dump($response);
 }
 
 // Final result is an array (not object)
 $finalArticle = $stream->finalValue();
-
 dump($finalArticle);
 
 assert(is_array($finalArticle));

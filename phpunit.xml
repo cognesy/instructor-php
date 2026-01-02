@@ -24,6 +24,7 @@
             <directory suffix="Test.php">./packages/instructor/tests/Unit</directory>
             <directory suffix="Test.php">./packages/logging/tests/Unit</directory>
             <directory suffix="Test.php">./packages/messages/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/metrics/tests/Unit</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Unit</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Unit</directory>
             <directory suffix="Test.php">./packages/schema/tests/Unit</directory>
@@ -48,6 +49,7 @@
             <directory suffix="Test.php">./packages/instructor/tests/Feature</directory>
             <directory suffix="Test.php">./packages/logging/tests/Feature</directory>
             <directory suffix="Test.php">./packages/messages/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/metrics/tests/Feature</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Feature</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Feature</directory>
             <directory suffix="Test.php">./packages/schema/tests/Feature</directory>
@@ -72,6 +74,7 @@
             <directory suffix="Test.php">./packages/instructor/tests/Integration</directory>
             <directory suffix="Test.php">./packages/logging/tests/Integration</directory>
             <directory suffix="Test.php">./packages/messages/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/metrics/tests/Integration</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Integration</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
             <directory suffix="Test.php">./packages/schema/tests/Integration</directory>
@@ -95,6 +98,7 @@
             <directory suffix="Test.php">./packages/hub/tests/Regression</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Regression</directory>
             <directory suffix="Test.php">./packages/messages/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/metrics/tests/Regression</directory>
             <directory suffix="Test.php">./packages/pipeline/tests/Regression</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Regression</directory>
             <directory suffix="Test.php">./packages/schema/tests/Regression</directory>
@@ -121,6 +125,7 @@
             <directory suffix=".php">./packages/instructor/src</directory>
             <directory suffix=".php">./packages/logging/src</directory>
             <directory suffix=".php">./packages/messages/src</directory>
+            <directory suffix=".php">./packages/metrics/src</directory>
             <directory suffix=".php">./packages/pipeline/src</directory>
             <directory suffix=".php">./packages/polyglot/src</directory>
             <directory suffix=".php">./packages/schema/src</directory>

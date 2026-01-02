@@ -17,7 +17,12 @@ Use `Structure::define()` to define the structure and pass it to Instructor
 as response model.
 
 If `Structure` instance has been provided as a response model, Instructor
-returns an array in the shape you defined.
+returns a `Structure` object with dynamic properties in the shape you defined.
+
+You can access properties directly or call `->toArray()` to convert to an array.
+
+> **Note:** If you need raw arrays instead of objects, use `->intoArray()` when calling
+> StructuredOutput. See: [Output Formats](output_formats.md)
 
 `Structure::define()` accepts array of `Field` objects.
 
@@ -40,7 +45,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 ?>
-// @doctest id="081e"
+// @doctest id="199a"
 ```
 
 Following types of fields are currently supported:
@@ -66,7 +71,7 @@ $structure = Structure::define('person', [
     //...
 ]);
 ?>
-// @doctest id="2163"
+// @doctest id="7955"
 ```
 
 
@@ -85,7 +90,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="a04f"
+// @doctest id="4fd4"
 ```
 
 ## Nesting structures
@@ -108,7 +113,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
 ?>
-// @doctest id="d634"
+// @doctest id="810e"
 ```
 
 ## Validation of structure data
@@ -132,7 +137,7 @@ $structure = Structure::define('person', [
     // ...
 ], 'A person object');
 ?>
-// @doctest id="766c"
+// @doctest id="60ca"
 ```
 
 ## Extracting data
@@ -153,6 +158,12 @@ $person = (new StructuredOutput)->with(
     responseModel: $structure,
 )->get();
 
+// $person is a Structure object, not an array
+echo $person->name;  // "Jane Doe"
+echo $person->age;   // 25
+echo $person->role;  // "line"
+
+// Convert to array if needed
 dump($person->toArray());
 // array [
 //   "name" => "Jane Doe"
@@ -162,8 +173,17 @@ dump($person->toArray());
 //   ]
 //   "role" => "line"
 // ]
+
+// Or use intoArray() to get raw array directly
+$personArray = (new StructuredOutput)->with(
+    messages: $text,
+    responseModel: $structure,
+)->intoArray()->get();
+
+dump($personArray);
+// array [ "name" => "Jane Doe", "age" => 25, ... ]
 ?>
-// @doctest id="ffbd"
+// @doctest id="81d6"
 ```
 
 
@@ -207,5 +227,5 @@ $age = $person->age;
 $role = $person->role->name;
 $level = $person->role->level;
 ?>
-// @doctest id="67b1"
+// @doctest id="25ed"
 ```

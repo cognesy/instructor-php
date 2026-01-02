@@ -80,7 +80,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseJsonSchema($schema)   // Set JSON schema directly
 ```
 
-### Output Formats (v1.3+)
+### Output Formats
 
 Control how extracted data is returned while keeping the same schema:
 

@@ -30,7 +30,87 @@ Instructor requires information on the class of each nested object in your JSON 
 
 This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema. Lack of the information on target class makes it impossible for Instructor to deserialize the data into appropriate, expected type.
 
-Current design uses JSON Schema `$comment` field on property to overcome this information gap. Instructor expects developer to use `$comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+Current design uses JSON Schema `$comment` field (or `x-php-class` field) on property to overcome this information gap. Instructor expects developer to use this field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+
+
+### Important: Arrays as Schema INPUT vs OUTPUT
+
+**Arrays as Schema INPUT ✅**
+
+You can provide an array as `responseModel` to specify the JSON Schema:
+
+```php
+$output = StructuredOutput::create()
+    ->with(
+        responseModel: [
+            'x-php-class' => User::class,  // ← Required for deserialization
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string'],
+                'age' => ['type' => 'integer'],
+            ],
+            'required' => ['name'],
+        ],
+        // ...
+    )
+    ->get();
+// @doctest id="8ce3"
+```
+
+**Important:** The `x-php-class` field is REQUIRED for InstructorPHP to know which
+class to deserialize the data into.
+
+**Arrays as OUTPUT ❌**
+
+InstructorPHP does NOT return raw arrays. The output is ALWAYS an object:
+
+```php
+$user = StructuredOutput::create()
+    ->with(responseModel: User::class, ...)
+    ->get();
+
+// Result is User object (not array)
+$user->name;   // ✅ Works
+$user['name']; // ❌ Error - not an array
+// @doctest id="0c9a"
+```
+
+**Getting Raw Arrays (v1.3+) ✅**
+
+If you need raw arrays instead of objects, use the `intoArray()` output format:
+
+```php
+$userArray = StructuredOutput::create()
+    ->with(responseModel: User::class, ...)
+    ->intoArray()  // Returns array instead of object
+    ->get();
+
+// Result is array (not object)
+$userArray['name'];  // ✅ Works
+$userArray->name;    // ❌ Error - not an object
+
+// $userArray = ['name' => 'John', 'age' => 30]
+// @doctest id="4510"
+```
+
+You can also use different output classes or self-deserializing objects:
+
+```php
+// Use different class for output than schema
+$dto = StructuredOutput::create()
+    ->with(responseModel: UserProfile::class, ...)  // Rich schema (5 fields)
+    ->intoInstanceOf(UserDTO::class)                // Simple output (2 fields)
+    ->get();
+
+// Self-deserializing objects
+$scalar = StructuredOutput::create()
+    ->with(responseModel: Rating::class, ...)
+    ->intoObject(new Scalar('rating', 'integer'))
+    ->get();
+// @doctest id="74be"
+```
+
+See: [Output Formats](../advanced/output_formats.md) for comprehensive guide.
 
 
 ## Custom response handling strategy

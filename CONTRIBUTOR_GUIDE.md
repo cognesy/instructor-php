@@ -10,6 +10,7 @@ This is a monorepo containing multiple independent packages under the `packages/
 - **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`
 - **Development tools**: `evals`, `experimental`, `doctor`
 - **Agent control**: `agent-ctrl` - Unified CLI bridge for code agents
+- **Observability**: `metrics` - metrics collection and export
 - **HTTP client**: `http-client`
 - **Pipeline processing**: `pipeline`
 
