@@ -69,7 +69,17 @@ if ($response->usage()) {
     print("Tokens: {$response->usage()->inputTokens} in / {$response->usage()->outputTokens} out\n");
 }
 
-assert($execResult->exitCode() === 0, 'Command should execute successfully');
-assert($answer !== null, 'Should receive an answer from Codex');
+if ($execResult->exitCode() !== 0) {
+    print("Error: Command failed with exit code {$execResult->exitCode()}\n");
+    if ($execResult->stderr()) {
+        print("STDERR: " . $execResult->stderr() . "\n");
+    }
+    exit(1);
+}
+
+if ($answer === null) {
+    print("Error: No answer received from Codex\n");
+    exit(1);
+}
 ?>
 ```
