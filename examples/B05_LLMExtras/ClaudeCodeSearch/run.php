@@ -193,6 +193,7 @@ if ($execResult->exitCode() === 0) {
     if ($execResult->stderr()) {
         print("STDERR: " . substr($execResult->stderr(), 0, 500) . "\n");
     }
+    exit(1);
 }
 ?>
 ```
