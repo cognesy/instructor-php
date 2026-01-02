@@ -16,6 +16,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Instructor\Extraction\JsonResponseExtractor;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
@@ -149,6 +150,14 @@ class StructuredOutput
             config: $config,
         );
 
+        // Apply OutputFormat to ResponseModel if configured
+        $outputFormat = $this->getOutputFormat();
+        if ($outputFormat !== null && $execution->responseModel() !== null) {
+            $execution = $execution->with(
+                responseModel: $execution->responseModel()->withOutputFormat($outputFormat)
+            );
+        }
+
         $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
 
         $responseDeserializer = new ResponseDeserializer(
@@ -167,6 +176,9 @@ class StructuredOutput
             config: $config,
         );
         $partialResponseValidator = new PartialValidation(new Config\PartialsGeneratorConfig());
+
+        // Create extractor for array-first pipeline (used when OutputFormat is set)
+        $extractor = ($outputFormat !== null) ? new JsonResponseExtractor() : null;
 
         // Ensure HttpClient is available; build default if not provided
         if ($this->httpClient !== null) {
@@ -187,6 +199,7 @@ class StructuredOutput
             responseTransformer: $responseTransformer,
             events: $this->events,
             httpClient: $client,
+            extractor: $extractor,
         );
 
         return new PendingStructuredOutput(

@@ -3,6 +3,8 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Creation\StructuredOutputRequestBuilder;
+use Cognesy\Instructor\Data\OutputFormat;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -14,6 +16,7 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 trait HandlesRequestBuilder
 {
     private StructuredOutputRequestBuilder $requestBuilder;
+    private ?OutputFormat $outputFormat = null;
 
     public function withMessages(string|array|Message|Messages $messages): static {
         $this->requestBuilder->withMessages($messages);
@@ -97,5 +100,50 @@ trait HandlesRequestBuilder
     ) : ?self {
         $this->requestBuilder->withCachedContext($messages, $system, $prompt, $examples);
         return $this;
+    }
+
+    // OUTPUT FORMAT METHODS ///////////////////////////////////////////////
+
+    /**
+     * Return extracted data as raw associative array (skip object deserialization).
+     *
+     * @return static
+     */
+    public function intoArray(): static {
+        $this->outputFormat = OutputFormat::array();
+        return $this;
+    }
+
+    /**
+     * Hydrate extracted data into the specified class.
+     *
+     * Allows using one class for schema (sent to LLM) and a different class for output.
+     *
+     * @param class-string $class Target class for deserialization
+     * @return static
+     */
+    public function intoInstanceOf(string $class): static {
+        $this->outputFormat = OutputFormat::instanceOf($class);
+        return $this;
+    }
+
+    /**
+     * Use a self-deserializing object for output.
+     *
+     * @param CanDeserializeSelf $object Object implementing CanDeserializeSelf
+     * @return static
+     */
+    public function intoObject(CanDeserializeSelf $object): static {
+        $this->outputFormat = OutputFormat::selfDeserializing($object);
+        return $this;
+    }
+
+    /**
+     * Get the configured output format (if any).
+     *
+     * @internal Used by StructuredOutput to apply OutputFormat to ResponseModel
+     */
+    protected function getOutputFormat(): ?OutputFormat {
+        return $this->outputFormat;
     }
 }

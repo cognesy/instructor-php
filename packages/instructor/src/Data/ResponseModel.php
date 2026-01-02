@@ -23,6 +23,7 @@ class ResponseModel implements CanProvideJsonSchema
     private bool $useObjectReferences;
 
     private StructuredOutputConfig $config;
+    private ?OutputFormat $outputFormat = null;
 
     public function __construct(
         string $class,
@@ -103,6 +104,14 @@ class ResponseModel implements CanProvideJsonSchema
         return $this->toolDescription ?: ($this->config->toolDescription() ?: '');
     }
 
+    public function outputFormat(): ?OutputFormat {
+        return $this->outputFormat;
+    }
+
+    public function shouldReturnArray(): bool {
+        return $this->outputFormat?->isArray() ?? false;
+    }
+
     // MUTATORS ////////////////////////////////////////////////////////
 
     public function withOutputMode(OutputMode $mode) : static {
@@ -119,6 +128,12 @@ class ResponseModel implements CanProvideJsonSchema
 
     public function withToolDescription(string $toolDescription) : static {
         return $this->with(toolDescription: $toolDescription);
+    }
+
+    public function withOutputFormat(OutputFormat $outputFormat): static {
+        $clone = clone $this;
+        $clone->outputFormat = $outputFormat;
+        return $clone;
     }
 
     /** @param array<string, mixed> $values */
@@ -205,7 +220,7 @@ class ResponseModel implements CanProvideJsonSchema
         ?string $toolName = null,
         ?string $toolDescription = null,
     ) : static {
-        return new static(
+        $new = new static(
             class: $this->class,
             instance: $instance ?? $this->instance,
             schema: $this->schema,
@@ -220,6 +235,8 @@ class ResponseModel implements CanProvideJsonSchema
                 default => $this->config->withOutputMode($mode),
             },
         );
+        $new->outputFormat = $this->outputFormat;
+        return $new;
     }
 
     private function makeToolCallSchema() : array {

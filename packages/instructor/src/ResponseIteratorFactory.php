@@ -14,6 +14,7 @@ use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
 use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromJson;
@@ -38,6 +39,7 @@ class ResponseIteratorFactory
     private readonly CanTransformResponse $responseTransformer;
     private readonly CanHandleEvents $events;
     private readonly ?HttpClient $httpClient;
+    private readonly ?CanExtractResponse $extractor;
 
     public function __construct(
         LLMProvider $llmProvider,
@@ -47,6 +49,7 @@ class ResponseIteratorFactory
         CanTransformResponse $responseTransformer,
         CanHandleEvents $events,
         ?HttpClient $httpClient = null,
+        ?CanExtractResponse $extractor = null,
     ) {
         $this->llmProvider = $llmProvider;
         $this->responseDeserializer = $responseDeserializer;
@@ -55,6 +58,7 @@ class ResponseIteratorFactory
         $this->responseTransformer = $responseTransformer;
         $this->events = $events;
         $this->httpClient = $httpClient;
+        $this->extractor = $extractor;
     }
 
     public function makeExecutor(StructuredOutputExecution $execution) : CanHandleStructuredOutputAttempts {
@@ -160,6 +164,7 @@ class ResponseIteratorFactory
             $this->responseValidator,
             $this->responseTransformer,
             $this->events,
+            $this->extractor,
         );
     }
 }
