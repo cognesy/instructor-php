@@ -320,6 +320,52 @@ final readonly class HydrationSpec implements HydrationTarget
 }
 ```
 
+### Schema vs JsonSchema: Critical Architectural Distinction
+
+**IMPORTANT:** There's a fundamental difference between `Schema` and `JsonSchema`:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Schema Architecture                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   Schema (Internal Canonical Representation)                                │
+│   ├── packages/schema/src/Data/Schema/                                      │
+│   ├── ObjectSchema, ArraySchema, ScalarSchema, EnumSchema, etc.            │
+│   └── Language-agnostic structure description                               │
+│                           │                                                 │
+│                           ▼                                                 │
+│              ┌────────────┴────────────┐                                    │
+│              │    Schema Visitors      │                                    │
+│              └────────────┬────────────┘                                    │
+│                           │                                                 │
+│         ┌─────────────────┼─────────────────┐                              │
+│         ▼                 ▼                 ▼                              │
+│   ┌───────────┐    ┌───────────┐    ┌───────────┐                         │
+│   │JSON Schema│    │XML Schema │    │  Future   │                         │
+│   │ (current) │    │ (future?) │    │ Formats   │                         │
+│   └───────────┘    └───────────┘    └───────────┘                         │
+│                                                                             │
+│   Schema Definition Languages (Output Formats for LLMs)                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Points:**
+- **`Schema`** = Internal canonical representation (what InstructorPHP works with internally)
+- **`JsonSchema`** = ONE specific schema definition language (what current LLMs use)
+- **`SchemaToJsonSchema`** = Visitor that converts Schema → JSON Schema format
+
+**Current Reality (v1.x):** JSON Schema is the only format LLMs support.
+**Future Possibility (v2.0+):** LLMs might support XML Schema, YAML Schema, Protocol Buffers, or custom formats.
+
+**Implication for API Design:**
+- `withResponseSchema(Schema)` - Works with internal representation (future-proof)
+- `withResponseJsonSchema(JsonSchema)` - Works with specific output format (current LLM needs)
+- `withResponseClass(string)` - Creates Schema via reflection, then converts to JSON Schema
+
+---
+
 ### New StructuredOutput API (User's Preferred Design)
 
 **Design Principle:** Leverage and adjust existing API methods rather than creating entirely new API surface.
@@ -331,14 +377,16 @@ final readonly class HydrationSpec implements HydrationTarget
 ->withResponseModel(string|array|object $responseModel)   // ← Deprecate
 ->withResponseObject(object $responseObject)              // ← Deprecate
 
-// MODIFY - accept JsonSchema builder or contract
+// MODIFY - accept JsonSchema builder or contract (specific output format)
 ->withResponseJsonSchema(JsonSchema|CanProvideJsonSchema $schema)  // ← Needs change
+// Note: JsonSchema is a SCHEMA DEFINITION LANGUAGE, not internal representation
 
-// KEEP - explicit class-based schema
+// KEEP - explicit class-based schema (creates internal Schema, converts to JSON Schema)
 ->withResponseClass(string $class)                        // ← Exists, keep as-is
 
-// NEW - Schema object or contract
+// NEW - Internal Schema object or contract (canonical representation)
 ->withResponseSchema(Schema|CanProvideSchema $schema)     // ← New
+// Note: Schema is INTERNAL REPRESENTATION, converted to JSON Schema (or other format) for LLM
 
 // NEW - Extract class from object instance
 ->withResponseClassFrom(object $object)                   // ← New (calls get_class())
@@ -926,13 +974,27 @@ $finalArray = $stream->finalValue();
 - No way to get raw arrays without deserialization
 - Multipurpose `withResponseModel()` method handles all cases
 
+### Critical Architectural Insight: Schema ≠ JsonSchema
+
+```
+Schema (Internal)  →  Visitor  →  JsonSchema | XmlSchema | Future formats
+     ↑                              ↓
+  Canonical              Schema Definition Languages
+  Representation              (LLM output formats)
+```
+
+- **`Schema`** = Internal canonical representation (language-agnostic)
+- **`JsonSchema`** = ONE schema definition language (what current LLMs use)
+- **v1.x:** JSON Schema is the only LLM format we support
+- **v2.0+:** Architecture ready for XML Schema, YAML Schema, Protocol Buffers, etc.
+
 ### Proposed State (User's Preferred Design)
 
 **Schema Specification Methods (Explicit, Single-Purpose):**
-- `withResponseClass(string $class)` - Keep, explicit class-based
-- `withResponseJsonSchema(JsonSchema|CanProvideJsonSchema)` - Modify to accept builder
-- `withResponseSchema(Schema|CanProvideSchema)` - New
-- `withResponseClassFrom(object)` - New
+- `withResponseClass(string $class)` - Keep, creates Schema via reflection
+- `withResponseJsonSchema(JsonSchema|CanProvideJsonSchema)` - Modify, specific SDL
+- `withResponseSchema(Schema|CanProvideSchema)` - New, internal representation
+- `withResponseClassFrom(object)` - New, convenience for prototype objects
 - `withResponseModel()` - Deprecate (multipurpose)
 - `withResponseObject()` - Deprecate
 
