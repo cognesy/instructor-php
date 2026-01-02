@@ -71,12 +71,42 @@ $user = StructuredOutput::create()
 // Result is User object (not array)
 $user->name;   // ✅ Works
 $user['name']; // ❌ Error - not an array
-
-// To get array representation (if needed):
-$array = json_decode(json_encode($user), true);
 ```
 
-If you need raw arrays instead of objects, this feature is not currently supported (planned for v1.3+).
+**Getting Raw Arrays (v1.3+) ✅**
+
+If you need raw arrays instead of objects, use the `intoArray()` output format:
+
+```php
+$userArray = StructuredOutput::create()
+    ->with(responseModel: User::class, ...)
+    ->intoArray()  // Returns array instead of object
+    ->get();
+
+// Result is array (not object)
+$userArray['name'];  // ✅ Works
+$userArray->name;    // ❌ Error - not an object
+
+// $userArray = ['name' => 'John', 'age' => 30]
+```
+
+You can also use different output classes or self-deserializing objects:
+
+```php
+// Use different class for output than schema
+$dto = StructuredOutput::create()
+    ->with(responseModel: UserProfile::class, ...)  // Rich schema (5 fields)
+    ->intoInstanceOf(UserDTO::class)                // Simple output (2 fields)
+    ->get();
+
+// Self-deserializing objects
+$scalar = StructuredOutput::create()
+    ->with(responseModel: Rating::class, ...)
+    ->intoObject(new Scalar('rating', 'integer'))
+    ->get();
+```
+
+See: [Output Formats](../advanced/output_formats.md) for comprehensive guide.
 
 
 ## Custom response handling strategy

@@ -80,6 +80,41 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseJsonSchema($schema)   // Set JSON schema directly
 ```
 
+### Output Formats (v1.3+)
+
+Control how extracted data is returned while keeping the same schema:
+
+```php
+$structuredOutput = (new StructuredOutput)
+    ->intoArray()                       // Return as associative array
+    ->intoInstanceOf($className)        // Return as different class
+    ->intoObject($selfDeserializing)    // Return as self-deserializing object
+```
+
+**Example - Get raw arrays:**
+```php
+$userData = (new StructuredOutput)
+    ->withResponseClass(User::class)    // Schema from User class
+    ->intoArray()                        // Return as array (not object)
+    ->with(messages: 'Extract: John Doe, 30 years old')
+    ->get();
+
+// Result: ['name' => 'John Doe', 'age' => 30]
+```
+
+**Example - Use different output class:**
+```php
+$dto = (new StructuredOutput)
+    ->withResponseClass(UserProfile::class)  // Rich schema (5 fields)
+    ->intoInstanceOf(UserDTO::class)         // Simple output (2 fields)
+    ->with(messages: 'Extract user data')
+    ->get();
+
+// Schema defines 5 fields, output has 2 fields
+```
+
+See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive documentation.
+
 ### Configuration and Behavior
 ```php
 $structuredOutput = (new StructuredOutput)

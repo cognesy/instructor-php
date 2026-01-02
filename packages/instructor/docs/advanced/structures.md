@@ -17,7 +17,12 @@ Use `Structure::define()` to define the structure and pass it to Instructor
 as response model.
 
 If `Structure` instance has been provided as a response model, Instructor
-returns an array in the shape you defined.
+returns a `Structure` object with dynamic properties in the shape you defined.
+
+You can access properties directly or call `->toArray()` to convert to an array.
+
+> **Note:** If you need raw arrays instead of objects, use `->intoArray()` when calling
+> StructuredOutput. See: [Output Formats](output_formats.md)
 
 `Structure::define()` accepts array of `Field` objects.
 
@@ -148,6 +153,12 @@ $person = (new StructuredOutput)->with(
     responseModel: $structure,
 )->get();
 
+// $person is a Structure object, not an array
+echo $person->name;  // "Jane Doe"
+echo $person->age;   // 25
+echo $person->role;  // "line"
+
+// Convert to array if needed
 dump($person->toArray());
 // array [
 //   "name" => "Jane Doe"
@@ -157,6 +168,15 @@ dump($person->toArray());
 //   ]
 //   "role" => "line"
 // ]
+
+// Or use intoArray() to get raw array directly
+$personArray = (new StructuredOutput)->with(
+    messages: $text,
+    responseModel: $structure,
+)->intoArray()->get();
+
+dump($personArray);
+// array [ "name" => "Jane Doe", "age" => 25, ... ]
 ?>
 ```
 

@@ -1,0 +1,392 @@
+---
+title: 'Output Formats'
+description: 'Control how InstructorPHP returns extracted data'
+---
+
+# Output Formats
+
+By default, InstructorPHP deserializes LLM responses into PHP objects based on your response model class. The OutputFormat API allows you to change this behavior while keeping the same schema definition.
+
+## Overview
+
+The OutputFormat API decouples **schema specification** (what structure the LLM should produce) from **output format** (how you receive the result).
+
+```php
+// Schema from User class, output as object (default)
+$user = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->get();
+// Returns: User object
+
+// Schema from User class, output as array
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()
+    ->get();
+// Returns: ['name' => 'John', 'age' => 30]
+```
+
+## Available Output Formats
+
+### 1. intoArray() - Raw Associative Arrays
+
+Returns extracted data as a plain associative array instead of an object.
+
+```php
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)  // Schema definition
+    ->intoArray()                      // Output format
+    ->with(messages: 'Extract: John Doe, 30 years old')
+    ->get();
+
+// Result: ['name' => 'John Doe', 'age' => 30]
+dump($data['name']);  // 'John Doe'
+```
+
+**Use cases:**
+- **Database storage** - Direct array insertion without conversion
+- **JSON APIs** - Return arrays for `json_encode()`
+- **Array manipulation** - Easier to modify arrays than objects
+- **Debugging** - Arrays are simpler to inspect with `dump()`
+- **Legacy integration** - When existing code expects arrays
+
+**Example:**
+```php
+class User {
+    public function __construct(
+        public string $name,
+        public int $age,
+        public string $email,
+    ) {}
+}
+
+$userData = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()
+    ->with(messages: 'Extract: Jane Smith, 25, jane@example.com')
+    ->get();
+
+// Store directly in database
+DB::table('users')->insert($userData);
+
+// Or return as JSON API response
+return response()->json($userData);
+```
+
+---
+
+### 2. intoInstanceOf() - Different Output Class
+
+Uses one class for schema definition and a different class for the output object.
+
+```php
+$dto = (new StructuredOutput)
+    ->withResponseClass(UserProfile::class)  // Rich schema (5 fields)
+    ->intoInstanceOf(UserDTO::class)         // Simple output (2 fields)
+    ->with(messages: 'Extract user data')
+    ->get();
+
+// Result: UserDTO instance with subset of fields
+```
+
+**Use cases:**
+- **Separate API contracts from internal models** - Public schema vs internal DTO
+- **Simplify complex models** - Extract rich data, return simple DTO
+- **Different validation rules** - Schema validation vs output validation
+- **Decouple layers** - Domain model for LLM, presentation model for API
+
+**Example:**
+```php
+// Rich schema sent to LLM (all user profile data)
+class UserProfile {
+    public string $fullName;
+    public int $age;
+    public string $email;
+    public string $phoneNumber;
+    public string $address;
+}
+
+// Simplified DTO for your application (only essential fields)
+class UserDTO {
+    public function __construct(
+        public string $fullName = '',
+        public string $email = '',
+    ) {}
+}
+
+$user = (new StructuredOutput)
+    ->withResponseClass(UserProfile::class)  // LLM sees all 5 fields
+    ->intoInstanceOf(UserDTO::class)         // You get 2 fields
+    ->with(
+        messages: "Extract: John Smith, 30, john@example.com, 555-1234, 123 Main St"
+    )
+    ->get();
+
+// $user is UserDTO with only fullName and email
+echo $user->fullName;  // 'John Smith'
+echo $user->email;     // 'john@example.com'
+// phoneNumber and address were extracted but not included in output
+```
+
+---
+
+### 3. intoObject() - Self-Deserializing Objects
+
+Provides a custom object that controls its own deserialization from the extracted array.
+
+```php
+$scalar = (new StructuredOutput)
+    ->withResponseClass(Rating::class)
+    ->intoObject(new Scalar('rating', 'integer'))
+    ->with(messages: 'Extract rating: 5 stars')
+    ->get();
+
+// Result: Scalar object with custom deserialization logic
+```
+
+**Use cases:**
+- **Scalar values** - Extract single values wrapped in objects
+- **Custom deserialization** - Full control over how data becomes objects
+- **Value objects** - Domain-driven design value objects
+- **Complex transformations** - When standard deserialization isn't enough
+
+**Example with Scalar:**
+```php
+use Cognesy\Instructor\Extras\Scalar\Scalar;
+
+// Extract a single integer value
+$rating = (new StructuredOutput)
+    ->withResponseClass(Rating::class)
+    ->intoObject(new Scalar('rating', 'integer'))
+    ->with(messages: 'Extract rating from: "5 out of 5 stars"')
+    ->get();
+
+dump($rating);  // 5 (integer)
+
+// Extract a single string value
+$sentiment = (new StructuredOutput)
+    ->withResponseClass(Sentiment::class)
+    ->intoObject(new Scalar('sentiment', 'string'))
+    ->with(messages: 'Analyze sentiment: "This product is amazing!"')
+    ->get();
+
+dump($sentiment);  // 'positive' (string)
+```
+
+**Custom self-deserializing object:**
+```php
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelfFromArray;
+
+class Money implements CanDeserializeSelfFromArray
+{
+    public function __construct(
+        private int $amountInCents,
+        private string $currency,
+    ) {}
+
+    public static function fromArray(array $data): self {
+        // Custom deserialization logic
+        $amount = $data['amount'] ?? 0;
+        $currency = $data['currency'] ?? 'USD';
+
+        return new self(
+            amountInCents: (int)($amount * 100),  // Convert to cents
+            currency: strtoupper($currency),       // Normalize currency
+        );
+    }
+
+    public function toArray(): array {
+        return [
+            'amount' => $this->amountInCents / 100,
+            'currency' => $this->currency,
+        ];
+    }
+}
+
+$price = (new StructuredOutput)
+    ->withResponseClass(Product::class)
+    ->intoObject(new Money(0, 'USD'))
+    ->with(messages: 'Extract price: $19.99 USD')
+    ->get();
+
+// $price is Money instance with custom deserialization
+```
+
+---
+
+## Streaming with Output Formats
+
+Output formats work seamlessly with streaming responses.
+
+**Key behavior:**
+- **During streaming:** Partial updates are always objects (for validation and deduplication)
+- **Final result:** Respects the output format you specified
+
+```php
+$stream = (new StructuredOutput)
+    ->withResponseClass(Article::class)
+    ->intoArray()  // Final result will be array
+    ->with(messages: 'Extract article data')
+    ->stream();
+
+// Iterate over partial objects
+foreach ($stream->partials() as $partial) {
+    // $partial is Article object during streaming
+    echo "Progress: " . strlen($partial->content) . " characters\n";
+}
+
+// Get final result as array
+$finalArticle = $stream->finalValue();
+// Returns: ['title' => '...', 'author' => '...', 'content' => '...']
+```
+
+**Why this design?**
+- Objects during streaming enable validation and deduplication
+- Array for final result provides convenience for your application
+- Best of both worlds: safety during processing, flexibility for results
+
+---
+
+## Comparison Matrix
+
+| Feature | Default (Object) | intoArray() | intoInstanceOf() | intoObject() |
+|---------|------------------|-------------|------------------|--------------|
+| **Output type** | Schema class | Array | Target class | Custom object |
+| **Validation** | ✅ Yes | ❌ Skipped | ✅ Yes | Custom |
+| **Transformation** | ✅ Yes | ❌ Skipped | ✅ Yes | Custom |
+| **Use case** | Standard | Database/API | DTOs/Decoupling | Value objects |
+| **Streaming partials** | Object | Object | Object | Object |
+| **Streaming final** | Object | Array | Target class | Custom object |
+
+---
+
+## Common Patterns
+
+### Pattern 1: Conditional Deserialization
+
+Inspect data before creating objects:
+
+```php
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()
+    ->with(messages: 'Extract user')
+    ->get();
+
+// Choose class based on data
+if ($data['age'] < 18) {
+    $user = new MinorUser(...$data);
+} else {
+    $user = new AdultUser(...$data);
+}
+```
+
+### Pattern 2: Data Enrichment
+
+Add computed fields to arrays:
+
+```php
+$data = (new StructuredOutput)
+    ->withResponseClass(Person::class)
+    ->intoArray()
+    ->with(messages: 'Extract person')
+    ->get();
+
+// Add computed field
+$data['full_name'] = $data['first_name'] . ' ' . $data['last_name'];
+$data['age_group'] = $data['age'] < 30 ? 'young' : 'senior';
+
+// Then create object
+$person = new Person(...$data);
+```
+
+### Pattern 3: Multi-Layer Architecture
+
+Separate schema from application layer:
+
+```php
+// Domain layer - rich schema for LLM
+class OrderDomain {
+    public string $orderId;
+    public CustomerInfo $customer;
+    public array $items;
+    public PaymentDetails $payment;
+    public ShippingInfo $shipping;
+}
+
+// Application layer - simplified DTO
+class OrderDTO {
+    public function __construct(
+        public string $orderId,
+        public string $customerName,
+        public float $total,
+    ) {}
+}
+
+$order = (new StructuredOutput)
+    ->withResponseClass(OrderDomain::class)  // Rich domain model
+    ->intoInstanceOf(OrderDTO::class)        // Simple application DTO
+    ->with(messages: 'Extract order details')
+    ->get();
+```
+
+---
+
+## Important Notes
+
+### Schema is Always Respected
+
+The output format only changes how data is returned to you. The LLM always receives the full schema:
+
+```php
+$data = (new StructuredOutput)
+    ->withResponseClass(UserProfile::class)  // LLM sees all 5 fields
+    ->intoArray()                             // You get array, but...
+    ->get();
+
+// Schema sent to LLM still includes all 5 fields from UserProfile
+// Only the deserialization step is different
+```
+
+### Validation Behavior
+
+- **intoArray():** Validation is **skipped** (arrays can't be validated like objects)
+- **intoInstanceOf():** Validation **runs** on the target class
+- **intoObject():** Validation is **custom** (depends on implementation)
+
+### Backward Compatibility
+
+Default behavior is unchanged. Output formats are opt-in:
+
+```php
+// v1.2 and earlier - still works
+$user = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->get();
+// Returns: User object (default behavior)
+
+// v1.3+ - new capability
+$data = (new StructuredOutput)
+    ->withResponseClass(User::class)
+    ->intoArray()  // ← New
+    ->get();
+// Returns: array
+```
+
+---
+
+## Examples
+
+See working examples in:
+- `examples/A05_Extras/OutputFormatArray/run.php` - Basic `intoArray()` usage
+- `examples/A05_Extras/OutputFormatInstanceOf/run.php` - Different output class
+- `examples/A05_Extras/OutputFormatStreaming/run.php` - Streaming with arrays
+
+---
+
+## Related Documentation
+
+- [Response Models](../internals/response_models.md) - How schemas work
+- [Structures](structures.md) - Dynamic data models
+- [Validation](../essentials/validation.md) - How validation works
+- [Streaming](../essentials/streaming.md) - Streaming responses
