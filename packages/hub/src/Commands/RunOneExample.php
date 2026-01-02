@@ -104,8 +104,11 @@ class RunOneExample extends Command
         $command = 'php ' . escapeshellarg($example->runPath);
         $exitCode = 0;
 
-        // Preserve terminal environment for colors and TTY detection
-        $env = $_ENV;
+        // Preserve terminal environment for colors, TTY detection, and PATH for CLI tools
+        // Use $_SERVER as fallback since $_ENV may not have PATH on some systems
+        $env = array_merge($_SERVER, $_ENV);
+        // Keep only string values (filter out arrays from $_SERVER like argv)
+        $env = array_filter($env, fn($v) => is_string($v));
         $env['FORCE_COLOR'] = '1';
         $env['TERM'] = $env['TERM'] ?? 'xterm-256color';
 

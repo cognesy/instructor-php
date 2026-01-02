@@ -15,6 +15,9 @@ final readonly class ExecutionPolicy
     /**
      * Create default policy for a CLI agent.
      *
+     * CLI agents need PATH to find executables like claude, codex, opencode etc.,
+     * so environment inheritance is enabled by default.
+     *
      * @param string $cacheSubdir The CLI-specific cache directory (e.g., '.claude', '.codex')
      */
     public static function default(string $cacheSubdir = ''): self {
@@ -28,7 +31,8 @@ final readonly class ExecutionPolicy
             ->withNetwork(true)
             ->withOutputCaps(5 * 1024 * 1024, 1 * 1024 * 1024)
             ->withReadablePaths($baseDir)
-            ->withWritablePaths($writablePaths);
+            ->withWritablePaths($writablePaths)
+            ->inheritEnvironment();
 
         return new self($policy);
     }
