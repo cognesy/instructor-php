@@ -232,93 +232,103 @@ interface ResponseExtractor {
 
 **Output:** Always `array` - the canonical intermediate representation.
 
-### Layer 3: Hydration/Deserialization
+### Layer 3: Deserialization (Existing Infrastructure)
 
 **Purpose:** Convert canonical array into target type (object, array, or custom)
 
-```php
-interface ResponseHydrator {
-    /**
-     * Convert canonical array to target type.
-     *
-     * @param array $data Canonical array from extraction
-     * @param HydrationTarget $target What to hydrate into
-     * @return mixed The hydrated result
-     */
-    public function hydrate(array $data, HydrationTarget $target): mixed;
-}
+**IMPORTANT:** We already have working code! No need for new abstractions.
 
-interface HydrationTarget {
-    public function targetType(): string;  // 'array', 'object', 'custom'
+**Existing:**
+- `ResponseDeserializer` - Already orchestrates deserialization
+- `SymfonyDeserializer` - Already has `fromArray(array $data, string $dataType)` method
+- `CanDeserializeSelf` - Already supports self-deserializing objects
+
+**What needs to change:**
+- `ResponseDeserializer::deserialize()` should respect `OutputFormat`
+- When `OutputFormat::isArray()` → skip deserialization, return array
+- When `OutputFormat::isClass()` → use existing deserialization
+- When `OutputFormat::isObject()` → delegate to instance's `fromJson()`
+
+```php
+// Extend existing ResponseDeserializer, don't replace it
+class ResponseDeserializer {
+    public function deserialize(
+        string $json,
+        ResponseModel $responseModel
+    ): Result {
+        // NEW: Check output format first
+        if ($responseModel->outputFormat()->isArray()) {
+            return Result::try(fn() => json_decode($json, true));
+        }
+
+        // Existing logic for object deserialization
+        return match(true) {
+            $this->canDeserializeSelf($responseModel) => $this->deserializeSelf(...),
+            default => $this->deserializeAny($json, $responseModel)
+        };
+    }
 }
 ```
-
-**Implementations:**
-- `ArrayHydrator` - Returns array as-is (no conversion)
-- `ObjectHydrator` - Deserializes to class (current Symfony-based)
-- `SelfHydrator` - Delegates to `CanDeserializeSelf` objects
-- `StructureHydrator` - Creates dynamic Structure objects
 
 ---
 
 ## New ResponseModel Design
 
-### Split into Focused Components
+### Minimal Changes to Existing Components
+
+**Principle:** Don't create new abstractions when existing code works. Just extend.
 
 ```php
 /**
- * Schema specification for LLM request.
- * Does NOT know about deserialization target.
+ * NEW: OutputFormat - Simple value object for output format specification.
+ * This is the ONLY new class needed.
  */
-final readonly class RequestSchema implements SchemaSpecification
+final readonly class OutputFormat
 {
     public function __construct(
-        private array $jsonSchema,
-        private string $name,
-        private string $description,
-        private OutputMode $outputMode,
+        public string $type,           // 'array', 'class', 'object'
+        public ?string $class = null,  // For 'class' type
+        public ?object $instance = null, // For 'object' type (self-deserializing)
     ) {}
 
-    public function toJsonSchema(): array { return $this->jsonSchema; }
-    public function schemaName(): string { return $this->name; }
-    public function schemaDescription(): string { return $this->description; }
+    public static function array(): self { return new self('array'); }
+    public static function class(string $class): self { return new self('class', $class); }
+    public static function object(object $instance): self {
+        return new self('object', get_class($instance), $instance);
+    }
 
-    // Factory methods
-    public static function fromClass(string $class): self { ... }
-    public static function fromArray(array $schema): self { ... }
-    public static function fromBuilder(JsonSchemaBuilder $builder): self { ... }
+    public function isArray(): bool { return $this->type === 'array'; }
+    public function isClass(): bool { return $this->type === 'class'; }
+    public function isObject(): bool { return $this->type === 'object'; }
 }
 
 /**
- * Hydration target specification.
- * Does NOT know about schema.
+ * EXISTING: ResponseModel - just add OutputFormat storage.
+ * No new class needed, just extend existing.
  */
-final readonly class HydrationSpec implements HydrationTarget
+class ResponseModel implements CanProvideJsonSchema
 {
-    public function __construct(
-        private string $type,           // 'array', 'object', 'self', 'structure'
-        private ?string $class = null,  // For object type
-        private ?object $instance = null, // For self-deserializing
-    ) {}
+    // ... existing properties and methods ...
 
-    public function targetType(): string { return $this->type; }
-    public function targetClass(): ?string { return $this->class; }
-    public function targetInstance(): ?object { return $this->instance; }
+    private ?OutputFormat $outputFormat = null;  // ← ADD THIS
 
-    // Factory methods
-    public static function array(): self {
-        return new self('array');
+    public function withOutputFormat(OutputFormat $format): self {
+        $clone = clone $this;
+        $clone->outputFormat = $format;
+        return $clone;
     }
 
-    public static function object(string $class): self {
-        return new self('object', $class);
-    }
-
-    public static function selfDeserializing(object $instance): self {
-        return new self('self', get_class($instance), $instance);
+    public function outputFormat(): OutputFormat {
+        return $this->outputFormat ?? OutputFormat::class($this->class);
     }
 }
 ```
+
+**What we're NOT doing:**
+- ❌ Creating `RequestSchema` class (ResponseModel already provides schema)
+- ❌ Creating `HydrationSpec` class (OutputFormat is simpler)
+- ❌ Creating `ResponseHydrator` interface (ResponseDeserializer already works)
+- ❌ Replacing existing infrastructure
 
 ### Schema vs JsonSchema: Critical Architectural Distinction
 
@@ -584,83 +594,77 @@ InferenceResponse
 
 ---
 
-## Key Interfaces
+## Key Changes Summary
 
-### Complete Interface Definitions
+### What's NEW (Minimal)
 
 ```php
 <?php
 
-namespace Cognesy\Instructor\Schema;
+namespace Cognesy\Instructor\Data;
 
 /**
- * Provides JSON Schema for LLM request formatting.
+ * OutputFormat - The ONLY new class needed.
+ * Simple value object specifying desired output format.
  */
-interface SchemaSpecification
+final readonly class OutputFormat
 {
-    public function toJsonSchema(): array;
-    public function schemaName(): string;
-    public function schemaDescription(): string;
-}
+    public function __construct(
+        public string $type,           // 'array', 'class', 'object'
+        public ?string $class = null,
+        public ?object $instance = null,
+    ) {}
 
-namespace Cognesy\Instructor\Extraction;
+    public static function array(): self { return new self('array'); }
+    public static function class(string $class): self { return new self('class', $class); }
+    public static function object(object $instance): self {
+        return new self('object', get_class($instance), $instance);
+    }
 
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Result\Result;
-
-/**
- * Extracts structured data from LLM response.
- * Returns canonical array representation.
- */
-interface ResponseExtractor
-{
-    /**
-     * @return Result<array> Success with parsed array or failure
-     */
-    public function extract(InferenceResponse $response, OutputMode $mode): Result;
-}
-
-namespace Cognesy\Instructor\Hydration;
-
-use Cognesy\Utils\Result\Result;
-
-/**
- * Specifies target for hydration.
- */
-interface HydrationTarget
-{
-    public function targetType(): string;  // 'array', 'object', 'self', 'structure'
-    public function targetClass(): ?string;
-    public function targetInstance(): ?object;
-}
-
-/**
- * Converts canonical array to target type.
- */
-interface ResponseHydrator
-{
-    /**
-     * @return Result<mixed> Hydrated result
-     */
-    public function hydrate(array $data, HydrationTarget $target): Result;
-}
-
-namespace Cognesy\Instructor\Validation;
-
-/**
- * Validates extracted/hydrated data.
- */
-interface ResponseValidator
-{
-    /**
-     * @param mixed $data Array or object to validate
-     * @param ValidationSpec $spec Validation configuration
-     * @return Result<mixed> Validated data or failure
-     */
-    public function validate(mixed $data, ValidationSpec $spec): Result;
+    public function isArray(): bool { return $this->type === 'array'; }
+    public function isClass(): bool { return $this->type === 'class'; }
+    public function isObject(): bool { return $this->type === 'object'; }
 }
 ```
+
+### What's MODIFIED (Existing Code)
+
+```php
+// ResponseModel - add OutputFormat storage
+class ResponseModel {
+    private ?OutputFormat $outputFormat = null;
+    public function withOutputFormat(OutputFormat $format): self { ... }
+    public function outputFormat(): OutputFormat { ... }
+}
+
+// ResponseDeserializer - respect OutputFormat
+class ResponseDeserializer {
+    public function deserialize(string $json, ResponseModel $responseModel): Result {
+        if ($responseModel->outputFormat()->isArray()) {
+            return Result::try(fn() => json_decode($json, true));  // Skip deserialization
+        }
+        // ... existing logic ...
+    }
+}
+
+// HandlesRequestBuilder trait - add new fluent methods
+trait HandlesRequestBuilder {
+    public function intoArray(): static { ... }
+    public function intoInstanceOf(string $class): static { ... }
+    public function intoObject(object $instance): static { ... }
+    public function withResponseSchema(Schema|CanProvideSchema $schema): static { ... }
+    public function withResponseClassFrom(object $object): static { ... }
+}
+```
+
+### What we're NOT Creating
+
+- ❌ `SchemaSpecification` interface (existing `CanProvideSchema` / `CanProvideJsonSchema` work)
+- ❌ `ResponseExtractor` interface (existing JSON extraction works)
+- ❌ `HydrationTarget` interface (OutputFormat is simpler)
+- ❌ `ResponseHydrator` interface (existing ResponseDeserializer works)
+- ❌ `RequestSchema` class (ResponseModel already handles this)
+- ❌ `HydrationSpec` class (OutputFormat covers this)
 
 ---
 
@@ -1021,14 +1025,17 @@ Schema (Internal)  →  Visitor  →  JsonSchema | XmlSchema | Future formats
 - **v2.0:** Deprecate old methods, finalize API, documentation
 - **v3.0:** Remove deprecated methods (optional)
 
-### Files to Create
-- `packages/instructor/src/Data/OutputFormat.php`
-- `docs/migration/v1-to-v2.md`
-- `docs/essentials/schema_specification.md`
-- `docs/essentials/output_formats.md`
+### Files to Create (Minimal!)
+- `packages/instructor/src/Data/OutputFormat.php` - **Only new class needed**
 
-### Files to Modify
-- `packages/instructor/src/Traits/HandlesRequestBuilder.php`
-- `packages/instructor/src/Data/ResponseModel.php`
-- `packages/instructor/src/Core/ResponseGenerator.php`
-- `packages/instructor/src/PendingStructuredOutput.php`
+### Files to Modify (Extend Existing)
+- `packages/instructor/src/Traits/HandlesRequestBuilder.php` - Add fluent methods
+- `packages/instructor/src/Data/ResponseModel.php` - Add OutputFormat storage
+- `packages/instructor/src/Deserialization/ResponseDeserializer.php` - Respect OutputFormat
+- `packages/instructor/src/PendingStructuredOutput.php` - Wire up new methods
+
+### Files NOT Created (Avoided Over-Engineering)
+- ~~`RequestSchema.php`~~ - ResponseModel already works
+- ~~`HydrationSpec.php`~~ - OutputFormat is simpler
+- ~~`ResponseHydrator.php`~~ - ResponseDeserializer already works
+- ~~`ResponseExtractor.php`~~ - JSON extraction already works
