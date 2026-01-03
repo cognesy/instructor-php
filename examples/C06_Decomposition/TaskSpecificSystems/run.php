@@ -33,7 +33,7 @@ class ReasoningStep {
         public array $rationale,
         /** @var int[] */
         public array $dependencies,
-        public string $eval_string
+        public string $eval_string = ''
     ) {}
 }
 
@@ -45,23 +45,34 @@ class TaskSpecificReasoner {
     
     private function generateReasoningSteps(string $query): array {
         return (new StructuredOutput)->with(
-            messages: [
-                [
-                    'role' => 'system', 
-                    'content' => 'You are a world class AI who excels at generating reasoning steps to answer a question. Generate a list of reasoning steps needed to answer the question.
+                messages: [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a world class AI who excels at generating reasoning steps to answer a question. Generate a list of reasoning steps needed to answer the question.
 
-At each point you should either:
-- declare a variable to be referenced later on
-- combine multiple variables together to generate a new result that you should store in another variable
+For each reasoning step, provide:
+- id: step number starting from 1
+- rationale: array of strings explaining the reasoning
+- dependencies: array of step IDs this step depends on
+- eval_string: valid PHP code (without <?php tags) that can be evaluated
 
-The final answer should be stored in a variable called $answer.
+At each step you should either:
+- declare a variable to be referenced later on (e.g., "$cars = 3;")
+- combine multiple variables together to generate a new result (e.g., "$total = $cars + $more;")
 
-Use valid PHP syntax for variable assignments.'
+The final step must store the answer in a variable called $answer.
+
+Example eval_string values:
+- "$cars = 3;"
+- "$more_cars = 2;"
+- "$answer = $cars + $more_cars;"
+
+Use only valid PHP syntax for variable assignments in eval_string.'
+                    ],
+                    ['role' => 'user', 'content' => $query],
                 ],
-                ['role' => 'user', 'content' => $query],
-            ],
-            responseModel: Sequence::of(ReasoningStep::class),
-        )->get()->toArray();
+                responseModel: Sequence::of(ReasoningStep::class),
+            )->get()->toArray();
     }
     
     private function executeSteps(array $steps): mixed {
@@ -69,9 +80,9 @@ Use valid PHP syntax for variable assignments.'
         foreach ($steps as $step) {
             $code[] = $step->eval_string;
         }
-        
+
         $fullCode = "<?php\n" . implode("\n", $code) . "\nreturn \$answer;";
-        
+
         $result = eval(substr($fullCode, 5));
         return $result;
     }
