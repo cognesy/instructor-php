@@ -56,7 +56,7 @@ class StructuredOutputRequestBuilder
     }
 
     public function withInput(mixed $input): static {
-        $this->messages = Messages::fromAny($input);
+        $this->messages = Messages::fromInput($input);
         return $this;
     }
 
