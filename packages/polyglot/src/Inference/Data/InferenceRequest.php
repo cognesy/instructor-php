@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
@@ -28,6 +29,7 @@ class InferenceRequest
     protected ?OutputMode $mode;
 
     protected ?CachedContext $cachedContext;
+    protected ResponseCachePolicy $responseCachePolicy;
 
     public function __construct(
         ?Messages $messages = null,
@@ -38,6 +40,7 @@ class InferenceRequest
         ?array $options = null,
         ?OutputMode $mode = null,
         ?CachedContext $cachedContext = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
         //
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -61,6 +64,7 @@ class InferenceRequest
         };
 
         $this->messages = $this->normalizeMessages($messages);
+        $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::Memory;
     }
 
     // ACCESSORS //////////////////////////////////////
@@ -137,6 +141,10 @@ class InferenceRequest
         return $this->cachedContext;
     }
 
+    public function responseCachePolicy() : ResponseCachePolicy {
+        return $this->responseCachePolicy;
+    }
+
     /**
      * Retrieves the response format configuration based on the current mode.
      *
@@ -205,6 +213,7 @@ class InferenceRequest
         ?array $options = null,
         ?OutputMode $mode = null,
         ?CachedContext $cachedContext = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
     ) : self {
         $normalizedMessages = match(true) {
             $messages instanceof Messages => $messages,
@@ -221,6 +230,7 @@ class InferenceRequest
             options: $options ?? $this->options,
             mode: $mode ?? $this->mode,
             cachedContext: $cachedContext ?? $this->cachedContext,
+            responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
             id: $this->id,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
@@ -265,6 +275,10 @@ class InferenceRequest
         return $this->with(cachedContext: $cachedContext);
     }
 
+    public function withResponseCachePolicy(ResponseCachePolicy $policy) : self {
+        return $this->with(responseCachePolicy: $policy);
+    }
+
     /**
      * Returns a copy of the current object with cached context applied if it is available.
      * If no cached context is set, it returns the current instance unchanged.
@@ -284,6 +298,7 @@ class InferenceRequest
             options: $this->options,
             mode: $this->mode,
             cachedContext: new CachedContext(),
+            responseCachePolicy: $this->responseCachePolicy,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -305,6 +320,7 @@ class InferenceRequest
             'response_format' => $this->responseFormat,
             'options' => $this->options,
             'mode' => $this->mode?->value,
+            'response_cache_policy' => $this->responseCachePolicy->value,
         ];
     }
 
@@ -317,6 +333,7 @@ class InferenceRequest
             responseFormat: $data['response_format'] ?? [],
             options: $data['options'] ?? [],
             mode: isset($data['mode']) ? OutputMode::from($data['mode']) : null,
+            responseCachePolicy: isset($data['response_cache_policy']) ? ResponseCachePolicy::from($data['response_cache_policy']) : null,
         );
     }
 

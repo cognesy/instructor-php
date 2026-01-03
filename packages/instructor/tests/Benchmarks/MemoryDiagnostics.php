@@ -106,7 +106,7 @@ final class MemoryDiagnostics
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+            ->withConfig(new StructuredOutputConfig())
             ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
 
         $result = $so->get();
@@ -131,7 +131,7 @@ final class MemoryDiagnostics
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+            ->withConfig(new StructuredOutputConfig())
             ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
 
         $stream = $so->stream();
@@ -192,7 +192,7 @@ final class MemoryDiagnostics
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+            ->withConfig(new StructuredOutputConfig())
             ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
 
         $stream = $so->stream();
@@ -247,7 +247,7 @@ final class MemoryDiagnostics
         gc_collect_cycles();
         echo "  After withDriver():        " . self::formatDelta($baseline) . "\n";
 
-        $so = $so->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'));
+        $so = $so->withConfig(new StructuredOutputConfig());
         gc_collect_cycles();
         echo "  After withConfig():        " . self::formatDelta($baseline) . "\n";
 
@@ -383,7 +383,7 @@ final class MemoryDiagnostics
 
             $so = (new StructuredOutput)
                 ->withDriver($driver)
-                ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+                ->withConfig(new StructuredOutputConfig())
                 ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
 
             $stream = $so->stream();
@@ -453,7 +453,7 @@ final class MemoryDiagnostics
 
         $soSync = (new StructuredOutput)
             ->withDriver($syncDriver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+            ->withConfig(new StructuredOutputConfig())
             ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
 
         $syncResult = $soSync->get();
@@ -469,7 +469,7 @@ final class MemoryDiagnostics
         // Invariant 1: Stream peak ≤ Sync peak (for same payload)
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+            ->withConfig(new StructuredOutputConfig())
             ->with(messages: 'Test', responseModel: new Sequence(\stdClass::class), mode: OutputMode::Json);
 
         $stream = $so->stream();

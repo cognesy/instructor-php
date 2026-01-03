@@ -13,6 +13,8 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Utils\Collection\ArrayList;
 use Exception;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -27,12 +29,12 @@ class StructuredOutputStream
     private EventDispatcherInterface $events;
 
     private Generator $stream;
-    /** @var array<StructuredOutputExecution> */
-    private array $cachedResponseStream = [];
-    private readonly bool $cacheProcessedResponse;
+    /** @var ArrayList<StructuredOutputExecution> */
+    private ArrayList $cachedResponseStream;
 
     private StructuredOutputExecution $execution;
     private InferenceResponse|null $lastResponse = null;
+    private ResponseCachePolicy $cachePolicy;
 
     /**
      * @param Generator<StructuredOutputExecution> $stream
@@ -43,11 +45,11 @@ class StructuredOutputStream
         CanHandleStructuredOutputAttempts $attemptHandler,
         EventDispatcherInterface $events,
     ) {
-        $this->cacheProcessedResponse = false;
-
         $this->execution = $execution;
         $this->attemptHandler = $attemptHandler;
         $this->events = $events;
+        $this->cachePolicy = $execution->config()->responseCachePolicy();
+        $this->cachedResponseStream = ArrayList::empty();
         $this->stream = $this->getStream($execution);
     }
 
@@ -200,7 +202,7 @@ class StructuredOutputStream
     private function getStream(StructuredOutputExecution $execution) : Generator {
         $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
 
-        return match($this->cacheProcessedResponse) {
+        return match($this->shouldCache()) {
             false => $this->streamWithoutCaching($execution),
             true => $this->streamWithCaching($execution),
         };
@@ -225,11 +227,13 @@ class StructuredOutputStream
      * @return Generator<StructuredOutputExecution>
      */
     private function streamWithCaching(StructuredOutputExecution $execution): Generator {
-        if (empty($this->cachedResponseStream)) {
+        if ($this->cachedResponseStream->isEmpty()) {
             yield from $this->buildAndCacheStream($execution);
             return;
         }
-        yield from $this->cachedResponseStream;
+        foreach ($this->cachedResponseStream as $item) {
+            yield $item;
+        }
     }
 
     /**
@@ -238,13 +242,16 @@ class StructuredOutputStream
      * @return Generator<StructuredOutputExecution>
      */
     private function buildAndCacheStream(StructuredOutputExecution $execution): Generator {
-        $this->cachedResponseStream = [];
+        $this->cachedResponseStream = ArrayList::empty();
         while ($this->attemptHandler->hasNext($execution)) {
             $execution = $this->attemptHandler->nextUpdate($execution);
-            $this->cachedResponseStream[] = $execution;
+            $this->cachedResponseStream = $this->cachedResponseStream->withAppended($execution);
             yield $execution;
         }
         $this->execution = $execution;
     }
-}
 
+    private function shouldCache(): bool {
+        return $this->cachePolicy->shouldCache();
+    }
+}

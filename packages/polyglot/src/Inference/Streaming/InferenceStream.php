@@ -4,9 +4,11 @@ namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -33,6 +35,9 @@ class InferenceStream
     protected iterable $stream;
 
     protected InferenceExecution $execution;
+    private ResponseCachePolicy $cachePolicy;
+    private PartialInferenceResponseList $cachedResponses;
+    private bool $streamConsumed = false;
 
     private ?DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
@@ -42,12 +47,15 @@ class InferenceStream
         CanHandleInference $driver,
         EventDispatcherInterface $eventDispatcher,
         ?DateTimeImmutable $startedAt = null,
+        ?ResponseCachePolicy $cachePolicy = null,
     ) {
         $this->execution = $execution;
         $this->driver = $driver;
         $this->events = $eventDispatcher;
         $this->startedAt = $startedAt ?? new DateTimeImmutable();
         $this->stream = $driver->makeStreamResponsesFor($execution->request());
+        $this->cachePolicy = $cachePolicy ?? ResponseCachePolicy::None;
+        $this->cachedResponses = PartialInferenceResponseList::empty();
     }
 
     /**
@@ -56,8 +64,22 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding partial LLM responses.
      */
     public function responses(): Generator {
+        if ($this->shouldCache() && $this->streamConsumed) {
+            foreach ($this->cachedResponses as $partialInferenceResponse) {
+                yield $partialInferenceResponse;
+            }
+            return;
+        }
+
         foreach ($this->makePartialResponses($this->stream) as $partialInferenceResponse) {
+            if ($this->shouldCache()) {
+                $this->cachedResponses = $this->cachedResponses->withNewPartialResponse($partialInferenceResponse);
+            }
             yield $partialInferenceResponse;
+        }
+
+        if ($this->shouldCache()) {
+            $this->streamConsumed = true;
         }
     }
 
@@ -105,10 +127,8 @@ class InferenceStream
      */
     public function all(): array {
         $responses = [];
-        if ($this->execution->response() === null) {
-            foreach ($this->makePartialResponses($this->stream) as $partialResponse) {
-                $responses[] = $partialResponse;
-            }
+        foreach ($this->responses() as $partialResponse) {
+            $responses[] = $partialResponse;
         }
         return $responses;
     }
@@ -123,7 +143,7 @@ class InferenceStream
         if ($this->execution->response() === null && !$this->execution->isFinalized()) {
             // Drain the stream to ensure all deltas are processed and the final
             // response + events are produced even if the caller stopped early.
-            foreach ($this->makePartialResponses($this->stream) as $_) {}
+            foreach ($this->responses() as $_) {}
         }
         return $this->execution->response();
     }
@@ -257,5 +277,9 @@ class InferenceStream
             response: $response,
         ));
     }
-}
 
+    private function shouldCache(): bool
+    {
+        return $this->cachePolicy->shouldCache();
+    }
+}

@@ -37,7 +37,7 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
 
     $pending = (new StructuredOutput())
         ->withDriver($driver)
-        ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+        ->withConfig(new StructuredOutputConfig())
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -88,7 +88,7 @@ it('[modular] sequence() yields single update per COMPLETED sequence item only',
 
     $pending = (new StructuredOutput())
         ->withDriver($driver)
-        ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+        ->withConfig(new StructuredOutputConfig())
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -138,7 +138,7 @@ it('[modular] sequence() does not yield incomplete items even if many chunks arr
 
     $pending = (new StructuredOutput())
         ->withDriver($driver)
-        ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+        ->withConfig(new StructuredOutputConfig())
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -174,7 +174,7 @@ it('[modular] partials() yields MORE updates than sequence() for same stream', f
     $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
     $pending = (new StructuredOutput())
         ->withDriver($driver)
-        ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+        ->withConfig(new StructuredOutputConfig())
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -190,7 +190,7 @@ it('[modular] partials() yields MORE updates than sequence() for same stream', f
     $driver2 = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
     $pending2 = (new StructuredOutput())
         ->withDriver($driver2)
-        ->withConfig((new StructuredOutputConfig())->with(responseIterator: 'modular'))
+        ->withConfig(new StructuredOutputConfig())
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),

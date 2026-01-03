@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Config;
 use Cognesy\Config\Dsn;
 use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Throwable;
 
 final readonly class StructuredOutputConfig
@@ -29,7 +30,7 @@ final readonly class StructuredOutputConfig
     private string $deserializationErrorPrompt;
     private bool $throwOnTransformationFailure;
     private array $chatStructure;
-    public string $responseIterator;
+    private ResponseCachePolicy $responseCachePolicy;
 
     public function __construct(
         ?OutputMode $outputMode = null,
@@ -46,9 +47,8 @@ final readonly class StructuredOutputConfig
         ?bool $defaultToStdClass = null,
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
-        ?string $responseIterator = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
     ) {
-        $this->responseIterator = $responseIterator ?? 'modular'; // 'partials', 'legacy', 'modular'
         $this->outputMode = $outputMode ?: OutputMode::Tools;
         $this->useObjectReferences = $useObjectReferences ?? false;
         $this->maxRetries = $maxRetries ?? 0;
@@ -84,6 +84,7 @@ final readonly class StructuredOutputConfig
         $this->defaultToStdClass = $defaultToStdClass ?? false;
         $this->deserializationErrorPrompt = $deserializationErrorPrompt ?? "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
         $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? false;
+        $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::Memory;
     }
 
     public function toArray(): array {
@@ -102,7 +103,7 @@ final readonly class StructuredOutputConfig
             'defaultToStdClass' => $this->defaultToStdClass,
             'deserializationErrorPrompt' => $this->deserializationErrorPrompt,
             'throwOnTransformationFailure' => $this->throwOnTransformationFailure,
-            'responseIterator' => $this->responseIterator,
+            'responseCachePolicy' => $this->responseCachePolicy->value,
         ];
     }
 
@@ -114,6 +115,12 @@ final readonly class StructuredOutputConfig
                 is_string($config['outputMode']) => OutputMode::fromText($config['outputMode']),
                 $config['outputMode'] instanceof OutputMode => $config['outputMode'],
                 default => OutputMode::Tools,
+            };
+            $config['responseCachePolicy'] = match (true) {
+                !isset($config['responseCachePolicy']) => ResponseCachePolicy::Memory,
+                is_string($config['responseCachePolicy']) => ResponseCachePolicy::from($config['responseCachePolicy']),
+                $config['responseCachePolicy'] instanceof ResponseCachePolicy => $config['responseCachePolicy'],
+                default => ResponseCachePolicy::Memory,
             };
             $instance = new self(...$config);
         } catch (Throwable $e) {
@@ -199,8 +206,8 @@ final readonly class StructuredOutputConfig
         return $this->throwOnTransformationFailure;
     }
 
-    public function responseIterator(): string {
-        return $this->responseIterator;
+    public function responseCachePolicy(): ResponseCachePolicy {
+        return $this->responseCachePolicy;
     }
 
     // MUTATORS /////////////////////////////////////////////////////
@@ -211,6 +218,10 @@ final readonly class StructuredOutputConfig
 
     public function withMaxRetries(int $maxRetries): static {
         return $this->with(maxRetries: $maxRetries);
+    }
+
+    public function withResponseCachePolicy(ResponseCachePolicy $responseCachePolicy): static {
+        return $this->with(responseCachePolicy: $responseCachePolicy);
     }
 
     public function withSchemaName(string $schemaName): static {
@@ -251,10 +262,6 @@ final readonly class StructuredOutputConfig
         return $this->with(outputClass: $defaultOutputClass);
     }
 
-    public function withResponseIterator(string $responseIterator): static {
-        return $this->with(responseIterator: $responseIterator);
-    }
-
     // INTERNAL ////////////////////////////////////////////////////
 
     public function with(
@@ -272,7 +279,7 @@ final readonly class StructuredOutputConfig
         ?bool $defaultToStdClass = null,
         ?string $deserializationErrorPrompt = null,
         ?bool $throwOnTransformationFailure = null,
-        ?string $responseIterator = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
     ): self {
         return new self(
             outputMode: $outputMode ?? $this->outputMode,
@@ -289,7 +296,7 @@ final readonly class StructuredOutputConfig
             defaultToStdClass: $defaultToStdClass ?? $this->defaultToStdClass,
             deserializationErrorPrompt: $deserializationErrorPrompt ?? $this->deserializationErrorPrompt,
             throwOnTransformationFailure: $throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
-            responseIterator: $responseIterator ?? $this->responseIterator,
+            responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
         );
     }
 }

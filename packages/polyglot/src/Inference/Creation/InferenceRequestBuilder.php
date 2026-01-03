@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class InferenceRequestBuilder
 {
@@ -18,6 +19,7 @@ class InferenceRequestBuilder
     private ?ResponseFormat $responseFormat;
     private ?array $options;
     private ?OutputMode $mode;
+    private ?ResponseCachePolicy $responseCachePolicy;
 
     private ?bool $streaming;
     private ?int $maxTokens;
@@ -35,6 +37,7 @@ class InferenceRequestBuilder
         ?CachedContext $cachedContext = null,
         ?bool $streaming = null,
         ?int $maxTokens = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
     ) {
         $this->messages = $messages;
         $this->model = $model;
@@ -46,6 +49,7 @@ class InferenceRequestBuilder
         $this->streaming = $streaming;
         $this->maxTokens = $maxTokens;
         $this->cachedContext = $cachedContext ?? new CachedContext();
+        $this->responseCachePolicy = $responseCachePolicy;
     }
 
     /**
@@ -123,6 +127,11 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    public function withResponseCachePolicy(ResponseCachePolicy $policy): static {
+        $this->responseCachePolicy = $policy;
+        return $this;
+    }
+
     /**
      * Sets a cached context with provided messages, tools, tool choices, and response format.
      *
@@ -155,6 +164,7 @@ class InferenceRequestBuilder
         $this->streaming = $request->isStreamed();
         $this->mode = $request->outputMode();
         $this->cachedContext = $request->cachedContext();
+        $this->responseCachePolicy = $request->responseCachePolicy();
         return $this;
     }
 
@@ -171,7 +181,8 @@ class InferenceRequestBuilder
             responseFormat: $this->responseFormat,
             options: $options,
             mode: $this->mode,
-            cachedContext: $this->cachedContext
+            cachedContext: $this->cachedContext,
+            responseCachePolicy: $this->responseCachePolicy,
         );
     }
 

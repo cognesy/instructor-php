@@ -6,6 +6,7 @@ use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 class StructuredOutputConfigBuilder
 {
@@ -23,6 +24,7 @@ class StructuredOutputConfigBuilder
     private ?bool $defaultToStdClass = null;
     private ?string $deserializationErrorPrompt = null;
     private ?bool $throwOnTransformationFailure = null;
+    private ?ResponseCachePolicy $responseCachePolicy = null;
 
     private ?string $configPreset = null;
     private ?StructuredOutputConfig $explicitConfig = null;
@@ -137,6 +139,11 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    public function withResponseCachePolicy(ResponseCachePolicy $responseCachePolicy): self {
+        $this->responseCachePolicy = $responseCachePolicy;
+        return $this;
+    }
+
     public function withConfigPreset(string $preset) : self {
         $this->configPreset = $preset;
         return $this;
@@ -152,7 +159,8 @@ class StructuredOutputConfigBuilder
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?array $chatStructure = null,
-        ?string $defaultOutputClass = null
+        ?string $defaultOutputClass = null,
+        ?ResponseCachePolicy $responseCachePolicy = null
     ) : self {
         $this->outputMode = $outputMode ?? $this->outputMode;
         $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
@@ -164,6 +172,7 @@ class StructuredOutputConfigBuilder
         $this->toolDescription = $toolDescription ?? $this->toolDescription;
         $this->chatStructure = $chatStructure ?? $this->chatStructure;
         $this->defaultOutputClass = $defaultOutputClass ?? $this->defaultOutputClass;
+        $this->responseCachePolicy = $responseCachePolicy ?? $this->responseCachePolicy;
         return $this;
     }
 
@@ -200,6 +209,7 @@ class StructuredOutputConfigBuilder
             defaultToStdClass: $this->defaultToStdClass ?? $defaults->defaultToStdClass(),
             deserializationErrorPrompt: $this->deserializationErrorPrompt ?? $defaults->deserializationErrorPrompt(),
             throwOnTransformationFailure: $this->throwOnTransformationFailure ?? $defaults->throwOnTransformationFailure(),
+            responseCachePolicy: $this->responseCachePolicy ?? $defaults->responseCachePolicy(),
         );
         return $config;
     }

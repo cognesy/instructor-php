@@ -6,6 +6,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 trait HandlesRequestBuilder
 {
@@ -56,6 +57,11 @@ trait HandlesRequestBuilder
         return $this;
     }
 
+    public function withResponseCachePolicy(ResponseCachePolicy $policy): static {
+        $this->requestBuilder->withResponseCachePolicy($policy);
+        return $this;
+    }
+
     public function withCachedContext(
         string|array $messages = [],
         array        $tools = [],
@@ -66,4 +72,3 @@ trait HandlesRequestBuilder
         return $this;
     }
 }
-

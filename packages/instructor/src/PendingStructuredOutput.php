@@ -9,6 +9,7 @@ use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Traits\HandlesResultTypecasting;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Utils\Json\Json;
 use RuntimeException;
 
@@ -23,15 +24,14 @@ class PendingStructuredOutput
     private readonly CanHandleStructuredOutputAttempts $attemptHandler;
     private readonly ResponseIteratorFactory $executorFactory;
     private StructuredOutputExecution $execution;
-    private readonly bool $cacheProcessedResponse;
     private ?InferenceResponse $cachedResponse = null;
+    private ?StructuredOutputStream $cachedStream = null;
 
     public function __construct(
         StructuredOutputExecution $execution,
         ResponseIteratorFactory $executorFactory,
         CanHandleEvents $events,
     ) {
-        $this->cacheProcessedResponse = true;
         $this->execution = $execution;
         $this->executorFactory = $executorFactory;
         $this->attemptHandler = $executorFactory->makeExecutor($execution);
@@ -82,44 +82,51 @@ class PendingStructuredOutput
      * @return StructuredOutputStream<TResponse>
      */
     public function stream() : StructuredOutputStream {
+        if ($this->cachedStream !== null) {
+            return $this->cachedStream;
+        }
         $this->execution = $this->execution->withStreamed();
         $handler = $this->executorFactory->makeExecutor($this->execution);
-        return new StructuredOutputStream($this->execution, $handler, $this->events);
+        $stream = new StructuredOutputStream($this->execution, $handler, $this->events);
+        $this->cachedStream = $stream;
+        return $stream;
     }
 
     // INTERNAL /////////////////////////////////////////////////
 
     private function getResponse() : InferenceResponse {
         $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
-
-        // RESPONSE CACHING = IS DISABLED
-        if (!$this->cacheProcessedResponse) {
-            while ($this->attemptHandler->hasNext($this->execution)) {
-                $this->execution = $this->attemptHandler->nextUpdate($this->execution);
-            }
-            $response = $this->execution->inferenceResponse();
-            if ($response === null) {
-                throw new RuntimeException('Failed to get inference response');
-            }
-            $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
-            return $response;
+        $existingResponse = $this->execution->inferenceResponse();
+        if ($existingResponse !== null) {
+            return $existingResponse;
+        }
+        if ($this->shouldCache() && $this->cachedResponse !== null) {
+            $this->events->dispatch(new StructuredOutputResponseGenerated([
+                'value' => json_encode($this->cachedResponse->value()),
+                'cached' => true,
+            ]));
+            return $this->cachedResponse;
         }
 
-        // RESPONSE CACHING = IS ENABLED
-        if ($this->cachedResponse === null) {
-            while ($this->attemptHandler->hasNext($this->execution)) {
-                $this->execution = $this->attemptHandler->nextUpdate($this->execution);
-            }
-            $this->cachedResponse = $this->execution->inferenceResponse();
-            if ($this->cachedResponse === null) {
-                throw new RuntimeException('Failed to get inference response');
-            }
+        while ($this->attemptHandler->hasNext($this->execution)) {
+            $this->execution = $this->attemptHandler->nextUpdate($this->execution);
         }
+        $response = $this->execution->inferenceResponse();
+        if ($response === null) {
+            throw new RuntimeException('Failed to get inference response');
+        }
+        if ($this->shouldCache()) {
+            $this->cachedResponse = $response;
+        }
+        $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
+        return $response;
+    }
 
-        $this->events->dispatch(new StructuredOutputResponseGenerated([
-            'value' => json_encode($this->cachedResponse->value()),
-            'cached' => true,
-        ]));
-        return $this->cachedResponse;
+    private function shouldCache(): bool {
+        return $this->cachePolicy()->shouldCache();
+    }
+
+    private function cachePolicy(): ResponseCachePolicy {
+        return $this->execution->config()->responseCachePolicy();
     }
 }

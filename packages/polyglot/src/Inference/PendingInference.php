@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
@@ -36,6 +37,8 @@ class PendingInference
     private ?DateTimeImmutable $startedAt = null;
     private ?DateTimeImmutable $attemptStartedAt = null;
     private int $attemptNumber = 0;
+    private ?InferenceResponse $cachedResponse = null;
+    private ?InferenceStream $cachedStream = null;
 
     public function __construct(
         InferenceExecution $execution,
@@ -76,11 +79,18 @@ class PendingInference
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
 
-        return new InferenceStream(
+        if ($this->cachedStream !== null) {
+            return $this->cachedStream;
+        }
+
+        $stream = new InferenceStream(
             execution: $this->execution,
             driver: $this->driver,
             eventDispatcher: $this->events,
+            cachePolicy: $this->cachePolicy(),
         );
+        $this->cachedStream = $stream;
+        return $stream;
     }
 
     // AS API RESPONSE OBJECT ///////////////////////////////////
@@ -109,6 +119,14 @@ class PendingInference
      * @return InferenceResponse The constructed InferenceResponse object, either fully or from partial responses if streaming is enabled.
      */
     public function response() : InferenceResponse {
+        $existingResponse = $this->execution->response();
+        if ($existingResponse !== null) {
+            return $existingResponse;
+        }
+        if ($this->shouldCache() && $this->cachedResponse !== null) {
+            return $this->cachedResponse;
+        }
+
         $this->dispatchInferenceStarted();
         $this->dispatchAttemptStarted();
 
@@ -135,10 +153,22 @@ class PendingInference
         $this->handleAttemptSuccess($response);
         $this->dispatchInferenceCompleted(isSuccess: true);
 
+        if ($this->shouldCache()) {
+            $this->cachedResponse = $response;
+        }
+
         return $response;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function cachePolicy(): ResponseCachePolicy {
+        return $this->execution->request()->responseCachePolicy();
+    }
+
+    private function shouldCache(): bool {
+        return $this->cachePolicy()->shouldCache();
+    }
 
     private function makeResponse(InferenceRequest $request) : InferenceResponse {
         return match($this->isStreamed()) {

@@ -36,6 +36,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
@@ -329,6 +330,11 @@ class StructuredOutput
         return $this;
     }
 
+    public function withResponseCachePolicy(ResponseCachePolicy $responseCachePolicy): self {
+        $this->configBuilder->withResponseCachePolicy($responseCachePolicy);
+        return $this;
+    }
+
     // PARTIAL/SEQUENCE UPDATE HANDLERS (from traits) /////////////////////////
 
     /**
@@ -415,6 +421,7 @@ class StructuredOutput
         ?string $toolDescription = null,
         ?string $retryPrompt = null,
         ?OutputMode $mode = null,
+        ?ResponseCachePolicy $responseCachePolicy = null,
     ): static {
         $this->requestBuilder->with(
             messages: $messages,
@@ -431,6 +438,7 @@ class StructuredOutput
             retryPrompt: $retryPrompt,
             toolName: $toolName,
             toolDescription: $toolDescription,
+            responseCachePolicy: $responseCachePolicy,
         );
         return $this;
     }

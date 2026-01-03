@@ -39,6 +39,7 @@ class InferenceProvider
                 options: $request->options(),
                 mode: $execution->outputMode(),
             )
+            ->withResponseCachePolicy($execution->config()->responseCachePolicy())
             ->create();
     }
 }

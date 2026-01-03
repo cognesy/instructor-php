@@ -47,7 +47,6 @@
  * - Memory growing non-linearly with payload size = scalability issue
  */
 
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
@@ -120,10 +119,10 @@ final class MemoryProfileBench
      * @Iterations(3)
      * @OutputTimeUnit("milliseconds", precision=3)
      */
-    public function benchCleanStream1KB(): void
+    public function benchStream1KB(): void
     {
         $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(1024)]);
-        $this->runStreamBench($driver, 'modular', 1024);
+        $this->runStreamBench($driver, 1024);
     }
 
     /**
@@ -131,32 +130,10 @@ final class MemoryProfileBench
      * @Iterations(3)
      * @OutputTimeUnit("milliseconds", precision=3)
      */
-    public function benchCleanSync1KB(): void
+    public function benchSync1KB(): void
     {
         $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(1024))]);
-        $this->runSyncBench($driver, 'modular', 1024);
-    }
-
-    /**
-     * @Revs(100)
-     * @Iterations(3)
-     * @OutputTimeUnit("milliseconds", precision=3)
-     */
-    public function benchLegacyStream1KB(): void
-    {
-        $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(1024)]);
-        $this->runStreamBench($driver, 'legacy', 1024);
-    }
-
-    /**
-     * @Revs(100)
-     * @Iterations(3)
-     * @OutputTimeUnit("milliseconds", precision=3)
-     */
-    public function benchLegacySync1KB(): void
-    {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(1024))]);
-        $this->runSyncBench($driver, 'legacy', 1024);
+        $this->runSyncBench($driver, 1024);
     }
 
     // ============================================================================
@@ -168,10 +145,10 @@ final class MemoryProfileBench
      * @Iterations(3)
      * @OutputTimeUnit("milliseconds", precision=3)
      */
-    public function benchCleanStream10KB(): void
+    public function benchStream10KB(): void
     {
         $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(10240)]);
-        $this->runStreamBench($driver, 'modular', 10240);
+        $this->runStreamBench($driver, 10240);
     }
 
     /**
@@ -179,32 +156,10 @@ final class MemoryProfileBench
      * @Iterations(3)
      * @OutputTimeUnit("milliseconds", precision=3)
      */
-    public function benchCleanSync10KB(): void
+    public function benchSync10KB(): void
     {
         $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(10240))]);
-        $this->runSyncBench($driver, 'modular', 10240);
-    }
-
-    /**
-     * @Revs(50)
-     * @Iterations(3)
-     * @OutputTimeUnit("milliseconds", precision=3)
-     */
-    public function benchLegacyStream10KB(): void
-    {
-        $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(10240)]);
-        $this->runStreamBench($driver, 'legacy', 10240);
-    }
-
-    /**
-     * @Revs(50)
-     * @Iterations(3)
-     * @OutputTimeUnit("milliseconds", precision=3)
-     */
-    public function benchLegacySync10KB(): void
-    {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(10240))]);
-        $this->runSyncBench($driver, 'legacy', 10240);
+        $this->runSyncBench($driver, 10240);
     }
 
     // ============================================================================
@@ -216,10 +171,10 @@ final class MemoryProfileBench
      * @Iterations(3)
      * @OutputTimeUnit("milliseconds", precision=3)
      */
-    public function benchCleanStream100KB(): void
+    public function benchStream100KB(): void
     {
         $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(102400)]);
-        $this->runStreamBench($driver, 'modular', 102400);
+        $this->runStreamBench($driver, 102400);
     }
 
     /**
@@ -227,39 +182,17 @@ final class MemoryProfileBench
      * @Iterations(3)
      * @OutputTimeUnit("milliseconds", precision=3)
      */
-    public function benchCleanSync100KB(): void
+    public function benchSync100KB(): void
     {
         $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(102400))]);
-        $this->runSyncBench($driver, 'modular', 102400);
-    }
-
-    /**
-     * @Revs(10)
-     * @Iterations(3)
-     * @OutputTimeUnit("milliseconds", precision=3)
-     */
-    public function benchLegacyStream100KB(): void
-    {
-        $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(102400)]);
-        $this->runStreamBench($driver, 'legacy', 102400);
-    }
-
-    /**
-     * @Revs(10)
-     * @Iterations(3)
-     * @OutputTimeUnit("milliseconds", precision=3)
-     */
-    public function benchLegacySync100KB(): void
-    {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(102400))]);
-        $this->runSyncBench($driver, 'legacy', 102400);
+        $this->runSyncBench($driver, 102400);
     }
 
     // ============================================================================
     // Memory Measurement Helpers
     // ============================================================================
 
-    private function runStreamBench(FakeInferenceDriver $driver, string $responseIterator, int $payloadSize): void
+    private function runStreamBench(FakeInferenceDriver $driver, int $payloadSize): void
     {
         // Force garbage collection to get clean baseline
         gc_collect_cycles();
@@ -268,7 +201,6 @@ final class MemoryProfileBench
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: $responseIterator))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModel(),
@@ -283,7 +215,6 @@ final class MemoryProfileBench
 
         // Store stats for analysis (in production, this would be logged)
         $this->recordMemoryStats([
-            'driver' => $responseIterator,
             'mode' => 'stream',
             'payload_size' => $payloadSize,
             'mem_before' => $memBefore,
@@ -296,7 +227,7 @@ final class MemoryProfileBench
         ]);
     }
 
-    private function runSyncBench(FakeInferenceDriver $driver, string $responseIterator, int $payloadSize): void
+    private function runSyncBench(FakeInferenceDriver $driver, int $payloadSize): void
     {
         // Force garbage collection to get clean baseline
         gc_collect_cycles();
@@ -305,7 +236,6 @@ final class MemoryProfileBench
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
-            ->withConfig((new StructuredOutputConfig())->with(responseIterator: $responseIterator))
             ->with(
                 messages: 'Emit sequence',
                 responseModel: $this->responseModel(),
@@ -319,7 +249,6 @@ final class MemoryProfileBench
 
         // Store stats for analysis
         $this->recordMemoryStats([
-            'driver' => $responseIterator,
             'mode' => 'sync',
             'payload_size' => $payloadSize,
             'mem_before' => $memBefore,
