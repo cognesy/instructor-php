@@ -41,14 +41,10 @@ The function `multi_classify` executes multi-label classification using LLM.
 <?php
 // Perform single-label classification on the input text.
 function multi_classify(string $data) : TicketLabels {
-    $x = (new StructuredOutput)
-        //->withDebugPreset('on')
-        ->wiretap(fn($e) => $e->printDebug())
+    return (new StructuredOutput)
         ->withMessages("Label following support ticket: {$data}")
         ->withResponseModel(TicketLabels::class)
-        ->create();
-dd($x);
-//        ->get();
+        ->get();
 }
 ?>
 ```
