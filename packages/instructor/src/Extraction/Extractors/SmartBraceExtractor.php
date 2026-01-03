@@ -1,24 +1,22 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace Cognesy\Instructor\Extraction\Extractors;
 
-namespace Cognesy\Instructor\Extraction\Strategies;
-
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 use JsonException;
 
 /**
  * Extracts JSON with smart brace matching that handles string escaping.
  *
- * Unlike simple bracket matching, this strategy:
+ * Unlike simple bracket matching, this extractor:
  * - Tracks brace depth properly
  * - Ignores braces inside quoted strings
  * - Handles escaped quotes within strings
  *
  * Best for: Complex JSON with nested objects and strings containing braces
  */
-class SmartBraceMatchingStrategy implements ExtractionStrategy
+class SmartBraceExtractor implements CanExtractContent
 {
     #[\Override]
     public function extract(string $content): Result

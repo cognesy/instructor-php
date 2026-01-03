@@ -8,7 +8,7 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\AggregateStream;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Events\EventTapTransducer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAndDeduplicate;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\EnrichResponse;
@@ -36,7 +36,7 @@ use IteratorAggregate;
 final readonly class ModularStreamFactory
 {
     /**
-     * @param Closure(OutputMode): ContentBuffer|null $bufferFactory Optional factory for content buffer
+     * @param Closure(OutputMode): CanBufferContent|null $bufferFactory Optional factory for content buffer
      */
     public function __construct(
         private CanDeserializeResponse $deserializer,

@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace Cognesy\Instructor\Extraction\Extractors;
 
-namespace Cognesy\Instructor\Extraction\Strategies;
-
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Json\Partial\ResilientJson;
 use Cognesy\Utils\Result\Result;
 
@@ -19,7 +17,7 @@ use Cognesy\Utils\Result\Result;
  *
  * Best for: LLM responses with minor JSON formatting issues
  */
-class ResilientJsonStrategy implements ExtractionStrategy
+class ResilientJsonExtractor implements CanExtractContent
 {
     #[\Override]
     public function extract(string $content): Result

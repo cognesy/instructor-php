@@ -1,22 +1,20 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace Cognesy\Instructor\Extraction\Extractors;
 
-namespace Cognesy\Instructor\Extraction\Strategies;
-
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 use JsonException;
 
 /**
  * Attempts to parse content directly as JSON.
  *
- * This is the simplest strategy - it assumes the entire content
+ * This is the simplest extractor - it assumes the entire content
  * is valid JSON and attempts to parse it as-is.
  *
  * Best for: Clean API responses, structured output modes
  */
-class DirectJsonStrategy implements ExtractionStrategy
+class DirectJsonExtractor implements CanExtractContent
 {
     #[\Override]
     public function extract(string $content): Result

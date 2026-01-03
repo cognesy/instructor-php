@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction;
 
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
-use Cognesy\Instructor\Extraction\Strategies\ResilientJsonStrategy;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ExtractingJsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\ExtractingJsonBuffer;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 
 describe('ExtractingJsonBuffer', function () {
-    it('creates empty buffer with default strategies', function () {
+    it('creates empty buffer with default extractors', function () {
         $buffer = ExtractingJsonBuffer::empty();
 
         expect($buffer->raw())->toBe('');
         expect($buffer->normalized())->toBe('');
         expect($buffer->isEmpty())->toBeTrue();
-        expect($buffer->strategies())->toHaveCount(2);
+        expect($buffer->extractors())->toHaveCount(2);
     });
 
-    it('creates buffer with custom strategies', function () {
-        $buffer = ExtractingJsonBuffer::withStrategies(new DirectJsonStrategy());
+    it('creates buffer with custom extractors', function () {
+        $buffer = ExtractingJsonBuffer::withExtractors(new DirectJsonExtractor());
 
-        expect($buffer->strategies())->toHaveCount(1);
-        expect($buffer->strategies()[0])->toBeInstanceOf(DirectJsonStrategy::class);
+        expect($buffer->extractors())->toHaveCount(1);
+        expect($buffer->extractors()[0])->toBeInstanceOf(DirectJsonExtractor::class);
     });
 
     it('assembles deltas into raw content', function () {
@@ -79,10 +79,10 @@ describe('ExtractingJsonBuffer', function () {
         // Now normalization should happen
     });
 
-    it('handles JSON with trailing comma via resilient strategy', function () {
+    it('handles JSON with trailing comma via resilient extractor', function () {
         $buffer = ExtractingJsonBuffer::empty([
-            new DirectJsonStrategy(),
-            new ResilientJsonStrategy(),
+            new DirectJsonExtractor(),
+            new ResilientJsonExtractor(),
         ]);
 
         $buffer = $buffer->assemble('{"name":"John",}');
@@ -124,19 +124,19 @@ describe('ExtractingJsonBuffer', function () {
         expect($buffer->normalized())->toBe('{"user":{"name":"John"}}');
     });
 
-    it('uses default strategies when null passed', function () {
+    it('uses default extractors when null passed', function () {
         $buffer = ExtractingJsonBuffer::empty(null);
 
-        $defaultStrategies = ExtractingJsonBuffer::defaultStrategies();
-        expect(count($buffer->strategies()))->toBe(count($defaultStrategies));
+        $defaultExtractors = ExtractingJsonBuffer::defaultExtractors();
+        expect(count($buffer->extractors()))->toBe(count($defaultExtractors));
     });
 
-    it('provides default strategies optimized for streaming', function () {
-        $strategies = ExtractingJsonBuffer::defaultStrategies();
+    it('provides default extractors optimized for streaming', function () {
+        $extractors = ExtractingJsonBuffer::defaultExtractors();
 
         // Should have Direct and Resilient for streaming
-        expect($strategies)->toHaveCount(2);
-        expect($strategies[0])->toBeInstanceOf(DirectJsonStrategy::class);
-        expect($strategies[1])->toBeInstanceOf(ResilientJsonStrategy::class);
+        expect($extractors)->toHaveCount(2);
+        expect($extractors[0])->toBeInstanceOf(DirectJsonExtractor::class);
+        expect($extractors[1])->toBeInstanceOf(ResilientJsonExtractor::class);
     });
 });

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction;
 
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
-use Cognesy\Instructor\Extraction\Strategies\BracketMatchingStrategy;
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ExtractingJsonBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\ExtractingJsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
+use Cognesy\Instructor\Extraction\Extractors\BracketMatchingExtractor;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDeltaReducer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -45,9 +45,9 @@ function makeStreamingFrameCollector(): Reducer
 }
 
 /**
- * Custom strategy that strips XML wrapper before parsing.
+ * Custom extractor that strips XML wrapper before parsing.
  */
-class XmlWrapperStrategy implements ExtractionStrategy
+class XmlWrapperExtractor implements CanExtractContent
 {
     #[\Override]
     public function extract(string $content): Result
@@ -73,9 +73,9 @@ class XmlWrapperStrategy implements ExtractionStrategy
 }
 
 /**
- * Custom strategy that extracts from YAML-like delimiter.
+ * Custom extractor that extracts from YAML-like delimiter.
  */
-class DelimiterStrategy implements ExtractionStrategy
+class DelimiterExtractor implements CanExtractContent
 {
     public function __construct(
         private string $startDelimiter = '---JSON_START---',
@@ -145,7 +145,7 @@ describe('Streaming-Aware Extraction', function () {
         it('passes OutputMode to buffer factory', function () {
             $receivedMode = null;
             $collector = makeStreamingFrameCollector();
-            $factory = function (OutputMode $mode) use (&$receivedMode): ContentBuffer {
+            $factory = function (OutputMode $mode) use (&$receivedMode): CanBufferContent {
                 $receivedMode = $mode;
                 return ExtractingJsonBuffer::empty();
             };
@@ -166,28 +166,28 @@ describe('Streaming-Aware Extraction', function () {
         });
     });
 
-    describe('ExtractingJsonBuffer with custom strategies', function () {
-        it('applies custom strategy during streaming', function () {
-            $buffer = ExtractingJsonBuffer::withStrategies(new XmlWrapperStrategy());
+    describe('ExtractingJsonBuffer with custom extractors', function () {
+        it('applies custom extractor during streaming', function () {
+            $buffer = ExtractingJsonBuffer::withExtractors(new XmlWrapperExtractor());
 
             $buffer = $buffer->assemble('<json>{"name":"John"}</json>');
 
             expect($buffer->normalized())->toBe('{"name":"John"}');
         });
 
-        it('applies delimiter strategy during streaming', function () {
-            $buffer = ExtractingJsonBuffer::withStrategies(new DelimiterStrategy());
+        it('applies delimiter extractor during streaming', function () {
+            $buffer = ExtractingJsonBuffer::withExtractors(new DelimiterExtractor());
 
             $buffer = $buffer->assemble('Some text ---JSON_START--- {"id": 42} ---JSON_END--- more text');
 
             expect($buffer->normalized())->toBe('{"id": 42}');
         });
 
-        it('tries strategies in order until success', function () {
-            // DelimiterStrategy will fail, XmlWrapperStrategy will succeed
-            $buffer = ExtractingJsonBuffer::withStrategies(
-                new DelimiterStrategy(),
-                new XmlWrapperStrategy(),
+        it('tries extractors in order until success', function () {
+            // DelimiterExtractor will fail, XmlWrapperExtractor will succeed
+            $buffer = ExtractingJsonBuffer::withExtractors(
+                new DelimiterExtractor(),
+                new XmlWrapperExtractor(),
             );
 
             $buffer = $buffer->assemble('<json>{"found": true}</json>');
@@ -195,10 +195,10 @@ describe('Streaming-Aware Extraction', function () {
             expect($buffer->normalized())->toBe('{"found": true}');
         });
 
-        it('falls back to partial JSON when all strategies fail', function () {
-            $buffer = ExtractingJsonBuffer::withStrategies(new XmlWrapperStrategy());
+        it('falls back to partial JSON when all extractors fail', function () {
+            $buffer = ExtractingJsonBuffer::withExtractors(new XmlWrapperExtractor());
 
-            // No XML wrapper, so strategy fails, falls back to partial parser
+            // No XML wrapper, so extractor fails, falls back to partial parser
             $buffer = $buffer->assemble('{"name":"Jo');
 
             // Partial parser should complete the incomplete JSON
@@ -206,7 +206,7 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('accumulates deltas and re-extracts each time', function () {
-            $buffer = ExtractingJsonBuffer::withStrategies(new BracketMatchingStrategy());
+            $buffer = ExtractingJsonBuffer::withExtractors(new BracketMatchingExtractor());
 
             // Feed in chunks with surrounding text
             $buffer = $buffer->assemble('Response: {"na');
@@ -219,9 +219,9 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('works with streaming chunks progressively', function () {
-            $buffer = ExtractingJsonBuffer::withStrategies(
-                new DirectJsonStrategy(),
-                new BracketMatchingStrategy(),
+            $buffer = ExtractingJsonBuffer::withExtractors(
+                new DirectJsonExtractor(),
+                new BracketMatchingExtractor(),
             );
 
             $chunks = ['Prefix ', '{"user":', '{"name":', '"Alice', '"}}', ' Suffix'];
@@ -230,16 +230,16 @@ describe('Streaming-Aware Extraction', function () {
             }
 
             expect($buffer->raw())->toBe('Prefix {"user":{"name":"Alice"}} Suffix');
-            // BracketMatchingStrategy should extract the JSON
+            // BracketMatchingExtractor should extract the JSON
             expect($buffer->normalized())->toBe('{"user":{"name":"Alice"}}');
         });
     });
 
-    describe('Integration: custom strategies in streaming pipeline', function () {
+    describe('Integration: custom extractors in streaming pipeline', function () {
         it('integrates custom buffer with ExtractDeltaReducer', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::withStrategies(
-                new BracketMatchingStrategy(),
+            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::withExtractors(
+                new BracketMatchingExtractor(),
             );
 
             $reducer = new ExtractDeltaReducer(
@@ -268,9 +268,9 @@ describe('Streaming-Aware Extraction', function () {
 
         it('preserves buffer state across streaming frames', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::withStrategies(
-                new XmlWrapperStrategy(),
-                new DirectJsonStrategy(),
+            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::withExtractors(
+                new XmlWrapperExtractor(),
+                new DirectJsonExtractor(),
             );
 
             $reducer = new ExtractDeltaReducer(
@@ -293,24 +293,24 @@ describe('Streaming-Aware Extraction', function () {
                 usage: Usage::none(),
             ));
 
-            // XmlWrapperStrategy should now succeed
+            // XmlWrapperExtractor should now succeed
             expect($collector->collected[1]->buffer->normalized())->toBe('{"status":"ok"}');
         });
     });
 
     describe('Edge cases', function () {
-        it('handles empty strategies array by falling back to partial parser', function () {
+        it('handles empty extractors array by falling back to partial parser', function () {
             $buffer = ExtractingJsonBuffer::empty([]);
 
             $buffer = $buffer->assemble('{"name":"John"}');
 
-            // With no strategies, falls back to partial parser
+            // With no extractors, falls back to partial parser
             expect($buffer->normalized())->toBe('{"name":"John"}');
         });
 
-        it('handles strategy that modifies JSON format', function () {
-            // Strategy that strips comments before parsing
-            $commentStripper = new class implements ExtractionStrategy {
+        it('handles extractor that modifies JSON format', function () {
+            // Extractor that strips comments before parsing
+            $commentStripper = new class implements CanExtractContent {
                 #[\Override]
                 public function extract(string $content): Result
                 {
@@ -333,7 +333,7 @@ describe('Streaming-Aware Extraction', function () {
                 }
             };
 
-            $buffer = ExtractingJsonBuffer::withStrategies($commentStripper);
+            $buffer = ExtractingJsonBuffer::withExtractors($commentStripper);
             $buffer = $buffer->assemble('{"name":"John"} // this is a comment');
 
             expect($buffer->normalized())->toBe('{"name":"John"}');

@@ -16,9 +16,9 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
-use Cognesy\Instructor\Extraction\JsonResponseExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
@@ -59,8 +59,8 @@ class StructuredOutput
     protected array $transformers = [];
     protected array $deserializers = [];
     protected ?CanExtractResponse $extractor = null;
-    /** @var ExtractionStrategy[] */
-    protected array $streamingExtractionStrategies = [];
+    /** @var array<CanExtractContent|class-string<CanExtractContent>> */
+    protected array $extractors = [];
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
@@ -192,10 +192,12 @@ class StructuredOutput
 
         // Create extractor for array-first pipeline (used when OutputFormat is set or custom extractor provided)
         $extractor = match (true) {
-            $this->extractor !== null => $this->extractor instanceof JsonResponseExtractor
-                ? $this->extractor->withEvents($this->events)
-                : $this->extractor,
-            $outputFormat !== null => new JsonResponseExtractor(events: $this->events),
+            $this->extractor !== null => $this->extractor,
+            !empty($this->extractors) => new ResponseExtractor(
+                extractors: $this->extractors,
+                events: $this->events,
+            ),
+            $outputFormat !== null => new ResponseExtractor(events: $this->events),
             default => null,
         };
 
@@ -219,7 +221,6 @@ class StructuredOutput
             events: $this->events,
             httpClient: $client,
             extractor: $extractor,
-            streamingExtractionStrategies: $this->streamingExtractionStrategies,
         );
 
         return new PendingStructuredOutput(
@@ -253,32 +254,26 @@ class StructuredOutput
      * Use this to implement custom extraction logic for special formats.
      */
     public function withExtractor(CanExtractResponse $extractor): static {
-        $this->extractor = $extractor;
+        // Apply event handler if the extractor supports it (like ResponseExtractor)
+        if (method_exists($extractor, 'withEvents')) {
+            $this->extractor = $extractor->withEvents($this->events);
+        } else {
+            $this->extractor = $extractor;
+        }
         return $this;
     }
 
     /**
-     * Configure extraction strategies for the default JsonResponseExtractor.
+     * Configure extractors for response content extraction.
      *
-     * Strategies are tried in order until one succeeds.
+     * Extractors are tried in order until one succeeds. This method creates
+     * a ResponseExtractor with the specified extractors for both sync and
+     * streaming operations.
      *
-     * @param ExtractionStrategy ...$strategies Custom extraction strategies
+     * @param CanExtractContent|class-string<CanExtractContent> ...$extractors Custom extractors
      */
-    public function withExtractionStrategies(ExtractionStrategy ...$strategies): static {
-        $this->extractor = JsonResponseExtractor::withStrategies(...$strategies);
-        return $this;
-    }
-
-    /**
-     * Configure extraction strategies for streaming responses.
-     *
-     * When set, streaming chunks will use these strategies to extract JSON
-     * during the streaming process, before the final response is assembled.
-     *
-     * @param ExtractionStrategy ...$strategies Custom extraction strategies for streaming
-     */
-    public function withStreamingExtractionStrategies(ExtractionStrategy ...$strategies): static {
-        $this->streamingExtractionStrategies = $strategies;
+    public function withExtractors(CanExtractContent|string ...$extractors): static {
+        $this->extractors = $extractors;
         return $this;
     }
 

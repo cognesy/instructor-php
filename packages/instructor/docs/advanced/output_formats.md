@@ -388,45 +388,45 @@ See working examples in:
 
 InstructorPHP uses a pluggable extraction pipeline to convert raw LLM responses into canonical arrays. You can customize this pipeline for special formats or implement custom extraction logic.
 
-### Default Extraction Strategies
+### Default Content Extractors
 
-The default `JsonResponseExtractor` uses a strategy chain (tried in order):
+The default `ResponseExtractor` uses an extractor chain (tried in order):
 
-| Strategy | Description |
-|----------|-------------|
-| `DirectJsonStrategy` | Parse content directly as JSON |
-| `ResilientJsonStrategy` | Handle malformed JSON (trailing commas, etc.) |
-| `MarkdownCodeBlockStrategy` | Extract from ` ```json ``` ` blocks |
-| `BracketMatchingStrategy` | Find first `{` to last `}` |
-| `SmartBraceMatchingStrategy` | Handle escaped quotes in strings |
+| Extractor | Description |
+|-----------|-------------|
+| `DirectJsonExtractor` | Parse content directly as JSON |
+| `ResilientJsonExtractor` | Handle malformed JSON (trailing commas, etc.) |
+| `MarkdownBlockExtractor` | Extract from ` ```json ``` ` blocks |
+| `BracketMatchingExtractor` | Find first `{` to last `}` |
+| `SmartBraceExtractor` | Handle escaped quotes in strings |
 
-### Custom Extraction Strategies
+### Custom Extractors
 
-Replace the default strategies with your own:
+Replace the default extractors with your own:
 
 ```php
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
-use Cognesy\Instructor\Extraction\Strategies\MarkdownCodeBlockStrategy;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
 
 $result = (new StructuredOutput)
-    ->withExtractionStrategies(
-        new DirectJsonStrategy(),       // Only these strategies
-        new MarkdownCodeBlockStrategy(),
+    ->withExtractors(
+        new DirectJsonExtractor(),       // Only these extractors
+        new MarkdownBlockExtractor(),
     )
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
 ```
 
-### Custom Strategy Implementation
+### Custom Extractor Implementation
 
-Create your own strategy for special formats:
+Create your own extractor for special formats:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 
-class XmlJsonStrategy implements ExtractionStrategy
+class XmlJsonExtractor implements CanExtractContent
 {
     public function extract(string $content): Result
     {
@@ -443,20 +443,20 @@ class XmlJsonStrategy implements ExtractionStrategy
     }
 }
 
-// Use custom strategy
+// Use custom extractor
 $result = (new StructuredOutput)
-    ->withExtractionStrategies(
-        new XmlJsonStrategy(),
-        new DirectJsonStrategy(), // Fallback
+    ->withExtractors(
+        new XmlJsonExtractor(),
+        new DirectJsonExtractor(), // Fallback
     )
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
 ```
 
-### Custom Extractor
+### Custom Response Extractor
 
-For complete control, implement `CanExtractResponse`:
+For complete control over the extraction pipeline, implement `CanExtractResponse`:
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
@@ -493,15 +493,16 @@ $result = (new StructuredOutput)
 
 ### When to Customize Extraction
 
-**Use `withExtractionStrategies()` when:**
+**Use `withExtractors()` when:**
 - You want to optimize for known response formats
 - You need to add support for additional formats
-- You want to change the strategy order
+- You want to change the extractor order
+- Custom extractors are automatically used for both sync and streaming
 
 **Use `withExtractor()` when:**
 - You need completely custom extraction logic
 - You're integrating with a non-standard LLM response format
-- You want to bypass the strategy chain entirely
+- You want to bypass the extractor chain entirely
 
 ---
 

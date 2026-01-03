@@ -3,9 +3,9 @@
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
 
 use Closure;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer;
+use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\ToolsBuffer;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\FrameMetadata;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
@@ -25,10 +25,10 @@ use Cognesy\Utils\Result\Result;
 final class ExtractDeltaReducer implements Reducer
 {
     private int $frameIndex = 0;
-    private ContentBuffer $accumulatedBuffer;
+    private CanBufferContent $accumulatedBuffer;
 
     /**
-     * @param Closure(OutputMode): ContentBuffer|null $bufferFactory Optional factory for content buffer
+     * @param Closure(OutputMode): CanBufferContent|null $bufferFactory Optional factory for content buffer
      */
     public function __construct(
         private readonly Reducer $inner,
@@ -79,7 +79,7 @@ final class ExtractDeltaReducer implements Reducer
 
     // INTERNAL //////////////////////////////////////////////////////////////
 
-    private function createEmptyBuffer(): ContentBuffer {
+    private function createEmptyBuffer(): CanBufferContent {
         // Use custom buffer factory if provided
         if ($this->bufferFactory !== null) {
             return ($this->bufferFactory)($this->mode);
@@ -95,7 +95,7 @@ final class ExtractDeltaReducer implements Reducer
     private function createFrame(
         PartialInferenceResponse $response,
         int $index,
-        ContentBuffer $buffer
+        CanBufferContent $buffer
     ): PartialFrame {
         return new PartialFrame(
             source: $response,

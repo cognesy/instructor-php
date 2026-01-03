@@ -1,13 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer;
+namespace Cognesy\Instructor\Extraction\Buffers;
+
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 
 /**
  * Text content buffer for text-based modes.
  *
  * Simple string accumulation with trimming for normalization.
  */
-final readonly class TextBuffer implements ContentBuffer
+final readonly class TextBuffer implements CanBufferContent
 {
     private function __construct(
         private string $content,
@@ -18,7 +20,7 @@ final readonly class TextBuffer implements ContentBuffer
     }
 
     #[\Override]
-    public function assemble(string $delta): self {
+    public function assemble(string $delta): CanBufferContent {
         return new self($this->content . $delta);
     }
 

@@ -5,7 +5,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAndDeduplicateReducer;

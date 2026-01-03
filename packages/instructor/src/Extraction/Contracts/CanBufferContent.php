@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer;
+namespace Cognesy\Instructor\Extraction\Contracts;
 
 /**
  * Buffer abstraction for assembling streaming content.
@@ -8,7 +8,7 @@ namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer;
  * Enables different content modes (JSON, text, binary) with uniform interface.
  * Implementations handle mode-specific assembly and normalization logic.
  */
-interface ContentBuffer
+interface CanBufferContent
 {
     /**
      * Append a delta to the buffer and return new buffer instance.

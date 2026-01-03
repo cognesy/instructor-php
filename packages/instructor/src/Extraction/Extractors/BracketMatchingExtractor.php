@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace Cognesy\Instructor\Extraction\Extractors;
 
-namespace Cognesy\Instructor\Extraction\Strategies;
-
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 use JsonException;
 
@@ -17,7 +15,7 @@ use JsonException;
  * Best for: Text with embedded JSON where content wraps the JSON
  * Limitation: Doesn't handle escaped braces inside strings
  */
-class BracketMatchingStrategy implements ExtractionStrategy
+class BracketMatchingExtractor implements CanExtractContent
 {
     #[\Override]
     public function extract(string $content): Result

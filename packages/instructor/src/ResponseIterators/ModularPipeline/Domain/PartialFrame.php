@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain;
 
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Utils\Result\Result;
@@ -27,7 +27,7 @@ final readonly class PartialFrame
         public PartialInferenceResponse $source,
 
         // Progressive transformation state
-        public ContentBuffer $buffer,
+        public CanBufferContent $buffer,
         public Result $object,  // Result<mixed> - Success or Failure
 
         // Emission control
@@ -72,7 +72,7 @@ final readonly class PartialFrame
 
     // TRANSFORMATIONS ///////////////////////////////////////////////////////
 
-    public function withBuffer(ContentBuffer $buffer): self {
+    public function withBuffer(CanBufferContent $buffer): self {
         return new self(
             source: $this->source,
             buffer: $buffer,

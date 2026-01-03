@@ -225,15 +225,15 @@ If all strategies fail, InstructorPHP:
 
 Most responses succeed on first strategy (direct parsing).
 
-## Custom Extraction Strategies
+## Custom Content Extractors
 
-You can add custom extraction strategies to handle non-standard response formats:
+You can add custom extractors to handle non-standard response formats:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 
-class XmlCdataJsonStrategy implements ExtractionStrategy
+class XmlCdataExtractor implements CanExtractContent
 {
     public function extract(string $content): Result
     {
@@ -256,29 +256,31 @@ class XmlCdataJsonStrategy implements ExtractionStrategy
 }
 ```
 
-### Using Custom Strategies
+### Using Custom Extractors
 
-**For sync responses:**
+Custom extractors work for both sync and streaming responses:
+
 ```php
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 
 $result = (new StructuredOutput)
-    ->withExtractionStrategies(
-        new DirectJsonStrategy(),
-        new XmlCdataJsonStrategy(),
+    ->withExtractors(
+        new DirectJsonExtractor(),
+        new XmlCdataExtractor(),
     )
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
 ```
 
-**For streaming responses:**
+The same extractors are automatically used for streaming:
+
 ```php
 $stream = (new StructuredOutput)
-    ->withStreamingExtractionStrategies(
-        new DirectJsonStrategy(),
-        new XmlCdataJsonStrategy(),
+    ->withExtractors(
+        new DirectJsonExtractor(),
+        new XmlCdataExtractor(),
     )
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')

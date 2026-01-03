@@ -1,44 +1,45 @@
 ---
-title: 'Custom Extraction Strategies'
+title: 'Custom Content Extractors'
 docname: 'custom_extractor'
 ---
 
 ## Overview
 
-Instructor uses a pluggable extraction strategy system to parse JSON from LLM responses.
-Different LLMs and output modes may return JSON in various formats - wrapped in markdown,
+Instructor uses a pluggable extraction system to parse structured content from LLM responses.
+Different LLMs and output modes may return content in various formats - wrapped in markdown,
 embedded in explanatory text, or with trailing commas.
 
-You can create custom extraction strategies to handle specific response formats from
-your LLM or API. Strategies are tried in order until one succeeds.
+You can create custom extractors to handle specific response formats from
+your LLM or API. Extractors are tried in order until one succeeds.
 
-## Built-in Strategies
+## Built-in Extractors
 
-Instructor provides these extraction strategies:
+Instructor provides these content extractors:
 
-- `DirectJsonStrategy` - Parses content directly as JSON (fastest)
-- `BracketMatchingStrategy` - Finds JSON by matching first `{` to last `}`
-- `MarkdownJsonStrategy` - Extracts from markdown code blocks
-- `ResilientJsonStrategy` - Handles trailing commas, missing braces
+- `DirectJsonExtractor` - Parses content directly as JSON (fastest)
+- `BracketMatchingExtractor` - Finds JSON by matching first `{` to last `}`
+- `MarkdownBlockExtractor` - Extracts from markdown code blocks
+- `ResilientJsonExtractor` - Handles trailing commas, missing braces
+- `SmartBraceExtractor` - Smart brace matching with string escaping
 
-## Example: Custom XML Wrapper Strategy
+## Example: Custom XML Wrapper Extractor
 
 ```php
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Result\Result;
 
 /**
- * Custom strategy that extracts JSON from XML-like wrappers.
+ * Custom extractor that extracts JSON from XML-like wrappers.
  *
  * Some LLMs or custom APIs return JSON wrapped in XML tags like:
  * <response><json>{"name":"John"}</json></response>
  */
-class XmlJsonExtractor implements ExtractionStrategy
+class XmlJsonExtractor implements CanExtractContent
 {
     public function __construct(
         private string $tagName = 'json',
@@ -93,19 +94,19 @@ Here is the extracted information:
 The data has been successfully extracted from the input.
 EOT;
 
-echo "=== Demonstrating Custom Extraction Strategy ===\n\n";
+echo "=== Demonstrating Custom Content Extractor ===\n\n";
 echo "Raw LLM response:\n";
 echo str_repeat('-', 50) . "\n";
 echo $xmlWrappedResponse . "\n";
 echo str_repeat('-', 50) . "\n\n";
 
-// Use custom extraction strategies
+// Use custom extractors
 // DirectJson is tried first (will fail), then XmlJsonExtractor (will succeed)
 $person = (new StructuredOutput)
     ->withResponseClass(Person::class)
-    ->withExtractionStrategies(
-        new DirectJsonStrategy(),      // Try direct parsing first
-        new XmlJsonExtractor('json'),  // Fall back to XML wrapper extraction
+    ->withExtractors(
+        new DirectJsonExtractor(),      // Try direct parsing first
+        new XmlJsonExtractor('json'),   // Fall back to XML wrapper extraction
     )
     ->withMessages("Extract: Alice Johnson, 28 years old, lives in San Francisco")
     ->get();
@@ -151,18 +152,19 @@ Age: 28
 City: San Francisco
 ```
 
-## Streaming with Custom Strategies
+## Streaming with Custom Extractors
 
-For streaming responses, use `withStreamingExtractionStrategies()` to apply
-custom extraction during streaming (not just on the final response):
+Custom extractors are automatically used for both sync and streaming modes.
+The `ResponseExtractor` handles buffer creation internally, using a subset
+of extractors optimized for streaming (fast extractors by default).
 
 ```php
 <?php
-// Custom strategies for streaming
+// Custom extractors work for streaming too
 $stream = (new StructuredOutput)
     ->withResponseClass(Person::class)
-    ->withStreamingExtractionStrategies(
-        new DirectJsonStrategy(),
+    ->withExtractors(
+        new DirectJsonExtractor(),
         new XmlJsonExtractor('json'),
     )
     ->withMessages("Extract person data...")
@@ -177,15 +179,15 @@ echo "Final: {$person->name}\n";
 ?>
 ```
 
-## Creating Your Own Strategy
+## Creating Your Own Extractor
 
-Implement `ExtractionStrategy` interface:
+Implement `CanExtractContent` interface:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 
-class MyCustomStrategy implements ExtractionStrategy
+class MyCustomExtractor implements CanExtractContent
 {
     public function extract(string $content): Result
     {
@@ -201,14 +203,14 @@ class MyCustomStrategy implements ExtractionStrategy
 }
 ```
 
-## Strategy Chain Behavior
+## Extractor Chain Behavior
 
-Strategies are tried in order until one succeeds:
+Extractors are tried in order until one succeeds:
 
-1. First strategy is called with raw content
+1. First extractor is called with raw content
 2. If it returns `Result::success()`, extraction is complete
-3. If it returns `Result::failure()`, next strategy is tried
+3. If it returns `Result::failure()`, next extractor is tried
 4. If all fail, an error is raised
 
-This allows graceful degradation - try fast/simple strategies first,
+This allows graceful degradation - try fast/simple extractors first,
 fall back to more complex ones only when needed.

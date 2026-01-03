@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer;
+namespace Cognesy\Instructor\Extraction\Buffers;
 
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Utils\Json\Json;
 
 /**
@@ -10,7 +11,7 @@ use Cognesy\Utils\Json\Json;
  * Assembles partial JSON chunks and normalizes them for deserialization.
  * Uses Json::fromPartial to handle incomplete JSON syntax.
  */
-final readonly class JsonBuffer implements ContentBuffer
+final readonly class JsonBuffer implements CanBufferContent
 {
     private function __construct(
         private string $raw,
@@ -22,7 +23,7 @@ final readonly class JsonBuffer implements ContentBuffer
     }
 
     #[\Override]
-    public function assemble(string $delta): self {
+    public function assemble(string $delta): CanBufferContent {
         if (trim($delta) === '') {
             return $this;
         }

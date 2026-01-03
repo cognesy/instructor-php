@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace Cognesy\Instructor\Extraction\Extractors;
 
-namespace Cognesy\Instructor\Extraction\Strategies;
-
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 use JsonException;
 
@@ -18,7 +16,7 @@ use JsonException;
  *
  * Best for: LLM responses that wrap JSON in markdown formatting
  */
-class MarkdownCodeBlockStrategy implements ExtractionStrategy
+class MarkdownBlockExtractor implements CanExtractContent
 {
     #[\Override]
     public function extract(string $content): Result

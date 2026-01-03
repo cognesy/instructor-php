@@ -15,16 +15,14 @@ use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanProvideContentBuffer;
 use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
 use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromJson;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromToolCalls;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\StreamingUpdatesGenerator;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ExtractingJsonBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
@@ -45,12 +43,7 @@ class ResponseIteratorFactory
     private readonly CanHandleEvents $events;
     private readonly ?HttpClient $httpClient;
     private readonly ?CanExtractResponse $extractor;
-    /** @var ExtractionStrategy[] */
-    private readonly array $streamingExtractionStrategies;
 
-    /**
-     * @param ExtractionStrategy[] $streamingExtractionStrategies Strategies for streaming extraction
-     */
     public function __construct(
         LLMProvider $llmProvider,
         CanDeserializeResponse $responseDeserializer,
@@ -60,7 +53,6 @@ class ResponseIteratorFactory
         CanHandleEvents $events,
         ?HttpClient $httpClient = null,
         ?CanExtractResponse $extractor = null,
-        array $streamingExtractionStrategies = [],
     ) {
         $this->llmProvider = $llmProvider;
         $this->responseDeserializer = $responseDeserializer;
@@ -70,7 +62,6 @@ class ResponseIteratorFactory
         $this->events = $events;
         $this->httpClient = $httpClient;
         $this->extractor = $extractor;
-        $this->streamingExtractionStrategies = $streamingExtractionStrategies;
     }
 
     public function makeExecutor(StructuredOutputExecution $execution) : CanHandleStructuredOutputAttempts {
@@ -123,21 +114,20 @@ class ResponseIteratorFactory
     /**
      * Create buffer factory for streaming extraction.
      *
-     * @return Closure(OutputMode): ContentBuffer|null Factory that creates ContentBuffer based on OutputMode
+     * Uses the extractor's CanProvideContentBuffer implementation if available.
+     *
+     * @return Closure(OutputMode): CanBufferContent|null Factory that creates buffer based on OutputMode
      */
     private function makeBufferFactory(): ?Closure
     {
-        // No custom strategies = use default buffers
-        if (empty($this->streamingExtractionStrategies)) {
-            return null;
+        // Use extractor's buffer factory if it implements CanProvideContentBuffer
+        if ($this->extractor instanceof CanProvideContentBuffer) {
+            $extractor = $this->extractor;
+            return fn(OutputMode $mode): CanBufferContent => $extractor->makeContentBuffer($mode);
         }
 
-        $strategies = $this->streamingExtractionStrategies;
-
-        return fn(OutputMode $mode) => match ($mode) {
-            OutputMode::Tools => ToolsBuffer::empty(),
-            default => ExtractingJsonBuffer::empty($strategies),
-        };
+        // No buffer factory available - ModularStreamFactory will use defaults
+        return null;
     }
 
     private function makePartialStreamingIterator(): CanStreamStructuredOutputUpdates {

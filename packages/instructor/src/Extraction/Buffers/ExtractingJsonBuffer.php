@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer;
+namespace Cognesy\Instructor\Extraction\Buffers;
 
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
-use Cognesy\Instructor\Extraction\Strategies\ResilientJsonStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 use Cognesy\Utils\Json\Json;
 
 /**
@@ -12,59 +13,59 @@ use Cognesy\Utils\Json\Json;
  *
  * This buffer allows the same extraction strategies used for final response
  * extraction to be applied during streaming. Each time a delta is assembled,
- * the buffer attempts to extract valid JSON using the strategy chain.
+ * the buffer attempts to extract valid JSON using the extractor chain.
  *
  * Provides streaming-aware extraction with fallback to partial JSON parsing
- * when no strategy succeeds (for incomplete streaming chunks).
+ * when no extractor succeeds (for incomplete streaming chunks).
  */
-final readonly class ExtractingJsonBuffer implements ContentBuffer
+final readonly class ExtractingJsonBuffer implements CanBufferContent
 {
-    /** @var ExtractionStrategy[] */
-    private array $strategies;
+    /** @var CanExtractContent[] */
+    private array $extractors;
 
     private function __construct(
         private string $raw,
         private string $normalized,
-        array $strategies,
+        array $extractors,
     ) {
-        $this->strategies = $strategies;
+        $this->extractors = $extractors;
     }
 
     /**
-     * Create empty buffer with default strategies.
+     * Create empty buffer with default extractors.
      *
-     * @param ExtractionStrategy[]|null $strategies Custom strategies (null = defaults)
+     * @param CanExtractContent[]|null $extractors Custom extractors (null = defaults)
      */
-    public static function empty(?array $strategies = null): self
+    public static function empty(?array $extractors = null): self
     {
-        return new self('', '', $strategies ?? self::defaultStrategies());
+        return new self('', '', $extractors ?? self::defaultExtractors());
     }
 
     /**
-     * Create buffer with custom strategies.
+     * Create buffer with custom extractors.
      *
-     * @param ExtractionStrategy ...$strategies
+     * @param CanExtractContent ...$extractors
      */
-    public static function withStrategies(ExtractionStrategy ...$strategies): self
+    public static function withExtractors(CanExtractContent ...$extractors): self
     {
-        return new self('', '', $strategies);
+        return new self('', '', $extractors);
     }
 
     /**
-     * Default strategies optimized for streaming (fast strategies first).
+     * Default extractors optimized for streaming (fast extractors first).
      *
-     * @return ExtractionStrategy[]
+     * @return CanExtractContent[]
      */
-    public static function defaultStrategies(): array
+    public static function defaultExtractors(): array
     {
         return [
-            new DirectJsonStrategy(),
-            new ResilientJsonStrategy(),
+            new DirectJsonExtractor(),
+            new ResilientJsonExtractor(),
         ];
     }
 
     #[\Override]
-    public function assemble(string $delta): self
+    public function assemble(string $delta): CanBufferContent
     {
         if (trim($delta) === '') {
             return $this;
@@ -73,7 +74,7 @@ final readonly class ExtractingJsonBuffer implements ContentBuffer
         $raw = $this->raw . $delta;
         $normalized = $this->extractOrParse($raw);
 
-        return new self($raw, $normalized, $this->strategies);
+        return new self($raw, $normalized, $this->extractors);
     }
 
     #[\Override]
@@ -100,13 +101,13 @@ final readonly class ExtractingJsonBuffer implements ContentBuffer
     }
 
     /**
-     * Get the strategies currently in use.
+     * Get the extractors currently in use.
      *
-     * @return ExtractionStrategy[]
+     * @return CanExtractContent[]
      */
-    public function strategies(): array
+    public function extractors(): array
     {
-        return $this->strategies;
+        return $this->extractors;
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////
@@ -123,8 +124,8 @@ final readonly class ExtractingJsonBuffer implements ContentBuffer
         }
 
         // Try extraction strategies
-        foreach ($this->strategies as $strategy) {
-            $result = $strategy->extract($raw);
+        foreach ($this->extractors as $extractor) {
+            $result = $extractor->extract($raw);
             if ($result->isSuccess()) {
                 return $result->unwrap();
             }
