@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Instructor\Data\CachedContext;
+use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
@@ -20,6 +21,7 @@ class StructuredOutputRequestBuilder
     private array $options = [];
     private CachedContext $cachedContext;
     private string|array|object $requestedSchema = [];
+    private ?OutputFormat $outputFormat = null;
 
     public function __construct() {
         $this->messages = Messages::empty();
@@ -38,6 +40,7 @@ class StructuredOutputRequestBuilder
         ?string $model = null,
         ?array $options = null,
         ?CachedContext $cachedContext = null,
+        ?OutputFormat $outputFormat = null,
     ): static {
         $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
         $this->requestedSchema = $requestedSchema ?? $this->requestedSchema;
@@ -47,6 +50,7 @@ class StructuredOutputRequestBuilder
         $this->model = $model ?? $this->model;
         $this->options = $options !== null ? array_merge($this->options, $options) : $this->options;
         $this->cachedContext = $cachedContext ?? $this->cachedContext;
+        $this->outputFormat = $outputFormat ?? $this->outputFormat;
         return $this;
     }
 
@@ -125,6 +129,11 @@ class StructuredOutputRequestBuilder
         return $this;
     }
 
+    public function withOutputFormat(OutputFormat $outputFormat): static {
+        $this->outputFormat = $outputFormat;
+        return $this;
+    }
+
     public function withRequest(StructuredOutputRequest $request): static {
         $this->messages = $request->messages();
         $this->requestedSchema = $request->requestedSchema();
@@ -134,6 +143,7 @@ class StructuredOutputRequestBuilder
         $this->model = $request->model();
         $this->options = array_merge($this->options, $request->options());
         $this->cachedContext = $request->cachedContext();
+        $this->outputFormat = $request->outputFormat();
         return $this;
     }
 
@@ -151,6 +161,7 @@ class StructuredOutputRequestBuilder
             model: $this->model ?? null,
             options: $this->options ?? null,
             cachedContext: $this->cachedContext,
+            outputFormat: $this->outputFormat,
         );
     }
 }

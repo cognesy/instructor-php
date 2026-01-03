@@ -23,7 +23,7 @@ class ResponseModel implements CanProvideJsonSchema
     private bool $useObjectReferences;
 
     private StructuredOutputConfig $config;
-    private ?OutputFormat $outputFormat = null;
+    private ?OutputFormat $outputFormat;
 
     public function __construct(
         string $class,
@@ -36,6 +36,7 @@ class ResponseModel implements CanProvideJsonSchema
         string $toolDescription,
         bool   $useObjectReferences = false,
         ?StructuredOutputConfig $config = null,
+        ?OutputFormat $outputFormat = null,
     ) {
         $this->class = $class;
         $this->instance = $instance;
@@ -47,6 +48,7 @@ class ResponseModel implements CanProvideJsonSchema
         $this->toolDescription = $toolDescription;
         $this->useObjectReferences = $useObjectReferences;
         $this->config = $config ?? new StructuredOutputConfig();
+        $this->outputFormat = $outputFormat;
     }
 
     // ACCESSORS ///////////////////////////////////////////////////////
@@ -128,12 +130,6 @@ class ResponseModel implements CanProvideJsonSchema
 
     public function withToolDescription(string $toolDescription) : static {
         return $this->with(toolDescription: $toolDescription);
-    }
-
-    public function withOutputFormat(OutputFormat $outputFormat): static {
-        $clone = clone $this;
-        $clone->outputFormat = $outputFormat;
-        return $clone;
     }
 
     /** @param array<string, mixed> $values */
@@ -219,6 +215,7 @@ class ResponseModel implements CanProvideJsonSchema
         mixed $instance = null,
         ?string $toolName = null,
         ?string $toolDescription = null,
+        ?OutputFormat $outputFormat = null,
     ) : static {
         $new = new static(
             class: $this->class,
@@ -234,8 +231,8 @@ class ResponseModel implements CanProvideJsonSchema
                 ($mode === null) => $this->config,
                 default => $this->config->withOutputMode($mode),
             },
+            outputFormat: $outputFormat ?? $this->outputFormat,
         );
-        $new->outputFormat = $this->outputFormat;
         return $new;
     }
 

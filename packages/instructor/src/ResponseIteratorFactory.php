@@ -18,11 +18,6 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Contracts\CanProvideContentBuffer;
-use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
-use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
-use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromJson;
-use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromToolCalls;
-use Cognesy\Instructor\ResponseIterators\GeneratorBased\StreamingUpdatesGenerator;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
@@ -66,7 +61,7 @@ class ResponseIteratorFactory
 
     public function makeExecutor(StructuredOutputExecution $execution) : CanHandleStructuredOutputAttempts {
         $streamIterator = match(true) {
-            $execution->isStreamed() => $this->makeStreamingIterator($execution),
+            $execution->isStreamed() => $this->makeStreamingIterator(),
             default => $this->makeSyncIterator(),
         };
 
@@ -85,19 +80,8 @@ class ResponseIteratorFactory
         );
     }
 
-    private function makeStreamingIterator(StructuredOutputExecution $execution): CanStreamStructuredOutputUpdates {
-        $pipeline = $execution->config()->responseIterator;
-
-        return match($pipeline) {
-            'modular' => $this->makeModularStreamingIterator(),
-            'partials' => $this->makePartialStreamingIterator(),
-            'legacy' => $this->makeLegacyStreamingIterator($execution),
-            default => $this->makeModularStreamingIterator(),
-        };
-    }
-
-    private function makeModularStreamingIterator(): CanStreamStructuredOutputUpdates {
-        $cleanFactory = new ModularStreamFactory(
+    private function makeStreamingIterator(): CanStreamStructuredOutputUpdates {
+        $factory = new ModularStreamFactory(
             deserializer: $this->responseDeserializer,
             validator: $this->partialResponseValidator,
             transformer: $this->responseTransformer,
@@ -107,7 +91,7 @@ class ResponseIteratorFactory
 
         return new ModularUpdateGenerator(
             inferenceProvider: $this->makeInferenceProvider(),
-            factory: $cleanFactory,
+            factory: $factory,
         );
     }
 
@@ -120,50 +104,11 @@ class ResponseIteratorFactory
      */
     private function makeBufferFactory(): ?Closure
     {
-        // Use extractor's buffer factory if it implements CanProvideContentBuffer
         if ($this->extractor instanceof CanProvideContentBuffer) {
             $extractor = $this->extractor;
             return fn(OutputMode $mode): CanBufferContent => $extractor->makeContentBuffer($mode);
         }
-
-        // No buffer factory available - ModularStreamFactory will use defaults
         return null;
-    }
-
-    private function makePartialStreamingIterator(): CanStreamStructuredOutputUpdates {
-        $partialsFactory = new PartialStreamFactory(
-            deserializer: $this->responseDeserializer,
-            validator: $this->partialResponseValidator,
-            transformer: $this->responseTransformer,
-            events: $this->events,
-        );
-
-        return new PartialUpdateGenerator(
-            inferenceProvider: $this->makeInferenceProvider(),
-            partials: $partialsFactory,
-        );
-    }
-
-    private function makeLegacyStreamingIterator(StructuredOutputExecution $execution): CanStreamStructuredOutputUpdates {
-        $partialsGenerator = match($execution->outputMode()) {
-            OutputMode::Tools => new GeneratePartialsFromToolCalls(
-                $this->responseDeserializer,
-                $this->partialResponseValidator,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            default => new GeneratePartialsFromJson(
-                $this->responseDeserializer,
-                $this->partialResponseValidator,
-                $this->responseTransformer,
-                $this->events,
-            ),
-        };
-
-        return new StreamingUpdatesGenerator(
-            inferenceProvider: $this->makeInferenceProvider(),
-            partialsGenerator: $partialsGenerator,
-        );
     }
 
     private function makeInferenceProvider(): InferenceProvider {

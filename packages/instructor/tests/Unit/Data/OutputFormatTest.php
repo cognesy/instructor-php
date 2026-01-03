@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Tests\Unit\Data;
 
 use Cognesy\Instructor\Data\OutputFormat;
+use Cognesy\Instructor\Data\OutputFormatType;
 
 /**
  * Test-first validation for OutputFormat value object.
@@ -73,9 +74,9 @@ it('array and class formats are not equal', function () {
 });
 
 it('exposes type property for debugging', function () {
-    expect(OutputFormat::array()->type)->toBe('array');
-    expect(OutputFormat::instanceOf(TestUser::class)->type)->toBe('class');
-    expect(OutputFormat::selfDeserializing(new TestSelfDeserializing())->type)->toBe('object');
+    expect(OutputFormat::array()->type)->toBe(OutputFormatType::AsArray);
+    expect(OutputFormat::instanceOf(TestUser::class)->type)->toBe(OutputFormatType::AsClass);
+    expect(OutputFormat::selfDeserializing(new TestSelfDeserializing())->type)->toBe(OutputFormatType::AsObject);
 });
 
 // Test fixtures

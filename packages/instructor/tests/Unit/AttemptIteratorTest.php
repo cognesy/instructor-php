@@ -14,8 +14,8 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
-use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
-use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -39,6 +39,21 @@ function makeAttemptTestResponseModel(): ResponseModel {
     return $factory->fromAny(AttemptTestModel::class);
 }
 
+function makeModularStreamIterator(EventDispatcher $events, InferenceProvider $inferenceProvider): ModularUpdateGenerator {
+    $factory = new ModularStreamFactory(
+        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
+        validator: new PartialValidation(new PartialsGeneratorConfig()),
+        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
+        events: $events,
+        bufferFactory: null,
+    );
+
+    return new ModularUpdateGenerator(
+        inferenceProvider: $inferenceProvider,
+        factory: $factory,
+    );
+}
+
 it('processes successful streaming attempt end-to-end', function () {
     $driver = new FakeInferenceDriver(
         streamBatches: [
@@ -58,17 +73,7 @@ it('processes successful streaming attempt end-to-end', function () {
         events: $events
     );
 
-    $partialsFactory = new PartialStreamFactory(
-        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        validator: new PartialValidation(new PartialsGeneratorConfig()),
-        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
-    );
-
-    $streamIterator = new PartialUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-        partials: $partialsFactory
-    );
+    $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
 
     $responseGenerator = new ResponseGenerator(
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
@@ -138,17 +143,7 @@ it('retries on validation failure when retries available', function () {
         events: $events
     );
 
-    $partialsFactory = new PartialStreamFactory(
-        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        validator: new PartialValidation(new PartialsGeneratorConfig()),
-        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
-    );
-
-    $streamIterator = new PartialUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-        partials: $partialsFactory
-    );
+    $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
 
     $responseGenerator = new ResponseGenerator(
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
@@ -183,17 +178,6 @@ it('retries on validation failure when retries available', function () {
         $execution = $iterator->nextUpdate($execution);
     }
 
-    // DEBUG
-    echo "\nDriver stream calls: " . $driver->streamCalls . "\n";
-    echo "Attempt count: " . $execution->attempts()->count() . "\n";
-    if ($execution->isFinalized() && !$execution->isSuccessful()) {
-        $lastAttempt = $execution->attempts()->last();
-        echo "Last attempt errors: " . json_encode($lastAttempt?->errors()) . "\n";
-        foreach ($execution->attempts()->all() as $i => $attempt) {
-            echo "Attempt $i errors: " . json_encode($attempt->errors()) . "\n";
-        }
-    }
-
     // Should be successful after retry
     expect($execution->isFinalized())->toBeTrue();
     expect($execution->isSuccessful())->toBeTrue();
@@ -220,17 +204,7 @@ it('throws exception when max retries exceeded', function () {
         events: $events
     );
 
-    $partialsFactory = new PartialStreamFactory(
-        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        validator: new PartialValidation(new PartialsGeneratorConfig()),
-        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
-    );
-
-    $streamIterator = new PartialUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-        partials: $partialsFactory
-    );
+    $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
 
     $responseGenerator = new ResponseGenerator(
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
@@ -286,17 +260,7 @@ it('hasNext returns false when execution is finalized', function () {
         events: $events
     );
 
-    $partialsFactory = new PartialStreamFactory(
-        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        validator: new PartialValidation(new PartialsGeneratorConfig()),
-        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
-    );
-
-    $streamIterator = new PartialUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-        partials: $partialsFactory
-    );
+    $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
 
     $responseGenerator = new ResponseGenerator(
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
@@ -351,17 +315,7 @@ it('clears attempt state between attempts', function () {
         events: $events
     );
 
-    $partialsFactory = new PartialStreamFactory(
-        deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        validator: new PartialValidation(new PartialsGeneratorConfig()),
-        transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
-    );
-
-    $streamIterator = new PartialUpdateGenerator(
-        inferenceProvider: $inferenceProvider,
-        partials: $partialsFactory
-    );
+    $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
 
     $responseGenerator = new ResponseGenerator(
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),

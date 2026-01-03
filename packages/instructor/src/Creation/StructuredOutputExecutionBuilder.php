@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -28,6 +29,7 @@ class StructuredOutputExecutionBuilder
                 requestedSchema: $request->requestedSchema(),
                 config: $config,
                 events: $this->events,
+                outputFormat: $request->outputFormat(),
             ),
         );
     }
@@ -36,6 +38,7 @@ class StructuredOutputExecutionBuilder
         string|array|object $requestedSchema,
         StructuredOutputConfig $config,
         CanHandleEvents $events,
+        ?OutputFormat $outputFormat = null,
     ): ResponseModel {
         $schemaFactory = new SchemaFactory(
             useObjectReferences: $config->useObjectReferences(),
@@ -51,6 +54,6 @@ class StructuredOutputExecutionBuilder
             config: $config,
             events: $events,
         );
-        return $responseModelFactory->fromAny($requestedSchema);
+        return $responseModelFactory->fromAny($requestedSchema, $outputFormat);
     }
 }

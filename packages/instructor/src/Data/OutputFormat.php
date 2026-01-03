@@ -18,7 +18,7 @@ namespace Cognesy\Instructor\Data;
 final readonly class OutputFormat
 {
     private function __construct(
-        public string $type,
+        public OutputFormatType $type,
         private ?string $class = null,
         private ?object $instance = null,
     ) {}
@@ -28,7 +28,7 @@ final readonly class OutputFormat
      */
     public static function array(): self
     {
-        return new self('array');
+        return new self(OutputFormatType::AsArray);
     }
 
     /**
@@ -38,7 +38,7 @@ final readonly class OutputFormat
      */
     public static function instanceOf(string $class): self
     {
-        return new self('class', $class);
+        return new self(OutputFormatType::AsClass, $class);
     }
 
     /**
@@ -48,22 +48,22 @@ final readonly class OutputFormat
      */
     public static function selfDeserializing(object $instance): self
     {
-        return new self('object', get_class($instance), $instance);
+        return new self(OutputFormatType::AsObject, get_class($instance), $instance);
     }
 
     public function isArray(): bool
     {
-        return $this->type === 'array';
+        return $this->type === OutputFormatType::AsArray;
     }
 
     public function isClass(): bool
     {
-        return $this->type === 'class';
+        return $this->type === OutputFormatType::AsClass;
     }
 
     public function isObject(): bool
     {
-        return $this->type === 'object';
+        return $this->type === OutputFormatType::AsObject;
     }
 
     /**

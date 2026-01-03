@@ -48,14 +48,7 @@ function createTestResponseModel(string $class, ?OutputFormat $outputFormat = nu
     };
 
     $factory = new ResponseModelFactory($toolCallBuilder, $schemaFactory, $config, $events);
-    $responseModel = $factory->fromAny($class);
-
-    // Apply OutputFormat if provided
-    if ($outputFormat !== null) {
-        $responseModel = $responseModel->withOutputFormat($outputFormat);
-    }
-
-    return $responseModel;
+    return $factory->fromAny($class, $outputFormat);
 }
 
 // Helper to create a ResponseDeserializer for testing
@@ -160,4 +153,3 @@ it('preserves array types and values accurately', function () {
     expect($array['age'])->toBe(30);
     expect($array['age'])->toBeInt();
 });
-

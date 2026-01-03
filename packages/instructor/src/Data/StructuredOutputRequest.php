@@ -2,10 +2,12 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Extras\Example\Example;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
+use ReflectionClass;
 
 class StructuredOutputRequest
 {
@@ -22,6 +24,7 @@ class StructuredOutputRequest
     protected array $options = [];
     protected CachedContext $cachedContext;
     protected string|array|object $requestedSchema = [];
+    protected ?OutputFormat $outputFormat = null;
 
 
     public function __construct(
@@ -33,6 +36,7 @@ class StructuredOutputRequest
         ?string        $model = null,
         ?array         $options = null,
         ?CachedContext $cachedContext = null,
+        ?OutputFormat  $outputFormat = null,
 
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -52,6 +56,7 @@ class StructuredOutputRequest
         $this->model = $model ?: '';
 
         $this->cachedContext = $cachedContext ?: new CachedContext();
+        $this->outputFormat = $outputFormat;
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -96,6 +101,10 @@ class StructuredOutputRequest
         return $this->requestedSchema;
     }
 
+    public function outputFormat() : ?OutputFormat {
+        return $this->outputFormat;
+    }
+
     // MUTATORS /////////////////////////////////////////////////
 
     public function with(
@@ -107,6 +116,7 @@ class StructuredOutputRequest
         ?string        $model = null,
         ?array         $options = null,
         ?CachedContext $cachedContext = null,
+        ?OutputFormat  $outputFormat = null,
     ) : static {
         return new static(
             messages: $messages ?? $this->messages,
@@ -117,6 +127,7 @@ class StructuredOutputRequest
             model: $model ?? $this->model,
             options: $options ?? $this->options,
             cachedContext: $cachedContext ?? $this->cachedContext,
+            outputFormat: $outputFormat ?? $this->outputFormat,
             id: $this->id,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
@@ -159,6 +170,10 @@ class StructuredOutputRequest
         return $this->with(cachedContext: $cachedContext);
     }
 
+    public function withOutputFormat(OutputFormat $outputFormat) : static {
+        return $this->with(outputFormat: $outputFormat);
+    }
+
     // SERIALIZATION ////////////////////////////////////////////
 
     public function toArray() : array {
@@ -174,10 +189,20 @@ class StructuredOutputRequest
             'options' => $this->options,
             'cachedContext' => $this->cachedContext->toArray(),
             'requestedSchema' => $this->requestedSchema,
+            'outputFormat' => $this->outputFormat !== null ? [
+                'type' => $this->outputFormat->type->value,
+                'class' => $this->outputFormat->targetClass(),
+            ] : null,
         ];
     }
 
     public static function fromArray(array $data) : self {
+        $rawOutputFormat = $data['outputFormat'] ?? null;
+        $outputFormat = match (true) {
+            $rawOutputFormat instanceof OutputFormat => $rawOutputFormat,
+            is_array($rawOutputFormat) => self::outputFormatFromArray($rawOutputFormat),
+            default => null,
+        };
         return new self(
             messages: $data['messages'] ?? null,
             requestedSchema: $data['requestedSchema'] ?? null,
@@ -187,9 +212,35 @@ class StructuredOutputRequest
             model: $data['model'] ?? null,
             options: $data['options'] ?? null,
             cachedContext: $data['cachedContext'] ?? null,
+            outputFormat: $outputFormat,
             id: $data['id'] ?? null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );
+    }
+
+    private static function outputFormatFromArray(?array $data) : ?OutputFormat {
+        if ($data === null) {
+            return null;
+        }
+        $type = OutputFormatType::tryFrom($data['type'] ?? '');
+        return match (true) {
+            $type === OutputFormatType::Array => OutputFormat::array(),
+            $type === OutputFormatType::Class && isset($data['class']) => OutputFormat::instanceOf($data['class']),
+            $type === OutputFormatType::Object => self::selfDeserializingFromClass($data['class'] ?? null),
+            default => null,
+        };
+    }
+
+    private static function selfDeserializingFromClass(?string $class) : ?OutputFormat {
+        if ($class === null || !class_exists($class)) {
+            return null;
+        }
+        if (!is_subclass_of($class, CanDeserializeSelf::class)) {
+            return null;
+        }
+        $reflection = new ReflectionClass($class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        return OutputFormat::selfDeserializing($instance);
     }
 }
