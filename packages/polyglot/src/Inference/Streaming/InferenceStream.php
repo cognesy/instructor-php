@@ -7,17 +7,12 @@ use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Polyglot\Inference\Events\InferenceAttemptStatsReported;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
-use Cognesy\Polyglot\Inference\Events\InferenceExecutionStatsReported;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
-use Cognesy\Polyglot\Inference\Stats\InferenceStatsCalculator;
 use DateTimeImmutable;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -42,7 +37,6 @@ class InferenceStream
     private ?DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
     private ?float $timeToFirstChunkMs = null;
-    private InferenceStatsCalculator $statsCalculator;
 
     public function __construct(
         InferenceExecution $execution,
@@ -55,7 +49,6 @@ class InferenceStream
         $this->events = $eventDispatcher;
         $this->startedAt = $startedAt ?? new DateTimeImmutable();
         $this->stream = $driver->makeStreamResponsesFor($execution->request());
-        $this->statsCalculator = new InferenceStatsCalculator();
     }
 
     /**
@@ -241,8 +234,8 @@ class InferenceStream
         $isSuccess = !$response->hasFinishedWithFailure();
         $model = $this->execution->request()->model();
         $startedAt = $this->startedAt ?? new DateTimeImmutable();
+        $attemptId = $this->execution->attempts()->last()?->id ?? $this->execution->id;
 
-        // Usage event
         $this->events->dispatch(new InferenceUsageReported(
             executionId: $this->execution->id,
             usage: $usage,
@@ -250,8 +243,6 @@ class InferenceStream
             isFinal: true,
         ));
 
-        // Attempt succeeded event
-        $attemptId = $this->execution->attempts()->last()?->id ?? $this->execution->id;
         $this->events->dispatch(new InferenceAttemptSucceeded(
             executionId: $this->execution->id,
             attemptId: $attemptId,
@@ -261,20 +252,6 @@ class InferenceStream
             startedAt: $startedAt,
         ));
 
-        // Calculate and dispatch attempt stats
-        $attemptStats = $this->statsCalculator->calculateAttemptStatsFromResponse(
-            response: $response,
-            executionId: $this->execution->id,
-            attemptId: $attemptId,
-            attemptNumber: 1,
-            startedAt: $startedAt,
-            timeToFirstChunkMs: $this->timeToFirstChunkMs,
-            model: $model,
-            isStreamed: true,
-        );
-        $this->events->dispatch(new InferenceAttemptStatsReported($attemptStats));
-
-        // Completion event
         $this->events->dispatch(new InferenceCompleted(
             executionId: $this->execution->id,
             isSuccess: $isSuccess,
@@ -284,17 +261,6 @@ class InferenceStream
             startedAt: $startedAt,
             response: $response,
         ));
-
-        // Calculate and dispatch execution stats
-        $executionStats = $this->statsCalculator->calculateExecutionStats(
-            execution: $this->execution,
-            startedAt: $startedAt,
-            timeToFirstChunkMs: $this->timeToFirstChunkMs,
-            model: $model,
-            isStreamed: true,
-            attemptStats: [$attemptStats],
-        );
-        $this->events->dispatch(new InferenceExecutionStatsReported($executionStats));
     }
 }
 

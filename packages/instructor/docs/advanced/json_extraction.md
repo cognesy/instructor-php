@@ -225,22 +225,67 @@ If all strategies fail, InstructorPHP:
 
 Most responses succeed on first strategy (direct parsing).
 
-## Future: Custom Extractors (v1.4+)
+## Custom Extraction Strategies
 
-In version 1.4, you'll be able to add custom extraction strategies:
+You can add custom extraction strategies to handle non-standard response formats:
 
 ```php
-class XmlCdataJsonStrategy implements ExtractionStrategy {
-    public function extract(string $content): Result {
-        // Extract JSON from <![CDATA[...]]>
+use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Utils\Result\Result;
+
+class XmlCdataJsonStrategy implements ExtractionStrategy
+{
+    public function extract(string $content): Result
+    {
+        if (preg_match('/<!\[CDATA\[(.*?)\]\]>/s', $content, $matches)) {
+            $json = trim($matches[1]);
+            try {
+                json_decode($json, flags: JSON_THROW_ON_ERROR);
+                return Result::success($json);
+            } catch (\JsonException) {
+                return Result::failure('Invalid JSON in CDATA');
+            }
+        }
+        return Result::failure('No CDATA found');
+    }
+
+    public function name(): string
+    {
+        return 'xml_cdata';
     }
 }
-
-$parser = new JsonParser();
-$parser->addStrategy(new XmlCdataJsonStrategy());
 ```
 
-See: [Pluggable Extractors](#pluggable-extractors) for more details.
+### Using Custom Strategies
+
+**For sync responses:**
+```php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
+
+$result = (new StructuredOutput)
+    ->withExtractionStrategies(
+        new DirectJsonStrategy(),
+        new XmlCdataJsonStrategy(),
+    )
+    ->withResponseClass(User::class)
+    ->with(messages: 'Extract user')
+    ->get();
+```
+
+**For streaming responses:**
+```php
+$stream = (new StructuredOutput)
+    ->withStreamingExtractionStrategies(
+        new DirectJsonStrategy(),
+        new XmlCdataJsonStrategy(),
+    )
+    ->withResponseClass(User::class)
+    ->with(messages: 'Extract user')
+    ->stream();
+```
+
+See: [Output Formats - Pluggable Extraction](output_formats.md#pluggable-extraction) for comprehensive documentation and examples.
 
 ## Related Documentation
 
