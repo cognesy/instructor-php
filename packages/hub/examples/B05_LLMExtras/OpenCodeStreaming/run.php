@@ -100,6 +100,12 @@ function handleStepFinish(StepFinishEvent $event): void {
 
 print("\nFinal exit code: {$execResult->exitCode()}\n");
 
-assert($execResult->exitCode() === 0, 'Command should execute successfully');
+if ($execResult->exitCode() !== 0) {
+    print("Error: Command failed\n");
+    if ($execResult->stderr()) {
+        print("STDERR: " . $execResult->stderr() . "\n");
+    }
+    exit(1);
+}
 ?>
 ```

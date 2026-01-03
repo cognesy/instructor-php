@@ -38,13 +38,23 @@ $email = new Email(
 $translatedEmail = (new StructuredOutput)
     ->withInput($email)
     ->withResponseClass(Email::class)
-    ->withPrompt('Translate the text fields of email to Spanish. Keep other fields unchanged.')
+    ->withPrompt('Translate the subject and body fields to Spanish. Keep the address field unchanged.')
+    ->withModel('gpt-4o-mini')
     ->get();
 
-dump($translatedEmail);
+print_r($translatedEmail);
 
-assert($translatedEmail->address === $email->address);
-assert($translatedEmail->subject !== $email->subject);
-assert($translatedEmail->body !== $email->body);
+if ($translatedEmail->address !== $email->address) {
+    echo "ERROR: Address was modified during translation\n";
+    exit(1);
+}
+if ($translatedEmail->subject === $email->subject) {
+    echo "ERROR: Subject was not translated\n";
+    exit(1);
+}
+if ($translatedEmail->body === $email->body) {
+    echo "ERROR: Body was not translated\n";
+    exit(1);
+}
 ?>
 ```

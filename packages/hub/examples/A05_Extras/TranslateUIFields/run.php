@@ -18,12 +18,8 @@ structure-to-structure processing with LLM.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
-use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class TextElementModel
 {
@@ -39,43 +35,32 @@ $sourceModel = new TextElementModel(
     text: '<p>This is some WYSIWYG HTML content.</p>'
 );
 
-$validator = new class implements CanValidateObject {
-    #[\Override]
-    public function validate(object $dataObject): ValidationResult {
-        $isInGerman = (new StructuredOutput)
-            //->withDebugPreset('on')
-            ->withInput($dataObject)
-            ->withResponseObject(Scalar::boolean())
-            ->withPrompt('Are all content fields translated to German? Return result in JSON format: <|json_schema|>')
-            ->withOutputMode(OutputMode::Json)
-            ->get();
-        return match($isInGerman) {
-            true => ValidationResult::valid(),
-            default => ValidationResult::invalid(['All input text fields have to be translated to German. Keep HTML tags unchanged.']),
-        };
-    }
-};
-
 $transformedModel = (new StructuredOutput)
-    //->withDebugPreset('on')
-    //->wiretap(fn($e)=>$e->print())
     ->withInput($sourceModel)
     ->withResponseClass(get_class($sourceModel))
-    ->withPrompt('Translate all text fields to German. Keep HTML tags unchanged. Return result in JSON format: <|json_schema|>')
+    ->withPrompt('Translate the headline and text fields to German. Keep HTML tags unchanged. Keep the url field unchanged.')
+    ->withModel('gpt-4o-mini')
     ->withMaxRetries(2)
     ->withOptions(['temperature' => 0])
-    ->withOutputMode(OutputMode::Json)
-    ->withValidators($validator, SymfonyValidator::class)
+    ->withValidators(SymfonyValidator::class)
     ->get();
 
-dump($transformedModel);
+print_r($transformedModel);
 
-assert(true === (
-    str_contains($transformedModel->headline, 'Überschrift')
-    || str_contains($transformedModel->headline, 'Schlagzeile')
-));
-assert(str_contains($transformedModel->text, 'Inhalt') === true);
-assert(str_contains($transformedModel->text, '<p>') === true);
-assert(str_contains(str_replace('\/', '/', $transformedModel->url), 'https://translation.com/') === true);
+$hasGermanHeadline = str_contains($transformedModel->headline, 'Überschrift')
+    || str_contains($transformedModel->headline, 'Schlagzeile');
+if (!$hasGermanHeadline) {
+    echo "ERROR: Headline not translated to German\n";
+    exit(1);
+}
+if (!str_contains($transformedModel->text, '<p>')) {
+    echo "ERROR: HTML tags not preserved in text\n";
+    exit(1);
+}
+$url = str_replace('\/', '/', $transformedModel->url);
+if (!str_contains($url, 'https://translation.com/')) {
+    echo "ERROR: URL was modified during translation\n";
+    exit(1);
+}
 ?>
 ```

@@ -234,9 +234,9 @@ return [
                 'organization' => '',
                 'project' => '',
             ],
-            'model' => 'gpt-5-nano-2025-08-07',
+            'model' => 'gpt-4.1-nano',
             'maxTokens' => 1024,
-            'contextLength' => 128_000,
+            'contextLength' => 1_000_000,
             'maxOutputLength' => 16384,
         ],
         'openrouter' => [

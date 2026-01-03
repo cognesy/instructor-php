@@ -57,7 +57,17 @@ if ($response->cost()) {
     print("Cost: \${$response->cost()}\n");
 }
 
-assert($execResult->exitCode() === 0, 'Command should execute successfully');
-assert($response->messageText() !== '', 'Should receive an answer from OpenCode');
+if ($execResult->exitCode() !== 0) {
+    print("Error: Command failed with exit code {$execResult->exitCode()}\n");
+    if ($execResult->stderr()) {
+        print("STDERR: " . $execResult->stderr() . "\n");
+    }
+    exit(1);
+}
+
+if ($response->messageText() === '') {
+    print("Error: No answer received from OpenCode\n");
+    exit(1);
+}
 ?>
 ```

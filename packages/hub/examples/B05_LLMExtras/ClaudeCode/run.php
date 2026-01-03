@@ -41,7 +41,7 @@ $spec = $builder->buildHeadless($request);
 // Step 3: Execute the command using sandboxed executor
 $executor = SandboxCommandExecutor::default();
 $execResult = $executor->execute($spec);
-dump($execResult);
+
 // Step 4: Parse the structured response
 $response = (new ResponseParser())->parse($execResult, OutputFormat::Json);
 
@@ -54,6 +54,12 @@ foreach ($response->decoded()->all() as $event) {
     }
 }
 
-assert($execResult->exitCode() === 0, 'Command should execute successfully');
+if ($execResult->exitCode() !== 0) {
+    print("Error: Command failed with exit code {$execResult->exitCode()}\n");
+    if ($execResult->stderr()) {
+        print("STDERR: " . $execResult->stderr() . "\n");
+    }
+    exit(1);
+}
 ?>
 ```
