@@ -10,7 +10,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAndDeduplicateReducer;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Schema\Factories\SchemaFactory;
@@ -65,22 +64,6 @@ function makeFailureDeserializer(): CanDeserializeResponse {
     };
 }
 
-function makePassThroughValidator(): CanValidatePartialResponse {
-    return new class implements CanValidatePartialResponse {
-        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
-            return Result::success(null);
-        }
-    };
-}
-
-function makeFailingValidator(): CanValidatePartialResponse {
-    return new class implements CanValidatePartialResponse {
-        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
-            return Result::failure('Validation failed');
-        }
-    };
-}
-
 function makePassThroughTransformer(): CanTransformResponse {
     return new class implements CanTransformResponse {
         public function transform(mixed $object, ResponseModel $responseModel): Result {
@@ -94,7 +77,6 @@ test('deserializes valid JSON and marks for emission', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeSuccessDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -116,7 +98,6 @@ test('skips frames without content', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeSuccessDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -138,7 +119,6 @@ test('handles deserialization failure', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeFailureDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -155,33 +135,11 @@ test('handles deserialization failure', function() {
         ->and($collector->collected[0]->emissionType)->toBe(EmissionType::None);
 });
 
-test('handles validation failure', function() {
-    $collector = makeDeserializedCollector();
-    $reducer = new DeserializeAndDeduplicateReducer(
-        inner: $collector,
-        deserializer: makeSuccessDeserializer(),
-        validator: makeFailingValidator(),
-        transformer: makePassThroughTransformer(),
-        responseModel: makeDeserializeTestResponseModel(),
-    );
-
-    $reducer->init();
-
-    $frame = PartialFrame::fromResponse(new PartialInferenceResponse(usage: Usage::none()))
-        ->withBuffer(JsonBuffer::empty()->assemble('{"key": "value"}'));
-
-    $reducer->step(null, $frame);
-
-    expect($collector->collected)->toHaveCount(1)
-        ->and($collector->collected[0]->isError())->toBeTrue();
-});
-
 test('deduplicates identical objects', function() {
     $collector = makeDeserializedCollector();
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeSuccessDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -210,7 +168,6 @@ test('emits when object changes', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeSuccessDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -239,7 +196,6 @@ test('init resets deduplication state', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeSuccessDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -269,7 +225,6 @@ test('preserves frame metadata through transformation', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeSuccessDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );
@@ -289,7 +244,6 @@ test('forwards errors without updating dedup state', function() {
     $reducer = new DeserializeAndDeduplicateReducer(
         inner: $collector,
         deserializer: makeFailureDeserializer(),
-        validator: makePassThroughValidator(),
         transformer: makePassThroughTransformer(),
         responseModel: makeDeserializeTestResponseModel(),
     );

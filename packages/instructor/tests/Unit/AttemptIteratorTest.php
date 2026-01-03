@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\AttemptIterator;
 use Cognesy\Instructor\Core\InferenceProvider;
@@ -19,7 +18,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -42,7 +40,6 @@ function makeAttemptTestResponseModel(): ResponseModel {
 function makeModularStreamIterator(EventDispatcher $events, InferenceProvider $inferenceProvider): ModularUpdateGenerator {
     $factory = new ModularStreamFactory(
         deserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
-        validator: new PartialValidation(new PartialsGeneratorConfig()),
         transformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
         events: $events,
         bufferFactory: null,

@@ -23,7 +23,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -33,7 +32,6 @@ class ResponseIteratorFactory
     private readonly LLMProvider $llmProvider;
     private readonly CanDeserializeResponse $responseDeserializer;
     private readonly CanValidateResponse $responseValidator;
-    private readonly CanValidatePartialResponse $partialResponseValidator;
     private readonly CanTransformResponse $responseTransformer;
     private readonly CanExtractResponse $extractor;
     private readonly CanHandleEvents $events;
@@ -43,7 +41,6 @@ class ResponseIteratorFactory
         LLMProvider $llmProvider,
         CanDeserializeResponse $responseDeserializer,
         CanValidateResponse $responseValidator,
-        CanValidatePartialResponse $partialResponseValidator,
         CanTransformResponse $responseTransformer,
         CanHandleEvents $events,
         CanExtractResponse $extractor,
@@ -52,7 +49,6 @@ class ResponseIteratorFactory
         $this->llmProvider = $llmProvider;
         $this->responseDeserializer = $responseDeserializer;
         $this->responseValidator = $responseValidator;
-        $this->partialResponseValidator = $partialResponseValidator;
         $this->responseTransformer = $responseTransformer;
         $this->extractor = $extractor;
         $this->events = $events;
@@ -83,7 +79,6 @@ class ResponseIteratorFactory
     private function makeStreamingIterator(): CanStreamStructuredOutputUpdates {
         $factory = new ModularStreamFactory(
             deserializer: $this->responseDeserializer,
-            validator: $this->partialResponseValidator,
             transformer: $this->responseTransformer,
             events: $this->events,
             bufferFactory: $this->makeBufferFactory(),

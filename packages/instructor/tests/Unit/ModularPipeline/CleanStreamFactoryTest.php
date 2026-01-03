@@ -8,7 +8,6 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -31,14 +30,6 @@ function makeStreamDeserializer(): CanDeserializeResponse {
     return new class implements CanDeserializeResponse {
         public function deserialize(array $data, ResponseModel $responseModel): Result {
             return Result::success((object) $data);
-        }
-    };
-}
-
-function makeStreamValidator(): CanValidatePartialResponse {
-    return new class implements CanValidatePartialResponse {
-        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
-            return Result::success(null);
         }
     };
 }
@@ -75,7 +66,6 @@ function makeStreamEvents(): CanHandleEvents {
 test('creates observable stream from iterable source', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -98,7 +88,6 @@ test('creates observable stream from iterable source', function() {
 test('stream processes all source items', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -123,7 +112,6 @@ test('stream processes all source items', function() {
 test('stream accumulates partials when enabled', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -155,7 +143,6 @@ test('stream accumulates partials when enabled', function() {
 test('stream does not accumulate partials when disabled', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -181,7 +168,6 @@ test('stream does not accumulate partials when disabled', function() {
 test('handles JsonSchema output mode', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -204,7 +190,6 @@ test('handles JsonSchema output mode', function() {
 test('handles Tools output mode', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -232,7 +217,6 @@ test('handles Tools output mode', function() {
 test('stream accumulates usage across chunks', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -264,7 +248,6 @@ test('stream accumulates usage across chunks', function() {
 test('stream handles finish reason', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -302,7 +285,6 @@ test('factory uses provided deserializer', function() {
 
     $factory = new ModularStreamFactory(
         deserializer: $customDeserializer,
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: makeStreamEvents(),
     );
@@ -320,38 +302,6 @@ test('factory uses provided deserializer', function() {
     iterator_to_array($stream);
 
     expect($customDeserializer->called)->toBeTrue();
-});
-
-test('factory uses provided validator', function() {
-    $customValidator = new class implements CanValidatePartialResponse {
-        public bool $called = false;
-
-        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
-            $this->called = true;
-            return Result::success(null);
-        }
-    };
-
-    $factory = new ModularStreamFactory(
-        deserializer: makeStreamDeserializer(),
-        validator: $customValidator,
-        transformer: makeStreamTransformer(),
-        events: makeStreamEvents(),
-    );
-
-    $source = [
-        new PartialInferenceResponse(contentDelta: '{"test": true}', usage: Usage::none()),
-    ];
-
-    $stream = $factory->makeStream(
-        source: $source,
-        responseModel: makeFactoryTestResponseModel(),
-        mode: OutputMode::JsonSchema,
-    );
-
-    iterator_to_array($stream);
-
-    expect($customValidator->called)->toBeTrue();
 });
 
 test('factory uses provided event handler', function() {
@@ -376,7 +326,6 @@ test('factory uses provided event handler', function() {
 
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
-        validator: makeStreamValidator(),
         transformer: makeStreamTransformer(),
         events: $customEvents,
     );
@@ -395,5 +344,4 @@ test('factory uses provided event handler', function() {
 
     expect($customEvents->events)->not()->toBeEmpty();
 });
-
 

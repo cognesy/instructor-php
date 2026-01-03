@@ -15,7 +15,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\EnrichResponse
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDelta;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\UpdateSequence;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Stream\Transformation;
@@ -40,7 +39,6 @@ final readonly class ModularStreamFactory
      */
     public function __construct(
         private CanDeserializeResponse $deserializer,
-        private CanValidatePartialResponse $validator,
         private CanTransformResponse $transformer,
         private CanHandleEvents $events,
         private ?Closure $bufferFactory = null,
@@ -63,10 +61,9 @@ final readonly class ModularStreamFactory
             // 1. Entry: Extract delta and create PartialFrame
             new ExtractDelta($mode, $this->bufferFactory),
 
-            // 2. Objects: Deserialize, validate, transform, deduplicate
+            // 2. Objects: Deserialize, transform, deduplicate
             new DeserializeAndDeduplicate(
                 deserializer: $this->deserializer,
-                validator: $this->validator,
                 transformer: $this->transformer,
                 responseModel: $responseModel,
             ),

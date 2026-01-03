@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Instructor\Config\PartialsGeneratorConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
@@ -15,7 +14,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\PartialValidation;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -50,10 +48,9 @@ function makeModularUpdateGeneratorTestInfrastructure(FakeInferenceDriver $drive
     );
 
     $deserializer = new ResponseDeserializer($events, [SymfonyDeserializer::class], $config);
-    $validator = new PartialValidation(new PartialsGeneratorConfig());
     $transformer = new ResponseTransformer(events: $events, transformers: [], config: $config);
 
-    $factory = new ModularStreamFactory($deserializer, $validator, $transformer, $events);
+    $factory = new ModularStreamFactory($deserializer, $transformer, $events);
 
     $generator = new ModularUpdateGenerator($inferenceProvider, $factory);
 

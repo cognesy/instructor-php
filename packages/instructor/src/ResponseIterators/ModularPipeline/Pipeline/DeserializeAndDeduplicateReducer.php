@@ -9,13 +9,12 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\DeduplicationSta
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Validation\Contracts\CanValidatePartialResponse;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
 /**
- * Deserializes, validates, transforms, and deduplicates partial objects.
+ * Deserializes, transforms, and deduplicates partial objects.
  *
  * Always uses buffer.parsed() as source - buffer is single source of truth.
  * Uses DeduplicationState to track hash of last emitted object.
@@ -30,7 +29,6 @@ final class DeserializeAndDeduplicateReducer implements Reducer
     public function __construct(
         private readonly Reducer $inner,
         private readonly CanDeserializeResponse $deserializer,
-        private readonly CanValidatePartialResponse $validator,
         private readonly CanTransformResponse $transformer,
         private readonly ResponseModel $responseModel,
     ) {
@@ -111,16 +109,6 @@ final class DeserializeAndDeduplicateReducer implements Reducer
      */
     private function createObject(array $data): Result {
         try {
-            // Validate
-            $validationResult = $this->validator->validatePartialResponse(
-                $data,
-                $this->responseModel,
-            );
-
-            if ($validationResult->isFailure()) {
-                return $validationResult;
-            }
-
             // Deserialize
             $deserialized = $this->deserializer->deserialize($data, $this->responseModel);
             if ($deserialized->isFailure()) {
