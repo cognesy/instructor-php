@@ -11,24 +11,19 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
+use Cognesy\Instructor\Creation\StructuredOutputPipelineFactory;
 use Cognesy\Instructor\Creation\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
-use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -460,52 +455,20 @@ class StructuredOutput
 
         $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
 
-        $responseDeserializer = new ResponseDeserializer(
+        $pipelineFactory = new StructuredOutputPipelineFactory(
             events: $this->events,
-            deserializers: $this->deserializers ?: [SymfonyDeserializer::class],
             config: $config,
-        );
-        $responseValidator = new ResponseValidator(
-            events: $this->events,
-            validators: $this->validators ?: [SymfonyValidator::class],
-            config: $config,
-        );
-        $responseTransformer = new ResponseTransformer(
-            events: $this->events,
-            transformers: $this->transformers ?: [],
-            config: $config,
-        );
-
-        // Always use extractor for array-first pipeline
-        $extractor = match (true) {
-            $this->extractor !== null => $this->extractor,
-            !empty($this->extractors) => new ResponseExtractor(
-                extractors: $this->extractors,
-                events: $this->events,
-            ),
-            default => new ResponseExtractor(events: $this->events),
-        };
-
-        // Ensure HttpClient is available; build default if not provided
-        if ($this->httpClient !== null) {
-            $client = $this->httpClient;
-        } else {
-            $builder = new HttpClientBuilder(events: $this->events);
-            if ($this->httpDebugPreset !== null) {
-                $builder = $builder->withDebugPreset($this->httpDebugPreset);
-            }
-            $client = $builder->create();
-        }
-
-        $executorFactory = new ResponseIteratorFactory(
             llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
-            responseDeserializer: $responseDeserializer,
-            responseValidator: $responseValidator,
-            responseTransformer: $responseTransformer,
-            events: $this->events,
-            extractor: $extractor,
-            httpClient: $client,
+            httpClient: $this->httpClient,
+            httpDebugPreset: $this->httpDebugPreset,
+            validators: $this->validators,
+            transformers: $this->transformers,
+            deserializers: $this->deserializers,
+            extractor: $this->extractor,
+            extractors: $this->extractors,
         );
+
+        $executorFactory = $pipelineFactory->createIteratorFactory();
 
         return new PendingStructuredOutput(
             execution: $execution,

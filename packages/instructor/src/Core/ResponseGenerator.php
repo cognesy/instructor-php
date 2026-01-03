@@ -42,14 +42,6 @@ class ResponseGenerator implements CanGenerateResponse
         }
 
         // Array-first pipeline: extract → deserialize → validate → transform
-        return $this->makeArrayFirstResponse($response, $responseModel, $mode);
-    }
-
-    /**
-     * Array-first pipeline: extract → deserializeFromArray → validate → transform
-     */
-    private function makeArrayFirstResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode): Result {
-        // Stage 1: Extract to canonical array
         $extractResult = $this->extractor->extract($response, $mode);
         if ($extractResult->isFailure()) {
             $this->events->dispatch(new ResponseGenerationFailed(['error' => $extractResult->error()]));
@@ -57,14 +49,14 @@ class ResponseGenerator implements CanGenerateResponse
         }
 
         // Stage 2-4: Deserialize, Validate, Transform via pipeline
-        $pipeline = $this->makeArrayFirstPipeline($responseModel);
+        $pipeline = $this->makePipeline($responseModel);
         return $pipeline->executeWith(ProcessingState::with($extractResult->unwrap()))->result();
     }
 
     /**
      * Array-first pipeline: array → deserialize → validate (if object) → transform (if object)
      */
-    private function makeArrayFirstPipeline(ResponseModel $responseModel): Pipeline {
+    private function makePipeline(ResponseModel $responseModel): Pipeline {
         // When returning arrays, skip validation and transformation (they require objects)
         $skipValidation = $responseModel->shouldReturnArray();
 

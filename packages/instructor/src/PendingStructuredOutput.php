@@ -4,6 +4,7 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
+use Cognesy\Instructor\Creation\ResponseIteratorFactory;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;

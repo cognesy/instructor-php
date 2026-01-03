@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Enums\OutputFormatType;
+use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Uuid;

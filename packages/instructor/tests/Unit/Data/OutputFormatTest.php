@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Tests\Unit\Data;
 
 use Cognesy\Instructor\Data\OutputFormat;
-use Cognesy\Instructor\Data\OutputFormatType;
+use Cognesy\Instructor\Enums\OutputFormatType;
 
 /**
  * Test-first validation for OutputFormat value object.

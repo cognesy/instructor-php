@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Enums\OutputFormatType;
+
 /**
  * Value object representing the desired output format for deserialization.
  *

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\Creation;
 
 use Closure;
 use Cognesy\Events\Contracts\CanHandleEvents;

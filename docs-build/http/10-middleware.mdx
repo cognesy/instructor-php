@@ -34,7 +34,7 @@ interface HttpMiddleware
 {
     public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse;
 }
-// @doctest id="cf02"
+// @doctest id="bf4b"
 ```
 
 The `handle` method takes two parameters:
@@ -85,7 +85,7 @@ abstract class BaseMiddleware implements HttpMiddleware
         return $response;
     }
 }
-// @doctest id="c712"
+// @doctest id="6f84"
 ```
 
 By extending `BaseMiddleware`, you only need to override the methods relevant to your middleware's functionality, making the code more focused and maintainable.
@@ -120,7 +120,7 @@ $client->withMiddleware(
     new RetryMiddleware(),
     new TimeoutMiddleware()
 );
-// @doctest id="0246"
+// @doctest id="8d47"
 ```
 
 Named middleware are useful when you need to reference them later, for example, to remove or replace them.
@@ -132,7 +132,7 @@ You can remove middleware from the stack by name:
 ```php
 // Remove a middleware by name
 $client->middleware()->remove('cache');
-// @doctest id="fc3b"
+// @doctest id="fab3"
 ```
 
 ### Replacing Middleware
@@ -142,7 +142,7 @@ You can replace a middleware with another one:
 ```php
 // Replace a middleware with a new one
 $client->middleware()->replace('cache', new ImprovedCachingMiddleware());
-// @doctest id="7801"
+// @doctest id="ce18"
 ```
 
 ### Clearing Middleware
@@ -152,7 +152,7 @@ You can remove all middleware from the stack:
 ```php
 // Clear all middleware
 $client->middleware()->clear();
-// @doctest id="69c0"
+// @doctest id="2d2c"
 ```
 
 ### Checking Middleware
@@ -164,7 +164,7 @@ You can check if a middleware exists in the stack:
 if ($client->middleware()->has('rate-limit')) {
     // The 'rate-limit' middleware exists
 }
-// @doctest id="3b32"
+// @doctest id="e8f8"
 ```
 
 ### Getting Middleware
@@ -177,7 +177,7 @@ $rateLimitMiddleware = $client->middleware()->get('rate-limit');
 
 // Get a middleware by index
 $firstMiddleware = $client->middleware()->get(0);
-// @doctest id="8a01"
+// @doctest id="5d16"
 ```
 
 ### Middleware Order
@@ -229,7 +229,7 @@ $request = new HttpRequest(
 // 6. RetryMiddleware processes the response (may retry on certain status codes)
 // 7. LoggingMiddleware processes the response (logs incoming response)
 $response = $client->withRequest($request)->get();
-// @doctest id="1749"
+// @doctest id="0cb0"
 ```
 
 ## Built-in Middleware
@@ -248,7 +248,7 @@ $client->withMiddleware(new DebugMiddleware());
 
 // Or use the convenience method
 $client->withDebugPreset('on');
-// @doctest id="6046"
+// @doctest id="0ca9"
 ```
 
 The debug middleware logs:
@@ -275,7 +275,7 @@ return [
         'responseStreamByLine' => true, // Dump stream as full lines or raw chunks
     ],
 ];
-// @doctest id="c008"
+// @doctest id="ff4b"
 ```
 
 ### StreamByLine Middleware
@@ -287,7 +287,7 @@ use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
 
 // Add stream by line middleware
 $client->withMiddleware(new StreamSSEsMiddleware());
-// @doctest id="8370"
+// @doctest id="19b0"
 ```
 
 You can customize how lines are processed by providing a parser function:
@@ -302,7 +302,7 @@ $lineParser = function (string $line) {
 };
 
 $client->withMiddleware(new StreamByLineMiddleware($lineParser));
-// @doctest id="18f4"
+// @doctest id="5835"
 ```
 
 
@@ -318,7 +318,7 @@ $client->withMiddleware(
     new BufferResponseMiddleware(),  // Buffer responses for reuse
     new DebugMiddleware()            // Log requests and responses
 );
-// @doctest id="af67"
+// @doctest id="92df"
 ```
 
 #### API Client Setup
@@ -331,7 +331,7 @@ $client->withMiddleware(
     new RateLimitingMiddleware(maxRequests: 100),      // Respect rate limits
     new LoggingMiddleware()                            // Log API interactions
 );
-// @doctest id="7953"
+// @doctest id="1be2"
 ```
 
 #### Testing Setup
@@ -341,7 +341,7 @@ $client = new HttpClient();
 $client->withMiddleware(
     new RecordReplayMiddleware(RecordReplayMiddleware::MODE_REPLAY) // Replay recorded responses
 );
-// @doctest id="451e"
+// @doctest id="5491"
 ```
 
 #### Streaming Setup
@@ -352,7 +352,7 @@ $client->withMiddleware(
     new StreamByLineMiddleware(), // Process streaming responses line by line
     new BufferResponseMiddleware() // Buffer responses for reuse
 );
-// @doctest id="4e19"
+// @doctest id="9540"
 ```
 
 By combining middleware components, you can create a highly customized HTTP client that handles complex requirements while keeping your application code clean and focused.
