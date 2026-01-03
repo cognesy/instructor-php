@@ -73,7 +73,6 @@ class StructureFactory
         $schemaConverter = new JsonSchemaToSchema(
             defaultToolName: $name,
             defaultToolDescription: $description,
-            defaultOutputClass: Structure::class,
         );
         $schema = $schemaConverter->fromJsonSchema($jsonSchema);
         return self::fromSchema($name, $schema, $description);

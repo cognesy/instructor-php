@@ -36,7 +36,6 @@ class InferenceStream
 
     private ?DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
-    private ?float $timeToFirstChunkMs = null;
 
     public function __construct(
         InferenceExecution $execution,
@@ -182,10 +181,6 @@ class InferenceStream
     private function dispatchFirstChunkReceived(PartialInferenceResponse $partialResponse): void {
         $now = new DateTimeImmutable();
         $startedAt = $this->startedAt ?? $now;
-
-        // Calculate TTFC in milliseconds
-        $interval = $startedAt->diff($now);
-        $this->timeToFirstChunkMs = ($interval->s * 1000) + ($interval->f * 1000);
 
         $this->events->dispatch(new StreamFirstChunkReceived(
             executionId: $this->execution->id,

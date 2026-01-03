@@ -27,16 +27,13 @@ class JsonSchemaToSchema
 {
     private string $defaultToolName;
     private string $defaultToolDescription;
-    private string $defaultOutputClass;
 
     public function __construct(
         string $defaultToolName = 'extract_object',
         string $defaultToolDescription = 'Extract data from chat content',
-        string $defaultOutputClass = '',
     ) {
         $this->defaultToolName = $defaultToolName;
         $this->defaultToolDescription = $defaultToolDescription;
-        $this->defaultOutputClass = $defaultOutputClass;
     }
 
     /**

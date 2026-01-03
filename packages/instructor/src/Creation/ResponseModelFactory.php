@@ -42,7 +42,6 @@ class ResponseModelFactory
         $this->schemaConverter = new JsonSchemaToSchema(
             defaultToolName: $config->toolName(),
             defaultToolDescription: $config->toolDescription(),
-            defaultOutputClass: $config->outputClass(),
         );
         $this->events = $events;
     }

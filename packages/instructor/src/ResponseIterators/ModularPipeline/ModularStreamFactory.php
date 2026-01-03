@@ -36,11 +36,7 @@ use IteratorAggregate;
 final readonly class ModularStreamFactory
 {
     /**
-     * @param CanDeserializeResponse $deserializer
-     * @param CanValidatePartialResponse $validator
-     * @param CanTransformResponse $transformer
-     * @param CanHandleEvents $events
-     * @param Closure|null $bufferFactory Optional factory: fn(OutputMode $mode): ContentBuffer
+     * @param Closure(OutputMode): ContentBuffer|null $bufferFactory Optional factory for content buffer
      */
     public function __construct(
         private CanDeserializeResponse $deserializer,

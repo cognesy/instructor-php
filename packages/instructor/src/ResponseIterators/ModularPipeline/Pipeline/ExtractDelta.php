@@ -16,8 +16,7 @@ use Cognesy\Stream\Contracts\Transducer;
 final readonly class ExtractDelta implements Transducer
 {
     /**
-     * @param OutputMode $mode
-     * @param Closure|null $bufferFactory Optional factory: fn(OutputMode $mode): ContentBuffer
+     * @param Closure(OutputMode): ContentBuffer|null $bufferFactory Optional factory for content buffer
      */
     public function __construct(
         private OutputMode $mode,

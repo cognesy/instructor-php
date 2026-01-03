@@ -51,7 +51,7 @@ trait HandlesJsonTypes
             $json->isCollection() => TypeDetails::collection(match (true) {
                 $json->itemSchema()?->isOption() => self::PHP_STRING,
                 $json->itemSchema()?->isEnum() => $json->itemSchema()->objectClass() ?? throw new \Exception('Enum class is required'),
-                $json->itemSchema()?->isObject() && !$json->itemSchema()->hasObjectClass() => self::PHP_ARRAY, // Return array when no class
+                ($json->itemSchema()?->isObject() === true) && !$json->itemSchema()->hasObjectClass() => self::PHP_ARRAY, // Return array when no class
                 $json->itemSchema()?->isObject() => $json->itemSchema()->objectClass() ?? throw new \Exception('Object class is required'),
                 $json->itemSchema()?->isScalar() => self::jsonToPhpType($json->itemSchema()->type()),
                 $json->itemSchema()?->isAny() => self::PHP_MIXED,

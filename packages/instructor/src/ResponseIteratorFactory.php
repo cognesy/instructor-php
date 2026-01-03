@@ -22,6 +22,7 @@ use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerato
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromJson;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\PartialGen\GeneratePartialsFromToolCalls;
 use Cognesy\Instructor\ResponseIterators\GeneratorBased\StreamingUpdatesGenerator;
+use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ExtractingJsonBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ToolsBuffer;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
@@ -122,7 +123,7 @@ class ResponseIteratorFactory
     /**
      * Create buffer factory for streaming extraction.
      *
-     * @return Closure|null Factory that creates ContentBuffer based on OutputMode
+     * @return Closure(OutputMode): ContentBuffer|null Factory that creates ContentBuffer based on OutputMode
      */
     private function makeBufferFactory(): ?Closure
     {

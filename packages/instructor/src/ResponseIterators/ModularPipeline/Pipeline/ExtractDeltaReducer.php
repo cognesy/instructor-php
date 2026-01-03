@@ -28,9 +28,7 @@ final class ExtractDeltaReducer implements Reducer
     private ContentBuffer $accumulatedBuffer;
 
     /**
-     * @param Reducer $inner
-     * @param OutputMode $mode
-     * @param Closure|null $bufferFactory Optional factory: fn(OutputMode $mode): ContentBuffer
+     * @param Closure(OutputMode): ContentBuffer|null $bufferFactory Optional factory for content buffer
      */
     public function __construct(
         private readonly Reducer $inner,

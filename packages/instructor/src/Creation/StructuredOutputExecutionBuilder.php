@@ -42,7 +42,6 @@ class StructuredOutputExecutionBuilder
             schemaConverter: new JsonSchemaToSchema(
                 defaultToolName: $config->toolName(),
                 defaultToolDescription: $config->toolDescription(),
-                defaultOutputClass: $config->outputClass(),
             )
         );
         $toolCallBuilder = new ToolCallBuilder($schemaFactory);
