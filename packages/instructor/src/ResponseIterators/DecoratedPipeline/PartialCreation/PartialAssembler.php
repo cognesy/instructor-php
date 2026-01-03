@@ -31,11 +31,15 @@ final class PartialAssembler
         PartialJson $partialJson,
         ResponseModel $responseModel,
     ): PartialObjectState {
-        $normalized = $partialJson->normalized();
+        $data = $partialJson->toArray();
+
+        if (empty($data)) {
+            return $state;
+        }
 
         try {
             $validationResult = $this->validator->validatePartialResponse(
-                $normalized,
+                $data,
                 $responseModel,
             );
         } catch (Throwable $e) {
@@ -47,7 +51,7 @@ final class PartialAssembler
             return $state->with($state->hash(), null, $validationResult);
         }
 
-        $deserialized = $this->deserializer->deserialize($normalized, $responseModel);
+        $deserialized = $this->deserializer->deserialize($data, $responseModel);
         if ($deserialized->isFailure()) {
             return $state->with($state->hash(), null, $deserialized);
         }

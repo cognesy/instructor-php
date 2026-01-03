@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain;
 
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\ContentBuffer;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\ContentBuffer\JsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
+use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Json\Json;
 
@@ -20,7 +20,7 @@ final readonly class ToolCallTracker
 {
     private function __construct(
         public string $activeName,
-        public ContentBuffer $argsBuffer,
+        public CanBufferContent $argsBuffer,
     ) {}
 
     public static function empty(): self {

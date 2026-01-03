@@ -79,7 +79,7 @@ it('returns array directly when OutputFormat is array', function () {
     $deserializer = createTestDeserializer();
 
     // This method will be added to ResponseDeserializer
-    $result = $deserializer->deserializeFromArray($data, $responseModel);
+    $result = $deserializer->deserialize($data, $responseModel);
 
     expect($result->isSuccess())->toBeTrue();
     expect($result->unwrap())->toBe($data);
@@ -91,7 +91,7 @@ it('hydrates to target class when OutputFormat specifies class', function () {
     $responseModel = createTestResponseModel(TestUser::class, OutputFormat::instanceOf(TestUserDTO::class));
     $deserializer = createTestDeserializer();
 
-    $result = $deserializer->deserializeFromArray($data, $responseModel);
+    $result = $deserializer->deserialize($data, $responseModel);
 
     expect($result->isSuccess())->toBeTrue();
     expect($result->unwrap())->toBeInstanceOf(TestUserDTO::class);
@@ -105,7 +105,7 @@ it('hydrates to schema class when OutputFormat is null (default)', function () {
     $deserializer = createTestDeserializer();
 
     // When OutputFormat is null, should use returnedClass from ResponseModel (default behavior)
-    $result = $deserializer->deserializeFromArray($data, $responseModel);
+    $result = $deserializer->deserialize($data, $responseModel);
 
     expect($result->isSuccess())->toBeTrue();
     expect($result->unwrap())->toBeInstanceOf(TestUser::class);
@@ -113,19 +113,6 @@ it('hydrates to schema class when OutputFormat is null (default)', function () {
     expect($result->unwrap()->age)->toBe(25);
 });
 
-it('backward compatible: deserialize(string) still works', function () {
-    $json = '{"name":"John","age":30}';
-    $responseModel = createTestResponseModel(TestUser::class);
-    $deserializer = createTestDeserializer();
-
-    // Existing API should continue to work
-    $result = $deserializer->deserialize($json, $responseModel);
-
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBeInstanceOf(TestUser::class);
-    expect($result->unwrap()->name)->toBe('John');
-    expect($result->unwrap()->age)->toBe(30);
-});
 
 it('handles nested objects in array deserialization', function () {
     $data = [
@@ -135,7 +122,7 @@ it('handles nested objects in array deserialization', function () {
     $responseModel = createTestResponseModel(TestUser::class, OutputFormat::array());
     $deserializer = createTestDeserializer();
 
-    $result = $deserializer->deserializeFromArray($data, $responseModel);
+    $result = $deserializer->deserialize($data, $responseModel);
 
     expect($result->isSuccess())->toBeTrue();
     expect($result->unwrap())->toBe($data);
@@ -148,7 +135,7 @@ it('returns failure for invalid data when hydrating to class', function () {
     $responseModel = createTestResponseModel(TestUser::class, OutputFormat::instanceOf(TestUserDTO::class));
     $deserializer = createTestDeserializer();
 
-    $result = $deserializer->deserializeFromArray($data, $responseModel);
+    $result = $deserializer->deserialize($data, $responseModel);
 
     // Symfony deserializer should still succeed (it uses default values)
     // This is expected behavior - validation is a separate stage
@@ -164,7 +151,7 @@ it('preserves array types and values accurately', function () {
     $responseModel = createTestResponseModel(TestUser::class, OutputFormat::array());
     $deserializer = createTestDeserializer();
 
-    $result = $deserializer->deserializeFromArray($data, $responseModel);
+    $result = $deserializer->deserialize($data, $responseModel);
 
     expect($result->isSuccess())->toBeTrue();
     $array = $result->unwrap();

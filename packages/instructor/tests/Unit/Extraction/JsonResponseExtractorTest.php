@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction;
 
-use Cognesy\Instructor\Extraction\JsonResponseExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 /**
- * Test-first validation for JsonResponseExtractor.
+ * Test-first validation for ResponseExtractor.
  *
  * These tests validate design assumptions BEFORE implementation.
- * They should fail until JsonResponseExtractor is implemented.
+ * They should fail until ResponseExtractor is implemented.
  */
 
 it('extracts array from valid JSON content', function () {
     $response = new InferenceResponse(content: '{"name":"John","age":30}');
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -29,7 +29,7 @@ it('extracts array from valid JSON content', function () {
 
 it('extracts array from JSON Schema mode', function () {
     $response = new InferenceResponse(content: '{"name":"Jane","age":25}');
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::JsonSchema);
 
@@ -42,7 +42,17 @@ it('extracts from tool calls in Tools mode', function () {
         new ToolCall(name: 'User', args: ['name' => 'John', 'age' => 30])
     );
     $response = new InferenceResponse(content: '', toolCalls: $toolCalls);
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
+
+    $result = $extractor->extract($response, OutputMode::Tools);
+
+    expect($result->isSuccess())->toBeTrue();
+    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+});
+
+it('falls back to content in Tools mode when tool calls are missing', function () {
+    $response = new InferenceResponse(content: '{"name":"John","age":30}');
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Tools);
 
@@ -62,7 +72,7 @@ This represents the user.
 MD;
 
     $response = new InferenceResponse(content: $content);
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -73,7 +83,7 @@ MD;
 it('handles JSON wrapped in text (bracket matching)', function () {
     $content = 'The user data is {"name":"John","age":30} as extracted.';
     $response = new InferenceResponse(content: $content);
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -84,7 +94,7 @@ it('handles JSON wrapped in text (bracket matching)', function () {
 it('handles nested objects', function () {
     $json = '{"user":{"name":"John","address":{"city":"NYC","zip":"10001"}},"active":true}';
     $response = new InferenceResponse(content: $json);
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -104,7 +114,7 @@ it('handles nested objects', function () {
 it('handles arrays in JSON', function () {
     $json = '{"users":[{"name":"John"},{"name":"Jane"}],"count":2}';
     $response = new InferenceResponse(content: $json);
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -120,7 +130,7 @@ it('handles arrays in JSON', function () {
 
 it('returns failure for invalid JSON', function () {
     $response = new InferenceResponse(content: 'this is not json at all');
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -129,7 +139,7 @@ it('returns failure for invalid JSON', function () {
 
 it('returns failure for empty content', function () {
     $response = new InferenceResponse(content: '');
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -139,7 +149,7 @@ it('returns failure for empty content', function () {
 it('handles malformed JSON with trailing comma (resilient parsing)', function () {
     // Note: This tests the existing resilient parser behavior
     $response = new InferenceResponse(content: '{"name":"John","age":30,}');
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::Json);
 
@@ -152,7 +162,7 @@ it('handles MdJson mode (markdown with JSON)', function () {
     $response = new InferenceResponse(content: '```json
 {"name":"John"}
 ```');
-    $extractor = new JsonResponseExtractor();
+    $extractor = new ResponseExtractor();
 
     $result = $extractor->extract($response, OutputMode::MdJson);
 

@@ -38,7 +38,7 @@ echo "Finish reason: " . $fullResponse->finishReason() . "\n";
 echo "Usage - Total tokens: " . $fullResponse->usage()->total() . "\n";
 echo "Usage - Input tokens: " . $fullResponse->usage()->input() . "\n";
 echo "Usage - Output tokens: " . $fullResponse->usage()->output() . "\n";
-// @doctest id="0371"
+// @doctest id="f0e7"
 ```
 
 
@@ -73,7 +73,7 @@ foreach ($stream as $partialResponse) {
 }
 
 echo "\n\nComplete response: " . $response->get();
-// @doctest id="4500"
+// @doctest id="8366"
 ```
 
 
@@ -169,5 +169,5 @@ if ($response->hasToolCalls()) {
 } else {
     echo "Response: " . $response->content() . "\n";
 }
-// @doctest id="921f"
+// @doctest id="5e9b"
 ```

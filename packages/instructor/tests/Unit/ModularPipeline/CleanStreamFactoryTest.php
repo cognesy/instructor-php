@@ -29,8 +29,7 @@ function makeFactoryTestResponseModel(): ResponseModel {
 
 function makeStreamDeserializer(): CanDeserializeResponse {
     return new class implements CanDeserializeResponse {
-        public function deserialize(string $json, ResponseModel $responseModel): Result {
-            $data = json_decode($json, true);
+        public function deserialize(array $data, ResponseModel $responseModel): Result {
             return Result::success((object) $data);
         }
     };
@@ -38,7 +37,7 @@ function makeStreamDeserializer(): CanDeserializeResponse {
 
 function makeStreamValidator(): CanValidatePartialResponse {
     return new class implements CanValidatePartialResponse {
-        public function validatePartialResponse(string $json, ResponseModel $responseModel): Result {
+        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
             return Result::success(null);
         }
     };
@@ -295,9 +294,9 @@ test('factory uses provided deserializer', function() {
     $customDeserializer = new class implements CanDeserializeResponse {
         public bool $called = false;
 
-        public function deserialize(string $json, ResponseModel $responseModel): Result {
+        public function deserialize(array $data, ResponseModel $responseModel): Result {
             $this->called = true;
-            return Result::success((object) json_decode($json, true));
+            return Result::success((object) $data);
         }
     };
 
@@ -327,7 +326,7 @@ test('factory uses provided validator', function() {
     $customValidator = new class implements CanValidatePartialResponse {
         public bool $called = false;
 
-        public function validatePartialResponse(string $json, ResponseModel $responseModel): Result {
+        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
             $this->called = true;
             return Result::success(null);
         }

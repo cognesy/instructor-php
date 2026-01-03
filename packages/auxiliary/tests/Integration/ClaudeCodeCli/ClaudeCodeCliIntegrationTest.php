@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Dto\ClaudeRequest;
-use Cognesy\Auxiliary\ClaudeCodeCli\Application\Parser\ResponseParser;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\OutputFormat;
-use Cognesy\Auxiliary\ClaudeCodeCli\Domain\Enum\PermissionMode;
-use Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution\CommandExecutor;
-use Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution\ExecutionPolicy;
-use Cognesy\Auxiliary\ClaudeCodeCli\Infrastructure\Execution\SandboxDriver;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\AgentCtrl\Common\Contract\CommandExecutor;
+use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
 use Cognesy\Utils\Sandbox\Data\ExecResult;
 
 it('builds, executes stub, and parses structured output', function () {
@@ -26,7 +25,7 @@ it('builds, executes stub, and parses structured output', function () {
     $executor = new class implements CommandExecutor {
         public array $capturedArgv = [];
 
-        public function execute(\Cognesy\Auxiliary\ClaudeCodeCli\Domain\Value\CommandSpec $command): ExecResult {
+        public function execute(\Cognesy\AgentCtrl\Common\Value\CommandSpec $command): ExecResult {
             $this->capturedArgv = $command->argv()->toArray();
             $payload = '{"type":"result","result":"ok","session_id":"abc","total_cost_usd":0.001}';
             return new ExecResult($payload, '', 0, 0.01);

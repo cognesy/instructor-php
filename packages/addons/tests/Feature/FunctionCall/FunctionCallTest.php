@@ -74,19 +74,19 @@ it('it can handle default args', function () {
     expect($call->getArgumentInfo('boolParam')->defaultValue())->toBe(true);
 });
 
-it('can deserialize from JSON', function () {
-    $json = '{
-        "intParam": 1,
-        "stringParam": "string",
-        "boolParam": true,
-        "objectParam": {
-            "intField": 1,
-            "stringField": "string",
-            "boolField": true
-        }
-    }';
+it('can deserialize from array', function () {
+    $data = [
+        "intParam" => 1,
+        "stringParam" => "string",
+        "boolParam" => true,
+        "objectParam" => [
+            "intField" => 1,
+            "stringField" => "string",
+            "boolField" => true
+        ]
+    ];
     $call = FunctionCallFactory::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
-    $call->fromJson($json);
+    $call->fromArray($data);
     $args = $call->transform();
     expect($args['intParam'])->toBe(1);
     expect($args['stringParam'])->toBe('string');

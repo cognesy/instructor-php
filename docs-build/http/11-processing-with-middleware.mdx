@@ -70,7 +70,7 @@ $client->withMiddleware(new class implements HttpMiddleware {
         return $response;
     }
 });
-// @doctest id="4253"
+// @doctest id="b368"
 ```
 
 This approach is concise but less reusable than defining a named class.
@@ -131,7 +131,7 @@ Then add the middleware to your client:
 ```php
 $client = new HttpClient();
 $client->withMiddleware(new JsonStreamMiddleware());
-// @doctest id="df8a"
+// @doctest id="dd7e"
 ```
 
 ### Response Decoration for Transforming Content
@@ -169,7 +169,7 @@ class XmlToJsonDecorator extends BaseResponseDecorator
         return $headers;
     }
 }
-// @doctest id="bba8"
+// @doctest id="2bf2"
 ```
 
 And the corresponding middleware:
@@ -199,7 +199,7 @@ class XmlToJsonMiddleware extends BaseMiddleware
         return new XmlToJsonDecorator($request, $response);
     }
 }
-// @doctest id="13c1"
+// @doctest id="bb6a"
 ```
 
 ## Advanced Middleware Examples
@@ -257,7 +257,7 @@ class AnalyticsMiddleware extends BaseMiddleware
         return $response;
     }
 }
-// @doctest id="c8ff"
+// @doctest id="43fa"
 ```
 
 ### Circuit Breaker Middleware
@@ -347,7 +347,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
         }
     }
 }
-// @doctest id="95f2"
+// @doctest id="3083"
 ```
 
 ### Conditional Middleware
@@ -387,7 +387,7 @@ class ConditionalMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="55df"
+// @doctest id="2eb8"
 ```
 
 Usage example:
@@ -401,7 +401,7 @@ $conditionalCaching = new ConditionalMiddleware(
 );
 
 $client->withMiddleware($conditionalCaching);
-// @doctest id="53e0"
+// @doctest id="387b"
 ```
 
 ### Request ID Middleware
@@ -454,7 +454,7 @@ class RequestIdMiddleware extends BaseMiddleware
         return $response;
     }
 }
-// @doctest id="9bf2"
+// @doctest id="2db7"
 ```
 
 ### OpenTelemetry Tracing Middleware
@@ -537,7 +537,7 @@ class TracingMiddleware extends BaseMiddleware
         }
     }
 }
-// @doctest id="8e3d"
+// @doctest id="ca2f"
 ```
 
 ### Customizing Middleware for LLM APIs
@@ -643,7 +643,7 @@ class LlmStreamingMiddleware extends BaseMiddleware
         };
     }
 }
-// @doctest id="db71"
+// @doctest id="aa46"
 ```
 
 ### Combining Multiple Middleware Components
@@ -687,7 +687,7 @@ $client->withMiddleware(
 
 // Now the client is ready to use with a complete middleware pipeline
 $response = $client->withRequest($request)->get();
-// @doctest id="10ed"
+// @doctest id="ec78"
 ```
 
 With this setup, requests and responses flow through the middleware in the following order:

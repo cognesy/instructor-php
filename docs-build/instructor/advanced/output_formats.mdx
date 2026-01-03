@@ -24,7 +24,7 @@ $data = (new StructuredOutput)
     ->intoArray()
     ->get();
 // Returns: ['name' => 'John', 'age' => 30]
-// @doctest id="5e69"
+// @doctest id="ec93"
 ```
 
 ## Available Output Formats
@@ -42,7 +42,7 @@ $data = (new StructuredOutput)
 
 // Result: ['name' => 'John Doe', 'age' => 30]
 dump($data['name']);  // 'John Doe'
-// @doctest id="d448"
+// @doctest id="1d42"
 ```
 
 **Use cases:**
@@ -73,7 +73,7 @@ DB::table('users')->insert($userData);
 
 // Or return as JSON API response
 return response()->json($userData);
-// @doctest id="fb66"
+// @doctest id="a829"
 ```
 
 ---
@@ -90,7 +90,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Result: UserDTO instance with subset of fields
-// @doctest id="8878"
+// @doctest id="ae2d"
 ```
 
 **Use cases:**
@@ -130,7 +130,7 @@ $user = (new StructuredOutput)
 echo $user->fullName;  // 'John Smith'
 echo $user->email;     // 'john@example.com'
 // phoneNumber and address were extracted but not included in output
-// @doctest id="7254"
+// @doctest id="1e00"
 ```
 
 ---
@@ -147,7 +147,7 @@ $scalar = (new StructuredOutput)
     ->get();
 
 // Result: Scalar object with custom deserialization logic
-// @doctest id="330f"
+// @doctest id="b324"
 ```
 
 **Use cases:**
@@ -177,7 +177,7 @@ $sentiment = (new StructuredOutput)
     ->get();
 
 dump($sentiment);  // 'positive' (string)
-// @doctest id="6f89"
+// @doctest id="0bc6"
 ```
 
 **Custom self-deserializing object:**
@@ -217,7 +217,7 @@ $price = (new StructuredOutput)
     ->get();
 
 // $price is Money instance with custom deserialization
-// @doctest id="315d"
+// @doctest id="3dab"
 ```
 
 ---
@@ -246,7 +246,7 @@ foreach ($stream->partials() as $partial) {
 // Get final result as array
 $finalArticle = $stream->finalValue();
 // Returns: ['title' => '...', 'author' => '...', 'content' => '...']
-// @doctest id="94e2"
+// @doctest id="b5a7"
 ```
 
 **Why this design?**
@@ -288,7 +288,7 @@ if ($data['age'] < 18) {
 } else {
     $user = new AdultUser(...$data);
 }
-// @doctest id="8a90"
+// @doctest id="3669"
 ```
 
 ### Pattern 2: Data Enrichment
@@ -308,7 +308,7 @@ $data['age_group'] = $data['age'] < 30 ? 'young' : 'senior';
 
 // Then create object
 $person = new Person(...$data);
-// @doctest id="e08c"
+// @doctest id="36df"
 ```
 
 ### Pattern 3: Multi-Layer Architecture
@@ -339,7 +339,7 @@ $order = (new StructuredOutput)
     ->intoInstanceOf(OrderDTO::class)        // Simple application DTO
     ->with(messages: 'Extract order details')
     ->get();
-// @doctest id="20a5"
+// @doctest id="4677"
 ```
 
 ---
@@ -358,7 +358,7 @@ $data = (new StructuredOutput)
 
 // Schema sent to LLM still includes all 5 fields from UserProfile
 // Only the deserialization step is different
-// @doctest id="6cae"
+// @doctest id="f575"
 ```
 
 ### Validation Behavior
@@ -384,7 +384,7 @@ $data = (new StructuredOutput)
     ->intoArray()  // ← New
     ->get();
 // Returns: array
-// @doctest id="db38"
+// @doctest id="c549"
 ```
 
 ---
@@ -402,46 +402,46 @@ See working examples in:
 
 InstructorPHP uses a pluggable extraction pipeline to convert raw LLM responses into canonical arrays. You can customize this pipeline for special formats or implement custom extraction logic.
 
-### Default Extraction Strategies
+### Default Content Extractors
 
-The default `JsonResponseExtractor` uses a strategy chain (tried in order):
+The default `ResponseExtractor` uses an extractor chain (tried in order):
 
-| Strategy | Description |
-|----------|-------------|
-| `DirectJsonStrategy` | Parse content directly as JSON |
-| `ResilientJsonStrategy` | Handle malformed JSON (trailing commas, etc.) |
-| `MarkdownCodeBlockStrategy` | Extract from ` ```json ``` ` blocks |
-| `BracketMatchingStrategy` | Find first `{` to last `}` |
-| `SmartBraceMatchingStrategy` | Handle escaped quotes in strings |
+| Extractor | Description |
+|-----------|-------------|
+| `DirectJsonExtractor` | Parse content directly as JSON |
+| `ResilientJsonExtractor` | Handle malformed JSON (trailing commas, etc.) |
+| `MarkdownBlockExtractor` | Extract from ` ```json ``` ` blocks |
+| `BracketMatchingExtractor` | Find first `{` to last `}` |
+| `SmartBraceExtractor` | Handle escaped quotes in strings |
 
-### Custom Extraction Strategies
+### Custom Extractors
 
-Replace the default strategies with your own:
+Replace the default extractors with your own:
 
 ```php
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
-use Cognesy\Instructor\Extraction\Strategies\MarkdownCodeBlockStrategy;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
 
 $result = (new StructuredOutput)
-    ->withExtractionStrategies(
-        new DirectJsonStrategy(),       // Only these strategies
-        new MarkdownCodeBlockStrategy(),
+    ->withExtractors(
+        new DirectJsonExtractor(),       // Only these extractors
+        new MarkdownBlockExtractor(),
     )
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="e05c"
+// @doctest id="1b86"
 ```
 
-### Custom Strategy Implementation
+### Custom Extractor Implementation
 
-Create your own strategy for special formats:
+Create your own extractor for special formats:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\ExtractionStrategy;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
 
-class XmlJsonStrategy implements ExtractionStrategy
+class XmlJsonExtractor implements CanExtractContent
 {
     public function extract(string $content): Result
     {
@@ -458,21 +458,21 @@ class XmlJsonStrategy implements ExtractionStrategy
     }
 }
 
-// Use custom strategy
+// Use custom extractor
 $result = (new StructuredOutput)
-    ->withExtractionStrategies(
-        new XmlJsonStrategy(),
-        new DirectJsonStrategy(), // Fallback
+    ->withExtractors(
+        new XmlJsonExtractor(),
+        new DirectJsonExtractor(), // Fallback
     )
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="700d"
+// @doctest id="7f5b"
 ```
 
-### Custom Extractor
+### Custom Response Extractor
 
-For complete control, implement `CanExtractResponse`:
+For complete control over the extraction pipeline, implement `CanExtractResponse`:
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
@@ -505,20 +505,21 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="67bb"
+// @doctest id="1d5d"
 ```
 
 ### When to Customize Extraction
 
-**Use `withExtractionStrategies()` when:**
+**Use `withExtractors()` when:**
 - You want to optimize for known response formats
 - You need to add support for additional formats
-- You want to change the strategy order
+- You want to change the extractor order
+- Custom extractors are automatically used for both sync and streaming
 
 **Use `withExtractor()` when:**
 - You need completely custom extraction logic
 - You're integrating with a non-standard LLM response format
-- You want to bypass the strategy chain entirely
+- You want to bypass the extractor chain entirely
 
 ---
 

@@ -22,11 +22,15 @@ final class AssemblePartialObject
         PartialJson $partialJson,
         ResponseModel $responseModel,
     ): PartialObject {
-        $normalized = $partialJson->normalized();
+        $data = $partialJson->toArray();
+
+        if (empty($data)) {
+            return $state;
+        }
 
         try {
             $validationResult = $this->validator->validatePartialResponse(
-                $normalized,
+                $data,
                 $responseModel,
             );
         } catch (Throwable $e) {
@@ -38,7 +42,7 @@ final class AssemblePartialObject
             return $state->with($state->hash(), null, $validationResult);
         }
 
-        $deserialized = $this->deserializer->deserialize($normalized, $responseModel);
+        $deserialized = $this->deserializer->deserialize($data, $responseModel);
         if ($deserialized->isFailure()) {
             return $state->with($state->hash(), null, $deserialized);
         }

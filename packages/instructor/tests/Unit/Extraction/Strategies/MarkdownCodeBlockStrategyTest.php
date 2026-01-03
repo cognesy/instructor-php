@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction\Strategies;
 
-use Cognesy\Instructor\Extraction\Strategies\MarkdownCodeBlockStrategy;
+use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
 
-describe('MarkdownCodeBlockStrategy', function () {
+describe('MarkdownBlockExtractor', function () {
     beforeEach(function () {
-        $this->strategy = new MarkdownCodeBlockStrategy();
+        $this->extractor = new MarkdownBlockExtractor();
     });
 
     it('has correct name', function () {
-        expect($this->strategy->name())->toBe('markdown_code_block');
+        expect($this->extractor->name())->toBe('markdown_code_block');
     });
 
     it('extracts JSON from ```json block', function () {
@@ -23,7 +23,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap())->toBe('{"name":"John","age":30}');
@@ -36,7 +36,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap())->toBe('{"name":"John"}');
@@ -49,7 +49,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap())->toBe('{"name":"John"}');
@@ -65,7 +65,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isSuccess())->toBeTrue();
         $decoded = json_decode($result->unwrap(), true);
@@ -73,7 +73,7 @@ describe('MarkdownCodeBlockStrategy', function () {
     });
 
     it('fails when no code block present', function () {
-        $result = $this->strategy->extract('{"name":"John"}');
+        $result = $this->extractor->extract('{"name":"John"}');
 
         expect($result->isFailure())->toBeTrue();
         expect($result->errorMessage())->toBe('No markdown code block found');
@@ -85,7 +85,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isFailure())->toBeTrue();
         expect($result->errorMessage())->toBe('Empty code block');
@@ -98,7 +98,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isFailure())->toBeTrue();
         expect($result->errorMessage())->toContain('Invalid JSON in code block');
@@ -115,7 +115,7 @@ describe('MarkdownCodeBlockStrategy', function () {
         ```
         MD;
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap())->toBe('{"first":"one"}');
@@ -124,7 +124,7 @@ describe('MarkdownCodeBlockStrategy', function () {
     it('handles code block with no space after json', function () {
         $content = '```json{"name":"John"}```';
 
-        $result = $this->strategy->extract($content);
+        $result = $this->extractor->extract($content);
 
         expect($result->isSuccess())->toBeTrue();
         expect($result->unwrap())->toBe('{"name":"John"}');

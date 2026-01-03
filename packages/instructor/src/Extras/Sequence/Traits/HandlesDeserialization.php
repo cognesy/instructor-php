@@ -3,15 +3,14 @@
 namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
-use Cognesy\Utils\Json\Json;
 
 trait HandlesDeserialization
 {
     private CanDeserializeClass $deserializer;
 
-    public function fromJson(string $jsonData, ?string $toolName = null): static {
+    #[\Override]
+    public function fromArray(array $data, ?string $toolName = null): static {
         $deserializer = $this->deserializer;
-        $data = Json::decode($jsonData);
 
         // $data['properties']['list'] is workaround for models
         // which do not support JSON Schema tool calling natively

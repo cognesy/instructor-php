@@ -5,7 +5,6 @@ namespace Cognesy\Dynamic\Traits\Structure;
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Utils\Json\Json;
 use DateTime;
 use DateTimeImmutable;
 use Exception;
@@ -15,12 +14,8 @@ trait HandlesDeserialization
     private SymfonyDeserializer $deserializer;
     protected bool $ignoreUnknownFields = true;
 
-    public function fromJson(string $jsonData, ?string $toolName = null): static {
-        $data = Json::decode($jsonData);
-        return $this->fromArray($data);
-    }
-
-    public function fromArray(array $data): static {
+    #[\Override]
+    public function fromArray(array $data, ?string $toolName = null): static {
         foreach ($data as $name => $fieldData) {
             if ($this->ignoreUnknownFields && !$this->has($name)) {
                 continue;

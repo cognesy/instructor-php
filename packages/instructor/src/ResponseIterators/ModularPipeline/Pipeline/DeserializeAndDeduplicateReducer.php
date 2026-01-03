@@ -17,7 +17,7 @@ use Throwable;
 /**
  * Deserializes, validates, transforms, and deduplicates partial objects.
  *
- * Always uses buffer.normalized() as source - buffer is single source of truth.
+ * Always uses buffer.parsed() as source - buffer is single source of truth.
  * Uses DeduplicationState to track hash of last emitted object.
  * Only emits when object content changes.
  *
@@ -60,10 +60,16 @@ final class DeserializeAndDeduplicateReducer implements Reducer
             return $this->inner->step($accumulator, $reducible);
         }
 
-        // Use buffer's normalized content as single source of truth
-        // Buffer has accumulated all deltas across chunks
-        $normalizedText = $reducible->buffer->normalized();
-        $result = $this->createObject($normalizedText);
+        // Use buffer's parsed content as single source of truth
+        $parsed = $reducible->buffer->parsed();
+
+        if ($parsed->isFailure()) {
+             // If parsing fails (invalid/incomplete JSON), we forward failure.
+             $frame = $reducible->withObject($parsed);
+             return $this->inner->step($accumulator, $frame);
+        }
+
+        $result = $this->createObject($parsed->unwrap());
 
         // Handle errors - forward with error in Result, no dedup update
         if ($result->isFailure()) {
@@ -100,11 +106,14 @@ final class DeserializeAndDeduplicateReducer implements Reducer
 
     // INTERNAL //////////////////////////////////////////////////////////////
 
-    private function createObject(string $normalized): Result {
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function createObject(array $data): Result {
         try {
             // Validate
             $validationResult = $this->validator->validatePartialResponse(
-                $normalized,
+                $data,
                 $this->responseModel,
             );
 
@@ -113,7 +122,7 @@ final class DeserializeAndDeduplicateReducer implements Reducer
             }
 
             // Deserialize
-            $deserialized = $this->deserializer->deserialize($normalized, $this->responseModel);
+            $deserialized = $this->deserializer->deserialize($data, $this->responseModel);
             if ($deserialized->isFailure()) {
                 return $deserialized;
             }

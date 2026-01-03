@@ -41,13 +41,13 @@ class SymfonyHttpResponseAdapter implements CanAdaptHttpResponse
         if ($this->isStreamed) {
             return HttpResponse::streaming(
                 statusCode: $this->response->getStatusCode(),
-                headers: $this->response->getHeaders(),
+                headers: $this->response->getHeaders(false),
                 stream: new IterableStream($this->stream()),
             );
         }
         return HttpResponse::sync(
             statusCode: $this->response->getStatusCode(),
-            headers: $this->response->getHeaders(),
+            headers: $this->response->getHeaders(false),
             body: $this->body(),
         );
     }

@@ -34,7 +34,7 @@ $anthropicResponse = $inference
     ->get();
 
 echo "Anthropic response: $anthropicResponse\n";
-// @doctest id="e9a3"
+// @doctest id="ef76"
 ```
 
 
@@ -79,7 +79,7 @@ try {
 } catch (\Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
-// @doctest id="8c81"
+// @doctest id="9bd3"
 ```
 
 
@@ -143,7 +143,7 @@ echo "Response: " . $costAwareLLM->ask($mediumQuestion, 'medium') . "\n\n";
 $complexQuestion = "Analyze the ethical implications of AI in healthcare.";
 echo "Complex question (high cost): $complexQuestion\n";
 echo "Response: " . $costAwareLLM->ask($complexQuestion, 'high') . "\n\n";
-// @doctest id="07ee"
+// @doctest id="3f1b"
 ```
 
 
@@ -196,5 +196,5 @@ foreach ($tasks as $task) {
     echo "Task: $task\n";
     echo "Response: " . $experts->ask($task[0], $task[1]) . "\n\n";
 }
-// @doctest id="e41a"
+// @doctest id="2c6c"
 ```

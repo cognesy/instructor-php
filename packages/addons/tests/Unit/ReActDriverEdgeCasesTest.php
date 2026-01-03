@@ -82,5 +82,5 @@ it('records extraction failures inside failure steps (deterministic)', function 
     expect($result->currentStep()?->hasErrors())->toBeTrue();
     expect($result->currentStep()?->stepType())->toBe(ToolUseStepType::Error);
     expect($result->currentStep()?->errorsAsString())
-        ->toContain('No JSON found');
+        ->toContain('Empty response content');
 });

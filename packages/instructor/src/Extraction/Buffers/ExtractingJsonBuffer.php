@@ -7,6 +7,7 @@ use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Result\Result;
 
 /**
  * JSON buffer that uses pluggable extraction strategies for normalization.
@@ -87,6 +88,12 @@ final readonly class ExtractingJsonBuffer implements CanBufferContent
     public function normalized(): string
     {
         return $this->normalized;
+    }
+
+    #[\Override]
+    public function parsed(): Result
+    {
+        return Result::try(fn() => Json::fromPartial($this->normalized())->toArray());
     }
 
     #[\Override]

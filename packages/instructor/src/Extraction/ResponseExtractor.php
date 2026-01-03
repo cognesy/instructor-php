@@ -13,12 +13,15 @@ use Cognesy\Instructor\Extraction\Buffers\ToolsBuffer;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Contracts\CanParseContent;
 use Cognesy\Instructor\Extraction\Contracts\CanProvideContentBuffer;
+use Cognesy\Instructor\Extraction\Enums\DataFormat;
 use Cognesy\Instructor\Extraction\Extractors\BracketMatchingExtractor;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\SmartBraceExtractor;
+use Cognesy\Instructor\Extraction\Parsers\JsonParser;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Result\Result;
@@ -132,8 +135,12 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
             return Result::failure('Empty response content');
         }
 
-        // 2. EXTRACTION: Try extractors in order (format-agnostic)
-        return $this->extractFromContent($content);
+        // 2. RESOLVE PARSER
+        $format = $this->resolveFormat($mode);
+        $parser = $this->resolveParser($format);
+
+        // 3. EXTRACTION: Try extractors in order (format-agnostic)
+        return $this->extractFromContent($content, $parser);
     }
 
     #[\Override]
@@ -177,7 +184,8 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
         $toolCalls = $response->toolCalls();
 
         if ($toolCalls->isEmpty()) {
-            return '';
+            // Fallback for providers that return tool-call JSON in content.
+            return $response->content();
         }
 
         if ($toolCalls->hasSingle()) {
@@ -192,7 +200,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
      *
      * @return Result<array<string, mixed>, string>
      */
-    private function extractFromContent(string $content): Result
+    private function extractFromContent(string $content, CanParseContent $parser): Result
     {
         $this->dispatch(new ExtractionStarted([
             'content_length' => strlen($content),
@@ -214,21 +222,20 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
             $result = $extractor->extract($content);
 
             if ($result->isSuccess()) {
-                $json = $result->unwrap();
+                $rawContent = $result->unwrap();
 
                 $this->dispatch(new ExtractionStrategySucceeded([
                     'strategy' => $extractorName,
-                    'content_length' => strlen($json),
+                    'content_length' => strlen($rawContent),
                 ]));
 
-                // Decode JSON string to array
-                /** @var Result<array<string, mixed>, string> */
-                $decoded = Result::try(fn() => json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR));
+                // Parse content to array
+                $decoded = $parser->parse($rawContent);
 
                 if ($decoded->isSuccess()) {
                     $this->dispatch(new ExtractionCompleted([
                         'strategy' => $extractorName,
-                        'content_length' => strlen($json),
+                        'content_length' => strlen($rawContent),
                     ]));
                 }
 
@@ -284,6 +291,23 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
             fn($extractor) => $this->resolveExtractor($extractor),
             $extractors
         );
+    }
+
+    private function resolveFormat(OutputMode $mode): DataFormat
+    {
+        return match($mode) {
+            OutputMode::Tools, OutputMode::Json, OutputMode::JsonSchema, OutputMode::MdJson => DataFormat::Json,
+            // Future:
+            // OutputMode::MdYaml, OutputMode::Yaml => DataFormat::Yaml,
+            default => DataFormat::Json,
+        };
+    }
+
+    private function resolveParser(DataFormat $format): CanParseContent
+    {
+        return match($format) {
+            DataFormat::Json => new JsonParser(),
+        };
     }
 
     /**

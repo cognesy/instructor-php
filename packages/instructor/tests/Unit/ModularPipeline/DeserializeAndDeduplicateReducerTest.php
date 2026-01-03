@@ -51,8 +51,7 @@ function makeDeserializedCollector(): Reducer {
 
 function makeSuccessDeserializer(): CanDeserializeResponse {
     return new class implements CanDeserializeResponse {
-        public function deserialize(string $json, ResponseModel $responseModel): Result {
-            $data = json_decode($json, true);
+        public function deserialize(array $data, ResponseModel $responseModel): Result {
             return Result::success((object) $data);
         }
     };
@@ -60,7 +59,7 @@ function makeSuccessDeserializer(): CanDeserializeResponse {
 
 function makeFailureDeserializer(): CanDeserializeResponse {
     return new class implements CanDeserializeResponse {
-        public function deserialize(string $json, ResponseModel $responseModel): Result {
+        public function deserialize(array $data, ResponseModel $responseModel): Result {
             return Result::failure('Deserialization failed');
         }
     };
@@ -68,7 +67,7 @@ function makeFailureDeserializer(): CanDeserializeResponse {
 
 function makePassThroughValidator(): CanValidatePartialResponse {
     return new class implements CanValidatePartialResponse {
-        public function validatePartialResponse(string $json, ResponseModel $responseModel): Result {
+        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
             return Result::success(null);
         }
     };
@@ -76,7 +75,7 @@ function makePassThroughValidator(): CanValidatePartialResponse {
 
 function makeFailingValidator(): CanValidatePartialResponse {
     return new class implements CanValidatePartialResponse {
-        public function validatePartialResponse(string $json, ResponseModel $responseModel): Result {
+        public function validatePartialResponse(array $data, ResponseModel $responseModel): Result {
             return Result::failure('Validation failed');
         }
     };

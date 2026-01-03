@@ -10,8 +10,8 @@ use Cognesy\Instructor\Events\Extraction\ExtractionStarted;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategyAttempted;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategyFailed;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategySucceeded;
-use Cognesy\Instructor\Extraction\JsonResponseExtractor;
-use Cognesy\Instructor\Extraction\Strategies\DirectJsonStrategy;
+use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -29,8 +29,8 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor(
-            strategies: [new DirectJsonStrategy()],
+        $extractor = new ResponseExtractor(
+            extractors: [new DirectJsonExtractor()],
             events: $dispatcher,
         );
 
@@ -51,8 +51,8 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor(
-            strategies: [new DirectJsonStrategy()],
+        $extractor = new ResponseExtractor(
+            extractors: [new DirectJsonExtractor()],
             events: $dispatcher,
         );
 
@@ -74,8 +74,8 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor(
-            strategies: JsonResponseExtractor::defaultStrategies(),
+        $extractor = new ResponseExtractor(
+            extractors: ResponseExtractor::defaultExtractors(),
             events: $dispatcher,
         );
 
@@ -97,8 +97,8 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor(
-            strategies: [new DirectJsonStrategy()],
+        $extractor = new ResponseExtractor(
+            extractors: [new DirectJsonExtractor()],
             events: $dispatcher,
         );
 
@@ -115,8 +115,8 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor(
-            strategies: [new DirectJsonStrategy()],
+        $extractor = new ResponseExtractor(
+            extractors: [new DirectJsonExtractor()],
             events: $dispatcher,
         );
 
@@ -134,8 +134,8 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor(
-            strategies: [new DirectJsonStrategy()],
+        $extractor = new ResponseExtractor(
+            extractors: [new DirectJsonExtractor()],
             events: $dispatcher,
         );
 
@@ -151,8 +151,8 @@ describe('Extraction Events', function () {
     });
 
     it('works without events dispatcher', function () {
-        $extractor = new JsonResponseExtractor(
-            strategies: [new DirectJsonStrategy()],
+        $extractor = new ResponseExtractor(
+            extractors: [new DirectJsonExtractor()],
             events: null,
         );
 
@@ -167,7 +167,7 @@ describe('Extraction Events', function () {
         $events = [];
         $dispatcher = createEventCollector($events);
 
-        $extractor = new JsonResponseExtractor();
+        $extractor = new ResponseExtractor();
         $withEvents = $extractor->withEvents($dispatcher);
 
         expect($withEvents)->not->toBe($extractor);

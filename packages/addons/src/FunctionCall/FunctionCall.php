@@ -115,8 +115,8 @@ final readonly class FunctionCall implements CanDeserializeSelf, CanTransformSel
     // SERIALIZATION ///////////////////////////////////////////////
 
     #[\Override]
-    public function fromJson(string $jsonData, ?string $toolName = null): static {
-        $arguments = $this->arguments->fromJson($jsonData);
+    public function fromArray(array $data, ?string $toolName = null): static {
+        $arguments = $this->arguments->fromArray($data);
         $name = $toolName ?? $this->name;
         return new static($name, $this->description, $arguments);
     }

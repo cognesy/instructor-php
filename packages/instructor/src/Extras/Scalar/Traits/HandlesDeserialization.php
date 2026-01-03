@@ -2,28 +2,15 @@
 
 namespace Cognesy\Instructor\Extras\Scalar\Traits;
 
-use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
-use Cognesy\Utils\Json\Json;
-use Exception;
-
 trait HandlesDeserialization
 {
     /**
-     * Deserialize JSON into scalar value
+     * Deserialize array into scalar value
      */
-    public function fromJson(string $jsonData, ?string $toolName = null) : static {
-        if (empty($jsonData)) {
-            $this->value = $this->defaultValue;
-            return $this;
-        }
-        try {
-            // decode JSON into array
-            $array = Json::decode($jsonData);
-        } catch (Exception $e) {
-            throw new DeserializationException($e->getMessage(), $this->name, $jsonData);
-        }
+    #[\Override]
+    public function fromArray(array $data, ?string $toolName = null) : static {
         // check if value exists in JSON
-        $this->value = $array[$this->name] ?? $this->defaultValue;
+        $this->value = $data[$this->name] ?? $this->defaultValue;
         return $this;
     }
 }

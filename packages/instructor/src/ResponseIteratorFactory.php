@@ -40,9 +40,9 @@ class ResponseIteratorFactory
     private readonly CanValidateResponse $responseValidator;
     private readonly CanValidatePartialResponse $partialResponseValidator;
     private readonly CanTransformResponse $responseTransformer;
+    private readonly CanExtractResponse $extractor;
     private readonly CanHandleEvents $events;
     private readonly ?HttpClient $httpClient;
-    private readonly ?CanExtractResponse $extractor;
 
     public function __construct(
         LLMProvider $llmProvider,
@@ -51,17 +51,17 @@ class ResponseIteratorFactory
         CanValidatePartialResponse $partialResponseValidator,
         CanTransformResponse $responseTransformer,
         CanHandleEvents $events,
+        CanExtractResponse $extractor,
         ?HttpClient $httpClient = null,
-        ?CanExtractResponse $extractor = null,
     ) {
         $this->llmProvider = $llmProvider;
         $this->responseDeserializer = $responseDeserializer;
         $this->responseValidator = $responseValidator;
         $this->partialResponseValidator = $partialResponseValidator;
         $this->responseTransformer = $responseTransformer;
+        $this->extractor = $extractor;
         $this->events = $events;
         $this->httpClient = $httpClient;
-        $this->extractor = $extractor;
     }
 
     public function makeExecutor(StructuredOutputExecution $execution) : CanHandleStructuredOutputAttempts {

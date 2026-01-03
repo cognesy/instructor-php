@@ -12,6 +12,7 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialStreamFactory;
 use Cognesy\Instructor\ResponseIterators\DecoratedPipeline\PartialUpdateGenerator;
@@ -73,7 +74,8 @@ it('processes successful streaming attempt end-to-end', function () {
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
         responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
         responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
+        events: $events,
+        extractor: new ResponseExtractor(events: $events),
     );
 
     $retryPolicy = new DefaultRetryPolicy($events);
@@ -152,7 +154,8 @@ it('retries on validation failure when retries available', function () {
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
         responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
         responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
+        events: $events,
+        extractor: new ResponseExtractor(events: $events),
     );
 
     $retryPolicy = new DefaultRetryPolicy($events);
@@ -233,7 +236,8 @@ it('throws exception when max retries exceeded', function () {
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
         responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
         responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
+        events: $events,
+        extractor: new ResponseExtractor(events: $events),
     );
 
     $retryPolicy = new DefaultRetryPolicy($events);
@@ -298,7 +302,8 @@ it('hasNext returns false when execution is finalized', function () {
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
         responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
         responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
+        events: $events,
+        extractor: new ResponseExtractor(events: $events),
     );
 
     $retryPolicy = new DefaultRetryPolicy($events);
@@ -362,7 +367,8 @@ it('clears attempt state between attempts', function () {
         responseDeserializer: new ResponseDeserializer($events, [\Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer::class], new StructuredOutputConfig()),
         responseValidator: new ResponseValidator($events, [], new StructuredOutputConfig()),
         responseTransformer: new ResponseTransformer($events, [], new StructuredOutputConfig()),
-        events: $events
+        events: $events,
+        extractor: new ResponseExtractor(events: $events),
     );
 
     $retryPolicy = new DefaultRetryPolicy($events);

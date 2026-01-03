@@ -7,5 +7,6 @@ use Cognesy\Utils\Result\Result;
 
 interface CanDeserializeResponse
 {
-    public function deserialize(string $text, ResponseModel $responseModel) : Result;
+    /** @param array<string, mixed> $data */
+    public function deserialize(array $data, ResponseModel $responseModel) : Result;
 }

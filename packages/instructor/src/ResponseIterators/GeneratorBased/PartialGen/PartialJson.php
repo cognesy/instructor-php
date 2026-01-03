@@ -36,6 +36,10 @@ final class PartialJson
         return $this->normalized;
     }
 
+    public function toArray(): array {
+        return Json::fromPartial($this->normalized)->toArray();
+    }
+
     public function isEmpty(): bool {
         return $this->normalized === '';
     }

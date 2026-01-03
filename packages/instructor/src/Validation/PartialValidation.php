@@ -10,10 +10,8 @@ use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\StateContracts\CanCarryState;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;
-use Exception;
 
 /**
  * Validates partial response text during streaming according to early policies:
@@ -30,88 +28,80 @@ class PartialValidation implements CanValidatePartialResponse
         $this->config = $config;
     }
 
+    #[\Override]
     public function validatePartialResponse(
-        string $partialResponseText,
+        array $data,
         ResponseModel $responseModel,
     ) : Result {
         return $this->makePartialValidationPipeline(
-                $partialResponseText,
+                $data,
                 $responseModel,
                 $this->config,
             )
-            ->executeWith(ProcessingState::with($partialResponseText))
+            ->executeWith(ProcessingState::with($data))
             ->result();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
 
     private function makePartialValidationPipeline(
-        string $partialResponseText,
+        array $data,
         ResponseModel $responseModel,
         PartialsGeneratorConfig $config,
     ) : Pipeline {
         return Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn(string $text) => $this->preventJsonSchemaResponse($config->preventJsonSchema, $text))
-            ->through(fn(string $text) => $this->detectNonMatchingJson($config->matchToExpectedFields, $text, $responseModel))
+            ->through(fn(array $d) => $this->preventJsonSchemaResponse($config->preventJsonSchema, $d))
+            ->through(fn(array $d) => $this->detectNonMatchingJson($config->matchToExpectedFields, $d, $responseModel))
             ->onFailure(fn(CanCarryState $state) => throw new JsonParsingException(
                 message: (string) $state->result()->error(),
-                json: $partialResponseText,
+                json: json_encode($data),
             ))
             ->create();
     }
 
-    private function preventJsonSchemaResponse(bool $check, string $partialResponseText) : Result {
+    private function preventJsonSchemaResponse(bool $check, array $data) : Result {
         if (!$check) {
-            return Result::success($partialResponseText);
+            return Result::success($data);
         }
-        if (!$this->isJsonSchemaResponse($partialResponseText)) {
-            return Result::success($partialResponseText);
+        if (!$this->isJsonSchemaResponse($data)) {
+            return Result::success($data);
         }
         return Result::failure(new JsonParsingException(
             message: 'You started responding with JSONSchema. Respond correctly with strict JSON object data instead.',
-            json: $partialResponseText,
+            json: json_encode($data),
         ));
     }
 
-    private function isJsonSchemaResponse(string $responseText) : bool {
-        try {
-            $decoded = Json::fromPartial($responseText)->toArray();
-        } catch (Exception $_) {
-            // also covers no JSON at all - which is fine, as some models will respond with text
-            return false;
-        }
-        return isset($decoded['type']) && $decoded['type'] === 'object';
+    private function isJsonSchemaResponse(array $data) : bool {
+        return isset($data['type']) && $data['type'] === 'object';
     }
 
-    private function detectNonMatchingJson(bool $check, string $responseText, ResponseModel $responseModel) : Result {
+    private function detectNonMatchingJson(bool $check, array $data, ResponseModel $responseModel) : Result {
         if (!$check) {
-            return Result::success($responseText);
+            return Result::success($data);
         }
-        if ($this->isMatchingResponseModel($responseText, $responseModel)) {
-            return Result::success($responseText);
+        if ($this->isMatchingResponseModel($data, $responseModel)) {
+            return Result::success($data);
         }
         return Result::failure(new JsonParsingException(
             message: 'JSON does not match schema.',
-            json: $responseText,
+            json: json_encode($data),
         ));
     }
 
     private function isMatchingResponseModel(
-        string $partialResponseText,
+        array $data,
         ResponseModel $responseModel
     ) : bool {
         $propertyNames = $responseModel->getPropertyNames();
         if (empty($propertyNames)) {
             return true;
         }
-        try {
-            $decoded = Json::fromPartial($partialResponseText)->toArray();
-            // remove last item as it is likely to be incomplete in streaming
-            $decoded = Arrays::removeTail($decoded, 1);
-        } catch (Exception $_) {
-            return false;
-        }
-        $decodedKeys = array_filter(array_keys($decoded));
+
+        // remove last item as it is likely to be incomplete in streaming
+        $data = Arrays::removeTail($data, 1);
+        
+        $decodedKeys = array_filter(array_keys($data));
         if (empty($decodedKeys)) {
             return true;
         }

@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Extraction\Contracts;
 
+use Cognesy\Utils\Result\Result;
+
 /**
  * Buffer abstraction for assembling streaming content.
  *
@@ -24,6 +26,13 @@ interface CanBufferContent
      * Get normalized content (e.g., completed JSON, trimmed text).
      */
     public function normalized(): string;
+
+    /**
+     * Get parsed structured content.
+     *
+     * @return Result<array<string, mixed>, string>
+     */
+    public function parsed(): Result;
 
     /**
      * Check if buffer is empty.

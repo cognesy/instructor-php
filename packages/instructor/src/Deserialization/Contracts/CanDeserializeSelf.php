@@ -3,9 +3,10 @@
 namespace Cognesy\Instructor\Deserialization\Contracts;
 
 /**
- * Response model can deserialize self from JSON data
+ * Response model can deserialize self from array data
  */
 interface CanDeserializeSelf
 {
-    public function fromJson(string $jsonData, ?string $toolName = null) : static;
+    /** @param array<string, mixed> $data */
+    public function fromArray(array $data, ?string $toolName = null) : static;
 }

@@ -190,15 +190,14 @@ class StructuredOutput
         );
         $partialResponseValidator = new PartialValidation(new Config\PartialsGeneratorConfig());
 
-        // Create extractor for array-first pipeline (used when OutputFormat is set or custom extractor provided)
+        // Always use extractor for array-first pipeline
         $extractor = match (true) {
             $this->extractor !== null => $this->extractor,
             !empty($this->extractors) => new ResponseExtractor(
                 extractors: $this->extractors,
                 events: $this->events,
             ),
-            $outputFormat !== null => new ResponseExtractor(events: $this->events),
-            default => null,
+            default => new ResponseExtractor(events: $this->events),
         };
 
         // Ensure HttpClient is available; build default if not provided

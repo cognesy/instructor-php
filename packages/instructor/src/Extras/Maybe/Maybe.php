@@ -69,14 +69,13 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     }
 
     #[\Override]
-    public function fromJson(string $jsonData, ?string $toolName = '') : static {
-        $data = json_decode($jsonData, true);
+    public function fromArray(array $data, ?string $toolName = null): static {
         $this->hasValue = $data['hasValue'] ?? false;
         $this->error = $data['error'] ?? '';
-        if ($this->hasValue) {
+        if ($this->hasValue && isset($data['value'])) {
             /** @var class-string $class */
             $class = $this->class;
-            $this->value = $this->deserializer->fromJson(Json::encode($data['value']), $class);
+            $this->value = $this->deserializer->fromArray($data['value'], $class);
         }
         return $this;
     }
