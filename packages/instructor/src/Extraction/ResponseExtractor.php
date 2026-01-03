@@ -26,6 +26,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 
 /**
  * Service class for extracting structured content from LLM responses.
@@ -198,7 +199,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Format-agnostic extraction - same logic for all content types.
      *
-     * @return Result<array<string, mixed>, string>
+     * @return Result<array<array-key, mixed>, Throwable>
      */
     private function extractFromContent(string $content, CanParseContent $parser): Result
     {
@@ -242,7 +243,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
                 return $decoded;
             }
 
-            $errorMessage = $result->errorMessage();
+            $errorMessage = $result->exception()->getMessage();
             $this->dispatch(new ExtractionStrategyFailed([
                 'strategy' => $extractorName,
                 'error' => $errorMessage,
@@ -307,6 +308,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     {
         return match($format) {
             DataFormat::Json => new JsonParser(),
+            DataFormat::Yaml, DataFormat::Xml => throw new \RuntimeException("Parser for format {$format->value} is not yet implemented"),
         };
     }
 

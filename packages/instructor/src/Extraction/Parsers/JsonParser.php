@@ -10,6 +10,7 @@ use InvalidArgumentException;
 /** @internal */
 final class JsonParser implements CanParseContent
 {
+    #[\Override]
     public function parse(string $content): Result
     {
         return Result::try(function () use ($content): array {

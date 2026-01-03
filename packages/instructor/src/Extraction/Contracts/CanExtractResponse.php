@@ -8,6 +8,7 @@ namespace Cognesy\Instructor\Extraction\Contracts;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Result\Result;
+use Throwable;
 
 /**
  * Contract for extracting structured data from LLM responses.
@@ -22,7 +23,7 @@ interface CanExtractResponse
      *
      * @param InferenceResponse $response The raw LLM response
      * @param OutputMode $mode The output mode used for the request
-     * @return Result<array<string, mixed>, string> Success with extracted array or Failure
+     * @return Result<array<array-key, mixed>, Throwable> Success with extracted array or Failure
      */
     public function extract(InferenceResponse $response, OutputMode $mode): Result;
 }

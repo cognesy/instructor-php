@@ -1,3 +1,16 @@
+---
+title: 'Streaming metrics (Polyglot)'
+docname: 'metrics_streaming'
+---
+
+## Overview
+
+Collect simple streaming metrics from Polyglot inference events: time to first chunk,
+stream duration, chunk count (streamed deltas), and average output tokens per second.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -6,197 +19,136 @@ use Cognesy\Metrics\Collectors\MetricsCollector;
 use Cognesy\Metrics\Data\Metric;
 use Cognesy\Metrics\Exporters\CallbackExporter;
 use Cognesy\Metrics\Metrics;
+use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
+use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
+use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
+use Cognesy\Polyglot\Inference\Inference;
 
-/**
- * Metrics Collection Example
- *
- * Demonstrates the event-driven metrics collection system:
- * - Setting up the Metrics facade
- * - Creating custom collectors that listen to events
- * - Recording counters, gauges, histograms, and timers
- * - Exporting metrics to custom backends
- */
+final class StreamMetricsCollector extends MetricsCollector
+{
+    private int $chunkCount = 0;
 
-print("================================================================================\n");
-print("              Metrics Collection - Event-Driven Metrics Demo                    \n");
-print("================================================================================\n\n");
-
-// --- Define domain events ---
-
-final class RequestReceived {
-    public function __construct(
-        public string $method,
-        public string $path,
-        public float $startTime,
-    ) {}
-}
-
-final class RequestCompleted {
-    public function __construct(
-        public string $method,
-        public string $path,
-        public int $statusCode,
-        public float $startTime,
-        public float $endTime,
-        public int $responseBytes,
-    ) {}
-}
-
-final class CacheEvent {
-    public function __construct(
-        public bool $hit,
-        public string $key,
-    ) {}
-}
-
-// --- Define a custom collector ---
-
-final class HttpMetricsCollector extends MetricsCollector {
-    #[\Override]
     protected function listeners(): array {
         return [
-            RequestReceived::class => 'onRequestReceived',
-            RequestCompleted::class => 'onRequestCompleted',
-            CacheEvent::class => 'onCacheEvent',
+            StreamFirstChunkReceived::class => 'onFirstChunk',
+            PartialInferenceResponseCreated::class => 'onChunk',
+            InferenceCompleted::class => 'onCompleted',
         ];
     }
 
-    public function onRequestReceived(RequestReceived $event): void {
-        $this->counter('http.requests.started', [
-            'method' => $event->method,
+    public function onFirstChunk(StreamFirstChunkReceived $event): void {
+        $this->timer('llm.stream.ttfc_ms', $event->timeToFirstChunkMs, [
+            'model' => $this->modelTag($event->model),
         ]);
     }
 
-    public function onRequestCompleted(RequestCompleted $event): void {
-        $durationMs = ($event->endTime - $event->startTime) * 1000;
-        $statusClass = (string) intdiv($event->statusCode, 100) . 'xx';
-
-        $this->counter('http.requests.completed', [
-            'method' => $event->method,
-            'status_class' => $statusClass,
-        ]);
-
-        $this->timer('http.request.duration', $durationMs, [
-            'method' => $event->method,
-            'path' => $event->path,
-        ]);
-
-        $this->histogram('http.response.size', (float) $event->responseBytes, [
-            'method' => $event->method,
-        ]);
+    public function onChunk(PartialInferenceResponseCreated $event): void {
+        $this->chunkCount += 1;
     }
 
-    public function onCacheEvent(CacheEvent $event): void {
-        $this->counter('cache.operations', [
-            'result' => $event->hit ? 'hit' : 'miss',
-        ]);
+    public function onCompleted(InferenceCompleted $event): void {
+        $durationSeconds = max(0.001, $event->durationMs / 1000);
+        $outputTokens = $event->usage->output();
+        $tokensPerSecond = $outputTokens / $durationSeconds;
+
+        $this->timer('llm.stream.duration_ms', $event->durationMs);
+        $this->gauge('llm.stream.chunk_count', (float) $this->chunkCount);
+        $this->gauge('llm.stream.output_tokens', (float) $outputTokens);
+        $this->gauge('llm.stream.output_tokens_per_second', $tokensPerSecond);
+
+        $this->chunkCount = 0;
+    }
+
+    private function modelTag(?string $model): string {
+        if ($model !== null && $model !== '') {
+            return $model;
+        }
+        return 'default';
     }
 }
-
-// --- Set up the metrics system ---
-
-print("Setting up metrics system...\n\n");
 
 $events = new EventDispatcher();
 $metrics = new Metrics($events);
+$metrics->collect(new StreamMetricsCollector());
 
-// Register collectors
-$metrics->collect(new HttpMetricsCollector());
-
-// Register exporters
-$metrics->exportTo(new CallbackExporter(function (iterable $metrics) {
-    print("Exporting " . iterator_count($metrics) . " metrics...\n");
-    foreach ($metrics as $metric) {
-        /** @var Metric $metric */
-        $tags = $metric->tags()->toArray();
-        $tagsStr = empty($tags)
-            ? ''
-            : ' {' . implode(', ', array_map(
-                fn($k, $v) => "{$k}=\"{$v}\"",
-                array_keys($tags),
-                array_values($tags)
-            )) . '}';
-
-        printf(
-            "  [%s] %s%s = %.2f\n",
-            $metric->type(),
-            $metric->name(),
-            $tagsStr,
-            $metric->value()
-        );
+$metrics->exportTo(new CallbackExporter(function (iterable $metrics): void {
+    $aggregates = aggregateMetrics($metrics);
+    foreach ($aggregates as $aggregate) {
+        $tagsOutput = formatTags($aggregate['tags']);
+        $value = aggregatedValue($aggregate);
+        printf("[%s] %s%s = %.2f\n", $aggregate['type'], $aggregate['name'], $tagsOutput, $value);
     }
 }));
 
-// --- Simulate application events ---
+$prompt = 'In one sentence, explain why streaming responses help UX.';
+$stream = (new Inference($events))
+    ->withMessages($prompt)
+    ->withOptions(['max_tokens' => 64])
+    ->withStreaming()
+    ->stream()
+    ->responses();
 
-print("Simulating application events...\n\n");
-
-// Simulate HTTP requests
-$requests = [
-    ['GET', '/api/users', 200, 45.2, 1024],
-    ['GET', '/api/users/123', 200, 32.1, 512],
-    ['POST', '/api/users', 201, 78.5, 256],
-    ['GET', '/api/products', 200, 55.0, 2048],
-    ['GET', '/api/users/999', 404, 12.3, 64],
-    ['GET', '/api/users', 200, 42.8, 1024],
-];
-
-foreach ($requests as [$method, $path, $status, $durationMs, $bytes]) {
-    $startTime = microtime(true);
-    $endTime = $startTime + ($durationMs / 1000);
-
-    print("  Dispatching: {$method} {$path} -> {$status}\n");
-
-    $events->dispatch(new RequestReceived($method, $path, $startTime));
-    $events->dispatch(new RequestCompleted($method, $path, $status, $startTime, $endTime, $bytes));
+echo "USER: {$prompt}\n";
+echo "ASSISTANT: ";
+foreach ($stream as $partial) {
+    echo $partial->contentDelta;
 }
+echo "\n\n";
 
-// Simulate cache events
-$cacheOps = [
-    ['user:123', true],
-    ['user:456', false],
-    ['product:789', true],
-    ['user:123', true],
-    ['config:main', false],
-];
-
-print("\n  Simulating cache operations...\n");
-foreach ($cacheOps as [$key, $hit]) {
-    $result = $hit ? 'HIT' : 'MISS';
-    print("    Cache {$result}: {$key}\n");
-    $events->dispatch(new CacheEvent($hit, $key));
-}
-
-print("\n--------------------------------------------------------------------------------\n");
-print("Exporting collected metrics:\n");
-print("--------------------------------------------------------------------------------\n\n");
-
-// Export all metrics
 $metrics->export();
 
-// --- Show summary stats ---
+function formatTags(array $tags): string {
+    if ($tags === []) {
+        return '';
+    }
 
-print("\n--------------------------------------------------------------------------------\n");
-print("Summary:\n");
-print("--------------------------------------------------------------------------------\n\n");
+    $keys = array_keys($tags);
+    $values = array_values($tags);
+    $tagList = array_map(
+        static fn (string $key, mixed $value): string => "{$key}=\"{$value}\"",
+        $keys,
+        $values,
+    );
 
-$registry = $metrics->registry();
+    return ' {' . implode(', ', $tagList) . '}';
+}
 
-printf("  Total metrics recorded: %d\n", $registry->count());
+/**
+ * @param iterable<Metric> $metrics
+ * @return array<int, array{type: string, name: string, tags: array, count: int, sum: float, last: float}>
+ */
+function aggregateMetrics(iterable $metrics): array {
+    $aggregates = [];
+    foreach ($metrics as $metric) {
+        $key = $metric->type() . '|' . $metric->name() . '|' . $metric->tags()->toKey();
+        if (!array_key_exists($key, $aggregates)) {
+            $aggregates[$key] = [
+                'type' => $metric->type(),
+                'name' => $metric->name(),
+                'tags' => $metric->tags()->toArray(),
+                'count' => 0,
+                'sum' => 0.0,
+                'last' => 0.0,
+            ];
+        }
 
-// Count by type
-$counters = iterator_count($registry->find('http.requests.started'));
-$timers = iterator_count($registry->find('http.request.duration'));
-$histograms = iterator_count($registry->find('http.response.size'));
-$cacheCounters = iterator_count($registry->find('cache.operations'));
+        $aggregates[$key]['count'] += 1;
+        $aggregates[$key]['sum'] += $metric->value();
+        $aggregates[$key]['last'] = $metric->value();
+    }
 
-print("  Breakdown:\n");
-print("    - Request started counters: {$counters}\n");
-print("    - Request completed counters: " . iterator_count($registry->find('http.requests.completed')) . "\n");
-print("    - Duration timers: {$timers}\n");
-print("    - Response size histograms: {$histograms}\n");
-print("    - Cache operation counters: {$cacheCounters}\n");
+    return array_values($aggregates);
+}
 
-print("\n================================================================================\n");
-print("Metrics Collection Demo Complete\n");
-print("================================================================================\n");
+/**
+ * @param array{type: string, count: int, sum: float, last: float} $aggregate
+ */
+function aggregatedValue(array $aggregate): float {
+    return match ($aggregate['type']) {
+        'counter' => $aggregate['sum'],
+        'timer', 'histogram' => $aggregate['sum'] / max(1, $aggregate['count']),
+        default => $aggregate['last'],
+    };
+}
+?>
+```

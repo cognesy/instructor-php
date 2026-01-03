@@ -1,0 +1,149 @@
+# Release Notes - v1.16.0
+
+## New Features
+
+### OutputFormat API
+
+Control output format independently from schema:
+
+```php
+// Get raw arrays instead of objects
+$data = StructuredOutput::with(...)
+    ->intoArray()
+    ->get();
+
+// Deserialize to different class than schema
+$user = StructuredOutput::with(...)
+    ->intoInstanceOf(User::class)
+    ->get();
+
+// Self-deserializing objects
+$obj = StructuredOutput::with(...)
+    ->intoObject($customObject)
+    ->get();
+```
+
+### Pluggable Extraction
+
+Custom JSON extraction strategies:
+
+```php
+class CustomExtractor implements CanExtractContent {
+    public function extract(string $content): string {
+        // custom extraction logic
+    }
+}
+
+StructuredOutput::with(...)
+    ->withExtractor(new ResponseExtractor([
+        new CustomExtractor(),
+        new ResilientJsonExtractor(),
+    ]))
+    ->get();
+```
+
+Built-in extractors:
+- `DirectJsonExtractor` - Parse as-is
+- `ResilientJsonExtractor` - Handle malformed JSON
+- `MarkdownBlockExtractor` - Extract from code blocks
+- `BracketMatchingExtractor` - Find first `{` to last `}`
+- `SmartBraceExtractor` - Handle escaped quotes
+
+### Extraction Events
+
+Track extraction lifecycle:
+- `ExtractionStarted`
+- `ExtractionStrategyAttempted`
+- `ExtractionStrategySucceeded`
+- `ExtractionStrategyFailed`
+- `ExtractionCompleted`
+- `ExtractionFailed`
+
+### Manual Schema Support
+
+JSON schemas no longer require `x-php-class`:
+
+```php
+$schema = [
+    'type' => 'object',
+    'properties' => [
+        'name' => ['type' => 'string'],
+    ],
+];
+
+// Returns raw array when no class specified
+$data = StructuredOutput::with(
+    messages: 'John',
+    responseModel: $schema
+)->get();
+```
+
+### Response Caching
+
+```php
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
+// Cache responses in memory
+$response = Inference::with(...)
+    ->withCachePolicy(ResponseCachePolicy::Memory)
+    ->get();
+```
+
+## Improvements
+
+- Simplified processing pipeline
+- Removed unused partial validations
+
+## Bug Fixes
+
+- Fixed `withInput()` to handle objects correctly
+- Fixed `HostSandbox` to run in `baseDir` (fixes CLI agents)
+- Fixed environment inheritance for agent execution
+- Fixed exit code propagation in examples
+- Resolved all PHPStan errors
+
+## New Package: metrics
+
+Event-driven metrics collection system.
+
+**Metric types:**
+- Counter - incremental counts
+- Gauge - point-in-time values
+- Histogram - value distributions
+- Timer - duration measurements
+
+**Usage:**
+
+```php
+use Cognesy\Metrics\Collectors\MetricsCollector;
+use Cognesy\Metrics\Metrics;
+
+// Create custom collector
+class StreamMetricsCollector extends MetricsCollector {
+    protected function listeners(): array {
+        return [
+            StreamFirstChunkReceived::class => $this->onFirstChunk(...),
+            InferenceCompleted::class => $this->onCompleted(...),
+        ];
+    }
+
+    public function onFirstChunk(StreamFirstChunkReceived $event): void {
+        $this->timer('llm.stream.ttfc_ms', $event->timeToFirstChunkMs, [
+            'model' => $event->model,
+        ]);
+    }
+
+    public function onCompleted(InferenceCompleted $event): void {
+        $this->gauge('llm.output_tokens', (float) $event->usage->output());
+    }
+}
+
+// Register collector and exporter
+$metrics = new Metrics($events);
+$metrics
+    ->collect(new StreamMetricsCollector())
+    ->exportTo(new CallbackExporter(fn($metrics) => dump($metrics)));
+
+// Metrics auto-collected from events
+$metrics->export();
+```

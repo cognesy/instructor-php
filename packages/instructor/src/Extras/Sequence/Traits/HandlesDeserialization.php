@@ -18,8 +18,14 @@ trait HandlesDeserialization
         $returnedList = $data['list'] ?? $data['properties']['list'] ?? [];
 
         $list = [];
-        foreach ($returnedList as $item) {
-            $list[] = $deserializer->fromArray($item, $this->class);
+        /** @var class-string<object> $class */
+        $class = $this->class;
+        if (is_array($returnedList)) {
+            foreach ($returnedList as $item) {
+                if (is_array($item)) {
+                    $list[] = $deserializer->fromArray($item, $class);
+                }
+            }
         }
         $this->list = $list;
 

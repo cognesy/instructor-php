@@ -70,9 +70,9 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 
     #[\Override]
     public function fromArray(array $data, ?string $toolName = null): static {
-        $this->hasValue = $data['hasValue'] ?? false;
+        $this->hasValue = (bool) ($data['hasValue'] ?? false);
         $this->error = $data['error'] ?? '';
-        if ($this->hasValue && isset($data['value'])) {
+        if ($this->hasValue && isset($data['value']) && is_array($data['value'])) {
             /** @var class-string $class */
             $class = $this->class;
             $this->value = $this->deserializer->fromArray($data['value'], $class);

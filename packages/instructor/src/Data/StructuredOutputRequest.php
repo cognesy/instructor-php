@@ -226,9 +226,9 @@ class StructuredOutputRequest
         }
         $type = OutputFormatType::tryFrom($data['type'] ?? '');
         return match (true) {
-            $type === OutputFormatType::Array => OutputFormat::array(),
-            $type === OutputFormatType::Class && isset($data['class']) => OutputFormat::instanceOf($data['class']),
-            $type === OutputFormatType::Object => self::selfDeserializingFromClass($data['class'] ?? null),
+            $type === OutputFormatType::AsArray => OutputFormat::array(),
+            $type === OutputFormatType::AsClass && isset($data['class']) => OutputFormat::instanceOf($data['class']),
+            $type === OutputFormatType::AsObject => self::selfDeserializingFromClass($data['class'] ?? null),
             default => null,
         };
     }
