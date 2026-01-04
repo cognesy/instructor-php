@@ -1,0 +1,110 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Addons\Agent\Tools;
+
+use Cognesy\Addons\Agent\Agent;
+use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\Collections\Tools;
+use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Enums\AgentType;
+use Cognesy\Addons\Agent\Subagents\AgentCapability;
+use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
+use Cognesy\Messages\Messages;
+
+class SpawnSubagentTool extends BaseTool
+{
+    private Agent $parentAgent;
+    private AgentCapability $capability;
+
+    public function __construct(
+        Agent $parentAgent,
+        ?AgentCapability $capability = null,
+    ) {
+        parent::__construct(
+            name: 'spawn_subagent',
+            description: 'Spawn an isolated subagent to handle a specific task. The subagent runs with a fresh context and returns only its final response. Use for: exploration (read-only codebase analysis), code (full file/bash access), or plan (solution design without execution).',
+        );
+
+        $this->parentAgent = $parentAgent;
+        $this->capability = $capability ?? new DefaultAgentCapability();
+    }
+
+    #[\Override]
+    public function __invoke(mixed ...$args): string {
+        $description = $args['description'] ?? $args[0] ?? '';
+        $prompt = $args['prompt'] ?? $args[1] ?? '';
+        $agent_type = $args['agent_type'] ?? $args[2] ?? 'explore';
+
+        $type = $this->parseAgentType($agent_type);
+        $filteredTools = $this->capability->toolsFor($type, $this->parentAgent->tools());
+        $systemPromptAddition = $this->capability->systemPromptFor($type);
+
+        $subagent = $this->createSubagent($filteredTools);
+        $initialState = $this->createInitialState($prompt, $systemPromptAddition);
+
+        $finalState = $this->runSubagent($subagent, $initialState);
+
+        return $this->extractFinalResponse($finalState, $description);
+    }
+
+    private function parseAgentType(string $type): AgentType {
+        return match(strtolower(trim($type))) {
+            'explore', 'exploration' => AgentType::Explore,
+            'code', 'coding' => AgentType::Code,
+            'plan', 'planning' => AgentType::Plan,
+            default => AgentType::Explore,
+        };
+    }
+
+    private function createSubagent(Tools $tools): Agent {
+        return AgentFactory::default(tools: $tools);
+    }
+
+    private function createInitialState(string $prompt, string $systemPromptAddition): AgentState {
+        $systemMessage = $systemPromptAddition;
+        $userMessage = $prompt;
+
+        $messages = Messages::fromArray([
+            ['role' => 'system', 'content' => $systemMessage],
+            ['role' => 'user', 'content' => $userMessage],
+        ]);
+
+        return AgentState::empty()->withMessages($messages);
+    }
+
+    private function runSubagent(Agent $subagent, AgentState $state): AgentState {
+        $finalState = $state;
+
+        foreach ($subagent->iterator($state) as $stepState) {
+            $finalState = $stepState;
+        }
+
+        return $finalState;
+    }
+
+    private function extractFinalResponse(AgentState $state, string $description): string {
+        $parts = ["[Subagent: {$description}]"];
+
+        if ($state->status() === AgentStatus::Failed) {
+            $errorMsg = $state->currentStep()?->errorsAsString() ?? 'Unknown error';
+            $parts[] = "Status: Failed";
+            $parts[] = "Error: {$errorMsg}";
+            return implode("\n", $parts);
+        }
+
+        $parts[] = "Status: Completed";
+        $parts[] = "Steps: {$state->stepCount()}";
+
+        $finalStep = $state->currentStep();
+        if ($finalStep !== null) {
+            $response = $finalStep->outputMessages()->toString();
+            if ($response !== '') {
+                $parts[] = "";
+                $parts[] = $response;
+            }
+        }
+
+        return implode("\n", $parts);
+    }
+}

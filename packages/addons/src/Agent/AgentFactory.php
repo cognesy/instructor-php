@@ -20,9 +20,20 @@ use Cognesy\Addons\Agent\Contracts\CanUseTools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\Agent\Skills\SkillLibrary;
+use Cognesy\Addons\Agent\StateProcessors\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Subagents\AgentCapability;
+use Cognesy\Addons\Agent\Tools\BashTool;
+use Cognesy\Addons\Agent\Tools\EditFileTool;
+use Cognesy\Addons\Agent\Tools\LoadSkillTool;
+use Cognesy\Addons\Agent\Tools\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\SpawnSubagentTool;
+use Cognesy\Addons\Agent\Tools\TodoWriteTool;
+use Cognesy\Addons\Agent\Tools\WriteFileTool;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
 class AgentFactory
 {
@@ -73,5 +84,125 @@ class AgentFactory
             ),
             new FinishReasonCheck($finishReasons, static fn(AgentState $state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
         );
+    }
+
+    // ENHANCED FACTORY METHODS ////////////////////////////////////////////
+
+    /**
+     * Create an agent with bash command execution capability.
+     */
+    public static function withBash(
+        ?ExecutionPolicy $policy = null,
+        ?string $baseDir = null,
+        int $timeout = 120,
+        ?CanHandleEvents $events = null,
+    ): Agent {
+        $bashTool = new BashTool(policy: $policy, baseDir: $baseDir, timeout: $timeout);
+        return self::default(tools: new Tools($bashTool), events: $events);
+    }
+
+    /**
+     * Create an agent with file operation tools (read, write, edit).
+     */
+    public static function withFileTools(
+        ?string $baseDir = null,
+        ?CanHandleEvents $events = null,
+    ): Agent {
+        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
+
+        $tools = new Tools(
+            ReadFileTool::inDirectory($baseDir),
+            WriteFileTool::inDirectory($baseDir),
+            EditFileTool::inDirectory($baseDir),
+        );
+
+        return self::default(tools: $tools, events: $events);
+    }
+
+    /**
+     * Create an agent with task planning capability (TodoWrite).
+     */
+    public static function withTaskPlanning(?CanHandleEvents $events = null): Agent {
+        $tools = new Tools(new TodoWriteTool());
+
+        $processors = new StateProcessors(
+            new AccumulateTokenUsage(),
+            new AppendContextMetadata(),
+            new AppendStepMessages(),
+            new PersistTasksProcessor(),
+        );
+
+        return self::default(tools: $tools, processors: $processors, events: $events);
+    }
+
+    /**
+     * Create an agent with skill loading capability.
+     */
+    public static function withSkills(
+        ?SkillLibrary $library = null,
+        ?CanHandleEvents $events = null,
+    ): Agent {
+        $library = $library ?? new SkillLibrary();
+        $tools = new Tools(LoadSkillTool::withLibrary($library));
+
+        return self::default(tools: $tools, events: $events);
+    }
+
+    /**
+     * Create a full-featured coding agent with bash, file tools, task planning, and skills.
+     */
+    public static function codingAgent(
+        ?string $workDir = null,
+        ?SkillLibrary $skills = null,
+        ?AgentCapability $capability = null,
+        int $maxSteps = 20,
+        int $maxTokens = 32768,
+        int $timeout = 300,
+        ?CanHandleEvents $events = null,
+    ): Agent {
+        $workDir = $workDir ?? getcwd() ?: '/tmp';
+        $policy = ExecutionPolicy::in($workDir)
+            ->withTimeout($timeout)
+            ->withNetwork(true)
+            ->withOutputCaps(5 * 1024 * 1024, 1 * 1024 * 1024)
+            ->withReadablePaths($workDir)
+            ->withWritablePaths($workDir)
+            ->inheritEnvironment();
+
+        $tools = new Tools(
+            new BashTool(policy: $policy),
+            ReadFileTool::withPolicy($policy),
+            WriteFileTool::withPolicy($policy),
+            EditFileTool::withPolicy($policy),
+            new TodoWriteTool(),
+        );
+
+        if ($skills !== null) {
+            $tools = $tools->merge(new Tools(LoadSkillTool::withLibrary($skills)));
+        }
+
+        $processors = new StateProcessors(
+            new AccumulateTokenUsage(),
+            new AppendContextMetadata(),
+            new AppendStepMessages(),
+            new PersistTasksProcessor(),
+        );
+
+        $continuationCriteria = self::defaultContinuationCriteria(
+            maxSteps: $maxSteps,
+            maxTokens: $maxTokens,
+            maxExecutionTime: $timeout,
+        );
+
+        $agent = self::default(
+            tools: $tools,
+            processors: $processors,
+            continuationCriteria: $continuationCriteria,
+            events: $events,
+        );
+
+        // Add subagent tool with reference to the agent
+        $subagentTool = new SpawnSubagentTool($agent, $capability);
+        return $agent->withTools($tools->merge(new Tools($subagentTool)));
     }
 }
