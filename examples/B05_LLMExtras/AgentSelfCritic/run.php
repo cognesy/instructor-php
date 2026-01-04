@@ -91,7 +91,7 @@ $agent = AgentFactory::default(
 // Question that requires checking a specific file
 // The self-critic will catch if the agent gives an answer without reading the file
 $question = <<<QUESTION
-What testing framework is listed in composer.json require-dev? Read the file and give a verified answer.
+What testing framework does this project use? Explain how you plan to determine the answer, then find and read the relevant files to provide a complete and accurate response.
 QUESTION;
 
 $state = AgentState::empty()->withMessages(
@@ -127,7 +127,7 @@ while ($agent->hasNextStep($state)) {
             $args = $toolCall->args();
             $argStr = match($toolCall->name()) {
                 'search_files' => "pattern={$args['pattern']}",
-                'read_file' => "path=" . basename($args['path'] ?? ''),
+                'read_file' => "path=" . ($args['path'] ?? ''),
                 default => '',
             };
             print("  → {$toolCall->name()}({$argStr})\n");
