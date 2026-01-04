@@ -1,15 +1,13 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\Enums\AgentType;
-use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
-use Cognesy\Addons\Agent\Tools\BaseTool;
-use Cognesy\Addons\Agent\Tools\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\File\SearchFilesTool;
+use Cognesy\Addons\Agent\Tools\Subagent\ResearchSubagentTool;
 use Cognesy\Messages\Messages;
 
 /**
@@ -44,172 +42,8 @@ if ($llmPreset) {
 // Get project root directory
 $projectRoot = dirname(__DIR__, 3);
 
-/**
- * Custom tool: Search for files matching a glob pattern
- */
-class SearchFilesTool extends BaseTool
-{
-    private string $baseDir;
-
-    public function __construct(string $baseDir) {
-        parent::__construct(
-            name: 'search_files',
-            description: 'Search for files matching a glob pattern in the project',
-        );
-        $this->baseDir = $baseDir;
-    }
-
-    #[\Override]
-    public function __invoke(mixed ...$args): string {
-        $pattern = $args['pattern'] ?? $args[0] ?? '*.php';
-
-        // Handle recursive patterns with **
-        if (str_contains($pattern, '**')) {
-            $files = $this->recursiveGlob($pattern);
-        } else {
-            $fullPattern = $this->baseDir . '/' . $pattern;
-            $files = glob($fullPattern, GLOB_BRACE) ?: [];
-        }
-
-        // Limit results
-        $files = array_slice($files, 0, 10);
-
-        if (empty($files)) {
-            return "No files found matching pattern: {$pattern}";
-        }
-
-        // Return relative paths
-        $relativePaths = array_map(
-            fn($f) => str_replace($this->baseDir . '/', '', $f),
-            $files
-        );
-
-        return "Found " . count($relativePaths) . " files:\n" . implode("\n", $relativePaths);
-    }
-
-    private function recursiveGlob(string $pattern): array {
-        // Convert ** pattern to regex for matching
-        $filePattern = basename($pattern);
-        $dirPattern = dirname($pattern);
-
-        // Simple recursive search
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($this->baseDir, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        $files = [];
-        foreach ($iterator as $file) {
-            if (fnmatch($filePattern, $file->getFilename())) {
-                $files[] = $file->getPathname();
-            }
-        }
-
-        return $files;
-    }
-
-    #[\Override]
-    public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'pattern' => [
-                            'type' => 'string',
-                            'description' => 'Glob pattern to match files (e.g., "src/*.php", "**/*.md")',
-                        ],
-                    ],
-                    'required' => ['pattern'],
-                ],
-            ],
-        ];
-    }
-}
-
-/**
- * Custom tool: Spawn a research subagent
- */
-class ResearchSubagentTool extends BaseTool
-{
-    private Agent $parentAgent;
-    private string $baseDir;
-
-    public function __construct(Agent $parentAgent, string $baseDir) {
-        parent::__construct(
-            name: 'research_subagent',
-            description: 'Spawn a subagent to research files and return a summary. Use for reading and analyzing file contents.',
-        );
-        $this->parentAgent = $parentAgent;
-        $this->baseDir = $baseDir;
-    }
-
-    #[\Override]
-    public function __invoke(mixed ...$args): string {
-        $task = $args['task'] ?? $args[0] ?? '';
-        $files = $args['files'] ?? $args[1] ?? [];
-
-        if (empty($task)) {
-            return "Error: task is required";
-        }
-
-        // Create subagent with read-only file access
-        $subagentTools = new Tools(
-            ReadFileTool::inDirectory($this->baseDir),
-        );
-
-        $subagent = AgentFactory::default(tools: $subagentTools);
-
-        // Build context with file list
-        $fileList = is_array($files) ? implode(', ', $files) : $files;
-        $prompt = "You are a research assistant. {$task}\n";
-        if (!empty($fileList)) {
-            $prompt .= "Relevant files to examine: {$fileList}\n";
-        }
-        $prompt .= "Provide a concise summary of your findings.";
-
-        $subState = AgentState::empty()->withMessages(
-            Messages::fromString($prompt)
-        );
-
-        // Run subagent
-        $finalState = $subagent->finalStep($subState);
-
-        return $finalState->currentStep()?->outputMessages()->toString() ?? 'No findings';
-    }
-
-    #[\Override]
-    public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'task' => [
-                            'type' => 'string',
-                            'description' => 'The research task to perform',
-                        ],
-                        'files' => [
-                            'type' => 'array',
-                            'items' => ['type' => 'string'],
-                            'description' => 'List of file paths to examine',
-                        ],
-                    ],
-                    'required' => ['task'],
-                ],
-            ],
-        ];
-    }
-}
-
 // Create tools for the main orchestrator agent
-$searchTool = new SearchFilesTool($projectRoot);
+$searchTool = SearchFilesTool::inDirectory($projectRoot);
 $readFileTool = ReadFileTool::inDirectory($projectRoot);
 
 // Create continuation criteria with higher step limit for agentic search
@@ -227,7 +61,7 @@ $mainAgent = AgentFactory::default(
 );
 
 // Now add the research subagent tool with reference to main agent
-$researchTool = new ResearchSubagentTool($mainAgent, $projectRoot);
+$researchTool = ResearchSubagentTool::withParent($mainAgent, $projectRoot);
 $mainAgent = $mainAgent->withTools(new Tools($searchTool, $readFileTool, $researchTool));
 
 // Initialize state with a research question
