@@ -18,7 +18,7 @@ class SearchFilesTool extends BaseTool
     ) {
         parent::__construct(
             name: 'search_files',
-            description: 'Search for files matching a glob pattern in the project',
+            description: 'Search for files in the project. Supports glob patterns (*.php, **/*.md) or simple keywords (php, test) which search recursively.',
         );
         $this->baseDir = rtrim($baseDir, '/');
         $this->maxResults = $maxResults;
@@ -32,11 +32,14 @@ class SearchFilesTool extends BaseTool
     public function __invoke(mixed ...$args): string {
         $pattern = $args['pattern'] ?? $args[0] ?? '*.php';
 
+        // Normalize pattern: if no glob characters, treat as substring search
+        $normalizedPattern = $this->normalizePattern($pattern);
+
         // Handle recursive patterns with **
-        if (str_contains($pattern, '**')) {
-            $files = $this->recursiveGlob($pattern);
+        if (str_contains($normalizedPattern, '**')) {
+            $files = $this->recursiveGlob($normalizedPattern);
         } else {
-            $fullPattern = $this->baseDir . '/' . $pattern;
+            $fullPattern = $this->baseDir . '/' . $normalizedPattern;
             $files = glob($fullPattern, GLOB_BRACE) ?: [];
         }
 
@@ -54,6 +57,24 @@ class SearchFilesTool extends BaseTool
         );
 
         return "Found " . count($relativePaths) . " files:\n" . implode("\n", $relativePaths);
+    }
+
+    private function normalizePattern(string $pattern): string {
+        // Check if pattern already has glob characters
+        if (preg_match('/[*?\[\]{}]/', $pattern)) {
+            return $pattern;
+        }
+
+        // No glob characters - treat as substring/extension search
+        // "php" -> "**/*php*" (recursive search for files containing "php")
+        // "test.php" -> "**/test.php" (recursive search for exact filename)
+        if (str_contains($pattern, '.')) {
+            // Looks like a filename - search recursively for exact match
+            return '**/' . $pattern;
+        }
+
+        // Looks like a keyword - search recursively for files containing it
+        return '**/*' . $pattern . '*';
     }
 
     private function recursiveGlob(string $pattern): array {
@@ -86,7 +107,7 @@ class SearchFilesTool extends BaseTool
                     'properties' => [
                         'pattern' => [
                             'type' => 'string',
-                            'description' => 'Glob pattern to match files (e.g., "src/*.php", "**/*.md")',
+                            'description' => 'Search pattern: glob (*.php, **/*.md), filename (composer.json), or keyword (test, config)',
                         ],
                     ],
                     'required' => ['pattern'],
