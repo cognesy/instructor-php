@@ -11,17 +11,17 @@ use Cognesy\Instructor\Attributes\Description;
 class SelfCriticResult
 {
     public function __construct(
-        #[Description('True if response is supported by evidence and answers the task. False if response contradicts evidence, makes unsupported claims, or missed critical information.')]
+        #[Description('True if response answers the task with supporting evidence. False if response contradicts evidence or makes unsupported claims.')]
         public bool $approved,
-        #[Description('One sentence summary of the evaluation decision.')]
+        #[Description('One sentence explaining the decision.')]
         public string $summary,
-        #[Description('What the response does well - evidence cited, clear reasoning, etc.')]
+        #[Description('List of positive aspects as simple strings.')]
         /** @var string[] */
         public array $strengths = [],
-        #[Description('Specific issues found. Format: "Response claims X but evidence shows Y" or "Response missed X in the tool results"')]
+        #[Description('List of issues as simple strings.')]
         /** @var string[] */
         public array $weaknesses = [],
-        #[Description('Specific next steps to fix issues. Format: "tool_name: what to check" or "file to read"')]
+        #[Description('List of suggested next steps as simple strings.')]
         /** @var string[] */
         public array $suggestions = [],
     ) {}
