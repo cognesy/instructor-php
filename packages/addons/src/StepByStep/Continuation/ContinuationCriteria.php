@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\StepByStep\Continuation;
 
 /**
- * Composable continuation criteria with AND/OR logic.
+ * Composable continuation criteria with logical operators.
  *
  * Usage:
  *   // All must pass (AND logic) - default behavior
@@ -18,20 +18,27 @@ namespace Cognesy\Addons\StepByStep\Continuation;
  *       new SelfCriticContinuationCheck(...),
  *   );
  *
+ *   // None must pass (NOR logic)
+ *   $criteria = ContinuationCriteria::none(
+ *       new ErrorDetectedCheck(...),
+ *       new UserCancelledCheck(...),
+ *   );
+ *
+ *   // Negate a criterion
+ *   $criteria = ContinuationCriteria::not(new SomeCheck(...));
+ *
+ *   // Custom predicate
+ *   $criteria = ContinuationCriteria::when(
+ *       fn($state) => $state->stepCount() < 10 && $state->hasToolCalls()
+ *   );
+ *
  *   // Nested composition
  *   $criteria = ContinuationCriteria::all(
  *       new StepsLimit(10),
- *       new TokenUsageLimit(16384),
  *       ContinuationCriteria::any(
  *           new ToolCallPresenceCheck(...),
- *           new SelfCriticContinuationCheck(...),
+ *           ContinuationCriteria::not(new ApprovedCheck(...)),
  *       ),
- *   );
- *
- *   // Legacy usage (defaults to ALL mode)
- *   $criteria = new ContinuationCriteria(
- *       new StepsLimit(10),
- *       new TokenUsageLimit(16384),
  *   );
  *
  * @template TState of object
@@ -39,12 +46,17 @@ namespace Cognesy\Addons\StepByStep\Continuation;
  */
 class ContinuationCriteria implements CanDecideToContinue
 {
-    public const MODE_ALL = 'all'; // AND - all must return true
-    public const MODE_ANY = 'any'; // OR - any returning true is enough
+    public const MODE_ALL = 'all';   // AND - all must return true
+    public const MODE_ANY = 'any';   // OR - any returning true is enough
+    public const MODE_NONE = 'none'; // NOR - none must return true
+    public const MODE_NOT = 'not';   // NOT - negate single criterion
+    public const MODE_WHEN = 'when'; // Custom predicate callback
 
     /** @var list<CanDecideToContinue<TState>> */
     protected array $criteria;
     protected string $mode;
+    /** @var null|callable(TState): bool */
+    protected $predicate = null;
 
     /**
      * Create criteria with AND logic (all must pass).
@@ -82,6 +94,47 @@ class ContinuationCriteria implements CanDecideToContinue
     }
 
     /**
+     * None of the criteria must return true (NOR logic).
+     * Continues only if ALL criteria return false.
+     *
+     * @template T of object
+     * @param CanDecideToContinue<T> ...$criteria
+     * @return self<T>
+     */
+    public static function none(CanDecideToContinue ...$criteria): self {
+        $instance = new self(...$criteria);
+        $instance->mode = self::MODE_NONE;
+        return $instance;
+    }
+
+    /**
+     * Negate a single criterion (NOT logic).
+     *
+     * @template T of object
+     * @param CanDecideToContinue<T> $criterion
+     * @return self<T>
+     */
+    public static function not(CanDecideToContinue $criterion): self {
+        $instance = new self($criterion);
+        $instance->mode = self::MODE_NOT;
+        return $instance;
+    }
+
+    /**
+     * Custom predicate callback for complex conditions.
+     *
+     * @template T of object
+     * @param callable(T): bool $predicate
+     * @return self<T>
+     */
+    public static function when(callable $predicate): self {
+        $instance = new self();
+        $instance->mode = self::MODE_WHEN;
+        $instance->predicate = $predicate;
+        return $instance;
+    }
+
+    /**
      * Legacy factory - defaults to ALL mode.
      *
      * @param CanDecideToContinue<TState> ...$criteria
@@ -100,13 +153,12 @@ class ContinuationCriteria implements CanDecideToContinue
      */
     #[\Override]
     final public function canContinue(object $state): bool {
-        if ($this->criteria === []) {
-            return false;
-        }
-
         return match ($this->mode) {
-            self::MODE_ALL => $this->evaluateAll($state),
-            self::MODE_ANY => $this->evaluateAny($state),
+            self::MODE_ALL => $this->criteria === [] ? false : $this->evaluateAll($state),
+            self::MODE_ANY => $this->criteria === [] ? false : $this->evaluateAny($state),
+            self::MODE_NONE => $this->criteria === [] ? true : $this->evaluateNone($state),
+            self::MODE_NOT => $this->criteria === [] ? false : $this->evaluateNot($state),
+            self::MODE_WHEN => $this->predicate !== null && ($this->predicate)($state),
             default => false,
         };
     }
@@ -150,5 +202,28 @@ class ContinuationCriteria implements CanDecideToContinue
             }
         }
         return false;
+    }
+
+    /**
+     * NOR logic - none of the criteria must return true.
+     *
+     * @param TState $state
+     */
+    private function evaluateNone(object $state): bool {
+        foreach ($this->criteria as $criterion) {
+            if ($criterion->canContinue($state) === true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * NOT logic - negate single criterion.
+     *
+     * @param TState $state
+     */
+    private function evaluateNot(object $state): bool {
+        return !$this->criteria[0]->canContinue($state);
     }
 }
