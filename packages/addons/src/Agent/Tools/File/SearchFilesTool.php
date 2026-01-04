@@ -88,10 +88,22 @@ class SearchFilesTool extends BaseTool
     }
 
     private function recursiveGlob(string $pattern): array {
-        $filePattern = basename($pattern);
+        // Parse pattern: "packages/addons/**/*.php" -> dir="packages/addons", file="*.php"
+        $parts = explode('**/', $pattern, 2);
+        $dirPrefix = rtrim($parts[0], '/');
+        $filePattern = $parts[1] ?? '*';
+
+        // Determine search root
+        $searchRoot = $dirPrefix !== ''
+            ? $this->baseDir . '/' . $dirPrefix
+            : $this->baseDir;
+
+        if (!is_dir($searchRoot)) {
+            return [];
+        }
 
         $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->baseDir, FilesystemIterator::SKIP_DOTS),
+            new RecursiveDirectoryIterator($searchRoot, FilesystemIterator::SKIP_DOTS),
             RecursiveIteratorIterator::LEAVES_ONLY
         );
 
