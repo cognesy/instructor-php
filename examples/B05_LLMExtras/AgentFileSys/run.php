@@ -3,6 +3,7 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Messages\Messages;
 
 /**
@@ -10,17 +11,31 @@ use Cognesy\Messages\Messages;
  *
  * Demonstrates using the Agent with file tools to read and analyze files.
  * The agent reads composer.json and answers questions about the project.
+ *
+ * Usage:
+ *   php run.php [preset]
+ *
+ * Examples:
+ *   php run.php              # Uses default LLM connection
+ *   php run.php openai       # Uses OpenAI preset
  */
 
 print("╔════════════════════════════════════════════════════════════════╗\n");
 print("║              Agent - File System Access Demo                   ║\n");
 print("╚════════════════════════════════════════════════════════════════╝\n\n");
 
+// Get optional LLM preset from command line
+$llmPreset = $argv[1] ?? null;
+
+if ($llmPreset) {
+    print("Using LLM preset: {$llmPreset}\n\n");
+}
+
 // Get project root directory
 $projectRoot = dirname(__DIR__, 3);
 
 // Create agent with file tools scoped to project root
-$agent = AgentFactory::withFileTools(baseDir: $projectRoot);
+$agent = AgentFactory::withFileTools(baseDir: $projectRoot, llmPreset: $llmPreset);
 
 // Initialize state with user question about the project
 $state = AgentState::empty()->withMessages(
@@ -72,3 +87,9 @@ print("  Steps: {$state->stepCount()}\n");
 print("  Status: {$state->status()->value}\n");
 $usage = $state->usage();
 print("  Tokens: {$usage->inputTokens} input, {$usage->outputTokens} output\n");
+
+// Show hint if failed
+if ($state->status() === AgentStatus::Failed && $usage->total() === 0) {
+    print("\nHint: Status 'failed' with 0 tokens usually means the LLM connection failed.\n");
+    print("      Try: php run.php openai    # If you have OPENAI_API_KEY set\n");
+}

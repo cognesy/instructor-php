@@ -3,6 +3,7 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Messages\Messages;
 
 /**
@@ -10,14 +11,29 @@ use Cognesy\Messages\Messages;
  *
  * Demonstrates the simplest use of Agent - a trivial Q&A without tools.
  * The agent uses the LLM directly to answer a simple question.
+ *
+ * Usage:
+ *   php run.php [preset]
+ *
+ * Examples:
+ *   php run.php              # Uses default LLM connection
+ *   php run.php openai       # Uses OpenAI preset
+ *   php run.php anthropic    # Uses Anthropic preset
  */
 
 print("╔════════════════════════════════════════════════════════════════╗\n");
 print("║                  Agent - Basic Q&A Demo                        ║\n");
 print("╚════════════════════════════════════════════════════════════════╝\n\n");
 
+// Get optional LLM preset from command line
+$llmPreset = $argv[1] ?? null;
+
+if ($llmPreset) {
+    print("Using LLM preset: {$llmPreset}\n\n");
+}
+
 // Create a basic agent (no tools needed for simple Q&A)
-$agent = AgentFactory::default();
+$agent = AgentFactory::default(llmPreset: $llmPreset);
 
 // Initialize state with user question
 $state = AgentState::empty()->withMessages(
@@ -44,3 +60,11 @@ print("  Steps: {$finalState->stepCount()}\n");
 print("  Status: {$finalState->status()->value}\n");
 $usage = $finalState->usage();
 print("  Tokens: {$usage->inputTokens} input, {$usage->outputTokens} output\n");
+
+// Show hint if failed
+if ($finalState->status() === AgentStatus::Failed && $usage->total() === 0) {
+    print("\nHint: Status 'failed' with 0 tokens usually means the LLM connection failed.\n");
+    print("      Check your API key configuration in /config/llm.php or try:\n");
+    print("      php run.php openai    # If you have OPENAI_API_KEY set\n");
+    print("      php run.php anthropic # If you have ANTHROPIC_API_KEY set\n");
+}

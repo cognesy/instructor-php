@@ -26,12 +26,23 @@ echo $finalState->currentStep()->outputMessages()->toString();
 
 | Method | Tools | Use Case |
 |--------|-------|----------|
-| `default(tools)` | Custom | Base agent with provided tools |
-| `withBash(baseDir)` | bash | Shell command execution |
-| `withFileTools(baseDir)` | read_file, write_file, edit_file | File operations |
-| `withTaskPlanning()` | todo_write | Task tracking |
-| `withSkills(library)` | load_skill | Knowledge loading |
-| `codingAgent(workDir)` | All above + spawn_subagent | Full coding assistant |
+| `default(tools, llmPreset)` | Custom | Base agent with provided tools |
+| `withBash(baseDir, llmPreset)` | bash | Shell command execution |
+| `withFileTools(baseDir, llmPreset)` | read_file, write_file, edit_file | File operations |
+| `withTaskPlanning(llmPreset)` | todo_write | Task tracking |
+| `withSkills(library, llmPreset)` | load_skill | Knowledge loading |
+| `codingAgent(workDir, llmPreset)` | All above + spawn_subagent | Full coding assistant |
+
+All factory methods accept an optional `llmPreset` parameter to specify the LLM connection preset from `/config/llm.php`.
+
+```php
+// Use default LLM
+$agent = AgentFactory::default();
+
+// Use specific preset
+$agent = AgentFactory::default(llmPreset: 'openai');
+$agent = AgentFactory::withFileTools(baseDir: '/path', llmPreset: 'anthropic');
+```
 
 ## Execution Patterns
 
@@ -98,6 +109,13 @@ LoadSkillTool::withLibrary(new SkillLibrary('./skills'));
 Spawn isolated subagents with filtered capabilities.
 ```php
 new SpawnSubagentTool($parentAgent, $capability);
+```
+
+### LlmQueryTool
+Send queries to the LLM for knowledge questions, reasoning, or text generation.
+```php
+new LlmQueryTool(); // Uses default LLM
+LlmQueryTool::using('openai'); // Uses specific preset
 ```
 
 ## Configuration
@@ -365,5 +383,6 @@ src/Agent/
     ├── EditFileTool.php
     ├── TodoWriteTool.php
     ├── LoadSkillTool.php
+    ├── LlmQueryTool.php
     └── SpawnSubagentTool.php
 ```

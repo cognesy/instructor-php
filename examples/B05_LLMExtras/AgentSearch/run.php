@@ -5,6 +5,7 @@ use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Enums\AgentType;
 use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
 use Cognesy\Addons\Agent\Tools\BaseTool;
@@ -20,11 +21,25 @@ use Cognesy\Messages\Messages;
  * - Generating a synthesized answer
  *
  * The main agent orchestrates subagents that each handle specific tasks.
+ *
+ * Usage:
+ *   php run.php [preset]
+ *
+ * Examples:
+ *   php run.php              # Uses default LLM connection
+ *   php run.php openai       # Uses OpenAI preset
  */
 
 print("╔════════════════════════════════════════════════════════════════╗\n");
 print("║            Agent - Agentic Search with Subagents               ║\n");
 print("╚════════════════════════════════════════════════════════════════╝\n\n");
+
+// Get optional LLM preset from command line
+$llmPreset = $argv[1] ?? null;
+
+if ($llmPreset) {
+    print("Using LLM preset: {$llmPreset}\n\n");
+}
 
 // Get project root directory
 $projectRoot = dirname(__DIR__, 3);
@@ -174,6 +189,7 @@ $searchTool = new SearchFilesTool($projectRoot);
 // Create main agent first (without subagent tool)
 $mainAgent = AgentFactory::default(
     tools: new Tools($searchTool),
+    llmPreset: $llmPreset,
 );
 
 // Now add the research subagent tool with reference to main agent
@@ -234,3 +250,9 @@ print("  Steps: {$state->stepCount()}\n");
 print("  Status: {$state->status()->value}\n");
 $usage = $state->usage();
 print("  Tokens: {$usage->inputTokens} input, {$usage->outputTokens} output\n");
+
+// Show hint if failed
+if ($state->status() === AgentStatus::Failed && $usage->total() === 0) {
+    print("\nHint: Status 'failed' with 0 tokens usually means the LLM connection failed.\n");
+    print("      Try: php run.php openai    # If you have OPENAI_API_KEY set\n");
+}

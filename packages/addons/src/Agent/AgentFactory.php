@@ -33,6 +33,7 @@ use Cognesy\Addons\Agent\Tools\WriteFileTool;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
 class AgentFactory
@@ -43,16 +44,25 @@ class AgentFactory
         ?ContinuationCriteria $continuationCriteria = null,
         ?CanUseTools $driver = null,
         ?CanHandleEvents $events = null,
+        ?string $llmPreset = null,
     ): Agent {
         $events = EventBusResolver::using($events);
         $tools = $tools ?? new Tools();
+
+        // Build driver with LLM preset if specified
+        if ($driver === null) {
+            $llmProvider = $llmPreset !== null
+                ? LLMProvider::using($llmPreset)
+                : LLMProvider::new();
+            $driver = new ToolCallingDriver(llm: $llmProvider);
+        }
 
         return (new Agent(
             tools: $tools,
             toolExecutor: (new ToolExecutor($tools))->withEventHandler($events),
             processors: $processors ?? self::defaultProcessors(),
             continuationCriteria: $continuationCriteria ?? self::defaultContinuationCriteria(),
-            driver: $driver ?? new ToolCallingDriver,
+            driver: $driver,
             events: $events,
         ));
     }
@@ -96,9 +106,10 @@ class AgentFactory
         ?string $baseDir = null,
         int $timeout = 120,
         ?CanHandleEvents $events = null,
+        ?string $llmPreset = null,
     ): Agent {
         $bashTool = new BashTool(policy: $policy, baseDir: $baseDir, timeout: $timeout);
-        return self::default(tools: new Tools($bashTool), events: $events);
+        return self::default(tools: new Tools($bashTool), events: $events, llmPreset: $llmPreset);
     }
 
     /**
@@ -107,6 +118,7 @@ class AgentFactory
     public static function withFileTools(
         ?string $baseDir = null,
         ?CanHandleEvents $events = null,
+        ?string $llmPreset = null,
     ): Agent {
         $baseDir = $baseDir ?? getcwd() ?: '/tmp';
 
@@ -116,13 +128,16 @@ class AgentFactory
             EditFileTool::inDirectory($baseDir),
         );
 
-        return self::default(tools: $tools, events: $events);
+        return self::default(tools: $tools, events: $events, llmPreset: $llmPreset);
     }
 
     /**
      * Create an agent with task planning capability (TodoWrite).
      */
-    public static function withTaskPlanning(?CanHandleEvents $events = null): Agent {
+    public static function withTaskPlanning(
+        ?CanHandleEvents $events = null,
+        ?string $llmPreset = null,
+    ): Agent {
         $tools = new Tools(new TodoWriteTool());
 
         $processors = new StateProcessors(
@@ -132,7 +147,7 @@ class AgentFactory
             new PersistTasksProcessor(),
         );
 
-        return self::default(tools: $tools, processors: $processors, events: $events);
+        return self::default(tools: $tools, processors: $processors, events: $events, llmPreset: $llmPreset);
     }
 
     /**
@@ -141,11 +156,12 @@ class AgentFactory
     public static function withSkills(
         ?SkillLibrary $library = null,
         ?CanHandleEvents $events = null,
+        ?string $llmPreset = null,
     ): Agent {
         $library = $library ?? new SkillLibrary();
         $tools = new Tools(LoadSkillTool::withLibrary($library));
 
-        return self::default(tools: $tools, events: $events);
+        return self::default(tools: $tools, events: $events, llmPreset: $llmPreset);
     }
 
     /**
@@ -159,6 +175,7 @@ class AgentFactory
         int $maxTokens = 32768,
         int $timeout = 300,
         ?CanHandleEvents $events = null,
+        ?string $llmPreset = null,
     ): Agent {
         $workDir = $workDir ?? getcwd() ?: '/tmp';
         $policy = ExecutionPolicy::in($workDir)
@@ -199,6 +216,7 @@ class AgentFactory
             processors: $processors,
             continuationCriteria: $continuationCriteria,
             events: $events,
+            llmPreset: $llmPreset,
         );
 
         // Add subagent tool with reference to the agent
