@@ -63,9 +63,13 @@ class SearchFilesTool extends BaseTool
     public function __invoke(mixed ...$args): string {
         $pattern = $args['pattern'] ?? $args[0] ?? '*.php';
 
-        // Use glob to find files
-        $fullPattern = $this->baseDir . '/' . $pattern;
-        $files = glob($fullPattern, GLOB_BRACE) ?: [];
+        // Handle recursive patterns with **
+        if (str_contains($pattern, '**')) {
+            $files = $this->recursiveGlob($pattern);
+        } else {
+            $fullPattern = $this->baseDir . '/' . $pattern;
+            $files = glob($fullPattern, GLOB_BRACE) ?: [];
+        }
 
         // Limit results
         $files = array_slice($files, 0, 10);
@@ -81,6 +85,27 @@ class SearchFilesTool extends BaseTool
         );
 
         return "Found " . count($relativePaths) . " files:\n" . implode("\n", $relativePaths);
+    }
+
+    private function recursiveGlob(string $pattern): array {
+        // Convert ** pattern to regex for matching
+        $filePattern = basename($pattern);
+        $dirPattern = dirname($pattern);
+
+        // Simple recursive search
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($this->baseDir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        $files = [];
+        foreach ($iterator as $file) {
+            if (fnmatch($filePattern, $file->getFilename())) {
+                $files[] = $file->getPathname();
+            }
+        }
+
+        return $files;
     }
 
     #[\Override]
@@ -233,13 +258,34 @@ while ($mainAgent->hasNextStep($state)) {
         }
     }
 
-    // Show tool calls
+    // Show tool calls and their results
     if ($step->hasToolCalls()) {
         foreach ($step->toolCalls()->all() as $toolCall) {
             $args = $toolCall->args();
             $argStr = isset($args['pattern']) ? "pattern={$args['pattern']}" :
                      (isset($args['task']) ? "task=\"" . substr($args['task'], 0, 40) . "...\"" : '');
             print("  → {$toolCall->name()}({$argStr})\n");
+        }
+    }
+
+    // Show tool execution results
+    if ($step->toolExecutions()->hasExecutions()) {
+        foreach ($step->toolExecutions()->all() as $execution) {
+            $name = $execution->name();
+            if ($execution->hasError()) {
+                $error = $execution->error();
+                print("    ✗ {$name}: ERROR - " . ($error?->getMessage() ?? 'Unknown error') . "\n");
+            } else {
+                $value = $execution->value();
+                $preview = is_string($value) ? $value : json_encode($value);
+                // Truncate long results
+                if (strlen($preview) > 200) {
+                    $preview = substr($preview, 0, 200) . '...';
+                }
+                // Indent multi-line output
+                $preview = str_replace("\n", "\n      ", $preview);
+                print("    ✓ {$name}: {$preview}\n");
+            }
         }
     }
 
