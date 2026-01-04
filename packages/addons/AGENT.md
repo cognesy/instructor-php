@@ -19,7 +19,7 @@ $state = AgentState::empty()->withMessages(
 
 // Run to completion
 $finalState = $agent->finalStep($state);
-echo $finalState->currentStep()->content();
+echo $finalState->currentStep()->outputMessages()->toString();
 ```
 
 ## Factory Methods
@@ -220,7 +220,7 @@ $state->metadata();         // Key-value store
 Single execution step with inference response and tool results.
 ```php
 $step->stepType();          // ToolExecution | FinalResponse | Error
-$step->content();           // LLM response text
+$step->outputMessages();    // LLM response messages
 $step->hasToolCalls();      // Whether tools were called
 $step->toolCalls();         // ToolCalls collection
 $step->toolExecutions();    // Execution results
