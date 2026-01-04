@@ -121,10 +121,16 @@ class StructureFactory
             $isOptional = $parameter->isOptional();
             $isVariadic = $parameter->isVariadic();
             $paramType = $parameter->getType()?->getName();
-            $typeDetails = match($isVariadic) {
-                true => TypeDetails::collection($paramType),
+
+            // For variadic parameters, we need a collection type, but 'mixed' can't be
+            // a collection item type (no valid JSON Schema representation).
+            // Treat variadic mixed as untyped array instead.
+            $typeDetails = match(true) {
+                $isVariadic && ($paramType === 'mixed' || $paramType === null) => TypeDetails::array(),
+                $isVariadic => TypeDetails::collection($paramType),
                 default => TypeDetails::fromTypeName($paramType),
             };
+
             $defaultValue = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
             $arguments[] = FieldFactory::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)
                 ->optional($isOptional)
