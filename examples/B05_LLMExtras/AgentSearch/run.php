@@ -221,7 +221,7 @@ while ($mainAgent->hasNextStep($state)) {
     // Show tool calls
     if ($step->hasToolCalls()) {
         foreach ($step->toolCalls()->all() as $toolCall) {
-            $args = json_decode($toolCall->arguments(), true) ?? [];
+            $args = $toolCall->args();
             $argStr = isset($args['pattern']) ? "pattern={$args['pattern']}" :
                      (isset($args['task']) ? "task=\"" . substr($args['task'], 0, 40) . "...\"" : '');
             print("  → {$toolCall->name()}({$argStr})\n");
