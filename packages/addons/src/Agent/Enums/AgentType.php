@@ -2,6 +2,9 @@
 
 namespace Cognesy\Addons\Agent\Enums;
 
+/**
+ * @deprecated Use SubagentRegistry and SubagentSpec instead. Will be removed in next major version.
+ */
 enum AgentType: string
 {
     case Explore = 'explore';

@@ -7,97 +7,138 @@ use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\Enums\AgentType;
-use Cognesy\Addons\Agent\Subagents\AgentCapability;
-use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
+use Cognesy\Addons\Agent\Skills\SkillLibrary;
+use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
+use Cognesy\Addons\Agent\Subagents\SubagentSpec;
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class SpawnSubagentTool extends BaseTool
 {
     private Agent $parentAgent;
-    private AgentCapability $capability;
+    private SubagentRegistry $registry;
+    private ?SkillLibrary $skillLibrary;
+    private ?LLMProvider $parentLlmProvider;
+    private int $currentDepth;
+    private int $maxDepth;
 
     public function __construct(
         Agent $parentAgent,
-        ?AgentCapability $capability = null,
+        SubagentRegistry $registry,
+        ?SkillLibrary $skillLibrary = null,
+        ?LLMProvider $parentLlmProvider = null,
+        int $currentDepth = 0,
+        int $maxDepth = 3,
     ) {
         parent::__construct(
             name: 'spawn_subagent',
-            description: <<<'DESC'
-Spawn an isolated subagent for a focused task. Returns only the final response.
-
-Examples:
-- description="Find auth implementation", prompt="Where is user authentication handled?", agent_type="explore"
-- description="Fix login bug", prompt="The login form throws error X. Find and fix it.", agent_type="code"
-- description="Design caching strategy", prompt="How should we implement Redis caching?", agent_type="plan"
-
-Agent types:
-- explore: Read-only analysis (search_files, read_file, list_dir)
-- code: Full access (includes edit_file, write_file, bash)
-- plan: Design only (no file modifications)
-DESC,
+            description: $this->buildDescription($registry),
         );
 
         $this->parentAgent = $parentAgent;
-        $this->capability = $capability ?? new DefaultAgentCapability();
+        $this->registry = $registry;
+        $this->skillLibrary = $skillLibrary;
+        $this->parentLlmProvider = $parentLlmProvider;
+        $this->currentDepth = $currentDepth;
+        $this->maxDepth = $maxDepth;
     }
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $description = $args['description'] ?? $args[0] ?? '';
+        $subagentName = $args['subagent'] ?? $args[0] ?? '';
         $prompt = $args['prompt'] ?? $args[1] ?? '';
-        $agent_type = $args['agent_type'] ?? $args[2] ?? 'explore';
 
-        $type = $this->parseAgentType($agent_type);
-        $filteredTools = $this->capability->toolsFor($type, $this->parentAgent->tools());
-        $systemPromptAddition = $this->capability->systemPromptFor($type);
+        // Check depth limit
+        if ($this->currentDepth >= $this->maxDepth) {
+            return $this->formatError(
+                "Maximum subagent nesting depth ({$this->maxDepth}) reached. " .
+                "Cannot spawn '{$subagentName}' at depth {$this->currentDepth}."
+            );
+        }
 
-        $subagent = $this->createSubagent($filteredTools);
-        $initialState = $this->createInitialState($prompt, $systemPromptAddition);
+        // Get subagent spec
+        try {
+            $spec = $this->registry->get($subagentName);
+        } catch (\Throwable $e) {
+            return $this->formatError($e->getMessage());
+        }
 
+        // Create and run subagent
+        $subagent = $this->createSubagent($spec);
+        $initialState = $this->createInitialState($prompt, $spec);
         $finalState = $this->runSubagent($subagent, $initialState);
 
-        return $this->extractFinalResponse($finalState, $description);
+        return $this->extractFinalResponse($finalState, $spec->name);
     }
 
-    private function parseAgentType(string $type): AgentType {
-        return match(strtolower(trim($type))) {
-            'explore', 'exploration' => AgentType::Explore,
-            'code', 'coding' => AgentType::Code,
-            'plan', 'planning' => AgentType::Plan,
-            default => AgentType::Explore,
-        };
+    // SUBAGENT CREATION ////////////////////////////////////////////
+
+    private function createSubagent(SubagentSpec $spec): Agent {
+        // Filter tools based on spec
+        $tools = $spec->filterTools($this->parentAgent->tools());
+
+        // If spawn_subagent is in filtered tools, create nested version with incremented depth
+        if ($tools->has('spawn_subagent')) {
+            $nestedSpawnTool = new self(
+                parentAgent: $this->parentAgent,
+                registry: $this->registry,
+                skillLibrary: $this->skillLibrary,
+                parentLlmProvider: $this->parentLlmProvider,
+                currentDepth: $this->currentDepth + 1,
+                maxDepth: $this->maxDepth,
+            );
+
+            $tools = $tools->withToolRemoved('spawn_subagent')
+                           ->withTool($nestedSpawnTool);
+        }
+
+        // Resolve LLM provider
+        $llmProvider = $spec->resolveLlmProvider($this->parentLlmProvider);
+
+        // Create agent
+        return AgentFactory::default(
+            tools: $tools,
+            llmPreset: null, // Don't use preset, use resolved provider directly
+        )->with(
+            driver: $this->parentAgent->driver()->withLLMProvider($llmProvider),
+        );
     }
 
-    private function createSubagent(Tools $tools): Agent {
-        return AgentFactory::default(tools: $tools);
-    }
+    private function createInitialState(string $prompt, SubagentSpec $spec): AgentState {
+        $systemParts = [$spec->systemPrompt];
 
-    private function createInitialState(string $prompt, string $systemPromptAddition): AgentState {
-        $systemMessage = $systemPromptAddition;
-        $userMessage = $prompt;
+        // Preload skills into system prompt
+        if ($spec->hasSkills() && $this->skillLibrary !== null) {
+            $systemParts[] = "\n## Loaded Skills\n";
+
+            foreach ($spec->skills as $skillName) {
+                $skill = $this->skillLibrary->getSkill($skillName);
+                if ($skill !== null) {
+                    $systemParts[] = $skill->render();
+                    $systemParts[] = ""; // Blank line between skills
+                }
+            }
+        }
+
+        $systemMessage = implode("\n", $systemParts);
 
         $messages = Messages::fromArray([
             ['role' => 'system', 'content' => $systemMessage],
-            ['role' => 'user', 'content' => $userMessage],
+            ['role' => 'user', 'content' => $prompt],
         ]);
 
         return AgentState::empty()->withMessages($messages);
     }
 
     private function runSubagent(Agent $subagent, AgentState $state): AgentState {
-        $finalState = $state;
-
-        foreach ($subagent->iterator($state) as $stepState) {
-            $finalState = $stepState;
-        }
-
-        return $finalState;
+        return $subagent->finalStep($state);
     }
 
-    private function extractFinalResponse(AgentState $state, string $description): string {
-        $parts = ["[Subagent: {$description}]"];
+    // RESPONSE FORMATTING //////////////////////////////////////////
+
+    private function extractFinalResponse(AgentState $state, string $name): string {
+        $parts = ["[Subagent: {$name}]"];
 
         if ($state->status() === AgentStatus::Failed) {
             $errorMsg = $state->currentStep()?->errorsAsString() ?? 'Unknown error';
@@ -121,33 +162,68 @@ DESC,
         return implode("\n", $parts);
     }
 
+    private function formatError(string $message): string {
+        return "[Subagent Error]\n{$message}";
+    }
+
+    // TOOL SCHEMA //////////////////////////////////////////////////
+
     #[\Override]
     public function toToolSchema(): array {
+        $subagentNames = $this->registry->names();
+        $descriptions = [];
+
+        foreach ($this->registry->all() as $spec) {
+            $tools = $spec->inheritsAllTools()
+                ? 'all parent tools'
+                : implode(', ', $spec->tools);
+
+            $descriptions[] = "- {$spec->name}: {$spec->description} (tools: {$tools})";
+        }
+
+        $descriptionText = $this->description;
+        if (!empty($descriptions)) {
+            $descriptionText .= "\n\nAvailable subagents:\n" . implode("\n", $descriptions);
+        }
+
         return [
             'type' => 'function',
             'function' => [
                 'name' => $this->name(),
-                'description' => $this->description(),
+                'description' => $descriptionText,
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
-                        'description' => [
+                        'subagent' => [
                             'type' => 'string',
-                            'description' => 'Short description of what the subagent will do',
+                            'enum' => $subagentNames,
+                            'description' => 'Which subagent to spawn',
                         ],
                         'prompt' => [
                             'type' => 'string',
                             'description' => 'The task or question for the subagent',
                         ],
-                        'agent_type' => [
-                            'type' => 'string',
-                            'enum' => ['explore', 'code', 'plan'],
-                            'description' => 'Type of subagent: explore (read-only), code (full access), plan (design only)',
-                        ],
                     ],
-                    'required' => ['description', 'prompt'],
+                    'required' => ['subagent', 'prompt'],
                 ],
             ],
         ];
+    }
+
+    // HELPERS //////////////////////////////////////////////////////
+
+    private function buildDescription(SubagentRegistry $registry): string {
+        $count = $registry->count();
+
+        if ($count === 0) {
+            return 'Spawn an isolated subagent for a focused task. No subagents are currently registered.';
+        }
+
+        return <<<DESC
+Spawn a specialized subagent for a focused task. Returns only the final response.
+
+Each subagent has specific expertise, tools, and capabilities optimized for its domain.
+Choose the most appropriate subagent based on the task requirements.
+DESC;
     }
 }

@@ -11,6 +11,7 @@ use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
 use Cognesy\Addons\Agent\StateProcessors\PersistTasksProcessor;
 use Cognesy\Addons\Agent\Subagents\AgentCapability;
+use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
 use Cognesy\Addons\Agent\Tools\BashTool;
 use Cognesy\Addons\Agent\Tools\File\EditFileTool;
 use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
@@ -166,14 +167,26 @@ class AgentFactory
 
     /**
      * Create a full-featured coding agent with bash, file tools, task planning, and skills.
+     *
+     * @param string|null $workDir Working directory for file operations
+     * @param SkillLibrary|null $skills Skill library for skill loading
+     * @param SubagentRegistry|null $subagentRegistry Registry of available subagents (null = create empty)
+     * @param int $maxSteps Maximum number of agent steps
+     * @param int $maxTokens Maximum token usage
+     * @param int $timeout Execution timeout in seconds
+     * @param int $maxSubagentDepth Maximum nesting depth for subagents (default: 3)
+     * @param CanHandleEvents|null $events Event handler
+     * @param string|null $llmPreset LLM preset name from config/llm.php
+     * @return Agent
      */
     public static function codingAgent(
         ?string $workDir = null,
         ?SkillLibrary $skills = null,
-        ?AgentCapability $capability = null,
+        ?SubagentRegistry $subagentRegistry = null,
         int $maxSteps = 20,
         int $maxTokens = 32768,
         int $timeout = 300,
+        int $maxSubagentDepth = 3,
         ?CanHandleEvents $events = null,
         ?string $llmPreset = null,
     ): Agent {
@@ -219,8 +232,24 @@ class AgentFactory
             llmPreset: $llmPreset,
         );
 
-        // Add subagent tool with reference to the agent
-        $subagentTool = new SpawnSubagentTool($agent, $capability);
+        // Create subagent registry if not provided
+        $subagentRegistry = $subagentRegistry ?? new SubagentRegistry();
+
+        // Get LLM provider for subagent inheritance
+        $llmProvider = $llmPreset !== null
+            ? LLMProvider::using($llmPreset)
+            : LLMProvider::new();
+
+        // Add subagent tool with registry
+        $subagentTool = new SpawnSubagentTool(
+            parentAgent: $agent,
+            registry: $subagentRegistry,
+            skillLibrary: $skills,
+            parentLlmProvider: $llmProvider,
+            currentDepth: 0,
+            maxDepth: $maxSubagentDepth,
+        );
+
         return $agent->withTools($tools->merge(new Tools($subagentTool)));
     }
 }

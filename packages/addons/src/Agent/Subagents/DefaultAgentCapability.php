@@ -2,6 +2,10 @@
 
 namespace Cognesy\Addons\Agent\Subagents;
 
+/**
+ * @deprecated Use SubagentRegistry and SubagentSpec instead. Will be removed in next major version.
+ */
+
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Enums\AgentType;
 
