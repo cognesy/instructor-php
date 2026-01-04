@@ -60,6 +60,16 @@ class SearchFilesTool extends BaseTool
     }
 
     private function normalizePattern(string $pattern): string {
+        // Exact path match: starts with ./ or contains directory separator
+        // "./composer.json" -> "composer.json" (exact match at root)
+        // "src/Config.php" -> "src/Config.php" (exact path match)
+        if (str_starts_with($pattern, './')) {
+            return substr($pattern, 2);
+        }
+        if (str_contains($pattern, '/') && !str_contains($pattern, '*')) {
+            return $pattern;
+        }
+
         // Check if pattern already has glob characters
         if (preg_match('/[*?\[\]{}]/', $pattern)) {
             return $pattern;
@@ -107,7 +117,7 @@ class SearchFilesTool extends BaseTool
                     'properties' => [
                         'pattern' => [
                             'type' => 'string',
-                            'description' => 'Search pattern: glob (*.php, **/*.md), filename (composer.json), or keyword (test, config)',
+                            'description' => 'Search pattern: exact path (./composer.json, src/Config.php), glob (*.php, **/*.md), filename (composer.json), or keyword (test)',
                         ],
                     ],
                     'required' => ['pattern'],
