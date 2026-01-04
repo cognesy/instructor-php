@@ -3,30 +3,96 @@
 namespace Cognesy\Addons\StepByStep\Continuation;
 
 /**
- * Shared base for domain continuation collections.
+ * Composable continuation criteria with AND/OR logic.
+ *
+ * Usage:
+ *   // All must pass (AND logic) - default behavior
+ *   $criteria = ContinuationCriteria::all(
+ *       new StepsLimit(10),
+ *       new TokenUsageLimit(16384),
+ *   );
+ *
+ *   // Any can pass (OR logic)
+ *   $criteria = ContinuationCriteria::any(
+ *       new ToolCallPresenceCheck(...),
+ *       new SelfCriticContinuationCheck(...),
+ *   );
+ *
+ *   // Nested composition
+ *   $criteria = ContinuationCriteria::all(
+ *       new StepsLimit(10),
+ *       new TokenUsageLimit(16384),
+ *       ContinuationCriteria::any(
+ *           new ToolCallPresenceCheck(...),
+ *           new SelfCriticContinuationCheck(...),
+ *       ),
+ *   );
+ *
+ *   // Legacy usage (defaults to ALL mode)
+ *   $criteria = new ContinuationCriteria(
+ *       new StepsLimit(10),
+ *       new TokenUsageLimit(16384),
+ *   );
  *
  * @template TState of object
  * @implements CanDecideToContinue<TState>
  */
-readonly class ContinuationCriteria implements CanDecideToContinue
+class ContinuationCriteria implements CanDecideToContinue
 {
+    public const MODE_ALL = 'all'; // AND - all must return true
+    public const MODE_ANY = 'any'; // OR - any returning true is enough
+
     /** @var list<CanDecideToContinue<TState>> */
-    private array $criteria;
-    /** @var ContinuationEvaluator<TState> */
-    private ContinuationEvaluator $evaluator;
+    protected array $criteria;
+    protected string $mode;
 
     /**
+     * Create criteria with AND logic (all must pass).
+     * This is the default/legacy behavior for backwards compatibility.
+     *
      * @param CanDecideToContinue<TState> ...$criteria
      */
     public function __construct(CanDecideToContinue ...$criteria) {
-        /** @var list<CanDecideToContinue<TState>> $criteria */
+        $this->mode = self::MODE_ALL;
         $this->criteria = $criteria;
-        /** @psalm-suppress InvalidPropertyAssignmentValue - Template parameter preserved through wrapAll */
-        $this->evaluator = ContinuationEvaluator::from($this->wrapAll($criteria));
+    }
+
+    /**
+     * All criteria must return true to continue (AND logic).
+     *
+     * @template T of object
+     * @param CanDecideToContinue<T> ...$criteria
+     * @return self<T>
+     */
+    public static function all(CanDecideToContinue ...$criteria): self {
+        return new self(...$criteria);
+    }
+
+    /**
+     * Any criterion returning true allows continuation (OR logic).
+     *
+     * @template T of object
+     * @param CanDecideToContinue<T> ...$criteria
+     * @return self<T>
+     */
+    public static function any(CanDecideToContinue ...$criteria): self {
+        $instance = new self(...$criteria);
+        $instance->mode = self::MODE_ANY;
+        return $instance;
+    }
+
+    /**
+     * Legacy factory - defaults to ALL mode.
+     *
+     * @param CanDecideToContinue<TState> ...$criteria
+     * @return self<TState>
+     */
+    public static function from(CanDecideToContinue ...$criteria): self {
+        return new self(...$criteria);
     }
 
     final public function isEmpty(): bool {
-        return $this->evaluator->isEmpty();
+        return $this->criteria === [];
     }
 
     /**
@@ -34,7 +100,15 @@ readonly class ContinuationCriteria implements CanDecideToContinue
      */
     #[\Override]
     final public function canContinue(object $state): bool {
-        return $this->evaluator->canContinue($state);
+        if ($this->criteria === []) {
+            return false;
+        }
+
+        return match ($this->mode) {
+            self::MODE_ALL => $this->evaluateAll($state),
+            self::MODE_ANY => $this->evaluateAny($state),
+            default => false,
+        };
     }
 
     /**
@@ -45,37 +119,36 @@ readonly class ContinuationCriteria implements CanDecideToContinue
             return $this;
         }
 
-        return $this->newInstance(...array_merge($this->criteria, $criteria));
+        $instance = new static(...array_merge($this->criteria, $criteria));
+        $instance->mode = $this->mode;
+        return $instance;
     }
 
     /**
-     * @param list<CanDecideToContinue<TState>> $criteria
-     * @return list<callable(TState): bool>
+     * AND logic - all criteria must return true.
+     *
+     * @param TState $state
      */
-    private function wrapAll(array $criteria): array {
-        $wrapped = [];
-        foreach ($criteria as $criterion) {
-            $wrapped[] = $this->wrapCriterion($criterion);
+    private function evaluateAll(object $state): bool {
+        foreach ($this->criteria as $criterion) {
+            if ($criterion->canContinue($state) === false) {
+                return false;
+            }
         }
-
-        return $wrapped;
+        return true;
     }
 
     /**
-     * @param CanDecideToContinue<TState> ...$criteria
+     * OR logic - any criterion returning true is enough.
+     *
+     * @param TState $state
      */
-    protected function newInstance(CanDecideToContinue ...$criteria): static {
-        return new static(...$criteria);
-    }
-
-    /**
-     * @param CanDecideToContinue<TState> $criterion
-     * @return callable(TState): bool
-     */
-    protected function wrapCriterion(CanDecideToContinue $criterion): callable {
-        return static function(object $state) use ($criterion): bool {
-            /** @var TState $state */
-            return $criterion->canContinue($state);
-        };
+    private function evaluateAny(object $state): bool {
+        foreach ($this->criteria as $criterion) {
+            if ($criterion->canContinue($state) === true) {
+                return true;
+            }
+        }
+        return false;
     }
 }
