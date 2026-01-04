@@ -132,4 +132,33 @@ class ReadFileTool extends BaseTool
 
         return implode("\n", $formatted);
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'path' => [
+                            'type' => 'string',
+                            'description' => 'The path to the file to read',
+                        ],
+                        'offset' => [
+                            'type' => 'integer',
+                            'description' => 'Line number to start reading from (0-indexed)',
+                        ],
+                        'limit' => [
+                            'type' => 'integer',
+                            'description' => 'Maximum number of lines to read (default: 2000)',
+                        ],
+                    ],
+                    'required' => ['path'],
+                ],
+            ],
+        ];
+    }
 }

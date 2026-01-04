@@ -79,4 +79,29 @@ class WriteFileTool extends BaseTool
 
         return "Successfully wrote {$byteCount} bytes ({$lineCount} lines) to {$path}";
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'path' => [
+                            'type' => 'string',
+                            'description' => 'The path to the file to write',
+                        ],
+                        'content' => [
+                            'type' => 'string',
+                            'description' => 'The content to write to the file',
+                        ],
+                    ],
+                    'required' => ['path', 'content'],
+                ],
+            ],
+        ];
+    }
 }

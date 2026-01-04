@@ -42,4 +42,29 @@ class LoadSkillTool extends BaseTool
 
         return $skill->render();
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'skill_name' => [
+                            'type' => 'string',
+                            'description' => 'Name of the skill to load',
+                        ],
+                        'list_skills' => [
+                            'type' => 'boolean',
+                            'description' => 'If true, list all available skills instead of loading one',
+                        ],
+                    ],
+                    'required' => [],
+                ],
+            ],
+        ];
+    }
 }

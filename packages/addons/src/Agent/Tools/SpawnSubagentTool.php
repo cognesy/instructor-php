@@ -107,4 +107,34 @@ class SpawnSubagentTool extends BaseTool
 
         return implode("\n", $parts);
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'description' => [
+                            'type' => 'string',
+                            'description' => 'Short description of what the subagent will do',
+                        ],
+                        'prompt' => [
+                            'type' => 'string',
+                            'description' => 'The task or question for the subagent',
+                        ],
+                        'agent_type' => [
+                            'type' => 'string',
+                            'enum' => ['explore', 'code', 'plan'],
+                            'description' => 'Type of subagent: explore (read-only), code (full access), plan (design only)',
+                        ],
+                    ],
+                    'required' => ['description', 'prompt'],
+                ],
+            ],
+        ];
+    }
 }

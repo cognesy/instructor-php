@@ -98,4 +98,37 @@ class EditFileTool extends BaseTool
     private function isValidPath(string $path): bool {
         return !str_contains($path, "\0");
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'path' => [
+                            'type' => 'string',
+                            'description' => 'The path to the file to edit',
+                        ],
+                        'old_string' => [
+                            'type' => 'string',
+                            'description' => 'The exact string to find and replace',
+                        ],
+                        'new_string' => [
+                            'type' => 'string',
+                            'description' => 'The string to replace old_string with',
+                        ],
+                        'replace_all' => [
+                            'type' => 'boolean',
+                            'description' => 'If true, replace all occurrences. If false (default), old_string must be unique.',
+                        ],
+                    ],
+                    'required' => ['path', 'old_string', 'new_string'],
+                ],
+            ],
+        ];
+    }
 }

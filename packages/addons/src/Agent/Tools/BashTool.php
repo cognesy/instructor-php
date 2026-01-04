@@ -114,4 +114,25 @@ class BashTool extends BaseTool
 
         return $output;
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'command' => [
+                            'type' => 'string',
+                            'description' => 'The bash command to execute',
+                        ],
+                    ],
+                    'required' => ['command'],
+                ],
+            ],
+        ];
+    }
 }

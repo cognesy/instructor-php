@@ -94,4 +94,44 @@ class TodoWriteTool extends BaseTool implements CanAccessAnyState
     public static function metadataKey(): string {
         return self::METADATA_KEY;
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return [
+            'type' => 'function',
+            'function' => [
+                'name' => $this->name(),
+                'description' => $this->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'todos' => [
+                            'type' => 'array',
+                            'description' => 'List of tasks to create or update',
+                            'items' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'content' => [
+                                        'type' => 'string',
+                                        'description' => 'What needs to be done',
+                                    ],
+                                    'status' => [
+                                        'type' => 'string',
+                                        'enum' => ['pending', 'in_progress', 'completed'],
+                                        'description' => 'Task status',
+                                    ],
+                                    'activeForm' => [
+                                        'type' => 'string',
+                                        'description' => 'Present tense action (e.g., "Running tests")',
+                                    ],
+                                ],
+                                'required' => ['content', 'status', 'activeForm'],
+                            ],
+                        ],
+                    ],
+                    'required' => ['todos'],
+                ],
+            ],
+        ];
+    }
 }

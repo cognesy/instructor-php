@@ -11,7 +11,7 @@ abstract class BaseTool implements ToolInterface
 {
     protected string $name;
     protected string $description;
-    protected array $cachedParamsJsonSchema;
+    protected ?array $cachedParamsJsonSchema = null;
 
     public function __construct(
         ?string $name = null,
@@ -19,7 +19,6 @@ abstract class BaseTool implements ToolInterface
     ) {
         $this->name = $name ?? static::class;
         $this->description = $description ?? '';
-        $this->cachedParamsJsonSchema = [];
     }
 
     /**
