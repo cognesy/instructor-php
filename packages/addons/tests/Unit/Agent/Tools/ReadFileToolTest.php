@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\Tools\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
 
 describe('ReadFileTool', function () {
 

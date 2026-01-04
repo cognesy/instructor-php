@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\Tools\EditFileTool;
+use Cognesy\Addons\Agent\Tools\File\EditFileTool;
 
 describe('EditFileTool', function () {
 

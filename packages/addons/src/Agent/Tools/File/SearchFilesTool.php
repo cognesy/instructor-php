@@ -30,33 +30,83 @@ class SearchFilesTool extends BaseTool
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $pattern = $args['pattern'] ?? $args[0] ?? '*.php';
+        $patterns = $this->extractPatterns($args);
 
-        // Normalize pattern: if no glob characters, treat as substring search
-        $normalizedPattern = $this->normalizePattern($pattern);
+        $allFiles = [];
+        $patternResults = [];
 
-        // Handle recursive patterns with **
-        if (str_contains($normalizedPattern, '**')) {
-            $files = $this->recursiveGlob($normalizedPattern);
-        } else {
-            $fullPattern = $this->baseDir . '/' . $normalizedPattern;
-            $files = glob($fullPattern, GLOB_BRACE) ?: [];
+        foreach ($patterns as $pattern) {
+            $normalizedPattern = $this->normalizePattern($pattern);
+
+            if (str_contains($normalizedPattern, '**')) {
+                $files = $this->recursiveGlob($normalizedPattern);
+            } else {
+                $fullPattern = $this->baseDir . '/' . $normalizedPattern;
+                $files = glob($fullPattern, GLOB_BRACE) ?: [];
+            }
+
+            // Convert to relative paths
+            $relativePaths = array_map(
+                fn($f) => str_replace($this->baseDir . '/', '', $f),
+                $files
+            );
+
+            if (!empty($relativePaths)) {
+                $patternResults[$pattern] = $relativePaths;
+                $allFiles = array_merge($allFiles, $relativePaths);
+            }
         }
 
-        // Limit results
-        $files = array_slice($files, 0, $this->maxResults);
+        // Deduplicate and limit
+        $allFiles = array_unique($allFiles);
+        $allFiles = array_slice($allFiles, 0, $this->maxResults);
 
-        if (empty($files)) {
-            return "No files found matching pattern: {$pattern}";
+        if (empty($allFiles)) {
+            $patternList = implode(', ', $patterns);
+            return "No files found matching patterns: {$patternList}";
         }
 
-        // Return relative paths
-        $relativePaths = array_map(
-            fn($f) => str_replace($this->baseDir . '/', '', $f),
-            $files
-        );
+        // Format output showing which pattern matched what
+        $output = "Found " . count($allFiles) . " files:\n";
+        foreach ($patternResults as $pattern => $files) {
+            $limited = array_slice($files, 0, 5);
+            $output .= "\n[{$pattern}]\n" . implode("\n", $limited);
+            if (count($files) > 5) {
+                $output .= "\n... and " . (count($files) - 5) . " more";
+            }
+        }
 
-        return "Found " . count($relativePaths) . " files:\n" . implode("\n", $relativePaths);
+        return $output;
+    }
+
+    private function extractPatterns(array $args): array {
+        // Single pattern as string
+        if (isset($args['pattern']) && is_string($args['pattern'])) {
+            return [$args['pattern']];
+        }
+
+        // Multiple patterns as array
+        if (isset($args['patterns']) && is_array($args['patterns'])) {
+            return array_filter($args['patterns'], 'is_string');
+        }
+
+        // Array of pattern objects: [{"pattern": "*.php"}, {"pattern": "*.md"}]
+        if (isset($args[0]) && is_array($args[0])) {
+            $patterns = [];
+            foreach ($args as $item) {
+                if (is_array($item) && isset($item['pattern'])) {
+                    $patterns[] = $item['pattern'];
+                }
+            }
+            return $patterns ?: ['*.php'];
+        }
+
+        // Single positional argument
+        if (isset($args[0]) && is_string($args[0])) {
+            return [$args[0]];
+        }
+
+        return ['*.php'];
     }
 
     private function normalizePattern(string $pattern): string {
@@ -129,10 +179,14 @@ class SearchFilesTool extends BaseTool
                     'properties' => [
                         'pattern' => [
                             'type' => 'string',
-                            'description' => 'Search pattern: exact path (./composer.json, src/Config.php), glob (*.php, **/*.md), filename (composer.json), or keyword (test)',
+                            'description' => 'Single search pattern: exact path (./composer.json), glob (*.php, **/*.md), filename (composer.json), or keyword (test)',
+                        ],
+                        'patterns' => [
+                            'type' => 'array',
+                            'items' => ['type' => 'string'],
+                            'description' => 'Multiple patterns to search at once. Use this to efficiently search for several file types or names in one call.',
                         ],
                     ],
-                    'required' => ['pattern'],
                 ],
             ],
         ];

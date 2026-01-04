@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools;
+namespace Cognesy\Addons\Agent\Tools\File;
 
+use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Utils\Sandbox\Sandbox;
@@ -41,12 +42,19 @@ class ReadFileTool extends BaseTool
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
+        // Handle array-wrapped args: [{"path": "..."}] -> {"path": "..."}
+        $args = $this->unwrapArgs($args);
+
         $path = $args['path'] ?? $args[0] ?? '';
         $offset = $args['offset'] ?? $args[1] ?? 0;
         $limit = $args['limit'] ?? $args[2] ?? self::DEFAULT_LINE_LIMIT;
 
         if (!$this->isValidPath($path)) {
             return "Error: Invalid file path";
+        }
+
+        if (is_dir($path)) {
+            return "Error: '{$path}' is a directory, not a file. Use list_dir to see directory contents.";
         }
 
         $limit = min($limit, self::DEFAULT_LINE_LIMIT);
@@ -57,6 +65,14 @@ class ReadFileTool extends BaseTool
         }
 
         return $this->readFileWithLineNumbers($path, $offset, $limit);
+    }
+
+    private function unwrapArgs(array $args): array {
+        // Handle LLM wrapping args in array: [{"path": "..."}] -> {"path": "..."}
+        if (isset($args[0]) && is_array($args[0]) && !isset($args['path'])) {
+            return $args[0];
+        }
+        return $args;
     }
 
     private function isValidPath(string $path): bool {

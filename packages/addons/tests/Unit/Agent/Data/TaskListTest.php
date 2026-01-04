@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\Agent\Collections\TaskList;
 use Cognesy\Addons\Agent\Data\Task;
-use Cognesy\Addons\Agent\Data\TaskList;
 use Cognesy\Addons\Agent\Enums\TaskStatus;
 
 describe('TaskList', function () {

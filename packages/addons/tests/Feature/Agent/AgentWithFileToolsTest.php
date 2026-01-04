@@ -3,10 +3,9 @@
 use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
-use Cognesy\Addons\Agent\Tools\EditFileTool;
-use Cognesy\Addons\Agent\Tools\ReadFileTool;
-use Cognesy\Addons\Agent\Tools\WriteFileTool;
+use Cognesy\Addons\Agent\Tools\File\EditFileTool;
+use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

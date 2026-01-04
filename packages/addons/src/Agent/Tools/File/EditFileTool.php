@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools;
+namespace Cognesy\Addons\Agent\Tools\File;
 
+use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
 use Cognesy\Utils\Sandbox\Sandbox;

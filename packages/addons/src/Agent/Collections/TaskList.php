@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Data;
+namespace Cognesy\Addons\Agent\Collections;
 
+use Cognesy\Addons\Agent\Data\Task;
 use Cognesy\Addons\Agent\Enums\TaskStatus;
 use InvalidArgumentException;
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\Tools\WriteFileTool;
+use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
 use Tests\Addons\Support\TestHelpers;
 
 require_once __DIR__ . '/../../../Support/TestHelpers.php';

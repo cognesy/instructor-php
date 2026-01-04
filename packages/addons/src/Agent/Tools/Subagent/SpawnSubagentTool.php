@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools;
+namespace Cognesy\Addons\Agent\Tools\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentFactory;
@@ -10,6 +10,7 @@ use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Enums\AgentType;
 use Cognesy\Addons\Agent\Subagents\AgentCapability;
 use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
+use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 
 class SpawnSubagentTool extends BaseTool

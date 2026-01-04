@@ -2,11 +2,11 @@
 
 namespace Cognesy\Addons\Agent\StateProcessors;
 
+use Cognesy\Addons\Agent\Collections\TaskList;
 use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\TaskList;
+use Cognesy\Addons\Agent\Step\HasStepToolExecutions;
 use Cognesy\Addons\Agent\Tools\TodoWriteTool;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
-use Cognesy\Addons\Agent\Step\HasStepToolExecutions;
 
 /**
  * Extracts tasks from TodoWriteTool executions and persists them in AgentState metadata.

@@ -4,10 +4,10 @@ use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Enums\AgentType;
 use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
 use Cognesy\Addons\Agent\Tools\BashTool;
-use Cognesy\Addons\Agent\Tools\EditFileTool;
-use Cognesy\Addons\Agent\Tools\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\File\EditFileTool;
+use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
+use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
 use Cognesy\Addons\Agent\Tools\TodoWriteTool;
-use Cognesy\Addons\Agent\Tools\WriteFileTool;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir() . '/capability_test_' . uniqid();
