@@ -30,6 +30,14 @@ final readonly class Tools
         return $this->tools;
     }
 
+    public function isEmpty(): bool {
+        return count($this->tools) === 0;
+    }
+
+    public function count(): int {
+        return count($this->tools);
+    }
+
     public function has(string $name): bool {
         return isset($this->tools[$name]);
     }
