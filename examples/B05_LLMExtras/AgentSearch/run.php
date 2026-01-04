@@ -65,7 +65,7 @@ $researchTool = ResearchSubagentTool::withParent($mainAgent, $projectRoot);
 $mainAgent = $mainAgent->withTools(new Tools($searchTool, $readFileTool, $researchTool));
 
 // Initialize state with a research question
-$question = "What testing framework does this project use? Think like a senior developer verifying unfamiliar code - ask yourself before using tools: 'What is the source of truth?'. Prepare a research plan and follow it. Be persistent, continue correcting the plan until you are certain of the answer. Early impressions might be misleading. Be self-critical and verify your findings carefully. Do not stop until you have high confidence in the final answer.";
+$question = "What testing framework does this project use?";
 //$question = "What testing framework does this project use? Prepare a plan and follow it. " .
 //    "First check composer.json for test-related dependencies, then look at test configuration files " .
 //    "and finally check actual test file syntax to determine the testing setup.";

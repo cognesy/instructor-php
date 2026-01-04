@@ -17,7 +17,17 @@ class EditFileTool extends BaseTool
     ) {
         parent::__construct(
             name: 'edit_file',
-            description: 'Edit a file by replacing an exact string with new content. The old_string must match exactly (including whitespace and indentation). Use replace_all=true to replace all occurrences.',
+            description: <<<'DESC'
+Edit a file by replacing exact string matches. old_string must match exactly including whitespace.
+
+Examples:
+- Fix typo: old_string="teh", new_string="the"
+- Change function: old_string="function old()", new_string="function new()"
+- Update config: old_string='"debug": false', new_string='"debug": true'
+- Rename all: old_string="OldClass", new_string="NewClass", replace_all=true
+
+IMPORTANT: Include enough context in old_string to make it unique. If multiple matches exist, use replace_all=true or provide more surrounding code.
+DESC,
         );
 
         $baseDir = $baseDir ?? getcwd() ?: '/tmp';
@@ -116,11 +126,11 @@ class EditFileTool extends BaseTool
                         ],
                         'old_string' => [
                             'type' => 'string',
-                            'description' => 'The exact string to find and replace',
+                            'description' => 'Exact string to find (include whitespace). Must be unique unless using replace_all',
                         ],
                         'new_string' => [
                             'type' => 'string',
-                            'description' => 'The string to replace old_string with',
+                            'description' => 'Replacement string. Can be empty to delete old_string',
                         ],
                         'replace_all' => [
                             'type' => 'boolean',

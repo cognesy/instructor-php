@@ -24,7 +24,19 @@ class SpawnSubagentTool extends BaseTool
     ) {
         parent::__construct(
             name: 'spawn_subagent',
-            description: 'Spawn an isolated subagent to handle a specific task. The subagent runs with a fresh context and returns only its final response. Use for: exploration (read-only codebase analysis), code (full file/bash access), or plan (solution design without execution).',
+            description: <<<'DESC'
+Spawn an isolated subagent for a focused task. Returns only the final response.
+
+Examples:
+- description="Find auth implementation", prompt="Where is user authentication handled?", agent_type="explore"
+- description="Fix login bug", prompt="The login form throws error X. Find and fix it.", agent_type="code"
+- description="Design caching strategy", prompt="How should we implement Redis caching?", agent_type="plan"
+
+Agent types:
+- explore: Read-only analysis (search_files, read_file, list_dir)
+- code: Full access (includes edit_file, write_file, bash)
+- plan: Design only (no file modifications)
+DESC,
         );
 
         $this->parentAgent = $parentAgent;

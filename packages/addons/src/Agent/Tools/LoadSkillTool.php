@@ -11,7 +11,16 @@ class LoadSkillTool extends BaseTool
     public function __construct(?SkillLibrary $library = null) {
         parent::__construct(
             name: 'load_skill',
-            description: 'Load a skill definition to get specialized knowledge or instructions. Skills provide domain expertise, workflows, and best practices. Use list_skills parameter to see available skills first.',
+            description: <<<'DESC'
+Load a skill for specialized knowledge or workflows.
+
+Examples:
+- list_skills=true → see all available skills
+- skill_name="code-review" → load code review expertise
+- skill_name="api-design" → load API design best practices
+
+Skills provide domain expertise, checklists, and step-by-step workflows.
+DESC,
         );
 
         $this->library = $library ?? new SkillLibrary();

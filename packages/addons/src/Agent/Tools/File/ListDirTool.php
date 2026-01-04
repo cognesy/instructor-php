@@ -15,7 +15,16 @@ class ListDirTool extends BaseTool
     ) {
         parent::__construct(
             name: 'list_dir',
-            description: 'List contents of a directory. Returns files and subdirectories with type indicators.',
+            description: <<<'DESC'
+List directory contents. Shows files and subdirectories with [file] or [dir] markers.
+
+Examples:
+- "." or "" → list project root
+- "src" → list src directory
+- "packages/addons/src" → list nested directory
+
+Use to explore project structure before searching for specific files.
+DESC,
         );
         $this->baseDir = rtrim($baseDir ?? getcwd() ?: '/tmp', '/');
         $this->maxEntries = $maxEntries;
@@ -95,7 +104,7 @@ class ListDirTool extends BaseTool
                     'properties' => [
                         'path' => [
                             'type' => 'string',
-                            'description' => 'Directory path to list (relative to project root, or absolute)',
+                            'description' => 'Directory path. Examples: "." (root), "src", "packages/addons"',
                         ],
                     ],
                     'required' => ['path'],

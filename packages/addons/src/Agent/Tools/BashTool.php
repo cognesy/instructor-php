@@ -22,7 +22,18 @@ class BashTool extends BaseTool
     ) {
         parent::__construct(
             name: 'bash',
-            description: 'Execute a bash command and return its output. Use for running shell commands, scripts, and system operations.',
+            description: <<<'DESC'
+Execute a bash command and return stdout/stderr. Use for shell operations, not file reading.
+
+Examples:
+- "git status" → check git state
+- "composer install" → install dependencies
+- "php artisan migrate" → run migrations
+- "grep -r 'TODO' src/" → search file contents
+- "npm run build" → run build scripts
+
+Prefer dedicated tools when available: read_file over cat, search_files over find.
+DESC,
         );
 
         $baseDir = $baseDir ?? getcwd() ?: '/tmp';

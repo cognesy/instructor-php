@@ -17,7 +17,15 @@ class WriteFileTool extends BaseTool
     ) {
         parent::__construct(
             name: 'write_file',
-            description: 'Write content to a file. Creates the file if it does not exist, overwrites if it does. Creates parent directories as needed.',
+            description: <<<'DESC'
+Write content to a file. Creates file and parent directories if needed. Overwrites existing files.
+
+Examples:
+- path="config.json", content='{"debug": true}'
+- path="src/NewClass.php", content="<?php\n\nclass NewClass {}\n"
+
+Use edit_file for partial changes. write_file replaces entire file content.
+DESC,
         );
 
         $baseDir = $baseDir ?? getcwd() ?: '/tmp';

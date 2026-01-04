@@ -20,7 +20,16 @@ class ReadFileTool extends BaseTool
     ) {
         parent::__construct(
             name: 'read_file',
-            description: 'Read the contents of a file. Returns the file content with line numbers. For large files, use offset and limit parameters.',
+            description: <<<'DESC'
+Read file contents with line numbers. Use to examine file content after finding it with search_files.
+
+Examples:
+- "composer.json" → read composer.json from project root
+- "src/Config.php" → read specific file by path
+- {"path": "large.log", "offset": 100, "limit": 50} → read lines 101-150
+
+Returns numbered lines. For large files, use offset/limit to read specific sections.
+DESC,
         );
 
         $baseDir = $baseDir ?? getcwd() ?: '/tmp';
@@ -161,7 +170,7 @@ class ReadFileTool extends BaseTool
                     'properties' => [
                         'path' => [
                             'type' => 'string',
-                            'description' => 'The path to the file to read',
+                            'description' => 'File path (relative to project root or absolute). Example: "composer.json" or "src/Config.php"',
                         ],
                         'offset' => [
                             'type' => 'integer',

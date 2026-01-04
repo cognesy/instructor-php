@@ -17,7 +17,25 @@ class TodoWriteTool extends BaseTool implements CanAccessAnyState
     public function __construct() {
         parent::__construct(
             name: 'todo_write',
-            description: 'Create or update a structured task list to track progress. Each task needs: content (what to do), status (pending/in_progress/completed), and activeForm (present tense action shown during execution). Maximum 20 tasks, only 1 can be in_progress at a time.',
+            description: <<<'DESC'
+Create or update a task list to track progress. Replaces the entire list each call.
+
+Example - initial planning:
+todos: [
+  {"content": "Read config files", "status": "in_progress", "activeForm": "Reading config files"},
+  {"content": "Implement feature", "status": "pending", "activeForm": "Implementing feature"},
+  {"content": "Write tests", "status": "pending", "activeForm": "Writing tests"}
+]
+
+Example - marking progress:
+todos: [
+  {"content": "Read config files", "status": "completed", "activeForm": "Reading config files"},
+  {"content": "Implement feature", "status": "in_progress", "activeForm": "Implementing feature"},
+  {"content": "Write tests", "status": "pending", "activeForm": "Writing tests"}
+]
+
+Rules: Only 1 task can be in_progress. Mark completed immediately when done. Max 20 tasks.
+DESC,
         );
     }
 

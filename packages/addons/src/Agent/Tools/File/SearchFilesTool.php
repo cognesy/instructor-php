@@ -18,7 +18,19 @@ class SearchFilesTool extends BaseTool
     ) {
         parent::__construct(
             name: 'search_files',
-            description: 'Search for files in the project. Supports glob patterns (*.php, **/*.md) or simple keywords (php, test) which search recursively.',
+            description: <<<'DESC'
+Search for files by name/path pattern (not content). Returns matching file paths.
+
+Examples:
+- "composer.json" → finds composer.json recursively in all directories
+- "*.php" → finds PHP files in root directory only
+- "**/*.php" → finds PHP files recursively in all directories
+- "src/**/*.php" → finds PHP files recursively under src/
+- "./composer.json" → finds composer.json in root directory only
+- "Config" → finds files with "Config" in their name, recursively
+
+Note: Use read_file to examine file contents after finding them.
+DESC,
         );
         $this->baseDir = rtrim($baseDir, '/');
         $this->maxResults = $maxResults;
@@ -43,6 +55,8 @@ class SearchFilesTool extends BaseTool
             } else {
                 $fullPattern = $this->baseDir . '/' . $normalizedPattern;
                 $files = glob($fullPattern, GLOB_BRACE) ?: [];
+                // Filter out directories - only return files
+                $files = array_filter($files, 'is_file');
             }
 
             // Convert to relative paths
@@ -179,12 +193,12 @@ class SearchFilesTool extends BaseTool
                     'properties' => [
                         'pattern' => [
                             'type' => 'string',
-                            'description' => 'Single search pattern: exact path (./composer.json), glob (*.php, **/*.md), filename (composer.json), or keyword (test)',
+                            'description' => 'Search pattern. Examples: "composer.json" (recursive), "**/*.php" (recursive glob), "*.json" (root only), "./README.md" (exact path)',
                         ],
                         'patterns' => [
                             'type' => 'array',
                             'items' => ['type' => 'string'],
-                            'description' => 'Multiple patterns to search at once. Use this to efficiently search for several file types or names in one call.',
+                            'description' => 'Multiple patterns to search at once. Example: ["composer.json", "package.json", "*.xml"]',
                         ],
                     ],
                 ],
