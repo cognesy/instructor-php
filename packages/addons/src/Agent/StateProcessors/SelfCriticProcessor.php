@@ -230,10 +230,7 @@ PROMPT;
                 foreach ($step->toolExecutions()->all() as $execution) {
                     $value = $execution->value();
                     if (is_string($value)) {
-                        // Truncate very long results but keep enough for evidence
-                        $truncated = strlen($value) > 2000
-                            ? substr($value, 0, 2000) . "\n... [truncated]"
-                            : $value;
+                        $truncated = $this->smartTruncate($value, $execution->name());
                         $evidence[] = "Result ({$execution->name()}):\n{$truncated}";
                     }
                 }
@@ -241,6 +238,39 @@ PROMPT;
         }
 
         return empty($evidence) ? '(No tool calls made)' : implode("\n\n", $evidence);
+    }
+
+    /**
+     * Smart truncation that preserves important sections.
+     * For JSON files like composer.json, keeps require-dev section visible.
+     */
+    private function smartTruncate(string $content, string $toolName): string {
+        $maxLength = 8000; // Increased limit for better evidence
+
+        if (strlen($content) <= $maxLength) {
+            return $content;
+        }
+
+        // For composer.json or package.json, extract key sections
+        if (str_contains($toolName, 'read_file') || str_contains($toolName, 'read')) {
+            // Try to find and preserve require-dev section (PHP) or devDependencies (JS)
+            if (preg_match('/"require-dev"\s*:\s*\{[^}]+\}/s', $content, $matches)) {
+                $requireDev = $matches[0];
+                $header = substr($content, 0, 500);
+                return $header . "\n\n... [truncated middle section] ...\n\n" . $requireDev . "\n\n... [truncated remainder]";
+            }
+            if (preg_match('/"devDependencies"\s*:\s*\{[^}]+\}/s', $content, $matches)) {
+                $devDeps = $matches[0];
+                $header = substr($content, 0, 500);
+                return $header . "\n\n... [truncated middle section] ...\n\n" . $devDeps . "\n\n... [truncated remainder]";
+            }
+        }
+
+        // Default: keep first and last portions
+        $halfLength = (int)($maxLength / 2);
+        return substr($content, 0, $halfLength) .
+            "\n\n... [truncated " . (strlen($content) - $maxLength) . " characters] ...\n\n" .
+            substr($content, -$halfLength);
     }
 
     private function evaluateResponse(string $task, string $evidence, string $response): SelfCriticResult {
