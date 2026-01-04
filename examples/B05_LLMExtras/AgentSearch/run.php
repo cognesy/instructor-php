@@ -186,10 +186,18 @@ class ResearchSubagentTool extends BaseTool
 // Create tools for the main orchestrator agent
 $searchTool = new SearchFilesTool($projectRoot);
 
+// Create continuation criteria with higher step limit for agentic search
+$continuationCriteria = new \Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria(
+    new \Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit(10, fn($s) => $s->stepCount()),
+    new \Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit(32768, fn($s) => $s->usage()->total()),
+    new \Cognesy\Addons\Agent\Continuation\ToolCallPresenceCheck(fn($s) => $s->stepCount() === 0 || ($s->currentStep()?->hasToolCalls() ?? false)),
+);
+
 // Create main agent first (without subagent tool)
 $mainAgent = AgentFactory::default(
     tools: new Tools($searchTool),
     llmPreset: $llmPreset,
+    continuationCriteria: $continuationCriteria,
 );
 
 // Now add the research subagent tool with reference to main agent
@@ -217,6 +225,13 @@ while ($mainAgent->hasNextStep($state)) {
     $stepType = $step->stepType()->value;
 
     print("Step {$stepNum}: [{$stepType}]\n");
+
+    // Show errors if any
+    if ($step->hasErrors()) {
+        foreach ($step->errors() as $error) {
+            print("  ⚠ Error: " . $error->getMessage() . "\n");
+        }
+    }
 
     // Show tool calls
     if ($step->hasToolCalls()) {

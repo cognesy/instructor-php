@@ -158,13 +158,23 @@ class Agent extends StepByStep
     ) : self {
         /** @var CanApplyProcessors<AgentState> $resolvedProcessors */
         $resolvedProcessors = $processors ?? $this->processors;
+        $resolvedTools = $tools ?? $this->tools;
+        $resolvedEvents = $events ?? $this->events;
+
+        // If tools changed but no executor provided, create a new executor for the new tools
+        $resolvedExecutor = $toolExecutor ?? (
+            $tools !== null
+                ? (new ToolExecutor($resolvedTools))->withEventHandler($resolvedEvents)
+                : $this->toolExecutor
+        );
+
         return new self(
-            tools: $tools ?? $this->tools,
-            toolExecutor: $toolExecutor ?? $this->toolExecutor,
+            tools: $resolvedTools,
+            toolExecutor: $resolvedExecutor,
             processors: $resolvedProcessors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             driver: $driver ?? $this->driver,
-            events: $events ?? $this->events,
+            events: $resolvedEvents,
         );
     }
 
