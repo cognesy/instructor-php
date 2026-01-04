@@ -210,6 +210,7 @@ class ResearchSubagentTool extends BaseTool
 
 // Create tools for the main orchestrator agent
 $searchTool = new SearchFilesTool($projectRoot);
+$readFileTool = ReadFileTool::inDirectory($projectRoot);
 
 // Create continuation criteria with higher step limit for agentic search
 $continuationCriteria = new \Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria(
@@ -220,18 +221,19 @@ $continuationCriteria = new \Cognesy\Addons\StepByStep\Continuation\Continuation
 
 // Create main agent first (without subagent tool)
 $mainAgent = AgentFactory::default(
-    tools: new Tools($searchTool),
+    tools: new Tools($searchTool, $readFileTool),
     llmPreset: $llmPreset,
     continuationCriteria: $continuationCriteria,
 );
 
 // Now add the research subagent tool with reference to main agent
 $researchTool = new ResearchSubagentTool($mainAgent, $projectRoot);
-$mainAgent = $mainAgent->withTools(new Tools($searchTool, $researchTool));
+$mainAgent = $mainAgent->withTools(new Tools($searchTool, $readFileTool, $researchTool));
 
 // Initialize state with a research question
 $question = "What testing framework does this PHP project use? " .
-    "Search for test configuration files and examine them to determine the testing setup.";
+    "First check composer.json for test-related dependencies, then look at test configuration files " .
+    "and actual test file syntax to determine the testing setup.";
 
 $state = AgentState::empty()->withMessages(
     Messages::fromString($question)
