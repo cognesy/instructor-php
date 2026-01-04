@@ -34,45 +34,34 @@ You are a critical evaluator checking for factual errors and evidence contradict
 ## Proposed Response
 %s
 
-## CRITICAL: Check Evidence Quality and Contradictions
+## Evaluation Criteria
 
-Compare the proposed response against the ACTUAL evidence gathered above.
+Compare the proposed response against the evidence gathered above.
 
-**Evidence Quality Checks:**
-- For "what framework/library is used" questions: Did the agent check composer.json or package.json? Config files alone (phpunit.xml, jest.config) are NOT authoritative - the actual dependencies in composer.json/package.json are.
-- Was the evidence from authoritative sources or just circumstantial?
-
-**Contradiction Checks:**
-- Response claims X but tool results clearly showed Y
-- Response ignores key data visible in the evidence
-- Response makes assumptions instead of using gathered evidence
-
-Example: Finding `phpunit.xml` does NOT prove PHPUnit - Pest also uses phpunit.xml. Must check composer.json require-dev to see actual testing package installed.
+**Check for:**
+1. **Contradictions**: Does the response claim something that contradicts the evidence?
+2. **Unsupported claims**: Does the response make claims without supporting evidence?
+3. **Missed evidence**: Did the response overlook important data in the tool results?
+4. **Incomplete investigation**: Are there obvious next steps that would strengthen the answer?
 
 ## Evaluation Rules
 
-APPROVE only if:
-- Evidence is from authoritative sources (composer.json, package.json, not just config files)
-- The conclusion matches ALL evidence gathered above
-- No contradictions between claims and tool results
+APPROVE if:
+- The response directly answers the original task
+- Claims are supported by the gathered evidence
+- No contradictions between response and evidence
 
-REJECT if you find:
-1. **Weak evidence**: Conclusion based on config files without checking composer.json/package.json
-2. **Evidence contradiction**: Response ignores data shown in tool results above
-3. **Wrong conclusion**: Evidence clearly points to X but response says Y
-4. **Missed evidence**: Tool results contain the answer but response missed it
+REJECT if:
+- Response contradicts evidence shown above
+- Response makes unsupported claims
+- Critical evidence was overlooked
+- An obvious investigation step was skipped
 
-## Required Output When Rejecting
+## Output Format
 
-In weaknesses, be specific about the gap:
-- BAD: "Response may be incomplete"
-- GOOD: "Response concludes 'PHPUnit' based on phpunit.xml, but composer.json require-dev was not checked"
-- GOOD: "Response says 'PHPUnit' but evidence shows 'pestphp/pest' in composer.json"
-
-In suggestions, give specific tool calls:
-- BAD: "Check more files"
-- GOOD: "read_file: composer.json - check require-dev section for actual testing package"
-- GOOD: "search_files: *composer.json - find and read composer.json to verify testing framework"
+When rejecting, be specific:
+- In weaknesses: State what the response claims vs what the evidence shows
+- In suggestions: Name specific tool calls or files to check
 PROMPT;
 
     private int $maxCriticIterations;
@@ -230,7 +219,7 @@ PROMPT;
                 foreach ($step->toolExecutions()->all() as $execution) {
                     $value = $execution->value();
                     if (is_string($value)) {
-                        $truncated = $this->smartTruncate($value, $execution->name());
+                        $truncated = $this->truncateContent($value);
                         $evidence[] = "Result ({$execution->name()}):\n{$truncated}";
                     }
                 }
@@ -241,35 +230,18 @@ PROMPT;
     }
 
     /**
-     * Smart truncation that preserves important sections.
-     * For JSON files like composer.json, keeps require-dev section visible.
+     * Truncate long content while preserving beginning and end.
      */
-    private function smartTruncate(string $content, string $toolName): string {
-        $maxLength = 8000; // Increased limit for better evidence
-
+    private function truncateContent(string $content, int $maxLength = 6000): string {
         if (strlen($content) <= $maxLength) {
             return $content;
         }
 
-        // For composer.json or package.json, extract key sections
-        if (str_contains($toolName, 'read_file') || str_contains($toolName, 'read')) {
-            // Try to find and preserve require-dev section (PHP) or devDependencies (JS)
-            if (preg_match('/"require-dev"\s*:\s*\{[^}]+\}/s', $content, $matches)) {
-                $requireDev = $matches[0];
-                $header = substr($content, 0, 500);
-                return $header . "\n\n... [truncated middle section] ...\n\n" . $requireDev . "\n\n... [truncated remainder]";
-            }
-            if (preg_match('/"devDependencies"\s*:\s*\{[^}]+\}/s', $content, $matches)) {
-                $devDeps = $matches[0];
-                $header = substr($content, 0, 500);
-                return $header . "\n\n... [truncated middle section] ...\n\n" . $devDeps . "\n\n... [truncated remainder]";
-            }
-        }
-
-        // Default: keep first and last portions
         $halfLength = (int)($maxLength / 2);
+        $omitted = strlen($content) - $maxLength;
+
         return substr($content, 0, $halfLength) .
-            "\n\n... [truncated " . (strlen($content) - $maxLength) . " characters] ...\n\n" .
+            "\n\n... [{$omitted} characters omitted] ...\n\n" .
             substr($content, -$halfLength);
     }
 

@@ -88,10 +88,10 @@ $agent = AgentFactory::default(
     $selfCriticProcessor,
 );
 
-// Question designed to potentially mislead: LLMs often assume PHPUnit for PHP projects
-// But this project uses Pest - the self-critic should catch incomplete answers
+// Question that requires checking a specific file
+// The self-critic will catch if the agent gives an answer without reading the file
 $question = <<<QUESTION
-What testing framework does this project use? Provide a confident, verified answer.
+What testing framework is listed in composer.json require-dev? Read the file and give a verified answer.
 QUESTION;
 
 $state = AgentState::empty()->withMessages(

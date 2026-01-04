@@ -11,17 +11,17 @@ use Cognesy\Instructor\Attributes\Description;
 class SelfCriticResult
 {
     public function __construct(
-        #[Description('False if: (1) evidence is insufficient for a confident answer, (2) response contradicts evidence, or (3) authoritative sources like composer.json were not checked. True ONLY if authoritative evidence supports the conclusion.')]
+        #[Description('True if response is supported by evidence and answers the task. False if response contradicts evidence, makes unsupported claims, or missed critical information.')]
         public bool $approved,
-        #[Description('One sentence: either "Approved: [reason]" or "Rejected: [specific contradiction or error found]"')]
+        #[Description('One sentence summary of the evaluation decision.')]
         public string $summary,
-        #[Description('Evidence that supports the conclusion (e.g., "Found pestphp/pest in composer.json require-dev")')]
+        #[Description('What the response does well - evidence cited, clear reasoning, etc.')]
         /** @var string[] */
         public array $strengths = [],
-        #[Description('Specific contradictions or errors. Format: "[Response claims X] but [evidence shows Y]". Example: "Response says PHPUnit but composer.json showed pestphp/pest"')]
+        #[Description('Specific issues found. Format: "Response claims X but evidence shows Y" or "Response missed X in the tool results"')]
         /** @var string[] */
         public array $weaknesses = [],
-        #[Description('Exact tool calls to resolve issues. Format: "[tool_name]: [what to check]". Example: "read_file: composer.json to check require-dev section"')]
+        #[Description('Specific next steps to fix issues. Format: "tool_name: what to check" or "file to read"')]
         /** @var string[] */
         public array $suggestions = [],
     ) {}
