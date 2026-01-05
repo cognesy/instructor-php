@@ -179,27 +179,22 @@ $result = $cycle->run(
 );
 
 echo "\nFinal Result:\n{$result}\n";
+?>
 ```
 
 ## Expected Output
 
 ```
 Cycle 1/3
-
 ▶ OBSERVE
   Summary: Need to search for PHP test files in the project structure
-
 ▶ ORIENT
   Analysis: Test files are typically in tests/ or have Test suffix in filename
-
 ▶ DECIDE
   Orders: Search for files matching *Test.php pattern in all directories
-
 ▶ ACT
   Result: Found 240 test files in packages/addons/tests/ directory
-
 ✓ Objective achieved
-
 Final Result:
 Found 240 test files in packages/addons/tests/ directory including:
 - Feature tests in Feature/

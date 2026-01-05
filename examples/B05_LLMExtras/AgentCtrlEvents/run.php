@@ -62,6 +62,7 @@ if ($response->isSuccess()) {
     echo "\nFinal response:\n";
     echo $response->text() . "\n";
 }
+?>
 ```
 
 ## Expected Output

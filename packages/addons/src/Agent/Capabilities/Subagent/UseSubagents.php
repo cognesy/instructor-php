@@ -16,18 +16,26 @@ class UseSubagents implements AgentCapability
 
     public function __construct(
         private ?AgentRegistry $registry = null,
-        int|SubagentPolicy $policyOrDepth = 3,
-        private ?int $summaryMaxChars = null,
+        ?SubagentPolicy $policy = null,
         private ?SkillLibrary $skillLibrary = null,
     ) {
-        if ($policyOrDepth instanceof SubagentPolicy) {
-            $this->policy = $policyOrDepth;
-        } else {
-            $this->policy = new SubagentPolicy(
-                maxDepth: $policyOrDepth,
+        $this->policy = $policy ?? SubagentPolicy::default();
+    }
+
+    public static function withDepth(
+        int $maxDepth,
+        ?AgentRegistry $registry = null,
+        ?int $summaryMaxChars = null,
+        ?SkillLibrary $skillLibrary = null,
+    ): self {
+        return new self(
+            registry: $registry,
+            policy: new SubagentPolicy(
+                maxDepth: $maxDepth,
                 summaryMaxChars: $summaryMaxChars ?? 8000,
-            );
-        }
+            ),
+            skillLibrary: $skillLibrary,
+        );
     }
 
     public function install(AgentBuilder $builder): void {

@@ -605,7 +605,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseFileTools($projectRoot))
     ->withCapability(new UseTaskPlanning())
-    ->withCapability(new UseSubagents($registry, 3))
+    ->withCapability(UseSubagents::withDepth(3, $registry))
     ->withMaxSteps(10)
     ->withLlmPreset('anthropic')
     ->build();

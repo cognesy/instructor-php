@@ -63,10 +63,7 @@ $registry = $registry->with(AgentSpec::simple(
 
 // Build main orchestration agent
 $agent = AgentBuilder::base()
-    ->withCapability(new UseSubagents(
-        registry: $registry,
-        policy: SubagentPolicy::default()
-    ))
+    ->withCapability(new UseSubagents(registry: $registry))
     ->build();
 
 // Ask a question that requires search
@@ -99,6 +96,7 @@ echo $answer . "\n\n";
 echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
 echo "  Status: {$state->status()->value}\n";
+?>
 ```
 
 ## Expected Output
@@ -106,35 +104,27 @@ echo "  Status: {$state->status()->value}\n";
 ```
 Step 1: [tool_use]
   → spawn_subagent()
-
 Step 2: [tool_use]
   → spawn_subagent()
-
 Step 3: [response]
-
 Answer:
 I found several test files related to Agent capabilities:
-
 1. Feature/Capabilities/BashCapabilityTest.php
    - Tests bash command execution
    - Tests command output capture
    - Tests security policies
-
 2. Feature/Capabilities/FileCapabilityTest.php
    - Tests file reading and writing
    - Tests directory listing
    - Tests file search functionality
-
 3. Feature/Capabilities/SubagentCapabilityTest.php
    - Tests subagent spawning
    - Tests communication between agents
    - Tests subagent lifecycle
-
 4. Feature/Capabilities/TasksCapabilityTest.php
    - Tests task planning and tracking
    - Tests task status management
    - Tests task completion detection
-
 Stats:
   Steps: 3
   Status: finished

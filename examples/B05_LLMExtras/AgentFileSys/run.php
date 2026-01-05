@@ -72,6 +72,7 @@ echo $response . "\n\n";
 echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
 echo "  Status: {$state->status()->value}\n";
+?>
 ```
 
 ## Expected Output

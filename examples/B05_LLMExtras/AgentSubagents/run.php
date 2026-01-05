@@ -60,10 +60,7 @@ $registry = $registry->with(AgentSpec::simple(
 // Build main orchestration agent
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
-    ->withCapability(new UseSubagents(
-        registry: $registry,
-        policy: SubagentPolicy::default()
-    ))
+    ->withCapability(new UseSubagents(registry: $registry))
     ->build();
 
 // Task requiring multiple isolated reviews

@@ -69,6 +69,7 @@ foreach ($agents as $agentId => $agentName) {
 
     echo "\n";
 }
+?>
 ```
 
 ## Expected Output

@@ -53,6 +53,7 @@ if ($response->usage) {
 if ($response->cost) {
     echo "  Cost: $" . number_format($response->cost, 4) . "\n";
 }
+?>
 ```
 
 ## Expected Output

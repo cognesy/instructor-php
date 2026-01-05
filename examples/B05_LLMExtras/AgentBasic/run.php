@@ -44,6 +44,7 @@ $response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No res
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Status: {$finalState->status()->value}\n";
+?>
 ```
 
 
@@ -54,7 +55,6 @@ Answer: The capital of France is Paris.
 Steps: 1
 Status: finished
 ```
-
 
 ## Key Points
 
