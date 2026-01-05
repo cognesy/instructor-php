@@ -5,16 +5,14 @@ require 'examples/boot.php';
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Continuation\ToolCallPresenceCheck;
+use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
 use Cognesy\Addons\Agent\Tools\File\SearchFilesTool;
-use Cognesy\Addons\Agent\Tools\Subagent\ResearchSubagentTool;
-use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
 use Cognesy\Messages\Messages;
 
 /**
@@ -25,7 +23,7 @@ use Cognesy\Messages\Messages;
  * - Reading file contents
  * - Generating a synthesized answer
  *
- * The main agent orchestrates subagents that each handle specific tasks.
+ * The main agent orchestrates subagents via AgentRegistry + spawn_subagent.
  *
  * Usage:
  *   php run.php [preset]
@@ -70,8 +68,12 @@ final class SearchStepPrinter
         }
         foreach ($step->toolCalls()->all() as $toolCall) {
             $args = $toolCall->args();
-            $argStr = isset($args['pattern']) ? "pattern={$args['pattern']}" :
-                (isset($args['task']) ? "task=\"" . substr($args['task'], 0, 40) . "...\"" : '');
+            $argStr = match ($toolCall->name()) {
+                'search_files' => "pattern=" . ($args['pattern'] ?? ''),
+                'read_file' => "path=" . ($args['path'] ?? ''),
+                'spawn_subagent' => "subagent=" . ($args['subagent'] ?? ''),
+                default => '',
+            };
             print("  → {$toolCall->name()}({$argStr})\n");
         }
     }
@@ -155,21 +157,29 @@ final class SearchAgentBuilder
         $searchTool = SearchFilesTool::inDirectory($projectRoot);
         $readFileTool = ReadFileTool::inDirectory($projectRoot);
 
-        $continuationCriteria = new ContinuationCriteria(
-            new StepsLimit(20, fn($s) => $s->stepCount()),
-            new TokenUsageLimit(32768, fn($s) => $s->usage()->total()),
-            new ToolCallPresenceCheck(fn($s) => $s->stepCount() === 0 || ($s->currentStep()?->hasToolCalls() ?? false)),
-        );
+        $registry = new AgentRegistry();
+        $registry->register(new AgentSpec(
+            name: 'file-researcher',
+            description: 'Searches files and extracts evidence to answer the question',
+            systemPrompt: <<<'PROMPT'
+You are a file research subagent. Use search_files and read_file to gather evidence.
+Prefer citing file paths and line numbers when possible. Return a concise summary.
+PROMPT,
+            tools: ['search_files', 'read_file'],
+            model: 'inherit',
+        ));
 
-        $builder = AgentBuilder::new()->withTools(new Tools($searchTool, $readFileTool));
+        $subagentPolicy = new SubagentPolicy(maxDepth: 2, summaryMaxChars: 8000);
+
+        $builder = AgentBuilder::new()
+            ->withTools(new Tools($searchTool, $readFileTool))
+            ->withSubagents($registry, $subagentPolicy)
+            ->withMaxSteps(20)
+            ->withMaxTokens(32768);
         if ($llmPreset) {
             $builder = $builder->withLlmPreset($llmPreset);
         }
-        $mainAgent = $builder->build()->withContinuationCriteria(...$continuationCriteria->all());
-
-        $researchTool = ResearchSubagentTool::withParent($mainAgent, $projectRoot);
-
-        return $mainAgent->withTools(new Tools($searchTool, $readFileTool, $researchTool));
+        return $builder->build();
     }
 }
 
@@ -234,7 +244,10 @@ final class HeaderPrinter
 
 $llmPreset = $argv[1] ?? null;
 $projectRoot = dirname(__DIR__, 3);
-$question = "What testing framework does this project use?";
+$question = <<<QUESTION
+Use the "file-researcher" subagent to answer:
+What testing framework does this project use? Cite evidence from the repo.
+QUESTION;
 
 $headerPrinter = new HeaderPrinter();
 $headerPrinter($llmPreset, $question);

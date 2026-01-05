@@ -4,18 +4,22 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Agents\AgentSpec;
+use Cognesy\Addons\Agent\Collections\Tools;
+use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Tools\File\ListDirTool;
+use Cognesy\Addons\Agent\Tools\File\SearchFilesTool;
+use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 use Cognesy\Schema\Attributes\Description;
 
 /**
- * OODA Cycle with SubagentRegistry
+ * OODA Cycle with AgentRegistry
  *
  * Demonstrates deterministic multi-phase agent workflow using:
- * - SubagentRegistry for specialized phase agents
+ * - AgentRegistry for specialized phase agents
  * - StructuredOutput for reliable phase outputs
  * - Immutable context for state management
  */
@@ -416,11 +420,16 @@ final class OodaCycle
         private string $llmPreset = 'anthropic',
     ) {
         $registry = (new OodaRegistryBuilder())();
+        $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 8000);
         $builder = AgentBuilder::new()
             ->withBash()
             ->withFileTools($this->workDir)
+            ->withTools(new Tools(
+                SearchFilesTool::inDirectory($this->workDir),
+                ListDirTool::inDirectory($this->workDir),
+            ))
             ->withTaskPlanning()
-            ->withSubagents($registry, 3)
+            ->withSubagents($registry, $subagentPolicy)
             ->withMaxSteps(10);
         if ($this->llmPreset) {
             $builder = $builder->withLlmPreset($this->llmPreset);

@@ -10,6 +10,7 @@ use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Tools\Subagent\SpawnSubagentTool;
+use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
 use Cognesy\Messages\Messages;
 
 /**
@@ -25,10 +26,10 @@ use Cognesy\Messages\Messages;
  */
 
 // =============================================================================
-// SUBAGENT REGISTRY
+// AGENT REGISTRY
 // =============================================================================
 
-final class QuickReviewSubagentRegistry
+final class QuickReviewAgentRegistry
 {
     public function create(): AgentRegistry {
         $registry = new AgentRegistry();
@@ -220,13 +221,14 @@ final class MultiFileReviewAction
     }
 
     private function setup(): void {
-        $registry = (new QuickReviewSubagentRegistry())->create();
+        $registry = (new QuickReviewAgentRegistry())->create();
+        $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 8000);
 
         $builder = AgentBuilder::new()
             ->withBash()
             ->withFileTools($this->workDir)
             ->withTaskPlanning()
-            ->withSubagents($registry, 3)
+            ->withSubagents($registry, $subagentPolicy)
             ->withMaxSteps(20);
         if ($this->llmPreset) {
             $builder = $builder->withLlmPreset($this->llmPreset);
@@ -313,9 +315,9 @@ echo str_repeat("─", 68) . "\n\n";
 
 // Small, fast files for quick demo
 $filesToReview = [
-    'packages/addons/src/Agent/Subagents/SubagentSpec.php',
-    'packages/addons/src/Agent/Subagents/SubagentRegistry.php',
-    'packages/addons/src/Agent/Subagents/SubagentSpecParser.php',
+    'packages/addons/src/Agent/Agents/AgentSpec.php',
+    'packages/addons/src/Agent/Agents/AgentRegistry.php',
+    'packages/addons/src/Agent/Agents/AgentSpecParser.php',
 ];
 
 echo "Reviewing " . count($filesToReview) . " classes:\n";

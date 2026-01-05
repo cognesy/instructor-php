@@ -3,6 +3,7 @@
 namespace Cognesy\Addons\Agent\Tools\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentExecution;
