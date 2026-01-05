@@ -60,21 +60,11 @@ while ($agent->hasNextStep($state)) {
     $state = $agent->nextStep($state);
 
     $step = $state->currentStep();
-    $stepType = $step->stepType()->value;
-
-    echo "Step {$state->stepCount()}: [{$stepType}]\n";
+    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 
     if ($step->hasToolCalls()) {
         foreach ($step->toolCalls()->all() as $toolCall) {
             echo "  → {$toolCall->name()}()\n";
-        }
-    }
-
-    // Show critic feedback
-    if ($stepType === 'critique') {
-        $critique = $step->metadata()['critique'] ?? '';
-        if ($critique) {
-            echo "  Critic: {$critique}\n";
         }
     }
 }
@@ -87,7 +77,6 @@ echo $answer . "\n\n";
 
 echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
-echo "  Revisions: " . ($state->metadata()['revision_count'] ?? 0) . "\n";
 echo "  Status: {$state->status()->value}\n";
 ?>
 ```
@@ -97,33 +86,22 @@ echo "  Status: {$state->status()->value}\n";
 ```
 Question: What testing framework does this project use? Be specific.
 
-Step 1: [response]
-  Initial answer: The project likely uses PHPUnit based on PHP conventions.
-
-Step 2: [critique]
-  Critic: Answer is speculative. Search for actual test framework configuration.
-
-Step 3: [tool_use]
+Step 1: [tool_use]
   → search_files()
 
-Step 4: [tool_use]
+Step 2: [tool_use]
   → read_file()
 
-Step 5: [response]
-  Revised answer: The project uses Pest, configured in phpunit.xml and composer.json.
-
-Step 6: [critique]
-  Critic: Answer is thorough and evidence-based. Accepted.
+Step 3: [final_response]
 
 Final Answer:
 The project uses Pest as its testing framework. This is confirmed by:
-1. phpunit.xml shows Pest configuration
-2. composer.json requires pestphp/pest
+1. phpunit.xml contains Pest configuration
+2. composer.json requires pestphp/pest package
 3. Test files use Pest's describe/it syntax
 
 Stats:
-  Steps: 6
-  Revisions: 1
+  Steps: 3
   Status: finished
 ```
 
