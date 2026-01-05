@@ -5,25 +5,16 @@ namespace Cognesy\Addons\Agent;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Continuation\ToolCallPresenceCheck;
+use Cognesy\Addons\Agent\Contracts\AgentCapability;
 use Cognesy\Addons\Agent\Contracts\CanUseTools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\Agent\Extras\Tasks\PersistTasksProcessor;
 use Cognesy\Addons\Agent\Extras\Tasks\TodoPolicy;
-use Cognesy\Addons\Agent\Extras\Tasks\TodoRenderProcessor;
-use Cognesy\Addons\Agent\Extras\Tasks\TodoReminderProcessor;
-use Cognesy\Addons\Agent\Extras\Tasks\TodoWriteTool;
-use Cognesy\Addons\Agent\Skills\AppendSkillMetadata;
-use Cognesy\Addons\Agent\Skills\LoadSkillTool;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
 use Cognesy\Addons\Agent\Tools\BashPolicy;
-use Cognesy\Addons\Agent\Tools\BashTool;
-use Cognesy\Addons\Agent\Tools\File\EditFileTool;
-use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
-use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
-use Cognesy\Addons\Agent\Tools\Subagent\SpawnSubagentTool;
 use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
@@ -34,6 +25,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
+use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -69,16 +61,8 @@ class AgentBuilder
     private int $maxRetries = 3;
     private array $finishReasons = [];
 
-    // Feature flags
-    private bool $hasTaskPlanning = false;
-    private bool $hasSubagents = false;
-    private ?TodoPolicy $todoPolicy = null;
-    private ?SubagentPolicy $subagentPolicy = null;
-
-    // Subagent configuration
-    private ?AgentRegistry $subagentRegistry = null;
-    private ?SkillLibrary $skillLibrary = null;
-    private int $maxSubagentDepth = 3;
+    /** @var callable[] */
+    private array $onBuildCallbacks = [];
 
     private function __construct() {
         $this->tools = new Tools();
@@ -89,6 +73,25 @@ class AgentBuilder
      */
     public static function new(): self {
         return new self();
+    }
+
+    /**
+     * Apply a capability to the builder.
+     */
+    public function withCapability(AgentCapability $capability): self {
+        $capability->install($this);
+        return $this;
+    }
+
+    /**
+     * Register a callback to be executed after the agent is built.
+     * The callback receives the built Agent and must return an Agent (potentially modified).
+     *
+     * @param callable(Agent): Agent $callback
+     */
+    public function onBuild(callable $callback): self {
+        $this->onBuildCallbacks[] = $callback;
+        return $this;
     }
 
     // TOOL CONFIGURATION ////////////////////////////////////////
@@ -102,51 +105,33 @@ class AgentBuilder
         int $timeout = 120,
         ?BashPolicy $outputPolicy = null,
     ): self {
-        $bashTool = new BashTool(
+        return $this->withCapability(new Capabilities\UseBash(
             policy: $policy,
             baseDir: $baseDir,
             timeout: $timeout,
             outputPolicy: $outputPolicy
-        );
-        $this->tools = $this->tools->merge(new Tools($bashTool));
-        return $this;
+        ));
     }
 
     /**
      * Add file operation tools (read, write, edit).
      */
     public function withFileTools(?string $baseDir = null): self {
-        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
-
-        $fileTools = new Tools(
-            ReadFileTool::inDirectory($baseDir),
-            WriteFileTool::inDirectory($baseDir),
-            EditFileTool::inDirectory($baseDir),
-        );
-
-        $this->tools = $this->tools->merge($fileTools);
-        return $this;
+        return $this->withCapability(new Capabilities\UseFileTools($baseDir));
     }
 
     /**
      * Add skill loading capability.
      */
     public function withSkills(?SkillLibrary $library = null): self {
-        $this->skillLibrary = $library ?? new SkillLibrary();
-        $skillTool = new Tools(LoadSkillTool::withLibrary($this->skillLibrary));
-        $this->tools = $this->tools->merge($skillTool);
-        return $this;
+        return $this->withCapability(new Capabilities\UseSkills($library));
     }
 
     /**
      * Add task planning capability (TodoWrite).
      */
     public function withTaskPlanning(?TodoPolicy $policy = null): self {
-        $this->hasTaskPlanning = true;
-        $this->todoPolicy = $policy ?? new TodoPolicy();
-        $todoTool = new Tools(new TodoWriteTool($this->todoPolicy));
-        $this->tools = $this->tools->merge($todoTool);
-        return $this;
+        return $this->withCapability(new Capabilities\UseTaskPlanning($policy));
     }
 
     /**
@@ -156,22 +141,14 @@ class AgentBuilder
         ?AgentRegistry $registry = null,
         int|SubagentPolicy $policyOrDepth = 3,
         ?int $summaryMaxChars = null,
+        ?SkillLibrary $skillLibrary = null,
     ): self {
-        $this->hasSubagents = true;
-        $this->subagentRegistry = $registry ?? new AgentRegistry();
-        if ($policyOrDepth instanceof SubagentPolicy) {
-            $this->subagentPolicy = $policyOrDepth;
-            $this->maxSubagentDepth = $policyOrDepth->maxDepth;
-        } else {
-            $this->maxSubagentDepth = $policyOrDepth;
-            if ($summaryMaxChars !== null) {
-                $this->subagentPolicy = new SubagentPolicy(
-                    maxDepth: $this->maxSubagentDepth,
-                    summaryMaxChars: $summaryMaxChars,
-                );
-            }
-        }
-        return $this;
+        return $this->withCapability(new Capabilities\UseSubagents(
+            registry: $registry,
+            policyOrDepth: $policyOrDepth,
+            summaryMaxChars: $summaryMaxChars,
+            skillLibrary: $skillLibrary,
+        ));
     }
 
     /**
@@ -184,6 +161,16 @@ class AgentBuilder
         };
 
         $this->tools = $this->tools->merge($toolsCollection);
+        return $this;
+    }
+
+    public function addProcessor(CanProcessAnyState $processor): self {
+        $this->processors[] = $processor;
+        return $this;
+    }
+
+    public function addContinuationCriteria(CanDecideToContinue $criteria): self {
+        $this->continuationCriteria[] = $criteria;
         return $this;
     }
 
@@ -276,9 +263,8 @@ class AgentBuilder
             events: $this->events,
         );
 
-        // Add subagent tool if enabled
-        if ($this->hasSubagents) {
-            $agent = $this->addSubagentTool($agent);
+        foreach ($this->onBuildCallbacks as $callback) {
+            $agent = $callback($agent);
         }
 
         return $agent;
@@ -293,25 +279,15 @@ class AgentBuilder
             new AppendStepMessages(),
         ];
 
-        if ($this->skillLibrary !== null) {
-            $baseProcessors[] = new AppendSkillMetadata($this->skillLibrary);
-        }
-
-        // Add task planning processor if enabled
-        if ($this->hasTaskPlanning) {
-            $todoPolicy = $this->todoPolicy ?? new TodoPolicy();
-            $baseProcessors[] = new TodoReminderProcessor($todoPolicy);
-            $baseProcessors[] = new TodoRenderProcessor($todoPolicy);
-            $baseProcessors[] = new PersistTasksProcessor();
-        }
+        $allProcessors = array_merge($baseProcessors, $this->processors);
 
         /** @var StateProcessors<AgentState> $processors */
-        $processors = new StateProcessors(...$baseProcessors);
+        $processors = new StateProcessors(...$allProcessors);
         return $processors;
     }
 
     private function buildContinuationCriteria(): ContinuationCriteria {
-        return new ContinuationCriteria(
+        $baseCriteria = [
             new StepsLimit($this->maxSteps, static fn($state) => $state->stepCount()),
             new TokenUsageLimit($this->maxTokens, static fn($state) => $state->usage()->total()),
             new ExecutionTimeLimit($this->maxExecutionTime, static fn($state) => $state->startedAt(), null),
@@ -321,7 +297,11 @@ class AgentBuilder
                 static fn($state) => $state->stepCount() === 0 || (($state->currentStep()?->hasToolCalls() ?? false))
             ),
             new FinishReasonCheck($this->finishReasons, static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
-        );
+        ];
+
+        $allCriteria = array_merge($baseCriteria, $this->continuationCriteria);
+
+        return new ContinuationCriteria(...$allCriteria);
     }
 
     private function buildDriver(): CanUseTools {
@@ -334,24 +314,5 @@ class AgentBuilder
             : LLMProvider::new();
 
         return new ToolCallingDriver(llm: $llmProvider);
-    }
-
-    private function addSubagentTool(Agent $agent): Agent {
-        $llmProvider = $this->llmPreset !== null
-            ? LLMProvider::using($this->llmPreset)
-            : LLMProvider::new();
-
-        $subagentTool = new SpawnSubagentTool(
-            parentAgent: $agent,
-            registry: $this->subagentRegistry ?? new AgentRegistry(),
-            skillLibrary: $this->skillLibrary,
-            parentLlmProvider: $llmProvider,
-            currentDepth: 0,
-            maxDepth: $this->maxSubagentDepth,
-            summaryMaxChars: $this->subagentPolicy?->summaryMaxChars ?? 8000,
-            policy: $this->subagentPolicy,
-        );
-
-        return $agent->withTools($this->tools->merge(new Tools($subagentTool)));
     }
 }

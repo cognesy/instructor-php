@@ -62,6 +62,10 @@ class ToolCallingDriver implements CanUseTools
         return $clone;
     }
 
+    public function getLlmProvider(): LLMProvider {
+        return $this->llm;
+    }
+
     /**
      * Executes tool usage within a given context and returns the result as a AgentStep.
      *
