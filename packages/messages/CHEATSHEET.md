@@ -111,6 +111,7 @@ match(true) {
     $message instanceof Message => $message->clone(),
     $message instanceof Content => Message::fromContent($message),
     $message instanceof ContentPart => Message::fromContentPart($message),
+    $message instanceof ContentParts => Message::fromContent(Content::fromParts($message)),
 }
 
 // Array validation and parsing
@@ -126,14 +127,32 @@ Message::fromArray($array) supports:
 ### Content Class Structure
 ```php
 final readonly class Content {
-    /** @var ContentPart[] */
-    protected array $parts;
-    
+    protected ContentParts $parts;
+
     // Content state classification
     public function isComposite(): bool;    // Multi-part or complex content
     public function isEmpty(): bool;        // All parts empty
     public function isNull(): bool;         // No parts
     public function isSimple(): bool;       // Single simple text part
+}
+```
+
+### ContentParts Collection
+```php
+final readonly class ContentParts {
+    /** @var ContentPart[] */
+    private array $parts;
+
+    public static function empty(): self;
+    public static function fromArray(array $parts): self;
+    public function add(ContentPart $part): self;
+    public function replaceLast(ContentPart $part): self;
+    public function first(): ?ContentPart;
+    public function last(): ?ContentPart;
+    public function count(): int;
+    public function toArray(): array;
+    public function toString(string $separator = \"\\n\"): string;
+    public function withoutEmpty(): self;
 }
 ```
 
@@ -146,16 +165,17 @@ Content::texts(...$texts);                 // Multiple text parts
 
 // Universal constructor
 Content::fromAny($input);                  // Handles multiple input types
+Content::fromParts($parts);                // From ContentParts collection
 
 // Input resolution logic
 match(true) {
     is_null($content) => new self(),
     is_string($content) => new self(ContentPart::text($content)),
-    is_array($content) && Message::isMessage($content) => new self(ContentPart::fromAny($content['content'] ?? '')),
-    is_array($content) && Arrays::hasOnlyStrings($content) => /* create text parts */,
-    is_array($content) => /* create parts from array items */,
-    $content instanceof Content => new self(...$content->parts()),
-    $content instanceof ContentPart => new self(...[$content]),
+    is_array($content) && Message::isMessage($content) => Content::fromAny($content['content'] ?? ''),
+    is_array($content) => Content::fromParts(ContentParts::fromArray($content)),
+    $content instanceof Content => Content::fromParts($content->partsList()),
+    $content instanceof ContentPart => new self($content),
+    $content instanceof ContentParts => Content::fromParts($content),
 }
 ```
 
@@ -163,6 +183,7 @@ match(true) {
 ```php
 // Content introspection
 $content->parts();                         // ContentPart[]
+$content->partsList();                     // ContentParts collection
 $content->firstContentPart();              // First part or null
 $content->lastContentPart();               // Last part (never null)
 $content->toArray();                       // Serialize to array
@@ -171,7 +192,6 @@ $content->normalized();                    // string|array based on complexity
 
 // Content mutation (immutable)
 $content->addContentPart($part);           // Add new part
-$content->appendContentFields($fields);    // Add fields to last part
 $content->appendContentField($key, $value); // Add single field to last part
 $content->clone();                         // Deep clone
 ```
@@ -590,11 +610,34 @@ final readonly class Sections {
 ### Messages Class Structure
 ```php
 final readonly class Messages {
-    /** @var Message[] $messages */
-    private array $messages;
+    /** @var MessageList $messages */
+    private MessageList $messages;
     
     public function __construct(Message ...$messages);
     public static function empty(): static;
+}
+```
+
+### MessageList Collection
+```php
+final readonly class MessageList {
+    /** @var Message[] */
+    private array $messages;
+
+    public static function empty(): self;
+    public static function fromArray(array $messages): self;
+    public function add(Message $message): self;
+    public function addAll(self $messages): self;
+    public function prependAll(self $messages): self;
+    public function replaceLast(Message $message): self;
+    public function removeHead(): self;
+    public function removeTail(): self;
+    public function reversed(): self;
+    public function withoutEmpty(): self;
+    public function first(): ?Message;
+    public function last(): ?Message;
+    public function count(): int;
+    public function toArray(): array;
 }
 ```
 
@@ -607,6 +650,7 @@ Messages::empty();
 // Factory methods
 Messages::fromString($content, $role = 'user'); // Single message
 Messages::fromArray($messagesArray);            // Array of message arrays
+Messages::fromList($messageList);               // MessageList collection
 Messages::fromMessages($arrayOrMessages);       // Array of Message objects
 Messages::fromAnyArray($mixedArray);           // Mixed array types
 Messages::fromAny($input);                     // Universal constructor
@@ -618,6 +662,7 @@ match(true) {
     is_array($messages) => self::fromAnyArray($messages),
     $messages instanceof Message => new Messages($messages),
     $messages instanceof Messages => $messages,
+    $messages instanceof MessageList => Messages::fromList($messages),
 }
 ```
 
@@ -627,6 +672,7 @@ match(true) {
 $messages->first();                        // First message or empty
 $messages->last();                         // Last message or empty
 $messages->all();                          // Message[] array
+$messages->messageList();                  // MessageList collection
 $messages->count();                        // Message count
 
 // Iteration
@@ -639,8 +685,10 @@ $messages->filter($callback);              // Filter messages (immutable)
 $messages->reduce($callback, $initial);    // Reduce to single value
 
 // Partitioning
-$messages->head();                         // First message as array
-$messages->tail();                         // Last message as array
+$messages->head();                         // First message as array (deprecated)
+$messages->tail();                         // Last message as array (deprecated)
+$messages->headList();                     // First message as MessageList
+$messages->tailList();                     // Last message as MessageList
 
 
 // State checking
@@ -664,7 +712,7 @@ $messages->tailAfterRoles($roles);         // Skip while role matches
 $messages->remapRoles($mapping);           // Transform roles
 
 // Content operations
-$messages->contentParts();                 // All ContentPart[] from all messages
+$messages->contentParts();                 // ContentParts collection from all messages
 $messages->toMergedPerRole();              // Merge consecutive same-role messages
 
 // Collection operations
@@ -698,7 +746,8 @@ if ($messages->hasComposites()) {
 $message->role();                          // MessageRole enum
 $message->name();                          // Name string
 $message->content();                       // Content object
-$message->contentParts();                  // ContentPart[] array
+$message->contentParts();                  // ContentParts collection
+$message->contentParts()->all();           // ContentPart[] array
 
 // State checking
 $message->isEmpty();                       // Content empty and no metadata

@@ -72,8 +72,9 @@ test('can merge multiple composite messages with the same role', function () {
     // Should merge composite messages with same role
     expect($merged->all())->toHaveCount(1)
         ->and($merged->first()->isComposite())->toBeTrue()
-        ->and($merged->first()->contentParts())->toBeArray()
-        ->and(count($merged->contentParts()))->toBe(2);
+        ->and($merged->first()->contentParts())->toBeInstanceOf(\Cognesy\Messages\ContentParts::class)
+        ->and($merged->contentParts())->toBeInstanceOf(\Cognesy\Messages\ContentParts::class)
+        ->and($merged->contentParts()->count())->toBe(2);
 });
 
 test('merges roles correctly with mixed content types', function () {

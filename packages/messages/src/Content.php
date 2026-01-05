@@ -6,11 +6,10 @@ use Cognesy\Messages\Support\ContentInput;
 
 final readonly class Content
 {
-    /** @var ContentPart[] */
-    protected array $parts;
+    protected ContentParts $parts;
 
     public function __construct(ContentPart ...$parts) {
-        $this->parts = $parts;
+        $this->parts = new ContentParts(...$parts);
     }
 
     // CONSTRUCTORS /////////////////////////////////////////////
@@ -24,31 +23,32 @@ final readonly class Content
     }
 
     public static function texts(string ...$texts): self {
-        return new self(...array_map(fn($text) => ContentPart::text($text), $texts));
+        return self::fromParts(ContentParts::fromArray($texts));
     }
 
-    public static function fromAny(string|array|Content|ContentPart|null $content): self {
+    public static function fromAny(string|array|Content|ContentPart|ContentParts|null $content): self {
         return ContentInput::fromAny($content);
+    }
+
+    public static function fromParts(ContentParts $parts): self {
+        return new self(...$parts->all());
     }
 
     // MUTATORS /////////////////////////////////////////////////
 
     public function addContentPart(ContentPart $part) : static {
-        $parts = $this->parts;
-        $parts[] = $part;
-        return new self(...$parts);
+        $parts = $this->parts->add($part);
+        return new self(...$parts->all());
     }
 
     public function appendContentField(string $key, mixed $value): static {
-        if (empty($this->parts)) {
+        if ($this->parts->isEmpty()) {
             return new self(ContentPart::text('')->withField($key, $value));
         }
 
         $lastPart = $this->lastContentPart();
-        return new self(...[
-            ...array_slice($this->parts, 0, -1),
-            $lastPart->withField($key, $value),
-        ]);
+        $parts = $this->parts->replaceLast($lastPart->withField($key, $value));
+        return new self(...$parts->all());
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -56,7 +56,7 @@ final readonly class Content
     public function isComposite(): bool {
         return match(true) {
             $this->isNull() => false,
-            (count($this->parts) > 1) => true,
+            ($this->parts->count() > 1) => true,
             $this->hasSingleTextContentPart() => false,
             default => true,
         };
@@ -65,13 +65,20 @@ final readonly class Content
     public function isEmpty(): bool {
         return match(true) {
             $this->isNull() => true,
-            array_reduce($this->parts, fn(bool $carry, ContentPart $part) => $carry && $part->isEmpty(), true) => true,
+            $this->parts->reduce(
+                fn(bool $carry, ContentPart $part) => $carry && $part->isEmpty(),
+                true,
+            ) => true,
             default => false,
         };
     }
 
     /** @return ContentPart[] */
     public function parts(): array {
+        return $this->parts->all();
+    }
+
+    public function partsList(): ContentParts {
         return $this->parts;
     }
 
@@ -80,7 +87,7 @@ final readonly class Content
     public function toArray(): array {
         return match(true) {
             $this->isNull() => [],
-            default => array_map(fn($part) => $part->toArray(), $this->parts)
+            default => $this->parts->toArray()
         };
     }
 
@@ -88,48 +95,48 @@ final readonly class Content
         return match(true) {
             $this->isNull() => '',
             $this->isSimple() => $this->firstContentPart()?->toString() ?? '',
-            default => array_map(fn(ContentPart $part) => $part->toArray(), $this->parts),
+            default => $this->parts->toArray(),
         };
     }
 
     public function toString(): string {
         return match(true) {
             $this->isNull() => '',
-            default => implode("\n", array_map(fn($part) => $part->toString(), array_filter($this->parts, fn($part) => !$part->isEmpty()))),
+            default => $this->parts->toString(),
         };
     }
 
     public function clone() : self {
-        return new self(...$this->parts);
+        return new self(...$this->parts->all());
     }
 
     // UTILS /////////////////////////////////////////////////
 
     private function isNull(): bool {
-        return empty($this->parts);
+        return $this->parts->isEmpty();
     }
 
     private function isSimple(): bool {
         return match(true) {
             $this->isNull() => true,
-            (count($this->parts) === 1) && ($this->firstContentPart()?->isSimple() ?? false) => true,
+            ($this->parts->count() === 1) && ($this->firstContentPart()?->isSimple() ?? false) => true,
             default => false,
         };
     }
 
     private function firstContentPart(): ?ContentPart {
-        return $this->parts[0] ?? null;
+        return $this->parts->first();
     }
 
     private function lastContentPart(): ContentPart {
-        if (empty($this->parts)) {
+        if ($this->parts->isEmpty()) {
             return new ContentPart('text', ['text' => '']);
         }
-        return $this->parts[array_key_last($this->parts)];
+        return $this->parts->last() ?? new ContentPart('text', ['text' => '']);
     }
 
     private function hasSingleTextContentPart() : bool {
-        return (count($this->parts) === 1)
+        return ($this->parts->count() === 1)
             && ($this->firstContentPart()?->isTextPart() ?? true)
             && ($this->firstContentPart()?->isSimple() ?? true);
     }

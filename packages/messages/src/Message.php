@@ -3,6 +3,7 @@
 namespace Cognesy\Messages;
 
 use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Support\MessageInput;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Utils\Metadata;
@@ -96,7 +97,7 @@ final readonly class Message
     }
 
     public static function fromAny(
-        string|array|Message|Messages|Content|ContentPart $message,
+        string|array|Message|Messages|Content|ContentPart|ContentParts $message,
         string|MessageRole|null $role = null,
         string $name = '',
     ): static {
@@ -168,11 +169,8 @@ final readonly class Message
         return $this->content;
     }
 
-    /**
-     * @return ContentPart[]
-     */
-    public function contentParts(): array {
-        return $this->content->parts();
+    public function contentParts(): ContentParts {
+        return $this->content->partsList();
     }
 
     public function isEmpty(): bool {
@@ -232,7 +230,7 @@ final readonly class Message
 
     public function addContentFrom(Message $source): Message {
         $newContent = $this->content->clone();
-        foreach ($source->content()->parts() as $part) {
+        foreach ($source->content()->partsList()->all() as $part) {
             $newContent = $newContent->addContentPart($part);
         }
         return $this->withContent($newContent);

@@ -175,7 +175,7 @@ class Template
             metadata: $message->metadata()->toArray()
         );
         $parts = [];
-        foreach($message->contentParts() as $part) {
+        foreach($message->contentParts()->all() as $part) {
             $newPart = new ContentPart(
                 type: $part->type(),
                 fields: $part->fields()

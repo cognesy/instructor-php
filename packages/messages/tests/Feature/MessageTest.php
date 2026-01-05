@@ -74,6 +74,18 @@ test('checks if message is composite', function () {
         ->and($compositeMessage->isComposite())->toBeTrue();
 });
 
+test('exposes content parts as collection', function () {
+    $message = new Message(content: [
+        ['type' => 'text', 'text' => 'Part 1'],
+        ['type' => 'text', 'text' => 'Part 2']
+    ]);
+
+    $parts = $message->contentParts();
+
+    expect($parts)->toBeInstanceOf(\Cognesy\Messages\ContentParts::class)
+        ->and($parts->count())->toBe(2);
+});
+
 test('accesses metadata values', function () {
     $message = new Message(metadata: [
         'temperature' => 0.7,
@@ -156,10 +168,13 @@ test('creates a message from various source types', function () {
     $arrayMessage = Message::fromAny(['role' => 'assistant', 'content' => 'Array message']);
     $messageObject = new Message('system', 'Object message');
     $messageFromObject = Message::fromAny($messageObject);
+    $parts = \Cognesy\Messages\ContentParts::fromArray(['Part 1', 'Part 2']);
+    $messageFromParts = Message::fromAny($parts);
 
     expect($stringMessage->content()->toString())->toBe('String message')
         ->and($arrayMessage->content()->toString())->toBe('Array message')
-        ->and($messageFromObject->content()->toString())->toBe('Object message');
+        ->and($messageFromObject->content()->toString())->toBe('Object message')
+        ->and($messageFromParts->content()->toString())->toBe("Part 1\nPart 2");
 });
 
 //test('throws exception for invalid message type in fromAnyMessage', function () {

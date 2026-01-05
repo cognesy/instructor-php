@@ -4,6 +4,7 @@ namespace Cognesy\Messages\Support;
 
 use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
@@ -15,7 +16,7 @@ use InvalidArgumentException;
 final class MessageInput
 {
     public static function fromAny(
-        string|array|Message|Messages|Content|ContentPart $message,
+        string|array|Message|Messages|Content|ContentPart|ContentParts $message,
         string|MessageRole|null $role = null,
         string $name = '',
     ): Message {
@@ -27,6 +28,10 @@ final class MessageInput
             $message instanceof ContentPart => new Message(
                 role: $role,
                 content: Content::empty()->addContentPart($message),
+            ),
+            $message instanceof ContentParts => new Message(
+                role: $role,
+                content: Content::fromParts($message),
             ),
             default => throw new InvalidArgumentException('Unsupported message type: ' . gettype($message)),
         };

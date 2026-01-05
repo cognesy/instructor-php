@@ -93,6 +93,19 @@ test('fromInput handles objects implementing CanProvideMessages', function () {
         ->and($messages->first()->content()->toString())->toBe('From messages provider');
 });
 
+test('fromInput handles MessageList', function () {
+    $list = \Cognesy\Messages\MessageList::fromArray([
+        new Message('user', 'Hello'),
+        new Message('assistant', 'Hi'),
+    ]);
+
+    $messages = Messages::fromInput($list);
+
+    expect($messages)->toBeInstanceOf(Messages::class)
+        ->and($messages->count())->toBe(2)
+        ->and($messages->first()->content()->toString())->toBe('Hello');
+});
+
 test('asString handles empty arrays', function () {
     $result = Messages::asString([]);
     
@@ -229,6 +242,9 @@ test('becomesEmpty correctly identifies empty inputs', function () {
     expect(Messages::becomesEmpty([]))->toBeTrue();
     expect(Messages::becomesEmpty(new Message()))->toBeTrue();
     expect(Messages::becomesEmpty(Messages::empty()))->toBeTrue();
+
+    $list = \Cognesy\Messages\MessageList::empty();
+    expect(Messages::becomesEmpty($list))->toBeTrue();
     
     expect(Messages::becomesEmpty(['not empty']))->toBeFalse();
     expect(Messages::becomesEmpty(new Message('user', 'content')))->toBeFalse();

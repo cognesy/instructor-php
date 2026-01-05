@@ -4,16 +4,18 @@ namespace Cognesy\Messages;
 
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Support\MessagesInput;
+use Cognesy\Messages\ContentParts;
 use Generator;
+use InvalidArgumentException;
 use RuntimeException;
 
 final readonly class Messages
 {
-    /** @var Message[] $messages */
-    private array $messages;
+    /** @var MessageList $messages */
+    private MessageList $messages;
 
     public function __construct(Message ...$messages) {
-        $this->messages = $messages;
+        $this->messages = new MessageList(...$messages);
     }
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
@@ -30,6 +32,10 @@ final readonly class Messages
      */
     static public function fromArray(array $messages) : Messages {
         return MessagesInput::fromArray($messages);
+    }
+
+    public static function fromList(MessageList $messages) : Messages {
+        return new Messages(...$messages->all());
     }
 
     /** @param array|Message[]|Messages $arrayOfMessages */
@@ -52,7 +58,7 @@ final readonly class Messages
         return MessagesInput::fromAnyArray($messages);
     }
 
-    public static function fromAny(string|array|Message|Messages $messages) : Messages {
+    public static function fromAny(string|array|Message|Messages|MessageList $messages) : Messages {
         return MessagesInput::fromAny($messages);
     }
 
@@ -61,28 +67,28 @@ final readonly class Messages
     }
 
     public function clone() : self {
-        return new Messages(...array_map(fn($message) => $message->clone(), $this->messages));
+        return new Messages(...$this->messages->map(fn(Message $message) => $message->clone()));
     }
 
     // MUTATORS /////////////////////////////////////////////////////////////
 
-    public function asSystem(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+    public function asSystem(string|array|Message|Messages|Content|ContentPart|ContentParts $message, string $name = '') : static {
         return $this->appendWithRole(MessageRole::System, $message, $name);
     }
 
-    public function asDeveloper(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+    public function asDeveloper(string|array|Message|Messages|Content|ContentPart|ContentParts $message, string $name = '') : static {
         return $this->appendWithRole(MessageRole::Developer, $message, $name);
     }
 
-    public function asUser(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+    public function asUser(string|array|Message|Messages|Content|ContentPart|ContentParts $message, string $name = '') : static {
         return $this->appendWithRole(MessageRole::User, $message, $name);
     }
 
-    public function asAssistant(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+    public function asAssistant(string|array|Message|Messages|Content|ContentPart|ContentParts $message, string $name = '') : static {
         return $this->appendWithRole(MessageRole::Assistant, $message, $name);
     }
 
-    public function asTool(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
+    public function asTool(string|array|Message|Messages|Content|ContentPart|ContentParts $message, string $name = '') : static {
         return $this->appendWithRole(MessageRole::Tool, $message, $name);
     }
 
@@ -95,65 +101,60 @@ final readonly class Messages
         return new static(...$newMessages);
     }
 
-    public function withMessages(array|Messages $messages) : static {
-        $newMessages = match (true) {
-            $messages instanceof Messages => $messages->messages,
-            default => Messages::fromAnyArray($messages)->messages,
+    public function withMessages(array|Messages|MessageList $messages) : static {
+        $list = match (true) {
+            $messages instanceof Messages => $messages->list(),
+            $messages instanceof MessageList => $messages,
+            default => Messages::fromAnyArray($messages)->list(),
         };
-        return new static(...$newMessages);
+        return new static(...$list->all());
     }
 
     public function appendMessage(string|array|Message $message) : static {
-        $newMessages = $this->messages;
-        $newMessages[] = match (true) {
+        $message = match (true) {
             is_string($message) => Message::fromString($message),
             is_array($message) => Message::fromArray($message),
             default => $message,
         };
-        return $this->withMessages($newMessages);
+        return $this->withMessages($this->messages->add($message)->all());
     }
 
-    public function appendMessages(array|Messages $messages) : static {
+    public function appendMessages(array|Messages|MessageList $messages) : static {
         if (Messages::becomesEmpty($messages)) {
             return $this;
         }
         $appended = match (true) {
-            $messages instanceof Messages => $messages->messages,
-            default => Messages::fromAnyArray($messages)->messages,
+            $messages instanceof Messages => $messages->list(),
+            $messages instanceof MessageList => $messages,
+            default => Messages::fromAnyArray($messages)->list(),
         };
-        $newMessages = array_merge($this->messages, $appended);
-        return $this->withMessages($newMessages);
+        return $this->withMessages($this->messages->addAll($appended)->all());
     }
 
-    public function prependMessages(array|Messages|Message $messages) : static {
-        $newMessages = match (true) {
+    public function prependMessages(array|Messages|Message|MessageList $messages) : static {
+        $list = match (true) {
             empty($messages) => $this->messages,
-            $messages instanceof Message => array_merge([$messages], $this->messages),
-            $messages instanceof Messages => array_merge($messages->messages, $this->messages),
-            default => array_merge(Messages::fromAnyArray($messages)->messages, $this->messages),
+            $messages instanceof Message => MessageList::fromArray([$messages]),
+            $messages instanceof Messages => $messages->list(),
+            $messages instanceof MessageList => $messages,
+            default => Messages::fromAnyArray($messages)->list(),
         };
-        return $this->withMessages($newMessages);
+        return $this->withMessages($this->messages->prependAll($list)->all());
     }
 
     public function removeHead() : static {
-        $newMessages = $this->messages;
-        array_shift($newMessages);
-        return $this->withMessages($newMessages);
+        return $this->withMessages($this->messages->removeHead()->all());
     }
 
     public function removeTail() : static {
-        $newMessages = $this->messages;
-        array_pop($newMessages);
-        return $this->withMessages($newMessages);
+        return $this->withMessages($this->messages->removeTail()->all());
     }
 
     public function appendContentField(string $key, mixed $value) : static {
-        $newMessages = $this->messages;
-        $lastMessage = $newMessages[array_key_last($newMessages)] ?? Message::empty();
+        $lastMessage = $this->messages->last() ?? Message::empty();
         $newContent = $lastMessage->content()->appendContentField($key, $value);
-        $messagesExceptLast = array_slice($newMessages, 0, -1);
-        $messages = [...$messagesExceptLast, $lastMessage->withContent($newContent)];
-        return new static(...$messages);
+        $messages = $this->messages->replaceLast($lastMessage->withContent($newContent));
+        return new static(...$messages->all());
     }
 
     // CONVERSION / TRANSFORMATION /////////////////////////////////////////
@@ -187,14 +188,9 @@ final readonly class Messages
      * @return list<array<array-key, mixed>>
      */
     public function toArray() : array {
-        $result = [];
-        foreach ($this->messages as $message) {
-            if ($message->isEmpty()) {
-                continue;
-            }
-            $result[] = $message->toArray();
-        }
-        return $result;
+        return $this->messages
+            ->withoutEmpty()
+            ->toArray();
     }
 
     public function toString(string $separator = "\n") : string {
@@ -227,7 +223,7 @@ final readonly class Messages
     public function forRoles(array $roles): Messages {
         $messages = Messages::empty();
         $roleEnums = MessageRole::normalizeArray($roles);
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             if ($message->role()->oneOf(...$roleEnums)) {
                 $messages = $messages->appendMessage($message);
             }
@@ -239,7 +235,7 @@ final readonly class Messages
     public function exceptRoles(array $roles): Messages {
         $messages = Messages::empty();
         $roleEnums = MessageRole::normalizeArray($roles);
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             if (!$message->role()->oneOf(...$roleEnums)) {
                 $messages = $messages->appendMessage($message);
             }
@@ -251,7 +247,7 @@ final readonly class Messages
     public function headWithRoles(array $roles): Messages {
         $messages = Messages::empty();
         $roleEnums = MessageRole::normalizeArray($roles);
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             if (!$message->role()->oneOf(...$roleEnums)) {
                 break;
             }
@@ -265,7 +261,7 @@ final readonly class Messages
         $messages = Messages::empty();
         $inHead = true;
         $roleEnums = MessageRole::normalizeArray($roles);
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             if ($inHead && $message->role()->oneOf(...$roleEnums)) {
                 continue;
             }
@@ -280,59 +276,52 @@ final readonly class Messages
     /** @param array<string, string|MessageRole> $mapping */
     public function remapRoles(array $mapping): Messages {
         $messages = Messages::empty();
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             $role = $message->role()->value;
             $messages = $messages->appendMessage($message->withRole($mapping[$role] ?? $role));
         }
         return $messages;
     }
 
-    /** @return ContentPart[] */
-    public function contentParts(): array {
+    public function contentParts(): ContentParts {
         $parts = [];
-        foreach ($this->messages as $message) {
-            foreach ($message->contentParts() as $part) {
+        foreach ($this->messages->all() as $message) {
+            foreach ($message->contentParts()->all() as $part) {
                 $parts[] = $part;
             }
         }
-        return $parts;
+        return ContentParts::fromArray($parts);
     }
 
     public function reversed(): Messages {
-        return new Messages(...array_reverse($this->messages));
+        return new Messages(...$this->messages->reversed()->all());
     }
 
     public function withoutEmptyMessages(): Messages {
-        $messages = Messages::empty();
-        foreach ($this->messages as $message) {
-            if (!$message->isEmpty()) {
-                $messages = $messages->appendMessage($message);
-            }
-        }
-        return $messages;
+        return new Messages(...$this->messages->withoutEmpty()->all());
     }
 
     // ACCESSORS ///////////////////////////////////////////////////////////
 
     public function first() : Message {
-        if (empty($this->messages)) {
+        if ($this->messages->isEmpty()) {
             return new Message();
         }
-        return $this->messages[0];
+        return $this->messages->first() ?? new Message();
     }
 
     public function last() : Message {
-        if (empty($this->messages)) {
+        if ($this->messages->isEmpty()) {
             return new Message();
         }
-        return $this->messages[count($this->messages)-1];
+        return $this->messages->last() ?? new Message();
     }
 
     /**
      * @return Generator<Message>
      */
     public function each() : iterable {
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             yield $message;
         }
     }
@@ -341,25 +330,36 @@ final readonly class Messages
         return $this->reduce(fn(bool $carry, Message $message) => $carry || $message->isComposite(), false);
     }
 
+    /** @deprecated Use headList() for collection access. */
     public function head() : array {
-        if (empty($this->messages)) {
+        if ($this->messages->isEmpty()) {
             return [];
         }
-        return array_slice($this->messages, 0, 1);
+        return array_slice($this->messages->all(), 0, 1);
     }
 
+    /** @deprecated Use tailList() for collection access. */
     public function tail() : array {
-        if (empty($this->messages)) {
+        if ($this->messages->isEmpty()) {
             return [];
         }
-        return array_slice($this->messages, count($this->messages)-1);
+        return array_slice($this->messages->all(), $this->messages->count() - 1);
     }
 
-    public static function becomesEmpty(array|Message|Messages $messages) : bool {
+    public function headList(): MessageList {
+        return MessageList::fromArray($this->head());
+    }
+
+    public function tailList(): MessageList {
+        return MessageList::fromArray($this->tail());
+    }
+
+    public static function becomesEmpty(array|Message|Messages|MessageList $messages) : bool {
         return match(true) {
             is_array($messages) && empty($messages) => true,
             $messages instanceof Message => $messages->isEmpty(),
             $messages instanceof Messages => $messages->isEmpty(),
+            $messages instanceof MessageList => $messages->isEmpty(),
             default => false,
         };
     }
@@ -373,8 +373,11 @@ final readonly class Messages
 
     public function isEmpty() : bool {
         return match(true) {
-            empty($this->messages) => true,
-            default => $this->reduce(fn(bool $carry, Message $message) => $carry && $message->isEmpty(), true),
+            $this->messages->isEmpty() => true,
+            default => $this->reduce(
+                fn(bool $carry, Message $message) => $carry && $message->isEmpty(),
+                true,
+            ),
         };
     }
 
@@ -389,7 +392,7 @@ final readonly class Messages
      * @return T
      */
     public function reduce(callable $callback, mixed $initial = null) : mixed {
-        return array_reduce($this->messages, $callback, $initial);
+        return $this->messages->reduce($callback, $initial);
     }
 
     /**
@@ -398,7 +401,7 @@ final readonly class Messages
      * @return array<T>
      */
     public function map(callable $callback) : array {
-        return array_map($callback, $this->messages);
+        return $this->messages->map($callback);
     }
 
     /**
@@ -406,7 +409,7 @@ final readonly class Messages
      */
     public function filter(?callable $callback = null) : Messages {
         $filteredMessages = [];
-        foreach ($this->messages as $message) {
+        foreach ($this->messages->all() as $message) {
             if ($message->isEmpty()) {
                 continue;
             }
@@ -422,7 +425,7 @@ final readonly class Messages
     }
 
     public function count() : int {
-        return count($this->messages);
+        return $this->messages->count();
     }
 
     public function firstRole() : MessageRole {
@@ -443,14 +446,22 @@ final readonly class Messages
 
     /**  @return Message[] */
     public function all() : array {
+        return $this->messages->all();
+    }
+
+    public function messageList(): MessageList {
         return $this->messages;
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
+    private function list(): MessageList {
+        return $this->messages;
+    }
+
     private function appendWithRole(
         MessageRole $role,
-        string|array|Message|Messages|Content|ContentPart $message,
+        string|array|Message|Messages|Content|ContentPart|ContentParts $message,
         string $name = ''
     ) : static {
         return match(true) {

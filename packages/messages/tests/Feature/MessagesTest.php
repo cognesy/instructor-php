@@ -69,6 +69,18 @@ test('can access first and last messages', function () {
         ->and($messages->last()->content()->toString())->toBe('Last');
 });
 
+test('exposes message list', function () {
+    $messages = Messages::fromArray([
+        ['role' => 'user', 'content' => 'Hello'],
+        ['role' => 'assistant', 'content' => 'Hi']
+    ]);
+
+    $list = $messages->messageList();
+
+    expect($list)->toBeInstanceOf(\Cognesy\Messages\MessageList::class)
+        ->and($list->count())->toBe(2);
+});
+
 test('returns empty message for first/last when collection is empty', function () {
     $messages = Messages::empty();
     
@@ -193,6 +205,20 @@ test('can set messages', function () {
         ->and($messages->last()->content()->toString())->toBe('Hi');
 });
 
+test('can set messages from MessageList', function () {
+    $messages = Messages::empty();
+    $list = \Cognesy\Messages\MessageList::fromArray([
+        new Message('user', 'Hello'),
+        new Message('assistant', 'Hi'),
+    ]);
+
+    $messages = $messages->withMessages($list);
+
+    expect($messages->all())->toHaveCount(2)
+        ->and($messages->first()->content()->toString())->toBe('Hello')
+        ->and($messages->last()->content()->toString())->toBe('Hi');
+});
+
 test('can append message', function () {
     $messages = Messages::fromString('Hello');
     $messages = $messages->appendMessage(new Message('assistant', 'Hi'));
@@ -210,6 +236,19 @@ test('can append messages', function () {
     
     $messages = $messages->appendMessages($messagesToAppend);
     
+    expect($messages->all())->toHaveCount(3)
+        ->and($messages->last()->content()->toString())->toBe('How are you?');
+});
+
+test('can append MessageList', function () {
+    $messages = Messages::fromString('Hello');
+    $list = \Cognesy\Messages\MessageList::fromArray([
+        new Message('assistant', 'Hi'),
+        new Message('user', 'How are you?'),
+    ]);
+
+    $messages = $messages->appendMessages($list);
+
     expect($messages->all())->toHaveCount(3)
         ->and($messages->last()->content()->toString())->toBe('How are you?');
 });
@@ -249,6 +288,23 @@ test('can remove head and tail', function () {
     $messages = $messages->removeTail();
     expect($messages->all())->toHaveCount(1)
         ->and($messages->first()->content()->toString())->toBe('Middle');
+});
+
+test('exposes head and tail lists', function () {
+    $messages = Messages::fromArray([
+        ['role' => 'user', 'content' => 'First'],
+        ['role' => 'assistant', 'content' => 'Middle'],
+        ['role' => 'user', 'content' => 'Last']
+    ]);
+
+    $head = $messages->headList();
+    $tail = $messages->tailList();
+
+    expect($head)->toBeInstanceOf(\Cognesy\Messages\MessageList::class)
+        ->and($head->count())->toBe(1)
+        ->and($head->first()?->content()->toString())->toBe('First')
+        ->and($tail->count())->toBe(1)
+        ->and($tail->first()?->content()->toString())->toBe('Last');
 });
 
 // Test HandlesConversion trait
@@ -356,4 +412,17 @@ test('can reverse messages', function () {
     
     expect($reversed->first()->content()->toString())->toBe('Second')
         ->and($reversed->last()->content()->toString())->toBe('First');
+});
+
+test('appends content field to last message', function () {
+    $messages = Messages::fromArray([
+        ['role' => 'user', 'content' => 'First'],
+        ['role' => 'assistant', 'content' => 'Second']
+    ]);
+
+    $updated = $messages->appendContentField('meta', 'value');
+
+    expect($updated->last()->content()->toArray())->toBe([
+        ['type' => 'text', 'text' => 'Second', 'meta' => 'value']
+    ]);
 });

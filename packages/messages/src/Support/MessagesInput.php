@@ -5,6 +5,7 @@ namespace Cognesy\Messages\Support;
 use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Contracts\CanProvideMessages;
 use Cognesy\Messages\Message;
+use Cognesy\Messages\MessageList;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\TextRepresentation;
 use InvalidArgumentException;
@@ -49,12 +50,13 @@ final class MessagesInput
         return new Messages(...$newMessages);
     }
 
-    public static function fromAny(string|array|Message|Messages $messages): Messages {
+    public static function fromAny(string|array|Message|Messages|MessageList $messages): Messages {
         return match (true) {
             is_string($messages) => Messages::fromString($messages),
             is_array($messages) => self::fromAnyArray($messages),
             $messages instanceof Message => new Messages($messages),
             $messages instanceof Messages => $messages,
+            $messages instanceof MessageList => new Messages(...$messages->all()),
             default => throw new InvalidArgumentException('Invalid message type'),
         };
     }
@@ -62,6 +64,7 @@ final class MessagesInput
     public static function fromInput(string|array|object $input): Messages {
         return match (true) {
             $input instanceof Messages => $input,
+            $input instanceof MessageList => new Messages(...$input->all()),
             $input instanceof CanProvideMessages => $input->toMessages(),
             $input instanceof Message => new Messages($input),
             $input instanceof CanProvideMessage => new Messages($input->toMessage()),

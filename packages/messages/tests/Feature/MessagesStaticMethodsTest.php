@@ -17,6 +17,19 @@ test('static fromString creates Messages with correct role and content', functio
     expect($defaultRole->first()->role()->value)->toBe('user');
 });
 
+test('static fromList creates Messages from MessageList', function () {
+    $list = \Cognesy\Messages\MessageList::fromArray([
+        new Message('user', 'Hello'),
+        new Message('assistant', 'Hi'),
+    ]);
+
+    $messages = Messages::fromList($list);
+
+    expect($messages)->toBeInstanceOf(Messages::class)
+        ->and($messages->count())->toBe(2)
+        ->and($messages->first()->content()->toString())->toBe('Hello');
+});
+
 test('static fromArray handles various input formats', function () {
     // Array of message arrays
     $messages1 = Messages::fromArray([
@@ -122,6 +135,14 @@ test('static fromAny handles all supported input types', function () {
     $messages = Messages::fromString('Original messages');
     $fromMessages = Messages::fromAny($messages);
     expect($fromMessages)->toBe($messages); // Should return the same instance
+
+    // MessageList
+    $list = \Cognesy\Messages\MessageList::fromArray([
+        new Message('user', 'List message')
+    ]);
+    $fromList = Messages::fromAny($list);
+    expect($fromList->all())->toHaveCount(1)
+        ->and($fromList->first()->content()->toString())->toBe('List message');
     
     // Invalid input
     //expect(fn() => Messages::fromAny(123))->toThrow(Exception::class);

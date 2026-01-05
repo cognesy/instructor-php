@@ -38,6 +38,24 @@ describe('Content', function () {
             expect($content->parts())->toHaveCount(1);
             expect($content->toString())->toBe('Hello');
         });
+
+        it('creates content from ContentParts', function () {
+            $parts = \Cognesy\Messages\ContentParts::fromArray([
+                ContentPart::text('Hello'),
+                ContentPart::text('World'),
+            ]);
+            $content = Content::fromParts($parts);
+            expect($content->toString())->toBe("Hello\nWorld");
+        });
+    });
+
+    describe('accessors', function () {
+        it('returns content parts list', function () {
+            $content = Content::texts(...['Hello', 'world']);
+            $parts = $content->partsList();
+            expect($parts)->toBeInstanceOf(\Cognesy\Messages\ContentParts::class)
+                ->and($parts->count())->toBe(2);
+        });
     });
 
     describe('fromAny static method', function () {
@@ -63,10 +81,35 @@ describe('Content', function () {
             expect($content->toString())->toBe('Hello');
         });
 
+        it('creates content from ContentParts instance', function () {
+            $parts = \Cognesy\Messages\ContentParts::fromArray([
+                ContentPart::text('Hello'),
+                ContentPart::text('World'),
+            ]);
+            $content = Content::fromAny($parts);
+            expect($content->toString())->toBe("Hello\nWorld");
+        });
+
         it('creates content from message array', function () {
             $messageArray = ['role' => 'user', 'content' => 'Hello'];
             $content = Content::fromAny($messageArray);
             expect($content->toString())->toBe('Hello');
+        });
+
+        it('creates composite content from message array', function () {
+            $messageArray = [
+                'role' => 'user',
+                'content' => [
+                    ['type' => 'text', 'text' => 'Hello'],
+                    ['type' => 'text', 'text' => 'World'],
+                ],
+            ];
+            $content = Content::fromAny($messageArray);
+            expect($content->isComposite())->toBeTrue()
+                ->and($content->toArray())->toBe([
+                    ['type' => 'text', 'text' => 'Hello'],
+                    ['type' => 'text', 'text' => 'World'],
+                ]);
         });
 
     });
