@@ -2,6 +2,7 @@
 
 namespace Cognesy\Addons\Agent;
 
+use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Continuation\ToolCallPresenceCheck;
 use Cognesy\Addons\Agent\Contracts\CanUseTools;
@@ -9,16 +10,6 @@ use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\StateProcessors\PersistTasksProcessor;
-use Cognesy\Addons\Agent\Subagents\AgentCapability;
-use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
-use Cognesy\Addons\Agent\Tools\BashTool;
-use Cognesy\Addons\Agent\Tools\File\EditFileTool;
-use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
-use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
-use Cognesy\Addons\Agent\Tools\LoadSkillTool;
-use Cognesy\Addons\Agent\Tools\Subagent\SpawnSubagentTool;
-use Cognesy\Addons\Agent\Tools\TodoWriteTool;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
@@ -39,6 +30,25 @@ use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
 class AgentFactory
 {
+    /**
+     * Get a fluent builder for creating agents.
+     *
+     * @example
+     * $agent = AgentFactory::builder()
+     *     ->withBash()
+     *     ->withFileTools()
+     *     ->withMaxSteps(20)
+     *     ->build();
+     */
+    public static function builder(): AgentBuilder {
+        return AgentBuilder::new();
+    }
+
+    /**
+     * Create a basic agent with default configuration.
+     *
+     * @deprecated Use AgentFactory::builder() for better composability
+     */
     public static function default(
         ?Tools $tools = null,
         ?CanApplyProcessors $processors = null,
@@ -101,6 +111,8 @@ class AgentFactory
 
     /**
      * Create an agent with bash command execution capability.
+     *
+     * @deprecated Use AgentFactory::builder()->withBash()->build()
      */
     public static function withBash(
         ?ExecutionPolicy $policy = null,
@@ -109,80 +121,84 @@ class AgentFactory
         ?CanHandleEvents $events = null,
         ?string $llmPreset = null,
     ): Agent {
-        $bashTool = new BashTool(policy: $policy, baseDir: $baseDir, timeout: $timeout);
-        return self::default(tools: new Tools($bashTool), events: $events, llmPreset: $llmPreset);
+        return self::builder()
+            ->withBash($policy, $baseDir, $timeout)
+            ->withEvents($events ?? EventBusResolver::using(null))
+            ->withLlmPreset($llmPreset ?? '')
+            ->build();
     }
 
     /**
      * Create an agent with file operation tools (read, write, edit).
+     *
+     * @deprecated Use AgentFactory::builder()->withFileTools()->build()
      */
     public static function withFileTools(
         ?string $baseDir = null,
         ?CanHandleEvents $events = null,
         ?string $llmPreset = null,
     ): Agent {
-        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
-
-        $tools = new Tools(
-            ReadFileTool::inDirectory($baseDir),
-            WriteFileTool::inDirectory($baseDir),
-            EditFileTool::inDirectory($baseDir),
-        );
-
-        return self::default(tools: $tools, events: $events, llmPreset: $llmPreset);
+        return self::builder()
+            ->withFileTools($baseDir)
+            ->withEvents($events ?? EventBusResolver::using(null))
+            ->withLlmPreset($llmPreset ?? '')
+            ->build();
     }
 
     /**
      * Create an agent with task planning capability (TodoWrite).
+     *
+     * @deprecated Use AgentFactory::builder()->withTaskPlanning()->build()
      */
     public static function withTaskPlanning(
         ?CanHandleEvents $events = null,
         ?string $llmPreset = null,
     ): Agent {
-        $tools = new Tools(new TodoWriteTool());
-
-        $processors = new StateProcessors(
-            new AccumulateTokenUsage(),
-            new AppendContextMetadata(),
-            new AppendStepMessages(),
-            new PersistTasksProcessor(),
-        );
-
-        return self::default(tools: $tools, processors: $processors, events: $events, llmPreset: $llmPreset);
+        return self::builder()
+            ->withTaskPlanning()
+            ->withEvents($events ?? EventBusResolver::using(null))
+            ->withLlmPreset($llmPreset ?? '')
+            ->build();
     }
 
     /**
      * Create an agent with skill loading capability.
+     *
+     * @deprecated Use AgentFactory::builder()->withSkills()->build()
      */
     public static function withSkills(
         ?SkillLibrary $library = null,
         ?CanHandleEvents $events = null,
         ?string $llmPreset = null,
     ): Agent {
-        $library = $library ?? new SkillLibrary();
-        $tools = new Tools(LoadSkillTool::withLibrary($library));
-
-        return self::default(tools: $tools, events: $events, llmPreset: $llmPreset);
+        return self::builder()
+            ->withSkills($library)
+            ->withEvents($events ?? EventBusResolver::using(null))
+            ->withLlmPreset($llmPreset ?? '')
+            ->build();
     }
 
     /**
      * Create a full-featured coding agent with bash, file tools, task planning, and skills.
      *
-     * @param string|null $workDir Working directory for file operations
-     * @param SkillLibrary|null $skills Skill library for skill loading
-     * @param SubagentRegistry|null $subagentRegistry Registry of available subagents (null = create empty)
-     * @param int $maxSteps Maximum number of agent steps
-     * @param int $maxTokens Maximum token usage
-     * @param int $timeout Execution timeout in seconds
-     * @param int $maxSubagentDepth Maximum nesting depth for subagents (default: 3)
-     * @param CanHandleEvents|null $events Event handler
-     * @param string|null $llmPreset LLM preset name from config/llm.php
-     * @return Agent
+     * @deprecated Use AgentFactory::builder() with fluent API for better composability
+     *
+     * @example
+     * $agent = AgentFactory::builder()
+     *     ->withBash($policy)
+     *     ->withFileTools($workDir)
+     *     ->withTaskPlanning()
+     *     ->withSkills($library)
+     *     ->withSubagents($registry, $maxDepth)
+     *     ->withMaxSteps(20)
+     *     ->withMaxTokens(32768)
+     *     ->withTimeout(300)
+     *     ->build();
      */
     public static function codingAgent(
         ?string $workDir = null,
         ?SkillLibrary $skills = null,
-        ?SubagentRegistry $subagentRegistry = null,
+        ?AgentRegistry $subagentRegistry = null,
         int $maxSteps = 20,
         int $maxTokens = 32768,
         int $timeout = 300,
@@ -199,57 +215,27 @@ class AgentFactory
             ->withWritablePaths($workDir)
             ->inheritEnvironment();
 
-        $tools = new Tools(
-            new BashTool(policy: $policy),
-            ReadFileTool::withPolicy($policy),
-            WriteFileTool::withPolicy($policy),
-            EditFileTool::withPolicy($policy),
-            new TodoWriteTool(),
-        );
+        $builder = self::builder()
+            ->withBash($policy)
+            ->withFileTools($workDir)
+            ->withTaskPlanning()
+            ->withSubagents($subagentRegistry, $maxSubagentDepth)
+            ->withMaxSteps($maxSteps)
+            ->withMaxTokens($maxTokens)
+            ->withTimeout($timeout);
 
         if ($skills !== null) {
-            $tools = $tools->merge(new Tools(LoadSkillTool::withLibrary($skills)));
+            $builder = $builder->withSkills($skills);
         }
 
-        $processors = new StateProcessors(
-            new AccumulateTokenUsage(),
-            new AppendContextMetadata(),
-            new AppendStepMessages(),
-            new PersistTasksProcessor(),
-        );
+        if ($events !== null) {
+            $builder = $builder->withEvents($events);
+        }
 
-        $continuationCriteria = self::defaultContinuationCriteria(
-            maxSteps: $maxSteps,
-            maxTokens: $maxTokens,
-            maxExecutionTime: $timeout,
-        );
+        if ($llmPreset !== null) {
+            $builder = $builder->withLlmPreset($llmPreset);
+        }
 
-        $agent = self::default(
-            tools: $tools,
-            processors: $processors,
-            continuationCriteria: $continuationCriteria,
-            events: $events,
-            llmPreset: $llmPreset,
-        );
-
-        // Create subagent registry if not provided
-        $subagentRegistry = $subagentRegistry ?? new SubagentRegistry();
-
-        // Get LLM provider for subagent inheritance
-        $llmProvider = $llmPreset !== null
-            ? LLMProvider::using($llmPreset)
-            : LLMProvider::new();
-
-        // Add subagent tool with registry
-        $subagentTool = new SpawnSubagentTool(
-            parentAgent: $agent,
-            registry: $subagentRegistry,
-            skillLibrary: $skills,
-            parentLlmProvider: $llmProvider,
-            currentDepth: 0,
-            maxDepth: $maxSubagentDepth,
-        );
-
-        return $agent->withTools($tools->merge(new Tools($subagentTool)));
+        return $builder->build();
     }
 }

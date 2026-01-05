@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools\Subagent;
+namespace Cognesy\Addons\Agent\Extras\SelfCritique;
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
@@ -71,7 +71,7 @@ PROMPT;
         $prompt = sprintf(self::CRITIC_PROMPT, $originalTask, $proposedResponse);
 
         // Create minimal subagent with no tools - pure evaluation
-        $subagent = AgentFactory::default(tools: new Tools());
+        $subagent = AgentBuilder::new()->withTools(new Tools())->build();
 
         $subState = AgentState::empty()->withMessages(
             Messages::fromString($prompt)

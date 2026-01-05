@@ -5,12 +5,16 @@ Tool-calling agent with iterative execution, state management, and extensible ca
 ## Quick Start
 
 ```php
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Messages\Messages;
 
-// Create agent with tools
-$agent = AgentFactory::codingAgent(workDir: '/path/to/project');
+// Create agent with tools using builder
+$agent = AgentBuilder::new()
+    ->withBash()
+    ->withFileTools('/path/to/project')
+    ->withTaskPlanning()
+    ->build();
 
 // Initialize state with user message
 $state = AgentState::empty()->withMessages(
@@ -22,27 +26,54 @@ $finalState = $agent->finalStep($state);
 echo $finalState->currentStep()->outputMessages()->toString();
 ```
 
-## Factory Methods
+## Building Agents
 
-| Method | Tools | Use Case |
-|--------|-------|----------|
-| `default(tools, llmPreset)` | Custom | Base agent with provided tools |
-| `withBash(baseDir, llmPreset)` | bash | Shell command execution |
-| `withFileTools(baseDir, llmPreset)` | read_file, write_file, edit_file | File operations |
-| `withTaskPlanning(llmPreset)` | todo_write | Task tracking |
-| `withSkills(library, llmPreset)` | load_skill | Knowledge loading |
-| `codingAgent(workDir, llmPreset)` | All above + spawn_subagent | Full coding assistant |
-
-All factory methods accept an optional `llmPreset` parameter to specify the LLM connection preset from `/config/llm.php`.
+Use `AgentBuilder` for composable agent configuration with fluent API:
 
 ```php
-// Use default LLM
-$agent = AgentFactory::default();
+use Cognesy\Addons\Agent\AgentBuilder;
 
-// Use specific preset
-$agent = AgentFactory::default(llmPreset: 'openai');
-$agent = AgentFactory::withFileTools(baseDir: '/path', llmPreset: 'anthropic');
+// Basic agent with custom tools
+$agent = AgentBuilder::new()
+    ->withTools($tools)
+    ->build();
+
+// Agent with file operations
+$agent = AgentBuilder::new()
+    ->withFileTools('/path/to/project')
+    ->build();
+
+// Full-featured coding agent
+$agent = AgentBuilder::new()
+    ->withBash()
+    ->withFileTools('/project')
+    ->withTaskPlanning()
+    ->withSkills($library)
+    ->withSubagents($registry, 3)
+    ->withMaxSteps(20)
+    ->withMaxTokens(32768)
+    ->withTimeout(300)
+    ->withLlmPreset('anthropic')
+    ->build();
 ```
+
+### Builder Methods
+
+| Method | Description |
+|--------|-------------|
+| `withBash($policy, $baseDir, $timeout)` | Add bash command execution |
+| `withFileTools($baseDir)` | Add file operations (read, write, edit) |
+| `withTaskPlanning()` | Add TodoWrite tool for task tracking |
+| `withSkills($library)` | Add LoadSkill tool with skill library |
+| `withSubagents($registry, $maxDepth)` | Enable spawning subagents |
+| `withTools($tools)` | Add custom tools |
+| `withMaxSteps($n)` | Set maximum execution steps |
+| `withMaxTokens($n)` | Set token usage limit |
+| `withTimeout($seconds)` | Set execution time limit |
+| `withMaxRetries($n)` | Set retry limit on errors |
+| `withLlmPreset($preset)` | Use LLM preset from config |
+| `withDriver($driver)` | Use custom tool-calling driver |
+| `withEvents($eventBus)` | Set event handler |
 
 ## Execution Patterns
 
@@ -133,14 +164,18 @@ $criteria = new ContinuationCriteria(
     new RetryLimit(3, fn($s) => $s->steps(), fn($step) => $step->hasErrors()),
 );
 
-$agent = AgentFactory::default()->withContinuationCriteria(...$criteria->all());
+// Build agent with custom criteria
+$agent = AgentBuilder::new()
+    ->withTools($tools)
+    ->build()
+    ->withContinuationCriteria(...$criteria->all());
 ```
 
 ### State Processors
 Modify state after each step:
+
 ```php
-use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
-use Cognesy\Addons\Agent\StateProcessors\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Extras\Tasks\PersistTasksProcessor;use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 
 $processors = new StateProcessors(
     new AccumulateTokenUsage(),
@@ -148,7 +183,10 @@ $processors = new StateProcessors(
     new PersistTasksProcessor(),
 );
 
-$agent = AgentFactory::default()->with(processors: $processors);
+$agent = AgentBuilder::new()
+    ->withTools($tools)
+    ->build()
+    ->with(processors: $processors);
 ```
 
 ### Custom Driver
@@ -161,7 +199,9 @@ $driver = new ToolCallingDriver(
     model: 'claude-sonnet-4-20250514',
 );
 
-$agent = AgentFactory::default()->withDriver($driver);
+$agent = AgentBuilder::new()
+    ->withDriver($driver)
+    ->build();
 ```
 
 ### Sandbox Policy
@@ -175,7 +215,9 @@ $policy = ExecutionPolicy::in('/project')
     ->withWritablePaths('/project/output')
     ->inheritEnvironment();
 
-$agent = AgentFactory::withBash(policy: $policy);
+$agent = AgentBuilder::new()
+    ->withBash($policy)
+    ->build();
 ```
 
 ## Subagent Types
@@ -188,7 +230,7 @@ $agent = AgentFactory::withBash(policy: $policy);
 
 ```php
 use Cognesy\Addons\Agent\Enums\AgentType;
-use Cognesy\Addons\Agent\Subagents\DefaultAgentCapability;
+use Cognesy\Addons\Agent\Agents\DefaultAgentCapability;
 
 $capability = new DefaultAgentCapability();
 $tools = $capability->toolsFor(AgentType::Explore, $allTools);
@@ -256,7 +298,9 @@ $events->onEvent(AgentStepCompleted::class, function($event) {
     echo "Step completed: " . json_encode($event->payload()) . "\n";
 });
 
-$agent = AgentFactory::default(events: $events);
+$agent = AgentBuilder::new()
+    ->withEvents($events)
+    ->build();
 ```
 
 | Event | Payload |
@@ -336,7 +380,9 @@ class MyTool extends BaseTool
     }
 }
 
-$agent = AgentFactory::default(tools: new Tools(new MyTool()));
+$agent = AgentBuilder::new()
+    ->withTools(new Tools(new MyTool()))
+    ->build();
 ```
 
 ## Directory Structure

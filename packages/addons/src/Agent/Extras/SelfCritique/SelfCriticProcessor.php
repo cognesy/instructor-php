@@ -4,8 +4,8 @@ namespace Cognesy\Addons\Agent\StateProcessors;
 
 use Cognesy\Addons\Agent\Continuation\SelfCriticContinuationCheck;
 use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\SelfCriticResult;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Extras\SelfCriticResult;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;

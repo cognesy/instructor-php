@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
@@ -52,8 +52,10 @@ describe('Agent with BashTool', function () {
         $tools = new Tools($bashTool);
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Run echo "Hello from bash"')
@@ -88,8 +90,10 @@ describe('Agent with BashTool', function () {
         $tools = new Tools($bashTool);
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('What is the current directory?')
@@ -133,8 +137,10 @@ describe('Agent with BashTool', function () {
         $tools = new Tools($bashTool);
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('List files')

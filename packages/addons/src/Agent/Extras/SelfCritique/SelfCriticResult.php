@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Data;
+namespace Cognesy\Addons\Agent\Extras;
 
 use Cognesy\Instructor\Attributes\Description;
 

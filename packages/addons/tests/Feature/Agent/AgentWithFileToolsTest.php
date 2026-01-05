@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Tools\File\EditFileTool;
@@ -54,8 +54,10 @@ describe('Agent with File Tools', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Read the test file')
@@ -97,8 +99,10 @@ describe('Agent with File Tools', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create a new file')
@@ -142,8 +146,10 @@ describe('Agent with File Tools', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Change World to Universe')
@@ -198,8 +204,10 @@ describe('Agent with File Tools', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create, read, and modify a file')

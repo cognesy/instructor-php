@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\Agent\Continuation;
 
 use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\SelfCriticResult;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Extras\SelfCriticResult;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 
 /**

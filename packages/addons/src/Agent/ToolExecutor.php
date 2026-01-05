@@ -4,6 +4,7 @@ namespace Cognesy\Addons\Agent;
 
 use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Collections\Tools;
+use Cognesy\Addons\Agent\Contracts\CanAccessAgentState;
 use Cognesy\Addons\Agent\Contracts\CanAccessAnyState;
 use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
@@ -117,10 +118,17 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     private function prepareTool(string $name, AgentState $state): ToolInterface {
         $tool = $this->tools->get($name);
-        if ($tool instanceof CanAccessAnyState) {
-            // Since CanAccessAnyState extends ToolInterface, withState preserves ToolInterface
-            return $tool->withState($state);
+
+        // Inject agent state if tool implements AgentStateAware
+        if ($tool instanceof CanAccessAgentState) {
+            $tool = $tool->withAgentState($state);
         }
+
+        // Legacy: Also support CanAccessAnyState for backward compatibility
+        if ($tool instanceof CanAccessAnyState) {
+            $tool = $tool->withState($state);
+        }
+
         return $tool;
     }
 
@@ -165,11 +173,11 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
     // EVENTS ////////////////////////////////////////////////////
 
     private function emitToolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {
-        $this->events->dispatch(new ToolCallStarted([
-            'tool' => $toolCall->name(),
-            'args' => $toolCall->args(),
-            'at' => $startedAt->format(DATE_ATOM),
-        ]));
+        $this->events->dispatch(new ToolCallStarted(
+            toolName: $toolCall->name(),
+            toolArgs: $toolCall->args(),
+            startedAt: $startedAt,
+        ));
     }
 
     private function emitToolCallCompleted(AgentExecution $toolExecution): void {
@@ -184,12 +192,12 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             };
         }
 
-        $this->events->dispatch(new ToolCallCompleted([
-            'tool' => $toolExecution->toolCall()->name(),
-            'success' => $toolExecution->result()->isSuccess(),
-            'error' => $error,
-            'startedAt' => $toolExecution->startedAt()->format(DATE_ATOM),
-            'endedAt' => $toolExecution->endedAt()->format(DATE_ATOM),
-        ]));
+        $this->events->dispatch(new ToolCallCompleted(
+            toolName: $toolExecution->toolCall()->name(),
+            isSuccess: $toolExecution->result()->isSuccess(),
+            errorMessage: $error,
+            startedAt: $toolExecution->startedAt(),
+            endedAt: $toolExecution->endedAt(),
+        ));
     }
 }

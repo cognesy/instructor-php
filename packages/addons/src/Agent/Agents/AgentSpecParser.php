@@ -13,11 +13,11 @@ final class SubagentSpecParser
      * Parse a subagent spec from a markdown file.
      *
      * @param string $path Absolute path to .md file
-     * @return SubagentSpec
+     * @return AgentSpec
      * @throws RuntimeException if file cannot be read
      * @throws InvalidArgumentException if format is invalid
      */
-    public function parseMarkdownFile(string $path): SubagentSpec {
+    public function parseMarkdownFile(string $path): AgentSpec {
         $content = @file_get_contents($path);
         if ($content === false) {
             throw new RuntimeException("Failed to read subagent file: {$path}");
@@ -30,10 +30,10 @@ final class SubagentSpecParser
      * Parse a subagent spec from markdown content.
      *
      * @param string $content Markdown with YAML frontmatter
-     * @return SubagentSpec
+     * @return AgentSpec
      * @throws InvalidArgumentException if format is invalid
      */
-    public function parseMarkdown(string $content): SubagentSpec {
+    public function parseMarkdown(string $content): AgentSpec {
         // Extract YAML frontmatter
         if (!preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
             throw new InvalidArgumentException(
@@ -57,10 +57,10 @@ final class SubagentSpecParser
      * Parse a subagent spec from JSON data.
      *
      * @param array<string, mixed> $data JSON-decoded data
-     * @return SubagentSpec
+     * @return AgentSpec
      * @throws InvalidArgumentException if required fields missing
      */
-    public function parseJson(array $data): SubagentSpec {
+    public function parseJson(array $data): AgentSpec {
         // Extract system prompt (support multiple field names)
         $systemPrompt = $data['systemPrompt'] ?? $data['prompt'] ?? $data['system'] ?? '';
         unset($data['systemPrompt'], $data['prompt'], $data['system']);
@@ -103,10 +103,10 @@ final class SubagentSpecParser
      *
      * @param array<string, mixed> $data Parsed frontmatter
      * @param string $systemPrompt System prompt content
-     * @return SubagentSpec
+     * @return AgentSpec
      * @throws InvalidArgumentException if required fields missing or invalid
      */
-    private function createSpec(array $data, string $systemPrompt): SubagentSpec {
+    private function createSpec(array $data, string $systemPrompt): AgentSpec {
         // Required fields
         $name = $data['name'] ?? throw new InvalidArgumentException("Missing 'name' field");
         $description = $data['description'] ?? throw new InvalidArgumentException("Missing 'description' field");
@@ -123,7 +123,7 @@ final class SubagentSpecParser
         // Metadata (everything else)
         $metadata = $data['metadata'] ?? [];
 
-        return new SubagentSpec(
+        return new AgentSpec(
             name: $name,
             description: $description,
             systemPrompt: $systemPrompt,

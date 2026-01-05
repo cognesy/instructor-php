@@ -8,16 +8,18 @@ use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
-use Cognesy\Addons\Agent\Subagents\SubagentSpec;
+use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class SpawnSubagentTool extends BaseTool
 {
+    private static array $subagentStates = [];
+
     private Agent $parentAgent;
-    private SubagentRegistry $registry;
+    private AgentRegistry $registry;
     private ?SkillLibrary $skillLibrary;
     private ?LLMProvider $parentLlmProvider;
     private int $currentDepth;
@@ -25,7 +27,7 @@ class SpawnSubagentTool extends BaseTool
 
     public function __construct(
         Agent $parentAgent,
-        SubagentRegistry $registry,
+        AgentRegistry $registry,
         ?SkillLibrary $skillLibrary = null,
         ?LLMProvider $parentLlmProvider = null,
         int $currentDepth = 0,
@@ -45,36 +47,39 @@ class SpawnSubagentTool extends BaseTool
     }
 
     #[\Override]
-    public function __invoke(mixed ...$args): string {
+    public function __invoke(mixed ...$args): mixed {
         $subagentName = $args['subagent'] ?? $args[0] ?? '';
         $prompt = $args['prompt'] ?? $args[1] ?? '';
 
         // Check depth limit
         if ($this->currentDepth >= $this->maxDepth) {
-            return $this->formatError(
-                "Maximum subagent nesting depth ({$this->maxDepth}) reached. " .
-                "Cannot spawn '{$subagentName}' at depth {$this->currentDepth}."
-            );
+            return "[Subagent Error] Maximum nesting depth ({$this->maxDepth}) reached for '{$subagentName}'.";
         }
 
         // Get subagent spec
         try {
             $spec = $this->registry->get($subagentName);
         } catch (\Throwable $e) {
-            return $this->formatError($e->getMessage());
+            return "[Subagent Error] {$e->getMessage()}";
         }
 
         // Create and run subagent
         $subagent = $this->createSubagent($spec);
-        $initialState = $this->createInitialState($prompt, $spec);
+        // Get parent's execution ID from injected agent state
+        $parentExecutionId = $this->agentState?->agentId ?? 'unknown';
+        $initialState = $this->createInitialState($prompt, $spec, $parentExecutionId);
         $finalState = $this->runSubagent($subagent, $initialState);
 
-        return $this->extractFinalResponse($finalState, $spec->name);
+        // Store full state in metadata for external access (metrics, debugging)
+        $this->storeSubagentState($finalState, $spec->name);
+
+        // Return ONLY the response text to LLM (context isolation!)
+        return $this->extractResponse($finalState, $spec->name);
     }
 
     // SUBAGENT CREATION ////////////////////////////////////////////
 
-    private function createSubagent(SubagentSpec $spec): Agent {
+    private function createSubagent(AgentSpec $spec): Agent {
         // Filter tools based on spec
         $tools = $spec->filterTools($this->parentAgent->tools());
 
@@ -96,23 +101,21 @@ class SpawnSubagentTool extends BaseTool
         // Resolve LLM provider
         $llmProvider = $spec->resolveLlmProvider($this->parentLlmProvider);
 
-        // Create agent
-        return AgentFactory::default(
-            tools: $tools,
-            llmPreset: null, // Don't use preset, use resolved provider directly
-        )->with(
-            driver: $this->parentAgent->driver()->withLLMProvider($llmProvider),
-        );
+        // Create agent (stateless blueprint)
+        return AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver($this->parentAgent->driver()->withLLMProvider($llmProvider))
+            ->build();
     }
 
-    private function createInitialState(string $prompt, SubagentSpec $spec): AgentState {
+    private function createInitialState(string $prompt, AgentSpec $spec, string $parentAgentId): AgentState {
         $systemParts = [$spec->systemPrompt];
 
         // Preload skills into system prompt
         if ($spec->hasSkills() && $this->skillLibrary !== null) {
             $systemParts[] = "\n## Loaded Skills\n";
 
-            foreach ($spec->skills as $skillName) {
+            foreach ($spec->skills ?? [] as $skillName) {
                 $skill = $this->skillLibrary->getSkill($skillName);
                 if ($skill !== null) {
                     $systemParts[] = $skill->render();
@@ -128,42 +131,55 @@ class SpawnSubagentTool extends BaseTool
             ['role' => 'user', 'content' => $prompt],
         ]);
 
-        return AgentState::empty()->withMessages($messages);
+        return AgentState::empty()
+            ->withMessages($messages)
+            ->with(parentAgentId: $parentAgentId);
     }
 
     private function runSubagent(Agent $subagent, AgentState $state): AgentState {
         return $subagent->finalStep($state);
     }
 
-    // RESPONSE FORMATTING //////////////////////////////////////////
+    // STATE STORAGE & EXTRACTION ///////////////////////////////////
 
-    private function extractFinalResponse(AgentState $state, string $name): string {
-        $parts = ["[Subagent: {$name}]"];
-
-        if ($state->status() === AgentStatus::Failed) {
-            $errorMsg = $state->currentStep()?->errorsAsString() ?? 'Unknown error';
-            $parts[] = "Status: Failed";
-            $parts[] = "Error: {$errorMsg}";
-            return implode("\n", $parts);
-        }
-
-        $parts[] = "Status: Completed";
-        $parts[] = "Steps: {$state->stepCount()}";
-
-        $finalStep = $state->currentStep();
-        if ($finalStep !== null) {
-            $response = $finalStep->outputMessages()->toString();
-            if ($response !== '') {
-                $parts[] = "";
-                $parts[] = $response;
-            }
-        }
-
-        return implode("\n", $parts);
+    private function storeSubagentState(AgentState $state, string $name): void {
+        self::$subagentStates[] = [
+            'name' => $name,
+            'state' => $state,
+            'timestamp' => time(),
+        ];
     }
 
-    private function formatError(string $message): string {
-        return "[Subagent Error]\n{$message}";
+    public static function getSubagentStates(): array {
+        return self::$subagentStates;
+    }
+
+    public static function clearSubagentStates(): void {
+        self::$subagentStates = [];
+    }
+
+    private function extractResponse(AgentState $state, string $name): string {
+        if ($state->status() === AgentStatus::Failed) {
+            $errorMsg = $state->currentStep()?->errorsAsString() ?? 'Unknown error';
+            return "[Subagent: {$name}] Failed: {$errorMsg}";
+        }
+
+        $finalStep = $state->currentStep();
+        $response = $finalStep?->outputMessages()->toString() ?? '';
+
+        if ($response === '') {
+            return "[Subagent: {$name}] No response";
+        }
+
+        // Extract only first line to ensure context isolation
+        $lines = explode("\n", trim($response));
+        $firstLine = trim($lines[0]);
+
+        // Remove markdown formatting if present
+        $firstLine = preg_replace('/^\*\*|\*\*$/', '', $firstLine) ?? $firstLine;
+        $firstLine = preg_replace('/^#+\s*/', '', $firstLine) ?? $firstLine;
+
+        return "[Subagent: {$name}] {$firstLine}";
     }
 
     // TOOL SCHEMA //////////////////////////////////////////////////
@@ -212,7 +228,7 @@ class SpawnSubagentTool extends BaseTool
 
     // HELPERS //////////////////////////////////////////////////////
 
-    private function buildDescription(SubagentRegistry $registry): string {
+    private function buildDescription(AgentRegistry $registry): string {
         $count = $registry->count();
 
         if ($count === 0) {

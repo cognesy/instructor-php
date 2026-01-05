@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
-use Cognesy\Addons\Agent\StateProcessors\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Extras\Tasks\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoWriteTool;
 use Cognesy\Addons\Agent\Tools\BashTool;
 use Cognesy\Addons\Agent\Tools\File\EditFileTool;
 use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
 use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
-use Cognesy\Addons\Agent\Tools\TodoWriteTool;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -70,8 +70,10 @@ describe('Coding Agent Workflow', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create a config file and set debug to true')
@@ -122,8 +124,10 @@ describe('Coding Agent Workflow', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Check PHP version and document it')
@@ -158,11 +162,11 @@ describe('Coding Agent Workflow', function () {
         $processors = new StateProcessors(new PersistTasksProcessor());
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(
-                driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm),
-                processors: $processors,
-            );
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build()
+            ->with(processors: $processors);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create some tasks')
@@ -197,8 +201,10 @@ describe('Coding Agent Workflow', function () {
         $tools = new Tools(WriteFileTool::inDirectory($this->tempDir));
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Write a file')
@@ -260,8 +266,10 @@ describe('Coding Agent Workflow', function () {
         );
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create two files and verify them')
@@ -294,8 +302,10 @@ describe('Coding Agent Workflow', function () {
         $tools = new Tools(ReadFileTool::inDirectory($this->tempDir));
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentFactory::default(tools: $tools)
-            ->with(driver: new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm));
+        $agent = AgentBuilder::new()
+            ->withTools($tools)
+            ->withDriver(new \Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Read the test file')

@@ -14,7 +14,9 @@ use Cognesy\Addons\Agent\Events\AgentFinished;
 use Cognesy\Addons\Agent\Events\AgentStateUpdated;
 use Cognesy\Addons\Agent\Events\AgentStepCompleted;
 use Cognesy\Addons\Agent\Events\AgentStepStarted;
+use Cognesy\Addons\Agent\Events\TokenUsageReported;
 use Cognesy\Addons\Agent\Exceptions\AgentException;
+use DateTimeImmutable;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
@@ -90,7 +92,9 @@ class Agent extends StepByStep
     protected function applyStep(object $state, object $nextStep): AgentState {
         assert($state instanceof AgentState);
         assert($nextStep instanceof AgentStep);
+        // Mark when step execution started (for duration calculation)
         $newState = $state
+            ->markStepStarted()
             ->withAddedStep($nextStep)
             ->withCurrentStep($nextStep);
         $this->emitAgentStateUpdated($newState);
@@ -211,47 +215,76 @@ class Agent extends StepByStep
     // EVENTS ////////////////////////////////////////////
 
     private function emitAgentFinished(AgentState $state) : void {
-        $this->events->dispatch(new AgentFinished([
-            'status' => $state->status()->value,
-            'steps' => $state->stepCount(),
-            'usage' => $state->usage()->toArray(),
-            'errors' => $state->currentStep()?->errorsAsString(),
-        ]));
+        $this->events->dispatch(new AgentFinished(
+            agentId: $state->agentId,
+            parentAgentId: $state->parentAgentId,
+            status: $state->status(),
+            totalSteps: $state->stepCount(),
+            totalUsage: $state->usage(),
+            errors: $state->currentStep()?->errorsAsString(),
+        ));
     }
 
     private function emitAgentStepStarted(AgentState $state) : void {
-        $this->events->dispatch(new AgentStepStarted([
-            'step' => $state->stepCount() + 1,
-            'messages' => $state->messages()->count(),
-            'tools' => count($this->tools->names()),
-        ]));
+        $this->events->dispatch(new AgentStepStarted(
+            agentId: $state->agentId,
+            parentAgentId: $state->parentAgentId,
+            stepNumber: $state->stepCount() + 1,
+            messageCount: $state->messages()->count(),
+            availableTools: count($this->tools->names()),
+        ));
     }
 
     private function emitAgentStepCompleted(AgentState $state) : void {
-        $this->events->dispatch(new AgentStepCompleted([
-            'step' => $state->stepCount(),
-            'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
-            'errors' => count($state->currentStep()?->errors() ?? []),
-            'errorMessages' => $state->currentStep()?->errorsAsString() ?? '',
-            'usage' => $state->currentStep()?->usage()->toArray() ?? [],
-            'finishReason' => $state->currentStep()?->finishReason()?->value ?? null,
-        ]));
+        $usage = $state->currentStep()?->usage() ?? new \Cognesy\Polyglot\Inference\Data\Usage(0, 0);
+
+        $this->events->dispatch(new AgentStepCompleted(
+            agentId: $state->agentId,
+            parentAgentId: $state->parentAgentId,
+            stepNumber: $state->stepCount(),
+            hasToolCalls: $state->currentStep()?->hasToolCalls() ?? false,
+            errorCount: count($state->currentStep()?->errors() ?? []),
+            errorMessages: $state->currentStep()?->errorsAsString() ?? '',
+            usage: $usage,
+            finishReason: $state->currentStep()?->finishReason(),
+            startedAt: $state->currentStepStartedAt ?? new DateTimeImmutable(),
+        ));
+
+        // Report token usage
+        if ($usage->total() > 0) {
+            $this->events->dispatch(new TokenUsageReported(
+                agentId: $state->agentId,
+                parentAgentId: $state->parentAgentId,
+                operation: 'step',
+                usage: $usage,
+                context: [
+                    'step' => $state->stepCount(),
+                    'hasToolCalls' => $state->currentStep()?->hasToolCalls() ?? false,
+                ],
+            ));
+        }
     }
 
     private function emitAgentStateUpdated(AgentState $state) : void {
-        $this->events->dispatch(new AgentStateUpdated([
-            'state' => $state->toArray(),
-            'step' => $state->currentStep()?->toArray() ?? [],
-        ]));
+        $this->events->dispatch(new AgentStateUpdated(
+            agentId: $state->agentId,
+            parentAgentId: $state->parentAgentId,
+            status: $state->status(),
+            stepCount: $state->stepCount(),
+            stateSnapshot: $state->toArray(),
+            currentStepSnapshot: $state->currentStep()?->toArray() ?? [],
+        ));
     }
 
     private function emitAgentFailed(AgentState $failedState, AgentException $exception) : void {
-        $this->events->dispatch(new AgentFailed([
-            'error' => $exception->getMessage(),
-            'status' => $failedState->status()->value,
-            'steps' => $failedState->stepCount(),
-            'usage' => $failedState->usage()->toArray(),
-            'errors' => $failedState->currentStep()?->errorsAsString(),
-        ]));
+        $this->events->dispatch(new AgentFailed(
+            agentId: $failedState->agentId,
+            parentAgentId: $failedState->parentAgentId,
+            exception: $exception,
+            status: $failedState->status(),
+            stepsCompleted: $failedState->stepCount(),
+            totalUsage: $failedState->usage(),
+            errors: $failedState->currentStep()?->errorsAsString(),
+        ));
     }
 }

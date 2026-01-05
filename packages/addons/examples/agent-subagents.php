@@ -6,19 +6,19 @@
  * This example demonstrates how to define and use subagents with the SubagentRegistry.
  */
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
-use Cognesy\Addons\Agent\Subagents\SubagentSpec;
+use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Messages\Messages;
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
 // Create subagent registry
-$registry = new SubagentRegistry();
+$registry = new AgentRegistry();
 
 // Register code reviewer subagent
-$registry->register(new SubagentSpec(
+$registry->register(new AgentSpec(
     name: 'code-reviewer',
     description: 'Expert code reviewer focusing on security and quality',
     systemPrompt: <<<'PROMPT'
@@ -53,7 +53,7 @@ PROMPT,
 ));
 
 // Register test generator subagent
-$registry->register(new SubagentSpec(
+$registry->register(new AgentSpec(
     name: 'test-generator',
     description: 'Generate comprehensive Pest tests for PHP code',
     systemPrompt: <<<'PROMPT'
@@ -86,7 +86,7 @@ PROMPT,
 ));
 
 // Register API designer subagent
-$registry->register(new SubagentSpec(
+$registry->register(new AgentSpec(
     name: 'api-designer',
     description: 'Design RESTful API endpoints and data structures',
     systemPrompt: <<<'PROMPT'
@@ -113,12 +113,13 @@ PROMPT,
 ));
 
 // Create coding agent with registry
-$agent = AgentFactory::codingAgent(
-    workDir: __DIR__,
-    subagentRegistry: $registry,
-    maxSubagentDepth: 3,  // Allow 3 levels of nesting
-    llmPreset: 'anthropic',
-);
+$agent = AgentBuilder::new()
+    ->withBash()
+    ->withFileTools(__DIR__)
+    ->withTaskPlanning()
+    ->withSubagents($registry, 3)  // Allow 3 levels of nesting
+    ->withLlmPreset('anthropic')
+    ->build();
 
 // Example 1: Use code reviewer
 echo "=== Example 1: Code Review ===\n\n";

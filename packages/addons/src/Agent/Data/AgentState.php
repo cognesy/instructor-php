@@ -18,6 +18,8 @@ use Cognesy\Addons\Agent\State\HandlesAgentSteps;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
+use Cognesy\Utils\Uuid;
+use DateTimeImmutable;
 
 /** @implements HasSteps<AgentStep> */
 final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadata, HasUsage, HasStateInfo
@@ -30,6 +32,10 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     private AgentStatus $status;
 
+    public string $agentId;
+    public ?string $parentAgentId;
+    public ?DateTimeImmutable $currentStepStartedAt;
+
     public function __construct(
         ?AgentStatus        $status = null,
         ?AgentSteps         $steps = null,
@@ -39,7 +45,14 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         ?Usage              $usage = null,
         ?MessageStore       $store = null,
         ?StateInfo          $stateInfo = null,
+        ?string             $agentId = null,
+        ?string             $parentAgentId = null,
+        ?DateTimeImmutable  $currentStepStartedAt = null,
     ) {
+        $this->agentId = $agentId ?? Uuid::uuid4();
+        $this->parentAgentId = $parentAgentId;
+        $this->currentStepStartedAt = $currentStepStartedAt;
+
         $this->status = $status ?? AgentStatus::InProgress;
         $this->steps = $steps ?? new AgentSteps();
         $this->currentStep = $currentStep ?? null;
@@ -64,14 +77,17 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?AgentStatus  $status = null,
-        ?AgentSteps   $steps = null,
-        ?AgentStep    $currentStep = null,
+        ?AgentStatus        $status = null,
+        ?AgentSteps         $steps = null,
+        ?AgentStep          $currentStep = null,
 
-        ?Metadata     $variables = null,
-        ?Usage        $usage = null,
-        ?MessageStore $store = null,
-        ?StateInfo    $stateInfo = null,
+        ?Metadata           $variables = null,
+        ?Usage              $usage = null,
+        ?MessageStore       $store = null,
+        ?StateInfo          $stateInfo = null,
+        ?string             $agentId = null,
+        ?string             $parentAgentId = null,
+        ?DateTimeImmutable  $currentStepStartedAt = null,
     ): self {
         return new self(
             status: $status ?? $this->status,
@@ -81,11 +97,22 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             usage: $usage ?? $this->usage,
             store: $store ?? $this->store,
             stateInfo: $stateInfo ?? $this->stateInfo->touch(),
+            agentId: $agentId ?? $this->agentId,
+            parentAgentId: $parentAgentId ?? $this->parentAgentId,
+            currentStepStartedAt: $currentStepStartedAt ?? $this->currentStepStartedAt,
         );
     }
 
     public function withStatus(AgentStatus $status) : self {
         return $this->with(status: $status);
+    }
+
+    public function withCurrentStepStartedAt(?DateTimeImmutable $startedAt) : self {
+        return $this->with(currentStepStartedAt: $startedAt);
+    }
+
+    public function markStepStarted() : self {
+        return $this->with(currentStepStartedAt: new DateTimeImmutable());
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -98,6 +125,9 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     public function toArray() : array {
         return [
+            'agentId' => $this->agentId,
+            'parentAgentId' => $this->parentAgentId,
+            'currentStepStartedAt' => $this->currentStepStartedAt?->format(DATE_ATOM),
             'metadata' => $this->metadata->toArray(),
             'usage' => $this->usage->toArray(),
             'messageStore' => $this->store->toArray(),
@@ -118,6 +148,9 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : new Usage(),
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : new MessageStore(),
             stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
+            agentId: $data['agentId'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
+            currentStepStartedAt: isset($data['currentStepStartedAt']) ? new DateTimeImmutable($data['currentStepStartedAt']) : null,
         );
     }
 }

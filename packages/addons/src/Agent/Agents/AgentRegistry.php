@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 final class SubagentRegistry
 {
-    /** @var array<string, SubagentSpec> */
+    /** @var array<string, AgentSpec> */
     private array $specs = [];
 
     private SubagentSpecParser $parser;
@@ -22,11 +22,11 @@ final class SubagentRegistry
     /**
      * Register a subagent spec.
      *
-     * @param SubagentSpec $spec Subagent specification
+     * @param AgentSpec $spec Subagent specification
      * @param Tools|null $parentTools Optional parent tools for validation
      * @throws InvalidArgumentException if validation fails
      */
-    public function register(SubagentSpec $spec, ?Tools $parentTools = null): void {
+    public function register(AgentSpec $spec, ?Tools $parentTools = null): void {
         // Validate tools if parent tools provided
         if ($parentTools !== null) {
             $errors = $spec->validate($parentTools);
@@ -43,10 +43,10 @@ final class SubagentRegistry
     /**
      * Register multiple subagent specs.
      *
-     * @param SubagentSpec ...$specs
+     * @param AgentSpec ...$specs
      * @param Tools|null $parentTools Optional parent tools for validation
      */
-    public function registerMultiple(?Tools $parentTools = null, SubagentSpec ...$specs): void {
+    public function registerMultiple(?Tools $parentTools = null, AgentSpec ...$specs): void {
         foreach ($specs as $spec) {
             $this->register($spec, $parentTools);
         }
@@ -59,7 +59,7 @@ final class SubagentRegistry
      *
      * @throws SubagentNotFoundException if subagent not found
      */
-    public function get(string $name): SubagentSpec {
+    public function get(string $name): AgentSpec {
         if (!$this->has($name)) {
             throw new SubagentNotFoundException(
                 "Subagent '{$name}' not found. Available: " . implode(', ', $this->names())
@@ -78,7 +78,7 @@ final class SubagentRegistry
     /**
      * Get all registered subagent specs.
      *
-     * @return array<string, SubagentSpec>
+     * @return array<string, AgentSpec>
      */
     public function all(): array {
         return $this->specs;

@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Agent\Tools\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Tools\BaseTool;
@@ -12,7 +12,6 @@ use Cognesy\Messages\Messages;
 
 class ResearchSubagentTool extends BaseTool
 {
-    private Agent $parentAgent;
     private string $baseDir;
 
     public function __construct(Agent $parentAgent, string $baseDir) {
@@ -20,7 +19,6 @@ class ResearchSubagentTool extends BaseTool
             name: 'research_subagent',
             description: 'Spawn a subagent to research files and return a summary. Use for reading and analyzing file contents.',
         );
-        $this->parentAgent = $parentAgent;
         $this->baseDir = rtrim($baseDir, '/');
     }
 
@@ -42,7 +40,7 @@ class ResearchSubagentTool extends BaseTool
             ReadFileTool::inDirectory($this->baseDir),
         );
 
-        $subagent = AgentFactory::default(tools: $subagentTools);
+        $subagent = AgentBuilder::new()->withTools($subagentTools)->build();
 
         // Build context with file list
         $fileList = is_array($files) ? implode(', ', $files) : $files;

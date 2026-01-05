@@ -2,16 +2,19 @@
 
 namespace Cognesy\Addons\Agent\Tools;
 
+use Cognesy\Addons\Agent\Contracts\CanAccessAgentState;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
+use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
-abstract class BaseTool implements ToolInterface
+abstract class BaseTool implements ToolInterface, CanAccessAgentState
 {
     protected string $name;
     protected string $description;
     protected ?array $cachedParamsJsonSchema = null;
+    protected ?AgentState $agentState = null;
 
     public function __construct(
         ?string $name = null,
@@ -19,6 +22,17 @@ abstract class BaseTool implements ToolInterface
     ) {
         $this->name = $name ?? static::class;
         $this->description = $description ?? '';
+    }
+
+    /**
+     * Inject the current agent execution state.
+     * Tools that need state access can use $this->agentState.
+     */
+    #[\Override]
+    public function withAgentState(AgentState $state): static {
+        $clone = clone $this;
+        $clone->agentState = $state;
+        return $clone;
     }
 
     /**

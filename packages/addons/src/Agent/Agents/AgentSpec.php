@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use InvalidArgumentException;
 
-final readonly class SubagentSpec
+final readonly class AgentSpec
 {
     /**
      * @param string $name Unique identifier (lowercase, hyphens)
