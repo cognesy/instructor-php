@@ -43,22 +43,20 @@ use Cognesy\Messages\Messages;
 $workDir = dirname(__DIR__, 3);
 
 // Register specialized subagents
-$registry = AgentRegistry::empty();
+$registry = new AgentRegistry();
 
-$registry = $registry->with(AgentSpec::simple(
+$registry->register(new AgentSpec(
     name: 'reader',
-    role: 'You read files and extract relevant information',
-    tools: Tools::list([
-        new ReadFileTool($workDir),
-    ])
+    description: 'Reads files and extracts relevant information',
+    systemPrompt: 'You read files and extract relevant information. Be thorough and precise.',
+    tools: ['read_file'],
 ));
 
-$registry = $registry->with(AgentSpec::simple(
+$registry->register(new AgentSpec(
     name: 'searcher',
-    role: 'You search for files matching patterns',
-    tools: Tools::list([
-        new SearchFilesTool($workDir),
-    ])
+    description: 'Searches for files matching patterns',
+    systemPrompt: 'You search for files matching patterns. Use glob patterns effectively.',
+    tools: ['search_files'],
 ));
 
 // Build main orchestration agent

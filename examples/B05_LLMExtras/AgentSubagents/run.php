@@ -41,20 +41,22 @@ use Cognesy\Messages\Messages;
 $workDir = dirname(__DIR__, 3);
 
 // Create subagent registry
-$registry = AgentRegistry::empty();
+$registry = new AgentRegistry();
 
 // Register code reviewer subagent
-$registry = $registry->with(AgentSpec::simple(
+$registry->register(new AgentSpec(
     name: 'reviewer',
-    role: 'You review code files and identify issues. Read the file and provide a concise assessment.',
-    tools: ['read_file']
+    description: 'Reviews code files and identifies issues',
+    systemPrompt: 'You review code files and identify issues. Read the file and provide a concise assessment focusing on code quality, potential bugs, and improvements.',
+    tools: ['read_file'],
 ));
 
 // Register documentation generator subagent
-$registry = $registry->with(AgentSpec::simple(
+$registry->register(new AgentSpec(
     name: 'documenter',
-    role: 'You generate documentation for code. Read the file and create brief documentation.',
-    tools: ['read_file']
+    description: 'Generates documentation for code',
+    systemPrompt: 'You generate documentation for code. Read the file and create brief, clear documentation explaining what the code does and how to use it.',
+    tools: ['read_file'],
 ));
 
 // Build main orchestration agent
