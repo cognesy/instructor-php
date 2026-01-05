@@ -2,7 +2,12 @@
 
 namespace Cognesy\Messages;
 
-final readonly class MessageList
+use Countable;
+use IteratorAggregate;
+use ArrayIterator;
+use Traversable;
+
+final readonly class MessageList implements Countable, IteratorAggregate
 {
     /** @var Message[] */
     private array $messages;
@@ -18,6 +23,10 @@ final readonly class MessageList
     /** @param Message[] $messages */
     public static function fromArray(array $messages): self {
         return new self(...$messages);
+    }
+
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->messages);
     }
 
     /** @return Message[] */

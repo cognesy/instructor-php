@@ -3,6 +3,9 @@
 namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Messages;
+use Countable;
+use IteratorAggregate;
+use Traversable;
 
 /**
  * Represents a distinct named section of message sequence.
@@ -15,7 +18,7 @@ use Cognesy\Messages\Messages;
  * The Section is initialized with a name, description, and metadata,
  * and determines its template status during instantiation.
  */
-final readonly class Section
+final readonly class Section implements Countable, IteratorAggregate
 {
     public string $name;
     public Messages $messages;
@@ -26,6 +29,14 @@ final readonly class Section
     ) {
         $this->name = $name;
         $this->messages = $messages ?? Messages::empty();
+    }
+
+    public function getIterator(): Traversable {
+        return $this->messages->getIterator();
+    }
+
+    public function count(): int {
+        return $this->messages->count();
     }
 
     // CONSTRUCTORS ///////////////////////////////////////////
@@ -72,12 +83,9 @@ final readonly class Section
     }
 
     public function appendContentField(string $key, mixed $value) : Section {
-        $lastMessage = $this->messages->last();
-        $newContent = $lastMessage->content()->appendContentField($key, $value);
-        $newMessage = $lastMessage->withContent($newContent);
         return new static(
             name: $this->name,
-            messages: $this->messages->removeTail()->appendMessage($newMessage),
+            messages: $this->messages->appendContentField($key, $value),
         );
     }
 

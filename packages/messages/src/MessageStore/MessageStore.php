@@ -6,6 +6,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\Operators\ParameterOperator;
 use Cognesy\Messages\MessageStore\Operators\SectionOperator;
+use Cognesy\Utils\Metadata;
 
 /**
  * MessageStore represents a library of message sequences with multiple sections and messages.
@@ -19,14 +20,14 @@ use Cognesy\Messages\MessageStore\Operators\SectionOperator;
 final readonly class MessageStore
 {
     public Sections $sections;
-    public MessageStoreParameters $parameters;
+    public Metadata $parameters;
 
     public function __construct(
         ?Sections $sections = null,
-        ?MessageStoreParameters $parameters = null,
+        ?Metadata $parameters = null,
     ) {
         $this->sections = $sections ?? new Sections();
-        $this->parameters = $parameters ?? new MessageStoreParameters();
+        $this->parameters = $parameters ?? new Metadata();
     }
 
     // CONSTRUCTORS ///////////////////////////////////////////
@@ -46,7 +47,7 @@ final readonly class MessageStore
 
     public static function fromArray(array $data) : MessageStore {
         $sections = isset($data['sections']) ? Sections::fromArray($data['sections']) : new Sections();
-        $parameters = isset($data['parameters']) ? MessageStoreParameters::fromArray($data['parameters']) : new MessageStoreParameters();
+        $parameters = isset($data['parameters']) ? Metadata::fromArray($data['parameters']) : new Metadata();
         return new MessageStore(
             sections: $sections,
             parameters: $parameters,
@@ -68,6 +69,37 @@ final readonly class MessageStore
         );
     }
 
+    public function setSection(Section $section): MessageStore {
+        return new MessageStore(
+            sections: $this->sections->set($section),
+            parameters: $this->parameters,
+        );
+    }
+
+    public function removeSection(string $name): MessageStore {
+        if (!$this->sections->has($name)) {
+            return $this;
+        }
+        return new MessageStore(
+            sections: $this->sections->filter(fn($section) => $section->name !== $name),
+            parameters: $this->parameters,
+        );
+    }
+
+    public function merge(MessageStore $other): MessageStore {
+        return new MessageStore(
+            sections: $this->sections->merge($other->sections()),
+            parameters: $this->parameters->withMergedData($other->parameters->toArray()),
+        );
+    }
+
+    public function withoutEmpty(): MessageStore {
+        return new MessageStore(
+            sections: $this->sections->withoutEmpty(),
+            parameters: $this->parameters,
+        );
+    }
+
     // ACCESSORS ////////////////////////////////////////////////
 
     public function sections() : Sections {
@@ -81,18 +113,12 @@ final readonly class MessageStore
      */
     public function select(string|array $sections = []) : MessageStore {
         $names = match (true) {
-            empty($sections) => $this->sections->map(fn($section) => $section->name),
+            empty($sections) => [],
             is_string($sections) => [$sections],
             is_array($sections) => $sections,
         };
-        $selectedSections = [];
-        foreach ($names as $sectionName) {
-            if ($this->section($sectionName)->exists()) {
-                $selectedSections[] = $this->section($sectionName)->get();
-            }
-        }
         return new MessageStore(
-            sections: new Sections(...$selectedSections),
+            sections: $this->sections->select($names),
             parameters: $this->parameters,
         );
     }

@@ -5,8 +5,12 @@ namespace Cognesy\Messages\MessageStore\Collections;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Section;
 use InvalidArgumentException;
+use Countable;
+use IteratorAggregate;
+use ArrayIterator;
+use Traversable;
 
-final readonly class Sections
+final readonly class Sections implements Countable, IteratorAggregate
 {
     private array $sections;
 
@@ -24,6 +28,10 @@ final readonly class Sections
         return new self(...$sections);
     }
 
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->sections);
+    }
+
     // MUTATORS /////////////////////////////////////////////////
 
     public function add(Section ...$sections): Sections {
@@ -33,6 +41,41 @@ final readonly class Sections
             }
         }
         return new Sections(...array_merge($this->sections, $sections));
+    }
+
+    public function set(Section ...$sections): Sections {
+        $newSections = $this->sections;
+        foreach ($sections as $section) {
+            $found = false;
+            foreach ($newSections as $key => $existing) {
+                if ($existing->name === $section->name) {
+                    $newSections[$key] = $section;
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $newSections[] = $section;
+            }
+        }
+        return new Sections(...$newSections);
+    }
+
+    /**
+     * @param string[] $names
+     */
+    public function select(array $names): Sections {
+        if (empty($names)) {
+            return new Sections(...$this->sections);
+        }
+        $selected = [];
+        foreach ($names as $name) {
+            $section = $this->get($name);
+            if ($section !== null) {
+                $selected[] = $section;
+            }
+        }
+        return new Sections(...$selected);
     }
 
     /**
@@ -66,21 +109,36 @@ final readonly class Sections
         return $this->sections;
     }
 
-    /**
-     * @return iterable<Section>
-     */
-    public function each(): iterable {
-        foreach ($this->sections as $section) {
-            yield $section;
-        }
-    }
-
     public function count(): int {
         return count($this->sections);
     }
 
     public function names(): array {
         return $this->map(fn(Section $section) => $section->name);
+    }
+
+    public function merge(Sections $other): Sections {
+        $merged = $this;
+        foreach ($other as $section) {
+            $existing = $merged->get($section->name);
+            if ($existing === null) {
+                $merged = $merged->set($section);
+            } else {
+                $merged = $merged->set($existing->appendMessages($section->messages()));
+            }
+        }
+        return $merged;
+    }
+
+    public function withoutEmpty(): Sections {
+        $nonEmpty = [];
+        foreach ($this->sections as $section) {
+            $trimmed = $section->withoutEmptyMessages();
+            if (!$trimmed->isEmpty()) {
+                $nonEmpty[] = $trimmed;
+            }
+        }
+        return new Sections(...$nonEmpty);
     }
 
     // CONVERSIONS and TRANSFORMATIONS //////////////////////////
@@ -112,15 +170,14 @@ final readonly class Sections
     }
 
     public function toMessages(): Messages {
-        $messages = Messages::empty();
+        $allMessages = [];
         foreach ($this->sections as $section) {
-            foreach($section->messages()->each() as $message) {
-                if ($message->isEmpty()) {
-                    continue;
+            foreach ($section as $message) {
+                if (!$message->isEmpty()) {
+                    $allMessages[] = $message->clone();
                 }
-                $messages = $messages->appendMessage($message->clone());
             }
         }
-        return $messages;
+        return new Messages(...$allMessages);
     }
 }

@@ -20,7 +20,7 @@ final class MessagesInput
         foreach ($messages as $message) {
             $newMessages[] = match (true) {
                 is_string($message) => Message::fromString($message),
-                Message::hasRoleAndContent($message) => MessageInput::fromArray($message),
+                Message::isMessage($message) => MessageInput::fromArray($message),
                 default => throw new InvalidArgumentException(
                     'Invalid message array - missing role or content keys'
                 ),
@@ -30,14 +30,14 @@ final class MessagesInput
     }
 
     public static function fromAnyArray(array $messages): Messages {
-        if (Message::hasRoleAndContent($messages)) {
+        if (Message::isMessage($messages)) {
             return self::fromArray([$messages]);
         }
         $newMessages = [];
         foreach ($messages as $message) {
             $newMessages[] = match (true) {
                 is_array($message) => match (true) {
-                    Message::hasRoleAndContent($message) => MessageInput::fromArray($message),
+                    Message::isMessage($message) => MessageInput::fromArray($message),
                     default => throw new InvalidArgumentException(
                         'Invalid message array - missing role or content keys'
                     ),

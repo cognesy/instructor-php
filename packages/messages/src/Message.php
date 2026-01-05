@@ -77,23 +77,23 @@ final readonly class Message
     }
 
     public static function asUser(string|array|Message $message, string $name = ''): static {
-        return static::fromAnyWithRole($message, MessageRole::User, $name);
+        return MessageInput::fromAny($message, MessageRole::User, $name);
     }
 
     public static function asAssistant(string|array|Message $message, string $name = ''): static {
-        return static::fromAnyWithRole($message, MessageRole::Assistant, $name);
+        return MessageInput::fromAny($message, MessageRole::Assistant, $name);
     }
 
     public static function asSystem(string|array|Message $message, string $name = ''): static {
-        return static::fromAnyWithRole($message, MessageRole::System, $name);
+        return MessageInput::fromAny($message, MessageRole::System, $name);
     }
 
     public static function asDeveloper(string|array|Message $message, string $name = ''): static {
-        return static::fromAnyWithRole($message, MessageRole::Developer, $name);
+        return MessageInput::fromAny($message, MessageRole::Developer, $name);
     }
 
     public static function asTool(string|array|Message $message, string $name = ''): static {
-        return static::fromAnyWithRole($message, MessageRole::Tool, $name);
+        return MessageInput::fromAny($message, MessageRole::Tool, $name);
     }
 
     public static function fromAny(
@@ -109,7 +109,7 @@ final readonly class Message
         string $role = self::DEFAULT_ROLE,
         string $name = '',
     ): static {
-        return new static(role: $role, content: $content, name: $name);
+        return MessageInput::fromAny($content, $role, $name);
     }
 
     public static function fromArray(array $message): static {
@@ -117,17 +117,11 @@ final readonly class Message
     }
 
     public static function fromContent(Content $content, string|MessageRole|null $role = null): static {
-        return new static(
-            role: $role,
-            content: $content,
-        );
+        return MessageInput::fromAny($content, $role);
     }
 
     public static function fromContentPart(ContentPart $part, string|MessageRole|null $role = null): static {
-        return new static(
-            role: $role,
-            content: Content::empty()->addContentPart($part),
-        );
+        return MessageInput::fromAny($part, $role);
     }
 
     public static function fromInput(string|array|object $input, string $role = ''): static {
@@ -145,14 +139,6 @@ final readonly class Message
             name: $this->name,
             metadata: $this->metadata->toArray(),
         );
-    }
-
-    private static function fromAnyWithRole(
-        string|array|Message $message,
-        MessageRole $role,
-        string $name = '',
-    ): static {
-        return static::fromAny($message, $role, $name);
     }
 
     // ACCESSORS ///////////////////////////////////////
@@ -292,43 +278,5 @@ final readonly class Message
     public static function becomesComposite(array $message): bool {
         return is_array($message['content']);
     }
-
-    public static function hasRoleAndContent(array $message): bool {
-        return isset($message['role']) && (
-            isset($message['content']) || isset($message['_metadata'])
-        );
-    }
 }
 
-//    private static function isArrayOfMessageArrays(array $array): bool {
-//        return count($array) > 0 && array_reduce(
-//                $array,
-//                fn(bool $carry, $item) => $carry && is_array($item) && Message::isMessage($item),
-//                true,
-//            );
-//    }
-//
-//    private static function isArrayOfContent(array $array): bool {
-//        return count($array) > 0 && array_reduce(
-//                $array,
-//                fn(bool $carry, $item) => $carry && ($item instanceof Content),
-//                true,
-//            );
-//    }
-//
-//    private static function isArrayOfMessages(array $array): bool {
-//        return count($array) > 0 && array_reduce(
-//                $array,
-//                fn(bool $carry, $item) => $carry && ($item instanceof Message),
-//                true,
-//            );
-//    }
-//
-//    private static function isArrayOfContentParts(array $array): bool {
-//        return count($array) > 0 && array_reduce(
-//                $array,
-//                fn(bool $carry, $item) => $carry && ($item instanceof ContentPart),
-//                true,
-//            );
-//    }
-//

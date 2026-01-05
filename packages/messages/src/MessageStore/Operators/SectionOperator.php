@@ -71,12 +71,9 @@ final readonly class SectionOperator
         if ($messages->isEmpty()) {
             return $this->store;
         }
-        $storeWithSection = $this->store->withSection($this->sectionName);
-        $section = $storeWithSection
-            ->section($this->sectionName)
-            ->get()
-            ->appendMessages($messages);
-        return $this->withStore($storeWithSection)->setSection($section);
+        return $this->store->setSection(
+            $this->get()->appendMessages($messages)
+        );
     }
 
     public function setSection(Section $section) : MessageStore {
@@ -85,41 +82,20 @@ final readonly class SectionOperator
             ($section->name !== $this->sectionName) => new Section($this->sectionName, messages: $section->messages()),
             default => $section,
         };
-        // rebuild the list of sections with new section replacing the old one
-        $newSections = new Sections(...$this->store->sections()->map(
-            fn($section) => $section->name === $this->sectionName ? $newSection : $section
-        ));
-        return new MessageStore(
-            sections: $newSections,
-            parameters: $this->store->parameters,
-        );
+        return $this->store->setSection($newSection);
     }
 
     public function setMessages(array|Message|Messages $messages): MessageStore {
         $messages = Messages::fromAny($messages);
         $section = new Section($this->sectionName, messages: $messages);
-        $storeWithSection = $this->store->withSection($this->sectionName);
-        return $this->withStore($storeWithSection)->setSection($section);
+        return $this->store->setSection($section);
     }
 
     public function remove(): MessageStore {
-        if (!$this->store->section($this->sectionName)->exists()) {
-            return $this->store;
-        }
-        $newSections = $this->store->sections()->filter(fn($section) => $section->name !== $this->sectionName);
-        return new MessageStore(
-            sections: $newSections,
-            parameters: $this->store->parameters,
-        );
+        return $this->store->removeSection($this->sectionName);
     }
 
     public function clear(): MessageStore {
         return $this->setMessages(Messages::empty());
-    }
-
-    // INTERNAL ////////////////////////////////////////////////////
-
-    private function withStore(MessageStore $newStore) : self {
-        return new self($newStore, $this->sectionName);
     }
 }

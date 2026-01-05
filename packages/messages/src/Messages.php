@@ -5,17 +5,24 @@ namespace Cognesy\Messages;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Support\MessagesInput;
 use Cognesy\Messages\ContentParts;
+use Countable;
+use IteratorAggregate;
+use Traversable;
 use Generator;
 use InvalidArgumentException;
 use RuntimeException;
 
-final readonly class Messages
+final readonly class Messages implements Countable, IteratorAggregate
 {
     /** @var MessageList $messages */
     private MessageList $messages;
 
     public function __construct(Message ...$messages) {
         $this->messages = new MessageList(...$messages);
+    }
+
+    public function getIterator(): Traversable {
+        return $this->messages->getIterator();
     }
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
@@ -47,7 +54,7 @@ final readonly class Messages
         foreach ($arrayOfMessages as $message) {
             $newMessages[] = match(true) {
                 $message instanceof Message => $message,
-                is_array($message) && Message::hasRoleAndContent($message) => Message::fromArray($message),
+                is_array($message) && Message::isMessage($message) => Message::fromArray($message),
                 default => throw new InvalidArgumentException('Invalid type for message'),
             };
         }

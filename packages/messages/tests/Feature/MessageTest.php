@@ -281,7 +281,7 @@ test('checks if array has role and content', function () {
     $validWithMetadata = ['role' => 'user', '_metadata' => ['key' => 'value']];
     $invalidArray = ['content' => 'Missing role'];
 
-    expect(Message::hasRoleAndContent($validArray))->toBeTrue()
-        ->and(Message::hasRoleAndContent($validWithMetadata))->toBeTrue()
-        ->and(Message::hasRoleAndContent($invalidArray))->toBeFalse();
+    expect(Message::isMessage($validArray))->toBeTrue()
+        ->and(Message::isMessage($validWithMetadata))->toBeTrue()
+        ->and(Message::isMessage($invalidArray))->toBeFalse();
 });

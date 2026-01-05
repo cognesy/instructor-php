@@ -2,12 +2,25 @@
 
 namespace Cognesy\Utils;
 
-final readonly class Metadata
+use Countable;
+use IteratorAggregate;
+use ArrayIterator;
+use Traversable;
+
+final readonly class Metadata implements Countable, IteratorAggregate
 {
     private array $metadata;
 
     public function __construct(array $metadata = []) {
         $this->metadata = $metadata;
+    }
+
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->metadata);
+    }
+
+    public function count(): int {
+        return count($this->metadata);
     }
 
     // CONSTRUCTORS /////////////////////////////////////////////

@@ -35,7 +35,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
 }
 
 echo "Processed " . count($vectors) . " embeddings in total.\n";
-// @doctest id="6c8e"
+// @doctest id="8cd1"
 ```
 
 ### Resilience Options
@@ -60,7 +60,7 @@ $response = $embeddings->with(
         ],
     ],
 )->get();
-// @doctest id="bf96"
+// @doctest id="ccbb"
 ```
 
 
@@ -153,5 +153,5 @@ echo "Second call completed (from cache).\n";
 // Compare vectors to verify they're the same
 $equal = (serialize($vector1) === serialize($vector2));
 echo "Vectors are " . ($equal ? "identical" : "different") . ".\n";
-// @doctest id="3086"
+// @doctest id="4e37"
 ```

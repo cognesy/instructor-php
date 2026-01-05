@@ -286,28 +286,10 @@ class RequestMaterializer implements CanMaterializeRequest
     }
 
     private function mergeMessageStores(MessageStore $baseStore, MessageStore $sourceStore): MessageStore {
-        $mergedStore = $baseStore;
-        
-        // Append messages from each section of the source store to the base store
-        foreach ($sourceStore->sections()->each() as $section) {
-            $mergedStore = $mergedStore->section($section->name)->appendMessages($section->messages());
-        }
-        
-        // Merge parameters
-        return $mergedStore->parameters()->mergeParameters($sourceStore->parameters()->get());
+        return $baseStore->merge($sourceStore);
     }
 
     private function removeEmptyMessages(MessageStore $store): MessageStore {
-        $cleanStore = new MessageStore();
-        
-        foreach ($store->sections()->each() as $section) {
-            $trimmedMessages = $section->messages()->withoutEmptyMessages();
-            if (!$trimmedMessages->isEmpty()) {
-                $cleanStore = $cleanStore->section($section->name)->setMessages($trimmedMessages);
-            }
-        }
-        
-        // Preserve parameters
-        return $cleanStore->parameters()->mergeParameters($store->parameters()->get());
+        return $store->withoutEmpty();
     }
 }
