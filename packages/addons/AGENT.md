@@ -6,14 +6,17 @@ Tool-calling agent with iterative execution, state management, and extensible ca
 
 ```php
 use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Messages\Messages;
 
 // Create agent with tools using builder
-$agent = AgentBuilder::new()
-    ->withBash()
-    ->withFileTools('/path/to/project')
-    ->withTaskPlanning()
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withCapability(new UseFileTools('/path/to/project'))
+    ->withCapability(new UseTaskPlanning())
     ->build();
 
 // Initialize state with user message
@@ -28,28 +31,36 @@ echo $finalState->currentStep()->outputMessages()->toString();
 
 ## Building Agents
 
-Use `AgentBuilder` for composable agent configuration with fluent API:
+Use `AgentBuilder` for composable agent configuration with fluent API. The builder uses **Capabilities** to add modular features to the agent.
 
 ```php
 use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\Agent\Capabilities\UseBash;
+use Cognesy\Addons\Agent\Capabilities\UseFileTools;
 
 // Basic agent with custom tools
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withTools($tools)
     ->build();
 
 // Agent with file operations
-$agent = AgentBuilder::new()
-    ->withFileTools('/path/to/project')
+$agent = AgentBuilder::base()
+    ->withCapability(new UseFileTools('/path/to/project'))
+    ->build();
+
+// Using withCapability for explicit configuration
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash(baseDir: '/project'))
+    ->withCapability(new UseFileTools(baseDir: '/project'))
     ->build();
 
 // Full-featured coding agent
-$agent = AgentBuilder::new()
-    ->withBash()
-    ->withFileTools('/project')
-    ->withTaskPlanning()
-    ->withSkills($library)
-    ->withSubagents($registry, 3, summaryMaxChars: 8000)
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withCapability(new UseFileTools('/project'))
+    ->withCapability(new UseTaskPlanning())
+    ->withCapability(new UseSkills($library))
+    ->withCapability(new UseSubagents($registry, 3, summaryMaxChars: 8000))
     ->withMaxSteps(20)
     ->withMaxTokens(32768)
     ->withTimeout(300)
@@ -61,12 +72,12 @@ $agent = AgentBuilder::new()
 
 | Method | Description |
 |--------|-------------|
-| `withBash($policy, $baseDir, $timeout, $outputPolicy)` | Add bash command execution |
-| `withFileTools($baseDir)` | Add file operations (read, write, edit) |
-| `withTaskPlanning(?TodoPolicy $policy = null)` | Add TodoWrite tool for task tracking (custom limits & render cadence) |
-| `withSkills($library)` | Add LoadSkill tool with skill library |
-| `withSubagents($registry, $maxDepth|SubagentPolicy, $summaryMaxChars)` | Enable spawning subagents with configurable summary size |
+| `base()` | Create a new builder instance with sane defaults |
+| `new()` | Create a completely blank builder instance |
+| `withCapability($capability)` | Apply an `AgentCapability` (e.g., `UseBash`, `UseSkills`) |
 | `withTools($tools)` | Add custom tools |
+| `addProcessor($processor)` | Add a state processor |
+| `addContinuationCriteria($criteria)` | Add a stop condition |
 | `withMaxSteps($n)` | Set maximum execution steps |
 | `withMaxTokens($n)` | Set token usage limit |
 | `withTimeout($seconds)` | Set execution time limit |
@@ -74,6 +85,32 @@ $agent = AgentBuilder::new()
 | `withLlmPreset($preset)` | Use LLM preset from config |
 | `withDriver($driver)` | Use custom tool-calling driver |
 | `withEvents($eventBus)` | Set event handler |
+
+## Capabilities
+
+Capabilities are modular features that can be added to an agent. They can register tools, add state processors, or define continuation criteria.
+
+| Capability | Namespace | Description |
+|------------|-----------|-------------|
+| `UseBash` | `...\Bash` | Adds `BashTool` for command execution |
+| `UseFileTools` | `...\File` | Adds `ReadFileTool`, `WriteFileTool`, `EditFileTool` |
+| `UseTaskPlanning` | `...\Tasks` | Adds `TodoWriteTool` and task tracking processors |
+| `UseSkills` | `...\Skills` | Adds `LoadSkillTool` and skill metadata processor |
+| `UseSubagents` | `...\Subagent` | Adds `SpawnSubagentTool` for nested execution |
+| `UseSelfCritique` | `...\SelfCritique` | Adds `SelfCriticProcessor` and evaluation loop |
+
+(Note: `...` represents `Cognesy\Addons\Agent\Capabilities`)
+
+### Example: Using Self-Critique
+```php
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Capabilities\SelfCritique\UseSelfCritique;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withCapability(new UseSelfCritique(maxIterations: 3))
+    ->build();
+```
 
 ## Execution Patterns
 
@@ -137,17 +174,19 @@ Structured task management.
 Limits and render cadence can be customized via `TodoPolicy` passed to `withTaskPlanning()`.
 
 ```php
-use Cognesy\Addons\Agent\Extras\Tasks\TodoPolicy;
-use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
+use Cognesy\Addons\Agent\Capabilities\Tasks\TodoPolicy;
+use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
+use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
 
-$policy = new TodoPolicy(maxItems: 25, maxInProgress: 2, renderEverySteps: 5, reminderEverySteps: 10);
-$agent = AgentBuilder::new()
-    ->withTaskPlanning($policy)
+$policy = new TodoPolicy(maxItems: 25, maxInProgress: 2, reminderEverySteps: 10);
+$agent = AgentBuilder::base()
+    ->withCapability(new UseTaskPlanning($policy))
     ->build();
 
 $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 12000);
-$agent = AgentBuilder::new()
-    ->withSubagents($registry, $subagentPolicy)
+$agent = AgentBuilder::base()
+    ->withCapability(new UseSubagents($registry, $subagentPolicy))
     ->build();
 ```
 
@@ -187,28 +226,20 @@ $criteria = new ContinuationCriteria(
 );
 
 // Build agent with custom criteria
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withTools($tools)
-    ->build()
-    ->withContinuationCriteria(...$criteria->all());
+    ->addContinuationCriteria($customCriteria)
+    ->build();
 ```
 
 ### State Processors
 Modify state after each step:
 
 ```php
-use Cognesy\Addons\Agent\Extras\Tasks\PersistTasksProcessor;use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
-
-$processors = new StateProcessors(
-    new AccumulateTokenUsage(),
-    new AppendStepMessages(),
-    new PersistTasksProcessor(),
-);
-
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withTools($tools)
-    ->build()
-    ->with(processors: $processors);
+    ->addProcessor(new MyCustomProcessor())
+    ->build();
 ```
 
 ### Custom Driver
@@ -221,7 +252,7 @@ $driver = new ToolCallingDriver(
     model: 'claude-sonnet-4-20250514',
 );
 
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withDriver($driver)
     ->build();
 ```
@@ -230,6 +261,8 @@ $agent = AgentBuilder::new()
 ```php
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+
 $policy = ExecutionPolicy::in('/project')
     ->withTimeout(120)
     ->withNetwork(true)
@@ -237,8 +270,8 @@ $policy = ExecutionPolicy::in('/project')
     ->withWritablePaths('/project/output')
     ->inheritEnvironment();
 
-$agent = AgentBuilder::new()
-    ->withBash($policy)
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash(policy: $policy))
     ->build();
 ```
 
@@ -276,6 +309,8 @@ Instructions, examples, patterns...
 
 Load skills:
 ```php
+use Cognesy\Addons\Agent\Capabilities\Skills\SkillLibrary;
+
 $library = new SkillLibrary('./skills');
 $skill = $library->get('skill-name');
 echo $skill->content();
@@ -320,7 +355,7 @@ $events->onEvent(AgentStepCompleted::class, function($event) {
     echo "Step completed: " . json_encode($event->payload()) . "\n";
 });
 
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withEvents($events)
     ->build();
 ```
@@ -402,7 +437,7 @@ class MyTool extends BaseTool
     }
 }
 
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withTools(new Tools(new MyTool()))
     ->build();
 ```
@@ -410,47 +445,38 @@ $agent = AgentBuilder::new()
 ## Directory Structure
 
 ```
-src/Agent/
-├── Agent.php                   # Main orchestrator
-├── AgentBuilder.php            # Fluent builder for agents
-├── ToolExecutor.php            # Tool execution logic
-├── Collections/
-│   ├── Tools.php               # Tool collection
-│   └── ToolExecutions.php      # Execution results
-├── Contracts/
-│   ├── CanUseTools.php         # Driver interface
-│   ├── CanExecuteToolCalls.php # Executor interface
-│   └── ToolInterface.php       # Tool interface
-├── Data/
-│   ├── AgentState.php          # State container
-│   ├── AgentStep.php           # Step container
-│   ├── AgentExecution.php      # Single tool execution
-│   ├── Task.php                # Todo task
-│   └── TaskList.php            # Task collection
-├── Drivers/
-│   ├── ToolCalling/            # Native function calling
-│   └── ReAct/                  # Reason+Act driver
-├── Enums/
-│   ├── AgentType.php           # Explore | Code | Plan
-│   ├── AgentStatus.php         # Running | Completed | Failed
-│   ├── AgentStepType.php       # ToolExecution | FinalResponse | Error
-│   └── TaskStatus.php          # pending | in_progress | completed
-├── Skills/
-│   ├── Skill.php               # Skill data
-│   └── SkillLibrary.php        # Skill loading/caching
-├── StateProcessors/
-│   └── PersistTasksProcessor.php
-├── Subagents/
-│   ├── AgentCapability.php     # Capability interface
-│   └── DefaultAgentCapability.php
-└── Tools/
-    ├── BaseTool.php            # Base class
-    ├── BashTool.php
-    ├── ReadFileTool.php
-    ├── WriteFileTool.php
-    ├── EditFileTool.php
-    ├── TodoWriteTool.php
-    ├── LoadSkillTool.php
-    ├── LlmQueryTool.php
-    └── SpawnSubagentTool.php
+├── src/Agent/
+│   ├── Agent.php                   # Main orchestrator
+│   ├── AgentBuilder.php            # Fluent builder for agents
+│   ├── ToolExecutor.php            # Tool execution logic
+│   ├── Capabilities/               # MODULAR FEATURES
+│   │   ├── Bash/                   # Bash capability & tool
+│   │   ├── File/                   # File capability & tools
+│   │   ├── Skills/                 # Skills capability & tool
+│   │   ├── Subagent/               # Subagent capability & tool
+│   │   ├── Tasks/                  # Task planning capability & tool
+│   │   └── SelfCritique/           # Self-critique capability & processor
+│   ├── Collections/
+│   │   ├── Tools.php               # Tool collection
+│   │   └── ToolExecutions.php      # Execution results
+│   ├── Contracts/
+│   │   ├── AgentCapability.php     # Capability interface
+│   │   ├── CanUseTools.php         # Driver interface
+│   │   ├── CanExecuteToolCalls.php # Executor interface
+│   │   └── ToolInterface.php       # Tool interface
+│   ├── Data/
+│   │   ├── AgentState.php          # State container
+│   │   ├── AgentStep.php           # Step container
+│   │   ├── AgentExecution.php      # Single tool execution
+│   ├── Drivers/
+│   │   ├── ToolCalling/            # Native function calling
+│   │   └── ReAct/                  # Reason+Act driver
+│   ├── Enums/
+│   │   ├── AgentType.php           # Explore | Code | Plan
+│   │   ├── AgentStatus.php         # Running | Completed | Failed
+│   │   ├── AgentStepType.php       # ToolExecution | FinalResponse | Error
+│   └── Tools/
+│       ├── BaseTool.php            # Base class for tools
+│       ├── FunctionTool.php        # Wrap PHP functions as tools
+│       └── LlmQueryTool.php        # Opt-in LLM reasoning tool
 ```

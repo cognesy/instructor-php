@@ -3,9 +3,17 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Agents\AgentSpec;
+use Cognesy\Addons\Agent\Collections\Tools;
+use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\Agent\Capabilities\File\ListDirTool;
+use Cognesy\Addons\Agent\Capabilities\File\SearchFilesTool;
+use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 use Cognesy\Schema\Attributes\Description;
@@ -593,11 +601,11 @@ $goal = "What testing framework does this project use? Find definitive evidence 
 $registryFactory = new OodaSubagentRegistryFactory();
 $registry = $registryFactory->create();
 
-$agent = AgentBuilder::new()
-    ->withBash()
-    ->withFileTools($projectRoot)
-    ->withTaskPlanning()
-    ->withSubagents($registry, 3)
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withCapability(new UseFileTools($projectRoot))
+    ->withCapability(new UseTaskPlanning())
+    ->withCapability(new UseSubagents($registry, 3))
     ->withMaxSteps(10)
     ->withLlmPreset('anthropic')
     ->build();

@@ -2,17 +2,12 @@
 
 namespace Cognesy\Addons\Agent;
 
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Continuation\ToolCallPresenceCheck;
 use Cognesy\Addons\Agent\Contracts\AgentCapability;
 use Cognesy\Addons\Agent\Contracts\CanUseTools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\Agent\Extras\Tasks\TodoPolicy;
-use Cognesy\Addons\Agent\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Tools\BashPolicy;
-use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
@@ -30,17 +25,16 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
 /**
  * Fluent builder for creating Agent instances with composable features.
  *
  * @example
- * $agent = AgentBuilder::new()
- *     ->withBash($policy)
- *     ->withFileTools($baseDir)
- *     ->withSkills($library)
- *     ->withTaskPlanning()
+ * $agent = AgentBuilder::base()
+ *     ->withCapability(new UseBash($policy))
+ *     ->withCapability(new UseFileTools($baseDir))
+ *     ->withCapability(new UseSkills($library))
+ *     ->withCapability(new UseTaskPlanning())
  *     ->withMaxSteps(20)
  *     ->withMaxTokens(32768)
  *     ->build();
@@ -76,6 +70,13 @@ class AgentBuilder
     }
 
     /**
+     * Create a new builder instance with sane defaults.
+     */
+    public static function base(): self {
+        return new self();
+    }
+
+    /**
      * Apply a capability to the builder.
      */
     public function withCapability(AgentCapability $capability): self {
@@ -92,63 +93,6 @@ class AgentBuilder
     public function onBuild(callable $callback): self {
         $this->onBuildCallbacks[] = $callback;
         return $this;
-    }
-
-    // TOOL CONFIGURATION ////////////////////////////////////////
-
-    /**
-     * Add bash command execution capability.
-     */
-    public function withBash(
-        ?ExecutionPolicy $policy = null,
-        ?string $baseDir = null,
-        int $timeout = 120,
-        ?BashPolicy $outputPolicy = null,
-    ): self {
-        return $this->withCapability(new Capabilities\UseBash(
-            policy: $policy,
-            baseDir: $baseDir,
-            timeout: $timeout,
-            outputPolicy: $outputPolicy
-        ));
-    }
-
-    /**
-     * Add file operation tools (read, write, edit).
-     */
-    public function withFileTools(?string $baseDir = null): self {
-        return $this->withCapability(new Capabilities\UseFileTools($baseDir));
-    }
-
-    /**
-     * Add skill loading capability.
-     */
-    public function withSkills(?SkillLibrary $library = null): self {
-        return $this->withCapability(new Capabilities\UseSkills($library));
-    }
-
-    /**
-     * Add task planning capability (TodoWrite).
-     */
-    public function withTaskPlanning(?TodoPolicy $policy = null): self {
-        return $this->withCapability(new Capabilities\UseTaskPlanning($policy));
-    }
-
-    /**
-     * Enable subagent spawning capability.
-     */
-    public function withSubagents(
-        ?AgentRegistry $registry = null,
-        int|SubagentPolicy $policyOrDepth = 3,
-        ?int $summaryMaxChars = null,
-        ?SkillLibrary $skillLibrary = null,
-    ): self {
-        return $this->withCapability(new Capabilities\UseSubagents(
-            registry: $registry,
-            policyOrDepth: $policyOrDepth,
-            summaryMaxChars: $summaryMaxChars,
-            skillLibrary: $skillLibrary,
-        ));
     }
 
     /**

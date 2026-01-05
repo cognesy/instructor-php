@@ -10,9 +10,10 @@ use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
-use Cognesy\Addons\Agent\Tools\File\SearchFilesTool;
-use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
+use Cognesy\Addons\Agent\Capabilities\File\ReadFileTool;
+use Cognesy\Addons\Agent\Capabilities\File\SearchFilesTool;
+use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
 use Cognesy\Messages\Messages;
 
 /**
@@ -171,9 +172,9 @@ PROMPT,
 
         $subagentPolicy = new SubagentPolicy(maxDepth: 2, summaryMaxChars: 8000);
 
-        $builder = AgentBuilder::new()
+        $builder = AgentBuilder::base()
             ->withTools(new Tools($searchTool, $readFileTool))
-            ->withSubagents($registry, $subagentPolicy)
+            ->withCapability(new UseSubagents($registry, $subagentPolicy))
             ->withMaxSteps(20)
             ->withMaxTokens(32768);
         if ($llmPreset) {

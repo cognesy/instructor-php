@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Tests\Addons\Unit\Chat;
+
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\ChatToolUseCompleted;
 use Cognesy\Addons\Chat\Events\ChatToolUseStarted;
@@ -19,7 +21,6 @@ use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 
-require_once __DIR__ . '/../../Support/FakeInferenceDriver.php';
 
 function test_add(int $a, int $b): int {
     return $a + $b;

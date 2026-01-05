@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Tests\Addons\Unit\Chat;
+
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\ChatResponseRequested;
 use Cognesy\Addons\Chat\Participants\ScriptedParticipant;

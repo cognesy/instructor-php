@@ -9,8 +9,12 @@ use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Agents\AgentSpec;
-use Cognesy\Addons\Agent\Tools\Subagent\SpawnSubagentTool;
-use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\Agent\Capabilities\Subagent\SpawnSubagentTool;
+use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
 use Cognesy\Messages\Messages;
 
 /**
@@ -224,11 +228,11 @@ final class MultiFileReviewAction
         $registry = (new QuickReviewAgentRegistry())->create();
         $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 8000);
 
-        $builder = AgentBuilder::new()
-            ->withBash()
-            ->withFileTools($this->workDir)
-            ->withTaskPlanning()
-            ->withSubagents($registry, $subagentPolicy)
+        $builder = AgentBuilder::base()
+            ->withCapability(new UseBash())
+            ->withCapability(new UseFileTools($this->workDir))
+            ->withCapability(new UseTaskPlanning())
+            ->withCapability(new UseSubagents($registry, $subagentPolicy))
             ->withMaxSteps(20);
         if ($this->llmPreset) {
             $builder = $builder->withLlmPreset($this->llmPreset);

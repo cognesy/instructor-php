@@ -54,6 +54,7 @@
     "autoload-dev": {
         "psr-4": {
             "Cognesy\\Addons\\Tests\\": "packages/addons/tests/",
+            "Tests\\Addons\\": "packages/addons/tests/",
             "Cognesy\\AgentCtrl\\": "packages/agent-ctrl/src/",
             "Cognesy\\AgentCtrl\\Tests\\": "packages/agent-ctrl/tests/",
             "Cognesy\\Config\\Tests\\": "packages/config/tests/",

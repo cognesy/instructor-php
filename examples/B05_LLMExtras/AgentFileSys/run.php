@@ -4,6 +4,7 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
@@ -101,7 +102,8 @@ final class FileSystemAgentRunner
         private string $workDir,
         private ?string $llmPreset = null,
     ) {
-        $builder = AgentBuilder::new()->withFileTools($this->workDir);
+        $builder = AgentBuilder::base()
+            ->withCapability(new UseFileTools($this->workDir));
         if ($this->llmPreset) {
             $builder = $builder->withLlmPreset($this->llmPreset);
         }

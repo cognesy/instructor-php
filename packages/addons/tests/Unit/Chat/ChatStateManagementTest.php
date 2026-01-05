@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Tests\Addons\Unit\Chat;
+
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
@@ -171,7 +173,7 @@ it('preserves step metadata throughout state transitions', function () {
 
 it('captures participant errors inside failure steps', function () {
     $messages = Messages::fromString('hello there');
-    $error = new RuntimeException('participant blew up');
+    $error = new \RuntimeException('participant blew up');
 
     $failureStep = ChatStep::failure(
         error: $error,

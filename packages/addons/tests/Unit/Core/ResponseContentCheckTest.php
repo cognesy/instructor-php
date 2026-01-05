@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Tests\Addons\Unit\Core;
+
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ResponseContentCheck;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;

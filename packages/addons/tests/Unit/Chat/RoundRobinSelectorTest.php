@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Tests\Addons\Unit\Chat;
+
 use Cognesy\Addons\Chat\Collections\Participants;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatStep;
