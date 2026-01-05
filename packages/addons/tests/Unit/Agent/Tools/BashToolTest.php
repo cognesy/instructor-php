@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\Agent\Tools\BashPolicy;
 use Cognesy\Addons\Agent\Tools\BashTool;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
@@ -96,6 +97,17 @@ describe('BashTool', function () {
         $result = $tool('TEST_VAR=hello && echo $TEST_VAR');
 
         expect($result)->toContain('hello');
+    });
+
+    it('truncates output with head/tail policy', function () {
+        $policy = new BashPolicy(maxOutputChars: 10, headChars: 4, tailChars: 6);
+        $tool = new BashTool(baseDir: $this->tempDir, outputPolicy: $policy);
+
+        $result = $tool("printf '0123456789ABCDEFGHIJ'");
+
+        expect($result)->toContain('...(truncated)...');
+        expect($result)->toContain("0123\n...\nEFGHIJ");
+        expect($result)->not->toContain('4567');
     });
 
     it('generates valid tool schema', function () {

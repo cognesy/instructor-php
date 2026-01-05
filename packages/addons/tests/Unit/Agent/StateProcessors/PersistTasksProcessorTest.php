@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\Agent\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Data\AgentExecution;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Data\AgentStep;
-use Cognesy\Addons\Agent\Data\AgentExecution;
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\StateProcessors\PersistTasksProcessor;
-use Cognesy\Addons\Agent\Tools\TodoWriteTool;
+use Cognesy\Addons\Agent\Extras\Tasks\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoResult;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoWriteTool;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
@@ -56,15 +57,15 @@ describe('PersistTasksProcessor', function () {
         ]);
 
         // Create the result that todo_write returns
-        $todoResult = [
-            'success' => true,
-            'tasks' => [
+        $todoResult = new TodoResult(
+            success: true,
+            tasks: [
                 ['content' => 'Task 1', 'status' => 'pending', 'activeForm' => 'Doing 1'],
                 ['content' => 'Task 2', 'status' => 'in_progress', 'activeForm' => 'Doing 2'],
             ],
-            'summary' => 'Tasks: 0/2 completed',
-            'rendered' => '1. ○ Task 1\n2. ◐ Doing 2',
-        ];
+            summary: 'Tasks: 0/2 completed',
+            rendered: "1. ○ Task 1\n2. ◐ Doing 2",
+        );
 
         // Create tool execution
         $now = new DateTimeImmutable();

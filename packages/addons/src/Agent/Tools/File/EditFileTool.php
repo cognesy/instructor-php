@@ -90,6 +90,9 @@ DESC,
             $newContent = str_replace($old_string, $new_string, $content);
         } else {
             $pos = strpos($content, $old_string);
+            if ($pos === false) {
+                return "Error: old_string not found in file (this should not happen after validation)";
+            }
             $newContent = substr($content, 0, $pos) . $new_string . substr($content, $pos + strlen($old_string));
         }
 

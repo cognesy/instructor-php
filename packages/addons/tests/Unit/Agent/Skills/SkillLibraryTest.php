@@ -123,6 +123,28 @@ describe('SkillLibrary', function () {
         expect($skill->body)->toBe('# Simple Content');
     });
 
+    it('loads skills from SKILL.md folders', function () {
+        $skillDir = $this->tempDir . '/folder-skill';
+        mkdir($skillDir . '/scripts', 0755, true);
+        file_put_contents($skillDir . '/SKILL.md', <<<SKILL
+---
+name: folder-skill
+description: Folder skill description
+---
+# Folder Skill Content
+SKILL);
+        file_put_contents($skillDir . '/scripts/run.sh', '#!/bin/bash');
+
+        $library = new SkillLibrary($this->tempDir);
+        $skills = $library->listSkills();
+        $skill = $library->getSkill('folder-skill');
+
+        expect(array_column($skills, 'name'))->toContain('folder-skill');
+        expect($skill)->toBeInstanceOf(Skill::class);
+        expect($skill->body)->toContain('# Folder Skill Content');
+        expect($skill->resources)->toContain('scripts/run.sh');
+    });
+
     // Helper to create skill files
     beforeEach(function () {
         $this->createSkillFile = function (string $name, string $description, string $body = 'Content') {

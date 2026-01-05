@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools;
+namespace Cognesy\Addons\Agent\Skills;
 
-use Cognesy\Addons\Agent\Skills\SkillLibrary;
+use Cognesy\Addons\Agent\Tools\BaseTool;
 
 class LoadSkillTool extends BaseTool
 {

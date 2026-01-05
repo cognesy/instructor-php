@@ -4,6 +4,6 @@ namespace Cognesy\Addons\Agent\Exceptions;
 
 use Exception;
 
-class SubagentNotFoundException extends Exception
+class AgentNotFoundException extends Exception
 {
 }

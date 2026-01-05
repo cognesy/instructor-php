@@ -1,28 +1,28 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Subagents;
+namespace Cognesy\Addons\Agent\Agents;
 
 use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Exceptions\SubagentNotFoundException;
+use Cognesy\Addons\Agent\Exceptions\AgentNotFoundException;
 use InvalidArgumentException;
 
-final class SubagentRegistry
+final class AgentRegistry
 {
     /** @var array<string, AgentSpec> */
     private array $specs = [];
 
-    private SubagentSpecParser $parser;
+    private AgentSpecParser $parser;
 
-    public function __construct(?SubagentSpecParser $parser = null) {
-        $this->parser = $parser ?? new SubagentSpecParser();
+    public function __construct(?AgentSpecParser $parser = null) {
+        $this->parser = $parser ?? new AgentSpecParser();
     }
 
     // REGISTRATION /////////////////////////////////////////////////
 
     /**
-     * Register a subagent spec.
+     * Register an agent spec.
      *
-     * @param AgentSpec $spec Subagent specification
+     * @param AgentSpec $spec Agent specification
      * @param Tools|null $parentTools Optional parent tools for validation
      * @throws InvalidArgumentException if validation fails
      */
@@ -32,7 +32,7 @@ final class SubagentRegistry
             $errors = $spec->validate($parentTools);
             if (!empty($errors)) {
                 throw new InvalidArgumentException(
-                    "Invalid subagent '{$spec->name}':\n" . implode("\n", $errors)
+                    "Invalid agent '{$spec->name}':\n" . implode("\n", $errors)
                 );
             }
         }
@@ -41,7 +41,7 @@ final class SubagentRegistry
     }
 
     /**
-     * Register multiple subagent specs.
+     * Register multiple agent specs.
      *
      * @param AgentSpec ...$specs
      * @param Tools|null $parentTools Optional parent tools for validation
@@ -55,28 +55,28 @@ final class SubagentRegistry
     // RETRIEVAL ////////////////////////////////////////////////////
 
     /**
-     * Get a subagent spec by name.
+     * Get an agent spec by name.
      *
-     * @throws SubagentNotFoundException if subagent not found
+     * @throws AgentNotFoundException if agent not found
      */
     public function get(string $name): AgentSpec {
         if (!$this->has($name)) {
-            throw new SubagentNotFoundException(
-                "Subagent '{$name}' not found. Available: " . implode(', ', $this->names())
+            throw new AgentNotFoundException(
+                "Agent '{$name}' not found. Available: " . implode(', ', $this->names())
             );
         }
         return $this->specs[$name];
     }
 
     /**
-     * Check if subagent exists.
+     * Check if agent exists.
      */
     public function has(string $name): bool {
         return isset($this->specs[$name]);
     }
 
     /**
-     * Get all registered subagent specs.
+     * Get all registered agent specs.
      *
      * @return array<string, AgentSpec>
      */
@@ -85,7 +85,7 @@ final class SubagentRegistry
     }
 
     /**
-     * Get all subagent names.
+     * Get all agent names.
      *
      * @return array<string>
      */
@@ -94,7 +94,7 @@ final class SubagentRegistry
     }
 
     /**
-     * Get subagent descriptions for tool schema.
+     * Get agent descriptions for tool schema.
      *
      * @return array<string, string> Map of name => description
      */
@@ -109,7 +109,7 @@ final class SubagentRegistry
     // FILE LOADING /////////////////////////////////////////////////
 
     /**
-     * Load a subagent spec from a markdown file.
+     * Load an agent spec from a markdown file.
      *
      * @param string $path Absolute path to .md file
      * @param Tools|null $parentTools Optional parent tools for validation
@@ -120,7 +120,7 @@ final class SubagentRegistry
     }
 
     /**
-     * Load all subagent specs from a directory.
+     * Load all agent specs from a directory.
      *
      * @param string $path Directory path
      * @param bool $recursive Search subdirectories
@@ -145,7 +145,7 @@ final class SubagentRegistry
                 } catch (\Throwable $e) {
                     // Log error but continue loading other files
                     trigger_error(
-                        "Failed to load subagent from {$file}: {$e->getMessage()}",
+                        "Failed to load agent from {$file}: {$e->getMessage()}",
                         E_USER_WARNING
                     );
                 }
@@ -154,7 +154,7 @@ final class SubagentRegistry
     }
 
     /**
-     * Load a subagent spec from JSON data.
+     * Load an agent spec from JSON data.
      *
      * @param array<string, mixed> $data JSON-decoded data
      * @param Tools|null $parentTools Optional parent tools for validation
@@ -167,18 +167,18 @@ final class SubagentRegistry
     // AUTO-DISCOVERY ///////////////////////////////////////////////
 
     /**
-     * Auto-discover and load subagent specs from standard locations.
+     * Auto-discover and load agent specs from standard locations.
      *
      * Priority (highest to lowest):
      * 1. Project-level (.claude/agents/)
-     * 2. Package-level (vendor/cognesy/instructor-php/subagents/)
-     * 3. User-level (~/.instructor-php/subagents/)
+     * 2. Package-level (vendor/cognesy/instructor-php/agents/)
+     * 3. User-level (~/.instructor-php/agents/)
      *
      * Higher priority specs override lower priority specs with same name.
      *
      * @param string|null $projectPath Project directory (defaults to cwd)
-     * @param string|null $packagePath Package subagents directory
-     * @param string|null $userPath User subagents directory
+     * @param string|null $packagePath Package agents directory
+     * @param string|null $userPath User agents directory
      * @param Tools|null $parentTools Optional parent tools for validation
      */
     public function autoDiscover(
@@ -208,7 +208,7 @@ final class SubagentRegistry
     // MANAGEMENT ///////////////////////////////////////////////////
 
     /**
-     * Remove a subagent spec.
+     * Remove an agent spec.
      */
     public function remove(string $name): void {
         unset($this->specs[$name]);
@@ -222,7 +222,7 @@ final class SubagentRegistry
     }
 
     /**
-     * Get count of registered subagents.
+     * Get count of registered agents.
      */
     public function count(): int {
         return count($this->specs);

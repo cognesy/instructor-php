@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Addons\Agent\Skills\LoadSkillTool;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Tools\LoadSkillTool;
 
 describe('LoadSkillTool', function () {
 

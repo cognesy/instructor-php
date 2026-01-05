@@ -56,6 +56,12 @@ class ToolCallingDriver implements CanUseTools
         $this->formatter = new ToolExecutionFormatter();
     }
 
+    public function withLLMProvider(LLMProvider $llm): self {
+        $clone = clone $this;
+        $clone->llm = $llm;
+        return $clone;
+    }
+
     /**
      * Executes tool usage within a given context and returns the result as a AgentStep.
      *

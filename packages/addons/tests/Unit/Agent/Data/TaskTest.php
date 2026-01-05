@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\Data\Task;
-use Cognesy\Addons\Agent\Enums\TaskStatus;
+use Cognesy\Addons\Agent\Extras\Tasks\Task;
+use Cognesy\Addons\Agent\Extras\Tasks\TaskStatus;
 
 describe('Task', function () {
 

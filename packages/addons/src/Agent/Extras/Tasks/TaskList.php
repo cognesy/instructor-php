@@ -1,34 +1,33 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Collections;
+namespace Cognesy\Addons\Agent\Extras\Tasks;
 
-use Cognesy\Addons\Agent\Data\Task;
-use Cognesy\Addons\Agent\Enums\TaskStatus;
 use InvalidArgumentException;
 
 final readonly class TaskList
 {
-    private const MAX_TASKS = 20;
-
     /** @var list<Task> */
     private array $tasks;
+    private TodoPolicy $policy;
 
     /** @param list<Task> $tasks */
-    private function __construct(array $tasks) {
+    private function __construct(array $tasks, TodoPolicy $policy) {
         $this->tasks = $tasks;
+        $this->policy = $policy;
     }
 
-    public static function empty(): self {
-        return new self([]);
+    public static function empty(?TodoPolicy $policy = null): self {
+        return new self([], $policy ?? new TodoPolicy());
     }
 
     /** @param list<array> $data */
-    public static function fromArray(array $data): self {
+    public static function fromArray(array $data, ?TodoPolicy $policy = null): self {
+        $policy ??= new TodoPolicy();
         $tasks = array_map(
             fn(array $item) => Task::fromArray($item),
             $data
         );
-        return new self($tasks);
+        return new self($tasks, $policy);
     }
 
     /** @return list<array> */
@@ -42,7 +41,7 @@ final readonly class TaskList
     /** @param list<Task> $tasks */
     public function withTasks(array $tasks): self {
         $this->validateTasks($tasks);
-        return new self($tasks);
+        return new self($tasks, $this->policy);
     }
 
     /** @return list<Task> */
@@ -99,9 +98,9 @@ final readonly class TaskList
 
     /** @param list<Task> $tasks */
     private function validateTasks(array $tasks): void {
-        if (count($tasks) > self::MAX_TASKS) {
+        if (count($tasks) > $this->policy->maxItems) {
             throw new InvalidArgumentException(
-                "Maximum " . self::MAX_TASKS . " tasks allowed, got " . count($tasks)
+                "Maximum " . $this->policy->maxItems . " tasks allowed, got " . count($tasks)
             );
         }
 
@@ -112,9 +111,11 @@ final readonly class TaskList
             }
         }
 
-        if ($inProgressCount > 1) {
+        if ($inProgressCount > $this->policy->maxInProgress) {
             throw new InvalidArgumentException(
-                "Only 1 task can be in_progress at a time, got {$inProgressCount}"
+                "Only {$this->policy->maxInProgress} task"
+                . ($this->policy->maxInProgress === 1 ? '' : 's')
+                . " can be in_progress at a time, got {$inProgressCount}"
             );
         }
     }

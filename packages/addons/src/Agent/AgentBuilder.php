@@ -9,14 +9,20 @@ use Cognesy\Addons\Agent\Contracts\CanUseTools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\Agent\Extras\Tasks\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoPolicy;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoRenderProcessor;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoReminderProcessor;
 use Cognesy\Addons\Agent\Extras\Tasks\TodoWriteTool;
+use Cognesy\Addons\Agent\Skills\AppendSkillMetadata;
 use Cognesy\Addons\Agent\Skills\LoadSkillTool;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
+use Cognesy\Addons\Agent\Tools\BashPolicy;
 use Cognesy\Addons\Agent\Tools\BashTool;
 use Cognesy\Addons\Agent\Tools\File\EditFileTool;
 use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
 use Cognesy\Addons\Agent\Tools\File\WriteFileTool;
 use Cognesy\Addons\Agent\Tools\Subagent\SpawnSubagentTool;
+use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
@@ -57,15 +63,17 @@ class AgentBuilder
     private ?string $llmPreset = null;
 
     // Execution limits
-    private int $maxSteps = 3;
-    private int $maxTokens = 8192;
-    private int $maxExecutionTime = 30;
+    private int $maxSteps = 20;
+    private int $maxTokens = 32768;
+    private int $maxExecutionTime = 300;
     private int $maxRetries = 3;
     private array $finishReasons = [];
 
     // Feature flags
     private bool $hasTaskPlanning = false;
     private bool $hasSubagents = false;
+    private ?TodoPolicy $todoPolicy = null;
+    private ?SubagentPolicy $subagentPolicy = null;
 
     // Subagent configuration
     private ?AgentRegistry $subagentRegistry = null;
@@ -92,8 +100,14 @@ class AgentBuilder
         ?ExecutionPolicy $policy = null,
         ?string $baseDir = null,
         int $timeout = 120,
+        ?BashPolicy $outputPolicy = null,
     ): self {
-        $bashTool = new BashTool(policy: $policy, baseDir: $baseDir, timeout: $timeout);
+        $bashTool = new BashTool(
+            policy: $policy,
+            baseDir: $baseDir,
+            timeout: $timeout,
+            outputPolicy: $outputPolicy
+        );
         $this->tools = $this->tools->merge(new Tools($bashTool));
         return $this;
     }
@@ -127,9 +141,10 @@ class AgentBuilder
     /**
      * Add task planning capability (TodoWrite).
      */
-    public function withTaskPlanning(): self {
+    public function withTaskPlanning(?TodoPolicy $policy = null): self {
         $this->hasTaskPlanning = true;
-        $todoTool = new Tools(new TodoWriteTool());
+        $this->todoPolicy = $policy ?? new TodoPolicy();
+        $todoTool = new Tools(new TodoWriteTool($this->todoPolicy));
         $this->tools = $this->tools->merge($todoTool);
         return $this;
     }
@@ -139,11 +154,23 @@ class AgentBuilder
      */
     public function withSubagents(
         ?AgentRegistry $registry = null,
-        int $maxDepth = 3,
+        int|SubagentPolicy $policyOrDepth = 3,
+        ?int $summaryMaxChars = null,
     ): self {
         $this->hasSubagents = true;
         $this->subagentRegistry = $registry ?? new AgentRegistry();
-        $this->maxSubagentDepth = $maxDepth;
+        if ($policyOrDepth instanceof SubagentPolicy) {
+            $this->subagentPolicy = $policyOrDepth;
+            $this->maxSubagentDepth = $policyOrDepth->maxDepth;
+        } else {
+            $this->maxSubagentDepth = $policyOrDepth;
+            if ($summaryMaxChars !== null) {
+                $this->subagentPolicy = new SubagentPolicy(
+                    maxDepth: $this->maxSubagentDepth,
+                    summaryMaxChars: $summaryMaxChars,
+                );
+            }
+        }
         return $this;
     }
 
@@ -266,8 +293,15 @@ class AgentBuilder
             new AppendStepMessages(),
         ];
 
+        if ($this->skillLibrary !== null) {
+            $baseProcessors[] = new AppendSkillMetadata($this->skillLibrary);
+        }
+
         // Add task planning processor if enabled
         if ($this->hasTaskPlanning) {
+            $todoPolicy = $this->todoPolicy ?? new TodoPolicy();
+            $baseProcessors[] = new TodoReminderProcessor($todoPolicy);
+            $baseProcessors[] = new TodoRenderProcessor($todoPolicy);
             $baseProcessors[] = new PersistTasksProcessor();
         }
 
@@ -314,6 +348,8 @@ class AgentBuilder
             parentLlmProvider: $llmProvider,
             currentDepth: 0,
             maxDepth: $this->maxSubagentDepth,
+            summaryMaxChars: $this->subagentPolicy?->summaryMaxChars ?? 8000,
+            policy: $this->subagentPolicy,
         );
 
         return $agent->withTools($this->tools->merge(new Tools($subagentTool)));

@@ -3,15 +3,23 @@
 namespace Cognesy\Addons\Agent\Tools\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
+use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Collections\Tools;
+use Cognesy\Addons\Agent\Data\AgentExecution;
 use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolExecutionFormatter;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Tools\BaseTool;
+use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Utils\Result\Result;
+use DateTimeImmutable;
 
 class SpawnSubagentTool extends BaseTool
 {
@@ -23,6 +31,8 @@ class SpawnSubagentTool extends BaseTool
     private ?LLMProvider $parentLlmProvider;
     private int $currentDepth;
     private int $maxDepth;
+    private int $summaryMaxChars;
+    private SubagentPolicy $policy;
 
     public function __construct(
         Agent $parentAgent,
@@ -31,6 +41,8 @@ class SpawnSubagentTool extends BaseTool
         ?LLMProvider $parentLlmProvider = null,
         int $currentDepth = 0,
         int $maxDepth = 3,
+        int $summaryMaxChars = 8000,
+        ?SubagentPolicy $policy = null,
     ) {
         parent::__construct(
             name: 'spawn_subagent',
@@ -41,8 +53,13 @@ class SpawnSubagentTool extends BaseTool
         $this->registry = $registry;
         $this->skillLibrary = $skillLibrary;
         $this->parentLlmProvider = $parentLlmProvider;
+        $this->policy = $policy ?? new SubagentPolicy(
+            maxDepth: $maxDepth,
+            summaryMaxChars: $summaryMaxChars,
+        );
         $this->currentDepth = $currentDepth;
-        $this->maxDepth = $maxDepth;
+        $this->maxDepth = $this->policy->maxDepth;
+        $this->summaryMaxChars = $this->policy->summaryMaxChars;
     }
 
     #[\Override]
@@ -91,6 +108,8 @@ class SpawnSubagentTool extends BaseTool
                 parentLlmProvider: $this->parentLlmProvider,
                 currentDepth: $this->currentDepth + 1,
                 maxDepth: $this->maxDepth,
+                summaryMaxChars: $this->summaryMaxChars,
+                policy: $this->policy,
             );
 
             $tools = $tools->withToolRemoved('spawn_subagent')
@@ -108,27 +127,12 @@ class SpawnSubagentTool extends BaseTool
     }
 
     private function createInitialState(string $prompt, AgentSpec $spec, string $parentAgentId): AgentState {
-        $systemParts = [$spec->systemPrompt];
-
-        // Preload skills into system prompt
-        if ($spec->hasSkills() && $this->skillLibrary !== null) {
-            $systemParts[] = "\n## Loaded Skills\n";
-
-            foreach ($spec->skills ?? [] as $skillName) {
-                $skill = $this->skillLibrary->getSkill($skillName);
-                if ($skill !== null) {
-                    $systemParts[] = $skill->render();
-                    $systemParts[] = ""; // Blank line between skills
-                }
-            }
-        }
-
-        $systemMessage = implode("\n", $systemParts);
-
         $messages = Messages::fromArray([
-            ['role' => 'system', 'content' => $systemMessage],
-            ['role' => 'user', 'content' => $prompt],
+            ['role' => 'system', 'content' => $spec->systemPrompt],
         ]);
+
+        $messages = $this->appendSkillMessages($messages, $spec);
+        $messages = $messages->appendMessage(Message::asUser($prompt));
 
         return AgentState::empty()
             ->withMessages($messages)
@@ -170,15 +174,53 @@ class SpawnSubagentTool extends BaseTool
             return "[Subagent: {$name}] No response";
         }
 
-        // Extract only first line to ensure context isolation
-        $lines = explode("\n", trim($response));
-        $firstLine = trim($lines[0]);
+        $summary = $this->summarizeResponse($response);
+        return "[Subagent: {$name}] {$summary}";
+    }
 
-        // Remove markdown formatting if present
-        $firstLine = preg_replace('/^\*\*|\*\*$/', '', $firstLine) ?? $firstLine;
-        $firstLine = preg_replace('/^#+\s*/', '', $firstLine) ?? $firstLine;
+    private function summarizeResponse(string $response): string {
+        $response = trim($response);
+        if ($response === '') {
+            return '(no response)';
+        }
 
-        return "[Subagent: {$name}] {$firstLine}";
+        if ($this->summaryMaxChars <= 0 || strlen($response) <= $this->summaryMaxChars) {
+            return $response;
+        }
+
+        $snippet = substr($response, 0, $this->summaryMaxChars);
+        return rtrim($snippet) . "\n...";
+    }
+
+    private function appendSkillMessages(Messages $messages, AgentSpec $spec): Messages {
+        if (!$spec->hasSkills() || $this->skillLibrary === null) {
+            return $messages;
+        }
+
+        $executions = new ToolExecutions();
+        foreach ($spec->skills ?? [] as $skillName) {
+            $skill = $this->skillLibrary->getSkill($skillName);
+            if ($skill === null) {
+                continue;
+            }
+
+            $toolCallId = uniqid('load_skill_', true);
+            $toolCall = new ToolCall('load_skill', ['skill_name' => $skillName], $toolCallId);
+            $execution = new AgentExecution(
+                toolCall: $toolCall,
+                result: Result::success($skill->render()),
+                startedAt: new DateTimeImmutable(),
+                endedAt: new DateTimeImmutable(),
+            );
+            $executions = $executions->withAddedExecution($execution);
+        }
+
+        if (!$executions->hasExecutions()) {
+            return $messages;
+        }
+
+        $skillMessages = (new ToolExecutionFormatter())->makeExecutionMessages($executions);
+        return $messages->appendMessages($skillMessages);
     }
 
     // TOOL SCHEMA //////////////////////////////////////////////////

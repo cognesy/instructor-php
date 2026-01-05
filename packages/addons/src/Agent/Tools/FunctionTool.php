@@ -55,6 +55,6 @@ class FunctionTool extends BaseTool
 
     #[\Override]
     protected function paramsJsonSchema(): array {
-        return $this->cachedParamsJsonSchema;
+        return $this->cachedParamsJsonSchema ?? [];
     }
 }

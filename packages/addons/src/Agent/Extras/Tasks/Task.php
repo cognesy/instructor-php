@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Data;
-
-use Cognesy\Addons\Agent\Enums\TaskStatus;
+namespace Cognesy\Addons\Agent\Extras\Tasks;
 
 final readonly class Task
 {

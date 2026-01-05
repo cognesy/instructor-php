@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Extras;
-
-use Cognesy\Instructor\Attributes\Description;
+namespace Cognesy\Addons\Agent\Extras\SelfCritique;
 
 /**
  * Structured result from self-critic evaluation.
@@ -11,18 +9,15 @@ use Cognesy\Instructor\Attributes\Description;
 class SelfCriticResult
 {
     public function __construct(
-        #[Description('True if response answers the task with supporting evidence. False if response contradicts evidence or makes unsupported claims.')]
+        /** True if response answers the task with supporting evidence. False if response contradicts evidence or makes unsupported claims. */
         public bool $approved,
-        #[Description('One sentence explaining the decision.')]
+        /** One sentence explaining the decision. */
         public string $summary,
-        #[Description('List of positive aspects as simple strings.')]
-        /** @var string[] */
+        /** @var string[] List of positive aspects as simple strings. */
         public array $strengths = [],
-        #[Description('List of issues as simple strings.')]
-        /** @var string[] */
+        /** @var string[] List of issues as simple strings. */
         public array $weaknesses = [],
-        #[Description('List of suggested next steps as simple strings.')]
-        /** @var string[] */
+        /** @var string[] List of suggested next steps as simple strings. */
         public array $suggestions = [],
     ) {}
 

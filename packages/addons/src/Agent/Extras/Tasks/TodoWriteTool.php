@@ -1,20 +1,20 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools;
+namespace Cognesy\Addons\Agent\Extras\Tasks;
 
-use Cognesy\Addons\Agent\Collections\TaskList;
 use Cognesy\Addons\Agent\Contracts\CanAccessAnyState;
-use Cognesy\Addons\Agent\Data\Task;
-use Cognesy\Addons\Agent\Enums\TaskStatus;
+use Cognesy\Addons\Agent\Tools\BaseTool;
 use InvalidArgumentException;
 
 class TodoWriteTool extends BaseTool implements CanAccessAnyState
 {
     private const METADATA_KEY = 'tasks';
 
+    /** @phpstan-ignore property.onlyWritten */
     private ?object $state = null;
+    private TodoPolicy $policy;
 
-    public function __construct() {
+    public function __construct(?TodoPolicy $policy = null) {
         parent::__construct(
             name: 'todo_write',
             description: <<<'DESC'
@@ -37,6 +37,8 @@ todos: [
 Rules: Only 1 task can be in_progress. Mark completed immediately when done. Max 20 tasks.
 DESC,
         );
+
+        $this->policy = $policy ?? new TodoPolicy();
     }
 
     #[\Override]
@@ -47,17 +49,17 @@ DESC,
     }
 
     #[\Override]
-    public function __invoke(mixed ...$args): array {
+    public function __invoke(mixed ...$args): TodoResult {
         $todos = $args['todos'] ?? $args[0] ?? [];
         $tasks = $this->parseTasks($todos);
-        $taskList = TaskList::empty()->withTasks($tasks);
+        $taskList = TaskList::empty($this->policy)->withTasks($tasks);
 
-        return [
-            'success' => true,
-            'tasks' => $taskList->toArray(),
-            'summary' => $taskList->renderSummary(),
-            'rendered' => $taskList->render(),
-        ];
+        return new TodoResult(
+            success: true,
+            tasks: $taskList->toArray(),
+            summary: $taskList->renderSummary(),
+            rendered: $taskList->render(),
+        );
     }
 
     /**

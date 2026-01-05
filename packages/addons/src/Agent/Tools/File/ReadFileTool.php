@@ -21,7 +21,7 @@ class ReadFileTool extends BaseTool
         parent::__construct(
             name: 'read_file',
             description: <<<'DESC'
-Read file contents with line numbers. Use to examine file content after finding it with search_files.
+Read the contents of a file with line numbers. Use to examine file content after finding it with search_files.
 
 Examples:
 - "composer.json" → read composer.json from project root

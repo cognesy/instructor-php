@@ -8,10 +8,11 @@ use Symfony\Component\Yaml\Yaml;
 final class SkillLibrary
 {
     private const SKILL_EXTENSION = '.md';
+    private const SKILL_FILENAME = 'SKILL.md';
 
     private string $skillsPath;
 
-    /** @var array<string, array{name: string, description: string, path: string}> */
+    /** @var array<string, array{name: string, description: string, path: string, dir: string, isSkillFile: bool}> */
     private array $metadata = [];
 
     /** @var array<string, Skill> */
@@ -94,20 +95,53 @@ final class SkillLibrary
             return;
         }
 
-        $files = glob($this->skillsPath . '/*' . self::SKILL_EXTENSION);
-        if ($files === false) {
-            return;
-        }
-
+        $files = $this->findSkillFiles();
         foreach ($files as $file) {
             $meta = $this->extractMetadata($file);
-            if ($meta !== null) {
-                $this->metadata[$meta['name']] = $meta;
+            if ($meta === null) {
+                continue;
+            }
+
+            $name = $meta['name'];
+            if (!isset($this->metadata[$name])) {
+                $this->metadata[$name] = $meta;
+                continue;
+            }
+
+            if ($this->shouldOverrideMetadata($this->metadata[$name], $meta)) {
+                $this->metadata[$name] = $meta;
             }
         }
     }
 
-    /** @return array{name: string, description: string, path: string}|null */
+    /** @return list<string> */
+    private function findSkillFiles(): array {
+        $files = [];
+
+        $skillFiles = glob($this->skillsPath . '/*/' . self::SKILL_FILENAME);
+        if ($skillFiles !== false) {
+            $files = array_merge($files, $skillFiles);
+        }
+
+        $legacyFiles = glob($this->skillsPath . '/*' . self::SKILL_EXTENSION);
+        if ($legacyFiles !== false) {
+            $files = array_merge($files, $legacyFiles);
+        }
+
+        return $files;
+    }
+
+    /** @param array{name: string, description: string, path: string, dir: string, isSkillFile: bool} $existing
+     *  @param array{name: string, description: string, path: string, dir: string, isSkillFile: bool} $incoming
+     */
+    private function shouldOverrideMetadata(array $existing, array $incoming): bool {
+        if ($incoming['isSkillFile'] && !$existing['isSkillFile']) {
+            return true;
+        }
+        return false;
+    }
+
+    /** @return array{name: string, description: string, path: string, dir: string, isSkillFile: bool}|null */
     private function extractMetadata(string $path): ?array {
         $content = @file_get_contents($path);
         if ($content === false) {
@@ -115,13 +149,20 @@ final class SkillLibrary
         }
 
         $frontmatter = $this->parseFrontmatter($content) ?? [];
-        $name = $frontmatter['name'] ?? pathinfo($path, PATHINFO_FILENAME);
+        $isSkillFile = basename($path) === self::SKILL_FILENAME;
+        $defaultName = $isSkillFile
+            ? basename(dirname($path))
+            : pathinfo($path, PATHINFO_FILENAME);
+        $name = $frontmatter['name'] ?? $defaultName;
         $description = $frontmatter['description'] ?? '';
+        $dir = $isSkillFile ? dirname($path) : ($this->skillsPath . '/' . $name);
 
         return [
             'name' => $name,
             'description' => $description,
             'path' => $path,
+            'dir' => $dir,
+            'isSkillFile' => $isSkillFile,
         ];
     }
 
@@ -133,10 +174,14 @@ final class SkillLibrary
 
         $frontmatter = $this->parseFrontmatter($content);
         $body = $this->extractBody($content);
-        $resources = $this->findResources($path);
-
-        $name = $frontmatter['name'] ?? pathinfo($path, PATHINFO_FILENAME);
+        $isSkillFile = basename($path) === self::SKILL_FILENAME;
+        $defaultName = $isSkillFile
+            ? basename(dirname($path))
+            : pathinfo($path, PATHINFO_FILENAME);
+        $name = $frontmatter['name'] ?? $defaultName;
         $description = $frontmatter['description'] ?? '';
+        $dir = $isSkillFile ? dirname($path) : ($this->skillsPath . '/' . $name);
+        $resources = $this->findResources($dir, $name, !$isSkillFile);
 
         return new Skill(
             name: $name,
@@ -182,30 +227,43 @@ final class SkillLibrary
     }
 
     /** @return list<string> */
-    private function findResources(string $skillPath): array {
-        $skillDir = dirname($skillPath);
-        $skillName = pathinfo($skillPath, PATHINFO_FILENAME);
+    private function findResources(string $skillDir, string $skillName, bool $includeLegacy = false): array {
+        $resources = [];
+        $resourceFolders = ['scripts', 'references', 'assets'];
 
-        $resourceDirs = [
-            $skillDir . '/' . $skillName,
-            $skillDir . '/resources/' . $skillName,
-        ];
+        foreach ($resourceFolders as $folder) {
+            $resources = array_merge(
+                $resources,
+                $this->listResourceFiles($skillDir . '/' . $folder, $folder . '/')
+            );
+        }
+
+        if ($includeLegacy) {
+            $legacyDir = $this->skillsPath . '/resources/' . $skillName;
+            $resources = array_merge(
+                $resources,
+                $this->listResourceFiles($legacyDir, 'resources/')
+            );
+        }
+
+        return $resources;
+    }
+
+    /** @return list<string> */
+    private function listResourceFiles(string $dir, string $prefix): array {
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        $files = glob($dir . '/*');
+        if ($files === false) {
+            return [];
+        }
 
         $resources = [];
-        foreach ($resourceDirs as $dir) {
-            if (!is_dir($dir)) {
-                continue;
-            }
-
-            $files = glob($dir . '/*');
-            if ($files === false) {
-                continue;
-            }
-
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    $resources[] = basename($file);
-                }
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                $resources[] = $prefix . basename($file);
             }
         }
 

@@ -11,14 +11,23 @@ class BashTool extends BaseTool
     private const DEFAULT_TIMEOUT = 120;
     private const DEFAULT_STDOUT_LIMIT = 5 * 1024 * 1024; // 5MB
     private const DEFAULT_STDERR_LIMIT = 1 * 1024 * 1024; // 1MB
-    private const MAX_OUTPUT_LENGTH = 50000; // Characters to return to model
+    private const DANGEROUS_PATTERNS = [
+        'rm -rf /',
+        'mkfs',
+        'shutdown',
+        'reboot',
+        'dd if=/dev/zero',
+        '>:',
+    ];
 
     private CanStreamCommand $sandbox;
+    private BashPolicy $outputPolicy;
 
     public function __construct(
         ?ExecutionPolicy $policy = null,
         ?string $baseDir = null,
         int $timeout = self::DEFAULT_TIMEOUT,
+        ?BashPolicy $outputPolicy = null,
     ) {
         parent::__construct(
             name: 'bash',
@@ -39,24 +48,34 @@ DESC,
         $baseDir = $baseDir ?? getcwd() ?: '/tmp';
         $policy = $policy ?? ExecutionPolicy::in($baseDir)
             ->withTimeout($timeout)
-            ->withNetwork(true)
+            ->withNetwork(false)
             ->withOutputCaps(self::DEFAULT_STDOUT_LIMIT, self::DEFAULT_STDERR_LIMIT)
             ->inheritEnvironment();
 
         $this->sandbox = Sandbox::host($policy);
+        $this->outputPolicy = $outputPolicy ?? new BashPolicy();
     }
 
-    public static function inDirectory(string $baseDir, int $timeout = self::DEFAULT_TIMEOUT): self {
-        return new self(baseDir: $baseDir, timeout: $timeout);
+    public static function inDirectory(
+        string $baseDir,
+        int $timeout = self::DEFAULT_TIMEOUT,
+        ?BashPolicy $outputPolicy = null,
+    ): self {
+        return new self(baseDir: $baseDir, timeout: $timeout, outputPolicy: $outputPolicy);
     }
 
-    public static function withPolicy(ExecutionPolicy $policy): self {
-        return new self(policy: $policy);
+    public static function withPolicy(ExecutionPolicy $policy, ?BashPolicy $outputPolicy = null): self {
+        return new self(policy: $policy, outputPolicy: $outputPolicy);
     }
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
         $command = $args['command'] ?? $args[0] ?? '';
+
+        if ($this->isDangerousCommand($command)) {
+            return 'Error: Command blocked by safety policy';
+        }
+
         $result = $this->sandbox->execute(
             argv: ['bash', '-c', $command],
             stdin: null,
@@ -112,11 +131,15 @@ DESC,
     }
 
     private function truncateOutput(string $output, bool $wasTruncated): string {
-        $truncated = $wasTruncated;
+        $maxChars = $this->outputPolicy->maxOutputChars;
+        if ($maxChars <= 0) {
+            return $output;
+        }
 
-        if (strlen($output) > self::MAX_OUTPUT_LENGTH) {
-            $output = substr($output, -self::MAX_OUTPUT_LENGTH);
-            $truncated = true;
+        $truncated = $wasTruncated || (strlen($output) > $maxChars);
+
+        if (strlen($output) > $maxChars) {
+            $output = $this->headTailOutput($output, $maxChars);
         }
 
         if ($truncated) {
@@ -124,6 +147,34 @@ DESC,
         }
 
         return $output;
+    }
+
+    private function headTailOutput(string $output, int $maxChars): string {
+        $head = max(0, min($this->outputPolicy->headChars, $maxChars));
+        $tail = max(0, min($this->outputPolicy->tailChars, $maxChars - $head));
+
+        if ($head + $tail < $maxChars) {
+            $tail = $maxChars - $head;
+        }
+
+        if ($head === 0) {
+            return substr($output, -$tail);
+        }
+
+        if ($tail === 0) {
+            return substr($output, 0, $head);
+        }
+
+        return substr($output, 0, $head) . "\n...\n" . substr($output, -$tail);
+    }
+
+    private function isDangerousCommand(string $command): bool {
+        foreach (self::DANGEROUS_PATTERNS as $pattern) {
+            if (stripos($command, $pattern) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     #[\Override]

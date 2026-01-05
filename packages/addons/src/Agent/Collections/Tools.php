@@ -84,6 +84,10 @@ final readonly class Tools
         return new self(...$newTools);
     }
 
+    public function merge(Tools $other): Tools {
+        return $this->withTools(...$other->all());
+    }
+
     // TRANSFORMERS AND CONVERSIONS //////////////////////////////
 
     public function toToolSchema(): array {

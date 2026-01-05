@@ -49,7 +49,7 @@ $agent = AgentBuilder::new()
     ->withFileTools('/project')
     ->withTaskPlanning()
     ->withSkills($library)
-    ->withSubagents($registry, 3)
+    ->withSubagents($registry, 3, summaryMaxChars: 8000)
     ->withMaxSteps(20)
     ->withMaxTokens(32768)
     ->withTimeout(300)
@@ -61,11 +61,11 @@ $agent = AgentBuilder::new()
 
 | Method | Description |
 |--------|-------------|
-| `withBash($policy, $baseDir, $timeout)` | Add bash command execution |
+| `withBash($policy, $baseDir, $timeout, $outputPolicy)` | Add bash command execution |
 | `withFileTools($baseDir)` | Add file operations (read, write, edit) |
-| `withTaskPlanning()` | Add TodoWrite tool for task tracking |
+| `withTaskPlanning(?TodoPolicy $policy = null)` | Add TodoWrite tool for task tracking (custom limits & render cadence) |
 | `withSkills($library)` | Add LoadSkill tool with skill library |
-| `withSubagents($registry, $maxDepth)` | Enable spawning subagents |
+| `withSubagents($registry, $maxDepth|SubagentPolicy, $summaryMaxChars)` | Enable spawning subagents with configurable summary size |
 | `withTools($tools)` | Add custom tools |
 | `withMaxSteps($n)` | Set maximum execution steps |
 | `withMaxTokens($n)` | Set token usage limit |
@@ -103,8 +103,13 @@ foreach ($agent->iterator($state) as $currentState) {
 ### BashTool
 Execute shell commands via sandboxed process.
 ```php
-new BashTool(baseDir: '/tmp', timeout: 120);
+use Cognesy\Addons\Agent\Tools\BashPolicy;
+
+$bashPolicy = new BashPolicy(maxOutputChars: 50000, headChars: 8000, tailChars: 40000);
+new BashTool(baseDir: '/tmp', timeout: 120, outputPolicy: $bashPolicy);
 ```
+Network access is disabled by default; pass a custom `ExecutionPolicy` to enable it.
+Output is truncated with head/tail sampling when it exceeds `maxOutputChars`.
 
 ### ReadFileTool
 Read file contents with line numbers.
@@ -129,6 +134,22 @@ Structured task management.
 - Max 20 tasks
 - Only 1 task can be `in_progress` at a time
 - Required fields: `content`, `status`, `activeForm`
+Limits and render cadence can be customized via `TodoPolicy` passed to `withTaskPlanning()`.
+
+```php
+use Cognesy\Addons\Agent\Extras\Tasks\TodoPolicy;
+use Cognesy\Addons\Agent\Tools\Subagent\SubagentPolicy;
+
+$policy = new TodoPolicy(maxItems: 25, maxInProgress: 2, renderEverySteps: 5, reminderEverySteps: 10);
+$agent = AgentBuilder::new()
+    ->withTaskPlanning($policy)
+    ->build();
+
+$subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 12000);
+$agent = AgentBuilder::new()
+    ->withSubagents($registry, $subagentPolicy)
+    ->build();
+```
 
 ### LoadSkillTool
 Load SKILL.md files on-demand.
@@ -148,6 +169,7 @@ Send queries to the LLM for knowledge questions, reasoning, or text generation.
 new LlmQueryTool(); // Uses default LLM
 LlmQueryTool::using('openai'); // Uses specific preset
 ```
+Note: This tool is **opt‑in** and not included in default agent builds. It creates a nested LLM call inside the agent loop, which adds cost and latency. Prefer the main agent loop unless you have a specialized workflow.
 
 ## Configuration
 

@@ -52,6 +52,7 @@ class ToolExecutionFormatter
             role: 'tool',
             content: match(true) {
                 is_string($value) => $value,
+                is_object($value) && method_exists($value, '__toString') => (string) $value,
                 is_array($value) => Json::encode($value),
                 is_object($value) => Json::encode($value),
                 $value === null => 'null',
@@ -79,4 +80,3 @@ class ToolExecutionFormatter
         );
     }
 }
-

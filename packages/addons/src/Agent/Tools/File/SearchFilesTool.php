@@ -83,6 +83,7 @@ DESC,
         // Format output showing which pattern matched what
         $output = "Found " . count($allFiles) . " files:\n";
         foreach ($patternResults as $pattern => $files) {
+            /** @var array<int, string> $limited */
             $limited = array_slice($files, 0, 5);
             $output .= "\n[{$pattern}]\n" . implode("\n", $limited);
             if (count($files) > 5) {

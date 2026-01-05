@@ -2,21 +2,27 @@
 
 namespace Cognesy\Instructor\Tests;
 
+use Cognesy\Config\Env;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 
 class MockHttp
 {
-    static public function get(array $args) : HttpClient {
+    static public function get(array $args, ?string $provider = null) : HttpClient {
         $driver = new MockHttpDriver();
+
+        // Auto-detect provider from config if not specified
+        if ($provider === null) {
+            $provider = self::detectProvider();
+        }
 
         // If there's only one response, make it unlimited (for test reuse)
         // If there are multiple responses, make them sequential (for retry testing)
         $isSequential = count($args) > 1;
 
         foreach ($args as $json) {
-            $responseBody = json_encode(self::mockOpenAIResponse($json));
+            $responseBody = json_encode(self::mockResponse($json, $provider));
             $expectation = $driver->expect();
 
             if ($isSequential) {
@@ -31,6 +37,60 @@ class MockHttp
         }
 
         return new HttpClient(driver: $driver);
+    }
+
+    static private function detectProvider(): string {
+        // Load config to check default preset
+        $configPath = __DIR__ . '/Fixtures/Setup/config/llm.php';
+        if (file_exists($configPath)) {
+            $config = require $configPath;
+            $preset = $config['defaultPreset'] ?? 'openai';
+
+            // Map preset to provider type
+            if (isset($config['presets'][$preset]['providerType'])) {
+                return $config['presets'][$preset]['providerType'];
+            }
+        }
+
+        return 'openai'; // Default fallback
+    }
+
+    static private function mockResponse(string $json, string $provider): array {
+        return match($provider) {
+            'anthropic' => self::mockAnthropicResponse($json),
+            default => self::mockOpenAIResponse($json),
+        };
+    }
+
+    static private function mockAnthropicResponse(string $json): array {
+        $data = json_decode($json, true);
+
+        // Ensure data is decoded properly
+        if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+            // If JSON decode fails, use the string as-is
+            $data = $json;
+        }
+
+        return [
+            "id" => "msg_01XFDUDYJgAACzvnptvVoYEL",
+            "type" => "message",
+            "role" => "assistant",
+            "model" => "claude-3-haiku-20240307",
+            "content" => [
+                [
+                    "type" => "tool_use",
+                    "id" => "toolu_01T1x1fJ34qAmk2tNTrN7Up6",
+                    "name" => "extracted_data",
+                    "input" => is_array($data) ? $data : json_decode($data, true),
+                ]
+            ],
+            "stop_reason" => "end_turn",
+            "stop_sequence" => null,
+            "usage" => [
+                "input_tokens" => 95,
+                "output_tokens" => 9,
+            ],
+        ];
     }
 
     static private function mockOpenAIResponse(string $json) : array {

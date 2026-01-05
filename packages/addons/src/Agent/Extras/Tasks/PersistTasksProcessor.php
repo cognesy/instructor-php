@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\StateProcessors;
+namespace Cognesy\Addons\Agent\Extras\Tasks;
 
-use Cognesy\Addons\Agent\Collections\TaskList;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Step\HasStepToolExecutions;
-use Cognesy\Addons\Agent\Tools\TodoWriteTool;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 
 /**
@@ -50,6 +48,9 @@ final class PersistTasksProcessor implements CanProcessAnyState
             }
 
             $result = $execution->value();
+            if ($result instanceof TodoResult) {
+                $result = $result->toArray();
+            }
             if (!is_array($result) || !isset($result['tasks'])) {
                 continue;
             }

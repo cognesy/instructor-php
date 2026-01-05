@@ -208,22 +208,22 @@ use Cognesy\Addons\Agent\Exceptions\SubagentNotFoundException;
 
 final class SubagentRegistry
 {
-    /** @var array<string, SubagentSpec> */
+    /** @var array<string, AgentSpec> */
     private array $specs = [];
 
-    private SubagentSpecParser $parser;
+    private AgentSpecParser $parser;
 
-    public function __construct(?SubagentSpecParser $parser = null) {
-        $this->parser = $parser ?? new SubagentSpecParser();
+    public function __construct(?AgentSpecParser $parser = null) {
+        $this->parser = $parser ?? new AgentSpecParser();
     }
 
     // Registration
 
-    public function register(SubagentSpec $spec): void {
+    public function register(AgentSpec $spec): void {
         $this->specs[$spec->name] = $spec;
     }
 
-    public function registerMultiple(SubagentSpec ...$specs): void {
+    public function registerMultiple(AgentSpec ...$specs): void {
         foreach ($specs as $spec) {
             $this->register($spec);
         }
@@ -231,7 +231,7 @@ final class SubagentRegistry
 
     // Retrieval
 
-    public function get(string $name): SubagentSpec {
+    public function get(string $name): AgentSpec {
         if (!$this->has($name)) {
             throw new SubagentNotFoundException("Subagent '{$name}' not found.");
         }
@@ -242,7 +242,7 @@ final class SubagentRegistry
         return isset($this->specs[$name]);
     }
 
-    /** @return array<string, SubagentSpec> */
+    /** @return array<string, AgentSpec> */
     public function all(): array {
         return $this->specs;
     }
@@ -315,7 +315,7 @@ use Symfony\Component\Yaml\Yaml;
 
 final class SubagentSpecParser
 {
-    public function parseMarkdownFile(string $path): SubagentSpec {
+    public function parseMarkdownFile(string $path): AgentSpec {
         $content = file_get_contents($path);
         if ($content === false) {
             throw new \RuntimeException("Failed to read file: {$path}");
@@ -324,7 +324,7 @@ final class SubagentSpecParser
         return $this->parseMarkdown($content);
     }
 
-    public function parseMarkdown(string $content): SubagentSpec {
+    public function parseMarkdown(string $content): AgentSpec {
         // Extract YAML frontmatter
         $pattern = '/^---\s*\n(.*?)\n---\s*\n(.*)$/s';
         if (!preg_match($pattern, $content, $matches)) {
@@ -337,14 +337,14 @@ final class SubagentSpecParser
         return $this->createSpec($frontmatter, $systemPrompt);
     }
 
-    public function parseJson(array $data): SubagentSpec {
+    public function parseJson(array $data): AgentSpec {
         $systemPrompt = $data['systemPrompt'] ?? $data['prompt'] ?? '';
         unset($data['systemPrompt'], $data['prompt']);
 
         return $this->createSpec($data, $systemPrompt);
     }
 
-    private function createSpec(array $data, string $systemPrompt): SubagentSpec {
+    private function createSpec(array $data, string $systemPrompt): AgentSpec {
         $name = $data['name'] ?? throw new \InvalidArgumentException("Missing 'name' field");
         $description = $data['description'] ?? throw new \InvalidArgumentException("Missing 'description' field");
 
@@ -366,7 +366,7 @@ final class SubagentSpecParser
 
         $metadata = $data['metadata'] ?? [];
 
-        return new SubagentSpec(
+        return new AgentSpec(
             name: $name,
             description: $description,
             systemPrompt: $systemPrompt,
@@ -377,7 +377,7 @@ final class SubagentSpecParser
         );
     }
 
-    public function validate(SubagentSpec $spec): bool {
+    public function validate(AgentSpec $spec): bool {
         // Validate name format (lowercase, hyphens only)
         if (!preg_match('/^[a-z][a-z0-9-]*$/', $spec->name)) {
             throw new \InvalidArgumentException(
@@ -413,8 +413,8 @@ use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
-use Cognesy\Addons\Agent\Subagents\SubagentSpec;
+use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -422,13 +422,13 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 class SpawnSubagentTool extends BaseTool
 {
     private Agent $parentAgent;
-    private SubagentRegistry $registry;
+    private AgentRegistry $registry;
     private ?SkillLibrary $skillLibrary;
     private ?string $parentModel;
 
     public function __construct(
         Agent $parentAgent,
-        SubagentRegistry $registry,
+        AgentRegistry $registry,
         ?SkillLibrary $skillLibrary = null,
         ?string $parentModel = null,
     ) {
@@ -464,7 +464,7 @@ DESC,
         return $this->extractFinalResponse($finalState, $spec->name);
     }
 
-    private function createSubagent(SubagentSpec $spec): Agent {
+    private function createSubagent(AgentSpec $spec): Agent {
         // Filter tools
         $tools = $spec->filterTools($this->parentAgent->tools());
 
@@ -715,17 +715,17 @@ You are an API design expert following REST principles and best practices.
 
 ```php
 use Cognesy\Addons\Agent\AgentFactory;
-use Cognesy\Addons\Agent\Subagents\SubagentRegistry;
-use Cognesy\Addons\Agent\Subagents\SubagentSpec;
+use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Agents\AgentSpec;
 
 // Create registry
-$registry = new SubagentRegistry();
+$registry = new AgentRegistry();
 
 // Register from file
 $registry->loadFromFile('.claude/agents/code-reviewer.md');
 
 // Register from code
-$registry->register(new SubagentSpec(
+$registry->register(new AgentSpec(
     name: 'custom-analyzer',
     description: 'Analyze specific patterns',
     systemPrompt: 'You are an expert analyzer...',

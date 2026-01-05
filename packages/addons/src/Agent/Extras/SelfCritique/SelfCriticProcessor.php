@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\StateProcessors;
+namespace Cognesy\Addons\Agent\Extras\SelfCritique;
 
-use Cognesy\Addons\Agent\Continuation\SelfCriticContinuationCheck;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
-use Cognesy\Addons\Agent\Extras\SelfCriticResult;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
@@ -70,7 +68,7 @@ PROMPT;
     private ?SelfCriticResult $lastResult = null;
 
     public function __construct(
-        private int $maxIterations = 2,
+        int $maxIterations = 2,
         private bool $verbose = true,
         private ?string $llmPreset = null,
     ) {
@@ -100,7 +98,8 @@ PROMPT;
 
         // Capture original task from first message (before any processing)
         if ($this->originalTask === null && $state->messages()->count() > 0) {
-            $this->originalTask = $state->messages()->first()?->toString() ?? '';
+            $firstMessage = $state->messages()->first();
+            $this->originalTask = $firstMessage !== null ? $firstMessage->toString() : '';
         }
 
         // FIRST: Let the step execute by calling $next

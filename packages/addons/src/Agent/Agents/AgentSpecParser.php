@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Subagents;
+namespace Cognesy\Addons\Agent\Agents;
 
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 
-final class SubagentSpecParser
+final class AgentSpecParser
 {
     /**
-     * Parse a subagent spec from a markdown file.
+     * Parse an agent spec from a markdown file.
      *
      * @param string $path Absolute path to .md file
      * @return AgentSpec
@@ -20,14 +20,14 @@ final class SubagentSpecParser
     public function parseMarkdownFile(string $path): AgentSpec {
         $content = @file_get_contents($path);
         if ($content === false) {
-            throw new RuntimeException("Failed to read subagent file: {$path}");
+            throw new RuntimeException("Failed to read agent spec file: {$path}");
         }
 
         return $this->parseMarkdown($content);
     }
 
     /**
-     * Parse a subagent spec from markdown content.
+     * Parse an agent spec from markdown content.
      *
      * @param string $content Markdown with YAML frontmatter
      * @return AgentSpec
@@ -54,7 +54,7 @@ final class SubagentSpecParser
     }
 
     /**
-     * Parse a subagent spec from JSON data.
+     * Parse an agent spec from JSON data.
      *
      * @param array<string, mixed> $data JSON-decoded data
      * @return AgentSpec
@@ -99,7 +99,7 @@ final class SubagentSpecParser
     }
 
     /**
-     * Create SubagentSpec from parsed data and system prompt.
+     * Create AgentSpec from parsed data and system prompt.
      *
      * @param array<string, mixed> $data Parsed frontmatter
      * @param string $systemPrompt System prompt content

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Subagents;
+namespace Cognesy\Addons\Agent\Agents;
 
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -11,8 +11,8 @@ final readonly class AgentSpec
 {
     /**
      * @param string $name Unique identifier (lowercase, hyphens)
-     * @param string $description When to use this subagent
-     * @param string $systemPrompt Custom system prompt for subagent
+     * @param string $description When to use this agent
+     * @param string $systemPrompt Custom system prompt for agent
      * @param array<string>|null $tools Tool names (null = inherit all from parent)
      * @param LLMConfig|string|null $model LLMConfig object, preset name, 'inherit', or null
      * @param array<string>|null $skills Skill names to preload
@@ -37,20 +37,20 @@ final readonly class AgentSpec
     private function validateName(string $name): void {
         if (!preg_match('/^[a-z][a-z0-9-]*$/', $name)) {
             throw new InvalidArgumentException(
-                "Invalid subagent name '{$name}': must start with lowercase letter and contain only lowercase letters, numbers, and hyphens"
+                "Invalid agent name '{$name}': must start with lowercase letter and contain only lowercase letters, numbers, and hyphens"
             );
         }
     }
 
     private function validateDescription(string $description): void {
         if (trim($description) === '') {
-            throw new InvalidArgumentException("Subagent description cannot be empty");
+            throw new InvalidArgumentException("Agent description cannot be empty");
         }
     }
 
     private function validateSystemPrompt(string $systemPrompt): void {
         if (trim($systemPrompt) === '') {
-            throw new InvalidArgumentException("Subagent system prompt cannot be empty");
+            throw new InvalidArgumentException("Agent system prompt cannot be empty");
         }
     }
 
@@ -64,7 +64,7 @@ final readonly class AgentSpec
         if ($this->inheritsAllTools()) {
             return true;
         }
-        return in_array($toolName, $this->tools, true);
+        return in_array($toolName, $this->tools ?? [], true);
     }
 
     /**
@@ -97,9 +97,9 @@ final readonly class AgentSpec
             return $errors; // Nothing to validate
         }
 
-        foreach ($this->tools as $toolName) {
+        foreach ($this->tools ?? [] as $toolName) {
             if (!$parentTools->has($toolName)) {
-                $errors[] = "Unknown tool '{$toolName}' in subagent '{$this->name}'";
+                $errors[] = "Unknown tool '{$toolName}' in agent '{$this->name}'";
             }
         }
 
@@ -119,14 +119,14 @@ final readonly class AgentSpec
     }
 
     /**
-     * Resolve the LLM provider for this subagent.
+     * Resolve the LLM provider for this agent.
      *
      * @param LLMProvider|null $parentProvider Parent's LLM provider for inheritance
      * @return LLMProvider Resolved LLM provider
      */
     public function resolveLlmProvider(?LLMProvider $parentProvider = null): LLMProvider {
         return match(true) {
-            $this->model instanceof LLMConfig => LLMProvider::fromConfig($this->model),
+            $this->model instanceof LLMConfig => LLMProvider::new()->withConfig($this->model),
             $this->model === 'inherit' => $parentProvider ?? LLMProvider::new(),
             is_string($this->model) => LLMProvider::using($this->model),
             default => LLMProvider::new(),

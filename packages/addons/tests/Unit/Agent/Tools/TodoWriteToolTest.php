@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\Tools\TodoWriteTool;
+use Cognesy\Addons\Agent\Extras\Tasks\TodoWriteTool;
 
 describe('TodoWriteTool', function () {
 
@@ -19,8 +19,8 @@ describe('TodoWriteTool', function () {
             ['content' => 'Task 2', 'status' => 'in_progress', 'activeForm' => 'Doing task 2'],
         ]);
 
-        expect($result['success'])->toBeTrue();
-        expect($result['tasks'])->toHaveCount(2);
+        expect($result->success)->toBeTrue();
+        expect($result->tasks)->toHaveCount(2);
     });
 
     it('returns rendered output', function () {
@@ -31,8 +31,8 @@ describe('TodoWriteTool', function () {
             ['content' => 'Write tests', 'status' => 'in_progress', 'activeForm' => 'Writing tests'],
         ]);
 
-        expect($result['rendered'])->toContain('Fix bug');
-        expect($result['rendered'])->toContain('Writing tests');
+        expect($result->rendered)->toContain('Fix bug');
+        expect($result->rendered)->toContain('Writing tests');
     });
 
     it('returns summary', function () {
@@ -44,9 +44,9 @@ describe('TodoWriteTool', function () {
             ['content' => 'Task 3', 'status' => 'pending', 'activeForm' => 'Doing 3'],
         ]);
 
-        expect($result['summary'])->toContain('1/3 completed');
-        expect($result['summary'])->toContain('1 in progress');
-        expect($result['summary'])->toContain('1 pending');
+        expect($result->summary)->toContain('1/3 completed');
+        expect($result->summary)->toContain('1 in progress');
+        expect($result->summary)->toContain('1 pending');
     });
 
     it('throws exception for missing content', function () {
@@ -123,8 +123,8 @@ describe('TodoWriteTool', function () {
 
         $result = $tool([]);
 
-        expect($result['success'])->toBeTrue();
-        expect($result['tasks'])->toBeEmpty();
+        expect($result->success)->toBeTrue();
+        expect($result->tasks)->toBeEmpty();
     });
 
     it('trims whitespace from content and activeForm', function () {
@@ -134,8 +134,8 @@ describe('TodoWriteTool', function () {
             ['content' => '  Task with spaces  ', 'status' => 'pending', 'activeForm' => '  Doing task  '],
         ]);
 
-        expect($result['tasks'][0]['content'])->toBe('Task with spaces');
-        expect($result['tasks'][0]['activeForm'])->toBe('Doing task');
+        expect($result->tasks[0]['content'])->toBe('Task with spaces');
+        expect($result->tasks[0]['activeForm'])->toBe('Doing task');
     });
 
     it('provides metadata key', function () {
