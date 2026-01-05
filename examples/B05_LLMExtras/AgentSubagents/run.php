@@ -1,344 +1,169 @@
-<?php
+---
+title: 'Agent Subagent Orchestration'
+docname: 'agent_subagents'
+---
 
+## Overview
+
+Subagents enable decomposition of complex tasks into isolated subtasks. The main agent
+orchestrates multiple subagents, each with specialized roles and tools. This pattern
+provides:
+
+- **Context isolation**: Each subagent has clean context without cross-contamination
+- **Parallel execution**: Multiple subagents can work simultaneously
+- **Specialized capabilities**: Each subagent has specific tools for its role
+- **Scalability**: Handle many independent subtasks without context overflow
+- **Result aggregation**: Main agent synthesizes subagent outputs
+
+Key concepts:
+- `UseSubagents`: Capability that enables subagent spawning
+- `AgentRegistry`: Registry of available subagent specifications
+- `AgentSpec`: Defines subagent role, tools, and behavior
+- `spawn_subagent`: Tool to create and execute subagent
+- Context isolation: Subagents don't see each other's work
+
+## Example
+
+```php
+<?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\AgentStep;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Agents\AgentRegistry;
 use Cognesy\Addons\Agent\Agents\AgentSpec;
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
-use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
 use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\Agent\Capabilities\Subagent\SpawnSubagentTool;
 use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
 use Cognesy\Messages\Messages;
 
-/**
- * Subagent Example: Context Isolation
- *
- * Demonstrates the KEY VALUE of subagents:
- * - Main agent coordinates reviews of 3 classes
- * - Each review uses an isolated subagent
- * - Main agent only receives summaries (not full review details)
- * - Shows: context stays clean, scalable to many reviews
- *
- * Scope: Fast execution - reviews 3 small classes concisely
- */
+// Configure working directory
+$workDir = dirname(__DIR__, 3);
 
-// =============================================================================
-// AGENT REGISTRY
-// =============================================================================
+// Create subagent registry
+$registry = AgentRegistry::empty();
 
-final class QuickReviewAgentRegistry
-{
-    public function create(): AgentRegistry {
-        $registry = new AgentRegistry();
+// Register code reviewer subagent
+$registry = $registry->with(AgentSpec::simple(
+    name: 'reviewer',
+    role: 'You review code files and identify issues. Read the file and provide a concise assessment.',
+    tools: ['read_file']
+));
 
-        $registry->register(new AgentSpec(
-            name: 'quick-reviewer',
-            description: 'Fast code reviewer - 1 finding per class',
-            systemPrompt: <<<'PROMPT'
-You are a code reviewer. Read the file and return ONE line only.
+// Register documentation generator subagent
+$registry = $registry->with(AgentSpec::simple(
+    name: 'documenter',
+    role: 'You generate documentation for code. Read the file and create brief documentation.',
+    tools: ['read_file']
+));
 
-Format: ClassName: Issue - Fix
-Example: UserAuth: Missing type hints - add string return type
+// Build main orchestration agent
+$agent = AgentBuilder::base()
+    ->withCapability(new UseFileTools($workDir))
+    ->withCapability(new UseSubagents(
+        registry: $registry,
+        policy: SubagentPolicy::default()
+    ))
+    ->build();
 
-Return ONLY ONE LINE. No explanations, no markdown, no extra text.
-PROMPT,
-            tools: ['read_file'],
-            model: 'inherit',
-        ));
+// Task requiring multiple isolated reviews
+$task = <<<TASK
+Review these three files and provide a summary:
+1. src/Agent/AgentBuilder.php
+2. src/Agent/AgentState.php
+3. src/Agent/Agent.php
 
-        return $registry;
-    }
-}
-
-// =============================================================================
-// PRINTERS
-// =============================================================================
-
-final class ReviewProgressPrinter
-{
-    private int $stepNum = 0;
-
-    public function __invoke(AgentStep $step): void {
-        $this->stepNum++;
-
-        if ($step->hasErrors()) {
-            foreach ($step->errors() as $error) {
-                echo "⚠ ERROR: " . $error->getMessage() . "\n";
-            }
-        }
-
-        if ($step->hasToolCalls()) {
-            foreach ($step->toolCalls()->all() as $toolCall) {
-                if ($toolCall->name() === 'spawn_subagent') {
-                    echo "→ Spawning review subagent\n";
-                }
-            }
-        }
-
-        // DEBUG: Show tool execution results
-        if ($step->toolExecutions()->hasExecutions()) {
-            foreach ($step->toolExecutions()->all() as $execution) {
-                if ($execution->name() === 'spawn_subagent' && !$execution->hasError()) {
-                    $result = $execution->value();
-                    $resultStr = is_string($result) ? $result : json_encode($result);
-                    echo "  [DEBUG] Tool result length: " . strlen($resultStr) . " chars\n";
-                    echo "  [DEBUG] Tool result: " . substr($resultStr, 0, 200) . "...\n";
-                }
-            }
-        }
-
-        // DEBUG: Show step usage
-        echo "  [DEBUG] Step input messages: " . $step->inputMessages()->count() . "\n";
-        echo "  [DEBUG] Step output messages: " . $step->outputMessages()->count() . "\n";
-    }
-}
-
-final class ReviewResultPrinter
-{
-    public function __invoke(AgentState $state): void {
-        echo "\n" . str_repeat("═", 68) . "\n\n";
-        $this->printResult($state);
-        $this->printContextAnalysis($state);
-        $this->printStats($state);
-    }
-
-    private function printResult(AgentState $state): void {
-        $response = $state->currentStep()?->outputMessages()->toString() ?? '';
-
-        echo "COORDINATOR RESULT:\n\n";
-        if (empty($response)) {
-            echo "(No response - check errors)\n";
-        } else {
-            echo $response . "\n";
-        }
-        echo "\n" . str_repeat("─", 68) . "\n\n";
-    }
-
-    private function printContextAnalysis(AgentState $state): void {
-        $mainAgentTokens = $state->usage()->total();
-        $subagentTokenUsage = $this->collectSubagentTokenUsage($state);
-
-        echo "DEBUG: DETAILED USAGE ANALYSIS\n";
-        echo str_repeat("=", 68) . "\n\n";
-
-        // Analyze each step
-        echo "Main Agent Steps Breakdown:\n";
-        foreach ($state->steps() as $idx => $step) {
-            echo "  Step " . ($idx + 1) . ":\n";
-            echo "    Input messages: " . $step->inputMessages()->count() . "\n";
-            echo "    Output messages: " . $step->outputMessages()->count() . "\n";
-
-            // Show actual message content (truncated)
-            foreach ($step->inputMessages()->all() as $msgIdx => $msg) {
-                $content = $msg->toString();
-                $preview = substr($content, 0, 150);
-                echo "      Input msg {$msgIdx}: " . strlen($content) . " chars - " . str_replace("\n", " ", $preview) . "...\n";
-            }
-
-            foreach ($step->outputMessages()->all() as $msgIdx => $msg) {
-                $content = $msg->toString();
-                $preview = substr($content, 0, 150);
-                echo "      Output msg {$msgIdx}: " . strlen($content) . " chars - " . str_replace("\n", " ", $preview) . "...\n";
-            }
-        }
-
-        echo "\n" . str_repeat("=", 68) . "\n\n";
-
-        echo "CONTEXT ISOLATION DEMO:\n\n";
-
-        // Show subagent token usage
-        if (!empty($subagentTokenUsage)) {
-            echo "Subagent Token Usage (isolated contexts):\n";
-            foreach ($subagentTokenUsage as $idx => $usage) {
-                $num = $idx + 1;
-                echo "  Subagent {$num}: {$usage['input']} input + {$usage['output']} output = {$usage['total']} tokens\n";
-            }
-
-            $totalSubagentTokens = array_sum(array_column($subagentTokenUsage, 'total'));
-            echo "  Total subagent tokens: {$totalSubagentTokens}\n\n";
-        }
-
-        // Show main agent token usage
-        echo "Main Agent Token Usage (coordination only):\n";
-        echo "  Main agent: {$state->usage()->inputTokens} input + {$state->usage()->outputTokens} output = {$mainAgentTokens} tokens\n\n";
-
-        // Show the value
-        echo "VALUE DEMONSTRATION:\n";
-        echo "  ✓ Detailed analysis stayed in isolated subagent contexts\n";
-        echo "  ✓ Main agent only processed summaries, not full reviews\n";
-        echo "  ✓ Main agent context stays clean and focused\n";
-        echo "  ✓ Scales to 10, 50, 100 files without context explosion\n\n";
-    }
-
-    private function collectSubagentTokenUsage(AgentState $state): array {
-        $subagentUsage = [];
-
-        // Get subagent states from static storage (not from tool results!)
-        $subagentStates = SpawnSubagentTool::getSubagentStates();
-
-        foreach ($subagentStates as $entry) {
-            $subagentState = $entry['state'];
-            $usage = $subagentState->usage();
-
-            $subagentUsage[] = [
-                'name' => $entry['name'],
-                'input' => $usage->inputTokens,
-                'output' => $usage->outputTokens,
-                'total' => $usage->total(),
-            ];
-        }
-
-        return $subagentUsage;
-    }
-
-    private function printStats(AgentState $state): void {
-        $usage = $state->usage();
-        echo "Stats:\n";
-        echo "  Steps: {$state->stepCount()}\n";
-        echo "  Status: {$state->status()->value}\n";
-        echo "  Total tokens: {$usage->total()}\n";
-    }
-}
-
-// =============================================================================
-// ACTION: MULTI-FILE REVIEW
-// =============================================================================
-
-final class MultiFileReviewAction
-{
-    private Agent $agent;
-    private ReviewProgressPrinter $progressPrinter;
-    private ReviewResultPrinter $resultPrinter;
-
-    public function __construct(
-        private string $workDir,
-        private ?string $llmPreset = null,
-    ) {
-        $this->setup();
-    }
-
-    private function setup(): void {
-        $registry = (new QuickReviewAgentRegistry())->create();
-        $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 8000);
-
-        $builder = AgentBuilder::base()
-            ->withCapability(new UseBash())
-            ->withCapability(new UseFileTools($this->workDir))
-            ->withCapability(new UseTaskPlanning())
-            ->withCapability(new UseSubagents($registry, $subagentPolicy))
-            ->withMaxSteps(20);
-        if ($this->llmPreset) {
-            $builder = $builder->withLlmPreset($this->llmPreset);
-        }
-        $this->agent = $builder->build();
-
-        $this->progressPrinter = new ReviewProgressPrinter();
-        $this->resultPrinter = new ReviewResultPrinter();
-    }
-
-    public function __invoke(array $files): AgentState {
-        $task = $this->buildTask($files);
-        $state = $this->executeReview($task);
-        ($this->resultPrinter)($state);
-
-        return $state;
-    }
-
-    private function buildTask(array $files): string {
-        $fileCount = count($files);
-        $fileList = implode("\n", array_map(fn($f) => "- {$f}", $files));
-
-        return <<<TASK
-Review these {$fileCount} classes for code quality:
-{$fileList}
-
-For EACH file:
-1. Use the 'quick-reviewer' subagent
-2. Get ONE specific finding per class
-3. Keep subagent review focused and fast
-
-After all reviews, provide:
-- Summary of all findings
-- Top priority issue across all files
-
-Important: Each subagent review is isolated - detailed analysis
-stays in subagent context, you only coordinate the summaries.
+For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;
-    }
 
-    private function executeReview(string $task): AgentState {
-        // Clear any previous subagent states
-        SpawnSubagentTool::clearSubagentStates();
-
-        $state = AgentState::empty()->withMessages(
-            Messages::fromString($task)
-        );
-
-        while ($this->agent->hasNextStep($state)) {
-            $state = $this->agent->nextStep($state);
-            ($this->progressPrinter)($state->currentStep());
-        }
-
-        // Ensure completion - force final steps if still in progress
-        $safetyLimit = 5;
-        $attempts = 0;
-        while ($state->status() === AgentStatus::InProgress && $attempts < $safetyLimit) {
-            $state = $this->agent->nextStep($state);
-            ($this->progressPrinter)($state->currentStep());
-            $attempts++;
-        }
-
-        return $state;
-    }
-}
-
-// =============================================================================
-// MAIN
-// =============================================================================
-
-echo "╔════════════════════════════════════════════════════════════════╗\n";
-echo "║    Subagent Demo: Context Isolation & Coordination            ║\n";
-echo "╚════════════════════════════════════════════════════════════════╝\n\n";
-
-$llmPreset = $argv[1] ?? 'anthropic';
-
-echo "Value Proposition:\n";
-echo "  • Main agent coordinates multiple reviews\n";
-echo "  • Each review runs in isolated subagent context\n";
-echo "  • Detailed analysis doesn't pollute main agent\n";
-echo "  • Scales to many files without context explosion\n\n";
-
-echo str_repeat("─", 68) . "\n\n";
-
-// Small, fast files for quick demo
-$filesToReview = [
-    'packages/addons/src/Agent/Agents/AgentSpec.php',
-    'packages/addons/src/Agent/Agents/AgentRegistry.php',
-    'packages/addons/src/Agent/Agents/AgentSpecParser.php',
-];
-
-echo "Reviewing " . count($filesToReview) . " classes:\n";
-foreach ($filesToReview as $file) {
-    echo "  • " . basename($file) . "\n";
-}
-echo "\n";
-
-$projectRoot = dirname(__DIR__, 3);
-
-$action = new MultiFileReviewAction(
-    workDir: $projectRoot,
-    llmPreset: $llmPreset
+$state = AgentState::empty()->withMessages(
+    Messages::fromString($task)
 );
 
-echo "Executing (each subagent review is fast & isolated)...\n\n";
+// Execute with subagent spawning
+echo "Task: Review multiple files\n\n";
 
-$action($filesToReview);
+while ($agent->hasNextStep($state)) {
+    $state = $agent->nextStep($state);
 
-echo "\n✓ Demo complete\n";
+    $step = $state->currentStep();
+    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
+
+    if ($step->hasToolCalls()) {
+        foreach ($step->toolCalls()->all() as $toolCall) {
+            if ($toolCall->name() === 'spawn_subagent') {
+                $args = $toolCall->args();
+                echo "  → spawn_subagent(subagent={$args['subagent']}, prompt=...)\n";
+            } else {
+                echo "  → {$toolCall->name()}()\n";
+            }
+        }
+    }
+}
+
+// Extract summary
+$summary = $state->currentStep()?->outputMessages()->toString() ?? 'No summary';
+
+echo "\nSummary:\n";
+echo $summary . "\n\n";
+
+echo "Stats:\n";
+echo "  Steps: {$state->stepCount()}\n";
+echo "  Subagents spawned: " . ($state->metadata()['subagent_count'] ?? 0) . "\n";
+echo "  Status: {$state->status()->value}\n";
+```
+
+## Expected Output
+
+```
+Task: Review multiple files
+
+Step 1: [tool_use]
+  → spawn_subagent(subagent=reviewer, prompt=Review AgentBuilder.php)
+
+Step 2: [tool_use]
+  → spawn_subagent(subagent=reviewer, prompt=Review AgentState.php)
+
+Step 3: [tool_use]
+  → spawn_subagent(subagent=reviewer, prompt=Review Agent.php)
+
+Step 4: [response]
+
+Summary:
+Code Review Summary:
+
+1. AgentBuilder.php
+   - Well-structured builder pattern
+   - Good use of fluent interface
+   - Consider adding validation for required fields
+
+2. AgentState.php
+   - Immutable state design is excellent
+   - Clear separation of concerns
+   - Methods are well-named and focused
+
+3. Agent.php
+   - Core agent loop is clean
+   - Good error handling
+   - Consider extracting step execution to separate class
+
+Overall: Code quality is high with clear architectural patterns.
+
+Stats:
+  Steps: 4
+  Subagents spawned: 3
+  Status: finished
+```
+
+## Key Points
+
+- **Context isolation**: Each subagent reviews independently without seeing other reviews
+- **Scalability**: Main agent context stays clean even with many subagent calls
+- **Specialized roles**: Each subagent has specific tools and instructions
+- **Result aggregation**: Main agent synthesizes all subagent outputs
+- **Parallel potential**: Subagents can execute concurrently (implementation-dependent)
+- **AgentRegistry**: Central registry of available subagent types
+- **Policy control**: SubagentPolicy defines spawning limits and behavior
+- **Clean architecture**: Separation between orchestration and execution
+- **Use cases**: Code review batches, multi-document analysis, parallel research, task decomposition
+- **Metadata tracking**: Track subagent spawns and execution statistics

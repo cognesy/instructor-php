@@ -1,41 +1,48 @@
+---
+title: 'Agent Control Runtime Switching'
+docname: 'agent_ctrl_switching'
+---
+
+## Overview
+
+AgentCtrl provides a unified API that works across multiple CLI-based code agents. This
+enables runtime switching between different backends (Claude Code, OpenCode, Codex, Gemini)
+without changing your application code. Useful for comparing agent performance, failover
+scenarios, or A/B testing.
+
+Key concepts:
+- `AgentType` enum: Specify which agent backend to use
+- Unified API: Same methods work across all agent types
+- Runtime selection: Choose agent dynamically based on configuration or logic
+- Agent-specific configuration: Apply custom settings per agent type
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
 use Cognesy\AgentCtrl\Enum\AgentType;
 
-/**
- * Unified Agent - Runtime Switching Example
- *
- * Demonstrates switching between different AI coding agents at runtime.
- * The same prompt is sent to multiple agents to compare their responses.
- */
+$prompt = 'What design pattern does a class with a static make() method implement? Answer in one sentence.';
 
-print("╔════════════════════════════════════════════════════════════════╗\n");
-print("║          Unified Agent - Runtime Switching Demo                ║\n");
-print("╚════════════════════════════════════════════════════════════════╝\n\n");
-
-$prompt = 'What design pattern does a class with a static make() method that returns different subclasses based on a parameter typically implement? Answer in one sentence.';
-
-print("PROMPT: {$prompt}\n");
-print(str_repeat("─", 68) . "\n\n");
-
-// Test with multiple agents
+// Test the same prompt with multiple agents
 $agents = [
-    'opencode' => 'OpenCode (default model)',
+    'opencode' => 'OpenCode',
     'claude-code' => 'Claude Code',
     'codex' => 'Codex',
 ];
 
 foreach ($agents as $agentId => $agentName) {
-    print("▶ Testing: {$agentName}\n");
+    echo "▶ Testing: {$agentName}\n";
 
     $startTime = microtime(true);
 
     try {
         $builder = AgentCtrl::make(AgentType::from($agentId));
 
-        // Claude Code needs maxTurns limit
+        // Apply agent-specific configuration
         if ($agentId === 'claude-code') {
             $builder->withMaxTurns(1);
         }
@@ -44,25 +51,58 @@ foreach ($agents as $agentId => $agentName) {
         $elapsed = round((microtime(true) - $startTime) * 1000);
 
         if ($response->isSuccess()) {
-            print("  ✓ Response ({$elapsed}ms):\n");
-            print("    " . wordwrap($response->text(), 60, "\n    ") . "\n");
+            echo "  ✓ Response ({$elapsed}ms):\n";
+            echo "    " . wordwrap($response->text(), 60, "\n    ") . "\n";
 
             if ($response->usage) {
-                print("    Tokens: {$response->usage->input} in / {$response->usage->output} out\n");
+                echo "    Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
             }
             if ($response->cost) {
-                print("    Cost: $" . number_format($response->cost, 4) . "\n");
+                echo "    Cost: $" . number_format($response->cost, 4) . "\n";
             }
         } else {
-            print("  ✗ Failed (exit code: {$response->exitCode})\n");
+            echo "  ✗ Failed (exit code: {$response->exitCode})\n";
         }
     } catch (Throwable $e) {
-        print("  ✗ Error: {$e->getMessage()}\n");
+        echo "  ✗ Error: {$e->getMessage()}\n";
     }
 
-    print("\n");
+    echo "\n";
 }
+```
 
-print(str_repeat("─", 68) . "\n");
-print("This demonstrates runtime agent switching - the same AgentCtrl\n");
-print("API works with different backends (OpenCode, Claude Code, Codex).\n");
+## Expected Output
+
+```
+▶ Testing: OpenCode
+  ✓ Response (1234ms):
+    The Factory Method pattern, which uses a static method to create
+    and return instances of different subclasses based on parameters.
+    Tokens: 38 in / 24 out
+    Cost: $0.0008
+
+▶ Testing: Claude Code
+  ✓ Response (2156ms):
+    This is the Factory Method pattern, where a static factory method
+    determines which concrete class to instantiate based on input.
+    Tokens: 38 in / 26 out
+    Cost: $0.0015
+
+▶ Testing: Codex
+  ✓ Response (987ms):
+    A class using static make() for conditional instantiation typically
+    implements the Factory Method or Static Factory pattern.
+    Tokens: 38 in / 22 out
+    Cost: $0.0012
+```
+
+## Key Points
+
+- **Unified API**: Same interface across all agent backends
+- **Runtime selection**: Choose agent dynamically based on requirements
+- **Agent comparison**: Run the same prompt across multiple agents to compare
+- **Failover capability**: Try alternative agents if primary fails
+- **Agent-specific tuning**: Apply configuration based on agent characteristics
+- **Performance comparison**: Measure response time and cost across agents
+- **Use cases**: A/B testing, load balancing, fallback strategies, feature parity testing
+- **Available agents**: Claude Code, OpenCode, Codex, Gemini (via `AgentType` enum)
