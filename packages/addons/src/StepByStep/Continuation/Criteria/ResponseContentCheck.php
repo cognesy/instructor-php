@@ -4,9 +4,15 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 /**
- * Uses a predicate to decide whether to continue based on the latest response content.
+ * Work driver: Uses a predicate to decide whether to continue based on the latest response content.
+ *
+ * Acts as a hybrid:
+ * - No response yet (null): AllowContinuation (permits bootstrap)
+ * - Predicate returns true: RequestContinuation (has work to do)
+ * - Predicate returns false: AllowStop (work complete)
  *
  * @template TState of object
  * @template TResponse of object|null
@@ -21,7 +27,7 @@ final readonly class ResponseContentCheck implements CanDecideToContinue
 
     /**
      * @param Closure(TState): TResponse $responseResolver
-     * @param Closure(TResponse): bool $predicate Returns true to continue, false to stop
+     * @param Closure(TResponse): bool $predicate Returns true to signal continuation, false to allow stop
      */
     public function __construct(callable $responseResolver, callable $predicate) {
         $this->responseResolver = Closure::fromCallable($responseResolver);
@@ -32,13 +38,18 @@ final readonly class ResponseContentCheck implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         /** @var TState $state */
         $response = ($this->responseResolver)($state);
         if ($response === null) {
-            return true;
+            // No response yet - permit bootstrap (act like a guard)
+            return ContinuationDecision::AllowContinuation;
         }
 
-        return ($this->predicate)($response);
+        $shouldContinue = ($this->predicate)($response);
+
+        return $shouldContinue
+            ? ContinuationDecision::RequestContinuation
+            : ContinuationDecision::AllowStop;
     }
 }

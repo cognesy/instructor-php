@@ -5,9 +5,13 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 use BackedEnum;
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 /**
- * Stops when the current step's finish reason matches a configured set.
+ * Guard: Forbids continuation when the current step's finish reason matches a configured set.
+ *
+ * Returns ForbidContinuation when finish reason matches stop reasons (guard denial),
+ * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
  * @implements CanDecideToContinue<TState>
@@ -35,9 +39,9 @@ final readonly class FinishReasonCheck implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         if ($this->normalizedStopReasons === []) {
-            return true;
+            return ContinuationDecision::AllowContinuation;
         }
 
         /** @var TState $state */
@@ -46,10 +50,16 @@ final readonly class FinishReasonCheck implements CanDecideToContinue
             $reason = $reason->value;
         }
         if ($reason === null) {
-            return true;
+            return ContinuationDecision::AllowContinuation;
         }
 
-        return !in_array($reason, $this->normalizedStopReasons, true);
+        $shouldStop = in_array($reason, $this->normalizedStopReasons, true);
+
+        // Stop reason matched: forbid continuation (guard denies)
+        // No match: allow continuation (guard permits)
+        return $shouldStop
+            ? ContinuationDecision::ForbidContinuation
+            : ContinuationDecision::AllowContinuation;
     }
 
     /**

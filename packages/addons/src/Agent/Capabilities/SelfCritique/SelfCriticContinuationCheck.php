@@ -5,7 +5,15 @@ namespace Cognesy\Addons\Agent\Capabilities\SelfCritique;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStepType;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
+/**
+ * Signals continuation when self-critic requests a revision.
+ *
+ * Returns AllowContinuation when revision needed (has work to do),
+ * AllowStop when approved or max iterations reached,
+ * ForbidContinuation when max iterations exceeded (hard stop).
+ */
 class SelfCriticContinuationCheck implements CanDecideToContinue
 {
     public const METADATA_KEY = 'self_critic_result';
@@ -16,36 +24,36 @@ class SelfCriticContinuationCheck implements CanDecideToContinue
     ) {}
 
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         assert($state instanceof AgentState);
 
         $currentStep = $state->currentStep();
 
-        // If no step yet or not a final response, continue based on default logic
+        // If no step yet or not a final response, let other criteria decide
         if ($currentStep === null || $currentStep->stepType() !== AgentStepType::FinalResponse) {
-            return true; // Let other criteria decide
+            return ContinuationDecision::AllowStop;
         }
 
         // Check if critic result exists in metadata
         $criticResult = $state->metadata()->get(self::METADATA_KEY);
         $iteration = $state->metadata()->get(self::ITERATION_KEY, 0);
 
-        // If no critic result, means critic hasn't run yet - should continue to process
+        // If no critic result, means critic hasn't run yet - let other criteria decide
         if ($criticResult === null) {
-            return true;
+            return ContinuationDecision::AllowStop;
         }
 
-        // If critic approved, we're done
+        // If critic approved, we're done - allow stop
         if ($criticResult instanceof SelfCriticResult && $criticResult->approved) {
-            return false;
+            return ContinuationDecision::AllowStop;
         }
 
-        // If not approved but we've hit max iterations, accept anyway
+        // If not approved but we've hit max iterations, force stop
         if ($iteration >= $this->maxIterations) {
-            return false;
+            return ContinuationDecision::ForbidContinuation;
         }
 
-        // Not approved and under max iterations - should continue for revision
-        return true;
+        // Not approved and under max iterations - signal continuation for revision
+        return ContinuationDecision::AllowContinuation;
     }
 }

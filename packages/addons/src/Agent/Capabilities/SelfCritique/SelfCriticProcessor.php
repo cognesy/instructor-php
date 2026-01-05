@@ -247,6 +247,7 @@ PROMPT;
                 $structured = $structured->using($this->llmPreset);
             }
 
+            /** @var SelfCriticResult */
             return $structured->get();
         } catch (\Throwable $e) {
             // On failure, approve to avoid blocking

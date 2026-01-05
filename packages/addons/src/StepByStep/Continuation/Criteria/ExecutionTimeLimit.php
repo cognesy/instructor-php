@@ -4,12 +4,16 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Utils\Time\ClockInterface;
 use Cognesy\Utils\Time\SystemClock;
 use DateTimeImmutable;
 
 /**
- * Stops once elapsed time between the state's start and current clock exceeds the limit.
+ * Guard: Forbids continuation once elapsed time between the state's start and current clock exceeds the limit.
+ *
+ * Returns ForbidContinuation when time limit exceeded (guard denial),
+ * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
  * @implements CanDecideToContinue<TState>
@@ -41,10 +45,16 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         /** @var TState $state */
         $startedAt = ($this->startedAtResolver)($state);
         $now = $this->clock->now();
-        return ($now->getTimestamp() - $startedAt->getTimestamp()) < $this->maxSeconds;
+        $elapsedSeconds = $now->getTimestamp() - $startedAt->getTimestamp();
+
+        // Under limit: allow continuation (guard permits)
+        // At/over limit: forbid continuation (guard denies)
+        return $elapsedSeconds < $this->maxSeconds
+            ? ContinuationDecision::AllowContinuation
+            : ContinuationDecision::ForbidContinuation;
     }
 }

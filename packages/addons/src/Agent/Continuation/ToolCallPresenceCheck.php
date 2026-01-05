@@ -4,9 +4,13 @@ namespace Cognesy\Addons\Agent\Continuation;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 /**
- * Stops when the current step does not contain any tool calls.
+ * Work driver: Requests continuation when the current step contains tool calls.
+ *
+ * Returns RequestContinuation when tool calls are present (has work to do),
+ * AllowStop when no tool calls (work complete from this criterion's perspective).
  *
  * @template TState of object
  * @implements CanDecideToContinue<TState>
@@ -27,8 +31,12 @@ final readonly class ToolCallPresenceCheck implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         /** @var TState $state */
-        return ($this->hasToolCallsResolver)($state);
+        $hasToolCalls = ($this->hasToolCallsResolver)($state);
+
+        return $hasToolCalls
+            ? ContinuationDecision::RequestContinuation
+            : ContinuationDecision::AllowStop;
     }
 }

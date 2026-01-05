@@ -53,8 +53,8 @@ PROMPT;
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $originalTask = $args['original_task'] ?? $args[0] ?? '';
-        $proposedResponse = $args['proposed_response'] ?? $args[1] ?? '';
+        $originalTask = (string) ($args['original_task'] ?? $args[0] ?? '');
+        $proposedResponse = (string) ($args['proposed_response'] ?? $args[1] ?? '');
 
         if (empty($originalTask)) {
             return "Error: original_task is required";

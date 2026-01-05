@@ -43,7 +43,10 @@ class AgentBuilder
 {
     private Tools $tools;
     private array $processors = [];
-    private array $continuationCriteria = [];
+
+    /** @var CanDecideToContinue[] Flat list of continuation criteria */
+    private array $criteria = [];
+
     private ?CanUseTools $driver = null;
     private ?CanHandleEvents $events = null;
     private ?string $llmPreset = null;
@@ -55,7 +58,7 @@ class AgentBuilder
     private int $maxRetries = 3;
     private array $finishReasons = [];
 
-    /** @var callable[] */
+    /** @var array<callable(Agent): Agent> */
     private array $onBuildCallbacks = [];
 
     private function __construct() {
@@ -113,8 +116,19 @@ class AgentBuilder
         return $this;
     }
 
+    /**
+     * Add continuation criterion to the flat criteria list.
+     *
+     * Resolution uses priority logic (order-independent):
+     *   - ForbidContinuation from any criterion → STOP (hard limits win)
+     *   - AllowContinuation from any criterion → CONTINUE (someone has work)
+     *   - AllowStop from all criteria → STOP (nothing to do)
+     *
+     * Hard limits (StepsLimit, TokenUsageLimit) return ForbidContinuation when exceeded.
+     * Continue signals (ToolCallPresence, SelfCritic) return AllowContinuation when they have work.
+     */
     public function addContinuationCriteria(CanDecideToContinue $criteria): self {
-        $this->continuationCriteria[] = $criteria;
+        $this->criteria[] = $criteria;
         return $this;
     }
 
@@ -216,6 +230,7 @@ class AgentBuilder
 
     // INTERNAL //////////////////////////////////////////////////
 
+    /** @return StateProcessors<AgentState> */
     private function buildProcessors(): StateProcessors {
         $baseProcessors = [
             new AccumulateTokenUsage(),
@@ -225,27 +240,32 @@ class AgentBuilder
 
         $allProcessors = array_merge($baseProcessors, $this->processors);
 
-        /** @var StateProcessors<AgentState> $processors */
-        $processors = new StateProcessors(...$allProcessors);
-        return $processors;
+        /** @var StateProcessors<AgentState> */
+        return new StateProcessors(...$allProcessors);
     }
 
     private function buildContinuationCriteria(): ContinuationCriteria {
+        // Base criteria - all in flat list with priority-based resolution
+        // Hard limits return ForbidContinuation when exceeded, AllowStop otherwise
+        // Continue signals return AllowContinuation when they have work, AllowStop otherwise
         $baseCriteria = [
+            // Hard limits (return ForbidContinuation when exceeded)
             new StepsLimit($this->maxSteps, static fn($state) => $state->stepCount()),
             new TokenUsageLimit($this->maxTokens, static fn($state) => $state->usage()->total()),
             new ExecutionTimeLimit($this->maxExecutionTime, static fn($state) => $state->startedAt(), null),
             new RetryLimit($this->maxRetries, static fn($state) => $state->steps(), static fn($step) => $step->hasErrors()),
             new ErrorPresenceCheck(static fn($state) => $state->currentStep()?->hasErrors() ?? false),
-            new ToolCallPresenceCheck(
-                static fn($state) => $state->stepCount() === 0 || (($state->currentStep()?->hasToolCalls() ?? false))
-            ),
             new FinishReasonCheck($this->finishReasons, static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
+            // Continue signal (returns AllowContinuation when tool calls present)
+            new ToolCallPresenceCheck(
+                static fn($state) => $state->stepCount() === 0 || ($state->currentStep()?->hasToolCalls() ?? false)
+            ),
         ];
 
-        $allCriteria = array_merge($baseCriteria, $this->continuationCriteria);
+        // Merge with user-added criteria
+        $allCriteria = [...$baseCriteria, ...$this->criteria];
 
-        return new ContinuationCriteria(...$allCriteria);
+        return ContinuationCriteria::from(...$allCriteria);
     }
 
     private function buildDriver(): CanUseTools {

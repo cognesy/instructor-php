@@ -2,6 +2,7 @@
 
 namespace Tests\Addons\Unit\Tools;
 
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\ToolUse\Collections\ToolExecutions;
@@ -37,10 +38,10 @@ it('continues loop on tool failure and formats error message', function () {
     ]);
 
     $tools = new Tools(FunctionTool::fromCallable(_sum(...)));
-        
+
     $state = (new ToolUseState())
         ->withMessages(Messages::fromString('Test failure handling'));
-        
+
     $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
@@ -94,7 +95,8 @@ it('stops on configured finish reasons (FinishReasonCheck)', function () {
     $state = $state->withCurrentStep($step);
 
     $check = new FinishReasonCheck([InferenceFinishReason::Stop], static fn(ToolUseState $s) => $s->currentStep()?->finishReason());
-    expect($check->canContinue($state))->toBeFalse();
+    // Matching finish reason triggers ForbidContinuation (hard stop)
+    expect($check->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('limits retries based on consecutive failed steps (RetryLimit)', function () {
@@ -118,5 +120,6 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
     $state = $state->withCurrentStep($failedStep2);
 
     $limit = new RetryLimit(2, static fn(ToolUseState $s) => $s->steps()->all(), static fn(ToolUseStep $step) => $step->hasErrors());
-    expect($limit->canContinue($state))->toBeFalse(); // tail failures == maxRetries => stop
+    // tail failures == maxRetries => ForbidContinuation (hard stop)
+    expect($limit->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
 });

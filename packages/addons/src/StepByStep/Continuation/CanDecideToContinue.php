@@ -4,16 +4,16 @@ namespace Cognesy\Addons\StepByStep\Continuation;
 
 /**
  * Generic continuation criteria contract.
- * 
+ *
  * @template TState of object
  */
 interface CanDecideToContinue
 {
     /**
-     * Determine if the process should continue based on current state.
-     * 
+     * Decide whether to continue, stop, or forbid continuation.
+     *
      * @param TState $state
-     * @return bool True if process should continue, false to stop
+     * @return ContinuationDecision The criterion's decision
      */
-    public function canContinue(object $state): bool;
+    public function decide(object $state): ContinuationDecision;
 }

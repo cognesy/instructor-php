@@ -24,7 +24,7 @@ $list = (new StructuredOutput)
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
     )->get();
-// @doctest id="1917"
+// @doctest id="21d0"
 ```
 
 
@@ -80,7 +80,7 @@ foreach ($list as $person) {
     // do something with each person
     $this->db->save($person);
 }
-// @doctest id="09a6"
+// @doctest id="03c4"
 ```
 
 
@@ -96,7 +96,7 @@ $sequence->first();   // returns the first extracted item
 $sequence->last();    // returns the last extracted item
 $sequence->get(1);    // returns the second extracted item
 $sequence->toArray(); // returns the list of extracted items as an array
-// @doctest id="fb25"
+// @doctest id="4169"
 ```
 
 ## Streaming sequence updates

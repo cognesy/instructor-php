@@ -88,6 +88,7 @@ while ($agent->hasNextStep($state)) {
     $step = $state->currentStep();
     echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 
+    // we can introspect agent step state here
     if ($step->hasToolCalls()) {
         foreach ($step->toolCalls()->all() as $toolCall) {
             if ($toolCall->name() === 'spawn_subagent') {
@@ -108,8 +109,9 @@ echo $summary . "\n\n";
 
 echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
-echo "  Subagents spawned: " . ($state->metadata()['subagent_count'] ?? 0) . "\n";
+echo "  Subagents spawned: " . ($state->metadata()->get('subagent_count') ?? 0) . "\n";
 echo "  Status: {$state->status()->value}\n";
+?>
 ```
 
 ## Expected Output

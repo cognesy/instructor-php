@@ -22,6 +22,19 @@ Key concepts:
 - Revision loop: Agent revises answers based on critic feedback
 - State processor: Evaluates responses and requests revisions when needed
 
+## Key Points
+
+- **Quality enforcement**: Critic rejects superficial or incorrect answers
+- **Automatic revision**: Agent revises responses based on critic feedback
+- **Evidence-based**: Critic encourages fact-checking over speculation
+- **Iteration limits**: Prevent infinite loops with `maxIterations` setting
+- **Verbose mode**: Enable `verbose` to see critique feedback in real-time
+- **Metadata tracking**: Track critique iterations and feedback
+- **Critic as processor**: Uses state processor to evaluate responses
+- **Continuation criteria**: Adds criteria to continue loop based on critique
+- **Use cases**: Research tasks, fact-checking, technical analysis, quality-sensitive outputs
+- **Trade-offs**: Higher accuracy at cost of more LLM calls and longer execution time
+
 ## Example
 
 ```php
@@ -47,7 +60,7 @@ $agent = AgentBuilder::base()
     ->build();
 
 // Ask a question where the agent might give a superficial answer
-$question = "What testing framework does this project use? Be specific.";
+$question = "What testing framework does this project use? Be specific. Provide fragments of files as evidence.";
 
 $state = AgentState::empty()->withMessages(
     Messages::fromString($question)
@@ -64,7 +77,7 @@ while ($agent->hasNextStep($state)) {
 
     if ($step->hasToolCalls()) {
         foreach ($step->toolCalls()->all() as $toolCall) {
-            echo "  → {$toolCall->name()}()\n";
+            echo "  → {$toolCall->name()}({$toolCall->argsAsJson()})\n";
         }
     }
 }
@@ -80,40 +93,3 @@ echo "  Steps: {$state->stepCount()}\n";
 echo "  Status: {$state->status()->value}\n";
 ?>
 ```
-
-## Expected Output
-
-```
-Question: What testing framework does this project use? Be specific.
-
-Step 1: [tool_use]
-  → search_files()
-
-Step 2: [tool_use]
-  → read_file()
-
-Step 3: [final_response]
-
-Final Answer:
-The project uses Pest as its testing framework. This is confirmed by:
-1. phpunit.xml contains Pest configuration
-2. composer.json requires pestphp/pest package
-3. Test files use Pest's describe/it syntax
-
-Stats:
-  Steps: 3
-  Status: finished
-```
-
-## Key Points
-
-- **Quality enforcement**: Critic rejects superficial or incorrect answers
-- **Automatic revision**: Agent revises responses based on critic feedback
-- **Evidence-based**: Critic encourages fact-checking over speculation
-- **Iteration limits**: Prevent infinite loops with `maxIterations` setting
-- **Verbose mode**: Enable `verbose` to see critique feedback in real-time
-- **Metadata tracking**: Track critique iterations and feedback
-- **Critic as processor**: Uses state processor to evaluate responses
-- **Continuation criteria**: Adds criteria to continue loop based on critique
-- **Use cases**: Research tasks, fact-checking, technical analysis, quality-sensitive outputs
-- **Trade-offs**: Higher accuracy at cost of more LLM calls and longer execution time

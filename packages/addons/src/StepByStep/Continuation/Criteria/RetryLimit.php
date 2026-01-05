@@ -4,9 +4,13 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 /**
- * Stops after a configurable number of consecutive failed steps.
+ * Guard: Forbids continuation after a configurable number of consecutive failed steps.
+ *
+ * Returns ForbidContinuation when retry limit exceeded (guard denial),
+ * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
  * @template TStep of object
@@ -36,11 +40,11 @@ final readonly class RetryLimit implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         /** @var TState $state */
         $steps = $this->collectSteps($state);
         if ($steps === []) {
-            return true;
+            return ContinuationDecision::AllowContinuation;
         }
 
         $failedTail = 0;
@@ -55,11 +59,11 @@ final readonly class RetryLimit implements CanDecideToContinue
             }
         }
 
-        if ($failedTail === 0) {
-            return true;
-        }
-
-        return $failedTail < $this->maxConsecutiveFailures;
+        // Under limit: allow continuation (guard permits)
+        // At/over limit: forbid continuation (guard denies)
+        return $failedTail < $this->maxConsecutiveFailures
+            ? ContinuationDecision::AllowContinuation
+            : ContinuationDecision::ForbidContinuation;
     }
 
     /**

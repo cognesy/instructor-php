@@ -4,9 +4,13 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 /**
- * Stops a process once the number of completed steps reaches a configured maximum.
+ * Guard: Forbids continuation once the number of completed steps reaches a configured maximum.
+ *
+ * Returns ForbidContinuation when limit exceeded (guard denial),
+ * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
  * @implements CanDecideToContinue<TState>
@@ -30,8 +34,14 @@ final readonly class StepsLimit implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function decide(object $state): ContinuationDecision {
         /** @var TState $state */
-        return ($this->stepCounter)($state) < $this->maxSteps;
+        $currentSteps = ($this->stepCounter)($state);
+
+        // Under limit: allow continuation (guard permits)
+        // At/over limit: forbid continuation (guard denies)
+        return $currentSteps < $this->maxSteps
+            ? ContinuationDecision::AllowContinuation
+            : ContinuationDecision::ForbidContinuation;
     }
 }

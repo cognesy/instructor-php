@@ -20,6 +20,8 @@ class UseSelfCritique implements AgentCapability
             llmPreset: $this->llmPreset,
         ));
 
+        // Self-critic wanting a revision is a valid reason to continue the loop
+        // (combined with other continue signals using OR logic)
         $builder->addContinuationCriteria(new SelfCriticContinuationCheck(
             maxIterations: $this->maxIterations,
         ));
