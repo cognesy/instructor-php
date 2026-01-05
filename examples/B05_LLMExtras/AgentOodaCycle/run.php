@@ -15,18 +15,249 @@ use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
 use Cognesy\Addons\Agent\Capabilities\File\ListDirTool;
 use Cognesy\Addons\Agent\Capabilities\File\SearchFilesTool;
 use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
+use Cognesy\Addons\Agent\Events\AgentStepStarted;
+use Cognesy\Addons\Agent\Events\AgentStepCompleted;
+use Cognesy\Addons\Agent\Events\ToolCallStarted;
+use Cognesy\Addons\Agent\Events\ToolCallCompleted;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 use Cognesy\Schema\Attributes\Description;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
- * OODA Cycle with AgentRegistry
+ * OODA Cycle with AgentRegistry and Professional Logging
  *
  * Demonstrates deterministic multi-phase agent workflow using:
  * - AgentRegistry for specialized phase agents
  * - StructuredOutput for reliable phase outputs
  * - Immutable context for state management
+ * - Event-driven logging for visibility into agent operations
+ *
+ * Logging Features:
+ * - Structured, log-inspired output with timestamps
+ * - Phase tracking with timing information
+ * - Cycle progression visibility
+ * - Subagent spawning and completion tracking
+ * - Tool call monitoring with arguments and results
+ * - Configurable detail level (showSubagentDetails flag)
+ * - Indentation for hierarchical operations
+ * - Visual indicators (✓, ✗, ▶, ⚡, ⚙) for different event types
+ *
+ * Example Output:
+ * [14:23:45]   [SESSION   ] OODA Cycle Session Started
+ * [14:23:45]   [CYCLE     ] Starting cycle 1 (remaining: 10)
+ * [14:23:45] ▶ [OBSERVE   ] Phase started
+ * [14:23:46]     [OBSERVE   ] summary: Found config files indicating PHPUnit...
+ * [14:23:46] ▶ [OBSERVE   ] Phase completed [1.23s]
+ * [14:23:46] ⚡ [SUBAGENT  ] Spawning 'act' at depth 1
+ * [14:23:46]   ⚙ [TOOL      ] search_files(pattern=*.xml, path=/config)
+ * [14:23:47]   ⚙ [TOOL      ] ✓ search_files
  */
+
+// =============================================================================
+// STRUCTURED LOGGER
+// =============================================================================
+
+final class OodaLogger
+{
+    private int $indentLevel = 0;
+    private array $timers = [];
+
+    public function __construct(
+        private bool $showTimestamps = true,
+        private bool $showSubagentDetails = true,
+    ) {}
+
+    public function cycle(int $cycle, int $remaining): void {
+        $this->line();
+        $this->log('CYCLE', "Starting cycle {$cycle} (remaining: {$remaining})", 'info');
+        $this->line();
+    }
+
+    public function phaseStart(string $phase): void {
+        $this->startTimer($phase);
+        $this->log($phase, "Phase started", 'phase');
+        $this->indent();
+    }
+
+    public function phaseEnd(string $phase): void {
+        $elapsed = $this->stopTimer($phase);
+        $this->outdent();
+        $this->log($phase, sprintf("Phase completed [%.2fs]", $elapsed), 'phase');
+    }
+
+    public function phaseOutput(string $phase, string $key, mixed $value): void {
+        $formatted = $this->formatValue($value);
+        $this->log($phase, "{$key}: {$formatted}", 'data');
+    }
+
+    public function subagentStart(string $name, int $depth): void {
+        if (!$this->showSubagentDetails) return;
+        $this->log('SUBAGENT', "Spawning '{$name}' at depth {$depth}", 'agent');
+        $this->indent();
+    }
+
+    public function subagentEnd(string $name, string $status): void {
+        if (!$this->showSubagentDetails) return;
+        $this->outdent();
+        $this->log('SUBAGENT', "'{$name}' {$status}", 'agent');
+    }
+
+    public function toolCall(string $toolName, array $args): void {
+        if (!$this->showSubagentDetails) return;
+        $argsStr = $this->formatArgs($args);
+        $this->log('TOOL', "{$toolName}({$argsStr})", 'tool');
+    }
+
+    public function toolResult(string $toolName, bool $success): void {
+        if (!$this->showSubagentDetails) return;
+        $status = $success ? '✓' : '✗';
+        $this->log('TOOL', "{$status} {$toolName}", 'tool');
+    }
+
+    public function goalAchieved(int $cycle): void {
+        $this->line();
+        $this->log('SUCCESS', "Goal achieved in cycle {$cycle}", 'success');
+        $this->line();
+    }
+
+    public function goalFailed(): void {
+        $this->line();
+        $this->log('FAILURE', "Max cycles exhausted - goal not achieved", 'error');
+        $this->line();
+    }
+
+    public function sessionStart(string $goal): void {
+        $this->line('=');
+        $this->log('SESSION', 'OODA Cycle Session Started', 'info');
+        $this->log('GOAL', $goal, 'info');
+        $this->line('=');
+    }
+
+    public function sessionEnd(string $result): void {
+        $this->line('=');
+        $this->log('SESSION', 'OODA Cycle Session Ended', 'info');
+        $this->log('RESULT', $result, 'info');
+        $this->line('=');
+    }
+
+    private function log(string $component, string $message, string $level = 'info'): void {
+        $timestamp = $this->showTimestamps ? $this->timestamp() : '';
+        $indent = str_repeat('  ', $this->indentLevel);
+        $prefix = $this->levelPrefix($level);
+        $componentPadded = str_pad($component, 10);
+
+        echo "{$timestamp}{$indent}{$prefix}[{$componentPadded}] {$message}\n";
+    }
+
+    private function timestamp(): string {
+        return '[' . date('H:i:s') . '] ';
+    }
+
+    private function levelPrefix(string $level): string {
+        return match($level) {
+            'success' => '✓ ',
+            'error' => '✗ ',
+            'phase' => '▶ ',
+            'agent' => '⚡ ',
+            'tool' => '⚙ ',
+            'data' => '  ',
+            default => '  ',
+        };
+    }
+
+    private function formatValue(mixed $value): string {
+        if (is_bool($value)) {
+            return $value ? 'YES' : 'NO';
+        }
+        if (is_array($value)) {
+            return count($value) . ' items';
+        }
+        if (is_string($value) && strlen($value) > 80) {
+            return substr($value, 0, 77) . '...';
+        }
+        return (string) $value;
+    }
+
+    private function formatArgs(array $args): string {
+        $parts = [];
+        foreach ($args as $key => $value) {
+            if (is_string($value) && strlen($value) > 30) {
+                $value = substr($value, 0, 27) . '...';
+            }
+            $parts[] = "{$key}={$value}";
+        }
+        return implode(', ', $parts);
+    }
+
+    private function line(string $char = '-'): void {
+        echo str_repeat($char, 80) . "\n";
+    }
+
+    private function indent(): void {
+        $this->indentLevel++;
+    }
+
+    private function outdent(): void {
+        $this->indentLevel = max(0, $this->indentLevel - 1);
+    }
+
+    private function startTimer(string $key): void {
+        $this->timers[$key] = microtime(true);
+    }
+
+    private function stopTimer(string $key): float {
+        if (!isset($this->timers[$key])) {
+            return 0.0;
+        }
+        $elapsed = microtime(true) - $this->timers[$key];
+        unset($this->timers[$key]);
+        return $elapsed;
+    }
+}
+
+// =============================================================================
+// EVENT WIRETAP
+// =============================================================================
+
+final class OodaWiretap
+{
+    public function __construct(
+        private OodaLogger $logger,
+    ) {}
+
+    public function attachTo(EventDispatcher $events): void {
+        $events->addListener(AgentStepStarted::class, function(AgentStepStarted $event) {
+            // Only log subagent activity (when parentAgentId is set)
+            if ($event->parentAgentId !== null) {
+                $depth = substr_count($event->agentId, '-');
+                $this->logger->subagentStart(
+                    substr($event->agentId, 0, 12),
+                    $depth
+                );
+            }
+        });
+
+        $events->addListener(AgentStepCompleted::class, function(AgentStepCompleted $event) {
+            // Only log subagent activity (when parentAgentId is set)
+            if ($event->parentAgentId !== null) {
+                $this->logger->subagentEnd(
+                    substr($event->agentId, 0, 12),
+                    'completed'
+                );
+            }
+        });
+
+        $events->addListener(ToolCallStarted::class, function(ToolCallStarted $event) {
+            $args = is_array($event->toolArgs) ? $event->toolArgs : [];
+            $this->logger->toolCall($event->toolName, $args);
+        });
+
+        $events->addListener(ToolCallCompleted::class, function(ToolCallCompleted $event) {
+            $this->logger->toolResult($event->toolName, $event->isSuccess);
+        });
+    }
+}
 
 // =============================================================================
 // PHASE OUTPUT SCHEMAS
@@ -160,7 +391,13 @@ final class OodaContext
 
 final class ObservePhase
 {
+    public function __construct(
+        private OodaLogger $logger,
+    ) {}
+
     public function __invoke(OodaContext $ctx): ObserveOutput {
+        $this->logger->phaseStart('OBSERVE');
+
         $input = $ctx->lastActResult ?? '(first cycle - initial goal received, no previous action)';
 
         $prompt = <<<PROMPT
@@ -181,22 +418,32 @@ final class ObservePhase
             ->withResponseClass(ObserveOutput::class)
             ->get();
 
-        $this->printOutput($result);
+        $this->logOutput($result);
+        $this->logger->phaseEnd('OBSERVE');
+
         return $result;
     }
 
-    private function printOutput(ObserveOutput $result): void {
-        echo "\n[OBSERVE]\n";
-        echo "Summary: {$result->summary}\n";
+    private function logOutput(ObserveOutput $result): void {
+        $this->logger->phaseOutput('OBSERVE', 'summary', $result->summary);
+        if (!empty($result->keyFacts)) {
+            $this->logger->phaseOutput('OBSERVE', 'key_facts', $result->keyFacts);
+        }
         if ($result->learnings) {
-            echo "Learnings: {$result->learnings}\n";
+            $this->logger->phaseOutput('OBSERVE', 'learnings', $result->learnings);
         }
     }
 }
 
 final class OrientPhase
 {
+    public function __construct(
+        private OodaLogger $logger,
+    ) {}
+
     public function __invoke(OodaContext $ctx, ObserveOutput $observation): OrientOutput {
+        $this->logger->phaseStart('ORIENT');
+
         $knowledgeStr = empty($ctx->knowledge)
             ? "(no accumulated knowledge yet)"
             : implode("\n", array_map(fn($k, $i) => "- [{$i}] {$k}", $ctx->knowledge, array_keys($ctx->knowledge)));
@@ -221,27 +468,36 @@ final class OrientPhase
             ->withResponseClass(OrientOutput::class)
             ->get();
 
-        $this->printOutput($result);
+        $this->logOutput($result);
+        $this->logger->phaseEnd('ORIENT');
+
         return $result;
     }
 
-    private function printOutput(OrientOutput $result): void {
-        echo "\n[ORIENT]\n";
-        echo "Goal achieved: " . ($result->goalAchieved ? "YES" : "NO") . "\n";
-        echo "Progress: {$result->progressPercent}%\n";
-        echo "Reasoning: {$result->reasoning}\n";
+    private function logOutput(OrientOutput $result): void {
+        $this->logger->phaseOutput('ORIENT', 'goal_achieved', $result->goalAchieved);
+        $this->logger->phaseOutput('ORIENT', 'progress', "{$result->progressPercent}%");
+        $this->logger->phaseOutput('ORIENT', 'reasoning', $result->reasoning);
+
         if (!$result->goalAchieved && $result->whatsMissing) {
-            echo "Missing: {$result->whatsMissing}\n";
+            $this->logger->phaseOutput('ORIENT', 'missing', $result->whatsMissing);
         }
+
         if ($result->goalAchieved && $result->finalAnswer) {
-            echo "Final answer: {$result->finalAnswer}\n";
+            $this->logger->phaseOutput('ORIENT', 'final_answer', $result->finalAnswer);
         }
     }
 }
 
 final class DecidePhase
 {
+    public function __construct(
+        private OodaLogger $logger,
+    ) {}
+
     public function __invoke(OodaContext $ctx, OrientOutput $analysis): DecideOutput {
+        $this->logger->phaseStart('DECIDE');
+
         $possibleActionsStr = empty($analysis->possibleActions)
             ? "(none suggested)"
             : implode("\n", array_map(fn($a) => "- {$a}", $analysis->possibleActions));
@@ -266,16 +522,20 @@ final class DecidePhase
             ->withResponseClass(DecideOutput::class)
             ->get();
 
-        $this->printOutput($result);
+        $this->logOutput($result);
+        $this->logger->phaseEnd('DECIDE');
+
         return $result;
     }
 
-    private function printOutput(DecideOutput $result): void {
-        echo "\n[DECIDE]\n";
-        echo "Orders: {$result->orders}\n";
-        echo "Success criteria: {$result->successCriteria}\n";
+    private function logOutput(DecideOutput $result): void {
+        $this->logger->phaseOutput('DECIDE', 'orders', $result->orders);
+        $this->logger->phaseOutput('DECIDE', 'success_criteria', $result->successCriteria);
+        if ($result->currentPlanStep) {
+            $this->logger->phaseOutput('DECIDE', 'plan_step', $result->currentPlanStep);
+        }
         if ($result->rationale) {
-            echo "Rationale: {$result->rationale}\n";
+            $this->logger->phaseOutput('DECIDE', 'rationale', $result->rationale);
         }
     }
 }
@@ -284,9 +544,12 @@ final class ActPhase
 {
     public function __construct(
         private Agent $agent,
+        private OodaLogger $logger,
     ) {}
 
     public function __invoke(OodaContext $ctx, DecideOutput $orders): string {
+        $this->logger->phaseStart('ACT');
+
         $task = <<<TASK
             GOAL: {$ctx->goal}
 
@@ -307,8 +570,8 @@ final class ActPhase
         $result = $this->agent->finalStep($state);
         $response = $result->currentStep()?->outputMessages()->toString() ?? '(no output)';
 
-        echo "\n[ACT]\n";
-        echo $response . "\n";
+        $this->logger->phaseOutput('ACT', 'result', $response);
+        $this->logger->phaseEnd('ACT');
 
         return $response;
     }
@@ -417,14 +680,28 @@ final class OodaCycle
     private OrientPhase $orient;
     private DecidePhase $decide;
     private ActPhase $act;
+    private OodaLogger $logger;
+    private Agent $agent;
 
     public function __construct(
         private string $workDir,
         private int $maxCycles = 10,
         private string $llmPreset = 'anthropic',
+        private bool $showSubagentDetails = true,
     ) {
+        $this->logger = new OodaLogger(
+            showTimestamps: true,
+            showSubagentDetails: $this->showSubagentDetails,
+        );
+
         $registry = (new OodaRegistryBuilder())();
         $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 8000);
+
+        // Create event dispatcher and attach wiretap
+        $events = new EventDispatcher();
+        $wiretap = new OodaWiretap($this->logger);
+        $wiretap->attachTo($events);
+
         $builder = AgentBuilder::base()
             ->withCapability(new UseBash())
             ->withCapability(new UseFileTools($this->workDir))
@@ -434,16 +711,19 @@ final class OodaCycle
             ))
             ->withCapability(new UseTaskPlanning())
             ->withCapability(new UseSubagents($registry, $subagentPolicy))
-            ->withMaxSteps(10);
+            ->withMaxSteps(10)
+            ->withEventDispatcher($events);
+
         if ($this->llmPreset) {
             $builder = $builder->withLlmPreset($this->llmPreset);
         }
+
         $this->agent = $builder->build();
 
-        $this->observe = new ObservePhase();
-        $this->orient = new OrientPhase();
-        $this->decide = new DecidePhase();
-        $this->act = new ActPhase($this->agent);
+        $this->observe = new ObservePhase($this->logger);
+        $this->orient = new OrientPhase($this->logger);
+        $this->decide = new DecidePhase($this->logger);
+        $this->act = new ActPhase($this->agent, $this->logger);
     }
 
     public function __invoke(string $goal): ?string {
@@ -453,10 +733,10 @@ final class OodaCycle
             remainingCycles: $this->maxCycles,
         );
 
-        $this->printHeader($goal);
+        $this->logger->sessionStart($goal);
 
         while ($ctx->remainingCycles > 0) {
-            $this->printCycleHeader($ctx->cycle);
+            $this->logger->cycle($ctx->cycle, $ctx->remainingCycles);
 
             // OBSERVE
             $observation = ($this->observe)($ctx);
@@ -465,8 +745,10 @@ final class OodaCycle
             // ORIENT
             $analysis = ($this->orient)($ctx, $observation);
             if ($analysis->goalAchieved) {
-                $this->printGoalAchieved($ctx->cycle);
-                return $analysis->finalAnswer ?: $analysis->reasoning;
+                $this->logger->goalAchieved($ctx->cycle);
+                $finalResult = $analysis->finalAnswer ?: $analysis->reasoning;
+                $this->logger->sessionEnd($finalResult);
+                return $finalResult;
             }
 
             // DECIDE
@@ -478,31 +760,9 @@ final class OodaCycle
             $ctx = $ctx->withActResult($actResult)->nextCycle();
         }
 
-        $this->printCyclesExhausted();
+        $this->logger->goalFailed();
+        $this->logger->sessionEnd('(No result - goal not achieved)');
         return null;
-    }
-
-    private function printHeader(string $goal): void {
-        echo "=" . str_repeat("=", 70) . "\n";
-        echo "OODA CYCLE START\n";
-        echo "Goal: {$goal}\n";
-        echo "=" . str_repeat("=", 70) . "\n";
-    }
-
-    private function printCycleHeader(int $cycle): void {
-        echo "\n" . str_repeat("-", 35) . " CYCLE {$cycle} " . str_repeat("-", 35) . "\n";
-    }
-
-    private function printGoalAchieved(int $cycle): void {
-        echo "\n" . str_repeat("=", 70) . "\n";
-        echo "GOAL ACHIEVED in cycle {$cycle}\n";
-        echo str_repeat("=", 70) . "\n";
-    }
-
-    private function printCyclesExhausted(): void {
-        echo "\n" . str_repeat("=", 70) . "\n";
-        echo "CYCLES EXHAUSTED - goal not achieved\n";
-        echo str_repeat("=", 70) . "\n";
     }
 }
 
@@ -514,13 +774,9 @@ $cycle = new OodaCycle(
     workDir: dirname(__DIR__, 3),
     maxCycles: 10,
     llmPreset: 'anthropic',
+    showSubagentDetails: true,  // Set to false to hide subagent/tool details
 );
 
 $goal = "What testing framework does this project use? Find definitive evidence in config files.";
 
 $result = $cycle($goal);
-
-echo "\n" . str_repeat("=", 70) . "\n";
-echo "FINAL RESULT:\n";
-echo $result ?? "(No result - goal not achieved)";
-echo "\n" . str_repeat("=", 70) . "\n";
