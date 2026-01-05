@@ -22,7 +22,7 @@ use Cognesy\Addons\Agent\Events\ToolCallCompleted;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 use Cognesy\Schema\Attributes\Description;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 
 /**
  * OODA Cycle with AgentRegistry and Professional Logging
@@ -712,7 +712,7 @@ final class OodaCycle
             ->withCapability(new UseTaskPlanning())
             ->withCapability(new UseSubagents($registry, $subagentPolicy))
             ->withMaxSteps(10)
-            ->withEventDispatcher($events);
+            ->withEvents($events);
 
         if ($this->llmPreset) {
             $builder = $builder->withLlmPreset($this->llmPreset);
