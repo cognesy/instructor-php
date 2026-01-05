@@ -149,6 +149,7 @@ final readonly class ContentParts {
     public function replaceLast(ContentPart $part): self;
     public function first(): ?ContentPart;
     public function last(): ?ContentPart;
+    public function get(int $index): ?ContentPart;
     public function count(): int;
     public function toArray(): array;
     public function toString(string $separator = \"\\n\"): string;
@@ -182,7 +183,7 @@ match(true) {
 ### Content State Management
 ```php
 // Content introspection
-$content->parts();                         // ContentPart[]
+$content->parts();                         // ContentPart[] (deprecated)
 $content->partsList();                     // ContentParts collection
 $content->firstContentPart();              // First part or null
 $content->lastContentPart();               // Last part (never null)
@@ -626,6 +627,7 @@ final readonly class MessageList {
 
     public static function empty(): self;
     public static function fromArray(array $messages): self;
+    public function all(): array;
     public function add(Message $message): self;
     public function addAll(self $messages): self;
     public function prependAll(self $messages): self;
@@ -636,7 +638,9 @@ final readonly class MessageList {
     public function withoutEmpty(): self;
     public function first(): ?Message;
     public function last(): ?Message;
+    public function get(int $index): ?Message;
     public function count(): int;
+    public function isEmpty(): bool;
     public function toArray(): array;
 }
 ```
@@ -671,7 +675,7 @@ match(true) {
 // Basic access
 $messages->first();                        // First message or empty
 $messages->last();                         // Last message or empty
-$messages->all();                          // Message[] array
+$messages->all();                          // Message[] array (deprecated)
 $messages->messageList();                  // MessageList collection
 $messages->count();                        // Message count
 

@@ -70,7 +70,7 @@ describe('Image', function () {
             $image = Image::fromUrl('https://example.com/test.jpg', 'image/jpeg');
             $content = $image->toContent();
             
-            expect($content->parts())->toHaveCount(1);
+            expect($content->partsList()->count())->toBe(1);
             expect($content->toArray()[0]['type'])->toBe('image_url');
         });
     });
@@ -96,10 +96,10 @@ describe('Image', function () {
             
             $message = $image->toMessage();
             expect($message->role()->value)->toBe('user');
-            expect($message->content()->parts())->toHaveCount(1);
+            expect($message->content()->partsList()->count())->toBe(1);
             
             $messages = $image->toMessages();
-            expect($messages->all())->toHaveCount(1);
+            expect($messages->messageList()->count())->toBe(1);
         });
     });
 

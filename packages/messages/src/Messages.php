@@ -207,7 +207,7 @@ final readonly class Messages
         $messages = Messages::empty();
         $role = $this->firstRole();
         $newMessage = new Message($role);
-        foreach ($this->all() as $message) {
+        foreach ($this->messages->all() as $message) {
             if ($message->role()->isNot($role)) {
                 $messages = $messages->appendMessage($newMessage);
                 $role = $message->role();
@@ -444,7 +444,7 @@ final readonly class Messages
         return $last->role();
     }
 
-    /**  @return Message[] */
+    /**  @return Message[] @deprecated Use messageList() for collection access. */
     public function all() : array {
         return $this->messages->all();
     }

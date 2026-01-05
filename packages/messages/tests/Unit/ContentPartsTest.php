@@ -37,6 +37,17 @@ describe('ContentParts', function () {
             ->and($next->count())->toBe(1);
     });
 
+    it('gets part by index', function () {
+        $parts = ContentParts::fromArray([
+            ContentPart::text('Hello'),
+            ContentPart::text('World'),
+        ]);
+
+        expect($parts->get(0)?->toString())->toBe('Hello')
+            ->and($parts->get(1)?->toString())->toBe('World')
+            ->and($parts->get(2))->toBeNull();
+    });
+
     it('replaces last part immutably', function () {
         $parts = ContentParts::fromArray([
             ContentPart::text('Hello'),

@@ -45,6 +45,10 @@ final readonly class MessageList
         };
     }
 
+    public function get(int $index): ?Message {
+        return $this->messages[$index] ?? null;
+    }
+
     public function add(Message $message): self {
         $messages = $this->messages;
         $messages[] = $message;

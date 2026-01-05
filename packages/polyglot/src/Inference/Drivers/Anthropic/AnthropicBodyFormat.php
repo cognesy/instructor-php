@@ -127,8 +127,8 @@ class AnthropicBodyFormat implements CanMapRequestBody
         Messages $messages,
     ) : array {
         $textFragments = [];
-        foreach ($messages->all() as $message) {
-            foreach ($message->content()->parts() as $contentPart) {
+        foreach ($messages->messageList()->all() as $message) {
+            foreach ($message->content()->partsList()->all() as $contentPart) {
                 // TODO: what about non-text content - e.g. images? caching should support them too
                 if (!$contentPart->hasText() || $contentPart->isEmpty()) {
                     continue;

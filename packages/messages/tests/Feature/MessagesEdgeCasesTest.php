@@ -10,8 +10,8 @@ test('handles empty messages collection correctly', function () {
     $messages = Messages::empty();
     
     expect($messages->isEmpty())->toBeTrue()
-        ->and($messages->all())->toBeArray()
-        ->and($messages->all())->toBeEmpty()
+        ->and($messages->messageList())->toBeInstanceOf(\Cognesy\Messages\MessageList::class)
+        ->and($messages->messageList()->isEmpty())->toBeTrue()
         ->and($messages->toArray())->toBeEmpty();
     
     // Operations on empty collection
@@ -159,7 +159,7 @@ test('toMergedPerRole handles role changes with empty content', function () {
     
     $merged = $messages->toMergedPerRole();
     
-    expect($merged->all())->toHaveCount(2)
+    expect($merged->messageList()->count())->toBe(2)
         ->and($merged->first()->content()->toString())->toBe('Hello')
         ->and($merged->last()->content()->toString())->toBe('Hi');
 });
@@ -173,7 +173,7 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
     // Single message
     $single = Messages::fromString('Hello');
     $mergedSingle = $single->toMergedPerRole();
-    expect($mergedSingle->all())->toHaveCount(1)
+    expect($mergedSingle->messageList()->count())->toBe(1)
         ->and($mergedSingle->first()->content()->toString())->toBe('Hello');
     
     // Two messages, same role
@@ -182,7 +182,7 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
         ['role' => 'user', 'content' => 'There']
     ]);
     $mergedTwoSame = $twoSameRole->toMergedPerRole();
-    expect($mergedTwoSame->all())->toHaveCount(1)
+    expect($mergedTwoSame->messageList()->count())->toBe(1)
         ->and($mergedTwoSame->first()->content()->toString())->toContain('Hello')
         ->and($mergedTwoSame->first()->content()->toString())->toContain('There');
     
@@ -192,7 +192,7 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
         ['role' => 'assistant', 'content' => 'Hi']
     ]);
     $mergedTwoDiff = $twoDiffRole->toMergedPerRole();
-    expect($mergedTwoDiff->all())->toHaveCount(2)
+    expect($mergedTwoDiff->messageList()->count())->toBe(2)
         ->and($mergedTwoDiff->first()->content()->toString())->toBe('Hello')
         ->and($mergedTwoDiff->last()->content()->toString())->toBe('Hi');
 });
@@ -220,7 +220,7 @@ test('filter removes empty messages', function () {
     
     $filtered = $messages->filter(fn($msg) => true); // Accept all, but empty should be filtered
     
-    expect($filtered->all())->toHaveCount(1)
+    expect($filtered->messageList()->count())->toBe(1)
         ->and($filtered->first()->content()->toString())->toBe('Hello');
 });
 
@@ -232,7 +232,7 @@ test('filter without callback keeps non-empty messages', function () {
 
     $filtered = $messages->filter();
 
-    expect($filtered->all())->toHaveCount(2)
+    expect($filtered->messageList()->count())->toBe(2)
         ->and($filtered->first()->content()->toString())->toBe('Hello')
         ->and($filtered->last()->content()->toString())->toBe('Hi');
 });

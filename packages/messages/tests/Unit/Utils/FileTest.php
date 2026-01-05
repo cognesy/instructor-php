@@ -120,10 +120,10 @@ describe('File', function () {
             
             $message = $file->toMessage();
             expect($message->role()->value)->toBe('user');
-            expect($message->content()->parts())->toHaveCount(1);
+            expect($message->content()->partsList()->count())->toBe(1);
             
             $messages = $file->toMessages();
-            expect($messages->all())->toHaveCount(1);
+            expect($messages->messageList()->count())->toBe(1);
         });
     });
 

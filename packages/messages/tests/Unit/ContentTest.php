@@ -18,7 +18,7 @@ describe('Content', function () {
 
         it('creates content with array of strings', function () {
             $content = Content::texts(...['Hello', 'world']);
-            expect($content->parts())->toHaveCount(2);
+            expect($content->partsList()->count())->toBe(2);
             expect($content->toString())->toBe("Hello\nworld");
         });
 
@@ -28,14 +28,14 @@ describe('Content', function () {
                 ContentPart::text('world')
             ];
             $content = Content::fromAny($parts);
-            expect($content->parts())->toHaveCount(2);
+            expect($content->partsList()->count())->toBe(2);
             expect($content->toString())->toBe("Hello\nworld");
         });
 
         it('creates content with single ContentPart object', function () {
             $part = ContentPart::text('Hello');
             $content = new Content($part);
-            expect($content->parts())->toHaveCount(1);
+            expect($content->partsList()->count())->toBe(1);
             expect($content->toString())->toBe('Hello');
         });
 
@@ -66,7 +66,7 @@ describe('Content', function () {
 
         it('creates content from array of strings', function () {
             $content = Content::fromAny(['Hello', 'world']);
-            expect($content->parts())->toHaveCount(2);
+            expect($content->partsList()->count())->toBe(2);
         });
 
         it('creates content from Content instance', function () {
@@ -119,7 +119,7 @@ describe('Content', function () {
             $content = Content::empty();
             $part = ContentPart::text('Hello');
             $content = $content->addContentPart($part);
-            expect($content->parts())->toHaveCount(1);
+            expect($content->partsList()->count())->toBe(1);
             expect($content->toString())->toBe('Hello');
         });
     });
@@ -199,7 +199,7 @@ describe('Content', function () {
         it('clones with multiple parts', function () {
             $content = Content::texts(...['Hello', 'world']);
             $clone = $content->clone();
-            expect($clone->parts())->toHaveCount(2);
+            expect($clone->partsList()->count())->toBe(2);
             expect($clone->toString())->toBe("Hello\nworld");
         });
     });

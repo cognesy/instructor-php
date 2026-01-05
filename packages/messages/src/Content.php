@@ -73,7 +73,7 @@ final readonly class Content
         };
     }
 
-    /** @return ContentPart[] */
+    /** @return ContentPart[] @deprecated Use partsList() for collection access. */
     public function parts(): array {
         return $this->parts->all();
     }

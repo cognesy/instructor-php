@@ -31,6 +31,17 @@ describe('MessageList', function () {
             ->and($next->last()?->toString())->toBe('Done');
     });
 
+    it('gets message by index', function () {
+        $list = MessageList::fromArray([
+            new Message('user', 'Hello'),
+            new Message('assistant', 'World'),
+        ]);
+
+        expect($list->get(0)?->toString())->toBe('Hello')
+            ->and($list->get(1)?->toString())->toBe('World')
+            ->and($list->get(2))->toBeNull();
+    });
+
     it('removes head and tail', function () {
         $list = MessageList::fromArray([
             new Message('user', 'First'),

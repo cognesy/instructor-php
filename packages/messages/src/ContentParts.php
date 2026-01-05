@@ -51,6 +51,10 @@ final readonly class ContentParts
         };
     }
 
+    public function get(int $index): ?ContentPart {
+        return $this->parts[$index] ?? null;
+    }
+
     public function add(ContentPart $part): self {
         $parts = $this->parts;
         $parts[] = $part;

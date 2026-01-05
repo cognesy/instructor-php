@@ -8,7 +8,7 @@ test('can create Messages from string', function () {
     $messages = Messages::fromString('Hello');
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->all())->toHaveCount(1)
+        ->and($messages->messageList()->count())->toBe(1)
         ->and($messages->first()->role()->value)->toBe('user')
         ->and($messages->first()->content()->toString())->toBe('Hello');
 });
@@ -20,7 +20,7 @@ test('can create Messages from array', function () {
     ]);
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->all())->toHaveCount(2)
+        ->and($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->role()->value)->toBe('user')
         ->and($messages->first()->content()->toString())->toBe('Hello')
         ->and($messages->last()->role()->value)->toBe('assistant')
@@ -34,7 +34,7 @@ test('can create Messages from Message objects', function () {
     $messages = Messages::fromMessages([$message1, $message2]);
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->all())->toHaveCount(2)
+        ->and($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->role()->value)->toBe('user')
         ->and($messages->last()->role()->value)->toBe('assistant');
 });
@@ -46,7 +46,7 @@ test('can create Messages from mixed array', function () {
     ]);
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->all())->toHaveCount(2)
+        ->and($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->role()->value)->toBe('user')
         ->and($messages->first()->content()->toString())->toBe('Hello')
         ->and($messages->last()->role()->value)->toBe('user')
@@ -177,7 +177,7 @@ test('can filter messages', function () {
     $userMessages = $messages->filter(fn($message) => $message->role()->value === 'user');
     
     expect($userMessages)->toBeInstanceOf(Messages::class)
-        ->and($userMessages->all())->toHaveCount(2)
+        ->and($userMessages->messageList()->count())->toBe(2)
         ->and($userMessages->first()->content()->toString())->toBe('Hello')
         ->and($userMessages->last()->content()->toString())->toBe('How are you?');
 });
@@ -187,7 +187,7 @@ test('can set message', function () {
     $messages = Messages::empty();
     $messages = $messages->withMessage(new Message('user', 'Hello'));
     
-    expect($messages->all())->toHaveCount(1)
+    expect($messages->messageList()->count())->toBe(1)
         ->and($messages->first()->content()->toString())->toBe('Hello');
 });
 
@@ -200,7 +200,7 @@ test('can set messages', function () {
     
     $messages = $messages->withMessages($messagesToSet);
     
-    expect($messages->all())->toHaveCount(2)
+    expect($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->content()->toString())->toBe('Hello')
         ->and($messages->last()->content()->toString())->toBe('Hi');
 });
@@ -214,7 +214,7 @@ test('can set messages from MessageList', function () {
 
     $messages = $messages->withMessages($list);
 
-    expect($messages->all())->toHaveCount(2)
+    expect($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->content()->toString())->toBe('Hello')
         ->and($messages->last()->content()->toString())->toBe('Hi');
 });
@@ -223,7 +223,7 @@ test('can append message', function () {
     $messages = Messages::fromString('Hello');
     $messages = $messages->appendMessage(new Message('assistant', 'Hi'));
     
-    expect($messages->all())->toHaveCount(2)
+    expect($messages->messageList()->count())->toBe(2)
         ->and($messages->last()->content()->toString())->toBe('Hi');
 });
 
@@ -236,7 +236,7 @@ test('can append messages', function () {
     
     $messages = $messages->appendMessages($messagesToAppend);
     
-    expect($messages->all())->toHaveCount(3)
+    expect($messages->messageList()->count())->toBe(3)
         ->and($messages->last()->content()->toString())->toBe('How are you?');
 });
 
@@ -249,7 +249,7 @@ test('can append MessageList', function () {
 
     $messages = $messages->appendMessages($list);
 
-    expect($messages->all())->toHaveCount(3)
+    expect($messages->messageList()->count())->toBe(3)
         ->and($messages->last()->content()->toString())->toBe('How are you?');
 });
 
@@ -257,7 +257,7 @@ test('can prepend message', function () {
     $messages = Messages::fromString('Hello');
     $messages = $messages->prependMessages(new Message('assistant', 'Hi'));
     
-    expect($messages->all())->toHaveCount(2)
+    expect($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->content()->toString())->toBe('Hi');
 });
 
@@ -270,7 +270,7 @@ test('can prepend messages', function () {
     
     $messages = $messages->prependMessages($messagesToPrepend);
     
-    expect($messages->all())->toHaveCount(3)
+    expect($messages->messageList()->count())->toBe(3)
         ->and($messages->first()->content()->toString())->toBe('Hi');
 });
 
@@ -282,11 +282,11 @@ test('can remove head and tail', function () {
     ]);
     
     $messages = $messages->removeHead();
-    expect($messages->all())->toHaveCount(2)
+    expect($messages->messageList()->count())->toBe(2)
         ->and($messages->first()->content()->toString())->toBe('Middle');
     
     $messages = $messages->removeTail();
-    expect($messages->all())->toHaveCount(1)
+    expect($messages->messageList()->count())->toBe(1)
         ->and($messages->first()->content()->toString())->toBe('Middle');
 });
 
@@ -346,7 +346,7 @@ test('can transform to merged per role', function () {
     
     $merged = $messages->toMergedPerRole();
     
-    expect($merged->all())->toHaveCount(2)
+    expect($merged->messageList()->count())->toBe(2)
         ->and($merged->first()->role()->value)->toBe('user')
         ->and($merged->first()->content()->toString())->toContain('Hello')
         ->and($merged->first()->content()->toString())->toContain('How are you?')
@@ -365,9 +365,9 @@ test('can filter messages by roles', function () {
     $userMessages = $messages->forRoles(['user']);
     $nonSystemMessages = $messages->exceptRoles(['system']);
     
-    expect($userMessages->all())->toHaveCount(1)
+    expect($userMessages->messageList()->count())->toBe(1)
         ->and($userMessages->first()->role()->value)->toBe('user')
-        ->and($nonSystemMessages->all())->toHaveCount(2)
+        ->and($nonSystemMessages->messageList()->count())->toBe(2)
         ->and($nonSystemMessages->first()->role()->value)->toBe('user')
         ->and($nonSystemMessages->last()->role()->value)->toBe('assistant');
 });
@@ -398,7 +398,7 @@ test('can remap roles', function () {
     ]);
     
     expect($remapped->first()->role()->value)->toBe('human')
-        ->and($remapped->all()[1]->role()->value)->toBe('ai')
+        ->and($remapped->messageList()->get(1)?->role()->value)->toBe('ai')
         ->and($remapped->last()->role()->value)->toBe('system'); // Not in mapping, should stay the same
 })->skip('Needs clarification on expected behavior');
 

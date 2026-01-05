@@ -8,7 +8,7 @@ test('static fromString creates Messages with correct role and content', functio
     $messages = Messages::fromString('Test content', 'system');
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->all())->toHaveCount(1)
+        ->and($messages->messageList()->count())->toBe(1)
         ->and($messages->first()->role()->value)->toBe('system')
         ->and($messages->first()->content()->toString())->toBe('Test content');
     
@@ -38,7 +38,7 @@ test('static fromArray handles various input formats', function () {
     ]);
     
     expect($messages1)->toBeInstanceOf(Messages::class)
-        ->and($messages1->all())->toHaveCount(2);
+        ->and($messages1->messageList()->count())->toBe(2);
     
     // Array of strings (should throw exception - needs role/content keys)
 //    expect(fn() => Messages::fromArray(['string1', 'string2']))->toThrow(Exception::class);
@@ -60,16 +60,16 @@ test('static fromMessages handles various input combinations', function () {
     
     // Single message
     $single = Messages::fromMessages([$message1]);
-    expect($single->all())->toHaveCount(1)
+    expect($single->messageList()->count())->toBe(1)
         ->and($single->first()->content()->toString())->toBe('Message 1');
     
     // Multiple separate arguments
     $multiple = Messages::fromMessages([$message1, $message2]);
-    expect($multiple->all())->toHaveCount(2);
+    expect($multiple->messageList()->count())->toBe(2);
     
     // Array of messages
     $array = Messages::fromMessages([$message1, $message2]);
-    expect($array->all())->toHaveCount(2);
+    expect($array->messageList()->count())->toBe(2);
     
     // Invalid type
     //expect(fn() => Messages::fromMessages($message1, 'invalid'))->toThrow(InvalidArgumentException::class);
@@ -78,7 +78,7 @@ test('static fromMessages handles various input combinations', function () {
 test('static fromAnyArray handles mixed array formats', function () {
     // Simple message array with role and content
     $simple = Messages::fromAnyArray(['role' => 'user', 'content' => 'Simple message']);
-    expect($simple->all())->toHaveCount(1)
+    expect($simple->messageList()->count())->toBe(1)
         ->and($simple->first()->content()->toString())->toBe('Simple message');
     
     // Array of different message formats
@@ -88,10 +88,10 @@ test('static fromAnyArray handles mixed array formats', function () {
         new Message('assistant', 'Message object')
     ]);
     
-    expect($mixed->all())->toHaveCount(3)
+    expect($mixed->messageList()->count())->toBe(3)
         ->and($mixed->first()->content()->toString())->toBe('Array message')
-        ->and($mixed->all()[1]->content()->toString())->toBe('String message')
-        ->and($mixed->all()[2]->content()->toString())->toBe('Message object');
+        ->and($mixed->messageList()->get(1)?->content()->toString())->toBe('String message')
+        ->and($mixed->messageList()->get(2)?->content()->toString())->toBe('Message object');
     
     // Array with invalid entries
     expect(fn() => Messages::fromAnyArray([
@@ -108,13 +108,13 @@ test('static fromAnyArray handles mixed array formats', function () {
 test('static fromAny handles all supported input types', function () {
     // String
     $fromString = Messages::fromAny('String input');
-    expect($fromString->all())->toHaveCount(1)
+    expect($fromString->messageList()->count())->toBe(1)
         ->and($fromString->first()->role()->value)->toBe('user')
         ->and($fromString->first()->content()->toString())->toBe('String input');
     
     // Message array
     $fromArray = Messages::fromAny(['role' => 'system', 'content' => 'Array input']);
-    expect($fromArray->all())->toHaveCount(1)
+    expect($fromArray->messageList()->count())->toBe(1)
         ->and($fromArray->first()->role()->value)->toBe('system')
         ->and($fromArray->first()->content()->toString())->toBe('Array input');
     
@@ -123,12 +123,12 @@ test('static fromAny handles all supported input types', function () {
         ['role' => 'user', 'content' => 'First'],
         ['role' => 'assistant', 'content' => 'Second']
     ]);
-    expect($fromMultiArray->all())->toHaveCount(2);
+    expect($fromMultiArray->messageList()->count())->toBe(2);
     
     // Message object
     $message = new Message('user', 'Message object');
     $fromMessage = Messages::fromAny($message);
-    expect($fromMessage->all())->toHaveCount(1)
+    expect($fromMessage->messageList()->count())->toBe(1)
         ->and($fromMessage->first())->toBe($message);
     
     // Messages object
@@ -141,7 +141,7 @@ test('static fromAny handles all supported input types', function () {
         new Message('user', 'List message')
     ]);
     $fromList = Messages::fromAny($list);
-    expect($fromList->all())->toHaveCount(1)
+    expect($fromList->messageList()->count())->toBe(1)
         ->and($fromList->first()->content()->toString())->toBe('List message');
     
     // Invalid input

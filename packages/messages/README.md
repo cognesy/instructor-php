@@ -7,11 +7,13 @@ Utilities for representing chat messages, multimodal content parts, and message 
 Non-text parts are emitted in nested form. Legacy flat inputs are accepted and normalized on output.
 Content stores parts in a `ContentParts` collection. Use `partsList()` if you need the value object.
 You can also build content directly from a `ContentParts` collection via `Content::fromParts()`.
+`parts()` remains for backward compatibility but is deprecated.
 
 Messages now use an internal `MessageList` collection for immutable operations while keeping the public API unchanged. Use `messageList()` if you need the value object.
 You can construct a `Messages` instance from a `MessageList` via `Messages::fromList()`.
 Use `headList()` / `tailList()` when you need MessageList for partitions.
 `head()` and `tail()` remain for backward compatibility but are deprecated.
+`all()` remains for backward compatibility but is deprecated.
 
 ```php
 // text
