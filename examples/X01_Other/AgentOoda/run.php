@@ -1,7 +1,7 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\Ooda\OodaDriver;
@@ -64,11 +64,11 @@ $continuationCriteria = ContinuationCriteria::all(
 );
 
 // Build agent with OODA driver
-$agent = AgentFactory::default(
-    tools: $tools,
-    continuationCriteria: $continuationCriteria,
-    driver: $driver,
-);
+$agent = AgentBuilder::new()
+    ->withTools($tools)
+    ->withDriver($driver)
+    ->build()
+    ->withContinuationCriteria(...$continuationCriteria->all());
 
 // Task that requires investigation and reasoning
 $question = <<<QUESTION

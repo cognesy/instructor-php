@@ -3,7 +3,6 @@
 namespace Cognesy\Addons\Agent\Tools\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentFactory;
 use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Data\AgentState;
 use Cognesy\Addons\Agent\Enums\AgentStatus;

@@ -390,7 +390,7 @@ $agent = AgentBuilder::new()
 ```
 src/Agent/
 ├── Agent.php                   # Main orchestrator
-├── AgentFactory.php            # Factory methods
+├── AgentBuilder.php            # Fluent builder for agents
 ├── ToolExecutor.php            # Tool execution logic
 ├── Collections/
 │   ├── Tools.php               # Tool collection

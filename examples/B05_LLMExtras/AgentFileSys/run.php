@@ -1,8 +1,11 @@
 <?php
+
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\AgentFactory;
+use Cognesy\Addons\Agent\Agent;
+use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Messages\Messages;
 
@@ -20,76 +23,146 @@ use Cognesy\Messages\Messages;
  *   php run.php openai       # Uses OpenAI preset
  */
 
-print("╔════════════════════════════════════════════════════════════════╗\n");
-print("║              Agent - File System Access Demo                   ║\n");
-print("╚════════════════════════════════════════════════════════════════╝\n\n");
+// =============================================================================
+// STEP PRINTER
+// =============================================================================
 
-// Get optional LLM preset from command line
-$llmPreset = $argv[1] ?? null;
+final class StepPrinter
+{
+    private int $stepNum = 0;
 
-if ($llmPreset) {
-    print("Using LLM preset: {$llmPreset}\n\n");
-}
+    public function __invoke(AgentStep $step): void {
+        $this->stepNum++;
+        $stepType = $step->stepType()->value;
+        $hasTools = $step->hasToolCalls() ? 'yes' : 'no';
 
-// Get project root directory
-$projectRoot = dirname(__DIR__, 3);
+        print("Step {$this->stepNum}: [{$stepType}] tools_called={$hasTools}\n");
 
-// Create agent with file tools scoped to project root
-$agent = AgentFactory::withFileTools(baseDir: $projectRoot, llmPreset: $llmPreset);
-
-// Initialize state with user question about the project
-$state = AgentState::empty()->withMessages(
-    Messages::fromString(
-        "Read the composer.json file in the current directory and tell me:\n" .
-        "1. What is the project name?\n" .
-        "2. What PHP version is required?\n" .
-        "3. List the first 5 dependencies (require section only).\n" .
-        "Be concise."
-    )
-);
-
-print("Task: Analyze composer.json and extract project information\n\n");
-print("Processing...\n\n");
-
-// Run agent step by step to show progress
-$stepNum = 0;
-while ($agent->hasNextStep($state)) {
-    $state = $agent->nextStep($state);
-    $step = $state->currentStep();
-    $stepNum++;
-
-    $stepType = $step->stepType()->value;
-    $hasTools = $step->hasToolCalls() ? 'yes' : 'no';
-
-    print("Step {$stepNum}: [{$stepType}] tools_called={$hasTools}\n");
-
-    // Show tool calls if any
-    if ($step->hasToolCalls()) {
-        foreach ($step->toolCalls()->all() as $toolCall) {
-            print("  → {$toolCall->name()}()\n");
+        if ($step->hasToolCalls()) {
+            foreach ($step->toolCalls()->all() as $toolCall) {
+                print("  → {$toolCall->name()}()\n");
+            }
         }
     }
 }
 
-print("\n");
+// =============================================================================
+// RESULT PRINTER
+// =============================================================================
 
-// Extract and display the response
-$response = $state->currentStep()?->outputMessages()->toString() ?? 'No response';
+final class ResultPrinter
+{
+    public function __invoke(AgentState $state): void {
+        print("\n");
+        $this->printAnswer($state);
+        $this->printStats($state);
+        $this->printHintIfNeeded($state);
+    }
 
-print("Answer:\n");
-print(str_repeat("─", 68) . "\n");
-print($response . "\n");
-print(str_repeat("─", 68) . "\n\n");
+    private function printAnswer(AgentState $state): void {
+        $response = $state->currentStep()?->outputMessages()->toString() ?? 'No response';
 
-// Display stats
-print("Stats:\n");
-print("  Steps: {$state->stepCount()}\n");
-print("  Status: {$state->status()->value}\n");
-$usage = $state->usage();
-print("  Tokens: {$usage->inputTokens} input, {$usage->outputTokens} output\n");
+        print("Answer:\n");
+        print(str_repeat("─", 68) . "\n");
+        print($response . "\n");
+        print(str_repeat("─", 68) . "\n\n");
+    }
 
-// Show hint if failed
-if ($state->status() === AgentStatus::Failed && $usage->total() === 0) {
-    print("\nHint: Status 'failed' with 0 tokens usually means the LLM connection failed.\n");
-    print("      Try: php run.php openai    # If you have OPENAI_API_KEY set\n");
+    private function printStats(AgentState $state): void {
+        $usage = $state->usage();
+
+        print("Stats:\n");
+        print("  Steps: {$state->stepCount()}\n");
+        print("  Status: {$state->status()->value}\n");
+        print("  Tokens: {$usage->inputTokens} input, {$usage->outputTokens} output\n");
+    }
+
+    private function printHintIfNeeded(AgentState $state): void {
+        $usage = $state->usage();
+
+        if ($state->status() === AgentStatus::Failed && $usage->total() === 0) {
+            print("\nHint: Status 'failed' with 0 tokens usually means the LLM connection failed.\n");
+            print("      Try: php run.php openai    # If you have OPENAI_API_KEY set\n");
+        }
+    }
 }
+
+// =============================================================================
+// RUNNER
+// =============================================================================
+
+final class FileSystemAgentRunner
+{
+    private Agent $agent;
+    private StepPrinter $stepPrinter;
+    private ResultPrinter $resultPrinter;
+
+    public function __construct(
+        private string $workDir,
+        private ?string $llmPreset = null,
+    ) {
+        $builder = AgentBuilder::new()->withFileTools($this->workDir);
+        if ($this->llmPreset) {
+            $builder = $builder->withLlmPreset($this->llmPreset);
+        }
+        $this->agent = $builder->build();
+        $this->stepPrinter = new StepPrinter();
+        $this->resultPrinter = new ResultPrinter();
+    }
+
+    public function __invoke(string $task): string {
+        $state = AgentState::empty()->withMessages(
+            Messages::fromString($task)
+        );
+
+        while ($this->agent->hasNextStep($state)) {
+            $state = $this->agent->nextStep($state);
+            ($this->stepPrinter)($state->currentStep());
+        }
+
+        ($this->resultPrinter)($state);
+
+        return $state->currentStep()?->outputMessages()->toString() ?? 'No response';
+    }
+}
+
+// =============================================================================
+// HEADER PRINTER
+// =============================================================================
+
+final class HeaderPrinter
+{
+    public function __invoke(?string $llmPreset): void {
+        print("╔════════════════════════════════════════════════════════════════╗\n");
+        print("║              Agent - File System Access Demo                   ║\n");
+        print("╚════════════════════════════════════════════════════════════════╝\n\n");
+
+        if ($llmPreset) {
+            print("Using LLM preset: {$llmPreset}\n\n");
+        }
+
+        print("Task: Analyze composer.json and extract project information\n\n");
+        print("Processing...\n\n");
+    }
+}
+
+// =============================================================================
+// MAIN
+// =============================================================================
+
+$llmPreset = $argv[1] ?? null;
+$projectRoot = dirname(__DIR__, 3);
+
+$task = <<<TASK
+Read the composer.json file in the current directory and tell me:
+1. What is the project name?
+2. What PHP version is required?
+3. List the first 5 dependencies (require section only).
+Be concise.
+TASK;
+
+$headerPrinter = new HeaderPrinter();
+$headerPrinter($llmPreset);
+
+$runner = new FileSystemAgentRunner(workDir: $projectRoot, llmPreset: $llmPreset);
+$runner($task);
