@@ -17,9 +17,10 @@ This significantly improves accuracy by:
 
 Key concepts:
 - `UseSelfCritique`: Capability that adds self-evaluation after each response
-- Critic subagent: Specialized agent that evaluates response quality
+- `maxIterations`: Maximum number of critique-revision cycles (default: 2)
+- `verbose`: Enable/disable critique feedback output (default: true)
 - Revision loop: Agent revises answers based on critic feedback
-- Quality threshold: Minimum standard for accepting responses
+- State processor: Evaluates responses and requests revisions when needed
 
 ## Example
 
@@ -40,8 +41,8 @@ $workDir = dirname(__DIR__, 3);
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
     ->withCapability(new UseSelfCritique(
-        maxRevisions: 2,  // Allow up to 2 revision cycles
-        quality: 'thorough'  // Require thorough, not superficial answers
+        maxIterations: 2,  // Allow up to 2 critique iterations
+        verbose: true  // Show critique feedback in output
     ))
     ->build();
 
@@ -88,6 +89,7 @@ echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
 echo "  Revisions: " . ($state->metadata()['revision_count'] ?? 0) . "\n";
 echo "  Status: {$state->status()->value}\n";
+?>
 ```
 
 ## Expected Output
@@ -130,9 +132,10 @@ Stats:
 - **Quality enforcement**: Critic rejects superficial or incorrect answers
 - **Automatic revision**: Agent revises responses based on critic feedback
 - **Evidence-based**: Critic encourages fact-checking over speculation
-- **Configurable standards**: Set quality threshold (quick/thorough/exhaustive)
-- **Revision limits**: Prevent infinite loops with max revisions setting
-- **Metadata tracking**: Track revision count and critic feedback
-- **Critic as subagent**: Uses specialized evaluator agent with critique tool
+- **Iteration limits**: Prevent infinite loops with `maxIterations` setting
+- **Verbose mode**: Enable `verbose` to see critique feedback in real-time
+- **Metadata tracking**: Track critique iterations and feedback
+- **Critic as processor**: Uses state processor to evaluate responses
+- **Continuation criteria**: Adds criteria to continue loop based on critique
 - **Use cases**: Research tasks, fact-checking, technical analysis, quality-sensitive outputs
 - **Trade-offs**: Higher accuracy at cost of more LLM calls and longer execution time
