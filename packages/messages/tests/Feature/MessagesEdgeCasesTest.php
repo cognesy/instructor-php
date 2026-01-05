@@ -211,6 +211,19 @@ test('filter removes empty messages', function () {
         ->and($filtered->first()->content()->toString())->toBe('Hello');
 });
 
+test('filter without callback keeps non-empty messages', function () {
+    $messages = Messages::empty();
+    $messages = $messages->appendMessage(new Message('user', 'Hello'));
+    $messages = $messages->appendMessage(new Message('assistant', 'Hi'));
+    $messages = $messages->appendMessage(new Message()); // Empty message
+
+    $filtered = $messages->filter();
+
+    expect($filtered->all())->toHaveCount(2)
+        ->and($filtered->first()->content()->toString())->toBe('Hello')
+        ->and($filtered->last()->content()->toString())->toBe('Hi');
+});
+
 // Test static helper methods
 test('becomesEmpty correctly identifies empty inputs', function () {
     expect(Messages::becomesEmpty([]))->toBeTrue();

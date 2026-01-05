@@ -203,7 +203,7 @@ test('adds content part to a message', function () {
     $message = $message->addContentPart(['type' => 'image_url', 'url' => 'http://example.com/image.jpg']);
     expect($message->content()->toArray())->toBe([
         ['type' => 'text', 'text' => 'Part 1'],
-        ['type' => 'image_url', 'url' => 'http://example.com/image.jpg']
+        ['type' => 'image_url', 'image_url' => ['url' => 'http://example.com/image.jpg']]
     ]);
 });
 

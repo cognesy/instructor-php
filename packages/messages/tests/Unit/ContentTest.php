@@ -190,7 +190,11 @@ describe('Content', function () {
             $content = new Content(ContentPart::imageUrl('https://example.com/image.jpg'));
             $result = $content->appendContentField('detail', 'high');
             expect($result->toArray())->toBe([
-                ['type' => 'image_url', 'url' => 'https://example.com/image.jpg', 'detail' => 'high']
+                [
+                    'type' => 'image_url',
+                    'image_url' => ['url' => 'https://example.com/image.jpg'],
+                    'detail' => 'high'
+                ]
             ]);
         });
 
@@ -242,7 +246,7 @@ describe('Content', function () {
             $filePart = new ContentPart('file', [
                 'file' => [
                     'file_data' => 'base64encodedfiledata',
-                    'filename' => 'report.pdf'
+                    'file_name' => 'report.pdf'
                 ]
             ]);
             $content = new Content($filePart);
@@ -253,7 +257,7 @@ describe('Content', function () {
                     'type' => 'file',
                     'file' => [
                         'file_data' => 'base64encodedfiledata',
-                        'filename' => 'report.pdf'
+                        'file_name' => 'report.pdf'
                     ],
                     'page_count' => 42
                 ]
@@ -264,7 +268,7 @@ describe('Content', function () {
             $filePart = new ContentPart('file', [
                 'file' => [
                     'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
-                    'filename' => 'document.pdf'
+                    'file_name' => 'document.pdf'
                 ]
             ]);
             $content = new Content($filePart);
@@ -275,7 +279,7 @@ describe('Content', function () {
                     'type' => 'file',
                     'file' => [
                         'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
-                        'filename' => 'document.pdf'
+                        'file_name' => 'document.pdf'
                     ],
                     'processing_status' => 'completed'
                 ]

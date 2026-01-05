@@ -12,58 +12,28 @@ Provider rate limits can cause request failures during high traffic periods.
 
 ## Solutions
 
-1. **Implement Retry Logic**: Add automatic retries with exponential backoff
+1. **Use built-in resilience options**: Configure automatic retries with backoff/jitter
 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Http\Exceptions\HttpRequestException;
 
-function withRetry(callable $fn, int $maxRetries = 3): mixed {
-    $attempt = 0;
-    $lastException = null;
-
-    while ($attempt < $maxRetries) {
-        try {
-            return $fn();
-        } catch (HttpRequestException $e) {
-            $lastException = $e;
-            $attempt++;
-
-            // Only retry on rate limit errors
-            if (strpos($e->getMessage(), 'rate limit') === false &&
-                $e->getCode() !== 429) {
-                throw $e;
-            }
-
-            if ($attempt >= $maxRetries) {
-                break;
-            }
-
-            // Exponential backoff
-            $sleepTime = (2 ** $attempt);
-            echo "Rate limit hit. Retrying in $sleepTime seconds...\n";
-            sleep($sleepTime);
-        }
-    }
-
-    throw $lastException;
-}
-
-// Usage
 $inference = new Inference();
 
-try {
-    $response = withRetry(function() use ($inference) {
-        return $inference->with(
-            messages: 'What is the capital of France?'
-        )->get();
-    });
+$response = $inference->with(
+    messages: 'What is the capital of France?',
+    options: [
+        'resilience' => [
+            'maxAttempts' => 4,
+            'baseDelayMs' => 250,
+            'maxDelayMs' => 8000,
+            'jitter' => 'full',
+            'retryOnStatus' => [429, 500, 502, 503, 504],
+        ],
+    ]
+)->get();
 
-    echo "Response: $response\n";
-} catch (HttpRequestException $e) {
-    echo "All retry attempts failed: " . $e->getMessage() . "\n";
-}
+echo "Response: $response\n";
 ```
 
 2. **Request Throttling**: Limit the rate of requests from your application

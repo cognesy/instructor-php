@@ -2,12 +2,9 @@
 
 namespace Cognesy\Messages;
 
-use Cognesy\Messages\Contracts\CanProvideMessage;
-use Cognesy\Messages\Contracts\CanProvideMessages;
 use Cognesy\Messages\Enums\MessageRole;
-use Cognesy\Utils\TextRepresentation;
+use Cognesy\Messages\Support\MessagesInput;
 use Generator;
-use InvalidArgumentException;
 use RuntimeException;
 
 final readonly class Messages
@@ -32,15 +29,7 @@ final readonly class Messages
      * @param list<string|array<array-key, mixed>> $messages List of messages (strings or arrays with role/content)
      */
     static public function fromArray(array $messages) : Messages {
-        $newMessages = [];
-        foreach ($messages as $message) {
-            $newMessages[] = match(true) {
-                is_string($message) => Message::fromString($message),
-                Message::hasRoleAndContent($message) => Message::fromArray($message),
-                default => throw new InvalidArgumentException('Invalid message array - missing role or content keys'),
-            };
-        }
-        return new Messages(...$newMessages);
+        return MessagesInput::fromArray($messages);
     }
 
     /** @param array|Message[]|Messages $arrayOfMessages */
@@ -60,42 +49,15 @@ final readonly class Messages
     }
 
     public static function fromAnyArray(array $messages) : Messages {
-        if (Message::hasRoleAndContent($messages)) {
-            return self::fromArray([$messages]);
-        }
-        $newMessages = [];
-        foreach ($messages as $message) {
-            $newMessages[] = match(true) {
-                is_array($message) => match(true) {
-                    Message::hasRoleAndContent($message) => Message::fromArray($message),
-                    default => throw new InvalidArgumentException('Invalid message array - missing role or content keys'),
-                },
-                is_string($message) => new Message('user', $message),
-                $message instanceof Message => $message,
-                default => throw new InvalidArgumentException('Invalid message type'),
-            };
-        }
-        return new Messages(...$newMessages);
+        return MessagesInput::fromAnyArray($messages);
     }
 
     public static function fromAny(string|array|Message|Messages $messages) : Messages {
-        return match(true) {
-            is_string($messages) => self::fromString($messages),
-            is_array($messages) => self::fromAnyArray($messages),
-            $messages instanceof Message => new Messages($messages),
-            $messages instanceof Messages => $messages,
-            default => throw new InvalidArgumentException('Invalid message type'),
-        };
+        return MessagesInput::fromAny($messages);
     }
 
     public static function fromInput(string|array|object $input) : static {
-        return match(true) {
-            $input instanceof Messages => $input,
-            $input instanceof CanProvideMessages => $input->toMessages(),
-            $input instanceof Message => new Messages($input),
-            $input instanceof CanProvideMessage => new Messages($input->toMessage()),
-            default => new Messages(new Message(role: 'user', content: TextRepresentation::fromAny($input))),
-        };
+        return MessagesInput::fromInput($input);
     }
 
     public function clone() : self {
@@ -105,38 +67,23 @@ final readonly class Messages
     // MUTATORS /////////////////////////////////////////////////////////////
 
     public function asSystem(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
-        return match(true) {
-            $message instanceof Messages => $this->appendMessages($message),
-            default => $this->appendMessage(Message::fromAny($message, MessageRole::System, $name)),
-        };
+        return $this->appendWithRole(MessageRole::System, $message, $name);
     }
 
     public function asDeveloper(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
-        return match(true) {
-            $message instanceof Messages => $this->appendMessages($message),
-            default => $this->appendMessage(Message::fromAny($message, MessageRole::Developer, $name)),
-        };
+        return $this->appendWithRole(MessageRole::Developer, $message, $name);
     }
 
     public function asUser(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
-        return match(true) {
-            $message instanceof Messages => $this->appendMessages($message),
-            default => $this->appendMessage(Message::fromAny($message, MessageRole::User, $name)),
-        };
+        return $this->appendWithRole(MessageRole::User, $message, $name);
     }
 
     public function asAssistant(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
-        return match(true) {
-            $message instanceof Messages => $this->appendMessages($message),
-            default => $this->appendMessage(Message::fromAny($message, MessageRole::Assistant, $name)),
-        };
+        return $this->appendWithRole(MessageRole::Assistant, $message, $name);
     }
 
     public function asTool(string|array|Message|Messages|Content|ContentPart $message, string $name = '') : static {
-        return match(true) {
-            $message instanceof Messages => $this->appendMessages($message),
-            default => $this->appendMessage(Message::fromAny($message, MessageRole::Tool, $name)),
-        };
+        return $this->appendWithRole(MessageRole::Tool, $message, $name);
     }
 
     public function withMessage(string|array|Message $message) : static {
@@ -463,7 +410,11 @@ final readonly class Messages
             if ($message->isEmpty()) {
                 continue;
             }
-            if ($callback !== null && $callback($message)) {
+            if ($callback === null) {
+                $filteredMessages[] = $message->clone();
+                continue;
+            }
+            if ($callback($message)) {
                 $filteredMessages[] = $message->clone();
             }
         }
@@ -493,5 +444,18 @@ final readonly class Messages
     /**  @return Message[] */
     public function all() : array {
         return $this->messages;
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////
+
+    private function appendWithRole(
+        MessageRole $role,
+        string|array|Message|Messages|Content|ContentPart $message,
+        string $name = ''
+    ) : static {
+        return match(true) {
+            $message instanceof Messages => $this->appendMessages($message),
+            default => $this->appendMessage(Message::fromAny($message, $role, $name)),
+        };
     }
 }

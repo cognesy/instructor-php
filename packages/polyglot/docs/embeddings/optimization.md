@@ -37,6 +37,30 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
 echo "Processed " . count($vectors) . " embeddings in total.\n";
 ```
 
+### Resilience Options
+
+You can enable automatic retries with exponential backoff and jitter via options:
+
+```php
+<?php
+use Cognesy\Polyglot\Embeddings\Embeddings;
+
+$embeddings = new Embeddings();
+
+$response = $embeddings->with(
+    input: ['doc one', 'doc two'],
+    options: [
+        'resilience' => [
+            'maxAttempts' => 3,
+            'baseDelayMs' => 200,
+            'maxDelayMs' => 4000,
+            'jitter' => 'full',
+            'retryOnStatus' => [429, 500, 502, 503, 504],
+        ],
+    ],
+)->get();
+```
+
 
 ### Caching Embeddings
 
@@ -128,4 +152,3 @@ echo "Second call completed (from cache).\n";
 $equal = (serialize($vector1) === serialize($vector2));
 echo "Vectors are " . ($equal ? "identical" : "different") . ".\n";
 ```
-

@@ -11,13 +11,22 @@ enum MessageRole : string {
 
     public static function fromString(string $role) : static
     {
+        $resolved = self::tryFromString($role);
+        return match (true) {
+            $resolved instanceof self => $resolved,
+            default => self::User,
+        };
+    }
+
+    public static function tryFromString(string $role) : ?self
+    {
         return match($role) {
             'system' => self::System,
             'developer' => self::Developer,
             'user' => self::User,
             'assistant' => self::Assistant,
             'tool' => self::Tool,
-            default => self::User,
+            default => null,
         };
     }
 

@@ -2,11 +2,10 @@
 
 namespace Cognesy\Messages;
 
-use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Support\MessageInput;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Utils\Metadata;
-use Cognesy\Utils\TextRepresentation;
 
 /**
  * Represents a message entity with role, content, and metadata properties.
@@ -77,23 +76,23 @@ final readonly class Message
     }
 
     public static function asUser(string|array|Message $message, string $name = ''): static {
-        return static::fromAny($message, MessageRole::User, $name);
+        return static::fromAnyWithRole($message, MessageRole::User, $name);
     }
 
     public static function asAssistant(string|array|Message $message, string $name = ''): static {
-        return static::fromAny($message, MessageRole::Assistant, $name);
+        return static::fromAnyWithRole($message, MessageRole::Assistant, $name);
     }
 
     public static function asSystem(string|array|Message $message, string $name = ''): static {
-        return static::fromAny($message, MessageRole::System, $name);
+        return static::fromAnyWithRole($message, MessageRole::System, $name);
     }
 
     public static function asDeveloper(string|array|Message $message, string $name = ''): static {
-        return static::fromAny($message, MessageRole::Developer, $name);
+        return static::fromAnyWithRole($message, MessageRole::Developer, $name);
     }
 
     public static function asTool(string|array|Message $message, string $name = ''): static {
-        return static::fromAny($message, MessageRole::Tool, $name);
+        return static::fromAnyWithRole($message, MessageRole::Tool, $name);
     }
 
     public static function fromAny(
@@ -101,21 +100,7 @@ final readonly class Message
         string|MessageRole|null $role = null,
         string $name = '',
     ): static {
-        $message = match (true) {
-            is_string($message) => new Message(role: $role, content: $message),
-            is_array($message) => Message::fromArray($message),
-            $message instanceof Message => $message->clone(),
-            $message instanceof Content => Message::fromContent($message),
-            $message instanceof ContentPart => Message::fromContentPart($message),
-            default => throw new \InvalidArgumentException('Unsupported message type: ' . gettype($message)),
-        };
-        if ($name !== '') {
-            $message = $message->withName($name);
-        }
-        return match (true) {
-            $role === null => $message,
-            default => $message->withRole(MessageRole::fromAny($role)),
-        };
+        return MessageInput::fromAny($message, $role, $name);
     }
 
     public static function fromString(
@@ -127,19 +112,7 @@ final readonly class Message
     }
 
     public static function fromArray(array $message): static {
-        $role = $message['role'] ?? 'user';
-        $content = match (true) {
-            self::isArrayOfStrings($message) => Content::fromAny(array_map(fn($text) => ContentPart::text($text), $message)),
-            Message::isMessage($message) => Content::fromAny($message['content'] ?? ''),
-            default => throw new \InvalidArgumentException('Invalid message array - must be an array of strings or a valid message structure'),
-        };
-
-        return new static(
-            role: $role,
-            content: $content,
-            name: $message['name'] ?? '',
-            metadata: $message['_metadata'] ?? [],
-        );
+        return MessageInput::fromArray($message);
     }
 
     public static function fromContent(Content $content, string|MessageRole|null $role = null): static {
@@ -157,11 +130,7 @@ final readonly class Message
     }
 
     public static function fromInput(string|array|object $input, string $role = ''): static {
-        return match (true) {
-            $input instanceof Message => $input,
-            $input instanceof CanProvideMessage => $input->toMessage(),
-            default => new Message($role, TextRepresentation::fromAny($input)),
-        };
+        return MessageInput::fromInput($input, $role);
     }
 
     public static function fromImage(Image $image, string $role = ''): static {
@@ -177,12 +146,12 @@ final readonly class Message
         );
     }
 
-    private static function isArrayOfStrings(array $array): bool {
-        return count($array) > 0 && array_reduce(
-            $array,
-            fn(bool $carry, $item) => $carry && is_string($item),
-            true,
-        );
+    private static function fromAnyWithRole(
+        string|array|Message $message,
+        MessageRole $role,
+        string $name = '',
+    ): static {
+        return static::fromAny($message, $role, $name);
     }
 
     // ACCESSORS ///////////////////////////////////////

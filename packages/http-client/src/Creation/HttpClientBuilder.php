@@ -15,9 +15,14 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\Middleware\CircuitBreakerMiddleware;
+use Cognesy\Http\Middleware\CircuitBreakerPolicy;
 use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
 use Cognesy\Http\Middleware\EventSource\Listeners\DispatchDebugEvents;
 use Cognesy\Http\Middleware\EventSource\Listeners\PrintToConsole;
+use Cognesy\Http\Middleware\IdempotencyMiddleware;
+use Cognesy\Http\Middleware\RetryMiddleware;
+use Cognesy\Http\Middleware\RetryPolicy;
 use Cognesy\Http\Middleware\MiddlewareStack;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -114,6 +119,18 @@ final class HttpClientBuilder
     public function withMiddleware(HttpMiddleware ...$middleware): self {
         $this->middleware = [...$this->middleware, ...$middleware];
         return $this;
+    }
+
+    public function withRetryPolicy(RetryPolicy $policy): self {
+        return $this->withMiddleware(new RetryMiddleware($policy));
+    }
+
+    public function withCircuitBreakerPolicy(CircuitBreakerPolicy $policy): self {
+        return $this->withMiddleware(new CircuitBreakerMiddleware($policy));
+    }
+
+    public function withIdempotencyMiddleware(IdempotencyMiddleware $middleware): self {
+        return $this->withMiddleware($middleware);
     }
 
     public function withEventBus(CanHandleEvents|EventDispatcherInterface $events): self {

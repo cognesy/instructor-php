@@ -50,7 +50,7 @@ describe('ContentPart', function () {
         it('creates image URL part', function () {
             $part = ContentPart::imageUrl('https://example.com/image.jpg');
             expect($part->type())->toBe('image_url');
-            expect($part->get('url'))->toBe('https://example.com/image.jpg');
+            expect($part->get('image_url')['url'])->toBe('https://example.com/image.jpg');
         });
 
         it('creates from string using fromAny', function () {
@@ -189,6 +189,20 @@ describe('ContentPart', function () {
         it('returns empty string for non-text parts', function () {
             $part = ContentPart::imageUrl('https://example.com/image.jpg');
             expect($part->toString())->toBe('');
+        });
+    });
+
+    describe('normalization', function () {
+        it('normalizes flat image_url fields to canonical nested shape', function () {
+            $part = ContentPart::fromArray([
+                'type' => 'image_url',
+                'url' => 'https://example.com/image.jpg'
+            ]);
+
+            expect($part->toArray())->toBe([
+                'type' => 'image_url',
+                'image_url' => ['url' => 'https://example.com/image.jpg']
+            ]);
         });
     });
 

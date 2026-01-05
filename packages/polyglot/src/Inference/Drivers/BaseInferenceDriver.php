@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
@@ -12,6 +13,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Errors\ProviderErrorClassifier;
 use Cognesy\Polyglot\Inference\Events\InferenceFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
@@ -102,6 +104,9 @@ abstract class BaseInferenceDriver implements CanHandleInference
     protected function makeHttpResponse(HttpRequest $request): HttpResponse {
         try {
             $httpResponse = $this->httpClient->withRequest($request)->get();
+        } catch (HttpRequestException $e) {
+            $this->dispatchInferenceSendingFailed($request, $e);
+            throw ProviderErrorClassifier::fromHttpException($e);
         } catch (Exception $e) {
             $this->dispatchInferenceSendingFailed($request, $e);
             throw $e;
@@ -109,7 +114,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
 
         if ($httpResponse->statusCode() >= 400) {
             $this->dispatchInferenceResponseFailed($httpResponse);
-            throw new RuntimeException('HTTP request failed with status code ' . $httpResponse->statusCode());
+            throw ProviderErrorClassifier::fromHttpResponse($httpResponse);
         }
         return $httpResponse;
     }

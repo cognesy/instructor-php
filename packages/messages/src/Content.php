@@ -2,8 +2,7 @@
 
 namespace Cognesy\Messages;
 
-use Cognesy\Utils\Arrays;
-use InvalidArgumentException;
+use Cognesy\Messages\Support\ContentInput;
 
 final readonly class Content
 {
@@ -29,16 +28,7 @@ final readonly class Content
     }
 
     public static function fromAny(string|array|Content|ContentPart|null $content): self {
-        return match (true) {
-            is_null($content) => new self(),
-            is_string($content) => new self(ContentPart::text($content)),
-            is_array($content) && Message::isMessage($content) => new self(ContentPart::fromAny($content['content'] ?? '')),
-            is_array($content) && Arrays::hasOnlyStrings($content) => new self(...array_map(fn($text) => ContentPart::text($text), $content)),
-            is_array($content) => new self(...array_map(fn($item) => ContentPart::fromAny($item), $content)),
-            $content instanceof Content => new self(...$content->parts()),
-            $content instanceof ContentPart => new self(...[$content]),
-            default => throw new InvalidArgumentException('Content must be a string, array, or ContentPart.'),
-        };
+        return ContentInput::fromAny($content);
     }
 
     // MUTATORS /////////////////////////////////////////////////

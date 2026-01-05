@@ -3,6 +3,8 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
+use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -16,6 +18,8 @@ use Cognesy\Polyglot\Inference\Events\InferenceStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Messages\Messages;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -127,37 +131,82 @@ class PendingInference
             return $this->cachedResponse;
         }
 
+        $policy = InferenceRetryPolicy::fromOptions($this->execution->request()->options());
+        $maxAttempts = max(1, $policy->maxAttempts);
+
+        $lengthRetries = 0;
         $this->dispatchInferenceStarted();
-        $this->dispatchAttemptStarted();
 
-        try {
-            $response = $this->makeResponse($this->execution->request());
-        } catch (\Throwable $e) {
-            $this->handleAttemptFailure($e);
-            $this->dispatchInferenceCompleted(isSuccess: false);
-            throw $e;
-        }
+        while (true) {
+            $this->dispatchAttemptStarted();
 
-        $this->execution = match(true) {
-            $response->hasFinishedWithFailure() => $this->execution->withFailedResponse($response),
-            default => $this->execution->withNewResponse($response),
-        };
+            try {
+                $response = $this->makeResponse($this->execution->request());
+            } catch (\Throwable $e) {
+                $shouldRetry = $this->attemptNumber < $maxAttempts
+                    && $policy->shouldRetryException($e);
+                $this->handleAttemptFailure($e, null, $shouldRetry);
+                if (!$shouldRetry) {
+                    $this->dispatchInferenceCompleted(isSuccess: false);
+                    throw $e;
+                }
 
-        if ($response->hasFinishedWithFailure()) {
-            $error = new \RuntimeException('Inference execution failed: ' . $response->finishReason()->value);
-            $this->handleAttemptFailure($error, $response);
-            $this->dispatchInferenceCompleted(isSuccess: false);
-            throw $error;
-        }
+                $delayMs = $policy->delayMsForAttempt($this->attemptNumber);
+                if ($delayMs > 0) {
+                    usleep($delayMs * 1000);
+                }
+                continue;
+            }
 
-        $this->handleAttemptSuccess($response);
-        $this->dispatchInferenceCompleted(isSuccess: true);
+            $this->execution = match(true) {
+                $response->hasFinishedWithFailure() => $this->execution->withFailedResponse($response),
+                default => $this->execution->withNewResponse($response),
+            };
+
+            if ($response->hasFinishedWithFailure()) {
+                $finishReason = $response->finishReason();
+
+                if ($finishReason === InferenceFinishReason::Length && $policy->shouldRecoverFromLength($lengthRetries)) {
+                    $lengthRetries++;
+                    $error = new \RuntimeException('Inference execution hit length limit; retrying recovery');
+                    $this->handleAttemptFailure($error, $response, true);
+                    $this->execution = $this->execution->withRequest(
+                        $this->buildLengthRecoveryRequest($this->execution->request(), $response, $policy)
+                    );
+                    continue;
+                }
+
+                if ($finishReason === InferenceFinishReason::ContentFilter) {
+                    $error = new \RuntimeException('Inference blocked by content filter');
+                    $this->handleAttemptFailure($error, $response, false);
+                    $this->dispatchInferenceCompleted(isSuccess: false);
+                    throw $error;
+                }
+
+                $error = new \RuntimeException('Inference execution failed: ' . $finishReason->value);
+                $shouldRetry = $this->attemptNumber < $maxAttempts
+                    && $policy->shouldRetryException($error);
+                $this->handleAttemptFailure($error, $response, $shouldRetry);
+                if (!$shouldRetry) {
+                    $this->dispatchInferenceCompleted(isSuccess: false);
+                    throw $error;
+                }
+                $delayMs = $policy->delayMsForAttempt($this->attemptNumber);
+                if ($delayMs > 0) {
+                    usleep($delayMs * 1000);
+                }
+                continue;
+            }
+
+            $this->handleAttemptSuccess($response);
+            $this->dispatchInferenceCompleted(isSuccess: true);
 
         if ($this->shouldCache()) {
             $this->cachedResponse = $response;
         }
 
-        return $response;
+            return $response;
+        }
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
@@ -225,20 +274,47 @@ class PendingInference
         ));
     }
 
-    private function handleAttemptFailure(\Throwable $error, ?InferenceResponse $response = null): void {
+    private function handleAttemptFailure(
+        \Throwable $error,
+        ?InferenceResponse $response = null,
+        bool $willRetry = false
+    ): void {
         $attemptId = $this->getCurrentAttemptId();
         $partialUsage = $response?->usage() ?? $this->execution->partialResponse()?->usage();
+        $statusCode = $error instanceof HttpRequestException ? $error->getStatusCode() : null;
 
         $this->events->dispatch(InferenceAttemptFailed::fromThrowable(
             executionId: $this->execution->id,
             attemptId: $attemptId,
             attemptNumber: $this->attemptNumber,
             error: $error,
-            willRetry: false,
-            httpStatusCode: null,
+            willRetry: $willRetry,
+            httpStatusCode: $statusCode,
             partialUsage: $partialUsage,
             startedAt: $this->attemptStartedAt,
         ));
+    }
+
+    private function buildLengthRecoveryRequest(
+        InferenceRequest $request,
+        InferenceResponse $response,
+        InferenceRetryPolicy $policy
+    ): InferenceRequest {
+        $builder = (new InferenceRequestBuilder())->withRequest($request);
+
+        if ($policy->lengthRecovery === 'increase_max_tokens') {
+            $current = $request->options()['max_tokens'] ?? null;
+            $next = $current !== null
+                ? $current + max(1, $policy->maxTokensIncrement)
+                : max(1, $policy->maxTokensIncrement);
+            return $builder->withMaxTokens($next)->create();
+        }
+
+        $messages = Messages::fromAnyArray($request->messages())
+            ->asAssistant($response->content())
+            ->asUser($policy->lengthContinuePrompt);
+
+        return $builder->withMessages($messages)->create();
     }
 
     private function dispatchInferenceCompleted(bool $isSuccess): void {

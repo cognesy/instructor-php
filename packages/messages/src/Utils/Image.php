@@ -57,7 +57,7 @@ class Image implements CanProvideMessages
      * @return static
      */
     public static function fromBase64(string $base64string, string $mimeType): static {
-        $prefix = 'data:{$mimeType};base64,';
+        $prefix = "data:{$mimeType};base64,";
         if (substr($base64string, 0, 5) !== 'data:') {
             throw new Exception("Base64 encoded string has to start with: {$prefix}");
         }

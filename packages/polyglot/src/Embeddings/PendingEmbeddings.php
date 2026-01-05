@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsResiliencePolicy;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
@@ -41,13 +42,33 @@ class PendingEmbeddings
     }
 
     public function makeResponse() : EmbeddingsResponse {
-        $this->httpResponse = $this->driver->handle($this->request);
-        $data = Json::decode($this->httpResponse->body()) ?? [];
-        $response = $this->driver->fromData($data);
-        if ($response === null) {
-            throw new \RuntimeException('Failed to create embeddings response from data');
+        $policy = EmbeddingsResiliencePolicy::fromOptions($this->request->options());
+        $maxAttempts = max(1, $policy->maxAttempts);
+        $attempt = 0;
+
+        while (true) {
+            $attempt++;
+
+            try {
+                $this->httpResponse = $this->driver->handle($this->request);
+                $data = Json::decode($this->httpResponse->body()) ?? [];
+                $response = $this->driver->fromData($data);
+                if ($response === null) {
+                    throw new \RuntimeException('Failed to create embeddings response from data');
+                }
+                $this->events->dispatch(new EmbeddingsResponseReceived($response));
+                return $response;
+            } catch (\Throwable $e) {
+                $shouldRetry = $attempt < $maxAttempts
+                    && $policy->shouldRetryException($e, $attempt);
+                if (!$shouldRetry) {
+                    throw $e;
+                }
+                $delayMs = $policy->delayMsForAttempt($attempt);
+                if ($delayMs > 0) {
+                    usleep($delayMs * 1000);
+                }
+            }
         }
-        $this->events->dispatch(new EmbeddingsResponseReceived($response));
-        return $response;
     }
 }

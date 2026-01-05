@@ -404,6 +404,8 @@ final readonly class Metadata {
 
 ## OpenAI API Content Part Compliance
 
+Canonical output uses nested payload keys for non-text parts (e.g. `image_url`, `file`, `input_audio`). Flat legacy inputs like `['type' => 'image_url', 'url' => '...']` are accepted, but outputs are normalized to the nested shape.
+
 ### Supported Content Part Types
 ```php
 // Text content part
@@ -443,7 +445,7 @@ final readonly class Metadata {
     'type' => 'file',
     'file' => [
         'file_data' => 'data:application/pdf;base64,JVBERi0xLjQ...',
-        'filename' => 'document.pdf'
+        'file_name' => 'document.pdf'
     ]
 ]
 
@@ -452,7 +454,7 @@ final readonly class Metadata {
     'type' => 'file',
     'file' => [
         'file_id' => 'file-BK7bzQj3FfUp6VNGYLssxKcE',
-        'filename' => 'uploaded_document.pdf'
+        'file_name' => 'uploaded_document.pdf'
     ]
 ]
 ```
@@ -485,7 +487,7 @@ $message = [
             'type' => 'file',
             'file' => [
                 'file_id' => 'file-abc123',
-                'filename' => 'report.pdf'
+                'file_name' => 'report.pdf'
             ]
         ]
     ]

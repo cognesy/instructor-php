@@ -93,7 +93,7 @@ Update `InferenceResponse::hasFinishedWithFailure()` to respect policy:
 5) Add docs + examples in `packages/http-client/docs/`.
 
 ### Phase 2: Inference Retry Loop
-1) Create `InferenceResiliencePolicy` and wire into `LLMConfig` + `InferenceRequest.options`.
+1) Create `InferenceRetryPolicy` and wire into `LLMConfig` + `InferenceRequest.options`.
 2) Add attempt loop to `PendingInference::response()`:
    - increment attempts, dispatch attempt events, compute delay, sleep, retry.
 3) Emit `InferenceAttemptFailed` with `willRetry=true` when retry scheduled.
