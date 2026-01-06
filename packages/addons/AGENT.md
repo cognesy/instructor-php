@@ -404,18 +404,111 @@ $registry->autoDiscover();
 For queue workers and jobs, use deterministic agent classes implementing `AgentContract`.
 These expose self‑description plus execution and can be instantiated without serialization.
 
+### AgentContract Interface
+
 ```php
-use Cognesy\Addons\Agent\Contracts\AgentContract;
+interface AgentContract
+{
+    public function descriptor(): AgentDescriptor;
+    public function build(): Agent;
+    public function run(AgentState $state): AgentState;
+    public function nextStep(object $state): object;
+    public function hasNextStep(object $state): bool;
+    public function finalStep(object $state): object;
+    public function iterator(object $state): iterable;
+    public function withEventHandler($events): self;
+    public function wiretap(?callable $listener): self;
+    public function onEvent(string $class, ?callable $listener): self;
+}
+```
+
+### AbstractAgentDefinition
+
+Base class that implements `AgentContract` with event handling and lazy agent building.
+
+```php
+use Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition;
+use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
+use Cognesy\Addons\Agent\Core\Collections\NameList;
+use Cognesy\Addons\Agent\Agent;
+use Cognesy\Addons\Agent\AgentBuilder;
+
+class CodeAssistantAgent extends AbstractAgentDefinition
+{
+    public function __construct(
+        private readonly string $workspace,
+    ) {}
+
+    #[\Override]
+    public function descriptor(): AgentDescriptor {
+        return new AgentDescriptor(
+            name: 'code-assistant',
+            description: 'Assists with code review and refactoring',
+            tools: NameList::from(['read_file', 'write_file', 'bash']),
+            capabilities: NameList::from(['file-ops', 'shell-access']),
+        );
+    }
+
+    #[\Override]
+    protected function buildAgent(): Agent {
+        return AgentBuilder::base()
+            ->withCapability(new UseFileTools($this->workspace))
+            ->withCapability(new UseBash())
+            ->withMaxSteps(15)
+            ->build();
+    }
+}
+```
+
+### AgentContractRegistry
+
+Registry for agent contract classes, enabling dynamic instantiation.
+
+```php
 use Cognesy\Addons\Agent\Registry\AgentContractRegistry;
 
 $registry = new AgentContractRegistry();
 $registry = $registry->register('code-assistant', \App\Agents\CodeAssistantAgent::class);
 
+// Create instance with constructor args
 $result = $registry->create('code-assistant', ['workspace' => '/var/app']);
 // $result is Result<AgentContract>
+
+if ($result->isSuccess()) {
+    $agent = $result->unwrap();
+    $descriptor = $agent->descriptor();
+    $finalState = $agent->run($initialState);
+}
 ```
 
-Use `AbstractAgentDefinition` to implement the execution methods once.
+### AgentFactory Interface
+
+Implement this for custom agent creation logic.
+
+```php
+use Cognesy\Addons\Agent\Contracts\AgentFactory;
+use Cognesy\Utils\Result\Result;
+
+class MyAgentFactory implements AgentFactory
+{
+    public function create(string $agentName, array $config = []): Result {
+        return match ($agentName) {
+            'code-assistant' => Result::success(new CodeAssistantAgent($config['workspace'])),
+            'researcher' => Result::success(new ResearcherAgent($config['sources'])),
+            default => Result::failure("Unknown agent: {$agentName}"),
+        };
+    }
+}
+```
+
+### Event Hooks
+
+Agent contract instances support the same event hooks as Inference/StructuredOutput:
+
+```php
+$agent->wiretap(fn($e) => logger()->info($e));
+$agent->onEvent(\Cognesy\Addons\Agent\Events\AgentStepCompleted::class, fn($e) => dump($e));
+```
 
 ### Agent Markdown Format
 ```markdown
@@ -585,6 +678,75 @@ $agent = AgentBuilder::base()
     ->build();
 ```
 
+## Testing
+
+### DeterministicDriver
+
+Test agent behavior without LLM API calls by replaying pre-scripted responses.
+
+```php
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
+use Cognesy\Addons\Agent\AgentBuilder;
+
+// Create agent with deterministic responses
+$driver = DeterministicDriver::fromResponses(
+    'First response',
+    'Second response',
+    'Final response'
+);
+
+$agent = AgentBuilder::base()
+    ->withDriver($driver)
+    ->withTools($tools)
+    ->build();
+
+// Or build a scenario with tool calls
+$driver = DeterministicDriver::fromSteps(
+    ScenarioStep::toolCall('read_file', ['path' => '/tmp/test.txt']),
+    ScenarioStep::final('Task completed successfully')
+);
+
+$agent = AgentBuilder::base()
+    ->withDriver($driver)
+    ->build();
+```
+
+**ScenarioStep Factory Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `ScenarioStep::final($response)` | Creates a final response step |
+| `ScenarioStep::tool($response)` | Creates a tool execution step |
+| `ScenarioStep::error($response)` | Creates an error step |
+| `ScenarioStep::toolCall($name, $args, $response)` | Creates a step with tool call |
+
+### MockTool
+
+Simple mock tool for testing that returns fixed values or executes custom handlers.
+
+```php
+use Cognesy\Addons\Agent\Tools\Testing\MockTool;
+
+// Static return value
+$tool = MockTool::returning(
+    name: 'get_weather',
+    description: 'Returns weather data',
+    value: ['temp' => 72, 'conditions' => 'sunny']
+);
+
+// Custom handler
+$tool = new MockTool(
+    name: 'calculate',
+    description: 'Performs calculation',
+    handler: fn($a, $b) => $a + $b
+);
+
+$agent = AgentBuilder::base()
+    ->withTools(new Tools($tool))
+    ->build();
+```
+
 ## Directory Structure
 
 ```
@@ -602,10 +764,15 @@ $agent = AgentBuilder::base()
 │   │   └── Tasks/                  # Task planning capability & tool
 │   ├── Contracts/
 │   │   ├── AgentCapability.php     # Capability interface
+│   │   ├── AgentContract.php       # Agent contract interface for Laravel/jobs
+│   │   ├── AgentFactory.php        # Factory interface for custom agent creation
 │   │   └── ToolInterface.php       # Tool interface
+│   ├── Definitions/
+│   │   └── AbstractAgentDefinition.php  # Base class for AgentContract implementations
 │   ├── Core/                       # CORE INFRASTRUCTURE
 │   │   ├── Collections/
 │   │   │   ├── AgentSteps.php      # Step collection
+│   │   │   ├── NameList.php        # Named list for tools/capabilities
 │   │   │   ├── Tools.php           # Tool collection
 │   │   │   └── ToolExecutions.php  # Execution results
 │   │   ├── Continuation/
@@ -618,6 +785,7 @@ $agent = AgentBuilder::base()
 │   │   │   ├── HasStepToolCalls.php       # Step tool calls trait
 │   │   │   └── HasStepToolExecutions.php  # Step executions trait
 │   │   ├── Data/
+│   │   │   ├── AgentDescriptor.php # Agent metadata (name, description, tools, capabilities)
 │   │   │   ├── AgentExecution.php  # Single tool execution
 │   │   │   ├── AgentState.php      # State container
 │   │   │   └── AgentStep.php       # Step container
@@ -639,6 +807,8 @@ $agent = AgentBuilder::base()
 │   │   │   ├── Data/               # DecisionWithDetails, ReActDecision
 │   │   │   ├── ReActDriver.php
 │   │   │   └── Utils/              # ReActFormatter, ReActValidator
+│   │   ├── Testing/                # Testing utilities
+│   │   │   └── DeterministicDriver.php  # Deterministic test driver & ScenarioStep
 │   │   └── ToolCalling/            # Native function calling
 │   │       ├── ToolCallingDriver.php
 │   │       └── ToolExecutionFormatter.php
@@ -659,11 +829,14 @@ $agent = AgentBuilder::base()
 │   │   ├── InvalidToolException.php
 │   │   └── ToolExecutionException.php
 │   ├── Registry/
+│   │   ├── AgentContractRegistry.php  # Registry for AgentContract classes
 │   │   ├── AgentRegistry.php       # Manages agent specifications
 │   │   ├── AgentSpec.php           # Agent definition (name, tools, prompt)
 │   │   └── AgentSpecParser.php     # Parse agents from markdown
 │   └── Tools/
 │       ├── BaseTool.php            # Base class for tools
 │       ├── FunctionTool.php        # Wrap PHP functions as tools
-│       └── LlmQueryTool.php        # Opt-in LLM reasoning tool
+│       ├── LlmQueryTool.php        # Opt-in LLM reasoning tool
+│       └── Testing/
+│           └── MockTool.php        # Mock tool for testing
 ```
