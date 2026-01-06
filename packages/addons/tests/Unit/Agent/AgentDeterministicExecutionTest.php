@@ -1,0 +1,71 @@
+<?php declare(strict_types=1);
+
+namespace Tests\Addons\Unit\Agent;
+
+use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
+use Cognesy\Addons\Agent\Tools\Testing\MockTool;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Messages\Messages;
+
+describe('Deterministic agent execution', function () {
+    it('runs a trivial scenario without tools or LLM', function () {
+        $agent = AgentBuilder::base()
+            ->withDriver(DeterministicDriver::fromResponses('Paris'))
+            ->build();
+
+        $state = AgentState::empty()
+            ->withMessages(Messages::fromString('What is the capital of France?'));
+
+        $final = $agent->finalStep($state);
+
+        expect($final->stepCount())->toBe(1);
+        expect($final->currentStep()?->hasToolCalls())->toBeFalse();
+        expect($final->messages()->toString())->toContain('Paris');
+    });
+
+    it('executes mock tools via deterministic tool-call scenario', function () {
+        $toolCalls = [];
+        $tool = new MockTool(
+            name: 'get_capital',
+            description: 'Returns a capital for a country',
+            handler: function (string $country) use (&$toolCalls): string {
+                $toolCalls[] = $country;
+                return 'Paris';
+            },
+        );
+
+        $driver = DeterministicDriver::fromSteps(
+            ScenarioStep::toolCall('get_capital', ['country' => 'France'], response: 'using tool'),
+            ScenarioStep::final('Paris'),
+        );
+
+        $agent = AgentBuilder::base()
+            ->withTools([$tool])
+            ->withDriver($driver)
+            ->addContinuationCriteria(
+                ContinuationCriteria::when(
+                    static fn(AgentState $state): ContinuationDecision => match (true) {
+                        $state->stepCount() < 2 => ContinuationDecision::RequestContinuation,
+                        default => ContinuationDecision::AllowStop,
+                    }
+                )
+            )
+            ->build();
+
+        $state = AgentState::empty()
+            ->withMessages(Messages::fromString('What is the capital of France?'));
+
+        $final = $agent->finalStep($state);
+
+        expect($final->stepCount())->toBe(2);
+        expect($toolCalls)->toBe(['France']);
+
+        $executions = $final->stepAt(0)?->toolExecutions()->all() ?? [];
+        expect($executions)->toHaveCount(1);
+        expect($executions[0]->value())->toBe('Paris');
+    });
+});

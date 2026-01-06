@@ -5,6 +5,7 @@ namespace Tests\Addons\Unit\Tools;
 use Cognesy\Addons\Agent\Capabilities\Bash\BashPolicy;
 use Cognesy\Addons\Agent\Capabilities\Bash\BashTool;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Utils\Sandbox\Testing\MockSandbox;
 
 describe('BashTool', function () {
 
@@ -119,5 +120,25 @@ describe('BashTool', function () {
         expect($schema['type'])->toBe('function');
         expect($schema['function']['name'])->toBe('bash');
         expect($schema['function']['parameters'])->toBeArray();
+    });
+
+    it('executes using MockSandbox', function () {
+        $sandbox = new MockSandbox(
+            policy: ExecutionPolicy::in($this->tempDir),
+            responses: [
+                'bash -c echo "Hello"' => [
+                    ['stdout' => 'Hello', 'exit_code' => 0],
+                ],
+            ],
+        );
+
+        $tool = BashTool::withSandbox($sandbox);
+
+        $result = $tool('echo "Hello"');
+
+        expect($result)->toContain('Hello');
+        expect($sandbox->commands())->toBe([
+            ['bash', '-c', 'echo "Hello"'],
+        ]);
     });
 });

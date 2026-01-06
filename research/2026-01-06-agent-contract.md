@@ -17,6 +17,7 @@ Define a small interface that wraps builder usage and provides:
 1) **Execution** (iterative or full)
 2) **Self‑description** (name, type, tools, capabilities)
 3) **Serialization** (stable config snapshot)
+4) **Event hooks** (wiretap/onEvent)
 
 ```php
 <?php
@@ -24,20 +25,26 @@ Define a small interface that wraps builder usage and provides:
 namespace Cognesy\Addons\Agent\Contracts;
 
 use Cognesy\Addons\Agent\Agent;
+use Cognesy\Addons\Agent\Core\Collections\NameList;
+use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Utils\Result\Result;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 interface AgentContract
 {
     // deterministic metadata
-    public function name(): string;
-    public function description(): string;
-    public function tools(): array;
-    public function capabilities(): array;
+    public function descriptor(): AgentDescriptor;
 
     // execution
     public function build(): Agent;
     public function run(AgentState $state): AgentState;
+
+    // events
+    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): self;
+    public function wiretap(?callable $listener): self;
+    public function onEvent(string $class, ?callable $listener): self;
 
     // serialization
     public function serializeConfig(): array;
@@ -78,10 +85,15 @@ and re‑instantiate in a worker without serialized closures or dynamic builders
 ```php
 final class CodeAssistantAgent implements AgentContract
 {
-    public function name(): string { return 'code-assistant'; }
-    public function description(): string { return 'Code helper with file + bash tools'; }
-    public function tools(): array { return ['read_file', 'write_file', 'bash']; }
-    public function capabilities(): array { return ['file', 'bash', 'tasks']; }
+    public function descriptor(): AgentDescriptor
+    {
+        return new AgentDescriptor(
+            name: 'code-assistant',
+            description: 'Code helper with file + bash tools',
+            tools: NameList::fromArray(['read_file', 'write_file', 'bash']),
+            capabilities: NameList::fromArray(['file', 'bash', 'tasks']),
+        );
+    }
 
     public function build(): Agent
     {
@@ -118,6 +130,7 @@ final class CodeAssistantAgent implements AgentContract
 2) Worker resolves agent via `AgentFactory`
 3) Worker builds `AgentState` (from input or snapshot)
 4) `AgentContract->run($state)` or `->build()->iterator(...)`
+5) Optional: attach logging pipeline via `wiretap()` / `onEvent()`
 
 ---
 

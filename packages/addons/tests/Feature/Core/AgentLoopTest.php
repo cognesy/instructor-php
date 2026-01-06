@@ -3,16 +3,15 @@
 namespace Tests\Addons\Feature\Core;
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Contracts\ToolInterface;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Tools\Testing\MockTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Result\Result;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 describe('Agent Loop', function () {
@@ -49,12 +48,7 @@ describe('Agent Loop', function () {
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
 
-        $testTool = new class implements ToolInterface {
-            public function name(): string { return 'test_tool'; }
-            public function description(): string { return 'A test tool'; }
-            public function use(mixed ...$args): Result { return Result::success("Executed"); }
-            public function toToolSchema(): array { return ['name' => 'test_tool']; }
-        };
+        $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()

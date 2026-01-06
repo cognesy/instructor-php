@@ -32,6 +32,9 @@ Cognesy\Addons\Agent\AgentBuilder
 Cognesy\Addons\Agent\Core\Data\AgentState
 Cognesy\Addons\Agent\Contracts\AgentContract
 Cognesy\Addons\Agent\Registry\AgentContractRegistry
+Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition
+Cognesy\Addons\Agent\Core\Data\AgentDescriptor
+Cognesy\Addons\Agent\Core\Collections\NameList
 Cognesy\Events\EventBus
 ```
 
@@ -106,6 +109,7 @@ Minimal registry flow:
 - Job payload includes `agent_name` + `agent_config` (array)
 - Worker resolves agent via `AgentContractRegistry`
 - `AgentContract->build()` or `->iterator()` executes the run
+- Optional: attach logging / observability via `wiretap()` / `onEvent()`
 
 ---
 

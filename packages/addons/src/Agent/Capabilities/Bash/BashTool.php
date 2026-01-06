@@ -31,6 +31,7 @@ class BashTool extends BaseTool
         ?string $baseDir = null,
         int $timeout = self::DEFAULT_TIMEOUT,
         ?BashPolicy $outputPolicy = null,
+        ?CanStreamCommand $sandbox = null,
     ) {
         parent::__construct(
             name: 'bash',
@@ -48,14 +49,17 @@ Prefer dedicated tools when available: read_file over cat, search_files over fin
 DESC,
         );
 
-        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
-        $policy = $policy ?? ExecutionPolicy::in($baseDir)
-            ->withTimeout($timeout)
-            ->withNetwork(false)
-            ->withOutputCaps(self::DEFAULT_STDOUT_LIMIT, self::DEFAULT_STDERR_LIMIT)
-            ->inheritEnvironment();
-
-        $this->sandbox = Sandbox::host($policy);
+        if ($sandbox !== null) {
+            $this->sandbox = $sandbox;
+        } else {
+            $baseDir = $baseDir ?? getcwd() ?: '/tmp';
+            $policy = $policy ?? ExecutionPolicy::in($baseDir)
+                ->withTimeout($timeout)
+                ->withNetwork(false)
+                ->withOutputCaps(self::DEFAULT_STDOUT_LIMIT, self::DEFAULT_STDERR_LIMIT)
+                ->inheritEnvironment();
+            $this->sandbox = Sandbox::host($policy);
+        }
         $this->outputPolicy = $outputPolicy ?? new BashPolicy();
     }
 
@@ -69,6 +73,10 @@ DESC,
 
     public static function withPolicy(ExecutionPolicy $policy, ?BashPolicy $outputPolicy = null): self {
         return new self(policy: $policy, outputPolicy: $outputPolicy);
+    }
+
+    public static function withSandbox(CanStreamCommand $sandbox, ?BashPolicy $outputPolicy = null): self {
+        return new self(sandbox: $sandbox, outputPolicy: $outputPolicy);
     }
 
     #[\Override]
