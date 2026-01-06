@@ -215,11 +215,7 @@ class SandboxPolicyFactory
 
 namespace App\Services;
 
-use App\Models\AgentConversation;
-use App\Models\AgentExecution;
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Messages\Messages;
+use App\Models\AgentConversation;use App\Models\AgentExecution;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Messages\Messages;
 
 class ConversationAgentService
 {

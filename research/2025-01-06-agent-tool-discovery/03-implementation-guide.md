@@ -395,7 +395,7 @@ $agent = AgentBuilder::base()
 // packages/addons/src/Agent/Tools/DiscoverAgentsTool.php
 namespace Cognesy\Addons\Agent\Tools;
 
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
 use Cognesy\Instructor\Tools\Tool;
 use Cognesy\Instructor\Tools\ToolSpec;
 
@@ -524,7 +524,7 @@ use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Instructor\Tools\ToolRegistry;
 use Cognesy\Instructor\Tools\DiscoverToolsTool;
 use Cognesy\Addons\Agent\Tools\DiscoverAgentsTool;
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
 use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
 
 // Setup file tools registry

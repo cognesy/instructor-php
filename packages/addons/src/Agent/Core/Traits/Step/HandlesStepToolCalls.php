@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Traits\Step;
+namespace Cognesy\Addons\Agent\Core\Traits\Step;
 
-use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;

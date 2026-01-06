@@ -3,10 +3,10 @@
 namespace Tests\Addons\Feature\Core;
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -14,7 +14,6 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Result\Result;
 use Tests\Addons\Support\FakeInferenceDriver;
-
 
 describe('Agent Loop', function () {
     it('completes a simple interaction', function () {

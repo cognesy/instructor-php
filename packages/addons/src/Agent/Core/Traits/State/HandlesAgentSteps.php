@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Traits\State;
+namespace Cognesy\Addons\Agent\Core\Traits\State;
 
-use Cognesy\Addons\Agent\Collections\AgentSteps;
-use Cognesy\Addons\Agent\Data\AgentStep;
+use Cognesy\Addons\Agent\Core\Collections\AgentSteps;
+use Cognesy\Addons\Agent\Core\Data\AgentStep;
 
 trait HandlesAgentSteps
 {

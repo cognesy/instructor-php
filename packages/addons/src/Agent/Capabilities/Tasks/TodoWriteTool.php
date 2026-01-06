@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Capabilities\Tasks;
 
-use Cognesy\Addons\Agent\Contracts\CanAccessAnyState;
+use Cognesy\Addons\Agent\Core\Contracts\CanAccessAnyState;
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use InvalidArgumentException;
 

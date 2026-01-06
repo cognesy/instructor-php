@@ -2,13 +2,13 @@
 
 namespace Tests\Addons\Unit\Processors;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Data\AgentExecution;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\AgentStep;
 use Cognesy\Addons\Agent\Capabilities\Tasks\PersistTasksProcessor;
 use Cognesy\Addons\Agent\Capabilities\Tasks\TodoResult;
 use Cognesy\Addons\Agent\Capabilities\Tasks\TodoWriteTool;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Data\AgentExecution;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentStep;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;

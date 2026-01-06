@@ -399,6 +399,24 @@ $registry->loadFromDirectory('/path/to/agents', recursive: true);
 $registry->autoDiscover();
 ```
 
+## Agent Contracts (Laravel-Friendly)
+
+For queue workers and jobs, use deterministic agent classes implementing `AgentContract`.
+These expose self‑description plus execution and can be instantiated without serialization.
+
+```php
+use Cognesy\Addons\Agent\Contracts\AgentContract;
+use Cognesy\Addons\Agent\Registry\AgentContractRegistry;
+
+$registry = new AgentContractRegistry();
+$registry = $registry->register('code-assistant', \App\Agents\CodeAssistantAgent::class);
+
+$result = $registry->create('code-assistant', ['workspace' => '/var/app']);
+// $result is Result<AgentContract>
+```
+
+Use `AbstractAgentDefinition` to implement the execution methods once.
+
 ### Agent Markdown Format
 ```markdown
 ---

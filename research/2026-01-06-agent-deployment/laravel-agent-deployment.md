@@ -111,17 +111,7 @@ Schema::create('agent_signals', function (Blueprint $table) {
 
 namespace App\Jobs;
 
-use App\Models\AgentExecution;
-use App\Services\AgentExecutionService;
-use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
+use App\Models\AgentExecution;use App\Services\AgentExecutionService;use Illuminate\Bus\Queueable;use Illuminate\Contracts\Queue\ShouldQueue;use Illuminate\Foundation\Bus\Dispatchable;use Illuminate\Queue\InteractsWithQueue;use Illuminate\Queue\SerializesModels;use Illuminate\Support\Facades\Log;
 
 class ExecuteAgentJob implements ShouldQueue
 {
@@ -172,20 +162,7 @@ class ExecuteAgentJob implements ShouldQueue
 
 namespace App\Services;
 
-use App\Events\AgentStepCompleted;
-use App\Events\AgentStatusChanged;
-use App\Models\AgentExecution;
-use App\Models\AgentLog;
-use App\Models\AgentSignal;
-use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\Events\AgentStepCompleted as AgentStepCompletedEvent;
-use Cognesy\Addons\Agent\Events\ToolCallCompleted;
-use Cognesy\Events\EventBus;
-use Cognesy\Messages\Messages;
-use Illuminate\Support\Facades\Cache;
+use App\Events\AgentStatusChanged;use App\Events\AgentStepCompleted;use App\Models\AgentExecution;use App\Models\AgentLog;use App\Models\AgentSignal;use Cognesy\Addons\Agent\Agent;use Cognesy\Addons\Agent\AgentBuilder;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Events\AgentStepCompleted as AgentStepCompletedEvent;use Cognesy\Addons\Agent\Events\ToolCallCompleted;use Cognesy\Events\EventBus;use Cognesy\Messages\Messages;
 
 class AgentExecutionService
 {
@@ -452,14 +429,7 @@ class AgentExecutionService
 
 namespace App\Events;
 
-use App\Models\AgentExecution;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
+use App\Models\AgentExecution;use Cognesy\Addons\Agent\Core\Data\AgentState;use Illuminate\Broadcasting\Channel;use Illuminate\Broadcasting\InteractsWithSockets;use Illuminate\Broadcasting\PrivateChannel;use Illuminate\Contracts\Broadcasting\ShouldBroadcast;use Illuminate\Foundation\Events\Dispatchable;use Illuminate\Queue\SerializesModels;
 
 class AgentStepCompleted implements ShouldBroadcast
 {
@@ -1361,14 +1331,7 @@ class AgentWebhookController extends Controller
 
 namespace App\Jobs;
 
-use App\Models\AgentExecution;
-use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use App\Models\AgentExecution;use Cognesy\Addons\Agent\Core\Data\AgentState;use Illuminate\Bus\Queueable;use Illuminate\Contracts\Queue\ShouldQueue;use Illuminate\Foundation\Bus\Dispatchable;use Illuminate\Queue\InteractsWithQueue;use Illuminate\Queue\SerializesModels;
 
 class ChunkedAgentJob implements ShouldQueue
 {

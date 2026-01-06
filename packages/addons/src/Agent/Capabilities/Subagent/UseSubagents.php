@@ -3,11 +3,11 @@ namespace Cognesy\Addons\Agent\Capabilities\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Contracts\AgentCapability;
-use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\Agent\Capabilities\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
+use Cognesy\Addons\Agent\Contracts\AgentCapability;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class UseSubagents implements AgentCapability

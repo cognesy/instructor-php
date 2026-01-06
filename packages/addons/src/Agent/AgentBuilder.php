@@ -2,25 +2,26 @@
 
 namespace Cognesy\Addons\Agent;
 
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Continuation\ToolCallPresenceCheck;
 use Cognesy\Addons\Agent\Contracts\AgentCapability;
-use Cognesy\Addons\Agent\Contracts\CanUseTools;
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Continuation\ToolCallPresenceCheck;
+use Cognesy\Addons\Agent\Core\Contracts\CanUseTools;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\ToolExecutor;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
-use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;

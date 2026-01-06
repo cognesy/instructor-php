@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Traits\Step;
+namespace Cognesy\Addons\Agent\Core\Traits\Step;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
 use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;

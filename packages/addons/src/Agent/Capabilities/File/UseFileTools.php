@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\Agent\Capabilities\File;
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\AgentCapability;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
 
 class UseFileTools implements AgentCapability
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Collections;
+namespace Cognesy\Addons\Agent\Core\Collections;
 
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
 use Cognesy\Addons\Agent\Exceptions\InvalidToolException;

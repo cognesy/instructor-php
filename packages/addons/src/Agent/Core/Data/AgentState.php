@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Data;
+namespace Cognesy\Addons\Agent\Core\Data;
 
-use Cognesy\Addons\Agent\Collections\AgentSteps;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\Traits\State\HandlesAgentSteps;
+use Cognesy\Addons\Agent\Core\Collections\AgentSteps;
+use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Core\Traits\State\HandlesAgentSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMetadata;
 use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;

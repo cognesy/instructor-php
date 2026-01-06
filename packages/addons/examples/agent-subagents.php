@@ -7,13 +7,13 @@
  */
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
-use Cognesy\Addons\Agent\Agents\AgentSpec;
 use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
 use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
-use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
 use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\Agent\Registry\AgentSpec;
 use Cognesy\Messages\Messages;
 
 require_once __DIR__ . '/../../../vendor/autoload.php';

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Collections;
+namespace Cognesy\Addons\Agent\Core\Collections;
 
+use Cognesy\Addons\Agent\Core\Data\AgentStep;
 use Cognesy\Addons\StepByStep\Collections\Steps;
-use Cognesy\Addons\Agent\Data\AgentStep;
 
 /** @extends Steps<AgentStep> */
 final readonly class AgentSteps extends Steps

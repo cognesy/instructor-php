@@ -4,20 +4,19 @@ namespace Cognesy\Addons\Agent\Capabilities\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Data\AgentExecution;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolExecutionFormatter;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Capabilities\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
-use Cognesy\Addons\Agent\Agents\AgentSpec;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Data\AgentExecution;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolExecutionFormatter;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\Agent\Registry\AgentSpec;
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Capabilities\Tasks;
 
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 
 class TodoRenderProcessor implements CanProcessAnyState

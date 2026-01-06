@@ -4,8 +4,8 @@ namespace Cognesy\Addons\Agent\Tools\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
 use Cognesy\Messages\Messages;

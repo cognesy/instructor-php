@@ -29,14 +29,10 @@ Key concepts:
 require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Agents\AgentRegistry;
-use Cognesy\Addons\Agent\Agents\AgentSpec;
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Capabilities\File\ReadFileTool;
-use Cognesy\Addons\Agent\Capabilities\File\SearchFilesTool;
 use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\Agent\Registry\AgentSpec;
 use Cognesy\Messages\Messages;
 
 // Configure working directory

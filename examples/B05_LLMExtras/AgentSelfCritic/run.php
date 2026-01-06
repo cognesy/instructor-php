@@ -44,7 +44,7 @@ require 'examples/boot.php';
 use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
 use Cognesy\Addons\Agent\Capabilities\SelfCritique\UseSelfCritique;
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 
 // Configure working directory

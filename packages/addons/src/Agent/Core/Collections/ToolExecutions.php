@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Collections;
+namespace Cognesy\Addons\Agent\Core\Collections;
 
-use Cognesy\Addons\Agent\Data\AgentExecution;
+use Cognesy\Addons\Agent\Core\Data\AgentExecution;
 use Throwable;
 
 final readonly class ToolExecutions

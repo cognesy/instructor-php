@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Contracts;
+namespace Cognesy\Addons\Agent\Core\Contracts;
 
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 

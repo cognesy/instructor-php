@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\Agent\Tools;
 
-use Cognesy\Addons\Agent\Contracts\CanAccessAgentState;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Contracts\CanAccessAgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;

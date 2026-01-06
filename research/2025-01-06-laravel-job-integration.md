@@ -783,16 +783,7 @@ PROMPT,
 
 namespace App\Jobs;
 
-use App\Models\Conversation;
-use Cognesy\Addons\Agent\AgentFactory;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Registry\BlueprintRepository;
-use Cognesy\Addons\Agent\Exceptions\BlueprintNotFoundException;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use App\Models\Conversation;use Cognesy\Addons\Agent\AgentFactory;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Exceptions\BlueprintNotFoundException;use Cognesy\Addons\Agent\Registry\BlueprintRepository;use Illuminate\Bus\Queueable;use Illuminate\Contracts\Queue\ShouldQueue;use Illuminate\Foundation\Bus\Dispatchable;use Illuminate\Queue\InteractsWithQueue;use Illuminate\Queue\SerializesModels;
 
 class ExecuteAgentJob implements ShouldQueue
 {

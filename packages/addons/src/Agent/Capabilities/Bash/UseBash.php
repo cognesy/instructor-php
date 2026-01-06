@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\Agent\Capabilities\Bash;
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\AgentCapability;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
 class UseBash implements AgentCapability

@@ -1,16 +1,15 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
-use Cognesy\Addons\Agent\Capabilities\Tasks\PersistTasksProcessor;
-use Cognesy\Addons\Agent\Capabilities\Tasks\TodoWriteTool;
 use Cognesy\Addons\Agent\Capabilities\Bash\BashTool;
 use Cognesy\Addons\Agent\Capabilities\File\EditFileTool;
 use Cognesy\Addons\Agent\Capabilities\File\ReadFileTool;
 use Cognesy\Addons\Agent\Capabilities\File\WriteFileTool;
-use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
+use Cognesy\Addons\Agent\Capabilities\Tasks\PersistTasksProcessor;
+use Cognesy\Addons\Agent\Capabilities\Tasks\TodoWriteTool;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -18,7 +17,6 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceDriver;
 use Tests\Addons\Support\TestHelpers;
-
 
 describe('Coding Agent Workflow', function () {
 

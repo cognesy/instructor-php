@@ -2,20 +2,20 @@
 
 namespace Cognesy\Addons\Agent\Drivers\ReAct;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Addons\Agent\Contracts\CanUseTools;
-use Cognesy\Addons\Agent\Data\AgentExecution;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\AgentStep;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Addons\Agent\Core\Contracts\CanUseTools;
+use Cognesy\Addons\Agent\Core\Data\AgentExecution;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentStep;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
 use Cognesy\Addons\Agent\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Addons\Agent\Drivers\ReAct\Actions\MakeToolCalls;
 use Cognesy\Addons\Agent\Drivers\ReAct\Data\DecisionWithDetails;
 use Cognesy\Addons\Agent\Drivers\ReAct\Data\ReActDecision;
 use Cognesy\Addons\Agent\Drivers\ReAct\Utils\ReActFormatter;
 use Cognesy\Addons\Agent\Drivers\ReAct\Utils\ReActValidator;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;

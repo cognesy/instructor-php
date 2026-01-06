@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent;
+namespace Cognesy\Addons\Agent\Core;
 
-use Cognesy\Addons\Agent\Contracts\CanAccessAgentState;
-use Cognesy\Addons\Agent\Contracts\CanAccessAnyState;
-use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
 use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Contracts\CanAccessAgentState;
+use Cognesy\Addons\Agent\Core\Contracts\CanAccessAnyState;
+use Cognesy\Addons\Agent\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Core\Data\AgentExecution;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Events\ToolCallCompleted;

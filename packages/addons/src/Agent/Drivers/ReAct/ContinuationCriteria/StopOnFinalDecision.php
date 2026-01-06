@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\Agent\Drivers\ReAct\ContinuationCriteria;
 
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 

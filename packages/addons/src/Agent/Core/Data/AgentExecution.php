@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Data;
+namespace Cognesy\Addons\Agent\Core\Data;
 
 use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
 use Cognesy\Polyglot\Inference\Data\ToolCall;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Enums;
+namespace Cognesy\Addons\Agent\Core\Enums;
 
 enum AgentStepType : string
 {

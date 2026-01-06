@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Events;
 
-use Cognesy\Addons\Agent\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;

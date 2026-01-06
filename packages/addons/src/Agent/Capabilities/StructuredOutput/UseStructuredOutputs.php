@@ -3,9 +3,8 @@
 namespace Cognesy\Addons\Agent\Capabilities\StructuredOutput;
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Metadata\PersistMetadataProcessor;
-use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\AgentCapability;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
 
 /**
  * Adds structured output extraction capability to the agent.

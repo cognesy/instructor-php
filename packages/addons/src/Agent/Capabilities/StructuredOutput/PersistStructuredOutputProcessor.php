@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\Agent\Capabilities\StructuredOutput;
 
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Step\HasStepToolExecutions;
+use Cognesy\Addons\Agent\Core\Contracts\HasStepToolExecutions;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 
 /**

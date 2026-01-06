@@ -2,9 +2,8 @@
 
 namespace Cognesy\Addons\Agent\Capabilities\Tasks;
 
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
-use Cognesy\Addons\Agent\Step\HasStepToolExecutions;
+use Cognesy\Addons\Agent\Core\Contracts\HasStepToolExecutions;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 
 class PersistTasksProcessor implements CanProcessAnyState

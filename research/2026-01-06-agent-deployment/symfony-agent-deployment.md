@@ -972,25 +972,7 @@ class AgentExecutionRepository extends ServiceEntityRepository
 
 namespace App\MessageHandler;
 
-use App\Entity\AgentExecution;
-use App\Entity\AgentLog;
-use App\Entity\AgentSignal;
-use App\Message\AgentStatusChanged;
-use App\Message\ExecuteAgent;
-use App\Service\AgentBuilderService;
-use App\Service\AgentStateSerializer;
-use App\Service\MercurePublisher;
-use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\Events\AgentStepCompleted as AgentStepCompletedEvent;
-use Cognesy\Addons\Agent\Events\ToolCallCompleted;
-use Cognesy\Events\EventBus;
-use Cognesy\Messages\Messages;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Messenger\MessageBusInterface;
+use App\Entity\AgentExecution;use App\Entity\AgentLog;use App\Entity\AgentSignal;use App\Message\AgentStatusChanged;use App\Message\ExecuteAgent;use App\Service\AgentBuilderService;use App\Service\AgentStateSerializer;use App\Service\MercurePublisher;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Events\AgentStepCompleted as AgentStepCompletedEvent;use Cognesy\Addons\Agent\Events\ToolCallCompleted;use Cognesy\Events\EventBus;use Cognesy\Messages\Messages;use Doctrine\ORM\EntityManagerInterface;use Psr\Log\LoggerInterface;use Symfony\Component\Messenger\Attribute\AsMessageHandler;use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 final class ExecuteAgentHandler
@@ -1361,8 +1343,7 @@ final class AgentBuilderService
 
 namespace App\Service;
 
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Messages\Messages;
 
 final class AgentStateSerializer
 {
@@ -2338,19 +2319,7 @@ class AgentWebhookController extends AbstractController
 
 namespace App\MessageHandler;
 
-use App\Entity\AgentExecution;
-use App\Message\ExecuteAgentChunk;
-use App\Service\AgentBuilderService;
-use App\Service\AgentStateSerializer;
-use App\Service\MercurePublisher;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Messages\Messages;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\DelayStamp;
-use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
+use App\Entity\AgentExecution;use App\Message\ExecuteAgentChunk;use App\Service\AgentBuilderService;use App\Service\AgentStateSerializer;use App\Service\MercurePublisher;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Messages\Messages;use Doctrine\ORM\EntityManagerInterface;use Psr\Log\LoggerInterface;use Symfony\Component\Messenger\Attribute\AsMessageHandler;use Symfony\Component\Messenger\MessageBusInterface;use Symfony\Component\Messenger\Stamp\DelayStamp;use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 
 #[AsMessageHandler]
 final class ExecuteAgentChunkHandler

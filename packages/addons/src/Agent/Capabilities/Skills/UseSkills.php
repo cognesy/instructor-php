@@ -2,8 +2,8 @@
 namespace Cognesy\Addons\Agent\Capabilities\Skills;
 
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\AgentCapability;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
 
 class UseSkills implements AgentCapability
 {

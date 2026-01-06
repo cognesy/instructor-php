@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Agents;
+namespace Cognesy\Addons\Agent\Registry;
 
-use Cognesy\Addons\Agent\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Exceptions\AgentNotFoundException;
 use InvalidArgumentException;
 

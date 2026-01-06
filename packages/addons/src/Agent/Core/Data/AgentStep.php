@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Data;
+namespace Cognesy\Addons\Agent\Core\Data;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Contracts\HasStepToolCalls;
-use Cognesy\Addons\Agent\Contracts\HasStepToolExecutions;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Contracts\HasStepToolCalls;
+use Cognesy\Addons\Agent\Core\Contracts\HasStepToolExecutions;
+use Cognesy\Addons\Agent\Core\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Core\Traits\Step\HandlesStepToolCalls;
+use Cognesy\Addons\Agent\Core\Traits\Step\HandlesStepToolExecutions;
 use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
-use Cognesy\Addons\Agent\Traits\Step\HandlesStepToolCalls;
-use Cognesy\Addons\Agent\Traits\Step\HandlesStepToolExecutions;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepErrors;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMessages;
@@ -131,7 +131,7 @@ final readonly class AgentStep implements
     }
 
     /**
-     * @param array<int, array{message?:string,class?:string}|Throwable> $errors
+     * @param Throwable $errors
      * @return Throwable[]
      */
     private function normalizeErrors(array $errors): array {
