@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\Agent\Contracts;
 
-use Cognesy\Addons\Agent\Collections\Tools;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Addons\Agent\Data\AgentStep;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentStep;
 
 interface CanUseTools
 {

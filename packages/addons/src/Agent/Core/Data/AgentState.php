@@ -2,6 +2,9 @@
 
 namespace Cognesy\Addons\Agent\Data;
 
+use Cognesy\Addons\Agent\Collections\AgentSteps;
+use Cognesy\Addons\Agent\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Traits\State\HandlesAgentSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMetadata;
 use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
@@ -12,9 +15,6 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesMessageStore;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
-use Cognesy\Addons\Agent\Collections\AgentSteps;
-use Cognesy\Addons\Agent\Enums\AgentStatus;
-use Cognesy\Addons\Agent\State\HandlesAgentSteps;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;

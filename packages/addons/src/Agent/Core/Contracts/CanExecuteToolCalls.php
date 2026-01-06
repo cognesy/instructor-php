@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\Agent\Contracts;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Data\AgentExecution;
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Data\AgentExecution;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Agent\Contracts;
 
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 
 /**
  * Interface for tools that need access to the current agent execution state.

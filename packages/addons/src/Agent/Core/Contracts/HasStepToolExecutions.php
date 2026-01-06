@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Step;
+namespace Cognesy\Addons\Agent\Contracts;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
 use Cognesy\Messages\Messages;
 use Throwable;
 

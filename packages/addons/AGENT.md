@@ -5,12 +5,7 @@ Tool-calling agent with iterative execution, state management, and extensible ca
 ## Quick Start
 
 ```php
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
-use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
-use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
-use Cognesy\Addons\Agent\Data\AgentState;
-use Cognesy\Messages\Messages;
+use Cognesy\Addons\Agent\AgentBuilder;use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Messages\Messages;
 
 // Create agent with tools using builder
 $agent = AgentBuilder::base()
@@ -531,6 +526,7 @@ AgentStep
 
 ```php
 use Cognesy\Addons\Agent\Tools\BaseTool;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
 
 class MyTool extends BaseTool
 {
@@ -577,7 +573,6 @@ $agent = AgentBuilder::base()
 ├── src/Agent/
 │   ├── Agent.php                   # Main orchestrator
 │   ├── AgentBuilder.php            # Fluent builder for agents
-│   ├── ToolExecutor.php            # Tool execution logic
 │   ├── Capabilities/               # MODULAR FEATURES
 │   │   ├── Bash/                   # Bash capability & tool
 │   │   ├── File/                   # File tools (read, write, edit, search, list_dir)
@@ -587,28 +582,64 @@ $agent = AgentBuilder::base()
 │   │   ├── StructuredOutput/       # LLM-powered data extraction
 │   │   ├── Subagent/               # Subagent capability & tool
 │   │   └── Tasks/                  # Task planning capability & tool
-│   ├── Collections/
-│   │   ├── AgentSteps.php          # Step collection
-│   │   ├── Tools.php               # Tool collection
-│   │   └── ToolExecutions.php      # Execution results
-│   ├── Continuation/
-│   │   └── ToolCallPresenceCheck.php   # Continue if tool calls present
 │   ├── Contracts/
 │   │   ├── AgentCapability.php     # Capability interface
-│   │   ├── CanAccessAgentState.php # State access interface
-│   │   ├── CanExecuteToolCalls.php # Executor interface
-│   │   ├── CanUseTools.php         # Driver interface
 │   │   └── ToolInterface.php       # Tool interface
-│   ├── Data/
-│   │   ├── AgentExecution.php      # Single tool execution
-│   │   ├── AgentState.php          # State container
-│   │   └── AgentStep.php           # Step container
+│   ├── Core/                       # CORE INFRASTRUCTURE
+│   │   ├── Collections/
+│   │   │   ├── AgentSteps.php      # Step collection
+│   │   │   ├── Tools.php           # Tool collection
+│   │   │   └── ToolExecutions.php  # Execution results
+│   │   ├── Continuation/
+│   │   │   └── ToolCallPresenceCheck.php  # Continue if tool calls present
+│   │   ├── Contracts/
+│   │   │   ├── CanAccessAgentState.php    # State access interface
+│   │   │   ├── CanAccessAnyState.php      # Generic state access
+│   │   │   ├── CanExecuteToolCalls.php    # Executor interface
+│   │   │   ├── CanUseTools.php            # Driver interface
+│   │   │   ├── HasStepToolCalls.php       # Step tool calls trait
+│   │   │   └── HasStepToolExecutions.php  # Step executions trait
+│   │   ├── Data/
+│   │   │   ├── AgentExecution.php  # Single tool execution
+│   │   │   ├── AgentState.php      # State container
+│   │   │   └── AgentStep.php       # Step container
+│   │   ├── Enums/
+│   │   │   ├── AgentStatus.php     # InProgress | Completed | Failed
+│   │   │   └── AgentStepType.php   # ToolExecution | FinalResponse | Error
+│   │   ├── ToolExecutor.php        # Tool execution logic
+│   │   └── Traits/
+│   │       ├── State/
+│   │       │   └── HandlesAgentSteps.php
+│   │       └── Step/
+│   │           ├── HandlesStepToolCalls.php
+│   │           └── HandlesStepToolExecutions.php
 │   ├── Drivers/
 │   │   ├── ReAct/                  # Reason+Act driver
+│   │   │   ├── Actions/            # MakeReActPrompt, MakeToolCalls
+│   │   │   ├── ContinuationCriteria/  # StopOnFinalDecision
+│   │   │   ├── Contracts/          # Decision interface
+│   │   │   ├── Data/               # DecisionWithDetails, ReActDecision
+│   │   │   ├── ReActDriver.php
+│   │   │   └── Utils/              # ReActFormatter, ReActValidator
 │   │   └── ToolCalling/            # Native function calling
-│   ├── Enums/
-│   │   ├── AgentStatus.php         # InProgress | Completed | Failed
-│   │   └── AgentStepType.php       # ToolExecution | FinalResponse | Error
+│   │       ├── ToolCallingDriver.php
+│   │       └── ToolExecutionFormatter.php
+│   ├── Events/
+│   │   ├── AgentEvent.php          # Base event
+│   │   ├── AgentFailed.php
+│   │   ├── AgentFinished.php
+│   │   ├── AgentStateUpdated.php
+│   │   ├── AgentStepCompleted.php
+│   │   ├── AgentStepStarted.php
+│   │   ├── TokenUsageReported.php
+│   │   ├── ToolCallCompleted.php
+│   │   └── ToolCallStarted.php
+│   ├── Exceptions/
+│   │   ├── AgentException.php
+│   │   ├── AgentNotFoundException.php
+│   │   ├── InvalidToolArgumentsException.php
+│   │   ├── InvalidToolException.php
+│   │   └── ToolExecutionException.php
 │   ├── Registry/
 │   │   ├── AgentRegistry.php       # Manages agent specifications
 │   │   ├── AgentSpec.php           # Agent definition (name, tools, prompt)

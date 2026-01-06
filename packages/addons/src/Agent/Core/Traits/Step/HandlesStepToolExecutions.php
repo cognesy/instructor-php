@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Step;
+namespace Cognesy\Addons\Agent\Traits\Step;
 
 use Cognesy\Addons\Agent\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Enums\AgentStepType;

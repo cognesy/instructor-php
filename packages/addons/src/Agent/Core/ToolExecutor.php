@@ -2,14 +2,14 @@
 
 namespace Cognesy\Addons\Agent;
 
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Collections\Tools;
 use Cognesy\Addons\Agent\Contracts\CanAccessAgentState;
 use Cognesy\Addons\Agent\Contracts\CanAccessAnyState;
 use Cognesy\Addons\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
-use Cognesy\Addons\Agent\Data\AgentExecution;
-use Cognesy\Addons\Agent\Data\AgentState;
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\Agent\Core\Data\AgentExecution;
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Events\ToolCallCompleted;
 use Cognesy\Addons\Agent\Events\ToolCallStarted;
 use Cognesy\Addons\Agent\Exceptions\InvalidToolArgumentsException;

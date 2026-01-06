@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\State;
+namespace Cognesy\Addons\Agent\Traits\State;
 
 use Cognesy\Addons\Agent\Collections\AgentSteps;
 use Cognesy\Addons\Agent\Data\AgentStep;

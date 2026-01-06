@@ -2,6 +2,13 @@
 
 namespace Cognesy\Addons\Agent\Data;
 
+use Cognesy\Addons\Agent\Collections\ToolExecutions;
+use Cognesy\Addons\Agent\Contracts\HasStepToolCalls;
+use Cognesy\Addons\Agent\Contracts\HasStepToolExecutions;
+use Cognesy\Addons\Agent\Enums\AgentStepType;
+use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
+use Cognesy\Addons\Agent\Traits\Step\HandlesStepToolCalls;
+use Cognesy\Addons\Agent\Traits\Step\HandlesStepToolExecutions;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepErrors;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepInfo;
 use Cognesy\Addons\StepByStep\Step\Contracts\HasStepMessages;
@@ -11,13 +18,6 @@ use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepErrors;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepInfo;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepMessages;
 use Cognesy\Addons\StepByStep\Step\Traits\HandlesStepUsage;
-use Cognesy\Addons\Agent\Collections\ToolExecutions;
-use Cognesy\Addons\Agent\Enums\AgentStepType;
-use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
-use Cognesy\Addons\Agent\Step\HandlesStepToolCalls;
-use Cognesy\Addons\Agent\Step\HandlesStepToolExecutions;
-use Cognesy\Addons\Agent\Step\HasStepToolCalls;
-use Cognesy\Addons\Agent\Step\HasStepToolExecutions;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
