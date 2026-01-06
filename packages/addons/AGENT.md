@@ -35,8 +35,8 @@ Use `AgentBuilder` for composable agent configuration with fluent API. The build
 
 ```php
 use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\UseBash;
-use Cognesy\Addons\Agent\Capabilities\UseFileTools;
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
 
 // Basic agent with custom tools
 $agent = AgentBuilder::base()
@@ -98,6 +98,8 @@ Capabilities are modular features that can be added to an agent. They can regist
 | `UseSkills` | `...\Skills` | Adds `LoadSkillTool` and skill metadata processor |
 | `UseSubagents` | `...\Subagent` | Adds `SpawnSubagentTool` for nested execution |
 | `UseSelfCritique` | `...\SelfCritique` | Adds `SelfCriticProcessor` and evaluation loop |
+| `UseMetadataTools` | `...\Metadata` | Adds scratchpad for storing data between tool calls |
+| `UseStructuredOutputs` | `...\StructuredOutput` | Adds LLM-powered structured data extraction |
 
 (Note: `...` represents `Cognesy\Addons\Agent\Capabilities`)
 
@@ -109,6 +111,47 @@ use Cognesy\Addons\Agent\Capabilities\SelfCritique\UseSelfCritique;
 $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withCapability(new UseSelfCritique(maxIterations: 3))
+    ->build();
+```
+
+### Example: Using Metadata Tools
+```php
+use Cognesy\Addons\Agent\Capabilities\Metadata\UseMetadataTools;
+use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataPolicy;
+
+// Basic usage - agent gets scratchpad for storing intermediate results
+$agent = AgentBuilder::base()
+    ->withCapability(new UseMetadataTools())
+    ->build();
+
+// Custom policy with limits
+$policy = new MetadataPolicy(maxKeys: 50, maxValueSizeBytes: 65536);
+$agent = AgentBuilder::base()
+    ->withCapability(new UseMetadataTools($policy))
+    ->build();
+```
+
+### Example: Using Structured Outputs
+```php
+use Cognesy\Addons\Agent\Capabilities\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaRegistry;
+use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaDefinition;
+use Cognesy\Addons\Agent\Capabilities\StructuredOutput\StructuredOutputPolicy;
+
+// Register schemas for extraction
+$schemas = new SchemaRegistry();
+$schemas->register('lead', LeadForm::class);
+$schemas->register('contact', new SchemaDefinition(
+    class: ContactForm::class,
+    prompt: 'Extract contact information, prioritizing email and phone',
+    maxRetries: 5,
+));
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseStructuredOutputs(
+        schemas: $schemas,
+        policy: new StructuredOutputPolicy(llmPreset: 'anthropic'),
+    ))
     ->build();
 ```
 
@@ -140,7 +183,8 @@ foreach ($agent->iterator($state) as $currentState) {
 ### BashTool
 Execute shell commands via sandboxed process.
 ```php
-use Cognesy\Addons\Agent\Tools\BashPolicy;
+use Cognesy\Addons\Agent\Capabilities\Bash\BashTool;
+use Cognesy\Addons\Agent\Capabilities\Bash\BashPolicy;
 
 $bashPolicy = new BashPolicy(maxOutputChars: 50000, headChars: 8000, tailChars: 40000);
 new BashTool(baseDir: '/tmp', timeout: 120, outputPolicy: $bashPolicy);
@@ -166,6 +210,19 @@ Replace strings in files.
 EditFileTool::inDirectory('/path');
 ```
 
+### SearchFilesTool
+Search for files by name/path pattern (not content).
+```php
+SearchFilesTool::inDirectory('/path', maxResults: 10);
+```
+Supports glob patterns: `*.php`, `**/*.php`, `src/**/*.ts`, and substring search.
+
+### ListDirTool
+List directory contents with file/directory markers.
+```php
+ListDirTool::inDirectory('/path', maxEntries: 50);
+```
+
 ### TodoWriteTool
 Structured task management.
 - Max 20 tasks
@@ -178,17 +235,47 @@ use Cognesy\Addons\Agent\Capabilities\Tasks\TodoPolicy;
 use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
 use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
 use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
 
-$policy = new TodoPolicy(maxItems: 25, maxInProgress: 2, reminderEverySteps: 10);
+$policy = new TodoPolicy(
+    maxItems: 25,
+    maxInProgress: 2,
+    renderEverySteps: 10,
+    reminderEverySteps: 10,
+);
 $agent = AgentBuilder::base()
     ->withCapability(new UseTaskPlanning($policy))
     ->build();
 
+$registry = new AgentRegistry();
 $subagentPolicy = new SubagentPolicy(maxDepth: 3, summaryMaxChars: 12000);
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents($registry, $subagentPolicy))
     ->build();
 ```
+
+### MetadataReadTool / MetadataWriteTool / MetadataListTool
+Scratchpad for storing data between tool calls.
+```php
+use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataWriteTool;
+use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataReadTool;
+use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataListTool;
+
+// Usually added via UseMetadataTools capability
+// Tools: metadata_write, metadata_read, metadata_list
+```
+Useful for multi-step workflows where one tool produces data another needs.
+
+### StructuredOutputTool
+Extract structured data from unstructured text using Instructor.
+```php
+use Cognesy\Addons\Agent\Capabilities\StructuredOutput\StructuredOutputTool;
+use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaRegistry;
+
+// Usually added via UseStructuredOutputs capability
+// Tool: extract_data
+```
+Extracts data into registered schema classes with optional storage to metadata.
 
 ### LoadSkillTool
 Load SKILL.md files on-demand.
@@ -197,9 +284,13 @@ LoadSkillTool::withLibrary(new SkillLibrary('./skills'));
 ```
 
 ### SpawnSubagentTool
-Spawn isolated subagents with filtered capabilities.
+Spawn isolated subagents from registered agent specifications.
 ```php
-new SpawnSubagentTool($parentAgent, $capability);
+use Cognesy\Addons\Agent\Capabilities\Subagent\SpawnSubagentTool;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
+
+// Usually added via UseSubagents capability with AgentRegistry
+// The registry defines available subagent types and their tools/prompts
 ```
 
 ### LlmQueryTool
@@ -275,20 +366,58 @@ $agent = AgentBuilder::base()
     ->build();
 ```
 
-## Subagent Types
+## Agent Registry
 
-| Type | Tools | Purpose |
-|------|-------|---------|
-| `Explore` | bash, read_file | Read-only exploration |
-| `Code` | bash, read_file, write_file, edit_file, todo_write | Full coding |
-| `Plan` | read_file | Planning without execution |
+The `AgentRegistry` manages named agent specifications that can be spawned as subagents. Define agents with specific tools, prompts, and models.
 
+### AgentSpec
 ```php
-use Cognesy\Addons\Agent\Enums\AgentType;
-use Cognesy\Addons\Agent\Agents\DefaultAgentCapability;
+use Cognesy\Addons\Agent\Registry\AgentSpec;
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
 
-$capability = new DefaultAgentCapability();
-$tools = $capability->toolsFor(AgentType::Explore, $allTools);
+// Define an agent specification
+$spec = new AgentSpec(
+    name: 'code-reviewer',
+    description: 'Reviews code for quality and suggests improvements',
+    systemPrompt: 'You are a code reviewer. Analyze code for bugs, style issues, and improvements.',
+    tools: ['read_file', 'search_files'],  // null = inherit all parent tools
+    model: 'anthropic',  // preset name, 'inherit', or LLMConfig object
+    skills: ['code-review'],
+);
+
+$registry = new AgentRegistry();
+$registry->register($spec);
+```
+
+### Loading from Markdown Files
+```php
+// Load single agent spec from markdown file
+$registry->loadFromFile('/path/to/agent.md');
+
+// Load all agents from directory
+$registry->loadFromDirectory('/path/to/agents', recursive: true);
+
+// Auto-discover from standard locations:
+// - Project: .claude/agents/
+// - Package: vendor/cognesy/instructor-php/agents/
+// - User: ~/.instructor-php/agents/
+$registry->autoDiscover();
+```
+
+### Agent Markdown Format
+```markdown
+---
+name: code-reviewer
+description: Reviews code for quality issues
+tools: [read_file, search_files]
+model: anthropic
+skills: [code-review]
+---
+
+You are a code reviewer. Analyze code for:
+1. Bugs and logic errors
+2. Style consistency
+3. Performance issues
 ```
 
 ## Skills
@@ -387,7 +516,7 @@ AgentState
 ├── Steps[]                     # Execution history
 ├── Metadata                    # Key-value store
 ├── Usage                       # Accumulated tokens
-└── Status                      # Running | Completed | Failed
+└── Status                      # InProgress | Completed | Failed
 
 AgentStep
 ├── InputMessages               # Context for this step
@@ -451,30 +580,39 @@ $agent = AgentBuilder::base()
 │   ├── ToolExecutor.php            # Tool execution logic
 │   ├── Capabilities/               # MODULAR FEATURES
 │   │   ├── Bash/                   # Bash capability & tool
-│   │   ├── File/                   # File capability & tools
+│   │   ├── File/                   # File tools (read, write, edit, search, list_dir)
+│   │   ├── Metadata/               # Scratchpad capability & tools
+│   │   ├── SelfCritique/           # Self-critique capability & processor
 │   │   ├── Skills/                 # Skills capability & tool
+│   │   ├── StructuredOutput/       # LLM-powered data extraction
 │   │   ├── Subagent/               # Subagent capability & tool
-│   │   ├── Tasks/                  # Task planning capability & tool
-│   │   └── SelfCritique/           # Self-critique capability & processor
+│   │   └── Tasks/                  # Task planning capability & tool
 │   ├── Collections/
+│   │   ├── AgentSteps.php          # Step collection
 │   │   ├── Tools.php               # Tool collection
 │   │   └── ToolExecutions.php      # Execution results
+│   ├── Continuation/
+│   │   └── ToolCallPresenceCheck.php   # Continue if tool calls present
 │   ├── Contracts/
 │   │   ├── AgentCapability.php     # Capability interface
-│   │   ├── CanUseTools.php         # Driver interface
+│   │   ├── CanAccessAgentState.php # State access interface
 │   │   ├── CanExecuteToolCalls.php # Executor interface
+│   │   ├── CanUseTools.php         # Driver interface
 │   │   └── ToolInterface.php       # Tool interface
 │   ├── Data/
-│   │   ├── AgentState.php          # State container
-│   │   ├── AgentStep.php           # Step container
 │   │   ├── AgentExecution.php      # Single tool execution
+│   │   ├── AgentState.php          # State container
+│   │   └── AgentStep.php           # Step container
 │   ├── Drivers/
-│   │   ├── ToolCalling/            # Native function calling
-│   │   └── ReAct/                  # Reason+Act driver
+│   │   ├── ReAct/                  # Reason+Act driver
+│   │   └── ToolCalling/            # Native function calling
 │   ├── Enums/
-│   │   ├── AgentType.php           # Explore | Code | Plan
-│   │   ├── AgentStatus.php         # Running | Completed | Failed
-│   │   ├── AgentStepType.php       # ToolExecution | FinalResponse | Error
+│   │   ├── AgentStatus.php         # InProgress | Completed | Failed
+│   │   └── AgentStepType.php       # ToolExecution | FinalResponse | Error
+│   ├── Registry/
+│   │   ├── AgentRegistry.php       # Manages agent specifications
+│   │   ├── AgentSpec.php           # Agent definition (name, tools, prompt)
+│   │   └── AgentSpecParser.php     # Parse agents from markdown
 │   └── Tools/
 │       ├── BaseTool.php            # Base class for tools
 │       ├── FunctionTool.php        # Wrap PHP functions as tools
