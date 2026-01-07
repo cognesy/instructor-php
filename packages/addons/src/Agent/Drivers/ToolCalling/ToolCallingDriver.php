@@ -13,7 +13,9 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -89,7 +91,8 @@ class ToolCallingDriver implements CanUseTools
     // INTERNAL /////////////////////////////////////////////////
 
     private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
-        return $this->buildPendingInference($state->messages(), $tools)->response();
+        $cache = $this->resolveCachedContext($state, $tools);
+        return $this->buildPendingInference($state->messages(), $tools, $cache)->response();
     }
 
     private function getToolsToCall(InferenceResponse $response): ToolCalls {
@@ -99,15 +102,20 @@ class ToolCallingDriver implements CanUseTools
     /** Builds a PendingInference configured for tool-calling. */
     private function buildPendingInference(
         Messages $messages,
-        Tools $tools
+        Tools $tools,
+        ?CachedContext $cache = null,
     ) : PendingInference {
         $toolChoice = is_array($this->toolChoice)
             ? ($this->toolChoice['type'] ?? 'auto')
             : $this->toolChoice;
         assert(is_string($toolChoice));
 
+        $cache = $cache?->isEmpty() === true ? null : $cache;
+        $cachedTools = $cache?->tools() ?? [];
+        $hasCachedTools = $cachedTools !== [];
         $hasTools = !$tools->isEmpty();
-        $toolSchemas = $hasTools ? $tools->toToolSchema() : [];
+        $toolSchemas = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : [];
+        $resolvedToolChoice = $this->resolveToolChoice($toolChoice, $cache);
 
         // Only include parallel_tool_calls when tools are specified (API requirement)
         $options = $this->options;
@@ -120,10 +128,18 @@ class ToolCallingDriver implements CanUseTools
             ->withMessages($messages->toArray())
             ->withModel($this->model)
             ->withTools($toolSchemas)
-            ->withToolChoice($hasTools ? $toolChoice : '')
+            ->withToolChoice($hasTools ? $resolvedToolChoice : '')
             ->withResponseFormat($this->responseFormat)
             ->withOptions($options)
             ->withOutputMode($this->mode);
+        if ($cache !== null) {
+            $inference = $inference->withCachedContext(
+                messages: $cache->messages()->toArray(),
+                tools: $cachedTools,
+                toolChoice: $cache->toolChoice(),
+                responseFormat: $this->responseFormatToArray($cache->responseFormat()),
+            );
+        }
         if ($this->httpClient !== null) {
             $inference = $inference->withHttpClient($this->httpClient);
         }
@@ -158,5 +174,46 @@ class ToolCallingDriver implements CanUseTools
             $response->hasToolCalls() => AgentStepType::ToolExecution,
             default => AgentStepType::FinalResponse,
         };
+    }
+
+    private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedContext {
+        $cache = $state->cache();
+        $cachedTools = $cache->tools();
+        if ($cachedTools === [] && !$tools->isEmpty()) {
+            $cachedTools = $tools->toToolSchema();
+        }
+
+        $resolved = new CachedContext(
+            messages: $cache->messages()->toArray(),
+            tools: $cachedTools,
+            toolChoice: $cache->toolChoice(),
+            responseFormat: $this->responseFormatToArray($cache->responseFormat()),
+        );
+
+        return $resolved->isEmpty() ? null : $resolved;
+    }
+
+    private function resolveToolChoice(string $toolChoice, ?CachedContext $cache): string {
+        if ($cache === null) {
+            return $toolChoice;
+        }
+
+        $cachedChoice = $cache->toolChoice();
+        if ($cachedChoice === [] || $cachedChoice === '') {
+            return $toolChoice;
+        }
+
+        return $toolChoice === 'auto' ? '' : $toolChoice;
+    }
+
+    private function responseFormatToArray(ResponseFormat $format): array {
+        return $format->isEmpty()
+            ? []
+            : [
+                'type' => $format->type(),
+                'schema' => $format->schema(),
+                'name' => $format->schemaName(),
+                'strict' => $format->strict(),
+            ];
     }
 }

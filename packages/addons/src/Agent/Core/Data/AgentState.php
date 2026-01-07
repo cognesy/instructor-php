@@ -16,6 +16,7 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
 use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use Cognesy\Utils\Uuid;
@@ -31,6 +32,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     use HandlesUsage;
 
     private AgentStatus $status;
+    private CachedContext $cache;
 
     public string $agentId;
     public ?string $parentAgentId;
@@ -48,6 +50,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         ?string             $agentId = null,
         ?string             $parentAgentId = null,
         ?DateTimeImmutable  $currentStepStartedAt = null,
+        ?CachedContext      $cache = null,
     ) {
         $this->agentId = $agentId ?? Uuid::uuid4();
         $this->parentAgentId = $parentAgentId;
@@ -64,6 +67,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             is_array($variables) => new Metadata($variables),
             default => new Metadata(),
         };
+        $this->cache = $cache ?? new CachedContext();
         $this->usage = $usage ?? new Usage();
         $this->store = $store ?? new MessageStore();
     }
@@ -88,12 +92,14 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         ?string             $agentId = null,
         ?string             $parentAgentId = null,
         ?DateTimeImmutable  $currentStepStartedAt = null,
+        ?CachedContext      $cache = null,
     ): self {
         return new self(
             status: $status ?? $this->status,
             steps: $steps ?? $this->steps,
             currentStep: $currentStep ?? $this->currentStep,
             variables: $variables ?? $this->metadata,
+            cache: $cache ?? $this->cache,
             usage: $usage ?? $this->usage,
             store: $store ?? $this->store,
             stateInfo: $stateInfo ?? $this->stateInfo->touch(),
@@ -121,6 +127,14 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         return $this->status;
     }
 
+    public function cache() : CachedContext {
+        return $this->cache;
+    }
+
+    public function withCachedContext(CachedContext $cache) : self {
+        return $this->with(cache: $cache);
+    }
+
     // SERIALIZATION ////////////////////////////////////////
 
     public function toArray() : array {
@@ -129,6 +143,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             'parentAgentId' => $this->parentAgentId,
             'currentStepStartedAt' => $this->currentStepStartedAt?->format(DATE_ATOM),
             'metadata' => $this->metadata->toArray(),
+            'cachedContext' => $this->cacheToArray($this->cache),
             'usage' => $this->usage->toArray(),
             'messageStore' => $this->store->toArray(),
             'stateInfo' => $this->stateInfo->toArray(),
@@ -145,12 +160,63 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             currentStep: isset($data['currentStep']) ? AgentStep::fromArray($data['currentStep']) : null,
 
             variables: isset($data['metadata']) ? Metadata::fromArray($data['metadata']) : new Metadata(),
+            cache: self::cacheFromArray($data),
             usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : new Usage(),
             store: isset($data['messageStore']) ? MessageStore::fromArray($data['messageStore']) : new MessageStore(),
             stateInfo: isset($data['stateInfo']) ? StateInfo::fromArray($data['stateInfo']) : null,
             agentId: $data['agentId'] ?? null,
             parentAgentId: $data['parentAgentId'] ?? null,
             currentStepStartedAt: isset($data['currentStepStartedAt']) ? new DateTimeImmutable($data['currentStepStartedAt']) : null,
+        );
+    }
+
+    // INTERNAL ////////////////////////////////////////////////
+
+    private function cacheToArray(CachedContext $cache) : array {
+        $responseFormat = $cache->responseFormat();
+        $responseFormatData = $responseFormat->isEmpty()
+            ? []
+            : [
+                'type' => $responseFormat->type(),
+                'schema' => $responseFormat->schema(),
+                'name' => $responseFormat->schemaName(),
+                'strict' => $responseFormat->strict(),
+            ];
+
+        return [
+            'messages' => $cache->messages()->toArray(),
+            'tools' => $cache->tools(),
+            'toolChoice' => $cache->toolChoice(),
+            'responseFormat' => $responseFormatData,
+        ];
+    }
+
+    private static function cacheFromArray(array $data) : CachedContext {
+        $cacheData = match (true) {
+            isset($data['cachedContext']) && is_array($data['cachedContext']) => $data['cachedContext'],
+            isset($data['cache']) && is_array($data['cache']) => $data['cache'],
+            default => [],
+        };
+
+        if ($cacheData === []) {
+            return new CachedContext();
+        }
+
+        $messages = $cacheData['messages'] ?? [];
+        $tools = $cacheData['tools'] ?? [];
+        $toolChoice = $cacheData['toolChoice'] ?? $cacheData['tool_choice'] ?? [];
+        $responseFormat = $cacheData['responseFormat'] ?? $cacheData['response_format'] ?? null;
+
+        $normalizedResponseFormat = match (true) {
+            is_array($responseFormat) && $responseFormat !== [] => $responseFormat,
+            default => null,
+        };
+
+        return new CachedContext(
+            messages: $messages,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            responseFormat: $normalizedResponseFormat,
         );
     }
 }

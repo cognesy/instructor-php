@@ -56,6 +56,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseTaskPlanning())
     ->withCapability(new UseSkills($library))
     ->withCapability(UseSubagents::withDepth(3, $registry, summaryMaxChars: 8000))
+    ->withSystemPrompt('You are a code reviewer. Be concise and actionable.')
     ->withMaxSteps(20)
     ->withMaxTokens(32768)
     ->withTimeout(300)
@@ -80,6 +81,37 @@ $agent = AgentBuilder::base()
 | `withLlmPreset($preset)` | Use LLM preset from config |
 | `withDriver($driver)` | Use custom tool-calling driver |
 | `withEvents($eventBus)` | Set event handler |
+| `withCachedContext($cache)` | Set cached context for stable prompt parts |
+| `withSystemPrompt($prompt)` | Add system prompt to cached context |
+| `withResponseFormat($format)` | Set cached response format (applied when request format is empty) |
+
+### Cached Context
+
+Cached context is used for stable prompt parts that should persist across steps and benefit from provider prompt caching.
+
+```php
+use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Polyglot\Inference\Data\CachedContext;
+
+$cache = new CachedContext(
+    messages: [
+        ['role' => 'system', 'content' => 'You are a precise assistant.'],
+    ],
+);
+
+$agent = AgentBuilder::base()
+    ->withCachedContext($cache)
+    ->build();
+```
+
+Shorthand convenience methods:
+
+```php
+$agent = AgentBuilder::base()
+    ->withSystemPrompt('You are a precise assistant.')
+    ->withResponseFormat(['type' => 'json_object'])
+    ->build();
+```
 
 ## Capabilities
 

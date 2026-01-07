@@ -7,6 +7,7 @@ use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Continuation\ToolCallPresenceCheck;
 use Cognesy\Addons\Agent\Core\Contracts\CanUseTools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Addons\Agent\Core\StateProcessing\Processors\ApplyCachedContext;
 use Cognesy\Addons\Agent\Core\ToolExecutor;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
@@ -24,6 +25,9 @@ use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -51,6 +55,7 @@ class AgentBuilder
     private ?CanUseTools $driver = null;
     private ?CanHandleEvents $events = null;
     private ?string $llmPreset = null;
+    private ?CachedContext $cachedContext = null;
 
     // Execution limits
     private int $maxSteps = 20;
@@ -185,6 +190,48 @@ class AgentBuilder
         return $this;
     }
 
+    public function withCachedContext(CachedContext $cachedContext): self {
+        $this->cachedContext = $cachedContext;
+        return $this;
+    }
+
+    public function withSystemPrompt(string $systemPrompt): self {
+        $prompt = trim($systemPrompt);
+        if ($prompt === '') {
+            return $this;
+        }
+
+        $cache = $this->cachedContext ?? new CachedContext();
+        $messages = $cache->messages();
+        if ($this->hasSystemPrompt($messages, $prompt)) {
+            return $this;
+        }
+
+        $prepended = Messages::fromArray([
+            ['role' => 'system', 'content' => $prompt],
+        ])->appendMessages($messages);
+
+        $this->cachedContext = new CachedContext(
+            messages: $prepended->toArray(),
+            tools: $cache->tools(),
+            toolChoice: $cache->toolChoice(),
+            responseFormat: $this->responseFormatToArray($cache->responseFormat()),
+        );
+
+        return $this;
+    }
+
+    public function withResponseFormat(array $responseFormat): self {
+        $cache = $this->cachedContext ?? new CachedContext();
+        $this->cachedContext = new CachedContext(
+            messages: $cache->messages()->toArray(),
+            tools: $cache->tools(),
+            toolChoice: $cache->toolChoice(),
+            responseFormat: $responseFormat,
+        );
+        return $this;
+    }
+
     // EVENT HANDLING ////////////////////////////////////////////
 
     /**
@@ -233,11 +280,13 @@ class AgentBuilder
 
     /** @return StateProcessors<AgentState> */
     private function buildProcessors(): StateProcessors {
-        $baseProcessors = [
-            new AccumulateTokenUsage(),
-            new AppendContextMetadata(),
-            new AppendStepMessages(),
-        ];
+        $baseProcessors = [];
+        if ($this->cachedContext !== null && !$this->cachedContext->isEmpty()) {
+            $baseProcessors[] = new ApplyCachedContext($this->cachedContext);
+        }
+        $baseProcessors[] = new AccumulateTokenUsage();
+        $baseProcessors[] = new AppendContextMetadata();
+        $baseProcessors[] = new AppendStepMessages();
 
         $allProcessors = array_merge($baseProcessors, $this->processors);
 
@@ -279,5 +328,29 @@ class AgentBuilder
             : LLMProvider::new();
 
         return new ToolCallingDriver(llm: $llmProvider);
+    }
+
+    private function hasSystemPrompt(Messages $messages, string $prompt): bool {
+        foreach ($messages->messageList()->all() as $message) {
+            if ($message->role()->value !== 'system') {
+                continue;
+            }
+            $content = $message->content()->toString();
+            if ($content === $prompt) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function responseFormatToArray(ResponseFormat $format): array {
+        return $format->isEmpty()
+            ? []
+            : [
+                'type' => $format->type(),
+                'schema' => $format->schema(),
+                'name' => $format->schemaName(),
+                'strict' => $format->strict(),
+            ];
     }
 }

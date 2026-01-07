@@ -17,12 +17,14 @@ use Cognesy\Addons\Agent\Drivers\ReAct\Data\ReActDecision;
 use Cognesy\Addons\Agent\Drivers\ReAct\Utils\ReActFormatter;
 use Cognesy\Addons\Agent\Drivers\ReAct\Utils\ReActValidator;
 use Cognesy\Http\HttpClient;
+use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -69,7 +71,8 @@ final class ReActDriver implements CanUseTools
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
         $messages = $state->messages();
         $system = $this->buildSystemPrompt($tools);
-        $extraction = Result::try(fn() => $this->extractDecision($messages, $system));
+        $cachedContext = $this->structuredCachedContext($state);
+        $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext));
         if ($extraction->isFailure()) {
             return $this->buildExtractionFailureStep($extraction->error(), $messages);
         }
@@ -91,7 +94,7 @@ final class ReActDriver implements CanUseTools
         $usage = $inferenceResponse->usage();
 
         if (!$decision->isCall()) {
-            return $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages);
+            return $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->cache());
         }
 
         // Execute tool calls and assemble follow-ups
@@ -114,11 +117,12 @@ final class ReActDriver implements CanUseTools
         return (new MakeReActPrompt($tools))();
     }
 
-    private function extractDecision(Messages $messages, string $system): DecisionWithDetails {
+    private function extractDecision(Messages $messages, string $system, ?StructuredCachedContext $cachedContext): DecisionWithDetails {
         $pending = $this->extractDecisionWithUsage(
             messages: $messages,
             system: $system,
             decisionModel: ReActDecision::class,
+            cachedContext: $cachedContext,
         );
         /** @var ReActDecision $decision */
         $decision = $pending->get();
@@ -133,7 +137,12 @@ final class ReActDriver implements CanUseTools
      *
      * @param class-string|array|object $decisionModel
      */
-    private function extractDecisionWithUsage(Messages $messages, string $system, string|array|object $decisionModel): PendingStructuredOutput {
+    private function extractDecisionWithUsage(
+        Messages $messages,
+        string $system,
+        string|array|object $decisionModel,
+        ?StructuredCachedContext $cachedContext,
+    ): PendingStructuredOutput {
         $structured = (new StructuredOutput())
             ->withSystem($system)
             ->withMessages($messages)
@@ -143,6 +152,9 @@ final class ReActDriver implements CanUseTools
             ->withOptions($this->options)
             ->withMaxRetries($this->maxRetries)
             ->withLLMProvider($this->llm);
+        if ($cachedContext !== null && !$cachedContext->isEmpty()) {
+            $structured = $structured->withCachedContext($cachedContext);
+        }
 
         if ($this->httpClient !== null) {
             $structured = $structured->withHttpClient($this->httpClient);
@@ -202,10 +214,11 @@ final class ReActDriver implements CanUseTools
         ?Usage $usage,
         ?InferenceResponse $inferenceResponse,
         Messages $messages,
+        CachedContext $cachedContext,
     ): AgentStep {
         $finalText = $decision->answer();
         if ($this->finalViaInference) {
-            $pending = $this->finalizeAnswerViaInference($messages);
+            $pending = $this->finalizeAnswerViaInference($messages, $cachedContext);
             $inferenceResponse = $pending->response();
             $finalText = $inferenceResponse->content();
             $usage = $inferenceResponse->usage();
@@ -232,7 +245,7 @@ final class ReActDriver implements CanUseTools
     }
 
     /** Generates a plain-text final answer via Inference and returns PendingInference. */
-    private function finalizeAnswerViaInference(Messages $messages): PendingInference {
+    private function finalizeAnswerViaInference(Messages $messages, CachedContext $cachedContext): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),
@@ -243,9 +256,25 @@ final class ReActDriver implements CanUseTools
             ->withModel($this->finalModel ?: $this->model)
             ->withOptions($this->finalOptions ?: $this->options)
             ->withOutputMode(OutputMode::Text);
+        if (!$cachedContext->isEmpty()) {
+            $inference = $inference->withCachedContext(
+                messages: $cachedContext->messages()->toArray(),
+            );
+        }
         if ($this->httpClient !== null) {
             $inference = $inference->withHttpClient($this->httpClient);
         }
         return $inference->create();
+    }
+
+    private function structuredCachedContext(AgentState $state): ?StructuredCachedContext {
+        $cache = $state->cache();
+        if ($cache->isEmpty()) {
+            return null;
+        }
+
+        return new StructuredCachedContext(
+            messages: $cache->messages()->toArray(),
+        );
     }
 }
