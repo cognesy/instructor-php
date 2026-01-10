@@ -117,7 +117,7 @@ class EndToEndExample
         echo "2. LEXER OUTPUT (Tokens)\n";
         $reflection = new \ReflectionClass($parser);
         $lexMethod = $reflection->getMethod('lex');
-        $lexMethod->setAccessible(true);
+        
         $tokens = $lexMethod->invoke($parser, $input);
 
         foreach ($tokens as $token) {

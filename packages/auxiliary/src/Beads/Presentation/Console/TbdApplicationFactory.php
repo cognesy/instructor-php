@@ -44,18 +44,18 @@ class TbdApplicationFactory
         $ids = new TbdIdFactory();
         $map = new TbdInputMapper();
 
-        $app->add(new InitCommand(new InitAction($store)));
-        $app->add(new ListCommand(new ListAction($store), $map));
-        $app->add(new ReadyCommand(new ReadyAction($store)));
-        $app->add(new ShowCommand(new ShowAction($store)));
-        $app->add(new CreateCommand(new CreateAction($store, $ids, $clock, $map), $map));
-        $app->add(new UpdateCommand(new UpdateAction($store, $clock, $map), $map));
-        $app->add(new CloseCommand(new CloseAction($store, $clock)));
-        $app->add(new CommentCommand(new CommentAction($store, $clock)));
-        $app->add(new DepAddCommand(new DepAddAction($store, $clock, $map)));
-        $app->add(new DepRemoveCommand(new DepRemoveAction($store, $clock)));
-        $app->add(new DepTreeCommand(new DepTreeAction($store), $map));
-        $app->add(new CompactCommand(new CompactAction($store)));
+        $app->addCommand(new InitCommand(new InitAction($store)));
+        $app->addCommand(new ListCommand(new ListAction($store), $map));
+        $app->addCommand(new ReadyCommand(new ReadyAction($store)));
+        $app->addCommand(new ShowCommand(new ShowAction($store)));
+        $app->addCommand(new CreateCommand(new CreateAction($store, $ids, $clock, $map), $map));
+        $app->addCommand(new UpdateCommand(new UpdateAction($store, $clock, $map), $map));
+        $app->addCommand(new CloseCommand(new CloseAction($store, $clock)));
+        $app->addCommand(new CommentCommand(new CommentAction($store, $clock)));
+        $app->addCommand(new DepAddCommand(new DepAddAction($store, $clock, $map)));
+        $app->addCommand(new DepRemoveCommand(new DepRemoveAction($store, $clock)));
+        $app->addCommand(new DepTreeCommand(new DepTreeAction($store), $map));
+        $app->addCommand(new CompactCommand(new CompactAction($store)));
 
         return $app;
     }

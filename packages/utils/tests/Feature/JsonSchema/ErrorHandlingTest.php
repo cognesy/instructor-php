@@ -30,7 +30,7 @@ test('toFunctionCall throws exception when called on non-object schema', functio
 test('toKeyedProperties throws exception when property name is missing', function () {
     $reflectionClass = new ReflectionClass(JsonSchema::class);
     $method = $reflectionClass->getMethod('toKeyedProperties');
-    $method->setAccessible(true);
+    
 
     // Array with missing property name
     $invalidProperties = [
@@ -45,7 +45,7 @@ test('toKeyedProperties throws exception when property name is missing', functio
 test('toKeyedProperties throws exception when property is invalid', function () {
     $reflectionClass = new ReflectionClass(JsonSchema::class);
     $method = $reflectionClass->getMethod('toKeyedProperties');
-    $method->setAccessible(true);
+    
 
     // Invalid property type (neither JsonSchema nor array)
     $invalidProperties = [

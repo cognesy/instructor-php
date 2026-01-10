@@ -24,7 +24,7 @@ $data = (new StructuredOutput)
     ->intoArray()
     ->get();
 // Returns: ['name' => 'John', 'age' => 30]
-// @doctest id="0edd"
+// @doctest id="22a6"
 ```
 
 ## Available Output Formats
@@ -42,7 +42,7 @@ $data = (new StructuredOutput)
 
 // Result: ['name' => 'John Doe', 'age' => 30]
 dump($data['name']);  // 'John Doe'
-// @doctest id="b166"
+// @doctest id="6711"
 ```
 
 **Use cases:**
@@ -73,7 +73,7 @@ DB::table('users')->insert($userData);
 
 // Or return as JSON API response
 return response()->json($userData);
-// @doctest id="5fc0"
+// @doctest id="d91c"
 ```
 
 ---
@@ -90,7 +90,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Result: UserDTO instance with subset of fields
-// @doctest id="8107"
+// @doctest id="a1ac"
 ```
 
 **Use cases:**
@@ -130,7 +130,7 @@ $user = (new StructuredOutput)
 echo $user->fullName;  // 'John Smith'
 echo $user->email;     // 'john@example.com'
 // phoneNumber and address were extracted but not included in output
-// @doctest id="844d"
+// @doctest id="5c6f"
 ```
 
 ---
@@ -147,7 +147,7 @@ $scalar = (new StructuredOutput)
     ->get();
 
 // Result: Scalar object with custom deserialization logic
-// @doctest id="78bc"
+// @doctest id="d18d"
 ```
 
 **Use cases:**
@@ -177,7 +177,7 @@ $sentiment = (new StructuredOutput)
     ->get();
 
 dump($sentiment);  // 'positive' (string)
-// @doctest id="657f"
+// @doctest id="397c"
 ```
 
 **Custom self-deserializing object:**
@@ -217,7 +217,7 @@ $price = (new StructuredOutput)
     ->get();
 
 // $price is Money instance with custom deserialization
-// @doctest id="cb64"
+// @doctest id="142d"
 ```
 
 ---
@@ -246,7 +246,7 @@ foreach ($stream->partials() as $partial) {
 // Get final result as array
 $finalArticle = $stream->finalValue();
 // Returns: ['title' => '...', 'author' => '...', 'content' => '...']
-// @doctest id="e1b6"
+// @doctest id="a9ba"
 ```
 
 **Why this design?**
@@ -288,7 +288,7 @@ if ($data['age'] < 18) {
 } else {
     $user = new AdultUser(...$data);
 }
-// @doctest id="7245"
+// @doctest id="50e8"
 ```
 
 ### Pattern 2: Data Enrichment
@@ -308,7 +308,7 @@ $data['age_group'] = $data['age'] < 30 ? 'young' : 'senior';
 
 // Then create object
 $person = new Person(...$data);
-// @doctest id="5a96"
+// @doctest id="d07d"
 ```
 
 ### Pattern 3: Multi-Layer Architecture
@@ -339,7 +339,7 @@ $order = (new StructuredOutput)
     ->intoInstanceOf(OrderDTO::class)        // Simple application DTO
     ->with(messages: 'Extract order details')
     ->get();
-// @doctest id="be07"
+// @doctest id="a5e4"
 ```
 
 ---
@@ -358,7 +358,7 @@ $data = (new StructuredOutput)
 
 // Schema sent to LLM still includes all 5 fields from UserProfile
 // Only the deserialization step is different
-// @doctest id="4e44"
+// @doctest id="f6c5"
 ```
 
 ### Validation Behavior
@@ -384,7 +384,7 @@ $data = (new StructuredOutput)
     ->intoArray()  // ← New
     ->get();
 // Returns: array
-// @doctest id="4be6"
+// @doctest id="bb87"
 ```
 
 ---
@@ -430,7 +430,7 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="35dc"
+// @doctest id="91d0"
 ```
 
 ### Custom Extractor Implementation
@@ -467,7 +467,7 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="9563"
+// @doctest id="5ac9"
 ```
 
 ### Custom Response Extractor
@@ -505,7 +505,7 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="174a"
+// @doctest id="22c4"
 ```
 
 ### When to Customize Extraction

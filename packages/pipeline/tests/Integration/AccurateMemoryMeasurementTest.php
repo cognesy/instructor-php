@@ -164,11 +164,11 @@ describe('Accurate Memory Measurement', function () {
         // Analyze internal structure
         $reflection = new ReflectionClass($pipeline);
         $stepsProperty = $reflection->getProperty('steps');
-        $stepsProperty->setAccessible(true);
+        
         $steps = $stepsProperty->getValue($pipeline);
         
         $middlewareProperty = $reflection->getProperty('middleware');
-        $middlewareProperty->setAccessible(true);
+        
         $middleware = $middlewareProperty->getValue($pipeline);
         
         echo "\n=== Pipeline Internal Structure Analysis ===\n";
@@ -186,7 +186,7 @@ describe('Accurate Memory Measurement', function () {
             
         $chainReflection = new ReflectionClass($chain);
         $processorsProperty = $chainReflection->getProperty('processors');
-        $processorsProperty->setAccessible(true);
+        
         $chainProcessors = $processorsProperty->getValue($chain);
         
         echo "\n=== ResultChain Internal Structure Analysis ===\n";

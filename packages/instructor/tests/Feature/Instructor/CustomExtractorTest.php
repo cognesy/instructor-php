@@ -145,7 +145,7 @@ it('withExtractors() creates ResponseExtractor with custom extractors', function
     // Access via reflection to verify
     $reflection = new \ReflectionClass($so);
     $prop = $reflection->getProperty('extractors');
-    $prop->setAccessible(true);
+    
     $extractors = $prop->getValue($so);
 
     expect($extractors)->toHaveCount(1);

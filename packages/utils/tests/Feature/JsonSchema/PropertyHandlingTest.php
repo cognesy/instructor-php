@@ -164,7 +164,7 @@ test('nullable flag is handled properly', function () {
 test('appendMeta prefixes non-prefixed keys with x-', function () {
     $reflectionClass = new ReflectionClass(JsonSchema::class);
     $method = $reflectionClass->getMethod('appendMeta');
-    $method->setAccessible(true);
+    
 
     $schema = JsonSchema::fromArray(['type' => 'string']);
     $values = ['type' => 'string'];

@@ -24,7 +24,7 @@ function createTestTask(string $id, TaskStatus $status = TaskStatus::Open, ?Agen
     if ($status !== TaskStatus::Open || $assignee !== null) {
         $reflection = new ReflectionClass(Task::class);
         $constructor = $reflection->getConstructor();
-        $constructor->setAccessible(true);
+        
 
         $taskWithAssigneeAndStatus = $reflection->newInstanceWithoutConstructor();
         $constructor->invoke(

@@ -15,7 +15,7 @@ function createTaskForCollection(
     string $id,
     string $title,
     TaskType $type = TaskType::Task,
-    Priority $priority = null,
+    ?Priority $priority = null,
     TaskStatus $status = TaskStatus::Open,
     ?Agent $assignee = null,
     array $labels = [],
@@ -34,7 +34,7 @@ function createTaskForCollection(
     if ($status !== TaskStatus::Open || $assignee !== null || $createdAt !== null) {
         $reflection = new ReflectionClass(Task::class);
         $constructor = $reflection->getConstructor();
-        $constructor->setAccessible(true);
+        
 
         $customTask = $reflection->newInstanceWithoutConstructor();
         $constructor->invoke(

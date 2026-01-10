@@ -37,13 +37,13 @@ function resetBasePath() {
 
     // Reset singleton instance
     $instanceProperty = $reflection->getProperty('instance');
-    $instanceProperty->setAccessible(true);
+    
 
     // Get current instance if it exists and reset its basePath
     $instance = $instanceProperty->getValue(null);
     if ($instance !== null) {
         $basePathProperty = $reflection->getProperty('basePath');
-        $basePathProperty->setAccessible(true);
+        
         $basePathProperty->setValue($instance, null);
     }
 

@@ -191,7 +191,7 @@ describe('BdTaskRepository Integration', function () {
         // Create task with updates using reflection
         $reflection = new ReflectionClass(Task::class);
         $constructor = $reflection->getConstructor();
-        $constructor->setAccessible(true);
+        
 
         $task = $reflection->newInstanceWithoutConstructor();
         $constructor->invoke(
