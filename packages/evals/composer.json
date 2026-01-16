@@ -25,11 +25,11 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-config": "^1.17",
-    "cognesy/instructor-events": "^1.17",
-    "cognesy/instructor-polyglot": "^1.17",
-    "cognesy/instructor-struct": "^1.17",
-    "cognesy/instructor-utils": "^1.17"
+    "cognesy/instructor-config": "^1.18",
+    "cognesy/instructor-events": "^1.18",
+    "cognesy/instructor-polyglot": "^1.18",
+    "cognesy/instructor-struct": "^1.18",
+    "cognesy/instructor-utils": "^1.18"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

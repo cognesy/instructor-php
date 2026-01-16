@@ -30,7 +30,7 @@ class UserDetail {
     public string $name;
     public int $age;
 }
-// @doctest id="49b7"
+// @doctest id="ca3d"
 ```
 
 #### Step 2: Extract
@@ -47,7 +47,7 @@ $user = (new StructuredOutput)->with(
 
 assert($user->name == "Jason")
 assert($user->age == 25)
-// @doctest id="64f9"
+// @doctest id="4ca1"
 ```
 
 It's helpful to annotate the variable with the type of the response model, which will help your IDE provide autocomplete and spell check.
@@ -82,7 +82,7 @@ $user = (new StructuredOutput)->with(
 )->get();
 
 assert($user->email === "jason@gmail.com");
-// @doctest id="ba25"
+// @doctest id="93cc"
 ```
 
 !!! note "More about Validation"
@@ -124,5 +124,5 @@ $user = (new StructuredOutput)->with(
 )->get();
 
 assert($user->name === "JASON");
-// @doctest id="35d9"
+// @doctest id="5f3c"
 ```
