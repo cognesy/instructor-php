@@ -38,11 +38,11 @@ Implement middleware in `packages/http-client/src/Middleware/`:
 - Add `http.resilience` in config presets or builder:
   - `maxAttempts`, `baseDelayMs`, `maxDelayMs`, `jitter`, `retryOnStatus`, `retryOnExceptions`.
   - `circuitBreaker`: thresholds, open time, reset strategy.
-- Provide `HttpClientBuilder::withResilience(...)` to attach middleware stack defaults.
+- Provide `HttpClientBuilder::withRetryPolicy(...)` to attach middleware stack defaults.
 
 ### 2) LLM-layer Resilience (Inference + Embeddings)
 Implement a retry loop in `PendingInference::response()` and `PendingEmbeddings::get()`:
-- Add `ResiliencePolicy` (new value object) to `LLMConfig` and `EmbeddingsConfig` (or in `options['resilience']`).
+- Add `RetryPolicy` (new value object) to `LLMConfig` and `EmbeddingsConfig` (or in `options['retryPolicy']`).
 - Compute retry decisions based on:
   - HTTP exception type + status code.
   - Provider error payload (see “error classification”).
@@ -89,7 +89,7 @@ Update `InferenceResponse::hasFinishedWithFailure()` to respect policy:
 1) Implement `RetryPolicy`, `BackoffPolicy`, `JitterStrategy` (simple value objects).
 2) Implement `RetryMiddleware` using `HttpRequestException::isRetriable()` + status codes.
 3) Implement `CircuitBreakerMiddleware` with in-memory state keyed by host.
-4) Add `HttpClientBuilder::withResilience(...)` to install middleware by default.
+4) Add `HttpClientBuilder::withRetryPolicy(...)` to install middleware by default.
 5) Add docs + examples in `packages/http-client/docs/`.
 
 ### Phase 2: Inference Retry Loop
@@ -101,7 +101,7 @@ Update `InferenceResponse::hasFinishedWithFailure()` to respect policy:
 
 ### Phase 3: Embeddings Retry Loop
 1) Mirror the approach in `PendingEmbeddings::get()`.
-2) Add `EmbeddingsResiliencePolicy` to config.
+2) Add `EmbeddingsRetryPolicy` to config.
 3) Emit new events for retry scheduling.
 
 ### Phase 4: Error Classification + Moderation
@@ -117,7 +117,7 @@ Update `InferenceResponse::hasFinishedWithFailure()` to respect policy:
 Example `llm.php` / `embed.php` additions:
 ```php
 'options' => [
-  'resilience' => [
+  'retryPolicy' => [
     'maxAttempts' => 4,
     'baseDelayMs' => 250,
     'maxDelayMs' => 8000,

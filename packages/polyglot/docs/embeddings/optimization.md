@@ -37,7 +37,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
 echo "Processed " . count($vectors) . " embeddings in total.\n";
 ```
 
-### Resilience Options
+### Retry Policy Options
 
 You can enable automatic retries with exponential backoff and jitter via options:
 
@@ -50,7 +50,7 @@ $embeddings = new Embeddings();
 $response = $embeddings->with(
     input: ['doc one', 'doc two'],
     options: [
-        'resilience' => [
+        'retryPolicy' => [
             'maxAttempts' => 3,
             'baseDelayMs' => 200,
             'maxDelayMs' => 4000,

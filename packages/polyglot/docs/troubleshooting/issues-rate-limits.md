@@ -12,7 +12,7 @@ Provider rate limits can cause request failures during high traffic periods.
 
 ## Solutions
 
-1. **Use built-in resilience options**: Configure automatic retries with backoff/jitter
+1. **Use built-in retry policy**: Configure automatic retries with backoff/jitter
 
 ```php
 <?php
@@ -23,7 +23,7 @@ $inference = new Inference();
 $response = $inference->with(
     messages: 'What is the capital of France?',
     options: [
-        'resilience' => [
+        'retryPolicy' => [
             'maxAttempts' => 4,
             'baseDelayMs' => 250,
             'maxDelayMs' => 8000,

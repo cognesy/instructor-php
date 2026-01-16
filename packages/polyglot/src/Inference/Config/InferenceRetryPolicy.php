@@ -28,25 +28,25 @@ final readonly class InferenceRetryPolicy
     ) {}
 
     public static function fromOptions(array $options): self {
-        $resilience = $options['resilience'] ?? [];
-        if (!is_array($resilience)) {
-            $resilience = [];
+        $retryPolicy = $options['retryPolicy'] ?? [];
+        if (!is_array($retryPolicy)) {
+            $retryPolicy = [];
         }
 
         return new self(
-            maxAttempts: (int) ($resilience['maxAttempts'] ?? 1),
-            baseDelayMs: (int) ($resilience['baseDelayMs'] ?? 250),
-            maxDelayMs: (int) ($resilience['maxDelayMs'] ?? 8000),
-            jitter: (string) ($resilience['jitter'] ?? 'full'),
-            retryOnStatus: array_values($resilience['retryOnStatus'] ?? [408, 429, 500, 502, 503, 504]),
-            retryOnExceptions: array_values($resilience['retryOnExceptions'] ?? [
+            maxAttempts: (int) ($retryPolicy['maxAttempts'] ?? 1),
+            baseDelayMs: (int) ($retryPolicy['baseDelayMs'] ?? 250),
+            maxDelayMs: (int) ($retryPolicy['maxDelayMs'] ?? 8000),
+            jitter: (string) ($retryPolicy['jitter'] ?? 'full'),
+            retryOnStatus: array_values($retryPolicy['retryOnStatus'] ?? [408, 429, 500, 502, 503, 504]),
+            retryOnExceptions: array_values($retryPolicy['retryOnExceptions'] ?? [
                 TimeoutException::class,
                 NetworkException::class,
             ]),
-            lengthRecovery: (string) ($resilience['lengthRecovery'] ?? 'none'),
-            lengthMaxAttempts: (int) ($resilience['lengthMaxAttempts'] ?? 1),
-            lengthContinuePrompt: (string) ($resilience['lengthContinuePrompt'] ?? 'Continue.'),
-            maxTokensIncrement: (int) ($resilience['maxTokensIncrement'] ?? 512),
+            lengthRecovery: (string) ($retryPolicy['lengthRecovery'] ?? 'none'),
+            lengthMaxAttempts: (int) ($retryPolicy['lengthMaxAttempts'] ?? 1),
+            lengthContinuePrompt: (string) ($retryPolicy['lengthContinuePrompt'] ?? 'Continue.'),
+            maxTokensIncrement: (int) ($retryPolicy['maxTokensIncrement'] ?? 512),
         );
     }
 

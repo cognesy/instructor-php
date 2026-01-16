@@ -6,7 +6,7 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Exceptions\NetworkException;
 use Cognesy\Http\Exceptions\TimeoutException;
 
-final readonly class EmbeddingsResiliencePolicy
+final readonly class EmbeddingsRetryPolicy
 {
     public function __construct(
         public int $maxAttempts = 1,
@@ -23,18 +23,18 @@ final readonly class EmbeddingsResiliencePolicy
     ) {}
 
     public static function fromOptions(array $options): self {
-        $resilience = $options['resilience'] ?? [];
-        if (!is_array($resilience)) {
-            $resilience = [];
+        $retryPolicy = $options['retryPolicy'] ?? [];
+        if (!is_array($retryPolicy)) {
+            $retryPolicy = [];
         }
 
         return new self(
-            maxAttempts: (int) ($resilience['maxAttempts'] ?? 1),
-            baseDelayMs: (int) ($resilience['baseDelayMs'] ?? 250),
-            maxDelayMs: (int) ($resilience['maxDelayMs'] ?? 8000),
-            jitter: (string) ($resilience['jitter'] ?? 'full'),
-            retryOnStatus: array_values($resilience['retryOnStatus'] ?? [408, 429, 500, 502, 503, 504]),
-            retryOnExceptions: array_values($resilience['retryOnExceptions'] ?? [
+            maxAttempts: (int) ($retryPolicy['maxAttempts'] ?? 1),
+            baseDelayMs: (int) ($retryPolicy['baseDelayMs'] ?? 250),
+            maxDelayMs: (int) ($retryPolicy['maxDelayMs'] ?? 8000),
+            jitter: (string) ($retryPolicy['jitter'] ?? 'full'),
+            retryOnStatus: array_values($retryPolicy['retryOnStatus'] ?? [408, 429, 500, 502, 503, 504]),
+            retryOnExceptions: array_values($retryPolicy['retryOnExceptions'] ?? [
                 TimeoutException::class,
                 NetworkException::class,
             ]),

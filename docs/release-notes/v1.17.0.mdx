@@ -1,0 +1,309 @@
+# Release Notes - v1.17.0
+
+## Major Changes
+
+### Capability-Based Agent Architecture
+
+Overhaul of the Agent system with a modular, capability-based design:
+
+```php
+use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withCapability(new UseFileTools())
+    ->withCapability(new UseTaskPlanning())
+    ->build();
+```
+
+**New Agent Capabilities:**
+- `UseBash` - Execute shell commands with configurable policies
+- `UseFileTools` - Read, write, edit, search, and list files
+- `UseSkills` - Manage reusable skill libraries
+- `UseTaskPlanning` - Multi-step task management with TodoWriteTool
+- `UseMetadataTools` - Agent scratchpad for inter-tool data sharing
+- `UseStructuredOutputs` - LLM-powered structured data extraction
+- `UseSubagents` - Recursive agent spawning with AgentRegistry
+- `UseSelfCritique` - Self-evaluation of agent work
+
+### HTTP Client Resilience Framework
+
+New middleware for robust HTTP communication:
+
+```php
+use Cognesy\HttpClient\HttpClientBuilder;
+use Cognesy\HttpClient\Middleware\Policies\RetryPolicy;
+use Cognesy\HttpClient\Middleware\Policies\CircuitBreakerPolicy;
+
+$client = HttpClientBuilder::make()
+    ->withRetryPolicy(new RetryPolicy(
+        maxAttempts: 3,
+        baseDelayMs: 250,
+        maxDelayMs: 8000,
+        jitter: 'full',
+    ))
+    ->withCircuitBreakerPolicy(new CircuitBreakerPolicy(
+        failureThreshold: 5,
+        openWindowSeconds: 30,
+    ))
+    ->withIdempotencyMiddleware()
+    ->build();
+```
+
+**Features:**
+- Exponential backoff with configurable jitter strategies
+- Respects `Retry-After` headers
+- Circuit breaker pattern (closed → open → half-open → closed)
+- Per-host circuit tracking
+- Idempotency keys for safe retries
+
+### Inference Retry & Resilience
+
+Smart retry logic for LLM inference requests:
+
+```php
+use Cognesy\Polyglot\Inference\Inference;
+
+$response = Inference::with($messages)
+    ->withRetryPolicy([
+        'maxAttempts' => 3,
+        'baseDelayMs' => 500,
+        'lengthRecovery' => 'continue', // or 'increase_max_tokens'
+    ])
+    ->get();
+```
+
+**Features:**
+- Automatic retry on rate limits and transient errors
+- Length limit recovery (retry with "Continue." prompt or increased max_tokens)
+- Provider-specific error classification with typed exceptions
+
+### Driver Capabilities System
+
+Explicit capability declarations for all LLM providers:
+
+```php
+$driver = $inference->getDriver();
+$capabilities = $driver->capabilities('gpt-4');
+
+if ($capabilities->supportsJsonSchema) {
+    // Use native JSON schema mode
+}
+if ($capabilities->supportsToolCalling) {
+    // Use function calling
+}
+```
+
+All 14+ drivers now declare support for:
+- Output modes (JSON Schema, Tools, MdJson, Text)
+- Streaming
+- Tool/function calling
+- Native JSON schema mode
+
+## New Features
+
+### Agent Registry & Specifications
+
+Declarative agent definitions with registry-based discovery:
+
+```php
+use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\Agent\Registry\AgentSpec;
+
+$registry = new AgentRegistry();
+$registry->register('researcher', AgentSpec::from([
+    'name' => 'researcher',
+    'description' => 'Research agent',
+    'capabilities' => [UseFileTools::class, UseSkills::class],
+]));
+
+$agent = $registry->make('researcher');
+```
+
+### Agent State Serialization
+
+Efficient state persistence for distributed/resumable agents:
+
+```php
+use Cognesy\Addons\Agent\Serialization\SlimAgentStateSerializer;
+
+$serializer = new SlimAgentStateSerializer();
+$serialized = $serializer->serialize($agent->state());
+
+// Later...
+$state = $serializer->deserialize($serialized);
+```
+
+### Deterministic Agent Testing
+
+Test agents without LLM calls:
+
+```php
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
+
+$driver = new DeterministicDriver([
+    ScenarioStep::toolCall('search', ['query' => 'test']),
+    ScenarioStep::response('Search completed'),
+]);
+
+$agent = AgentBuilder::base()
+    ->withDriver($driver)
+    ->build();
+```
+
+### Real-time Agent Event Broadcasting
+
+Broadcast agent events via Laravel Reverb/Pusher:
+
+```php
+use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+
+$adapter = new ReverbAgentEventAdapter($events);
+$adapter->broadcast($agentId);
+```
+
+### Message Collection Classes
+
+New collection abstractions for messages:
+
+```php
+use Cognesy\Messages\ContentParts;
+use Cognesy\Messages\MessageList;
+
+// ContentParts collection
+$parts = new ContentParts([$textPart, $imagePart]);
+$filtered = $parts->filter(fn($p) => $p->isText());
+
+// MessageList collection
+$messages = new MessageList([$msg1, $msg2]);
+$reversed = $messages->reversed();
+```
+
+### Centralized Input Handling
+
+Unified factories for content and message creation:
+
+```php
+use Cognesy\Messages\Support\ContentInput;
+use Cognesy\Messages\Support\MessageInput;
+
+// Normalize any input to Content
+$content = ContentInput::fromAny($stringOrArrayOrContent);
+
+// Create Message from various inputs
+$message = MessageInput::fromAny($input, MessageRole::User);
+```
+
+### Provider Error Classification
+
+Typed exceptions for better error handling:
+
+```php
+use Cognesy\Polyglot\Inference\Exceptions\ProviderRateLimitException;
+use Cognesy\Polyglot\Inference\Exceptions\ProviderQuotaExceededException;
+
+try {
+    $response = $inference->get();
+} catch (ProviderRateLimitException $e) {
+    // Retriable - wait and retry
+} catch (ProviderQuotaExceededException $e) {
+    // Non-retriable - notify user
+}
+```
+
+### MockSandbox for Testing
+
+Mock command execution in tests:
+
+```php
+use Cognesy\Utils\Sandbox\MockSandbox;
+
+$sandbox = new MockSandbox();
+$sandbox->queueResponse('ls', ['stdout' => 'file1.txt\nfile2.txt']);
+
+$result = $sandbox->execute('ls');
+```
+
+## Improvements
+
+### Agent System
+- Sophisticated continuation logic with priority-based resolution
+- Enhanced error handling with granular `ErrorPolicy` configuration
+- State processors integrated into capability installation
+- Tools can access agent state via `CanAccessAgentState` contract
+- Improved `ToolCallingDriver` with better parallelization
+
+### Messages Package
+- `Content`, `Messages`, `Sections`, `Section` now implement `Countable` and `IteratorAggregate`
+- `MessageStore` uses standard `Metadata` class instead of custom parameters
+- Cleaner API with `partsList()` and `messageList()` methods
+
+### Polyglot Package
+- Response adapters simplified (tool calls handled separately from content)
+- Better handling of empty content parts
+- `AnthropicBodyFormat` updated for new message structure
+
+### Evals Package
+- Driver capability filtering for test cases
+- Dependency injection support for test mocking
+
+### Instructor Package
+- Simplified `MessageStore` operations using new merge/cleanup methods
+- Enhanced array return handling respects `defaultToStdClass()` config
+
+## Breaking Changes
+
+### Agent Namespace Reorganization
+Core classes moved from `Agent/` to `Agent/Core/`:
+- `Agent/Data/AgentState` → `Agent/Core/Data/AgentState`
+- `Agent/Collections/` → `Agent/Core/Collections/`
+- `Agent/Contracts/` → `Agent/Core/Contracts/`
+
+### Agent Construction
+Old `AgentFactory` removed. Use `AgentBuilder`:
+```php
+// Before
+$agent = AgentFactory::create($config);
+
+// After
+$agent = AgentBuilder::base()
+    ->withCapability(...)
+    ->build();
+```
+
+### Messages API Deprecations
+- `Content::parts()` → use `Content::partsList()`
+- `Messages::head()` → use `Messages::headList()`
+- `Messages::tail()` → use `Messages::tailList()`
+- `Messages::all()` → use `Messages::messageList()`
+
+### MessageStore Parameters
+`MessageStoreParameters` class removed. Use `Metadata` instead:
+```php
+// Before
+$store = new MessageStore($sections, new MessageStoreParameters($data));
+
+// After
+$store = new MessageStore($sections, new Metadata($data));
+```
+
+### Driver Capabilities Interface
+Drivers must implement new `capabilities()` method:
+```php
+public function capabilities(?string $model = null): DriverCapabilities;
+```
+
+### Provider Exceptions
+HTTP errors now throw typed `ProviderException` subclasses instead of generic exceptions.
+
+## Bug Fixes
+
+- Fixed variadic parameter type handling in `StructureFactory` for mixed/null types
+- Fixed PHP 8.5 compatibility issues with reflection API
+- Fixed Gemini response adapter content concatenation
+- Fixed contentParts() returning collection instead of array in templates
+- Updated Symfony Console API calls (`add()` → `addCommand()`)
