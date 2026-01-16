@@ -26,8 +26,8 @@
   "require": {
     "php": "^8.2",
     "ext-dom": "*",
-    "cognesy/instructor-messages": "^1.16",
-    "cognesy/instructor-utils": "^1.16",
+    "cognesy/instructor-messages": "^1.17",
+    "cognesy/instructor-utils": "^1.17",
     "guzzlehttp/psr7": "^2.7",
     "league/html-to-markdown": "^5.1",
     "phpdocumentor/reflection-docblock": "^5.4",

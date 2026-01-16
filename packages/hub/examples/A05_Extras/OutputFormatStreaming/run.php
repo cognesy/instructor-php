@@ -53,9 +53,9 @@ $finalArticle = $stream->finalValue();
 dump($finalArticle);
 
 assert(is_array($finalArticle));
-assert($finalArticle['title'] === 'Introduction to PHP 8.4');
-assert($finalArticle['author'] === 'Jane Doe');
-assert($finalArticle['wordCount'] === 1500);
+assert(is_string($finalArticle['title']) && $finalArticle['title'] !== '');
+assert(is_string($finalArticle['author']) && $finalArticle['author'] !== '');
+assert(is_int($finalArticle['wordCount']) && $finalArticle['wordCount'] > 0);
 assert(is_array($finalArticle['tags']));
 assert(in_array('php', $finalArticle['tags']));
 

@@ -25,10 +25,10 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-struct": "^1.16",
-    "cognesy/instructor-auxiliary": "^1.16",
-    "cognesy/instructor-utils": "^1.16",
-    "cognesy/instructor-doctor": "^1.16",
+    "cognesy/instructor-struct": "^1.17",
+    "cognesy/instructor-auxiliary": "^1.17",
+    "cognesy/instructor-utils": "^1.17",
+    "cognesy/instructor-doctor": "^1.17",
     "toolkit/cli-utils": "^2.0",
     "cebe/markdown": "^1.2"
   },

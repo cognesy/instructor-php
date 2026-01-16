@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # sync-ver.sh - Synchronizes versions across explicitly defined packages
+# Compatible with bash 3.2+ (macOS default)
 set -e  # Exit immediately if a command exits with non-zero status
 
 # Get the new version from tag
@@ -40,7 +41,6 @@ update_package_version() {
     echo "Updating $package_name in $package_dir..."
 
     # Update version field
-    #jq --arg version "$VERSION" '.version = $version' "$package_dir/composer.json" > "$package_dir/composer.json.tmp"
     cp "$package_dir/composer.json" "$package_dir/composer.json.tmp"
 
     # Update internal dependencies to use ^MAJOR.MINOR
@@ -48,18 +48,18 @@ update_package_version() {
 
     # Process require section if it exists
     if jq -e '.require' "$package_dir/composer.json.tmp" > /dev/null 2>&1; then
-        for pkg in "${PACKAGES[@]}"; do
+        while IFS= read -r pkg; do
             package_tmp=$(echo "$package_tmp" | jq --arg pkg "$pkg" --arg ver "^$MAJOR_MINOR" \
                 'if .require[$pkg] then .require[$pkg] = $ver else . end')
-        done
+        done < <(get_all_composer_names)
     fi
 
     # Process require-dev section if it exists
     if jq -e '."require-dev"' "$package_dir/composer.json.tmp" > /dev/null 2>&1; then
-        for pkg in "${PACKAGES[@]}"; do
+        while IFS= read -r pkg; do
             package_tmp=$(echo "$package_tmp" | jq --arg pkg "$pkg" --arg ver "^$MAJOR_MINOR" \
                 'if ."require-dev"[$pkg] then ."require-dev"[$pkg] = $ver else . end')
-        done
+        done < <(get_all_composer_names)
     fi
 
     echo "$package_tmp" > "$package_dir/composer.json"
@@ -70,17 +70,17 @@ update_package_version() {
 
 # List the packages that will be processed
 echo "The following packages will be updated to version $VERSION:"
-for dir in "${!PACKAGES[@]}"; do
-    pkg_name="${PACKAGES[$dir]}"
+while IFS= read -r dir; do
+    pkg_name=$(get_composer_name "$dir")
     echo "  - $pkg_name ($dir)"
-done
+done < <(get_package_dirs)
 
 # Update individual package versions
 echo -e "\nUpdating package versions..."
-for dir in "${!PACKAGES[@]}"; do
-    pkg_name="${PACKAGES[$dir]}"
+while IFS= read -r dir; do
+    pkg_name=$(get_composer_name "$dir")
     update_package_version "$dir" "$pkg_name"
-done
+done < <(get_package_dirs)
 
 echo -e "\n🎉 Version sync complete!"
 echo "All packages and dependencies updated to version $VERSION"

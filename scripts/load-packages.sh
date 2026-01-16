@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # load-packages.sh - Load package configuration from packages.json
+# Compatible with bash 3.2+ (macOS default)
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
@@ -16,25 +17,6 @@ if [ ! -f "$PACKAGES_JSON" ]; then
     echo "Error: packages.json not found at $PACKAGES_JSON"
     exit 1
 fi
-
-# Function to load packages into associative arrays
-load_packages() {
-    # Clear any existing arrays
-    unset PACKAGES
-    unset PACKAGE_REPOS
-    unset PACKAGE_GITHUB_NAMES
-    
-    declare -gA PACKAGES
-    declare -gA PACKAGE_REPOS
-    declare -gA PACKAGE_GITHUB_NAMES
-    
-    # Read packages from JSON and populate arrays
-    while IFS=$'\t' read -r local repo github_name composer_name; do
-        PACKAGES["$local"]="$composer_name"
-        PACKAGE_REPOS["$local"]="$repo"
-        PACKAGE_GITHUB_NAMES["$local"]="$github_name"
-    done < <(jq -r '.packages[] | [.local, .repo, .github_name, .composer_name] | @tsv' "$PACKAGES_JSON")
-}
 
 # Function to get all package directories
 get_package_dirs() {
@@ -59,5 +41,13 @@ get_github_name() {
     jq -r --arg dir "$dir" '.packages[] | select(.local == $dir) | .github_name' "$PACKAGES_JSON"
 }
 
-# Load packages when script is sourced
-load_packages
+# Function to get all composer names (for dependency updates)
+get_all_composer_names() {
+    jq -r '.packages[].composer_name' "$PACKAGES_JSON"
+}
+
+# Function to check if a composer name is an internal package
+is_internal_package() {
+    local pkg="$1"
+    jq -e --arg pkg "$pkg" '.packages[] | select(.composer_name == $pkg)' "$PACKAGES_JSON" > /dev/null 2>&1
+}

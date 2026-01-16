@@ -6,7 +6,7 @@ return [
     'presets' => [
         'curl' => [
             'driver' => 'curl',
-            'connectTimeout' => 3,
+            'connectTimeout' => 5,
             'requestTimeout' => 60,
             'idleTimeout' => -1,
             'streamChunkSize' => 256,

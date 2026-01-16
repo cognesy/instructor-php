@@ -279,6 +279,16 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 4096,
         ],
+        'test' => [
+            'driver' => 'openai',
+            'apiUrl' => 'https://api.openai.com/v1',
+            'apiKey' => Env::get('OPENAI_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'model' => 'gpt-4o-mini',
+            'maxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 4096,
+        ],
         'xai' => [
             'driver' => 'xai',
             'apiUrl' => 'https://api.x.ai/v1',
