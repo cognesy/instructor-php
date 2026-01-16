@@ -46,8 +46,8 @@ class User {
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
 $structuredOutput = (new StructuredOutput)
-    ->using('cohere');
-    //->withDebugPreset('on');
+    ->using('cohere')
+    ->withDebugPreset('on');
 
 $user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
@@ -57,7 +57,7 @@ $user = $structuredOutput->with(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'command-r-plus-08-2024',
-    mode: OutputMode::Tools,
+    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

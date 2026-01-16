@@ -391,6 +391,7 @@
             "pages": [
                 "cookbook/instructor/advanced/config_providers",
                 "cookbook/instructor/advanced/context_cache_structured",
+                "cookbook/instructor/advanced/context_cache_structured_oai",
                 "cookbook/instructor/advanced/custom_config",
                 "cookbook/instructor/advanced/custom_http_client",
                 "cookbook/instructor/advanced/custom_http_client_laravel",
@@ -490,6 +491,7 @@
             "pages": [
                 "cookbook/polyglot/llm_advanced/config_providers",
                 "cookbook/polyglot/llm_advanced/context_cache_llm",
+                "cookbook/polyglot/llm_advanced/context_cache_llm_oai",
                 "cookbook/polyglot/llm_advanced/custom_config",
                 "cookbook/polyglot/llm_advanced/custom_embeddings_config",
                 "cookbook/polyglot/llm_advanced/custom_llm_driver",
@@ -541,10 +543,16 @@
         {
             "group": "Cookbook \\ Polyglot \\ LLM Extras",
             "pages": [
+                "cookbook/polyglot/llm_extras/agent_basic",
                 "cookbook/polyglot/llm_extras/agent_ctrl_basic",
                 "cookbook/polyglot/llm_extras/agent_ctrl_events",
                 "cookbook/polyglot/llm_extras/agent_ctrl_streaming",
                 "cookbook/polyglot/llm_extras/agent_ctrl_switching",
+                "cookbook/polyglot/llm_extras/agent_file_system",
+                "cookbook/polyglot/llm_extras/agent_search",
+                "cookbook/polyglot/llm_extras/agent_self_critique",
+                "cookbook/polyglot/llm_extras/agent_structured_output",
+                "cookbook/polyglot/llm_extras/agent_subagents",
                 "cookbook/polyglot/llm_extras/chat_with_many_participants",
                 "cookbook/polyglot/llm_extras/chat_with_summary",
                 "cookbook/polyglot/llm_extras/claude_code_basic",

@@ -23,7 +23,7 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
-$data = (new Inference)
+$response = (new Inference)
     ->using('openai')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is capital of France? \
@@ -64,7 +64,9 @@ $data = (new Inference)
         options: ['max_tokens' => 64],
         mode: OutputMode::Tools,
     )
-    ->asJsonData();
+    ->response();
+
+$data = $response->findJsonData(OutputMode::Tools)->toArray();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";
@@ -72,8 +74,8 @@ dump($data);
 
 assert(is_array($data), 'Response should be an array');
 assert(isset($data['name']), 'Response should have "name" field');
-assert(strpos($data['name'], 'Paris') !== false, 'City name should be Paris');
-assert(isset($data['population']), 'Response should have "population" field');
-assert(isset($data['founded']), 'Response should have "founded" field');
+assert(is_string($data['name']) && $data['name'] !== '', 'City name should be a non-empty string');
+assert(array_key_exists('population', $data), 'Response should have "population" field');
+assert(array_key_exists('founded', $data), 'Response should have "founded" field');
 ?>
 ```

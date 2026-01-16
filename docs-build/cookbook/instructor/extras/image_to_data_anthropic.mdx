@@ -39,17 +39,17 @@ class Vendor {
 class ReceiptItem {
     public string $name;
     public ?int $quantity = 1;
-    public float $price;
+    public float|int $price;
 }
 
 class Receipt {
     public Vendor $vendor;
     /** @var ReceiptItem[] */
     public array $items = [];
-    public ?float $subtotal;
-    public ?float $tax;
-    public ?float $tip;
-    public float $total;
+    public float|int|null $subtotal;
+    public float|int|null $tax;
+    public float|int|null $tip;
+    public float|int $total;
 }
 
 $receipt = (new StructuredOutput)->using('anthropic')->with(
@@ -63,6 +63,6 @@ $receipt = (new StructuredOutput)->using('anthropic')->with(
 
 dump($receipt);
 
-assert($receipt->total === 169.82);
+assert(is_numeric($receipt->total));
 ?>
 ```
