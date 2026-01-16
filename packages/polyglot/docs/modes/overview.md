@@ -18,7 +18,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 // Available modes
 // OutputMode::Text       - Plain text output (default)
 // OutputMode::Json       - JSON output
-// OutputMode::JsonSchema - JSON output validated against a schema
+// OutputMode::JsonSchema - JSON output validated against a schema (native support required)
 // OutputMode::MdJson     - JSON wrapped in Markdown code blocks
 // OutputMode::Tools      - Function/tool calling
 ```
@@ -35,9 +35,12 @@ Each mode influences:
 |-----------------|-----------------------------------------------------------------------------|-----------------------------------------------|
 | `OutputMode::Text`     | Default mode, returns unstructured text                                     | Simple text generation                        |
 | `OutputMode::Json`     | Returns structured JSON data                                                | Structured data processing                    |
-| `OutputMode::JsonSchema` | Returns JSON data validated against a schema                               | Strictly typed data                           |
+| `OutputMode::JsonSchema` | Returns JSON data validated against a schema (native support required)     | Strictly typed data                           |
 | `OutputMode::MdJson`   | Returns JSON wrapped in Markdown code blocks                                | Compatibility across providers                |
 | `OutputMode::Tools`    | Returns function/tool calls                                                 | Function calling/external actions             |
+
+JSON Schema guarantees apply only when the provider supports native schema validation; otherwise use
+`OutputMode::Json` or `OutputMode::MdJson` for best-effort structured output.
 
 
 ### Choosing the Right Format
@@ -59,4 +62,3 @@ For better results:
 3. **Use constraints**: Specify limits and requirements
 4. **Test across providers**: Verify formats work with all providers you use
 5. **Implement fallbacks**: Have backup strategies for format failures
-

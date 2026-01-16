@@ -57,13 +57,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 
     #[\Override]
     protected function makeContent(array $data): string {
-        $contentMsg = $data['message']['content'][0]['text'] ?? '';
-        $contentFnArgs = $data['message']['tool_calls'][0]['function']['arguments'] ?? '';
-        return match(true) {
-            !empty($contentMsg) => $contentMsg,
-            !empty($contentFnArgs) => $contentFnArgs,
-            default => ''
-        };
+        return $data['message']['content'][0]['text'] ?? '';
     }
 
     #[\Override]
@@ -94,12 +88,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
             ([] !== ($data['delta']['message']['content'] ?? [])) => $this->normalizeContent($data['delta']['message']['content']),
             default => '',
         };
-        $deltaFnArgs = $data['delta']['message']['tool_calls']['function']['arguments'] ?? '';
-        return match(true) {
-            '' !== $deltaContent => $deltaContent,
-            '' !== $deltaFnArgs => $deltaFnArgs,
-            default => ''
-        };
+        return $deltaContent;
     }
 
     protected function normalizeContent(array|string $content) : string {

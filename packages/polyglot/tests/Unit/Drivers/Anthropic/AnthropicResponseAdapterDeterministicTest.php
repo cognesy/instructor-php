@@ -26,6 +26,22 @@ it('Anthropic: parses content, reasoning, and tool calls deterministically', fun
     expect($tool->value('q'))->toBe('Hello');
 });
 
+it('Anthropic: keeps content empty for tool-only responses', function () {
+    $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
+
+    $data = [
+        'stop_reason' => 'tool_use',
+        'content' => [
+            ['type' => 'tool_use', 'id' => 'c1', 'name' => 'search', 'input' => ['q' => 'Hello']],
+        ],
+        'usage' => ['input_tokens' => 1, 'output_tokens' => 2],
+    ];
+
+    $res = $adapter->fromResponse(MockHttpResponseFactory::json($data));
+    expect($res->content())->toBe('');
+    expect($res->hasToolCalls())->toBeTrue();
+});
+
 it('Anthropic: parses streaming text and tool args deltas', function () {
     $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
 
@@ -40,6 +56,7 @@ it('Anthropic: parses streaming text and tool args deltas', function () {
     ]);
     $p2 = $adapter->fromStreamResponse($eventTool);
     expect($p2)->not->toBeNull();
+    expect($p2->contentDelta)->toBe('');
     expect($p2->toolName)->toBe('search');
     expect($p2->toolArgs)->toContain('Hello');
 });

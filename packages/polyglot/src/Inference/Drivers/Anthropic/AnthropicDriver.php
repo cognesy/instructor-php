@@ -6,7 +6,9 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class AnthropicDriver extends BaseInferenceDriver
@@ -28,6 +30,21 @@ class AnthropicDriver extends BaseInferenceDriver
         );
         $this->responseTranslator = new AnthropicResponseAdapter(
             new AnthropicUsageFormat()
+        );
+    }
+
+    /**
+     * Anthropic does not support native JSON schema mode or response_format.
+     * Use Tools or MdJson modes for structured output.
+     */
+    #[\Override]
+    public function capabilities(?string $model = null): DriverCapabilities {
+        return new DriverCapabilities(
+            outputModes: [OutputMode::Tools, OutputMode::MdJson, OutputMode::Text, OutputMode::Unrestricted],
+            streaming: true,
+            toolCalling: true,
+            jsonSchema: false,
+            responseFormatWithTools: false,
         );
     }
 }

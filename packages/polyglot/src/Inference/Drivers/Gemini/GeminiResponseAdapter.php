@@ -75,9 +75,14 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
             return $this->makeContentPart($data, 0);
         }
         $content = '';
+        $separator = '';
         for ($i = 0; $i < $partCount; $i++) {
-            $part = $this->makeContentPart($data, $i) . "\n\n";
-            $content .= $part;
+            $part = $this->makeContentPart($data, $i);
+            if ($part === '') {
+                continue;
+            }
+            $content .= $separator . $part;
+            $separator = "\n\n";
         }
         return $content;
     }
@@ -85,9 +90,6 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     private function makeContentPart(array $data, int $index) : string {
         if (isset($data['candidates'][0]['content']['parts'][$index]['text'])) {
             return $data['candidates'][0]['content']['parts'][$index]['text'];
-        }
-        if (isset($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'])) {
-            return Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args']);
         }
         return '';
     }
@@ -99,9 +101,14 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
         }
 
         $content = '';
+        $separator = '';
         for ($i = 0; $i < $partCount; $i++) {
-            $part = $this->makeContentDeltaPart($data, $i) . "\n";
-            $content .= $part;
+            $part = $this->makeContentDeltaPart($data, $i);
+            if ($part === '') {
+                continue;
+            }
+            $content .= $separator . $part;
+            $separator = "\n";
         }
         return $content;
     }
@@ -109,9 +116,6 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     private function makeContentDeltaPart(array $data, int $index) : string {
         if (isset($data['candidates'][0]['content']['parts'][$index]['text'])) {
             return $data['candidates'][0]['content']['parts'][$index]['text'];
-        }
-        if (isset($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'])) {
-            return Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args']);
         }
         return '';
     }

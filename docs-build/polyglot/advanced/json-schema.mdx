@@ -5,6 +5,9 @@ description: 'Learn how to use JSON Schemas to generate structured outputs using
 
 JsonSchema is a powerful utility in the Polyglot library that enables developers to define structured data schemas for LLM interactions. This guide explains how to use JsonSchema to shape your LLM outputs and ensure consistent, typed responses from language models.
 
+Native JSON Schema enforcement depends on provider support. If your provider does not support
+`OutputMode::JsonSchema` natively, use `OutputMode::Json` or `OutputMode::MdJson` for best-effort output.
+
 ## Quick Start
 
 Here's a simple example of how to use JsonSchema with Polyglot's Inference API:
@@ -45,7 +48,7 @@ $data = (new Inference)
         mode: OutputMode::JsonSchema,
     )
     ->asJsonData();
-// @doctest id="9121"
+// @doctest id="400b"
 ```
 
 ## Why Use JsonSchema?
@@ -71,7 +74,7 @@ $nameSchema = JsonSchema::string(
     name: 'full_name',
     description: 'The user\'s full name'
 );
-// @doctest id="970d"
+// @doctest id="cb49"
 ```
 
 ### Number & Integer
@@ -88,7 +91,7 @@ $priceSchema = JsonSchema::number(
     name: 'price',
     description: 'Product price'
 );
-// @doctest id="8b96"
+// @doctest id="6d5d"
 ```
 
 ### Boolean
@@ -100,7 +103,7 @@ $activeSchema = JsonSchema::boolean(
     name: 'is_active',
     description: 'Whether the user account is active'
 );
-// @doctest id="7822"
+// @doctest id="b22d"
 ```
 
 ### Array
@@ -113,7 +116,7 @@ $tagsSchema = JsonSchema::array(
     description: 'List of tags associated with the post',
     itemSchema: JsonSchema::string()
 );
-// @doctest id="5f5d"
+// @doctest id="8efc"
 ```
 
 ### Enum
@@ -126,7 +129,7 @@ $statusSchema = JsonSchema::enum(
     description: 'The current status of the post',
     enumValues: ['draft', 'published', 'archived']
 );
-// @doctest id="90a2"
+// @doctest id="da4b"
 ```
 
 ### Object
@@ -144,7 +147,7 @@ $profileSchema = JsonSchema::object(
     ],
     requiredProperties: ['username']
 );
-// @doctest id="ac31"
+// @doctest id="68b3"
 ```
 
 ## Working with Required and Nullable Fields
@@ -162,7 +165,7 @@ $userSchema = JsonSchema::object(
     ],
     requiredProperties: ['email', 'name'] // email and name must be present
 );
-// @doctest id="8a10"
+// @doctest id="3506"
 ```
 
 ### Nullable Fields
@@ -175,7 +178,7 @@ $bioSchema = JsonSchema::string(
     description: 'Optional user biography',
     nullable: true
 );
-// @doctest id="b05a"
+// @doctest id="53e7"
 ```
 
 ## Understanding Required vs. Nullable
@@ -203,7 +206,7 @@ JsonSchema::string('phone', 'Phone number', nullable: false);
 // Optional and Nullable (most permissive)
 JsonSchema::string('website', 'Personal website', nullable: true);
 // requiredProperties: [] (doesn't include 'website')
-// @doctest id="4de4"
+// @doctest id="b6ee"
 ```
 
 ## Working with OpenAI and Other Providers
@@ -221,7 +224,7 @@ $userSchema = JsonSchema::object(
     ],
     requiredProperties: ['email', 'bio'] // Note: bio is required but nullable
 );
-// @doctest id="48cb"
+// @doctest id="092b"
 ```
 
 ## Building Complex Schemas
@@ -249,7 +252,7 @@ $userSchema = JsonSchema::object(
     ],
     requiredProperties: ['name', 'address']
 );
-// @doctest id="2a2b"
+// @doctest id="f365"
 ```
 
 ## Fluent API for Schema Creation
@@ -261,7 +264,7 @@ $schema = JsonSchema::array('tags')
     ->withItemSchema(JsonSchema::string())
     ->withDescription('A list of tags')
     ->withNullable(true);
-// @doctest id="f217"
+// @doctest id="97a9"
 ```
 
 Available methods include:
@@ -294,7 +297,7 @@ $schema->description();         // Get schema description
 $schema->title();               // Get schema title
 $schema->meta();                // Get all meta fields
 $schema->meta('key');           // Get specific meta field
-// @doctest id="0b98"
+// @doctest id="2f7d"
 ```
 
 ## Converting Schemas to Arrays and Function Calls
@@ -314,7 +317,7 @@ $functionCall = $schema->toFunctionCall(
     functionDescription: 'Gets the user profile information',
     strict: true
 );
-// @doctest id="943c"
+// @doctest id="362f"
 ```
 
 ## Meta Fields
@@ -331,7 +334,7 @@ $schema = JsonSchema::string(
         'pattern' => '^[a-zA-Z0-9_]+$',
     ]
 );
-// @doctest id="a8b5"
+// @doctest id="d9cf"
 ```
 
 Meta fields will be transformed to include the `x-` prefix when converted to arrays (e.g., `x-min_length`).
@@ -346,7 +349,7 @@ JsonSchema::string('name', 'the name');
 
 // ✅ Much better
 JsonSchema::string('name', 'The user\'s display name (2-50 characters)');
-// @doctest id="dd2f"
+// @doctest id="ab1d"
 ```
 
 2. **Only Mark Required Fields**: Only mark fields as required if they're truly necessary.
@@ -362,7 +365,7 @@ $contactSchema = JsonSchema::object(/*...*/);
 $userSchema = JsonSchema::object(
     properties: [$addressSchema, $contactSchema]
 );
-// @doctest id="bc70"
+// @doctest id="a0d0"
 ```
 
 4. **Be Explicit About Requirements**: Specify both the nullable status and required fields for clarity.
@@ -449,7 +452,7 @@ $userData = (new Inference)
     ->asJsonData();
 
 print_r($userData);
-// @doctest id="64a7"
+// @doctest id="16bb"
 ```
 
 ## Advanced: Creating Function Calls
@@ -493,5 +496,5 @@ $result = (new Inference)
         // Additional configuration...
     )
     ->create();
-// @doctest id="bc42"
+// @doctest id="07ad"
 ```

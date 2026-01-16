@@ -76,3 +76,34 @@ it('caches processed response within the same PendingStructuredOutput', function
     expect($first)->toBeInstanceOf(TestUserStruct::class);
     expect($secondResponse->value())->toBeInstanceOf(TestUserStruct::class);
 });
+
+it('returns stdClass when defaultToStdClass is enabled for JSON schema output', function () {
+    $schema = [
+        'type' => 'object',
+        'properties' => [
+            'name' => ['type' => 'string'],
+            'age' => ['type' => 'integer'],
+        ],
+        'required' => ['name', 'age'],
+    ];
+    $toolCalls = new ToolCalls(
+        new ToolCall('extract', ['name' => 'Jason', 'age' => 25])
+    );
+    $driver = new FakeInferenceDriver([
+        new InferenceResponse(content: '', toolCalls: $toolCalls)
+    ]);
+
+    $user = (new StructuredOutput)
+        ->withDriver($driver)
+        ->with(
+            messages: 'Extract user',
+            responseModel: $schema,
+            mode: OutputMode::Tools,
+        )
+        ->withDefaultToStdClass()
+        ->get();
+
+    expect($user)->toBeInstanceOf(stdClass::class);
+    expect($user->name)->toBe('Jason');
+    expect($user->age)->toBe(25);
+});

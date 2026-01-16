@@ -12,12 +12,13 @@ use Cognesy\Addons\Agent\Core\ToolExecutor;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\CumulativeExecutionTimeLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
@@ -56,6 +57,7 @@ class AgentBuilder
     private ?CanHandleEvents $events = null;
     private ?string $llmPreset = null;
     private ?CachedContext $cachedContext = null;
+    private ?ErrorPolicy $errorPolicy = null;
 
     // Execution limits
     private int $maxSteps = 20;
@@ -63,6 +65,7 @@ class AgentBuilder
     private int $maxExecutionTime = 300;
     private int $maxRetries = 3;
     private array $finishReasons = [];
+    private ?int $cumulativeTimeout = null;
 
     /** @var array<callable(Agent): Agent> */
     private array $onBuildCallbacks = [];
@@ -164,11 +167,21 @@ class AgentBuilder
         return $this;
     }
 
+    public function withCumulativeTimeout(int $seconds): self {
+        $this->cumulativeTimeout = $seconds;
+        return $this;
+    }
+
     /**
      * Set maximum retry attempts on errors.
      */
     public function withMaxRetries(int $maxRetries): self {
         $this->maxRetries = $maxRetries;
+        return $this;
+    }
+
+    public function withErrorPolicy(ErrorPolicy $policy): self {
+        $this->errorPolicy = $policy;
         return $this;
     }
 
@@ -302,9 +315,10 @@ class AgentBuilder
             // Hard limits (return ForbidContinuation when exceeded)
             new StepsLimit($this->maxSteps, static fn($state) => $state->stepCount()),
             new TokenUsageLimit($this->maxTokens, static fn($state) => $state->usage()->total()),
-            new ExecutionTimeLimit($this->maxExecutionTime, static fn($state) => $state->startedAt(), null),
-            new RetryLimit($this->maxRetries, static fn($state) => $state->steps(), static fn($step) => $step->hasErrors()),
-            new ErrorPresenceCheck(static fn($state) => $state->currentStep()?->hasErrors() ?? false),
+            // Uses executionStartedAt (set at start of each execution) with fallback to session startedAt.
+            // This prevents timeouts in multi-turn conversations spanning days.
+            $this->buildTimeLimitCriterion(),
+            ErrorPolicyCriterion::withPolicy($this->errorPolicy ?? ErrorPolicy::stopOnAnyError()),
             new FinishReasonCheck($this->finishReasons, static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
             // Continue signal (returns AllowContinuation when tool calls present)
             new ToolCallPresenceCheck(
@@ -316,6 +330,21 @@ class AgentBuilder
         $allCriteria = [...$baseCriteria, ...$this->criteria];
 
         return ContinuationCriteria::from(...$allCriteria);
+    }
+
+    private function buildTimeLimitCriterion(): CanDecideToContinue {
+        if ($this->cumulativeTimeout !== null) {
+            return new CumulativeExecutionTimeLimit(
+                $this->cumulativeTimeout,
+                static fn(AgentState $state): float => $state->stateInfo()->cumulativeExecutionSeconds(),
+            );
+        }
+
+        return new ExecutionTimeLimit(
+            $this->maxExecutionTime,
+            static fn(AgentState $state): \DateTimeImmutable => $state->executionStartedAt() ?? $state->startedAt(),
+            null,
+        );
     }
 
     private function buildDriver(): CanUseTools {

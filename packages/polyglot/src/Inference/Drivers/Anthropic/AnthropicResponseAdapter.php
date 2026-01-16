@@ -9,7 +9,6 @@ use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Utils\Json\Json;
 
 class AnthropicResponseAdapter implements CanTranslateInferenceResponse
 {
@@ -67,17 +66,16 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
     // INTERNAL //////////////////////////////////////////////
 
     private function makeContent(array $data) : string {
-        if (isset($data['content'][0]['text'])) {
-            return $data['content'][0]['text'];
-        }
-        if (isset($data['content'][0]['input'])) {
-            return Json::encode($data['content'][0]['input']);
+        foreach ($data['content'] ?? [] as $part) {
+            if (isset($part['text'])) {
+                return $part['text'];
+            }
         }
         return '';
     }
 
     private function makeContentDelta(array $data) : string {
-        return $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '';
+        return $data['delta']['text'] ?? '';
     }
 
     private function makeToolCalls(array $data) : ToolCalls {

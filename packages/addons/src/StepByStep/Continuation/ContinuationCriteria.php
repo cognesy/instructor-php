@@ -79,16 +79,7 @@ class ContinuationCriteria implements CanDecideToContinue
      * @param TState $state
      */
     public function canContinue(object $state): bool {
-        if ($this->criteria === []) {
-            return false;
-        }
-
-        $decisions = array_map(
-            fn(CanDecideToContinue $criterion) => $criterion->decide($state),
-            $this->criteria
-        );
-
-        return ContinuationDecision::canContinueWith(...$decisions);
+        return $this->evaluate($state)->shouldContinue();
     }
 
     /**
@@ -98,20 +89,81 @@ class ContinuationCriteria implements CanDecideToContinue
      */
     #[\Override]
     public function decide(object $state): ContinuationDecision {
+        return $this->evaluate($state)->decision;
+    }
+
+    /**
+     * Evaluate all criteria and return the full outcome.
+     *
+     * @param TState $state
+     */
+    public function evaluate(object $state): ContinuationOutcome {
         if ($this->criteria === []) {
-            return ContinuationDecision::AllowStop;
+            return new ContinuationOutcome(
+                decision: ContinuationDecision::AllowStop,
+                shouldContinue: false,
+                resolvedBy: self::class,
+                stopReason: StopReason::Completed,
+                evaluations: [],
+            );
+        }
+
+        $evaluations = [];
+        $resolvedBy = null;
+        $stopReason = StopReason::Completed;
+
+        foreach ($this->criteria as $criterion) {
+            if ($criterion instanceof CanExplainContinuation) {
+                $evaluation = $criterion->explain($state);
+            } else {
+                $evaluation = ContinuationEvaluation::fromDecision($criterion::class, $criterion->decide($state));
+            }
+            $evaluations[] = $evaluation;
+
+            if ($evaluation->decision === ContinuationDecision::ForbidContinuation && $resolvedBy === null) {
+                $resolvedBy = $evaluation->criterionClass;
+                $stopReason = $this->inferStopReason($evaluation);
+            }
         }
 
         $decisions = array_map(
-            fn(CanDecideToContinue $criterion) => $criterion->decide($state),
-            $this->criteria
+            static fn(ContinuationEvaluation $evaluation): ContinuationDecision => $evaluation->decision,
+            $evaluations,
         );
 
-        // Use resolution logic: Forbid > Request > (Allow + Stop)
         $shouldContinue = ContinuationDecision::canContinueWith(...$decisions);
+        if ($shouldContinue && $resolvedBy === null) {
+            foreach ($evaluations as $evaluation) {
+                if ($evaluation->decision === ContinuationDecision::RequestContinuation) {
+                    $resolvedBy = $evaluation->criterionClass;
+                    break;
+                }
+            }
+        }
 
-        return $shouldContinue
-            ? ContinuationDecision::RequestContinuation
-            : ContinuationDecision::AllowStop;
+        $decision = ContinuationDecision::AllowStop;
+        if ($shouldContinue) {
+            $decision = ContinuationDecision::RequestContinuation;
+            $stopReason = StopReason::Completed;
+        }
+
+        return new ContinuationOutcome(
+            decision: $decision,
+            shouldContinue: $shouldContinue,
+            resolvedBy: $resolvedBy ?? 'aggregate',
+            stopReason: $stopReason,
+            evaluations: $evaluations,
+        );
+    }
+
+    private function inferStopReason(ContinuationEvaluation $evaluation): StopReason {
+        return match (true) {
+            str_contains($evaluation->criterionClass, 'StepsLimit') => StopReason::StepsLimitReached,
+            str_contains($evaluation->criterionClass, 'TokenUsageLimit') => StopReason::TokenLimitReached,
+            str_contains($evaluation->criterionClass, 'ExecutionTimeLimit') => StopReason::TimeLimitReached,
+            str_contains($evaluation->criterionClass, 'ErrorPolicy') => StopReason::ErrorForbade,
+            str_contains($evaluation->criterionClass, 'FinishReason') => StopReason::FinishReasonReceived,
+            default => StopReason::GuardForbade,
+        };
     }
 }

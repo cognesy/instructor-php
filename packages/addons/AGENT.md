@@ -872,3 +872,97 @@ $agent = AgentBuilder::base()
 │       └── Testing/
 │           └── MockTool.php        # Mock tool for testing
 ```
+
+## Troubleshooting
+
+### Why did my agent stop after one step?
+- Default continuation stops when no tool calls are present after a step.
+- Guard criteria (steps, tokens, time limits) can forbid continuation.
+- Error policy stops on any error by default.
+
+If you expect multiple steps, add a continuation criterion that requests continuation,
+or ensure the model produces tool calls:
+```php
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+
+$agent = AgentBuilder::base()
+    ->addContinuationCriteria(
+        ContinuationCriteria::when(
+            static fn(AgentState $state): ContinuationDecision => ContinuationDecision::RequestContinuation
+        )
+    )
+    ->build();
+```
+
+### How to debug continuation decisions
+- Listen for `ContinuationEvaluated` events to inspect `ContinuationOutcome`.
+- Call `ContinuationCriteria::evaluate($state)` in tests to see all evaluations.
+
+### Configuring error policies
+Use `withErrorPolicy()` to control retries and stop behavior:
+```php
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+
+$agent = AgentBuilder::base()
+    ->withErrorPolicy(ErrorPolicy::retryToolErrors(3))
+    ->build();
+```
+
+### Using cumulative time for pause/resume
+Use cumulative timeout for long-lived sessions:
+```php
+$agent = AgentBuilder::base()
+    ->withCumulativeTimeout(120)
+    ->build();
+```
+Persist `AgentState` with `StateInfo::cumulativeExecutionSeconds()` to resume accurately.
+
+## Migration Guide (2026-01-16)
+
+### ErrorPresenceCheck → ErrorPolicyCriterion
+Old:
+```php
+new ErrorPresenceCheck(static fn($state) => $state->currentStep()?->hasErrors() ?? false);
+```
+New (builder default):
+```php
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+
+ErrorPolicyCriterion::withPolicy(ErrorPolicy::stopOnAnyError());
+```
+
+### RetryLimit → ErrorPolicy::maxRetries
+Old:
+```php
+new RetryLimit($maxRetries, fn($s) => $s->steps(), fn($step) => $step->hasErrors());
+```
+New:
+```php
+ErrorPolicy::retryToolErrors($maxRetries);
+```
+
+### Slim serialization
+Use `SlimAgentStateSerializer` for compact state payloads:
+```php
+use Cognesy\Addons\Agent\Serialization\SlimAgentStateSerializer;
+use Cognesy\Addons\Agent\Serialization\SlimSerializationConfig;
+
+$serializer = new SlimAgentStateSerializer(
+    SlimSerializationConfig::minimal()
+);
+$payload = $serializer->serialize($state);
+```
+
+### Reverb event envelope
+The `ReverbAgentEventAdapter` emits envelopes with:
+```
+{
+  "type": "agent.step.completed",
+  "session_id": "...",
+  "execution_id": "...",
+  "timestamp": "2026-01-16T12:00:00.000Z",
+  "payload": { ... }
+}
+```

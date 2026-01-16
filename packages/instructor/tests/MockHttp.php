@@ -104,7 +104,7 @@ class MockHttp
                     "index" => 0,
                     "message" => [
                         "role" => "assistant",
-                        "content" => null,
+                        "content" => $json,
                         "tool_calls" => [
                             0 => [
                                 "id" => "call_HGWji0nx7LQsRGGw1ckosq6S",

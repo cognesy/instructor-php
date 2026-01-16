@@ -5,6 +5,9 @@ description: Learn how to use JSON Schemas to generate structured outputs using 
 
 JsonSchema is a powerful utility in the Polyglot library that enables developers to define structured data schemas for LLM interactions. This guide explains how to use JsonSchema to shape your LLM outputs and ensure consistent, typed responses from language models.
 
+Native JSON Schema enforcement depends on provider support. If your provider does not support
+`OutputMode::JsonSchema` natively, use `OutputMode::Json` or `OutputMode::MdJson` for best-effort output.
+
 ## Quick Start
 
 Here's a simple example of how to use JsonSchema with Polyglot's Inference API:

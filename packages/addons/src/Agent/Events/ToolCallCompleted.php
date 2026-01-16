@@ -11,16 +11,16 @@ use DateTimeImmutable;
 final class ToolCallCompleted extends AgentEvent
 {
     public function __construct(
-        public readonly string $toolName,
-        public readonly bool $isSuccess,
-        public readonly ?string $errorMessage,
+        public readonly string $tool,
+        public readonly bool $success,
+        public readonly ?string $error,
         public readonly DateTimeImmutable $startedAt,
         public readonly DateTimeImmutable $endedAt,
     ) {
         parent::__construct([
-            'tool' => $this->toolName,
-            'success' => $this->isSuccess,
-            'error' => $this->errorMessage,
+            'tool' => $this->tool,
+            'success' => $this->success,
+            'error' => $this->error,
             'started' => $this->startedAt->format(DATE_ATOM),
             'ended' => $this->endedAt->format(DATE_ATOM),
             'duration_ms' => $this->getDurationMs(),
@@ -29,13 +29,13 @@ final class ToolCallCompleted extends AgentEvent
 
     #[\Override]
     public function __toString(): string {
-        $status = $this->isSuccess ? 'succeeded' : 'failed';
-        $error = $this->errorMessage ? " ({$this->errorMessage})" : '';
+        $status = $this->success ? 'succeeded' : 'failed';
+        $error = $this->error ? " ({$this->error})" : '';
 
         return sprintf(
             'Tool call %s: %s [%dms]%s',
             $status,
-            $this->toolName,
+            $this->tool,
             $this->getDurationMs(),
             $error
         );
@@ -47,4 +47,3 @@ final class ToolCallCompleted extends AgentEvent
         return ($diff * 1000) + (int) ($microDiff / 1000);
     }
 }
-

@@ -11,28 +11,27 @@ use DateTimeImmutable;
 final class ToolCallStarted extends AgentEvent
 {
     public function __construct(
-        public readonly string $toolName,
-        public readonly mixed $toolArgs,
+        public readonly string $tool,
+        public readonly mixed $args,
         public readonly DateTimeImmutable $startedAt,
     ) {
         parent::__construct([
-            'tool' => $this->toolName,
-            'args' => $this->toolArgs,
+            'tool' => $this->tool,
+            'args' => $this->args,
             'at' => $this->startedAt->format(DATE_ATOM),
         ]);
     }
 
     #[\Override]
     public function __toString(): string {
-        $argsPreview = is_array($this->toolArgs)
-            ? implode(', ', array_keys($this->toolArgs))
-            : (is_string($this->toolArgs) ? substr($this->toolArgs, 0, 50) : 'complex');
+        $argsPreview = is_array($this->args)
+            ? implode(', ', array_keys($this->args))
+            : (is_string($this->args) ? substr($this->args, 0, 50) : 'complex');
 
         return sprintf(
             'Tool call started: %s(%s)',
-            $this->toolName,
+            $this->tool,
             $argsPreview
         );
     }
 }
-

@@ -6,7 +6,7 @@ Instructor supports several ways to extract data from the response.
 
 Instructor supports multiple output modes to allow working with various models depending on their capabilities.
 - `OutputMode::Json` - generate structured output via LLM's native JSON generation
-- `OutputMode::JsonSchema` - use LLM's strict JSON Schema mode to enforce JSON Schema
+- `OutputMode::JsonSchema` - use native JSON Schema enforcement (guaranteed only when the provider supports it)
 - `OutputMode::Tools` - use tool calling API to get LLM follow provided schema
 - `OutputMode::MdJson` - use prompting to generate structured output; fallback for the models that do not support JSON generation or tool calling
 
@@ -82,9 +82,11 @@ See more about JSON mode in:
 
 In contrast to `OutputMode::Json` which may not always manage to meet the schema requirements,
 `OutputMode::JsonSchema` is strict and guarantees the response to be a valid JSON object that matches
-the provided schema.
+the provided schema when the provider supports native JSON Schema mode. For providers without native
+support, results fall back to best-effort JSON output without a strict guarantee.
 
-It is currently supported only by new OpenAI models (check their docs for details).
+Native JSON Schema support is currently limited to newer OpenAI models (check their docs for details).
+If you need broad provider compatibility, use `OutputMode::Json` or `OutputMode::MdJson`.
 
 NOTE: OpenAI JsonSchema mode does not support optional properties. If you need to have optional
 properties in your schema, use `OutputMode::Tools` or `OutputMode::Json`.

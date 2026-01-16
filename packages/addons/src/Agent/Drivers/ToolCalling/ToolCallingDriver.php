@@ -20,6 +20,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
+use Cognesy\Utils\Json\Json;
 
 /**
  * ToolCallingDriver is responsible for managing the interaction between a
@@ -153,9 +154,7 @@ class ToolCallingDriver implements CanUseTools
         Messages $followUps,
         Messages $context,
     ) : AgentStep {
-        $outputMessages = $followUps->appendMessage(
-            Message::asAssistant($response->content()),
-        );
+        $outputMessages = $this->appendResponseContent($followUps, $response);
 
         return new AgentStep(
             inputMessages: $context,
@@ -166,6 +165,44 @@ class ToolCallingDriver implements CanUseTools
             inferenceResponse: $response,
             stepType: $this->inferStepType($response, $executions)
         );
+    }
+
+    private function appendResponseContent(Messages $messages, InferenceResponse $response) : Messages {
+        $content = $response->content();
+        if ($content === '') {
+            return $messages;
+        }
+        if ($this->isToolArgsLeak($content, $response->toolCalls())) {
+            return $messages;
+        }
+        return $messages->appendMessage(Message::asAssistant($content));
+    }
+
+    private function isToolArgsLeak(string $content, ToolCalls $toolCalls) : bool {
+        if ($toolCalls->hasNone()) {
+            return false;
+        }
+
+        $contentArgs = $this->parseContentArgs($content);
+        if ($contentArgs === null) {
+            return false;
+        }
+
+        foreach ($toolCalls->each() as $toolCall) {
+            if ($toolCall->args() == $contentArgs) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function parseContentArgs(string $content) : ?array {
+        $json = Json::fromString($content);
+        if ($json->isEmpty()) {
+            return null;
+        }
+        return $json->toArray();
     }
 
     private function inferStepType(InferenceResponse $response, ToolExecutions $executions) : AgentStepType {

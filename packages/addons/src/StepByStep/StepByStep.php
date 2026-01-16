@@ -48,6 +48,11 @@ abstract class StepByStep implements CanExecuteIteratively
      */
     #[\Override]
     public function finalStep(object $state): object {
+        // Mark execution start time for ExecutionTimeLimit.
+        // This resets the clock for each new execution (user query),
+        // preventing timeouts in multi-turn conversations spanning days.
+        $state = $this->markExecutionStartedIfSupported($state);
+
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
         }
@@ -60,6 +65,11 @@ abstract class StepByStep implements CanExecuteIteratively
      */
     #[\Override]
     public function iterator(object $state): iterable {
+        // Mark execution start time for ExecutionTimeLimit.
+        // This resets the clock for each new execution (user query),
+        // preventing timeouts in multi-turn conversations spanning days.
+        $state = $this->markExecutionStartedIfSupported($state);
+
         while ($this->hasNextStep($state)) {
             $state = $this->nextStep($state);
             yield $state;
@@ -72,6 +82,21 @@ abstract class StepByStep implements CanExecuteIteratively
     }
 
     // INTERNAL ////////////////////////////////////////////
+
+    /**
+     * Mark execution start time if the state supports it.
+     * This is used by ExecutionTimeLimit to measure per-execution time,
+     * not session lifetime.
+     *
+     * @param TState $state
+     * @return TState
+     */
+    protected function markExecutionStartedIfSupported(object $state): object {
+        if (method_exists($state, 'markExecutionStarted')) {
+            return $state->markExecutionStarted();
+        }
+        return $state;
+    }
 
     protected function hasProcessors(): bool {
         return $this->processors !== null;

@@ -1,0 +1,13 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Addons\StepByStep\Continuation;
+
+enum ErrorType: string
+{
+    case Tool = 'tool';
+    case Model = 'model';
+    case Validation = 'validation';
+    case RateLimit = 'rate_limit';
+    case Timeout = 'timeout';
+    case Unknown = 'unknown';
+}

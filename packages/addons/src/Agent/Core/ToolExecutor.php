@@ -174,8 +174,8 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     private function emitToolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {
         $this->events->dispatch(new ToolCallStarted(
-            toolName: $toolCall->name(),
-            toolArgs: $toolCall->args(),
+            tool: $toolCall->name(),
+            args: $toolCall->args(),
             startedAt: $startedAt,
         ));
     }
@@ -193,9 +193,9 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         }
 
         $this->events->dispatch(new ToolCallCompleted(
-            toolName: $toolExecution->toolCall()->name(),
-            isSuccess: $toolExecution->result()->isSuccess(),
-            errorMessage: $error,
+            tool: $toolExecution->toolCall()->name(),
+            success: $toolExecution->result()->isSuccess(),
+            error: $error,
             startedAt: $toolExecution->startedAt(),
             endedAt: $toolExecution->endedAt(),
         ));

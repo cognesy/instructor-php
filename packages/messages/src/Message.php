@@ -147,6 +147,34 @@ final readonly class Message
         return MessageRole::fromString($this->role);
     }
 
+    // ROLE CONVENIENCE HELPERS ///////////////////////////////////////
+
+    public function isUser(): bool {
+        return $this->role() === MessageRole::User;
+    }
+
+    public function isAssistant(): bool {
+        return $this->role() === MessageRole::Assistant;
+    }
+
+    public function isTool(): bool {
+        return $this->role() === MessageRole::Tool;
+    }
+
+    public function isSystem(): bool {
+        return $this->role()->isSystem(); // Covers System and Developer
+    }
+
+    public function isDeveloper(): bool {
+        return $this->role() === MessageRole::Developer;
+    }
+
+    public function hasRole(MessageRole ...$roles): bool {
+        return $this->role()->oneOf(...$roles);
+    }
+
+    // ///////////////////////////////////////
+
     public function name(): string {
         return $this->name ?? '';
     }

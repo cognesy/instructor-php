@@ -12,6 +12,7 @@ use Cognesy\Addons\Agent\Events\AgentFinished;
 use Cognesy\Addons\Agent\Events\AgentStateUpdated;
 use Cognesy\Addons\Agent\Events\AgentStepCompleted;
 use Cognesy\Addons\Agent\Events\AgentStepStarted;
+use Cognesy\Addons\Agent\Events\ContinuationEvaluated;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Messages\Messages;
@@ -103,6 +104,7 @@ describe('AbstractAgentDefinition events', function () {
         expect($captured)->toContain(AgentStepStarted::class);
         expect($captured)->toContain(AgentStateUpdated::class);
         expect($captured)->toContain(AgentStepCompleted::class);
+        expect($captured)->toContain(ContinuationEvaluated::class);
         expect($captured)->toContain(AgentFinished::class);
     });
 
@@ -116,7 +118,12 @@ describe('AbstractAgentDefinition events', function () {
         $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
         $definition->run($state);
 
-        expect($handler->events)->toHaveCount(4);
-        expect($handler->events[0])->toBeInstanceOf(AgentStepStarted::class);
+        $classes = array_map(
+            static fn(object $event): string => $event::class,
+            $handler->events,
+        );
+
+        expect($classes)->toContain(ContinuationEvaluated::class);
+        expect($classes)->toContain(AgentStepStarted::class);
     });
 });

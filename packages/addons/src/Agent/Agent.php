@@ -15,10 +15,12 @@ use Cognesy\Addons\Agent\Events\AgentFinished;
 use Cognesy\Addons\Agent\Events\AgentStateUpdated;
 use Cognesy\Addons\Agent\Events\AgentStepCompleted;
 use Cognesy\Addons\Agent\Events\AgentStepStarted;
+use Cognesy\Addons\Agent\Events\ContinuationEvaluated;
 use Cognesy\Addons\Agent\Events\TokenUsageReported;
 use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
@@ -75,7 +77,9 @@ class Agent extends StepByStep
     #[\Override]
     protected function canContinue(object $state): bool {
         assert($state instanceof AgentState);
-        return $this->continuationCriteria->canContinue($state);
+        $outcome = $this->continuationCriteria->evaluate($state);
+        $this->emitContinuationEvaluated($state, $outcome);
+        return $outcome->shouldContinue();
     }
 
     #[\Override]
@@ -94,8 +98,9 @@ class Agent extends StepByStep
         assert($state instanceof AgentState);
         assert($nextStep instanceof AgentStep);
         // Mark when step execution started (for duration calculation)
+        $startedAt = $state->currentStepStartedAt ?? new DateTimeImmutable();
         $newState = $state
-            ->markStepStarted()
+            ->withCurrentStepStartedAt($startedAt)
             ->withAddedStep($nextStep)
             ->withCurrentStep($nextStep);
         $this->emitAgentStateUpdated($newState);
@@ -132,6 +137,21 @@ class Agent extends StepByStep
         );
         $this->emitAgentFailed($failedState, $failure);
         return $failedState;
+    }
+
+    #[\Override]
+    protected function performStep(object $state): object {
+        try {
+            $stepStartedAt = microtime(true);
+            $stateWithStart = $this->markStepStartedIfSupported($state);
+            $nextStep = $this->makeNextStep($stateWithStart);
+            $nextState = $this->applyStep(state: $stateWithStart, nextStep: $nextStep);
+            $durationSeconds = microtime(true) - $stepStartedAt;
+            $nextState = $this->addExecutionTimeIfSupported($nextState, $durationSeconds);
+            return $this->onStepCompleted($nextState);
+        } catch (Throwable $error) {
+            return $this->onFailure($error, $state);
+        }
     }
 
     // ACCESSORS ////////////////////////////////////////////
@@ -287,5 +307,27 @@ class Agent extends StepByStep
             totalUsage: $failedState->usage(),
             errors: $failedState->currentStep()?->errorsAsString(),
         ));
+    }
+
+    private function emitContinuationEvaluated(AgentState $state, ContinuationOutcome $outcome) : void {
+        $this->events->dispatch(new ContinuationEvaluated(
+            agentId: $state->agentId,
+            parentAgentId: $state->parentAgentId,
+            stepNumber: $state->stepCount(),
+            outcome: $outcome,
+        ));
+    }
+
+    private function markStepStartedIfSupported(object $state): object {
+        if (method_exists($state, 'markStepStarted')) {
+            return $state->markStepStarted();
+        }
+        return $state;
+    }
+
+    private function addExecutionTimeIfSupported(AgentState $state, float $seconds): AgentState {
+        return $state->withStateInfo(
+            $state->stateInfo()->addExecutionTime($seconds),
+        );
     }
 }

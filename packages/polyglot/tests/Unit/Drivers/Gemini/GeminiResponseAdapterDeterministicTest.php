@@ -29,6 +29,27 @@ it('Gemini native: parses final response content and tool calls deterministicall
     expect($tool->value('q'))->toBe('Hello');
 });
 
+it('Gemini native: keeps content empty for tool-only responses', function () {
+    $adapter = new GeminiResponseAdapter(new GeminiUsageFormat());
+
+    $data = [
+        'candidates' => [[
+            'finishReason' => 'STOP',
+            'content' => [
+                'parts' => [
+                    ['functionCall' => ['name' => 'search', 'args' => ['q' => 'Hello']]],
+                ],
+            ],
+        ]],
+        'usageMetadata' => ['promptTokenCount' => 1, 'candidatesTokenCount' => 1]
+    ];
+    $httpResp = MockHttpResponseFactory::json($data);
+
+    $res = $adapter->fromResponse($httpResp);
+    expect($res->content())->toBe('');
+    expect($res->hasToolCalls())->toBeTrue();
+});
+
 it('Gemini native: parses streaming partial with text and tool args', function () {
     $adapter = new GeminiResponseAdapter(new GeminiUsageFormat());
     $event = json_encode([
@@ -56,6 +77,7 @@ it('Gemini native: parses streaming partial with text and tool args', function (
     ]);
     $p2 = $adapter->fromStreamResponse($event2);
     expect($p2)->not->toBeNull();
+    expect($p2->contentDelta)->toBe('');
     expect($p2->toolName)->toBe('search');
     expect($p2->toolArgs)->toContain('Hello');
 });

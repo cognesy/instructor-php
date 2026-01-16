@@ -4,7 +4,7 @@ description: 'Learn how to use JSON Schema mode in Polyglot for structured and v
 ---
 
 
-JSON Schema mode takes JSON generation a step further by validating the response against a predefined schema. This ensures the response has exactly the structure your application expects.
+JSON Schema mode takes JSON generation a step further by validating the response against a predefined schema. This guarantees the response has the expected structure when the provider supports native JSON Schema validation.
 
 ## Defining and Using a JSON Schema
 
@@ -88,12 +88,12 @@ foreach ($response['forecast'] as $day) {
 
 ## Schema Validation
 
-With JSON Schema mode, Polyglot ensures the LLM's response adheres to your schema:
+With JSON Schema mode, Polyglot enforces the schema when native support is available:
 
 1. The schema is sent to the model as part of the request
 2. The model structures its response to match the schema
 3. For providers with native schema support, validation happens at the API level
-4. For other providers, Polyglot helps guide the model to produce correctly formatted output
+4. For other providers, results are best-effort and should be treated as JSON output without strict guarantees
 
 
 ## Provider Support for JSON Schema
@@ -101,10 +101,9 @@ With JSON Schema mode, Polyglot ensures the LLM's response adheres to your schem
 Provider support for JSON Schema varies:
 
 - **OpenAI (GPT-4 and newer)**: Native support with `json_schema` response format
-- **Anthropic (Claude 3 and newer)**: Partial support via prompt engineering
-- **Other providers**: May require more explicit instructions in the prompt
+- **Other providers**: No native guarantee; use `OutputMode::Json` or `OutputMode::MdJson` for best-effort output
 
-For best compatibility, use OpenAI for schema-validated responses.
+For guaranteed schema validation, use a provider with native JSON Schema support.
 
 
 ## When to Use JSON Schema Mode

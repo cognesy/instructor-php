@@ -5,9 +5,11 @@ namespace Cognesy\Instructor\Tests\Support;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 /**
  * Lightweight fake inference driver for unit tests.
@@ -70,5 +72,15 @@ class FakeInferenceDriver implements CanHandleInference
                 yield $item;
             }
         }
+    }
+
+    public function capabilities(?string $model = null): DriverCapabilities {
+        return new DriverCapabilities(
+            outputModes: OutputMode::cases(),
+            streaming: true,
+            toolCalling: true,
+            jsonSchema: true,
+            responseFormatWithTools: true,
+        );
     }
 }

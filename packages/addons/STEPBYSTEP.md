@@ -346,22 +346,127 @@ $finalState = $process->finalStep($initialState);
 
 ### Creating Custom Criteria
 
+Implement `CanDecideToContinue` with the `decide()` method:
+
 ```php
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 class CustomCriteria implements CanDecideToContinue
 {
-    public function canContinue(object $state): bool
+    public function decide(object $state): ContinuationDecision
     {
-        // Your custom continuation logic
-        return true;
+        if ($this->shouldStop($state)) {
+            return ContinuationDecision::ForbidContinuation;
+        }
+        if ($this->wantsMore($state)) {
+            return ContinuationDecision::RequestContinuation;
+        }
+        return ContinuationDecision::AllowContinuation;
     }
 }
 ```
 
+For observability, also implement `CanExplainContinuation`:
+
+```php
+use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
+
+class CustomCriteria implements CanDecideToContinue, CanExplainContinuation
+{
+    public function decide(object $state): ContinuationDecision { /* ... */ }
+
+    public function explain(object $state): ContinuationEvaluation
+    {
+        $decision = $this->decide($state);
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $this->buildReason($state),
+            stopReason: $decision === ContinuationDecision::ForbidContinuation
+                ? StopReason::GuardForbade
+                : null,
+            context: ['custom_metric' => $this->metric],
+        );
+    }
+}
+```
+
+### ContinuationDecision Enum
+
+Criteria return a `ContinuationDecision` to express their intent:
+
+```php
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+
+enum ContinuationDecision: string
+{
+    case AllowContinuation = 'allow';      // Doesn't oppose continuing
+    case ForbidContinuation = 'forbid';    // Vetoes continuation (guards)
+    case RequestContinuation = 'request';  // Actively wants to continue
+}
+```
+
+**Decision priority**:
+- If any criterion returns `ForbidContinuation`, the process stops
+- If at least one criterion returns `RequestContinuation` and none forbid, process continues
+- If all return `AllowContinuation`, the process stops (no active request to continue)
+
 ### Criteria Evaluation
 
-All criteria in a `ContinuationCriteria` collection must return `true` for the process to continue. If any criterion returns `false`, the process stops.
+Use `evaluate()` for full observability of continuation decisions:
+
+```php
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+
+$outcome = $criteria->evaluate($state);
+
+// ContinuationOutcome provides:
+$outcome->shouldContinue;   // bool - final decision
+$outcome->decision;         // ContinuationDecision enum
+$outcome->resolvedBy;       // string - criterion class that decided
+$outcome->stopReason;       // StopReason enum
+$outcome->evaluations;      // array of ContinuationEvaluation
+
+// Inspect individual criteria results:
+foreach ($outcome->evaluations as $eval) {
+    echo "{$eval->criterionClass}: {$eval->decision->value} - {$eval->reason}\n";
+}
+```
+
+### StopReason Enum
+
+When the process stops, `StopReason` provides semantic context:
+
+```php
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
+
+enum StopReason: string
+{
+    case Completed = 'completed';              // Normal completion
+    case StepsLimitReached = 'steps_limit';
+    case TokenLimitReached = 'token_limit';
+    case TimeLimitReached = 'time_limit';
+    case RetryLimitReached = 'retry_limit';
+    case ErrorForbade = 'error';
+    case FinishReasonReceived = 'finish_reason';
+    case GuardForbade = 'guard';
+    case UserRequested = 'user_requested';
+}
+```
+
+### Legacy canContinue()
+
+The simple `canContinue()` method still works and delegates to `evaluate()`:
+
+```php
+// Simple boolean check
+if ($criteria->canContinue($state)) {
+    // Continue
+}
+```
 
 ## State Processors Details
 

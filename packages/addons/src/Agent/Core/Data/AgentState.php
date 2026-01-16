@@ -37,6 +37,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     public string $agentId;
     public ?string $parentAgentId;
     public ?DateTimeImmutable $currentStepStartedAt;
+    public ?DateTimeImmutable $executionStartedAt;
 
     public function __construct(
         ?AgentStatus        $status = null,
@@ -50,11 +51,13 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         ?string             $agentId = null,
         ?string             $parentAgentId = null,
         ?DateTimeImmutable  $currentStepStartedAt = null,
+        ?DateTimeImmutable  $executionStartedAt = null,
         ?CachedContext      $cache = null,
     ) {
         $this->agentId = $agentId ?? Uuid::uuid4();
         $this->parentAgentId = $parentAgentId;
         $this->currentStepStartedAt = $currentStepStartedAt;
+        $this->executionStartedAt = $executionStartedAt;
 
         $this->status = $status ?? AgentStatus::InProgress;
         $this->steps = $steps ?? new AgentSteps();
@@ -92,6 +95,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         ?string             $agentId = null,
         ?string             $parentAgentId = null,
         ?DateTimeImmutable  $currentStepStartedAt = null,
+        ?DateTimeImmutable  $executionStartedAt = null,
         ?CachedContext      $cache = null,
     ): self {
         return new self(
@@ -106,6 +110,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             agentId: $agentId ?? $this->agentId,
             parentAgentId: $parentAgentId ?? $this->parentAgentId,
             currentStepStartedAt: $currentStepStartedAt ?? $this->currentStepStartedAt,
+            executionStartedAt: $executionStartedAt ?? $this->executionStartedAt,
         );
     }
 
@@ -119,6 +124,24 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     public function markStepStarted() : self {
         return $this->with(currentStepStartedAt: new DateTimeImmutable());
+    }
+
+    /**
+     * Mark the start of a new execution (user query processing).
+     * This should be called at the beginning of each execution cycle,
+     * NOT at session creation. Used by ExecutionTimeLimit to prevent
+     * runaway single-query processing.
+     */
+    public function markExecutionStarted() : self {
+        return $this->with(executionStartedAt: new DateTimeImmutable());
+    }
+
+    /**
+     * Get the timestamp when the current execution started.
+     * Returns null if execution hasn't started yet (e.g., after deserialization).
+     */
+    public function executionStartedAt(): ?DateTimeImmutable {
+        return $this->executionStartedAt;
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -142,6 +165,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             'agentId' => $this->agentId,
             'parentAgentId' => $this->parentAgentId,
             'currentStepStartedAt' => $this->currentStepStartedAt?->format(DATE_ATOM),
+            'executionStartedAt' => $this->executionStartedAt?->format(DATE_ATOM), // For debugging only - not restored
             'metadata' => $this->metadata->toArray(),
             'cachedContext' => $this->cacheToArray($this->cache),
             'usage' => $this->usage->toArray(),
@@ -167,6 +191,10 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             agentId: $data['agentId'] ?? null,
             parentAgentId: $data['parentAgentId'] ?? null,
             currentStepStartedAt: isset($data['currentStepStartedAt']) ? new DateTimeImmutable($data['currentStepStartedAt']) : null,
+            // NOTE: executionStartedAt is intentionally NOT restored from serialization.
+            // Each new execution should start fresh - markExecutionStarted() will be called
+            // when the execution begins. This prevents timeouts in multi-turn conversations.
+            executionStartedAt: null,
         );
     }
 

@@ -10,7 +10,13 @@ use Cognesy\Utils\Time\SystemClock;
 use DateTimeImmutable;
 
 /**
- * Guard: Forbids continuation once elapsed time between the state's start and current clock exceeds the limit.
+ * Guard: Forbids continuation once elapsed time between the execution start and current clock exceeds the limit.
+ *
+ * IMPORTANT: The startedAtResolver should return executionStartedAt (set at the start of each user query),
+ * NOT the session creation time. This prevents timeouts in multi-turn conversations spanning days.
+ *
+ * Example usage:
+ *   new ExecutionTimeLimit(120, fn($state) => $state->executionStartedAt() ?? $state->startedAt())
  *
  * Returns ForbidContinuation when time limit exceeded (guard denial),
  * AllowContinuation otherwise (guard approval - permits continuation).
@@ -26,7 +32,10 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue
     private int $maxSeconds;
 
     /**
-     * @param Closure(TState): DateTimeImmutable $startedAtResolver Provides the process start timestamp.
+     * @param int $maxSeconds Maximum seconds allowed for a single execution.
+     * @param Closure(TState): DateTimeImmutable $startedAtResolver Provides the execution start timestamp.
+     *        Should return executionStartedAt() (per-query), not session startedAt().
+     * @param ClockInterface|null $clock Optional clock for testing.
      */
     public function __construct(
         int $maxSeconds,

@@ -6,11 +6,13 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class A21Driver extends BaseInferenceDriver
@@ -32,6 +34,26 @@ class A21Driver extends BaseInferenceDriver
         );
         $this->responseTranslator = new OpenAIResponseAdapter(
             new OpenAIUsageFormat()
+        );
+    }
+
+    /**
+     * A21 does not support native JSON schema (falls back to json_object).
+     */
+    #[\Override]
+    public function capabilities(?string $model = null): DriverCapabilities {
+        return new DriverCapabilities(
+            outputModes: [
+                OutputMode::Tools,
+                OutputMode::Json,
+                OutputMode::MdJson,
+                OutputMode::Text,
+                OutputMode::Unrestricted,
+            ],
+            streaming: true,
+            toolCalling: true,
+            jsonSchema: false,
+            responseFormatWithTools: true,
         );
     }
 }

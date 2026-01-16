@@ -59,7 +59,7 @@ Polyglot supports various modes of interaction with LLMs:
 
 - **Text mode**: Simple text completion/chat
 - **JSON mode**: Structured JSON responses
-- **JSON Schema mode**: Responses validated against a schema
+- **JSON Schema mode**: Responses validated against a schema when native support is available
 - **Tools mode**: Function/tool calling for task execution
 
 ### Streaming Support

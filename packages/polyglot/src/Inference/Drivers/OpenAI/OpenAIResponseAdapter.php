@@ -80,23 +80,11 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
     }
 
     protected function makeContent(array $data): string {
-        $contentMsg = $data['choices'][0]['message']['content'] ?? '';
-        $contentFnArgs = $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
-        return match(true) {
-            !empty($contentMsg) => $contentMsg,
-            !empty($contentFnArgs) => $contentFnArgs,
-            default => ''
-        };
+        return $data['choices'][0]['message']['content'] ?? '';
     }
 
     protected function makeContentDelta(array $data): string {
-        $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
-        $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
-        return match(true) {
-            ('' !== $deltaContent) => $deltaContent,
-            ('' !== $deltaFnArgs) => $deltaFnArgs,
-            default => ''
-        };
+        return $data['choices'][0]['delta']['content'] ?? '';
     }
 
     protected function makeToolId(array $data) : string {

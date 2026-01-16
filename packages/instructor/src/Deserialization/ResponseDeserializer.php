@@ -28,8 +28,11 @@ class ResponseDeserializer implements CanDeserializeResponse
     public function deserialize(array $data, ResponseModel $responseModel) : Result {
         // If OutputFormat is array, return data directly (skip deserialization)
         if ($responseModel->shouldReturnArray()) {
-            $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($data)]));
-            return Result::success($data);
+            $response = $this->config->defaultToStdClass()
+                ? $this->toAnonymousObject($data)
+                : $data;
+            $this->events->dispatch(new ResponseDeserialized(['response' => json_encode($response)]));
+            return Result::success($response);
         }
 
         // Determine target class from OutputFormat or fall back to schema class
