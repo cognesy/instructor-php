@@ -543,7 +543,8 @@ MessageStore::fromMessages(Messages $messages, string $section = 'messages');
 $store->withSection(string $name);            // Ensure section exists
 $store->select(string|array $sections);      // Select specific sections
 $store->toMessages();                         // Flatten to Messages
-$store->toArray();                           // Export messages array
+$store->toArray();                           // Export structured store array
+$store->toFlatArray();                       // Export flat messages array
 $store->toString();                          // Text representation
 ```
 

@@ -146,6 +146,17 @@ test('creates a message from array', function () {
         ->and($message->metadata()->toArray())->toBe(['source' => 'test array']);
 });
 
+test('accepts metadata alias in message array', function () {
+    $message = Message::fromArray([
+        'role' => 'assistant',
+        'content' => 'Hello from alias',
+        'metadata' => ['source' => 'alias array'],
+    ]);
+
+    expect($message)->toBeInstanceOf(Message::class)
+        ->and($message->metadata()->toArray())->toBe(['source' => 'alias array']);
+});
+
 test('creates a message from content with role', function () {
     $message = Message::fromContent(Content::text('System instruction'), 'system');
 

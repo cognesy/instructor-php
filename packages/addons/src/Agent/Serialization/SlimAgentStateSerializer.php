@@ -90,7 +90,7 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
             }
         }
 
-        $metadata = $message['_metadata'] ?? [];
+        $metadata = $message['_metadata'] ?? $message['metadata'] ?? [];
         if ($this->config->redactToolArgs) {
             $metadata = $this->redactToolArgs($metadata);
         }
@@ -102,7 +102,7 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
         return [
             'role' => $message['role'] ?? 'user',
             'content' => $content,
-            'metadata' => $metadata,
+            '_metadata' => $metadata,
         ];
     }
 

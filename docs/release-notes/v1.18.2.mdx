@@ -1,0 +1,37 @@
+# Release Notes - v1.18.2
+
+## Highlights
+
+- Continuation-safe agent state persistence with new serialization helpers.
+- MessageStore serialization is now round-trip safe and section-aware.
+- Metadata preservation fixes for slim agent state snapshots.
+
+## Behavior Changes
+
+### MessageStore toArray Structure
+- `MessageStore::toArray()` now returns a structured payload with `sections` and `parameters` instead of a flat messages list.
+- Use `MessageStore::toFlatArray()` to obtain the previous flat messages array format.
+
+## New Features
+
+### Agent Continuation APIs
+- Added `AgentState::withUserMessage()` for multi-turn continuation.
+- Added `AgentState::forContinuation()` to reset execution state (steps, cache, usage, timing) while preserving conversation history.
+
+### Continuation Serializer
+- Added `ContinuationAgentStateSerializer` with `ContinuationSerializationConfig` to persist multi-turn state with retention limits.
+- Supports truncation, tool-result omission, and tool-arg redaction while preserving `_metadata`.
+
+## Bug Fixes
+
+### Metadata Preservation
+- `SlimAgentStateSerializer` now emits `_metadata` (with `metadata` alias support) so tool calls/results survive round-trips.
+- `MessageInput::fromArray()` now accepts `metadata` as a fallback alias for `_metadata`.
+
+### Serialization Round-Trip
+- MessageStore serialization now round-trips sections, messages, and parameters without data loss.
+
+## Tests
+
+- Added round-trip tests for MessageStore and continuation serialization.
+- Added AgentState continuation tests covering reset semantics and message appending.

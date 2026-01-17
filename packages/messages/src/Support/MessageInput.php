@@ -64,7 +64,7 @@ final class MessageInput
             role: $role,
             content: $content,
             name: $message['name'] ?? '',
-            metadata: $message['_metadata'] ?? [],
+            metadata: $message['_metadata'] ?? $message['metadata'] ?? [],
         );
     }
 

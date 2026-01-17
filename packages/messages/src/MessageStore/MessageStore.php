@@ -128,9 +128,28 @@ final readonly class MessageStore
     }
 
     /**
-     * @return list<array<array-key, mixed>>
+     * @return array{
+     *     sections: list<array{name: string, messages: list<array<array-key, mixed>>}>,
+     *     parameters: array<string, mixed>
+     * }
      */
     public function toArray() : array {
+        return [
+            'sections' => array_map(
+                static fn(Section $section) => [
+                    'name' => $section->name(),
+                    'messages' => $section->messages()->toArray(),
+                ],
+                $this->sections->all(),
+            ),
+            'parameters' => $this->parameters->toArray(),
+        ];
+    }
+
+    /**
+     * @return list<array<array-key, mixed>>
+     */
+    public function toFlatArray() : array {
         return $this->toMessages()->toArray();
     }
 

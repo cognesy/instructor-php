@@ -121,7 +121,7 @@ $store = $store->withSection('conversation')
     ]);
 
 $store->withParams(['name' => 'World']);
-$messages = $store->toArray();
+$messages = $store->toFlatArray();
 ```
 
 ### Configuration & Engine Selection

@@ -113,4 +113,33 @@ describe('MessageStore', function () {
             expect($promptSection->messages()->first()->content()->toString())->toBe('Say hi.');
         });
     });
+
+    describe('serialization', function () {
+        it('round-trips sections, messages, and parameters', function () {
+            $store = MessageStore::fromSections(
+                new \Cognesy\Messages\MessageStore\Section('system'),
+                new \Cognesy\Messages\MessageStore\Section('chat'),
+            );
+            $store = $store->parameters()->withParams(['locale' => 'en']);
+            $store = $store->section('system')->appendMessages([
+                'role' => 'system',
+                'content' => 'You are helpful.',
+                '_metadata' => ['tool_call_id' => 'call_1'],
+            ]);
+            $store = $store->section('chat')->appendMessages([
+                'role' => 'user',
+                'content' => 'Hello',
+            ]);
+
+            $serialized = $store->toArray();
+            $restored = MessageStore::fromArray($serialized);
+
+            expect($restored->sections()->names())->toBe(['system', 'chat']);
+            expect($restored->section('system')->messages()->first()->metadata()->toArray())
+                ->toBe(['tool_call_id' => 'call_1']);
+            expect($restored->section('chat')->messages()->first()->content()->toString())
+                ->toBe('Hello');
+            expect($restored->parameters()->get()->toArray())->toBe(['locale' => 'en']);
+        });
+    });
 });

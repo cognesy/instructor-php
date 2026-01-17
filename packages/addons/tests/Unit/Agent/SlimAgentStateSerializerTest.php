@@ -86,7 +86,7 @@ it('redacts tool args and omits tool results', function () {
     $data = $serializer->serialize($state);
 
     $assistant = $data['messages'][1];
-    $toolCalls = $assistant['metadata']['tool_calls'] ?? [];
+    $toolCalls = $assistant['_metadata']['tool_calls'] ?? [];
 
     expect($toolCalls[0])->toMatchArray(['id' => 'call_1', 'name' => 'search']);
     expect($toolCalls[0])->not->toHaveKey('function');

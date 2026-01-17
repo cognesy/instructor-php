@@ -21,7 +21,7 @@ it('creates messages from script', function () {
     $store = $store->section('section-2')->appendMessages(['role' => 'assistant', 'content' => 'content-5']);
     $store = $store->section('section-2')->appendMessages(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
-    $messages = $store->toArray();
+    $messages = $store->toFlatArray();
 
     expect(count($messages))->toBe(6);
     expect($messages[0]['role'])->toBe('user');
@@ -62,7 +62,7 @@ it('selects sections from script', function () {
     $store = $store->section('section-3')->appendMessages(['role' => 'assistant', 'content' => 'content-8']);
     $store = $store->section('section-3')->appendMessages(['role' => 'user', 'content' => 'content-9 <|key-2|>']);
 
-    $messages = $store->select(['section-3', 'section-1'])->toArray();
+    $messages = $store->select(['section-3', 'section-1'])->toFlatArray();
 
     expect(count($messages))->toBe(6);
     expect($messages[0]['role'])->toBe('user');
@@ -104,4 +104,3 @@ it('translates messages to string', function () {
     $text = $store->select('section-1')->toString();
     expect($text)->toBe("content-1\ncontent-2\ncontent-3 <|key-1|>\n");
 });
-

@@ -15,6 +15,7 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesMessageStore;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
+use Cognesy\Messages\Message;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -142,6 +143,40 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
      */
     public function executionStartedAt(): ?DateTimeImmutable {
         return $this->executionStartedAt;
+    }
+
+    /**
+     * Add a user message to continue the conversation.
+     */
+    public function withUserMessage(string|Message $message, bool $resetExecutionState = true): self {
+        $userMessage = Message::asUser($message);
+        $store = $this->store->section(self::DEFAULT_SECTION)->appendMessages($userMessage);
+        $state = $this->with(
+            store: $store,
+            status: AgentStatus::InProgress,
+        );
+
+        return $resetExecutionState ? $state->forContinuation() : $state;
+    }
+
+    /**
+     * Reset execution state while preserving conversation history and metadata.
+     */
+    public function forContinuation(): self {
+        return new self(
+            status: AgentStatus::InProgress,
+            steps: new AgentSteps(),
+            currentStep: null,
+            variables: $this->metadata,
+            usage: new Usage(),
+            store: $this->store,
+            stateInfo: $this->stateInfo->touch(),
+            agentId: $this->agentId,
+            parentAgentId: $this->parentAgentId,
+            currentStepStartedAt: null,
+            executionStartedAt: null,
+            cache: new CachedContext(),
+        );
     }
 
     // ACCESSORS ////////////////////////////////////////////////
