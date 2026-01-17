@@ -18,7 +18,7 @@ Here's how you can use Instructor with Groq API.
 ## Example
 
 ```php
-<?php
+\<\?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;

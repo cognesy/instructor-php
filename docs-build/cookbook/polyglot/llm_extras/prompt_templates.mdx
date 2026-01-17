@@ -12,7 +12,7 @@ prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;

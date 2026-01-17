@@ -18,7 +18,7 @@ These subproblems are solved sequentially, allowing the answers from earlier (si
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;

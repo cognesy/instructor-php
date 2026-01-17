@@ -22,7 +22,7 @@ We will also provide an example of the expected JSON output in the prompt
 to guide the model in generating the correct response.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

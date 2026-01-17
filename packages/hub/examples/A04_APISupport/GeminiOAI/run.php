@@ -15,7 +15,7 @@ Supported modes:
 Here's how you can use Instructor with Gemini's OpenAI compatible API.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

@@ -113,7 +113,7 @@ Active prompting identifies effective examples for human annotation using:
 Query the same example k times and measure disagreement: unique responses / total responses.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;

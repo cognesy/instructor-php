@@ -8,7 +8,7 @@ docname: 'custom_embeddings_config'
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Config\Env;

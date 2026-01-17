@@ -18,7 +18,7 @@ Here's how you can use Instructor with Groq API.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

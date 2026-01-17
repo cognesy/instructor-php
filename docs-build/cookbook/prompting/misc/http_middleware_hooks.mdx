@@ -3,7 +3,8 @@ title: 'HTTP Middleware (Hooks + Conditional Decoration)'
 docname: 'http_middleware_hooks'
 ---
 
-<?php
+```php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Data\HttpRequest;
@@ -73,3 +74,4 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // chunks are numbered by middleware
 }
 ?>
+```

@@ -12,7 +12,7 @@ Laravel).
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Adbar\Dot;

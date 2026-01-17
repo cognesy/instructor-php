@@ -10,7 +10,7 @@ Inference operation logging with Symfony-style context.
 
 ## Example
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Logging\Enrichers\LazyEnricher;

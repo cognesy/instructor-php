@@ -13,7 +13,7 @@ using Azure OpenAI service console.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

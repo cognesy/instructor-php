@@ -13,7 +13,7 @@ a simplified API for such cases.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;

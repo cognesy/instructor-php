@@ -17,7 +17,7 @@ Supported modes:
 ## Example
 
 ```php
-<?php
+\<\?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;

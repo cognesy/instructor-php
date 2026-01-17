@@ -17,7 +17,7 @@ The approach involves:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -43,7 +43,7 @@ class ProgramExecution {
 }
 
 class ProgramOfThoughtSolver {
-    private const PREFIX = '\<?php
+    private const PREFIX = '\\<\?php
 // Answer this question by implementing a solver()
 // function, use for loop if necessary.
 function solver() {
@@ -68,7 +68,7 @@ function solver() {
 
 Make sure to begin your generated program with the following structure:
 ```php
-<?php
+\<\?php
 function solver() {
     // Your step-by-step logic here
     // Define variables, perform calculations
@@ -101,7 +101,7 @@ return solver();
         $code = preg_replace('/^\s*```[a-zA-Z]*\s*/', '', $code);
         $code = preg_replace('/```\s*$/', '', (string) $code);
         // Remove PHP open/close tags — eval() expects pure PHP code body
-        $code = str_replace(['<?php', '<?', '?>'], '', (string) $code);
+        $code = str_replace(['\<\?php', '<?', '?>'], '', (string) $code);
         // Normalize line endings and trim
         $code = trim((string) $code);
         return $code;

@@ -24,7 +24,7 @@ generating its summary for 2 target audiences.
 
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;

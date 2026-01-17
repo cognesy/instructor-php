@@ -11,7 +11,7 @@ Simple Embeddings operation logging with Laravel-style context.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Logging\Enrichers\LazyEnricher;

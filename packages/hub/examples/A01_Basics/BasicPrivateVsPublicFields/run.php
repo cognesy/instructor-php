@@ -18,7 +18,7 @@ If you want to access them directly after extraction, provide default values for
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

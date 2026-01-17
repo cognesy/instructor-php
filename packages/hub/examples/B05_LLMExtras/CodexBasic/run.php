@@ -12,7 +12,7 @@ simple prompts. The OpenAICodex component provides a PHP API for invoking the
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;

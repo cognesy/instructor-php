@@ -11,7 +11,7 @@ the provided text with Anthropic Claude 3 model.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;

@@ -10,7 +10,7 @@ Instructor supports Meta LLM inference API. You can find the details on how to c
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

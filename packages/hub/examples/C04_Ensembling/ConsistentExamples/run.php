@@ -28,7 +28,7 @@ Therefore in order to do so, we introduce a - term in our implementation so that
 
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

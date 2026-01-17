@@ -12,7 +12,7 @@ generated.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -57,7 +57,7 @@ with partially updated object of type `UserDetail` that you can use, usually to 
 the UI.
 
 ```php
-<?php
+\<\?php
 $text = <<<TEXT
     Jason is 25 years old, he is an engineer and tech lead. He lives in
     San Francisco. He likes to play soccer and climb mountains.

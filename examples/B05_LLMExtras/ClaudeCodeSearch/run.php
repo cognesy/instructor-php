@@ -16,7 +16,7 @@ reads the code, and explains how validation works.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;

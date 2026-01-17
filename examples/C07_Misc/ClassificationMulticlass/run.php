@@ -11,7 +11,7 @@ For multi-label classification, we introduce a new enum class and a different PH
 to handle multiple labels.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -38,7 +38,7 @@ class TicketLabels {
 The function `multi_classify` executes multi-label classification using LLM.
 
 ```php
-<?php
+\<\?php
 // Perform single-label classification on the input text.
 function multi_classify(string $data) : TicketLabels {
     return (new StructuredOutput)
@@ -54,7 +54,7 @@ function multi_classify(string $data) : TicketLabels {
 Finally, we test the multi-label classification function using a sample support ticket.
 
 ```php
-<?php
+\<\?php
 // Test single-label classification
 $ticket = "My account is locked and I can't access my billing info.";
 $prediction = multi_classify($ticket);

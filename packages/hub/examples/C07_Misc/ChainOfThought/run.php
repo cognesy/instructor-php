@@ -16,7 +16,7 @@ self-explain approach to generating the response.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

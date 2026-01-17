@@ -7,7 +7,7 @@ docname: 'tool_use_react'
 
 ### Example
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;

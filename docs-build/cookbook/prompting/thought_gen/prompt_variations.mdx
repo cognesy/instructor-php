@@ -22,7 +22,7 @@ We implement a lightweight approach with Instructor to extract clearer prompt te
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

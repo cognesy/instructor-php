@@ -10,7 +10,7 @@ This is an example of a simple summarization.
 ## Example
 
 ```php
-<?php
+\<\?php
 
 require 'examples/boot.php';
 

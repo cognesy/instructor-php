@@ -17,7 +17,7 @@ content which are most relevant and missing from the previous iteration.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

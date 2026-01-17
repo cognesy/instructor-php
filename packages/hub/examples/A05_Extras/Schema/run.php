@@ -12,7 +12,7 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

@@ -10,7 +10,7 @@ Demonstration Ensembling (DENSE) runs multiple prompts, each with a different su
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

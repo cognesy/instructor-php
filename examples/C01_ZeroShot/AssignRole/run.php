@@ -22,7 +22,7 @@ To read about using more than one role, check out [Multi-Persona Self-Collaborat
 
 ## Example
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;

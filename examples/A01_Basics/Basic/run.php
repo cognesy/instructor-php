@@ -29,7 +29,7 @@ in this case is a simple PHP class with some public properties.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

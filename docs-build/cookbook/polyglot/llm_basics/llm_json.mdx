@@ -28,7 +28,7 @@ follow via `schema` parameter of `response_format`. OpenAI does not support
 this feature in JSON mode (only in JSON Schema mode).
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

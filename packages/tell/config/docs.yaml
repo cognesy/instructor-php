@@ -1,0 +1,50 @@
+# Documentation Configuration
+# This file configures the documentation generation system
+
+# Main docs section - manually curated landing pages
+main:
+  title: 'Instructor for PHP'
+  source: './docs'
+  # Files to include in the Main section (relative to source)
+  # These are the top-level conceptual docs, not package-specific
+  pages:
+    - index.md
+
+# Packages - autodiscovered from ./packages/*/docs/
+packages:
+  source_pattern: './packages/*/docs'
+  # Package descriptions (fallback to composer.json if not specified)
+  descriptions:
+    instructor: 'Core structured output extraction library'
+    polyglot: 'Unified LLM API abstraction layer'
+    http-client: 'Framework-agnostic HTTP client'
+    laravel: 'Laravel integration for Instructor'
+  # Target directory names in output (defaults to package name)
+  target_dirs:
+    http-client: 'http'
+  # Display order (packages not listed here appear alphabetically after)
+  order:
+    - instructor
+    - polyglot
+    - http-client
+    - laravel
+
+# Examples / Cookbook
+examples:
+  source: './examples'
+  intro_pages:
+    - cookbook/introduction.md
+    - cookbook/contributing.md
+
+# Release notes / Changelog
+changelog:
+  source: './docs/release-notes'
+
+# Output targets
+output:
+  mintlify:
+    target: './docs-build'
+    source_index: './docs/mint.json'
+  mkdocs:
+    target: './docs-mkdocs'
+    template: './docs/mkdocs.yml.template'

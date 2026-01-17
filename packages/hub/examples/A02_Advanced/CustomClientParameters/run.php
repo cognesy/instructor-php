@@ -12,7 +12,7 @@ other LLMs which support OpenAI API.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Config\Env;

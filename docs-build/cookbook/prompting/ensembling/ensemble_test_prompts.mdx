@@ -17,7 +17,7 @@ We approximate mutual information as the difference between marginal and conditi
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

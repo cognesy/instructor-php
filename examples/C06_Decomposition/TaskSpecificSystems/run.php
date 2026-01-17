@@ -20,7 +20,7 @@ Examples of task-specific systems:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -54,7 +54,7 @@ For each reasoning step, provide:
 - id: step number starting from 1
 - rationale: array of strings explaining the reasoning
 - dependencies: array of step IDs this step depends on
-- eval_string: valid PHP code (without <?php tags) that can be evaluated
+- eval_string: valid PHP code (without \<\?php tags) that can be evaluated
 
 At each step you should either:
 - declare a variable to be referenced later on (e.g., "$cars = 3;")
@@ -81,7 +81,7 @@ Use only valid PHP syntax for variable assignments in eval_string.'
             $code[] = $step->eval_string;
         }
 
-        $fullCode = "<?php\n" . implode("\n", $code) . "\nreturn \$answer;";
+        $fullCode = "\<\?php\n" . implode("\n", $code) . "\nreturn \$answer;";
 
         $result = eval(substr($fullCode, 5));
         return $result;

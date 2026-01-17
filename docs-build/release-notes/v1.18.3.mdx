@@ -1,0 +1,25 @@
+# Release Notes - v1.18.3
+
+## Highlights
+
+- Tool discovery registry with metadata/full-spec layering for progressive tool discovery.
+- New `tools` tool for list/help/search of available tools without loading full specs.
+- Capability to wire tool registries into agents for dynamic tool catalogs.
+
+## New Features
+
+### Tool Registry
+- Added `ToolRegistryContract` and `ToolRegistry` for registering tool instances or factories.
+- Added `ToolPolicy` filtering for allow/deny tool lists.
+- Added metadata and full-spec resolution helpers to support progressive discovery.
+
+### Tools Tool
+- Added `ToolsTool` for `list`, `help`, and `search` actions (plus CLI-like `command` parsing).
+- Supports locale-aware metadata/full spec rendering via registry.
+
+### Agent Capability
+- Added `UseToolRegistry` capability for agent blueprints to expose registries as tools.
+
+## Tests
+
+- Added registry and tools discovery tests for metadata/full spec, search, and help flows.

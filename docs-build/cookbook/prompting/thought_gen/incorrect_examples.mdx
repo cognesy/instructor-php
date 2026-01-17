@@ -10,7 +10,7 @@ Including examples of incorrect reasoning alongside correct ones helps the model
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

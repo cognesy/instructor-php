@@ -15,7 +15,7 @@ This example demonstrates a sophisticated multi-participant chat system featurin
 ## Example
 
 ```php
-<?php
+\<\?php
 
 require 'examples/boot.php';
 

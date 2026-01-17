@@ -31,7 +31,7 @@ search query.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -72,7 +72,7 @@ It uses the `StructuredOutput::create()` method to extract the data into the tar
 The `responseModel` parameter specifies `Search::class` as the model to use for extraction.
 
 ```php
-<?php
+\<\?php
 function segment(string $data) : Search {
     return (new StructuredOutput)
         //->withDebugPreset('on')

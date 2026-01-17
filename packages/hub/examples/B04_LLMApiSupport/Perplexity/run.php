@@ -11,7 +11,7 @@ be used in a variety of applications, including chatbots, content generation, an
 ## Example
 
 ```php
-<?php
+\<\?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;

@@ -20,7 +20,7 @@ schema.
 supported by all language model providers.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

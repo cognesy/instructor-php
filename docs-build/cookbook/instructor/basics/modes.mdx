@@ -22,7 +22,7 @@ Mode can be set via parameter of `StructuredOutput::create()` method.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

@@ -11,7 +11,7 @@ This is useful when you want to use a custom configuration directory instead of 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Config\Settings;

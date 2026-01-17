@@ -18,7 +18,7 @@ Self-Ask is a technique which use a single prompt to:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

@@ -18,7 +18,7 @@ in case of extraction issues.
 ## Example
 
 ```php
-<?php
+\<\?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;

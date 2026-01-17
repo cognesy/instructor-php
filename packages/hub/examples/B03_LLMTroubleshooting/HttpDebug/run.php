@@ -13,7 +13,7 @@ When debug mode is turned on all HTTP requests and responses are dumped to the c
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;

@@ -11,7 +11,7 @@ context to the language model or to provide additional instructions to the model
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

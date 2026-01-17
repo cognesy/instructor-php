@@ -19,7 +19,7 @@ Embeddings providers access details can be found and modified via
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;

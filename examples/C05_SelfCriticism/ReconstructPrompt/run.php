@@ -10,7 +10,7 @@ Reverse Chain-of-Thought (RCoT) reconstructs a likely prompt from reasoning step
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

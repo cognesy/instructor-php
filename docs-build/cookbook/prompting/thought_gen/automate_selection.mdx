@@ -10,7 +10,7 @@ Few-shot CoT requires curated examples. We can automate selection by clustering 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

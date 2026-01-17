@@ -3,7 +3,8 @@ title: 'HTTP Client – Streaming Basics'
 docname: 'http_client_streaming_basics'
 ---
 
-<?php
+```php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -40,4 +41,4 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // handle streamed data incrementally
 }
 ?>
-
+```

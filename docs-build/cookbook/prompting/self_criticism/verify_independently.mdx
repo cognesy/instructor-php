@@ -10,7 +10,7 @@ Chain-of-Verification (CoVe) verifies an answer by generating validation questio
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

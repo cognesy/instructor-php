@@ -1,0 +1,326 @@
+# Artisan Commands
+
+The package provides several Artisan commands to help with development and testing.
+
+## instructor:install
+
+Installs and configures the Instructor package.
+
+```bash
+php artisan instructor:install
+# @doctest id="18e1"
+```
+
+### What It Does
+
+1. Publishes the configuration file (`config/instructor.php`)
+2. Checks for API key configuration in `.env`
+3. Shows next steps for getting started
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--force` | Overwrite existing configuration files |
+
+### Example Output
+
+```
+Installing Instructor for Laravel...
+
+Publishing configuration... done
+Checking API key configuration... ✓
+
+Next steps:
+
+  1. Configure your API keys in .env:
+     OPENAI_API_KEY=your-key-here
+
+  2. Create a response model:
+     php artisan make:response-model PersonData
+
+  3. Extract structured data:
+     $person = StructuredOutput::with(
+         messages: "John is 30 years old",
+         responseModel: PersonData::class,
+     )->get();
+
+  4. Test your installation:
+     php artisan instructor:test
+
+Instructor installed successfully!
+// @doctest id="25a9"
+```
+
+---
+
+## instructor:test
+
+Tests your Instructor installation and API configuration.
+
+```bash
+php artisan instructor:test
+# @doctest id="2277"
+```
+
+### What It Does
+
+1. Displays current configuration
+2. Makes a test API call
+3. Verifies the response
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--preset=` | Test a specific connection preset |
+| `--inference` | Test raw inference instead of structured output |
+
+### Examples
+
+```bash
+# Test default connection
+php artisan instructor:test
+
+# Test specific connection
+php artisan instructor:test --preset=anthropic
+
+# Test raw inference
+php artisan instructor:test --inference
+# @doctest id="f3fc"
+```
+
+### Example Output
+
+```
+Testing Instructor installation...
+
+Preset ............................................. openai
+Driver ............................................. openai
+Model .............................................. gpt-4o-mini
+API Key ............................................ sk-...abc ✓
+
+Testing structured output extraction... ✓
+
+Structured output test completed!
+// @doctest id="150b"
+```
+
+---
+
+## make:response-model
+
+Generates a new response model class.
+
+```bash
+php artisan make:response-model {name}
+# @doctest id="decd"
+```
+
+### Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `name` | The name of the response model class |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--collection`, `-c` | Create a collection response model |
+| `--nested`, `-n` | Create a nested objects response model |
+| `--description=`, `-d` | Set the class description |
+| `--force`, `-f` | Overwrite existing file |
+
+### Examples
+
+#### Basic Response Model
+
+```bash
+php artisan make:response-model PersonData
+# @doctest id="3310"
+```
+
+Creates `app/ResponseModels/PersonData.php`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\ResponseModels;
+
+/**
+ * TODO: Add description for this response model
+ */
+final class PersonData
+{
+    public function __construct(
+        /** The name of the person */
+        public readonly string $name,
+
+        /** The age of the person in years */
+        public readonly int $age,
+
+        /** Optional email address */
+        public readonly ?string $email = null,
+    ) {}
+}
+// @doctest id="412d"
+```
+
+#### Collection Response Model
+
+```bash
+php artisan make:response-model ProductList --collection
+# @doctest id="4dbc"
+```
+
+Creates a model with an array of items:
+
+```php
+final class ProductList
+{
+    public function __construct(
+        /** List of extracted items */
+        public readonly array $items,
+    ) {}
+}
+
+final class ProductListItem
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly ?string $description = null,
+    ) {}
+}
+// @doctest id="234f"
+```
+
+#### Nested Objects Response Model
+
+```bash
+php artisan make:response-model CompanyProfile --nested
+# @doctest id="e999"
+```
+
+Creates a model with nested objects:
+
+```php
+final class CompanyProfile
+{
+    public function __construct(
+        public readonly string $title,
+        public readonly CompanyProfileContact $contact,
+        public readonly ?CompanyProfileAddress $address = null,
+    ) {}
+}
+
+final class CompanyProfileContact
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly string $email,
+        public readonly ?string $phone = null,
+    ) {}
+}
+
+final class CompanyProfileAddress
+{
+    public function __construct(
+        public readonly string $street,
+        public readonly string $city,
+        public readonly string $country,
+        public readonly ?string $postalCode = null,
+    ) {}
+}
+// @doctest id="1ae3"
+```
+
+#### With Description
+
+```bash
+php artisan make:response-model Invoice --description="Represents an invoice extracted from PDF documents"
+# @doctest id="7455"
+```
+
+Creates a model with the specified description in the docblock.
+
+---
+
+## Customizing Stubs
+
+Publish the stubs to customize them:
+
+```bash
+php artisan vendor:publish --tag=instructor-stubs
+# @doctest id="bda3"
+```
+
+This copies stubs to `stubs/instructor/`:
+
+```
+stubs/instructor/
+├── response-model.stub
+├── response-model.collection.stub
+└── response-model.nested.stub
+// @doctest id="b370"
+```
+
+Edit these files to customize generated response models.
+
+### Stub Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{{ namespace }}` | The class namespace |
+| `{{ class }}` | The class name |
+| `{{ description }}` | The class description |
+
+---
+
+## Creating Custom Commands
+
+Extend the package commands for your specific needs:
+
+```php
+// app/Console/Commands/ExtractInvoiceCommand.php
+namespace App\Console\Commands;
+
+use App\ResponseModels\InvoiceData;
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+use Illuminate\Console\Command;
+
+class ExtractInvoiceCommand extends Command
+{
+    protected $signature = 'invoice:extract {file}';
+    protected $description = 'Extract invoice data from a file';
+
+    public function handle(): int
+    {
+        $content = file_get_contents($this->argument('file'));
+
+        $invoice = StructuredOutput::with(
+            messages: $content,
+            responseModel: InvoiceData::class,
+        )->get();
+
+        $this->info("Invoice Number: {$invoice->number}");
+        $this->info("Amount: \${$invoice->amount}");
+        $this->info("Due Date: {$invoice->dueDate}");
+
+        return self::SUCCESS;
+    }
+}
+// @doctest id="1fed"
+```
+
+---
+
+## Command Reference
+
+| Command | Description |
+|---------|-------------|
+| `instructor:install` | Install and configure the package |
+| `instructor:test` | Test API configuration |
+| `make:response-model` | Generate a response model class |

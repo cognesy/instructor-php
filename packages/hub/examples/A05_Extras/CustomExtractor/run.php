@@ -25,7 +25,7 @@ Instructor provides these content extractors:
 ## Example: Custom XML Wrapper Extractor
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
@@ -159,7 +159,7 @@ The `ResponseExtractor` handles buffer creation internally, using a subset
 of extractors optimized for streaming (fast extractors by default).
 
 ```php
-<?php
+\<\?php
 // Custom extractors work for streaming too
 $stream = (new StructuredOutput)
     ->withResponseClass(Person::class)

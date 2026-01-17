@@ -10,7 +10,7 @@ Uncertainty-Routed Chain-of-Thought generates multiple chains (e.g., 8 or 32), t
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

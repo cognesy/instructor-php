@@ -10,7 +10,7 @@ Self-Verification generates multiple candidates via CoT, rewrites them as declar
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

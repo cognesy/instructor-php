@@ -23,7 +23,7 @@ Here's the image we're going to extract data from.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;

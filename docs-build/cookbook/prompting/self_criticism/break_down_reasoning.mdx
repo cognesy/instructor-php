@@ -10,7 +10,7 @@ Cumulative Reasoning separates reasoning into propose → verify → report for 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

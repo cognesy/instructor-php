@@ -10,7 +10,7 @@ Universal Self-Consistency uses a second LLM to judge the quality of multiple re
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

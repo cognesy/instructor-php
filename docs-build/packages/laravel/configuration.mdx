@@ -1,0 +1,276 @@
+# Configuration
+
+After publishing the configuration file, you'll find it at `config/instructor.php`.
+
+## Default Connection
+
+```php
+'default' => env('INSTRUCTOR_CONNECTION', 'openai'),
+// @doctest id="9a67"
+```
+
+Set the default LLM connection. Can be overridden at runtime with `->using('connection')`.
+
+## Connections
+
+Configure multiple LLM provider connections:
+
+```php
+'connections' => [
+    'openai' => [
+        'driver' => 'openai',
+        'api_url' => env('OPENAI_API_URL', 'https://api.openai.com/v1'),
+        'api_key' => env('OPENAI_API_KEY'),
+        'organization' => env('OPENAI_ORGANIZATION'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'max_tokens' => env('OPENAI_MAX_TOKENS', 4096),
+    ],
+
+    'anthropic' => [
+        'driver' => 'anthropic',
+        'api_url' => env('ANTHROPIC_API_URL', 'https://api.anthropic.com/v1'),
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+        'max_tokens' => env('ANTHROPIC_MAX_TOKENS', 4096),
+    ],
+
+    'azure' => [
+        'driver' => 'azure',
+        'api_key' => env('AZURE_OPENAI_API_KEY'),
+        'resource_name' => env('AZURE_OPENAI_RESOURCE'),
+        'deployment_id' => env('AZURE_OPENAI_DEPLOYMENT'),
+        'api_version' => env('AZURE_OPENAI_API_VERSION', '2024-08-01-preview'),
+        'model' => env('AZURE_OPENAI_MODEL', 'gpt-4o-mini'),
+        'max_tokens' => env('AZURE_OPENAI_MAX_TOKENS', 4096),
+    ],
+
+    'gemini' => [
+        'driver' => 'gemini',
+        'api_url' => env('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+        'max_tokens' => env('GEMINI_MAX_TOKENS', 4096),
+    ],
+
+    'ollama' => [
+        'driver' => 'ollama',
+        'api_url' => env('OLLAMA_API_URL', 'http://localhost:11434/v1'),
+        'api_key' => env('OLLAMA_API_KEY', 'ollama'),
+        'model' => env('OLLAMA_MODEL', 'llama3.2'),
+        'max_tokens' => env('OLLAMA_MAX_TOKENS', 4096),
+    ],
+],
+// @doctest id="9ad0"
+```
+
+### Supported Drivers
+
+| Driver | Provider | Description |
+|--------|----------|-------------|
+| `openai` | OpenAI | GPT-4, GPT-4o, GPT-4o-mini |
+| `anthropic` | Anthropic | Claude 3, Claude 3.5, Claude 4 |
+| `azure` | Azure OpenAI | Azure-hosted OpenAI models |
+| `gemini` | Google | Gemini 1.5, Gemini 2.0 |
+| `mistral` | Mistral AI | Mistral, Mixtral models |
+| `groq` | Groq | Fast inference with Llama, Mixtral |
+| `cohere` | Cohere | Command models |
+| `deepseek` | DeepSeek | DeepSeek models |
+| `ollama` | Ollama | Local open-source models |
+| `perplexity` | Perplexity | Perplexity models |
+
+### Adding a Custom Connection
+
+```php
+'connections' => [
+    // ... existing connections
+
+    'my-custom' => [
+        'driver' => 'openai', // Use OpenAI-compatible API
+        'api_url' => 'https://my-custom-api.com/v1',
+        'api_key' => env('MY_CUSTOM_API_KEY'),
+        'model' => 'custom-model',
+        'max_tokens' => 4096,
+    ],
+],
+// @doctest id="17f5"
+```
+
+## Embeddings Connections
+
+Configure embedding model connections:
+
+```php
+'embeddings' => [
+    'default' => env('INSTRUCTOR_EMBEDDINGS_CONNECTION', 'openai'),
+
+    'connections' => [
+        'openai' => [
+            'driver' => 'openai',
+            'api_url' => env('OPENAI_API_URL', 'https://api.openai.com/v1'),
+            'api_key' => env('OPENAI_API_KEY'),
+            'model' => env('OPENAI_EMBEDDINGS_MODEL', 'text-embedding-3-small'),
+            'dimensions' => env('OPENAI_EMBEDDINGS_DIMENSIONS', 1536),
+        ],
+
+        'ollama' => [
+            'driver' => 'ollama',
+            'api_url' => env('OLLAMA_API_URL', 'http://localhost:11434/v1'),
+            'api_key' => env('OLLAMA_API_KEY', 'ollama'),
+            'model' => env('OLLAMA_EMBEDDINGS_MODEL', 'nomic-embed-text'),
+            'dimensions' => env('OLLAMA_EMBEDDINGS_DIMENSIONS', 768),
+        ],
+    ],
+],
+// @doctest id="9729"
+```
+
+## Extraction Settings
+
+Configure structured output extraction defaults:
+
+```php
+'extraction' => [
+    // Output mode: json_schema, json, tools, md_json
+    'output_mode' => env('INSTRUCTOR_OUTPUT_MODE', 'json_schema'),
+
+    // Maximum retry attempts when validation fails
+    'max_retries' => env('INSTRUCTOR_MAX_RETRIES', 2),
+
+    // Prompt template for retry attempts
+    'retry_prompt' => 'The response did not pass validation. Please fix the following errors and try again: {errors}',
+],
+// @doctest id="2df7"
+```
+
+### Output Modes
+
+| Mode | Description | Best For |
+|------|-------------|----------|
+| `json_schema` | Uses JSON Schema for structured output | Most reliable, OpenAI recommended |
+| `json` | Simple JSON mode | Fallback for unsupported models |
+| `tools` | Uses tool/function calling | Alternative structured output |
+| `md_json` | Markdown-wrapped JSON | Gemini and other models |
+
+## HTTP Client Settings
+
+Configure the HTTP client:
+
+```php
+'http' => [
+    // Driver: 'laravel' uses Laravel's HTTP client (enables Http::fake())
+    'driver' => env('INSTRUCTOR_HTTP_DRIVER', 'laravel'),
+
+    // Request timeout in seconds
+    'timeout' => env('INSTRUCTOR_HTTP_TIMEOUT', 120),
+
+    // Connection timeout in seconds
+    'connect_timeout' => env('INSTRUCTOR_HTTP_CONNECT_TIMEOUT', 30),
+],
+// @doctest id="7d7f"
+```
+
+## Logging Settings
+
+Configure logging:
+
+```php
+'logging' => [
+    // Enable/disable logging
+    'enabled' => env('INSTRUCTOR_LOGGING_ENABLED', true),
+
+    // Log channel
+    'channel' => env('INSTRUCTOR_LOG_CHANNEL', 'stack'),
+
+    // Minimum log level
+    'level' => env('INSTRUCTOR_LOG_LEVEL', 'debug'),
+
+    // Logging preset: default, production, or custom
+    'preset' => env('INSTRUCTOR_LOGGING_PRESET', 'default'),
+
+    // Events to exclude from logging
+    'exclude_events' => [
+        // Cognesy\Http\Events\DebugRequestBodyUsed::class,
+    ],
+],
+// @doctest id="1aa4"
+```
+
+### Logging Presets
+
+| Preset | Description |
+|--------|-------------|
+| `default` | Full logging with request/response details |
+| `production` | Minimal logging, no sensitive data |
+| `custom` | Define your own pipeline |
+
+## Events Settings
+
+Configure event dispatching:
+
+```php
+'events' => [
+    // Bridge Instructor events to Laravel's event dispatcher
+    'dispatch_to_laravel' => env('INSTRUCTOR_DISPATCH_EVENTS', true),
+
+    // Specific events to bridge (empty = all events)
+    'bridge_events' => [
+        // \Cognesy\Instructor\Events\ExtractionComplete::class,
+    ],
+],
+// @doctest id="d0c6"
+```
+
+## Cache Settings
+
+Configure response caching:
+
+```php
+'cache' => [
+    // Enable response caching
+    'enabled' => env('INSTRUCTOR_CACHE_ENABLED', false),
+
+    // Cache store to use
+    'store' => env('INSTRUCTOR_CACHE_STORE'),
+
+    // Default TTL in seconds
+    'ttl' => env('INSTRUCTOR_CACHE_TTL', 3600),
+
+    // Cache key prefix
+    'prefix' => 'instructor',
+],
+// @doctest id="1f36"
+```
+
+## Environment Variables Reference
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `INSTRUCTOR_CONNECTION` | `openai` | Default LLM connection |
+| `INSTRUCTOR_OUTPUT_MODE` | `json_schema` | Output mode for extraction |
+| `INSTRUCTOR_MAX_RETRIES` | `2` | Max validation retry attempts |
+| `INSTRUCTOR_HTTP_DRIVER` | `laravel` | HTTP client driver |
+| `INSTRUCTOR_HTTP_TIMEOUT` | `120` | Request timeout (seconds) |
+| `INSTRUCTOR_LOGGING_ENABLED` | `true` | Enable logging |
+| `INSTRUCTOR_LOG_CHANNEL` | `stack` | Laravel log channel |
+| `INSTRUCTOR_DISPATCH_EVENTS` | `true` | Bridge events to Laravel |
+| `INSTRUCTOR_CACHE_ENABLED` | `false` | Enable response caching |
+| `OPENAI_API_KEY` | - | OpenAI API key |
+| `ANTHROPIC_API_KEY` | - | Anthropic API key |
+
+## Runtime Configuration
+
+Override configuration at runtime:
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+
+$result = StructuredOutput::using('anthropic')  // Switch connection
+    ->withModel('claude-3-opus-20240229')        // Override model
+    ->withMaxRetries(5)                          // Override retries
+    ->with(
+        messages: 'Extract data...',
+        responseModel: MyModel::class,
+    )
+    ->get();
+// @doctest id="11bc"
+```

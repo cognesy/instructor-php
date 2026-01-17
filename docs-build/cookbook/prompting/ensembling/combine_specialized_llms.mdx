@@ -10,7 +10,7 @@ Mixture of Reasoning Experts (MoRE) combines specialized experts (e.g., factual 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

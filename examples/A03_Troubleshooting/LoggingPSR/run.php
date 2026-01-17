@@ -11,7 +11,7 @@ Simple PSR-3 logging integration using Instructor's functional pipeline.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

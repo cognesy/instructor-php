@@ -12,7 +12,7 @@ offers you #[Assert/Callback] annotation to build fully customized validation lo
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

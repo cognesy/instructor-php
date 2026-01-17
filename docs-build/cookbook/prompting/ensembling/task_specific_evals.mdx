@@ -49,7 +49,7 @@ We bias this sampling towards samples that the model is more confident towards b
 
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -101,7 +101,7 @@ class USPClassification {
 
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 $examples = [
         "i do feel that running is a divine experience and

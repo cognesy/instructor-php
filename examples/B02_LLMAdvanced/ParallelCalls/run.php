@@ -8,7 +8,8 @@ path: ''
 
 Work in progress.
 
-<?php
+```php
+\<\?php
 echo "This example is not yet implemented.\n";
 ?>
-
+```

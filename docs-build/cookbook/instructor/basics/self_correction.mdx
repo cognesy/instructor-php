@@ -15,7 +15,7 @@ until results meet the requirements or maxRetries is reached.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;

@@ -10,7 +10,7 @@ Diverse verifier scoring aggregates quality over unique answers, improving over 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

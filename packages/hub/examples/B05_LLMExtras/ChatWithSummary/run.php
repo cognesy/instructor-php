@@ -10,7 +10,7 @@ docname: 'chat_with_summary'
 
 
 ```php
-<?php
+\<\?php
 
 require 'examples/boot.php';
 

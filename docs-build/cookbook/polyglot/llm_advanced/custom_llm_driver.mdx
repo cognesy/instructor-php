@@ -11,7 +11,7 @@ or overriding an existing driver bundled with Polyglot.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Config\Env;

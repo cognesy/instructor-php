@@ -12,7 +12,7 @@ better error handling without breaking the code flow.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Maybe\Maybe;

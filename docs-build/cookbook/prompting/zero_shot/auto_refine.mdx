@@ -18,7 +18,7 @@ We implement this in two steps:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;

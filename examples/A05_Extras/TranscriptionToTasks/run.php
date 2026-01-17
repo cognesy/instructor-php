@@ -10,7 +10,7 @@ This example demonstrates how you can create task assignments based on a transcr
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

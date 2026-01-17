@@ -19,7 +19,7 @@ is `1010` instead of `2010`) and respond with correct graduation year.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

@@ -10,7 +10,7 @@ Encouraging the model to examine each source in context helps mitigate irrelevan
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

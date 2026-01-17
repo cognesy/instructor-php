@@ -19,7 +19,7 @@ See more: [Manual Schema Building](../../../packages/instructor/docs/advanced/ma
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Utils\JsonSchema\JsonSchema;
@@ -108,7 +108,7 @@ print("- Reflection overhead is a concern\n");
 ## Advanced Example: Dynamic Schema
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 // Build schema dynamically based on user input

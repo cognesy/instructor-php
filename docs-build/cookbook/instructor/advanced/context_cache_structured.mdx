@@ -27,7 +27,7 @@ Let's start by defining the data model for the project details and the propertie
 that we want to extract or generate based on README file.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -59,7 +59,7 @@ We read the content of the README.md file and cache the context, so it can be re
 multiple requests.
 
 ```php
-<?php
+\<\?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
 $cached = (new StructuredOutput)->using('anthropic')->withCachedContext(
@@ -75,7 +75,7 @@ details from the README.md file into the `Project` data model.
 Let's start by asking the user to describe the project for a specific audience: P&C insurance CIOs.
 
 ```php
-<?php
+\<\?php
 // get StructuredOutputResponse object to get access to usage and other metadata
 $response1 = $cached->with(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
@@ -102,7 +102,7 @@ Anthropic API will use the context cached in the previous request to provide the
 which results in faster processing and lower costs.
 
 ```php
-<?php
+\<\?php
 // get StructuredOutputResponse object to get access to usage and other metadata
 $response2 = $cached->with(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",

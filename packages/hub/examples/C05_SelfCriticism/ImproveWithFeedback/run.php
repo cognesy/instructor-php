@@ -10,7 +10,7 @@ Self-Refine iteratively generates an answer, critiques it, and refines it until 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

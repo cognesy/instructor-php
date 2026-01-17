@@ -16,7 +16,7 @@ are objects during streaming, but the final value is returned as an array.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

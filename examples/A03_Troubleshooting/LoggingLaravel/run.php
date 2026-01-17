@@ -11,7 +11,7 @@ Laravel integration with Instructor's functional logging pipeline.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

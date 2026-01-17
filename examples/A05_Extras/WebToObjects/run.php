@@ -27,7 +27,7 @@ Commercial scrapers require API key, which can be set in the configuration file
 (`/config/web.php`).
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Auxiliary\Web\Webpage;

@@ -17,7 +17,7 @@ This is useful for debugging the request and response when you are not getting t
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

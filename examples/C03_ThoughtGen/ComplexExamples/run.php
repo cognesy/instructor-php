@@ -10,7 +10,7 @@ Choose more complex examples (longer reasoning or more steps) to improve model p
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

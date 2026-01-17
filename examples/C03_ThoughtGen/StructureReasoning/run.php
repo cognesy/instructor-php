@@ -12,7 +12,7 @@ We can implement this using Instructor with a response model ensuring we get exa
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

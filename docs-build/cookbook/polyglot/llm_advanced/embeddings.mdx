@@ -28,7 +28,7 @@ Pinecone, Weaviate, Milvus, etc.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Embeddings\Embeddings;

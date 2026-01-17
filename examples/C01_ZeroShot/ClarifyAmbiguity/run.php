@@ -27,7 +27,7 @@ This can also be implemented as two-step RaR:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

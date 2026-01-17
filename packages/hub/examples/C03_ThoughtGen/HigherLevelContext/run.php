@@ -9,7 +9,7 @@ How can we encourage an LLM to think through any high-level context required to 
 
 - Original Question: What happens to the pressure of an ideal gas when temperature and volume are increased?
 - Step-Back Question: What are the physics concepts associated with this question?
-- Reasoning Prompt: {step-back response} {original question}
+- Reasoning Prompt: `{step-back response} {original question}`
 
 Note that the step-back question is also generated using an LLM query.
 
@@ -156,7 +156,7 @@ Encourage the model to think through high-level context required to answer a que
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

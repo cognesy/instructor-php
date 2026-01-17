@@ -12,7 +12,7 @@ This feature is useful for debugging and understanding the reasoning behind the 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;

@@ -18,7 +18,7 @@ JSON Schema for them.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Dynamic\Field;

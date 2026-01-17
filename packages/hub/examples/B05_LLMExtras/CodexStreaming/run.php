@@ -12,7 +12,7 @@ on the agent's progress.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;

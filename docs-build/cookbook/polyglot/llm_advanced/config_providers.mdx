@@ -11,7 +11,7 @@ when you want to initialize LLM client with custom values.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Adbar\Dot;

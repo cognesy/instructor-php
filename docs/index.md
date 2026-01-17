@@ -1,4 +1,7 @@
-# Instructor for PHP
+---
+title: 'Instructor for PHP'
+---
+
 
 Instructor for PHP is a lightweight library that makes it easy to get structured outputs from Large Language Models (LLMs). Built on top of modern PHP 8.2+ features, it provides a simple, type-safe way to work with AI models.
 

@@ -32,7 +32,7 @@ if needed to answer simple math question. We provide 2 functions (`add_numbers` 
 The LLM is expected to call the functions in the correct order to get the final result.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;

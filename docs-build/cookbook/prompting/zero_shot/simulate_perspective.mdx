@@ -33,7 +33,7 @@ This is implemented in two steps. Given an entity:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;

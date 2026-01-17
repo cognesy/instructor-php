@@ -12,7 +12,7 @@ to a large language model (LLM) for various tasks, including search and text gen
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

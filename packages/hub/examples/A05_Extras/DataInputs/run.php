@@ -16,7 +16,7 @@ can be an object, but also an array or just a string.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

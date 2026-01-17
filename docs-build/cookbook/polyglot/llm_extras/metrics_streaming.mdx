@@ -11,7 +11,7 @@ stream duration, chunk count (streamed deltas), and average output tokens per se
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Events\Dispatchers\EventDispatcher;

@@ -12,7 +12,7 @@ simple prompts. The ClaudeCodeCli component provides a PHP API for invoking the
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;

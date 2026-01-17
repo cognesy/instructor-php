@@ -11,7 +11,7 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -37,7 +37,7 @@ Now we can use this data model to extract arbitrary properties from a text messa
 in a form that is easier for future processing.
 
 ```php
-<?php
+\<\?php
 $text = <<<TEXT
     Jason is 25 years old. He is a programmer. He has a car. He lives
     in a small house in Alamo. He likes to play guitar.

@@ -15,7 +15,7 @@ Supported modes:
 Here's how you can use Instructor with Gemini API.
 
 ```php
-<?php
+\<\?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;

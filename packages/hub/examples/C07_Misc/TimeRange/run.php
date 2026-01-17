@@ -11,7 +11,7 @@ example, the TimeRange component is used for both `$workTime` and `$leisureTime`
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

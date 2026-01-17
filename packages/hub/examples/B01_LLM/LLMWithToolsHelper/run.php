@@ -11,7 +11,7 @@ Polyglot has a built-in support for dynamically constructing tool calling schema
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

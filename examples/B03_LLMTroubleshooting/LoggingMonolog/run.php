@@ -11,7 +11,7 @@ Simple Inference operation logging using Monolog.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Logging\Filters\LogLevelFilter;

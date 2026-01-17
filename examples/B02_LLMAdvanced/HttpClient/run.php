@@ -8,7 +8,7 @@ docname: 'http_client'
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Http\HttpClient;

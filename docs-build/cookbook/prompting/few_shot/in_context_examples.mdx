@@ -17,7 +17,7 @@ We can implement SG-ICL using Instructor as seen below.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Example\Example;

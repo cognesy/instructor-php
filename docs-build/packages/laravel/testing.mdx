@@ -1,0 +1,647 @@
+# Testing
+
+The package provides testing fakes that allow you to mock LLM responses and make assertions about how your code interacts with the facades.
+
+## StructuredOutput::fake()
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\StructuredOutput;
+use App\ResponseModels\PersonData;
+use Tests\TestCase;
+
+class PersonExtractionTest extends TestCase
+{
+    public function test_extracts_person_data(): void
+    {
+        // Arrange - Setup the fake with expected response
+        $fake = StructuredOutput::fake([
+            PersonData::class => new PersonData(
+                name: 'John Smith',
+                age: 30,
+                email: 'john@example.com',
+            ),
+        ]);
+
+        // Act - Your code calls StructuredOutput
+        $person = StructuredOutput::with(
+            messages: 'John Smith is 30 years old',
+            responseModel: PersonData::class,
+        )->get();
+
+        // Assert - Verify the result
+        $this->assertEquals('John Smith', $person->name);
+        $this->assertEquals(30, $person->age);
+
+        // Assert that extraction was performed
+        $fake->assertExtracted(PersonData::class);
+    }
+}
+// @doctest id="9021"
+```
+
+### Response Mapping
+
+Map response model classes to their fake responses:
+
+```php
+$fake = StructuredOutput::fake([
+    PersonData::class => new PersonData(name: 'John', age: 30),
+    AddressData::class => new AddressData(city: 'New York'),
+    OrderData::class => new OrderData(total: 99.99),
+]);
+
+// Each class returns its mapped response
+$person = StructuredOutput::with(..., responseModel: PersonData::class)->get();
+$address = StructuredOutput::with(..., responseModel: AddressData::class)->get();
+// @doctest id="581e"
+```
+
+### Response Sequences
+
+Return different responses for sequential calls:
+
+```php
+$fake = StructuredOutput::fake();
+
+$fake->respondWithSequence(PersonData::class, [
+    new PersonData(name: 'First Person', age: 25),
+    new PersonData(name: 'Second Person', age: 30),
+    new PersonData(name: 'Third Person', age: 35),
+]);
+
+// First call
+$first = StructuredOutput::with(...)->get();  // First Person
+
+// Second call
+$second = StructuredOutput::with(...)->get(); // Second Person
+
+// Third call
+$third = StructuredOutput::with(...)->get();  // Third Person
+// @doctest id="e40f"
+```
+
+### Available Assertions
+
+```php
+$fake = StructuredOutput::fake([...]);
+
+// Run your code...
+
+// Assert extraction was called for a class
+$fake->assertExtracted(PersonData::class);
+
+// Assert extraction count
+$fake->assertExtractedTimes(PersonData::class, 1);
+$fake->assertExtractedTimes(PersonData::class, 3);
+
+// Assert no extractions were performed
+$fake->assertNothingExtracted();
+
+// Assert messages contained specific text
+$fake->assertExtractedWith(PersonData::class, 'John Smith');
+
+// Assert preset was used
+$fake->assertUsedPreset('anthropic');
+
+// Assert model was used
+$fake->assertUsedModel('gpt-4o');
+// @doctest id="01e6"
+```
+
+### Accessing Recorded Calls
+
+```php
+$fake = StructuredOutput::fake([...]);
+
+// Run your code...
+
+// Get all recorded extractions
+$recorded = $fake->recorded();
+
+foreach ($recorded as $extraction) {
+    echo "Class: " . $extraction['class'];
+    echo "Messages: " . json_encode($extraction['messages']);
+    echo "Model: " . $extraction['model'];
+    echo "Preset: " . $extraction['preset'];
+}
+// @doctest id="f53c"
+```
+
+---
+
+## Inference::fake()
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\Inference;
+
+public function test_calls_inference(): void
+{
+    // Arrange
+    $fake = Inference::fake([
+        'What is 2+2?' => 'The answer is 4.',
+        'default' => 'I don\'t know.',
+    ]);
+
+    // Act
+    $response = Inference::with(
+        messages: 'What is 2+2?',
+    )->get();
+
+    // Assert
+    $this->assertEquals('The answer is 4.', $response);
+    $fake->assertCalled();
+    $fake->assertCalledWith('What is 2+2?');
+}
+// @doctest id="7a92"
+```
+
+### Pattern Matching
+
+Responses are matched by pattern:
+
+```php
+$fake = Inference::fake([
+    'capital' => 'Paris is the capital of France.',
+    'weather' => 'The weather is sunny.',
+    'default' => 'I don\'t understand.',
+]);
+
+// Matches 'capital'
+$response1 = Inference::with(messages: 'What is the capital of France?')->get();
+
+// Matches 'weather'
+$response2 = Inference::with(messages: 'How is the weather today?')->get();
+
+// No match, uses 'default'
+$response3 = Inference::with(messages: 'Random question')->get();
+// @doctest id="c983"
+```
+
+### Response Sequences
+
+```php
+$fake = Inference::fake();
+
+$fake->respondWithSequence([
+    'First response',
+    'Second response',
+    'Third response',
+]);
+
+// Returns responses in order
+$first = Inference::with(...)->get();  // "First response"
+$second = Inference::with(...)->get(); // "Second response"
+// @doctest id="9c09"
+```
+
+### Available Assertions
+
+```php
+$fake = Inference::fake([...]);
+
+// Assert inference was called
+$fake->assertCalled();
+
+// Assert call count
+$fake->assertCalledTimes(3);
+
+// Assert never called
+$fake->assertNotCalled();
+
+// Assert called with specific message
+$fake->assertCalledWith('What is the capital');
+
+// Assert preset was used
+$fake->assertUsedPreset('groq');
+
+// Assert model was used
+$fake->assertUsedModel('llama-3.3-70b');
+
+// Assert called with specific tools
+$fake->assertCalledWithTools(['search', 'calculate']);
+// @doctest id="8c99"
+```
+
+---
+
+## Embeddings::fake()
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\Embeddings;
+
+public function test_generates_embeddings(): void
+{
+    // Arrange
+    $fake = Embeddings::fake([
+        'hello' => [0.1, 0.2, 0.3, 0.4, 0.5],
+    ]);
+
+    // Act
+    $embedding = Embeddings::withInputs('hello world')->first();
+
+    // Assert
+    $this->assertIsArray($embedding);
+    $fake->assertCalled();
+    $fake->assertCalledWith('hello world');
+}
+// @doctest id="9568"
+```
+
+### Default Embeddings
+
+If no pattern matches, a random normalized embedding is generated:
+
+```php
+$fake = Embeddings::fake();
+
+// Returns random 1536-dimensional embedding
+$embedding = Embeddings::withInputs('anything')->first();
+
+$this->assertCount(1536, $embedding);
+// @doctest id="c51f"
+```
+
+### Custom Dimensions
+
+```php
+$fake = Embeddings::fake()
+    ->withDimensions(768); // Use 768 dimensions
+
+$embedding = Embeddings::withInputs('test')->first();
+$this->assertCount(768, $embedding);
+// @doctest id="f7dc"
+```
+
+### Available Assertions
+
+```php
+$fake = Embeddings::fake([...]);
+
+// Assert embeddings were called
+$fake->assertCalled();
+
+// Assert call count
+$fake->assertCalledTimes(2);
+
+// Assert never called
+$fake->assertNotCalled();
+
+// Assert called with specific input
+$fake->assertCalledWith('hello world');
+
+// Assert preset was used
+$fake->assertUsedPreset('openai');
+
+// Assert model was used
+$fake->assertUsedModel('text-embedding-3-large');
+// @doctest id="f805"
+```
+
+---
+
+## AgentCtrl::fake()
+
+### Basic Usage
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+public function test_generates_code(): void
+{
+    // Arrange - Setup fake with expected responses
+    $fake = AgentCtrl::fake([
+        'Generated migration file: 2024_01_01_create_users_table.php',
+    ]);
+
+    // Act - Your code calls AgentCtrl
+    $result = AgentCtrl::claudeCode()
+        ->execute('Generate a users table migration');
+
+    // Assert
+    $this->assertEquals(0, $result->exitCode);
+    $this->assertStringContains('migration', $result->text());
+
+    $fake->assertExecuted();
+    $fake->assertExecutedWith('migration');
+}
+// @doctest id="33f5"
+```
+
+### Response Sequences
+
+Return different responses for sequential calls:
+
+```php
+$fake = AgentCtrl::fake([
+    'First response',
+    'Second response',
+    'Third response',
+]);
+
+$first = AgentCtrl::claudeCode()->execute('First');   // "First response"
+$second = AgentCtrl::claudeCode()->execute('Second'); // "Second response"
+$third = AgentCtrl::claudeCode()->execute('Third');   // "Third response"
+
+$fake->assertExecutedTimes(3);
+// @doctest id="23a7"
+```
+
+### Custom Responses
+
+Create detailed fake responses with metadata:
+
+```php
+use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
+
+$customResponse = AgentCtrlFake::response(
+    text: 'Generated code output',
+    exitCode: 0,
+    agentType: AgentType::ClaudeCode,
+    cost: 0.05,
+);
+
+$fake = AgentCtrl::fake([$customResponse]);
+
+$response = AgentCtrl::claudeCode()->execute('Test');
+
+expect($response->cost)->toBe(0.05);
+expect($response->agentType)->toBe(AgentType::ClaudeCode);
+// @doctest id="a1c1"
+```
+
+### Fake Tool Calls
+
+```php
+use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
+
+$responseWithTools = AgentCtrlFake::response(
+    text: 'Created file',
+    toolCalls: [
+        AgentCtrlFake::toolCall(
+            tool: 'write_file',
+            input: ['path' => 'app/Models/User.php'],
+            output: 'File created successfully',
+        ),
+        AgentCtrlFake::toolCall(
+            tool: 'run_tests',
+            input: ['path' => 'tests/'],
+            output: 'All tests passed',
+        ),
+    ],
+);
+
+$fake = AgentCtrl::fake([$responseWithTools]);
+
+$response = AgentCtrl::claudeCode()->execute('...');
+
+expect($response->toolCalls)->toHaveCount(2);
+expect($response->toolCalls[0]->tool)->toBe('write_file');
+// @doctest id="32da"
+```
+
+### Available Assertions
+
+```php
+$fake = AgentCtrl::fake([...]);
+
+// Run your code...
+
+// Assert execution occurred
+$fake->assertExecuted();
+$fake->assertNotExecuted();
+$fake->assertExecutedTimes(3);
+
+// Assert prompt content
+$fake->assertExecutedWith('Generate a migration');
+
+// Assert agent type
+$fake->assertAgentType(AgentType::ClaudeCode);
+$fake->assertUsedClaudeCode();
+$fake->assertUsedCodex();
+$fake->assertUsedOpenCode();
+
+// Assert streaming was used
+$fake->assertStreaming();
+
+// Access recorded executions
+$executions = $fake->getExecutions();
+foreach ($executions as $exec) {
+    echo $exec['prompt'];
+    echo $exec['agentType']->name;
+    echo $exec['model'];
+    echo $exec['timeout'];
+    echo $exec['directory'];
+    echo $exec['streaming'] ? 'yes' : 'no';
+}
+
+// Reset fake state
+$fake->reset();
+// @doctest id="5a18"
+```
+
+### Testing Agent Services
+
+```php
+use Cognesy\Instructor\Laravel\Facades\AgentCtrl;
+
+class CodeGeneratorService
+{
+    public function generateMigration(array $schema): string
+    {
+        $response = AgentCtrl::claudeCode()
+            ->inDirectory(database_path('migrations'))
+            ->execute("Generate migration for: " . json_encode($schema));
+
+        if (!$response->isSuccess()) {
+            throw new \RuntimeException('Code generation failed');
+        }
+
+        return $response->text();
+    }
+}
+
+// Test
+public function test_generates_migration(): void
+{
+    $fake = AgentCtrl::fake([
+        'Migration created successfully',
+    ]);
+
+    $service = app(CodeGeneratorService::class);
+    $result = $service->generateMigration(['table' => 'users']);
+
+    $this->assertStringContains('Migration', $result);
+    $fake->assertUsedClaudeCode();
+    $fake->assertExecutedWith('users');
+}
+// @doctest id="a2aa"
+```
+
+---
+
+## HTTP Client Faking
+
+Since the package uses Laravel's HTTP client, you can also use `Http::fake()`:
+
+```php
+use Illuminate\Support\Facades\Http;
+
+public function test_with_http_fake(): void
+{
+    Http::fake([
+        'api.openai.com/*' => Http::response([
+            'choices' => [
+                [
+                    'message' => [
+                        'content' => '{"name":"John","age":30}',
+                    ],
+                ],
+            ],
+        ]),
+    ]);
+
+    // Your StructuredOutput calls will use the fake HTTP response
+    $person = StructuredOutput::with(...)->get();
+
+    Http::assertSent(function ($request) {
+        return $request->url() === 'https://api.openai.com/v1/chat/completions';
+    });
+}
+// @doctest id="7f7d"
+```
+
+---
+
+## Testing Services
+
+When testing services that use Instructor, prefer dependency injection:
+
+```php
+use Cognesy\Instructor\StructuredOutput;
+
+class PersonExtractor
+{
+    public function __construct(
+        private StructuredOutput $structuredOutput,
+    ) {}
+
+    public function extract(string $text): PersonData
+    {
+        return $this->structuredOutput
+            ->with(messages: $text, responseModel: PersonData::class)
+            ->get();
+    }
+}
+
+// In your test
+public function test_extracts_person(): void
+{
+    $fake = StructuredOutput::fake([
+        PersonData::class => new PersonData(name: 'John', age: 30),
+    ]);
+
+    // The container will resolve the fake
+    $extractor = app(PersonExtractor::class);
+    $person = $extractor->extract('Some text');
+
+    $this->assertEquals('John', $person->name);
+}
+// @doctest id="14aa"
+```
+
+---
+
+## Best Practices
+
+### 1. Always Setup Fakes First
+
+```php
+public function test_example(): void
+{
+    // FIRST: Setup fake
+    $fake = StructuredOutput::fake([...]);
+
+    // THEN: Run your code
+    $result = $this->service->process();
+
+    // FINALLY: Assert
+    $fake->assertExtracted(...);
+}
+// @doctest id="40a2"
+```
+
+### 2. Use Realistic Test Data
+
+```php
+// Good - realistic data
+$fake = StructuredOutput::fake([
+    InvoiceData::class => new InvoiceData(
+        invoiceNumber: 'INV-2024-001',
+        amount: 1234.56,
+        dueDate: '2024-12-31',
+    ),
+]);
+
+// Avoid - placeholder data
+$fake = StructuredOutput::fake([
+    InvoiceData::class => new InvoiceData(
+        invoiceNumber: 'test',
+        amount: 0,
+        dueDate: '',
+    ),
+]);
+// @doctest id="7b03"
+```
+
+### 3. Test Edge Cases
+
+```php
+public function test_handles_empty_response(): void
+{
+    $fake = StructuredOutput::fake([
+        ItemList::class => new ItemList(items: []),
+    ]);
+
+    $result = $this->service->getItems();
+
+    $this->assertEmpty($result->items);
+}
+
+public function test_handles_null_optional_fields(): void
+{
+    $fake = StructuredOutput::fake([
+        PersonData::class => new PersonData(
+            name: 'John',
+            age: 30,
+            email: null, // Optional field
+        ),
+    ]);
+
+    $person = $this->service->getPerson();
+
+    $this->assertNull($person->email);
+}
+// @doctest id="137e"
+```
+
+### 4. Verify Assertions
+
+```php
+public function test_uses_correct_model(): void
+{
+    $fake = StructuredOutput::fake([...]);
+
+    $this->service->processWithClaude();
+
+    $fake->assertUsedPreset('anthropic');
+    $fake->assertUsedModel('claude-3-5-sonnet-20241022');
+}
+// @doctest id="5574"
+```

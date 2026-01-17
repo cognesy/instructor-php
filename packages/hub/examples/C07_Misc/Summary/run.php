@@ -10,7 +10,7 @@ This is an example of a simple summarization with keyword extraction.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

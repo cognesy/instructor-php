@@ -48,7 +48,7 @@ Social-cognitive theory:
 Here is how the results of the research can be applied to your code.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;

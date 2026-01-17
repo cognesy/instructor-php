@@ -17,7 +17,7 @@ Key concepts:
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;

@@ -22,7 +22,7 @@ A common critical thinking prompt is: "Let's think step by step."
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

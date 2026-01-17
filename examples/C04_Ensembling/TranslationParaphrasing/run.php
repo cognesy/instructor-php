@@ -10,7 +10,7 @@ Back-translation can produce diverse paraphrases: translate to another language 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

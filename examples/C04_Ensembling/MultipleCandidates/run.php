@@ -10,7 +10,7 @@ Generate multiple candidate responses and pick the most common answer (Self-Cons
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

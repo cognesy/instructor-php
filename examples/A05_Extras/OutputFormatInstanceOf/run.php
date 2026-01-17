@@ -19,7 +19,7 @@ deserialization while keeping the original class for schema generation.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

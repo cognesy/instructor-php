@@ -12,7 +12,7 @@ to achieve using traditional, code-based validation.
 
 ## Example
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Events\Event;

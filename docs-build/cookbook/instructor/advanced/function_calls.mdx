@@ -15,7 +15,7 @@ chatbots or agents.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\FunctionCall\FunctionCallFactory;

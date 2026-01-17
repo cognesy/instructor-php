@@ -13,7 +13,7 @@ be sent as part of the message content to the LLM.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Messages\Content;
@@ -36,3 +36,4 @@ $response = (new Inference)
     ->get();
 
 echo "Response: " . $response . "\n";
+```

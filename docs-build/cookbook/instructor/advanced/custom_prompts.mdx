@@ -15,7 +15,7 @@ customize how LLM is instructed to process the input.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;

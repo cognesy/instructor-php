@@ -17,7 +17,7 @@ a JSON containing arguments for a function call. This way we can make the
 model generate a JSON object with specific structure of parameters.
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

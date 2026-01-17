@@ -10,7 +10,7 @@ We want models to assess confidence in their own answers. Self-Calibration asks 
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

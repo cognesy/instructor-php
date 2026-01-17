@@ -15,7 +15,7 @@ is expected to be a JSON object.
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;

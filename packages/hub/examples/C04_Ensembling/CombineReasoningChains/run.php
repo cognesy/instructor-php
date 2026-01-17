@@ -10,7 +10,7 @@ Meta Chain-of-Thought (Meta-CoT) decomposes a query into sub-queries, solves eac
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;

@@ -26,7 +26,7 @@ It also specifies the default provider and parameters to be used when calling In
 ## Example
 
 ```php
-<?php
+\<\?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
