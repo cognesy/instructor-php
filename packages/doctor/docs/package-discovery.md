@@ -9,8 +9,9 @@ The documentation system automatically discovers and includes documentation from
 
 1. **Scan** - The system scans `packages/` for subdirectories
 2. **Check** - Each package is checked for a `docs/` subdirectory
-3. **Include** - Packages with `docs/` are included in the generated documentation
-4. **Build** - Navigation is built from the directory structure
+3. **Filter** - Internal packages (listed in `config/docs.yaml`) are excluded
+4. **Include** - Remaining packages are included in the generated documentation
+5. **Build** - Navigation is built from the directory structure
 
 ## Directory Structure
 
@@ -89,6 +90,28 @@ packages:
 ```
 
 This would output `http-client` docs to `packages/http/` instead of `packages/http-client/`.
+
+### Internal Packages
+
+Some packages are internal and should not be included in public documentation. Mark them in `config/docs.yaml`:
+
+```yaml
+packages:
+  internal:
+    - doctor
+    - hub
+    - tell
+```
+
+Internal packages:
+- Are excluded from MkDocs and Mintlify documentation generation
+- Will not appear in the packages listing page
+- Can still have a `docs/` directory for internal reference
+
+Use this for:
+- Development tools (`doctor`)
+- Internal utilities (`hub`, `tell`)
+- Packages not ready for public documentation
 
 ## Adding a New Package
 

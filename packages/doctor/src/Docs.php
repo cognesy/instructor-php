@@ -9,6 +9,7 @@ use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
 use Cognesy\Doctor\Docgen\Commands\ClearMintlifyDocsCommand;
 use Cognesy\Doctor\Docgen\Commands\ClearMkDocsCommand;
 use Cognesy\Doctor\Docgen\Commands\GenerateExamplesCommand;
+use Cognesy\Doctor\Docgen\Commands\GenerateLlmsCommand;
 use Cognesy\Doctor\Docgen\Commands\GenerateMintlifyCommand;
 use Cognesy\Doctor\Docgen\Commands\GenerateMkDocsCommand;
 use Cognesy\Doctor\Docgen\Commands\GeneratePackagesCommand;
@@ -172,6 +173,10 @@ class Docs extends Application
                 $this->dynamicGroups
             ),
             new ClearMkDocsCommand($this->mkDocsGen),
+            new GenerateLlmsCommand(
+                $this->examples,
+                $this->mkdocsTargetDir,
+            ),
             new MarkSnippets(
                 $this->docRepository,
             ),

@@ -17,6 +17,7 @@ readonly class DocsConfig
         public array $packageDescriptions,
         public array $packageTargetDirs,
         public array $packageOrder,
+        public array $packageInternal,
         // Examples section
         public string $examplesSource,
         public array $examplesIntroPages,
@@ -27,6 +28,14 @@ readonly class DocsConfig
         public string $mintlifySourceIndex,
         public string $mkdocsTarget,
         public string $mkdocsTemplate,
+        // LLMs documentation
+        public bool $llmsEnabled = true,
+        public string $llmsIndexFile = 'llms.txt',
+        public string $llmsFullFile = 'llms-full.txt',
+        public array $llmsExcludeSections = ['release-notes/'],
+        public string $llmsDeployTarget = '',
+        public string $llmsDeployDocsFolder = 'docs',
+        public string $llmsProjectDescription = 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
     ) {}
 
     /**
@@ -60,6 +69,7 @@ readonly class DocsConfig
             packageDescriptions: $config['packages']['descriptions'] ?? [],
             packageTargetDirs: $config['packages']['target_dirs'] ?? [],
             packageOrder: $config['packages']['order'] ?? [],
+            packageInternal: $config['packages']['internal'] ?? [],
             // Examples section
             examplesSource: $config['examples']['source'] ?? './examples',
             examplesIntroPages: $config['examples']['intro_pages'] ?? [],
@@ -70,6 +80,14 @@ readonly class DocsConfig
             mintlifySourceIndex: $config['output']['mintlify']['source_index'] ?? './docs/mint.json',
             mkdocsTarget: $config['output']['mkdocs']['target'] ?? './docs-mkdocs',
             mkdocsTemplate: $config['output']['mkdocs']['template'] ?? './docs/mkdocs.yml.template',
+            // LLMs documentation
+            llmsEnabled: $config['llms']['enabled'] ?? true,
+            llmsIndexFile: $config['llms']['index_file'] ?? 'llms.txt',
+            llmsFullFile: $config['llms']['full_file'] ?? 'llms-full.txt',
+            llmsExcludeSections: $config['llms']['exclude_sections'] ?? ['release-notes/'],
+            llmsDeployTarget: $config['llms']['deploy']['target'] ?? '',
+            llmsDeployDocsFolder: $config['llms']['deploy']['docs_folder'] ?? 'docs',
+            llmsProjectDescription: $config['llms']['project_description'] ?? 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
         );
     }
 
@@ -86,6 +104,7 @@ readonly class DocsConfig
             packageDescriptions: [],
             packageTargetDirs: [],
             packageOrder: [],
+            packageInternal: [],
             examplesSource: './examples',
             examplesIntroPages: [],
             changelogSource: './docs/release-notes',
@@ -93,6 +112,13 @@ readonly class DocsConfig
             mintlifySourceIndex: './docs/mint.json',
             mkdocsTarget: './docs-mkdocs',
             mkdocsTemplate: './docs/mkdocs.yml.template',
+            llmsEnabled: true,
+            llmsIndexFile: 'llms.txt',
+            llmsFullFile: 'llms-full.txt',
+            llmsExcludeSections: ['release-notes/'],
+            llmsDeployTarget: '',
+            llmsDeployDocsFolder: 'docs',
+            llmsProjectDescription: 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.',
         );
     }
 }

@@ -11,6 +11,7 @@ Doctor is an internal package that handles documentation generation for the Inst
 - **Package autodiscovery** - Automatically discovers and includes documentation from `packages/*/docs/`
 - **Metadata-driven navigation** - Control navigation order via `_meta.yaml` files or front matter
 - **Example integration** - Automatically includes cookbook examples with code inlining
+- **LLM-optimized output** - Generate `llms.txt` and `llms-full.txt` for AI consumption
 
 ## Commands
 
@@ -23,8 +24,14 @@ composer docs gen:mintlify
 # Generate MkDocs documentation
 composer docs gen:mkdocs
 
-# Generate both
-composer docs gen:all
+# Generate MkDocs + LLM docs together
+composer docs gen:mkdocs --with-llms
+
+# Generate LLM-friendly documentation
+composer docs gen:llms
+
+# Generate and deploy LLM docs to website
+composer docs gen:llms --deploy
 ```
 
 ## Documentation Structure
@@ -50,5 +57,6 @@ examples/                # Cookbook examples
 
 ## Topics
 
+- [LLM Documentation](llm-docs.md) - Generate LLM-friendly documentation (llms.txt)
 - [Navigation Ordering](navigation-ordering.md) - Control documentation structure with metadata
 - [Package Discovery](package-discovery.md) - How packages are autodiscovered

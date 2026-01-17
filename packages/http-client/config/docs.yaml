@@ -28,6 +28,11 @@ packages:
     - polyglot
     - http-client
     - laravel
+  # Internal packages (excluded from public docs for Mkdocs and Mintlify)
+  internal:
+    - doctor
+    - hub
+    - tell
 
 # Examples / Cookbook
 examples:
@@ -48,3 +53,21 @@ output:
   mkdocs:
     target: './docs-mkdocs'
     template: './docs/mkdocs.yml.template'
+
+# LLM-friendly documentation (llms.txt standard)
+llms:
+  enabled: true
+  # Output filenames
+  index_file: 'llms.txt'
+  full_file: 'llms-full.txt'
+  # Project description for LLM docs header
+  project_description: 'Structured data extraction in PHP, powered by LLMs. Define a PHP class, get a validated object back.'
+  # Sections to exclude from llms-full.txt (to save tokens)
+  exclude_sections:
+    - 'release-notes/'
+  # Deployment to website
+  deploy:
+    # Target directory (empty = no deployment, relative to project root)
+    target: '../instructor-www/public'
+    # Subfolder for full docs (llms.txt goes to target root)
+    docs_folder: 'docs'

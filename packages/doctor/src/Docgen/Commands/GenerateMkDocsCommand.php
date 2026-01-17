@@ -2,8 +2,12 @@
 
 namespace Cognesy\Doctor\Docgen\Commands;
 
+use Cognesy\Doctor\Docgen\Data\DocsConfig;
 use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
+use Cognesy\Doctor\Docgen\LlmsDocsGenerator;
 use Cognesy\Doctor\Docgen\MkDocsDocumentation;
+use Cognesy\Doctor\Docgen\NavigationBuilder;
+use Cognesy\Doctor\Docgen\PackageDiscovery;
 use Cognesy\Doctor\Docgen\Views\MkDocsGenerationView;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Services\ExampleRepository;
@@ -45,6 +49,12 @@ class GenerateMkDocsCommand extends Command
                 'e',
                 InputOption::VALUE_NONE,
                 'Generate only example documentation'
+            )
+            ->addOption(
+                'with-llms',
+                'l',
+                InputOption::VALUE_NONE,
+                'Also generate LLM-friendly documentation (llms.txt, llms-full.txt)'
             );
     }
 
@@ -52,9 +62,10 @@ class GenerateMkDocsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         $view = new MkDocsGenerationView();
-        
-        $packagesOnly = $input->getOption('packages-only');
-        $examplesOnly = $input->getOption('examples-only');
+
+        $packagesOnly = (bool) $input->getOption('packages-only');
+        $examplesOnly = (bool) $input->getOption('examples-only');
+        $withLlms = (bool) $input->getOption('with-llms');
 
         $view->renderStart();
 
@@ -80,13 +91,107 @@ class GenerateMkDocsCommand extends Command
         }
 
         $view->renderFinalResult($result);
-        
+
         if (!$result->isSuccess()) {
             return Command::FAILURE;
         }
 
+        // Generate LLM docs if requested
+        if ($withLlms) {
+            $this->generateLlmsDocs();
+        }
+
         $this->renderSuccess($result, microtime(true) - $timeStart);
         return Command::SUCCESS;
+    }
+
+    private function generateLlmsDocs(): void
+    {
+        $docsConfig = DocsConfig::fromFile();
+
+        if (!$docsConfig->llmsEnabled) {
+            return;
+        }
+
+        Cli::out('');
+        Cli::outln('Generating LLM documentation...', [Color::BOLD, Color::CYAN]);
+
+        $packageDiscovery = new PackageDiscovery(
+            packagesDir: 'packages',
+            descriptions: $docsConfig->packageDescriptions,
+            targetDirs: $docsConfig->packageTargetDirs,
+        );
+
+        $navBuilder = new NavigationBuilder(
+            config: $docsConfig,
+            targetDir: $this->docsTargetDir,
+            format: 'mkdocs',
+        );
+
+        // Build navigation
+        $packages = $packageDiscovery->discover();
+        $exampleGroups = $this->examples->getExampleGroups();
+        $releaseNotes = $this->scanReleaseNotes();
+        $navigation = $navBuilder->buildMkDocsNav($packages, $exampleGroups, $releaseNotes);
+
+        // Generate files
+        $generator = new LlmsDocsGenerator(
+            projectName: $docsConfig->mainTitle,
+            projectDescription: $docsConfig->llmsProjectDescription,
+        );
+
+        Cli::out('  Generating ' . $docsConfig->llmsIndexFile . '... ', [Color::DARK_GRAY]);
+        $indexPath = $this->docsTargetDir . '/' . $docsConfig->llmsIndexFile;
+        $indexResult = $generator->generateIndex($navigation, $indexPath);
+        if ($indexResult->isSuccess()) {
+            Cli::outln($indexResult->message, [Color::GREEN]);
+        } else {
+            Cli::outln('failed', [Color::RED]);
+        }
+
+        Cli::out('  Generating ' . $docsConfig->llmsFullFile . '... ', [Color::DARK_GRAY]);
+        $fullPath = $this->docsTargetDir . '/' . $docsConfig->llmsFullFile;
+        $fullResult = $generator->generateFull(
+            $navigation,
+            $this->docsTargetDir,
+            $fullPath,
+            $docsConfig->llmsExcludeSections,
+        );
+        if ($fullResult->isSuccess()) {
+            Cli::outln($fullResult->message, [Color::GREEN]);
+        } else {
+            Cli::outln('failed', [Color::RED]);
+        }
+    }
+
+    private function scanReleaseNotes(): array
+    {
+        $releaseNotesDir = $this->docsTargetDir . '/release-notes';
+        if (!is_dir($releaseNotesDir)) {
+            return [];
+        }
+
+        $files = glob($releaseNotesDir . '/*.md') ?: [];
+        $versions = [];
+
+        foreach ($files as $file) {
+            $filename = basename($file, '.md');
+            if ($filename === 'versions') {
+                continue;
+            }
+
+            if (preg_match('/^v(.+)$/', $filename, $matches)) {
+                $versions[] = [
+                    'version' => $matches[1],
+                    'filename' => $filename,
+                    'path' => 'release-notes/' . $filename . '.md'
+                ];
+            }
+        }
+
+        usort($versions, fn($a, $b) => version_compare($b['version'], $a['version']));
+
+        return $versions;
     }
 
     private function generateAll(MkDocsDocumentation $documentation, MkDocsGenerationView $view) {

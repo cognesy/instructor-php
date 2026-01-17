@@ -402,3 +402,6 @@ extra:
       link: https://twitter.com/ddebowczyk
     - icon: fontawesome/brands/github
       link: https://github.com/cognesy
+
+extra_css:
+  - stylesheets/nav.css

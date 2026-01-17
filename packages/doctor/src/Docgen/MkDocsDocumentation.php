@@ -28,6 +28,7 @@ class MkDocsDocumentation
             packagesDir: 'packages',
             descriptions: $this->docsConfig->packageDescriptions,
             targetDirs: $this->docsConfig->packageTargetDirs,
+            internal: $this->docsConfig->packageInternal,
         );
         $this->packageBuilder = new PackageDocsBuilder(
             targetBaseDir: $this->docsConfig->mkdocsTarget,

@@ -32,6 +32,7 @@ class MintlifyDocumentation
             packagesDir: 'packages',
             descriptions: $this->docsConfig->packageDescriptions,
             targetDirs: $this->docsConfig->packageTargetDirs,
+            internal: $this->docsConfig->packageInternal,
         );
         $this->packageBuilder = new PackageDocsBuilder(
             targetBaseDir: $this->docsConfig->mintlifyTarget,
@@ -442,11 +443,11 @@ class MintlifyDocumentation
         $order = $this->docsConfig->packageOrder;
 
         usort($packages, function ($a, $b) use ($order) {
-            $aIndex = array_search($a->name, $order);
-            $bIndex = array_search($b->name, $order);
+            $aIndex = array_search($a->name, $order, true);
+            $bIndex = array_search($b->name, $order, true);
 
             if ($aIndex !== false && $bIndex !== false) {
-                return $aIndex - $bIndex;
+                return (int) $aIndex - (int) $bIndex;
             }
             if ($aIndex !== false) {
                 return -1;

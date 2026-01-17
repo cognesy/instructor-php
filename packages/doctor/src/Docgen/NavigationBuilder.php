@@ -21,7 +21,7 @@ class NavigationBuilder
     public function __construct(
         private DocsConfig $config,
         private string $targetDir,
-        private string $format = 'mkdocs', // 'mkdocs' or 'mintlify'
+        string $format = 'mkdocs', // 'mkdocs' or 'mintlify' (reserved for future use)
     ) {
         $this->metadata = new DocsMetadata();
     }
@@ -200,7 +200,8 @@ class NavigationBuilder
                 }
             }
             if (!empty($groupNav)) {
-                $nav[] = [$group->name => $groupNav];
+                $groupTitle = $group->title ?: $this->formatTitle($group->name);
+                $nav[] = [$groupTitle => $groupNav];
             }
         }
 
@@ -238,12 +239,12 @@ class NavigationBuilder
         $order = $this->config->packageOrder;
 
         usort($packages, function ($a, $b) use ($order) {
-            $aIndex = array_search($a->name, $order);
-            $bIndex = array_search($b->name, $order);
+            $aIndex = array_search($a->name, $order, true);
+            $bIndex = array_search($b->name, $order, true);
 
             // If both in order, sort by order
             if ($aIndex !== false && $bIndex !== false) {
-                return $aIndex - $bIndex;
+                return (int) $aIndex - (int) $bIndex;
             }
             // If only a in order, a comes first
             if ($aIndex !== false) {
@@ -282,7 +283,7 @@ class NavigationBuilder
 
         // Handle numbered prefixes like "1-overview", "01_setup", or "9-1-custom-clients"
         // Repeat to handle multiple prefixes (e.g., "9-1-" becomes "")
-        $name = preg_replace('/^(\d+[-_])+/', '', $name);
+        $name = preg_replace('/^(\d+[-_])+/', '', $name) ?? $name;
 
         return ucwords(str_replace(['-', '_'], ' ', $name));
     }

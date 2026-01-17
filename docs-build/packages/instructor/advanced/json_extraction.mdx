@@ -23,7 +23,7 @@ LLM response:
 {"name": "John", "age": 30}
 
 ✅ Parsed successfully
-// @doctest id="ad00"
+// @doctest id="aa5c"
 ```
 
 ### 2. Markdown Code Block Extraction
@@ -33,20 +33,20 @@ Extracts JSON from markdown fenced code blocks:
 ```text
 LLM response:
 Here's the data you requested:
-// @doctest id="5bca"
+// @doctest id="5f12"
 ```json
 {"name": "John", "age": 30}
 ```
 
 ✅ Extracts content between
-// @doctest id="4692"
+// @doctest id="1d8a"
 ```json and ```
 ```
 
 ### 3. Bracket Matching
 
 Finds first `{` and last `}` to extract JSON:
-// @doctest id="91f1"
+// @doctest id="11b7"
 ```text
 LLM response:
 The user data is {"name": "John", "age": 30} as extracted from the text.
@@ -57,7 +57,7 @@ The user data is {"name": "John", "age": 30} as extracted from the text.
 ### 4. Smart Brace Matching
 
 Handles nested braces and escaped quotes:
-// @doctest id="c961"
+// @doctest id="b2f2"
 ```text
 LLM response:
 Here is {"user": {"name": "John \"The Great\"", "age": 30}} extracted.
@@ -75,7 +75,7 @@ After extraction, multiple parsers attempt to handle malformed JSON:
 ### 1. Standard JSON Parser
 
 Native `json_decode` with strict error handling.
-// @doctest id="450f"
+// @doctest id="6def"
 ```php
 json_decode($json, true, 512, JSON_THROW_ON_ERROR)
 ```
@@ -87,7 +87,7 @@ Applies automatic repairs before parsing:
 - **Balance quotes** - Adds missing closing quotes
 - **Remove trailing commas** - Fixes `{"a": 1,}`
 - **Balance braces** - Adds missing `}` or `]`
-// @doctest id="0692"
+// @doctest id="cfab"
 ```text
 Malformed JSON:
 {"name": "John", "age": 30
@@ -99,7 +99,7 @@ Resilient parser repairs:
 ### 3. Partial JSON Parser
 
 Handles incomplete JSON during streaming:
-// @doctest id="e25f"
+// @doctest id="05ba"
 ```text
 Partial JSON from streaming:
 {"name": "John", "age":
@@ -111,7 +111,7 @@ Partial JSON from streaming:
 ## Implementation Details
 
 **Location:** `packages/utils/src/Json/JsonParser.php`
-// @doctest id="d621"
+// @doctest id="a20b"
 ```php
 class JsonParser {
     public function findCompleteJson(string $input): string {
@@ -158,7 +158,7 @@ InstructorPHP's multi-strategy approach ensures maximum compatibility.
 ## Common Scenarios
 
 ### Scenario 1: LLM Adds Explanation
-// @doctest id="5745"
+// @doctest id="e5db"
 ```text
 LLM response:
 Based on the text, I extracted the following information:
@@ -171,7 +171,7 @@ This represents the user data found in the document.
 ✅ **Strategy 3 (Bracket Matching)** extracts the JSON successfully
 
 ### Scenario 2: Markdown Wrapped Response
-// @doctest id="8661"
+// @doctest id="612b"
 ```text
 LLM response:
 Sure! Here's the structured data:
@@ -181,7 +181,7 @@ Sure! Here's the structured data:
   "name": "Jane Smith",
   "age": 25
 }
-// @doctest id="7b1d"
+// @doctest id="6576"
 ```
 
 I've extracted the user information as requested.
@@ -190,7 +190,7 @@ I've extracted the user information as requested.
 ✅ **Strategy 2 (Markdown Extraction)** handles this case
 
 ### Scenario 3: Malformed JSON
-// @doctest id="150a"
+// @doctest id="f5ba"
 ```text
 LLM response:
 {"name": "Bob", "age": 35, "active": true,}
@@ -199,14 +199,14 @@ LLM response:
 ✅ **Resilient Parser** removes the trailing comma and parses successfully
 
 ### Scenario 4: Streaming Partial Response
-// @doctest id="87d1"
+// @doctest id="04e2"
 ```text
 Streaming chunk:
 {"name": "Alice", "email": "alice@
 ```
 
 ✅ **Partial Parser** completes to:
-// @doctest id="140c"
+// @doctest id="21b6"
 ```json
 {"name": "Alice", "email": "alice@"}
 ```
@@ -233,7 +233,7 @@ Most responses succeed on first strategy (direct parsing).
 ## Custom Content Extractors
 
 You can add custom extractors to handle non-standard response formats:
-// @doctest id="ec33"
+// @doctest id="5e8b"
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
@@ -264,7 +264,7 @@ class XmlCdataExtractor implements CanExtractContent
 ### Using Custom Extractors
 
 Custom extractors work for both sync and streaming responses:
-// @doctest id="7963"
+// @doctest id="8db6"
 ```php
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
@@ -280,7 +280,7 @@ $result = (new StructuredOutput)
 ```
 
 The same extractors are automatically used for streaming:
-// @doctest id="acdf"
+// @doctest id="7293"
 ```php
 $stream = (new StructuredOutput)
     ->withExtractors(

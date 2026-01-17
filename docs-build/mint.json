@@ -64,6 +64,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v1.18.4",
                 "release-notes/v1.18.3",
                 "release-notes/v1.18.2",
                 "release-notes/v1.18.1",
@@ -350,14 +351,6 @@
                 "packages/laravel/testing",
                 "packages/laravel/advanced",
                 "packages/laravel/troubleshooting"
-            ]
-        },
-        {
-            "group": "Doctor",
-            "pages": [
-                "packages/doctor/index",
-                "packages/doctor/navigation-ordering",
-                "packages/doctor/package-discovery"
             ]
         },
         {

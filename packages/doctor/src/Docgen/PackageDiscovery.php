@@ -10,15 +10,18 @@ class PackageDiscovery
     private string $packagesDir;
     private array $descriptions;
     private array $targetDirs;
+    private array $internal;
 
     public function __construct(
         string $packagesDir = 'packages',
         array $descriptions = [],
         array $targetDirs = [],
+        array $internal = [],
     ) {
         $this->packagesDir = BasePath::get($packagesDir);
         $this->descriptions = $descriptions;
         $this->targetDirs = $targetDirs;
+        $this->internal = $internal;
     }
 
     /**
@@ -43,6 +46,11 @@ class PackageDiscovery
             $docsPath = $packagePath . '/docs';
 
             if (!is_dir($packagePath) || !is_dir($docsPath)) {
+                continue;
+            }
+
+            // Skip internal packages (excluded from public docs)
+            if (in_array($entry, $this->internal, true)) {
                 continue;
             }
 
@@ -77,7 +85,7 @@ class PackageDiscovery
             if ($content !== false) {
                 $composer = json_decode($content, true);
                 if (isset($composer['description'])) {
-                    return $composer['description'];
+                    return (string) $composer['description'];
                 }
             }
         }
