@@ -7,6 +7,7 @@ use IteratorAggregate;
 use ArrayIterator;
 use Traversable;
 
+/** @implements IteratorAggregate<int, Message> */
 final readonly class MessageList implements Countable, IteratorAggregate
 {
     /** @var Message[] */
@@ -25,6 +26,7 @@ final readonly class MessageList implements Countable, IteratorAggregate
         return new self(...$messages);
     }
 
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->messages);
     }
@@ -34,6 +36,7 @@ final readonly class MessageList implements Countable, IteratorAggregate
         return $this->messages;
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->messages);
     }
@@ -103,15 +106,28 @@ final readonly class MessageList implements Countable, IteratorAggregate
         return new self(...array_reverse($this->messages));
     }
 
-    /** @return array<mixed> */
+    /**
+     * @template T
+     * @param callable(Message): T $callback
+     * @return array<T>
+     */
     public function map(callable $callback): array {
         return array_map($callback, $this->messages);
     }
 
+    /**
+     * @template T
+     * @param callable(T, Message): T $callback
+     * @param T $initial
+     * @return T
+     */
     public function reduce(callable $callback, mixed $initial = null): mixed {
         return array_reduce($this->messages, $callback, $initial);
     }
 
+    /**
+     * @param callable(Message): bool $callback
+     */
     public function filter(callable $callback): self {
         return new self(...array_values(array_filter($this->messages, $callback)));
     }

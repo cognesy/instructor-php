@@ -38,6 +38,7 @@ class UseSubagents implements AgentCapability
         );
     }
 
+    #[\Override]
     public function install(AgentBuilder $builder): void {
         $builder->onBuild(function (Agent $agent) {
             $driver = $agent->driver();

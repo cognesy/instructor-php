@@ -131,7 +131,7 @@ final readonly class AgentStep implements
     }
 
     /**
-     * @param Throwable $errors
+     * @param array<Throwable|array{message?: string, class?: string}> $errors
      * @return Throwable[]
      */
     private function normalizeErrors(array $errors): array {

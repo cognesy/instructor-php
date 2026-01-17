@@ -16,6 +16,7 @@ final readonly class TodoResult implements JsonSerializable
         public string $rendered,
     ) {}
 
+    #[\Override]
     public function jsonSerialize(): array {
         return $this->toArray();
     }

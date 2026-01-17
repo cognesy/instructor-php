@@ -70,7 +70,11 @@ final readonly class ContentParts
         return new self(...$parts);
     }
 
-    /** @return array<mixed> */
+    /**
+     * @template T
+     * @param callable(ContentPart): T $callback
+     * @return array<T>
+     */
     public function map(callable $callback): array {
         return array_map($callback, $this->parts);
     }
@@ -83,10 +87,19 @@ final readonly class ContentParts
         );
     }
 
+    /**
+     * @template T
+     * @param callable(T, ContentPart): T $callback
+     * @param T $initial
+     * @return T
+     */
     public function reduce(callable $callback, mixed $initial = null): mixed {
         return array_reduce($this->parts, $callback, $initial);
     }
 
+    /**
+     * @param callable(ContentPart): bool $callback
+     */
     public function filter(callable $callback): self {
         return new self(...array_values(array_filter($this->parts, $callback)));
     }

@@ -12,6 +12,7 @@ use Generator;
 use InvalidArgumentException;
 use RuntimeException;
 
+/** @implements IteratorAggregate<int, Message> */
 final readonly class Messages implements Countable, IteratorAggregate
 {
     /** @var MessageList $messages */
@@ -21,6 +22,7 @@ final readonly class Messages implements Countable, IteratorAggregate
         $this->messages = new MessageList(...$messages);
     }
 
+    #[\Override]
     public function getIterator(): Traversable {
         return $this->messages->getIterator();
     }
@@ -431,6 +433,7 @@ final readonly class Messages implements Countable, IteratorAggregate
         return new Messages(...$filteredMessages);
     }
 
+    #[\Override]
     public function count() : int {
         return $this->messages->count();
     }

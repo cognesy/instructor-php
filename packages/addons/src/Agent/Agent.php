@@ -21,6 +21,7 @@ use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
@@ -49,6 +50,7 @@ class Agent extends StepByStep
     private readonly CanExecuteToolCalls $toolExecutor;
     private readonly CanUseTools $driver;
     private readonly ContinuationCriteria $continuationCriteria;
+    private ?ContinuationOutcome $lastContinuationOutcome = null;
 
     /**
      * @param CanApplyProcessors<AgentState> $processors
@@ -78,6 +80,7 @@ class Agent extends StepByStep
     protected function canContinue(object $state): bool {
         assert($state instanceof AgentState);
         $outcome = $this->continuationCriteria->evaluate($state);
+        $this->lastContinuationOutcome = $outcome;
         $this->emitContinuationEvaluated($state, $outcome);
         return $outcome->shouldContinue();
     }
@@ -110,8 +113,18 @@ class Agent extends StepByStep
     #[\Override]
     protected function onNoNextStep(object $state): AgentState {
         assert($state instanceof AgentState);
-        $this->emitAgentFinished($state);
-        return $state;
+        $finalStatus = $this->determineFinalStatus();
+        $finalState = $state->withStatus($finalStatus);
+        $this->emitAgentFinished($finalState);
+        return $finalState;
+    }
+
+    private function determineFinalStatus(): AgentStatus {
+        $stopReason = $this->lastContinuationOutcome?->stopReason;
+        return match ($stopReason) {
+            StopReason::ErrorForbade => AgentStatus::Failed,
+            default => AgentStatus::Completed,
+        };
     }
 
     #[\Override]
@@ -144,6 +157,7 @@ class Agent extends StepByStep
         try {
             $stepStartedAt = microtime(true);
             $stateWithStart = $this->markStepStartedIfSupported($state);
+            assert($stateWithStart instanceof AgentState);
             $nextStep = $this->makeNextStep($stateWithStart);
             $nextState = $this->applyStep(state: $stateWithStart, nextStep: $nextStep);
             $durationSeconds = microtime(true) - $stepStartedAt;
@@ -329,5 +343,17 @@ class Agent extends StepByStep
         return $state->withStateInfo(
             $state->stateInfo()->addExecutionTime($seconds),
         );
+    }
+
+    /**
+     * Only consider state changed if a new step was added.
+     * Status-only changes (e.g., InProgress → Completed) don't represent new work.
+     */
+    #[\Override]
+    protected function isStateChanged(object $priorState, object $newState): bool {
+        if (!($priorState instanceof AgentState) || !($newState instanceof AgentState)) {
+            return $priorState !== $newState;
+        }
+        return $priorState->stepCount() !== $newState->stepCount();
     }
 }

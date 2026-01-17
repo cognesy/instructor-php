@@ -28,7 +28,6 @@ abstract class StepByStep implements CanExecuteIteratively
     #[\Override]
     public function nextStep(object $state): object {
         return match(true) {
-            !$this->hasNextStep($state) => $this->onNoNextStep($state),
             ($this->hasProcessors()) => $this->performThroughProcessors($state),
             default => $this->performStep($state),
         };

@@ -12,6 +12,7 @@ class UseTaskPlanning implements AgentCapability
         private ?TodoPolicy $policy = null,
     ) {}
 
+    #[\Override]
     public function install(AgentBuilder $builder): void {
         $policy = $this->policy ?? new TodoPolicy();
         

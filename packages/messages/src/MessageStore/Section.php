@@ -17,6 +17,7 @@ use Traversable;
  *
  * The Section is initialized with a name, description, and metadata,
  * and determines its template status during instantiation.
+ * @implements IteratorAggregate<int, \Cognesy\Messages\Message>
  */
 final readonly class Section implements Countable, IteratorAggregate
 {
@@ -31,10 +32,12 @@ final readonly class Section implements Countable, IteratorAggregate
         $this->messages = $messages ?? Messages::empty();
     }
 
+    #[\Override]
     public function getIterator(): Traversable {
         return $this->messages->getIterator();
     }
 
+    #[\Override]
     public function count(): int {
         return $this->messages->count();
     }

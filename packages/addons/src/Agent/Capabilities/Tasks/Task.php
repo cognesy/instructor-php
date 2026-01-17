@@ -18,6 +18,7 @@ class Task
         );
     }
 
+    /** @return array{content: string, status: string, activeForm: string} */
     public function toArray(): array {
         return [
             'content' => $this->content,

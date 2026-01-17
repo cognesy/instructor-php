@@ -46,6 +46,10 @@ final class ExecutionPolicy
         return new self(baseDir: $baseDir);
     }
 
+    public static function default(): self {
+        return new self();
+    }
+
     // Accessors //////////////////////////////////////////////////////////////
 
     public function baseDir(): string {

@@ -40,7 +40,7 @@ final class DeterministicDriver implements CanUseTools
     }
 
     public static function fromSteps(ScenarioStep ...$steps): self {
-        return new self($steps);
+        return new self(array_values($steps));
     }
 
     public static function fromResponses(string ...$responses): self {
@@ -52,12 +52,12 @@ final class DeterministicDriver implements CanUseTools
             $responses,
         );
         $default = $responses[array_key_last($responses)];
-        return new self($steps, $default);
+        return new self(array_values($steps), $default);
     }
 
     public function withSteps(ScenarioStep ...$steps): self {
         return new self(
-            steps: $steps,
+            steps: array_values($steps),
             defaultResponse: $this->defaultResponse,
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,

@@ -13,6 +13,7 @@ class UseSelfCritique implements AgentCapability
         private ?string $llmPreset = null,
     ) {}
 
+    #[\Override]
     public function install(AgentBuilder $builder): void {
         $builder->addProcessor(new SelfCriticProcessor(
             maxIterations: $this->maxIterations,

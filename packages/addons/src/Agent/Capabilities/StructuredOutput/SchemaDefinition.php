@@ -40,6 +40,7 @@ final readonly class SchemaDefinition
 
     /**
      * Create from just a class name (simplest case).
+     * @param class-string $class
      */
     public static function fromClass(string $class): self {
         return new self(class: $class);
@@ -47,6 +48,7 @@ final readonly class SchemaDefinition
 
     /**
      * Create with a description (for schema listing).
+     * @param class-string $class
      */
     public static function withDescription(string $class, string $description): self {
         return new self(class: $class, description: $description);

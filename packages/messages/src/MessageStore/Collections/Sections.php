@@ -10,6 +10,7 @@ use IteratorAggregate;
 use ArrayIterator;
 use Traversable;
 
+/** @implements IteratorAggregate<int, Section> */
 final readonly class Sections implements Countable, IteratorAggregate
 {
     private array $sections;
@@ -28,6 +29,7 @@ final readonly class Sections implements Countable, IteratorAggregate
         return new self(...$sections);
     }
 
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->sections);
     }
@@ -109,6 +111,7 @@ final readonly class Sections implements Countable, IteratorAggregate
         return $this->sections;
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->sections);
     }

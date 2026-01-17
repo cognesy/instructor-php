@@ -8,6 +8,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 
+/** @implements CanProcessAnyState<AgentState> */
 class SelfCriticProcessor implements CanProcessAnyState
 {
     private const CRITIC_PROMPT = <<<'PROMPT'

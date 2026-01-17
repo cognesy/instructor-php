@@ -356,7 +356,13 @@ class AgentBuilder
             ? LLMProvider::using($this->llmPreset)
             : LLMProvider::new();
 
-        return new ToolCallingDriver(llm: $llmProvider);
+        // Pass maxRetries to inference via retryPolicy options
+        $options = [];
+        if ($this->maxRetries > 1) {
+            $options['retryPolicy'] = ['maxAttempts' => $this->maxRetries];
+        }
+
+        return new ToolCallingDriver(llm: $llmProvider, options: $options);
     }
 
     private function hasSystemPrompt(Messages $messages, string $prompt): bool {

@@ -30,7 +30,7 @@ class TaskList
         return new self($tasks, $policy);
     }
 
-    /** @return list<array> */
+    /** @return list<array{content: string, status: string, activeForm: string}> */
     public function toArray(): array {
         return array_map(
             fn(Task $task) => $task->toArray(),

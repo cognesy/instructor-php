@@ -629,13 +629,174 @@ $agent = AgentBuilder::base()
 
 | Event | Payload |
 |-------|---------|
-| `AgentStepStarted` | step, messages, tools |
-| `AgentStepCompleted` | step, hasToolCalls, errors, usage |
-| `AgentStateUpdated` | state, step |
-| `AgentFinished` | status, steps, usage |
-| `AgentFailed` | error, status, steps |
-| `ToolCallStarted` | toolName, callId |
-| `ToolCallCompleted` | toolName, callId, result, duration |
+| `AgentStepStarted` | agentId, stepNumber, messageCount, availableTools |
+| `AgentStepCompleted` | stepNumber, hasToolCalls, errorCount, usage, finishReason, durationMs |
+| `AgentStateUpdated` | agentId, status, stepCount |
+| `AgentFinished` | agentId, status, totalSteps, totalUsage |
+| `AgentFailed` | agentId, exception, status, stepsCompleted |
+| `ToolCallStarted` | tool, args, startedAt |
+| `ToolCallCompleted` | tool, success, error, startedAt, endedAt |
+| `ContinuationEvaluated` | agentId, stepNumber, outcome |
+| `TokenUsageReported` | agentId, operation, usage |
+
+## Broadcasting
+
+The broadcasting system enables real-time UI updates by adapting agent events to a broadcast-friendly envelope format. Use `ReverbAgentEventAdapter` to broadcast events over WebSockets, Pusher, Laravel Reverb, or any custom transport.
+
+### Quick Start
+
+```php
+use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+use Cognesy\Addons\Agent\Broadcasting\BroadcastConfig;
+
+// Create adapter
+$adapter = new ReverbAgentEventAdapter(
+    broadcaster: $myBroadcaster,  // Implements CanBroadcastAgentEvents
+    sessionId: $sessionId,
+    executionId: $executionId,
+);
+
+// Wire to agent (single line!)
+$agent->wiretap($adapter->wiretap());
+
+// Run agent - all events automatically broadcast
+$result = $agent->run($state);
+```
+
+### Configuration Presets
+
+```php
+use Cognesy\Addons\Agent\Broadcasting\BroadcastConfig;
+
+// Minimal: status events only (no streaming)
+$adapter = new ReverbAgentEventAdapter(
+    $broadcaster, $sessionId, $executionId,
+    BroadcastConfig::minimal(),
+);
+
+// Standard: status + streaming (default)
+$adapter = new ReverbAgentEventAdapter(
+    $broadcaster, $sessionId, $executionId,
+    BroadcastConfig::standard(),
+);
+
+// Debug: everything including continuation trace and full tool args
+$adapter = new ReverbAgentEventAdapter(
+    $broadcaster, $sessionId, $executionId,
+    BroadcastConfig::debug(),
+);
+
+// Custom configuration
+$adapter = new ReverbAgentEventAdapter(
+    broadcaster: $broadcaster,
+    sessionId: $sessionId,
+    executionId: $executionId,
+    config: new BroadcastConfig(
+        includeStreamChunks: true,
+        includeContinuationTrace: false,
+        includeToolArgs: true,
+        maxArgLength: 200,
+        autoStatusTracking: true,
+    ),
+);
+```
+
+### Broadcast Events
+
+| Event Type | Trigger | Payload |
+|------------|---------|---------|
+| `agent.status` | Lifecycle transitions | `{status, previous_status}` |
+| `agent.step.started` | AgentStepStarted | `{step_number, message_count, available_tools}` |
+| `agent.step.completed` | AgentStepCompleted | `{step_number, has_tool_calls, errors, finish_reason, usage, duration_ms}` |
+| `agent.tool.started` | ToolCallStarted | `{tool_name, tool_call_id, args_summary}` |
+| `agent.tool.completed` | ToolCallCompleted | `{tool_name, tool_call_id, success, error, duration_ms}` |
+| `agent.stream.chunk` | StreamEventReceived | `{content, is_complete, chunk_index}` |
+| `agent.continuation` | ContinuationEvaluated | `{step_number, should_continue, stop_reason, evaluations}` |
+
+### Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `idle` | Initial state, waiting for execution |
+| `processing` | Agent is executing steps |
+| `completed` | Agent finished successfully |
+| `failed` | Agent encountered an error |
+| `cancelled` | User requested stop |
+| `stopped` | Other stop reasons (steps limit, etc.) |
+
+### Envelope Format
+
+All events are wrapped in a standard envelope:
+
+```json
+{
+    "type": "agent.stream.chunk",
+    "session_id": "sess-abc123",
+    "execution_id": "exec-xyz789",
+    "timestamp": "2026-01-16T12:00:00.123Z",
+    "payload": {
+        "content": "Hello",
+        "is_complete": false,
+        "chunk_index": 0
+    }
+}
+```
+
+### Implementing a Broadcaster
+
+Implement `CanBroadcastAgentEvents` to connect to your transport:
+
+```php
+use Cognesy\Addons\Agent\Broadcasting\CanBroadcastAgentEvents;
+
+// Laravel Reverb example
+final class LaravelReverbBroadcaster implements CanBroadcastAgentEvents
+{
+    public function broadcast(string $channel, array $envelope): void
+    {
+        broadcast(new AgentEvent("private-{$channel}", $envelope));
+    }
+}
+
+// Pusher example
+final class PusherBroadcaster implements CanBroadcastAgentEvents
+{
+    public function __construct(private Pusher $pusher) {}
+
+    public function broadcast(string $channel, array $envelope): void
+    {
+        $this->pusher->trigger(
+            "private-{$channel}",
+            $envelope['type'],
+            $envelope
+        );
+    }
+}
+
+// Console/Debug example
+final class ConsoleBroadcaster implements CanBroadcastAgentEvents
+{
+    public function broadcast(string $channel, array $envelope): void
+    {
+        $type = $envelope['type'];
+        $payload = json_encode($envelope['payload']);
+        echo "[{$type}] {$payload}\n";
+    }
+}
+```
+
+### Legacy Per-Event Wiring
+
+Individual event handlers are still supported for fine-grained control:
+
+```php
+$agent->onEvent(AgentStepStarted::class, [$adapter, 'onAgentStepStarted']);
+$agent->onEvent(AgentStepCompleted::class, [$adapter, 'onAgentStepCompleted']);
+$agent->onEvent(ToolCallStarted::class, [$adapter, 'onToolCallStarted']);
+$agent->onEvent(ToolCallCompleted::class, [$adapter, 'onToolCallCompleted']);
+$agent->onEvent(ContinuationEvaluated::class, [$adapter, 'onContinuationEvaluated']);
+$agent->onEvent(StreamEventReceived::class, [$adapter, 'onStreamChunk']);
+```
 
 ## Architecture
 
@@ -785,6 +946,10 @@ $agent = AgentBuilder::base()
 ├── src/Agent/
 │   ├── Agent.php                   # Main orchestrator
 │   ├── AgentBuilder.php            # Fluent builder for agents
+│   ├── Broadcasting/               # REAL-TIME UI EVENTS
+│   │   ├── BroadcastConfig.php     # Configuration with presets
+│   │   ├── CanBroadcastAgentEvents.php  # Broadcaster interface
+│   │   └── ReverbAgentEventAdapter.php  # Event-to-envelope adapter
 │   ├── Capabilities/               # MODULAR FEATURES
 │   │   ├── Bash/                   # Bash capability & tool
 │   │   ├── File/                   # File tools (read, write, edit, search, list_dir)
@@ -955,14 +1120,23 @@ $serializer = new SlimAgentStateSerializer(
 $payload = $serializer->serialize($state);
 ```
 
-### Reverb event envelope
-The `ReverbAgentEventAdapter` emits envelopes with:
+### Broadcasting with wiretap()
+The `ReverbAgentEventAdapter` now supports single-line integration via `wiretap()`:
+
+```php
+// Old approach (verbose)
+$agent->onEvent(AgentStepStarted::class, [$adapter, 'onAgentStepStarted']);
+$agent->onEvent(AgentStepCompleted::class, [$adapter, 'onAgentStepCompleted']);
+// ... repeat for each event
+
+// New approach (single line)
+$agent->wiretap($adapter->wiretap());
 ```
-{
-  "type": "agent.step.completed",
-  "session_id": "...",
-  "execution_id": "...",
-  "timestamp": "2026-01-16T12:00:00.000Z",
-  "payload": { ... }
-}
-```
+
+New features:
+- `StreamEventReceived` handling for real-time chat streaming
+- Automatic status transitions (`idle` → `processing` → `completed/failed`)
+- `BroadcastConfig` presets: `minimal()`, `standard()`, `debug()`
+- `reset()` method for reusing adapter across executions
+
+See the [Broadcasting](#broadcasting) section for full documentation.

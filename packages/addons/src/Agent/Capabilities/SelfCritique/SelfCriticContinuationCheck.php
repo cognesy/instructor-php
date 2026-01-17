@@ -13,6 +13,7 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
  * Returns AllowContinuation when revision needed (has work to do),
  * AllowStop when approved or max iterations reached,
  * ForbidContinuation when max iterations exceeded (hard stop).
+ * @implements CanDecideToContinue<AgentState>
  */
 class SelfCriticContinuationCheck implements CanDecideToContinue
 {

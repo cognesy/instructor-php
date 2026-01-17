@@ -12,6 +12,7 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
         private SlimSerializationConfig $config = new SlimSerializationConfig(),
     ) {}
 
+    #[\Override]
     public function serialize(AgentState $state): array {
         $steps = [];
         if ($this->config->includeSteps) {
@@ -37,6 +38,7 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
         ];
     }
 
+    #[\Override]
     public function deserialize(array $data): AgentState {
         $messages = $data['messages'] ?? [];
         $execution = $data['execution'] ?? [];
@@ -178,6 +180,7 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
     }
 
     private function serializeContinuation(AgentState $state): ?array {
+        // @phpstan-ignore function.alreadyNarrowedType (forward-compatibility check)
         if (!method_exists($state, 'lastContinuationOutcome')) {
             return null;
         }

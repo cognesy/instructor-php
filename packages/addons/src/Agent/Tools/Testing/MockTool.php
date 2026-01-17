@@ -7,6 +7,7 @@ use Cognesy\Utils\Result\Result;
 
 final readonly class MockTool implements ToolInterface
 {
+    /** @var \Closure(mixed ...): mixed */
     private \Closure $handler;
     private array $schema;
     private array $metadata;

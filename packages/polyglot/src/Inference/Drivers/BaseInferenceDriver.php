@@ -107,6 +107,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
      * Default implementation returns full capabilities.
      * Override in subclasses for providers with restrictions.
      */
+    #[\Override]
     public function capabilities(?string $model = null): DriverCapabilities {
         return new DriverCapabilities(
             outputModes: OutputMode::cases(),

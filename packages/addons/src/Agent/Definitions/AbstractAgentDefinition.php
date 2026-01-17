@@ -22,6 +22,7 @@ abstract class AbstractAgentDefinition implements AgentContract
     /** @var array<string, array<int, callable(object): void>> */
     private array $listeners = [];
 
+    #[\Override]
     abstract public function descriptor(): AgentDescriptor;
 
     abstract protected function buildAgent(): Agent;
@@ -34,12 +35,16 @@ abstract class AbstractAgentDefinition implements AgentContract
         $this->agent = $this->buildAgent();
         $this->applyEventHandlerIfProvided();
         $this->applyStoredListeners();
+        // $this->agent is reassigned by applyEventHandlerIfProvided(), so we must return it
+        assert($this->agent !== null);
         return $this->agent;
     }
 
     #[\Override]
     public function run(AgentState $state): AgentState {
-        return $this->finalStep($state);
+        $result = $this->finalStep($state);
+        assert($result instanceof AgentState);
+        return $result;
     }
 
     #[\Override]

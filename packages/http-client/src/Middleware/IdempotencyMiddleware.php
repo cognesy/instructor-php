@@ -10,16 +10,22 @@ use Cognesy\Utils\Uuid;
 
 final class IdempotencyMiddleware implements HttpMiddleware
 {
+    /** @var (\Closure(HttpRequest): string)|null */
+    private readonly ?\Closure $keyProvider;
+
     /**
      * @param list<string> $methods
      * @param list<string>|null $hostAllowList
+     * @param (callable(HttpRequest): string)|null $keyProvider
      */
     public function __construct(
         private readonly string $headerName = 'Idempotency-Key',
         private readonly array $methods = ['POST'],
         private readonly ?array $hostAllowList = null,
-        private readonly ?callable $keyProvider = null,
-    ) {}
+        ?callable $keyProvider = null,
+    ) {
+        $this->keyProvider = $keyProvider !== null ? \Closure::fromCallable($keyProvider) : null;
+    }
 
     #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {

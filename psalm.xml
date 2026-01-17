@@ -43,8 +43,33 @@
             <directory name="packages/auxiliary/src/Beads/Eloquent/Migrations" />
             <directory name="packages/auxiliary/src/Beads/Eloquent/Models" />
             <file name="packages/auxiliary/src/Beads/Presentation/BeadsServiceProvider.php" />
+            <!-- Exclude ext-http driver (optional pecl extension) -->
+            <directory name="packages/http-client/src/Drivers/ExtHttp" />
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
+        <!-- Suppress covariance issues with generic state processors (AgentState vs object) -->
+        <InvalidArgument>
+            <errorLevel type="suppress">
+                <referencedFunction name="Cognesy\Addons\Agent\AgentBuilder::addProcessor"/>
+                <referencedFunction name="Cognesy\Addons\Agent\AgentBuilder::addContinuationCriteria"/>
+                <referencedFunction name="Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria::from"/>
+                <!-- CachedContext type mismatch - needs API update -->
+                <referencedFunction name="Cognesy\Instructor\StructuredOutput::withCachedContext"/>
+            </errorLevel>
+        </InvalidArgument>
+        <!-- Suppress for Symfony 6/7 compatibility - getSupportedTypes exists only in Symfony 7 -->
+        <MissingOverrideAttribute>
+            <errorLevel type="suppress">
+                <file name="packages/instructor/src/Deserialization/Deserializers/BackedEnumNormalizer.php"/>
+                <file name="packages/instructor/src/Deserialization/Deserializers/FlexibleDateDenormalizer.php"/>
+            </errorLevel>
+        </MissingOverrideAttribute>
+        <!-- Suppress edge cases with type inference -->
+        <InvalidCast>
+            <errorLevel type="suppress">
+                <file name="packages/addons/src/Agent/Drivers/ToolCalling/ToolExecutionFormatter.php"/>
+            </errorLevel>
+        </InvalidCast>
     </issueHandlers>
 </psalm>

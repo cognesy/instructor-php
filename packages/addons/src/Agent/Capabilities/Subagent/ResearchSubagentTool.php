@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\Agent\Tools\Subagent;
+namespace Cognesy\Addons\Agent\Capabilities\Subagent;
 
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\Agent\Capabilities\File\ReadFileTool;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Tools\BaseTool;
-use Cognesy\Addons\Agent\Tools\File\ReadFileTool;
 use Cognesy\Messages\Messages;
 
 class ResearchSubagentTool extends BaseTool

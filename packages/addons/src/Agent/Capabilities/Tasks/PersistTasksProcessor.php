@@ -6,6 +6,7 @@ use Cognesy\Addons\Agent\Core\Contracts\HasStepToolExecutions;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 
+/** @implements CanProcessAnyState<AgentState> */
 class PersistTasksProcessor implements CanProcessAnyState
 {
     #[\Override]

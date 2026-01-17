@@ -11,6 +11,7 @@ class UseSkills implements AgentCapability
         private ?SkillLibrary $library = null,
     ) {}
 
+    #[\Override]
     public function install(AgentBuilder $builder): void {
         $library = $this->library ?? new SkillLibrary();
         

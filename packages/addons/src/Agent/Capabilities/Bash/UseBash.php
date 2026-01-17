@@ -16,6 +16,7 @@ class UseBash implements AgentCapability
         private ?BashPolicy $outputPolicy = null,
     ) {}
 
+    #[\Override]
     public function install(AgentBuilder $builder): void {
         $bashTool = new BashTool(
             policy: $this->policy,

@@ -72,9 +72,9 @@ final readonly class EmbeddingsRetryPolicy
         $capped = min($base, $this->maxDelayMs);
 
         return match ($this->jitter) {
-            'none' => (int) $capped,
+            'none' => $capped,
             'equal' => (int) ($capped / 2 + random_int(0, (int) ($capped / 2))),
-            default => (int) random_int(0, (int) $capped),
+            default => random_int(0, $capped),
         };
     }
 }

@@ -63,9 +63,9 @@ final readonly class RetryPolicy
         $capped = min($base, $this->maxDelayMs);
 
         $delay = match ($this->jitter) {
-            'none' => (int) $capped,
+            'none' => $capped,
             'equal' => (int) ($capped / 2 + random_int(0, (int) ($capped / 2))),
-            default => (int) random_int(0, (int) $capped),
+            default => random_int(0, $capped),
         };
 
         if ($this->respectRetryAfter && $response !== null) {

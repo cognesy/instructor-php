@@ -157,3 +157,7 @@ parameters:
     - '#Parameter .* should be contravariant with parameter#' # Contravariance in pipeline traits
     - '#Property class@anonymous.*::\$.* is never read, only written#' # Test anonymous class properties
     - '#Parameter .* of method Cognesy\\Utils\\TagMap\\TagQuery::only\(\) expects class-string.*class-string\|null given#' # TagQuery variadic class-string nullability
+    # HandlesEvents trait - $events property initialized via withEventHandler() or at runtime
+    - '#Class Cognesy\\Addons\\Agent\\Definitions\\AbstractAgentDefinition has an uninitialized property \$events#'
+    # Forward-compatibility check for future AgentState methods
+    - '#Call to function method_exists\(\) with Cognesy\\Addons\\Agent\\Core\\Data\\AgentState and .* will always evaluate to false#'

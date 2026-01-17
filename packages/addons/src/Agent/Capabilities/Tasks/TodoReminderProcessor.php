@@ -56,16 +56,16 @@ final readonly class TodoReminderProcessor implements CanProcessAnyState
         return $next ? $next($newState) : $newState;
     }
 
-    private function stepsSinceTodo(AgentState $state): ?int {
+    private function stepsSinceTodo(AgentState $state): int {
         $steps = $state->steps()->all();
-        $lastIndex = null;
+        $lastIndex = -1;
         foreach ($steps as $index => $step) {
             if ($this->stepHasTodo($step)) {
-                $lastIndex = $index;
+                $lastIndex = (int) $index;
             }
         }
 
-        if ($lastIndex === null) {
+        if ($lastIndex === -1) {
             return count($steps);
         }
 

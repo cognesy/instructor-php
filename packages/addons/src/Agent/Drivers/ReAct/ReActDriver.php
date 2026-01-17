@@ -153,7 +153,12 @@ final class ReActDriver implements CanUseTools
             ->withMaxRetries($this->maxRetries)
             ->withLLMProvider($this->llm);
         if ($cachedContext !== null && !$cachedContext->isEmpty()) {
-            $structured = $structured->withCachedContext($cachedContext);
+            $structured = $structured->withCachedContext(
+                messages: $cachedContext->messages()->toArray(),
+                system: $cachedContext->system(),
+                prompt: $cachedContext->prompt(),
+                examples: $cachedContext->examples(),
+            );
         }
 
         if ($this->httpClient !== null) {

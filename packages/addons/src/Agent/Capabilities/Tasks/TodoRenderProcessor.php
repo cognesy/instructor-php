@@ -4,7 +4,10 @@ namespace Cognesy\Addons\Agent\Capabilities\Tasks;
 
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
+/** @implements CanProcessAnyState<AgentState> */
 class TodoRenderProcessor implements CanProcessAnyState
 {
     private const MARKER = '<todo-render>';

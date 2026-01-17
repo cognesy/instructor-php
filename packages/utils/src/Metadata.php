@@ -7,6 +7,7 @@ use IteratorAggregate;
 use ArrayIterator;
 use Traversable;
 
+/** @implements IteratorAggregate<string, mixed> */
 final readonly class Metadata implements Countable, IteratorAggregate
 {
     private array $metadata;
@@ -15,10 +16,12 @@ final readonly class Metadata implements Countable, IteratorAggregate
         $this->metadata = $metadata;
     }
 
+    #[\Override]
     public function getIterator(): Traversable {
         return new ArrayIterator($this->metadata);
     }
 
+    #[\Override]
     public function count(): int {
         return count($this->metadata);
     }

@@ -12,6 +12,7 @@ class UseFileTools implements AgentCapability
         private ?string $baseDir = null,
     ) {}
 
+    #[\Override]
     public function install(AgentBuilder $builder): void {
         $baseDir = $this->baseDir ?? getcwd() ?: '/tmp';
 
