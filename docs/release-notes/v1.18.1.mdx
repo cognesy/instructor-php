@@ -1,0 +1,37 @@
+# Release Notes - v1.18.1
+
+## Bug Fixes
+
+### Agent Event Status Fix
+- `AgentFinished` event now correctly reports `status: completed` (or `failed`) instead of `in_progress` when agent terminates
+- The status is determined based on the `StopReason` from continuation criteria evaluation
+
+### Duplicate Event Fix
+- Fixed duplicate `ContinuationEvaluated` events being emitted during agent execution
+- Removed redundant `hasNextStep()` check from `StepByStep::nextStep()`
+
+### AgentBuilder maxRetries Fix
+- `AgentBuilder::withMaxRetries()` now actually works - the value is passed to `ToolCallingDriver` via inference retry policy
+- Previously the property was set but never used
+
+### AbstractAgentDefinition Event Handler Fix
+- Fixed `AbstractAgentDefinition::build()` returning stale agent instance without the configured event handler
+- Event handlers and listeners set via `withEventHandler()`, `wiretap()`, `onEvent()` now correctly propagate to the built agent
+
+## Static Analysis Improvements
+
+### PHPStan Level 8 Compliance
+- Added callable signatures to `ContentParts` and `MessageList` methods (`map`, `reduce`, `filter`)
+- Added proper Closure signatures to `MockTool` and `IdempotencyMiddleware`
+- Added `@param class-string` annotations to `SchemaDefinition`
+- Fixed array type annotations in `Task`, `TaskList`, `TodoReminderProcessor`
+- Fixed `ReActDriver::withCachedContext()` parameter passing
+- Fixed `DeterministicDriver` array key type issues
+- Removed redundant int casts in retry policy classes
+- Added `Agent::isStateChanged()` override to prevent spurious iterator yields
+
+### Psalm Compliance
+- Added missing `#[\Override]` attributes across codebase
+- Added template parameters to `IteratorAggregate` implementations
+- Fixed namespace issues in `ResearchSubagentTool`
+- Added `ExecutionPolicy::default()` static method
