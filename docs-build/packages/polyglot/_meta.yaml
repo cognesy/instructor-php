@@ -1,0 +1,13 @@
+# Navigation order for Polyglot documentation
+order:
+  - overview
+  - quickstart
+  - setup
+  # Directories
+  - essentials
+  - modes
+  - streaming
+  - embeddings
+  - advanced
+  - internals
+  - troubleshooting

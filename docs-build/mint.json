@@ -165,26 +165,11 @@
         {
             "group": "Instructor",
             "pages": [
-                "packages/instructor/cli_tools",
                 "packages/instructor/introduction",
                 "packages/instructor/quickstart",
                 "packages/instructor/setup",
                 "packages/instructor/upgrade",
-                {
-                    "group": "Advanced",
-                    "pages": [
-                        "packages/instructor/advanced/function_calls",
-                        "packages/instructor/advanced/json_extraction",
-                        "packages/instructor/advanced/manual_schemas",
-                        "packages/instructor/advanced/model_options",
-                        "packages/instructor/advanced/output_formats",
-                        "packages/instructor/advanced/partials",
-                        "packages/instructor/advanced/prompts",
-                        "packages/instructor/advanced/sequences",
-                        "packages/instructor/advanced/structure-to-structure",
-                        "packages/instructor/advanced/structures"
-                    ]
-                },
+                "packages/instructor/cli_tools",
                 {
                     "group": "Concepts",
                     "pages": [
@@ -195,45 +180,60 @@
                 {
                     "group": "Essentials",
                     "pages": [
-                        "packages/instructor/essentials/configuration",
-                        "packages/instructor/essentials/customize_prompts",
+                        "packages/instructor/essentials/usage",
                         "packages/instructor/essentials/data_model",
-                        "packages/instructor/essentials/demonstrations",
+                        "packages/instructor/essentials/validation",
                         "packages/instructor/essentials/modes",
                         "packages/instructor/essentials/scalars",
-                        "packages/instructor/essentials/usage",
-                        "packages/instructor/essentials/validation"
+                        "packages/instructor/essentials/demonstrations",
+                        "packages/instructor/essentials/customize_prompts",
+                        "packages/instructor/essentials/configuration"
                     ]
                 },
                 {
-                    "group": "Internals",
+                    "group": "Advanced",
                     "pages": [
-                        "packages/instructor/internals/config_files",
-                        "packages/instructor/internals/configuration_path",
-                        "packages/instructor/internals/debugging",
-                        "packages/instructor/internals/environment",
-                        "packages/instructor/internals/events",
-                        "packages/instructor/internals/instructor",
-                        "packages/instructor/internals/lifecycle",
-                        "packages/instructor/internals/response_models",
-                        "packages/instructor/internals/settings_class"
-                    ]
-                },
-                {
-                    "group": "Misc",
-                    "pages": [
-                        "packages/instructor/misc/contributing",
-                        "packages/instructor/misc/help",
-                        "packages/instructor/misc/llm_providers",
-                        "packages/instructor/misc/philosophy"
+                        "packages/instructor/advanced/partials",
+                        "packages/instructor/advanced/sequences",
+                        "packages/instructor/advanced/structures",
+                        "packages/instructor/advanced/function_calls",
+                        "packages/instructor/advanced/manual_schemas",
+                        "packages/instructor/advanced/json_extraction",
+                        "packages/instructor/advanced/output_formats",
+                        "packages/instructor/advanced/prompts",
+                        "packages/instructor/advanced/model_options",
+                        "packages/instructor/advanced/structure-to-structure"
                     ]
                 },
                 {
                     "group": "Techniques",
                     "pages": [
-                        "packages/instructor/techniques/classification",
                         "packages/instructor/techniques/prompting",
+                        "packages/instructor/techniques/classification",
                         "packages/instructor/techniques/search"
+                    ]
+                },
+                {
+                    "group": "Internals",
+                    "pages": [
+                        "packages/instructor/internals/instructor",
+                        "packages/instructor/internals/lifecycle",
+                        "packages/instructor/internals/configuration_path",
+                        "packages/instructor/internals/config_files",
+                        "packages/instructor/internals/settings_class",
+                        "packages/instructor/internals/environment",
+                        "packages/instructor/internals/events",
+                        "packages/instructor/internals/response_models",
+                        "packages/instructor/internals/debugging"
+                    ]
+                },
+                {
+                    "group": "Misc",
+                    "pages": [
+                        "packages/instructor/misc/help",
+                        "packages/instructor/misc/llm_providers",
+                        "packages/instructor/misc/philosophy",
+                        "packages/instructor/misc/contributing"
                     ]
                 }
             ]
@@ -245,78 +245,78 @@
                 "packages/polyglot/quickstart",
                 "packages/polyglot/setup",
                 {
-                    "group": "Advanced",
-                    "pages": [
-                        "packages/polyglot/advanced/connection-mgmt",
-                        "packages/polyglot/advanced/context-caching",
-                        "packages/polyglot/advanced/custom-config",
-                        "packages/polyglot/advanced/custom-http-client",
-                        "packages/polyglot/advanced/extending",
-                        "packages/polyglot/advanced/json-schema"
-                    ]
-                },
-                {
-                    "group": "Embeddings",
-                    "pages": [
-                        "packages/polyglot/embeddings/optimization",
-                        "packages/polyglot/embeddings/overview",
-                        "packages/polyglot/embeddings/work-with-embeddings"
-                    ]
-                },
-                {
                     "group": "Essentials",
                     "pages": [
-                        "packages/polyglot/essentials/creating-requests",
-                        "packages/polyglot/essentials/inference-class",
                         "packages/polyglot/essentials/overview",
+                        "packages/polyglot/essentials/inference-class",
+                        "packages/polyglot/essentials/creating-requests",
                         "packages/polyglot/essentials/request-options",
                         "packages/polyglot/essentials/response-handling"
                     ]
                 },
                 {
-                    "group": "Internals",
-                    "pages": [
-                        "packages/polyglot/internals/adapters",
-                        "packages/polyglot/internals/configuration",
-                        "packages/polyglot/internals/events",
-                        "packages/polyglot/internals/http-client",
-                        "packages/polyglot/internals/lifecycle",
-                        "packages/polyglot/internals/overview",
-                        "packages/polyglot/internals/providers",
-                        "packages/polyglot/internals/public-api",
-                        "packages/polyglot/internals/request-response"
-                    ]
-                },
-                {
                     "group": "Modes",
                     "pages": [
+                        "packages/polyglot/modes/overview",
+                        "packages/polyglot/modes/tools",
                         "packages/polyglot/modes/json-schema",
                         "packages/polyglot/modes/json",
                         "packages/polyglot/modes/md-json",
-                        "packages/polyglot/modes/overview",
-                        "packages/polyglot/modes/text",
-                        "packages/polyglot/modes/tools"
+                        "packages/polyglot/modes/text"
                     ]
                 },
                 {
                     "group": "Streaming",
                     "pages": [
-                        "packages/polyglot/streaming/misc",
-                        "packages/polyglot/streaming/overview"
+                        "packages/polyglot/streaming/overview",
+                        "packages/polyglot/streaming/misc"
+                    ]
+                },
+                {
+                    "group": "Embeddings",
+                    "pages": [
+                        "packages/polyglot/embeddings/overview",
+                        "packages/polyglot/embeddings/work-with-embeddings",
+                        "packages/polyglot/embeddings/optimization"
+                    ]
+                },
+                {
+                    "group": "Advanced",
+                    "pages": [
+                        "packages/polyglot/advanced/custom-config",
+                        "packages/polyglot/advanced/custom-http-client",
+                        "packages/polyglot/advanced/context-caching",
+                        "packages/polyglot/advanced/connection-mgmt",
+                        "packages/polyglot/advanced/json-schema",
+                        "packages/polyglot/advanced/extending"
+                    ]
+                },
+                {
+                    "group": "Internals",
+                    "pages": [
+                        "packages/polyglot/internals/overview",
+                        "packages/polyglot/internals/lifecycle",
+                        "packages/polyglot/internals/configuration",
+                        "packages/polyglot/internals/providers",
+                        "packages/polyglot/internals/adapters",
+                        "packages/polyglot/internals/http-client",
+                        "packages/polyglot/internals/request-response",
+                        "packages/polyglot/internals/events",
+                        "packages/polyglot/internals/public-api"
                     ]
                 },
                 {
                     "group": "Troubleshooting",
                     "pages": [
+                        "packages/polyglot/troubleshooting/overview",
                         "packages/polyglot/troubleshooting/debugging",
+                        "packages/polyglot/troubleshooting/issues-connection",
                         "packages/polyglot/troubleshooting/issues-authentication",
                         "packages/polyglot/troubleshooting/issues-configuration",
-                        "packages/polyglot/troubleshooting/issues-connection",
-                        "packages/polyglot/troubleshooting/issues-model-specific",
-                        "packages/polyglot/troubleshooting/issues-provider-specific",
                         "packages/polyglot/troubleshooting/issues-rate-limits",
                         "packages/polyglot/troubleshooting/issues-streaming",
-                        "packages/polyglot/troubleshooting/overview"
+                        "packages/polyglot/troubleshooting/issues-model-specific",
+                        "packages/polyglot/troubleshooting/issues-provider-specific"
                     ]
                 }
             ]
@@ -325,31 +325,39 @@
             "group": "HTTP Client",
             "pages": [
                 "packages/http/1-overview",
-                "packages/http/10-middleware",
-                "packages/http/11-processing-with-middleware",
                 "packages/http/2-getting-started",
                 "packages/http/3-making-requests",
                 "packages/http/4-handling-responses",
                 "packages/http/5-streaming-responses",
                 "packages/http/7-changing-client",
                 "packages/http/8-changing-client-config",
-                "packages/http/9-1-custom-clients"
+                "packages/http/9-1-custom-clients",
+                "packages/http/10-middleware",
+                "packages/http/11-processing-with-middleware"
             ]
         },
         {
             "group": "Laravel",
             "pages": [
                 "packages/laravel/index",
-                "packages/laravel/advanced",
-                "packages/laravel/agents",
-                "packages/laravel/commands",
-                "packages/laravel/configuration",
-                "packages/laravel/events",
-                "packages/laravel/facades",
                 "packages/laravel/installation",
+                "packages/laravel/configuration",
+                "packages/laravel/facades",
                 "packages/laravel/response-models",
+                "packages/laravel/agents",
+                "packages/laravel/events",
+                "packages/laravel/commands",
                 "packages/laravel/testing",
+                "packages/laravel/advanced",
                 "packages/laravel/troubleshooting"
+            ]
+        },
+        {
+            "group": "Doctor",
+            "pages": [
+                "packages/doctor/index",
+                "packages/doctor/navigation-ordering",
+                "packages/doctor/package-discovery"
             ]
         },
         {

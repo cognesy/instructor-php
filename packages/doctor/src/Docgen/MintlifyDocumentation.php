@@ -21,6 +21,7 @@ class MintlifyDocumentation
     private DocsConfig $docsConfig;
     private PackageDiscovery $packageDiscovery;
     private PackageDocsBuilder $packageBuilder;
+    private DocsMetadata $metadata;
 
     public function __construct(
         private ExampleRepository $examples,
@@ -36,6 +37,7 @@ class MintlifyDocumentation
             targetBaseDir: $this->docsConfig->mintlifyTarget,
             format: 'mintlify',
         );
+        $this->metadata = new DocsMetadata();
     }
 
     public function generateAll(): GenerationResult {
@@ -372,9 +374,10 @@ class MintlifyDocumentation
             }
         }
 
-        // Sort: index first, then alphabetically
-        usort($files, fn($a, $b) => $this->sortFiles($a, $b));
-        sort($dirs);
+        // Sort using metadata (_meta.yaml, front matter) with fallback to defaults
+        $sorted = $this->metadata->sortItems($dirPath, $files, $dirs);
+        $files = $sorted['files'];
+        $dirs = $sorted['dirs'];
 
         // Add files at this level (without .mdx extension for Mintlify)
         foreach ($files as $file) {
@@ -455,12 +458,6 @@ class MintlifyDocumentation
         });
 
         return $packages;
-    }
-
-    private function sortFiles(string $a, string $b): int {
-        if (str_starts_with($a, 'index.')) return -1;
-        if (str_starts_with($b, 'index.')) return 1;
-        return strcmp($a, $b);
     }
 
     private function getReleaseNotesGroup(): NavigationGroup {

@@ -123,9 +123,9 @@ nav:
       -
         Overview: index.md
       -
-        Features: features.md
-      -
         'Getting Started': getting-started.md
+      -
+        Features: features.md
       -
         Packages: packages.md
       -
@@ -231,54 +231,59 @@ nav:
         Overview: packages/index.md
       -
         Instructor:
-          - { 'Cli Tools': packages/instructor/cli_tools.md }
           - { Introduction: packages/instructor/introduction.md }
           - { Quickstart: packages/instructor/quickstart.md }
           - { Setup: packages/instructor/setup.md }
           - { Upgrade: packages/instructor/upgrade.md }
-          - { Advanced: [{ 'Function Calls': packages/instructor/advanced/function_calls.md }, { 'Json Extraction': packages/instructor/advanced/json_extraction.md }, { 'Manual Schemas': packages/instructor/advanced/manual_schemas.md }, { 'Model Options': packages/instructor/advanced/model_options.md }, { 'Output Formats': packages/instructor/advanced/output_formats.md }, { Partials: packages/instructor/advanced/partials.md }, { Prompts: packages/instructor/advanced/prompts.md }, { Sequences: packages/instructor/advanced/sequences.md }, { 'Structure To Structure': packages/instructor/advanced/structure-to-structure.md }, { Structures: packages/instructor/advanced/structures.md }] }
+          - { 'Cli Tools': packages/instructor/cli_tools.md }
           - { Concepts: [{ Overview: packages/instructor/concepts/overview.md }, { Why: packages/instructor/concepts/why.md }] }
-          - { Essentials: [{ Configuration: packages/instructor/essentials/configuration.md }, { 'Customize Prompts': packages/instructor/essentials/customize_prompts.md }, { 'Data Model': packages/instructor/essentials/data_model.md }, { Demonstrations: packages/instructor/essentials/demonstrations.md }, { Modes: packages/instructor/essentials/modes.md }, { Scalars: packages/instructor/essentials/scalars.md }, { Usage: packages/instructor/essentials/usage.md }, { Validation: packages/instructor/essentials/validation.md }] }
-          - { Internals: [{ 'Config Files': packages/instructor/internals/config_files.md }, { 'Configuration Path': packages/instructor/internals/configuration_path.md }, { Debugging: packages/instructor/internals/debugging.md }, { Environment: packages/instructor/internals/environment.md }, { Events: packages/instructor/internals/events.md }, { Instructor: packages/instructor/internals/instructor.md }, { Lifecycle: packages/instructor/internals/lifecycle.md }, { 'Response Models': packages/instructor/internals/response_models.md }, { 'Settings Class': packages/instructor/internals/settings_class.md }] }
-          - { Misc: [{ Contributing: packages/instructor/misc/contributing.md }, { Help: packages/instructor/misc/help.md }, { 'Llm Providers': packages/instructor/misc/llm_providers.md }, { Philosophy: packages/instructor/misc/philosophy.md }] }
-          - { Techniques: [{ Classification: packages/instructor/techniques/classification.md }, { Prompting: packages/instructor/techniques/prompting.md }, { Search: packages/instructor/techniques/search.md }] }
+          - { Essentials: [{ Usage: packages/instructor/essentials/usage.md }, { 'Data Model': packages/instructor/essentials/data_model.md }, { Validation: packages/instructor/essentials/validation.md }, { Modes: packages/instructor/essentials/modes.md }, { Scalars: packages/instructor/essentials/scalars.md }, { Demonstrations: packages/instructor/essentials/demonstrations.md }, { 'Customize Prompts': packages/instructor/essentials/customize_prompts.md }, { Configuration: packages/instructor/essentials/configuration.md }] }
+          - { Advanced: [{ Partials: packages/instructor/advanced/partials.md }, { Sequences: packages/instructor/advanced/sequences.md }, { Structures: packages/instructor/advanced/structures.md }, { 'Function Calls': packages/instructor/advanced/function_calls.md }, { 'Manual Schemas': packages/instructor/advanced/manual_schemas.md }, { 'Json Extraction': packages/instructor/advanced/json_extraction.md }, { 'Output Formats': packages/instructor/advanced/output_formats.md }, { Prompts: packages/instructor/advanced/prompts.md }, { 'Model Options': packages/instructor/advanced/model_options.md }, { 'Structure To Structure': packages/instructor/advanced/structure-to-structure.md }] }
+          - { Techniques: [{ Prompting: packages/instructor/techniques/prompting.md }, { Classification: packages/instructor/techniques/classification.md }, { Search: packages/instructor/techniques/search.md }] }
+          - { Internals: [{ Instructor: packages/instructor/internals/instructor.md }, { Lifecycle: packages/instructor/internals/lifecycle.md }, { 'Configuration Path': packages/instructor/internals/configuration_path.md }, { 'Config Files': packages/instructor/internals/config_files.md }, { 'Settings Class': packages/instructor/internals/settings_class.md }, { Environment: packages/instructor/internals/environment.md }, { Events: packages/instructor/internals/events.md }, { 'Response Models': packages/instructor/internals/response_models.md }, { Debugging: packages/instructor/internals/debugging.md }] }
+          - { Misc: [{ Help: packages/instructor/misc/help.md }, { 'Llm Providers': packages/instructor/misc/llm_providers.md }, { Philosophy: packages/instructor/misc/philosophy.md }, { Contributing: packages/instructor/misc/contributing.md }] }
       -
         Polyglot:
           - { Overview: packages/polyglot/overview.md }
           - { Quickstart: packages/polyglot/quickstart.md }
           - { Setup: packages/polyglot/setup.md }
-          - { Advanced: [{ 'Connection Mgmt': packages/polyglot/advanced/connection-mgmt.md }, { 'Context Caching': packages/polyglot/advanced/context-caching.md }, { 'Custom Config': packages/polyglot/advanced/custom-config.md }, { 'Custom Http Client': packages/polyglot/advanced/custom-http-client.md }, { Extending: packages/polyglot/advanced/extending.md }, { 'Json Schema': packages/polyglot/advanced/json-schema.md }] }
-          - { Embeddings: [{ Optimization: packages/polyglot/embeddings/optimization.md }, { Overview: packages/polyglot/embeddings/overview.md }, { 'Work With Embeddings': packages/polyglot/embeddings/work-with-embeddings.md }] }
-          - { Essentials: [{ 'Creating Requests': packages/polyglot/essentials/creating-requests.md }, { 'Inference Class': packages/polyglot/essentials/inference-class.md }, { Overview: packages/polyglot/essentials/overview.md }, { 'Request Options': packages/polyglot/essentials/request-options.md }, { 'Response Handling': packages/polyglot/essentials/response-handling.md }] }
-          - { Internals: [{ Adapters: packages/polyglot/internals/adapters.md }, { Configuration: packages/polyglot/internals/configuration.md }, { Events: packages/polyglot/internals/events.md }, { 'Http Client': packages/polyglot/internals/http-client.md }, { Lifecycle: packages/polyglot/internals/lifecycle.md }, { Overview: packages/polyglot/internals/overview.md }, { Providers: packages/polyglot/internals/providers.md }, { 'Public Api': packages/polyglot/internals/public-api.md }, { 'Request Response': packages/polyglot/internals/request-response.md }] }
-          - { Modes: [{ 'Json Schema': packages/polyglot/modes/json-schema.md }, { Json: packages/polyglot/modes/json.md }, { 'Md Json': packages/polyglot/modes/md-json.md }, { Overview: packages/polyglot/modes/overview.md }, { Text: packages/polyglot/modes/text.md }, { Tools: packages/polyglot/modes/tools.md }] }
-          - { Streaming: [{ Misc: packages/polyglot/streaming/misc.md }, { Overview: packages/polyglot/streaming/overview.md }] }
-          - { Troubleshooting: [{ Debugging: packages/polyglot/troubleshooting/debugging.md }, { 'Issues Authentication': packages/polyglot/troubleshooting/issues-authentication.md }, { 'Issues Configuration': packages/polyglot/troubleshooting/issues-configuration.md }, { 'Issues Connection': packages/polyglot/troubleshooting/issues-connection.md }, { 'Issues Model Specific': packages/polyglot/troubleshooting/issues-model-specific.md }, { 'Issues Provider Specific': packages/polyglot/troubleshooting/issues-provider-specific.md }, { 'Issues Rate Limits': packages/polyglot/troubleshooting/issues-rate-limits.md }, { 'Issues Streaming': packages/polyglot/troubleshooting/issues-streaming.md }, { Overview: packages/polyglot/troubleshooting/overview.md }] }
+          - { Essentials: [{ Overview: packages/polyglot/essentials/overview.md }, { 'Inference Class': packages/polyglot/essentials/inference-class.md }, { 'Creating Requests': packages/polyglot/essentials/creating-requests.md }, { 'Request Options': packages/polyglot/essentials/request-options.md }, { 'Response Handling': packages/polyglot/essentials/response-handling.md }] }
+          - { Modes: [{ Overview: packages/polyglot/modes/overview.md }, { Tools: packages/polyglot/modes/tools.md }, { 'Json Schema': packages/polyglot/modes/json-schema.md }, { Json: packages/polyglot/modes/json.md }, { 'Md Json': packages/polyglot/modes/md-json.md }, { Text: packages/polyglot/modes/text.md }] }
+          - { Streaming: [{ Overview: packages/polyglot/streaming/overview.md }, { Misc: packages/polyglot/streaming/misc.md }] }
+          - { Embeddings: [{ Overview: packages/polyglot/embeddings/overview.md }, { 'Work With Embeddings': packages/polyglot/embeddings/work-with-embeddings.md }, { Optimization: packages/polyglot/embeddings/optimization.md }] }
+          - { Advanced: [{ 'Custom Config': packages/polyglot/advanced/custom-config.md }, { 'Custom Http Client': packages/polyglot/advanced/custom-http-client.md }, { 'Context Caching': packages/polyglot/advanced/context-caching.md }, { 'Connection Mgmt': packages/polyglot/advanced/connection-mgmt.md }, { 'Json Schema': packages/polyglot/advanced/json-schema.md }, { Extending: packages/polyglot/advanced/extending.md }] }
+          - { Internals: [{ Overview: packages/polyglot/internals/overview.md }, { Lifecycle: packages/polyglot/internals/lifecycle.md }, { Configuration: packages/polyglot/internals/configuration.md }, { Providers: packages/polyglot/internals/providers.md }, { Adapters: packages/polyglot/internals/adapters.md }, { 'Http Client': packages/polyglot/internals/http-client.md }, { 'Request Response': packages/polyglot/internals/request-response.md }, { Events: packages/polyglot/internals/events.md }, { 'Public Api': packages/polyglot/internals/public-api.md }] }
+          - { Troubleshooting: [{ Overview: packages/polyglot/troubleshooting/overview.md }, { Debugging: packages/polyglot/troubleshooting/debugging.md }, { 'Issues Connection': packages/polyglot/troubleshooting/issues-connection.md }, { 'Issues Authentication': packages/polyglot/troubleshooting/issues-authentication.md }, { 'Issues Configuration': packages/polyglot/troubleshooting/issues-configuration.md }, { 'Issues Rate Limits': packages/polyglot/troubleshooting/issues-rate-limits.md }, { 'Issues Streaming': packages/polyglot/troubleshooting/issues-streaming.md }, { 'Issues Model Specific': packages/polyglot/troubleshooting/issues-model-specific.md }, { 'Issues Provider Specific': packages/polyglot/troubleshooting/issues-provider-specific.md }] }
       -
         'HTTP Client':
           - { Overview: packages/http/1-overview.md }
-          - { Middleware: packages/http/10-middleware.md }
-          - { 'Processing With Middleware': packages/http/11-processing-with-middleware.md }
           - { 'Getting Started': packages/http/2-getting-started.md }
           - { 'Making Requests': packages/http/3-making-requests.md }
           - { 'Handling Responses': packages/http/4-handling-responses.md }
           - { 'Streaming Responses': packages/http/5-streaming-responses.md }
           - { 'Changing Client': packages/http/7-changing-client.md }
           - { 'Changing Client Config': packages/http/8-changing-client-config.md }
-          - { '1 Custom Clients': packages/http/9-1-custom-clients.md }
+          - { 'Custom Clients': packages/http/9-1-custom-clients.md }
+          - { Middleware: packages/http/10-middleware.md }
+          - { 'Processing With Middleware': packages/http/11-processing-with-middleware.md }
       -
         Laravel:
           - { Overview: packages/laravel/index.md }
-          - { Advanced: packages/laravel/advanced.md }
-          - { Agents: packages/laravel/agents.md }
-          - { Commands: packages/laravel/commands.md }
-          - { Configuration: packages/laravel/configuration.md }
-          - { Events: packages/laravel/events.md }
-          - { Facades: packages/laravel/facades.md }
           - { Installation: packages/laravel/installation.md }
+          - { Configuration: packages/laravel/configuration.md }
+          - { Facades: packages/laravel/facades.md }
           - { 'Response Models': packages/laravel/response-models.md }
+          - { Agents: packages/laravel/agents.md }
+          - { Events: packages/laravel/events.md }
+          - { Commands: packages/laravel/commands.md }
           - { Testing: packages/laravel/testing.md }
+          - { Advanced: packages/laravel/advanced.md }
           - { Troubleshooting: packages/laravel/troubleshooting.md }
+      -
+        Doctor:
+          - { Overview: packages/doctor/index.md }
+          - { 'Navigation Ordering': packages/doctor/navigation-ordering.md }
+          - { 'Package Discovery': packages/doctor/package-discovery.md }
   -
     Cookbook:
       -

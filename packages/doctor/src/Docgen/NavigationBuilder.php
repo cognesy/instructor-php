@@ -16,11 +16,15 @@ use Cognesy\InstructorHub\Data\ExampleGroup;
  */
 class NavigationBuilder
 {
+    private DocsMetadata $metadata;
+
     public function __construct(
         private DocsConfig $config,
         private string $targetDir,
         private string $format = 'mkdocs', // 'mkdocs' or 'mintlify'
-    ) {}
+    ) {
+        $this->metadata = new DocsMetadata();
+    }
 
     /**
      * Build complete MkDocs navigation array
@@ -59,20 +63,14 @@ class NavigationBuilder
         $nav = [];
 
         // Scan for markdown files in docs root (excluding special directories)
-        $files = glob($this->targetDir . '/*.md') ?: [];
-        $excludeDirs = ['cookbook', 'release-notes', 'packages', 'snippets', 'images'];
+        $allFiles = glob($this->targetDir . '/*.md') ?: [];
+        $files = array_map('basename', $allFiles);
 
-        // Sort files: index first, then alphabetically
-        usort($files, function($a, $b) {
-            $aName = basename($a);
-            $bName = basename($b);
-            if ($aName === 'index.md') return -1;
-            if ($bName === 'index.md') return 1;
-            return strcmp($aName, $bName);
-        });
+        // Sort using metadata with fallback to defaults
+        $sorted = $this->metadata->sortItems($this->targetDir, $files, []);
+        $files = $sorted['files'];
 
-        foreach ($files as $file) {
-            $filename = basename($file);
+        foreach ($files as $filename) {
             $title = $this->formatTitle(basename($filename, '.md'));
             $nav[] = [$title => $filename];
         }
@@ -150,9 +148,10 @@ class NavigationBuilder
             }
         }
 
-        // Sort: index first, then alphabetically
-        usort($files, fn($a, $b) => $this->sortFiles($a, $b));
-        sort($dirs);
+        // Sort using metadata (_meta.yaml, front matter) with fallback to defaults
+        $sorted = $this->metadata->sortItems($dirPath, $files, $dirs);
+        $files = $sorted['files'];
+        $dirs = $sorted['dirs'];
 
         // Add files
         foreach ($files as $file) {
@@ -262,16 +261,6 @@ class NavigationBuilder
     }
 
     /**
-     * Sort files: index first, then alphabetically
-     */
-    private function sortFiles(string $a, string $b): int
-    {
-        if (str_starts_with($a, 'index.')) return -1;
-        if (str_starts_with($b, 'index.')) return 1;
-        return strcmp($a, $b);
-    }
-
-    /**
      * Format title from filename or directory name
      */
     private function formatTitle(string $name): string
@@ -291,8 +280,9 @@ class NavigationBuilder
             return $specialCases[$lower];
         }
 
-        // Handle numbered prefixes like "1-overview" or "01_setup"
-        $name = preg_replace('/^\d+[-_]/', '', $name);
+        // Handle numbered prefixes like "1-overview", "01_setup", or "9-1-custom-clients"
+        // Repeat to handle multiple prefixes (e.g., "9-1-" becomes "")
+        $name = preg_replace('/^(\d+[-_])+/', '', $name);
 
         return ucwords(str_replace(['-', '_'], ' ', $name));
     }
