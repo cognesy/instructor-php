@@ -4,6 +4,7 @@ namespace Cognesy\Addons\StepByStep;
 
 use Cognesy\Addons\StepByStep\Contracts\CanExecuteIteratively;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
+use Cognesy\Addons\StepByStep\State\Contracts\CanMarkExecutionStarted;
 use Throwable;
 
 /**
@@ -91,7 +92,7 @@ abstract class StepByStep implements CanExecuteIteratively
      * @return TState
      */
     protected function markExecutionStartedIfSupported(object $state): object {
-        if (method_exists($state, 'markExecutionStarted')) {
+        if ($state instanceof CanMarkExecutionStarted) {
             return $state->markExecutionStarted();
         }
         return $state;

@@ -14,7 +14,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'population', 'founded'],
 );
 
-$response = (new Inference)
+$data = (new Inference)
     ->using('openai')
     //->withDebugPreset('on')
     ->with(
@@ -36,9 +36,7 @@ $response = (new Inference)
         options: ['max_tokens' => 64],
         mode: OutputMode::Tools,
     )
-    ->response();
-
-$data = $response->findJsonData(OutputMode::Tools)->toArray();
+    ->asJsonData();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";

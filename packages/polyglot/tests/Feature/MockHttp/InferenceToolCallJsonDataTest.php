@@ -32,15 +32,13 @@ it('extracts tool call arguments as json data', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
+    $data = (new Inference())
         ->withHttpClient($http)
         ->using('openai')
         ->withModel('gpt-4o-mini')
         ->withOutputMode(OutputMode::Tools)
         ->withMessages('Provide city data')
-        ->response();
-
-    $data = $response->findJsonData(OutputMode::Tools)->toArray();
+        ->asJsonData();
 
     expect($data)->toBe([
         'name' => 'Paris',

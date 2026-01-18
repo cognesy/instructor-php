@@ -19,9 +19,7 @@ echo "ASSISTANT: {$response->content()}\n";
 echo "REASONING: {$response->reasoningContent()}\n";
 assert($response->content() !== '');
 assert(Str::contains($response->content(), 'Paris'));
-if ($response->reasoningContent() === '') {
-    print("Note: reasoningContent is empty. This depends on model support and settings.\n");
-}
+assert($response->reasoningContent() !== '');
 
 
 // EXAMPLE 2: streaming response
@@ -46,7 +44,5 @@ echo "\n";
 echo "REASONING: {$stream->final()->reasoningContent()}\n";
 assert($stream->final()->content() !== '');
 assert(Str::contains($stream->final()->content(), 'Brasília'));
-if ($stream->final()->reasoningContent() === '') {
-    print("Note: reasoningContent is empty for streamed response. This depends on model support and settings.\n");
-}
+assert($stream->final()->reasoningContent() !== '');
 ?>

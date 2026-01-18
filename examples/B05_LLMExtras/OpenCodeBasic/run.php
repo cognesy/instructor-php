@@ -6,12 +6,11 @@ use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Application\Parser\ResponseParser;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 
-$openCodePath = trim((string) shell_exec('command -v opencode'));
-$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
-if ($openCodePath === '' || $stdbufPath === '') {
-    print("OpenCode CLI or stdbuf not found. Install OpenCode CLI and coreutils before running this example.\n");
-    exit(0);
+if (ProcUtils::findOnPath('opencode', ProcUtils::defaultBinPaths()) === null) {
+    print("OpenCode CLI not found. Install OpenCode CLI before running this example.\n");
+    exit(1);
 }
 
 // Step 1: Create a request with a simple prompt

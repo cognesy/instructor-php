@@ -4,7 +4,9 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
  * Guard: Forbids continuation when the current step reports execution errors.
@@ -15,7 +17,7 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
  * @template TState of object
  * @implements CanDecideToContinue<TState>
  */
-final readonly class ErrorPresenceCheck implements CanDecideToContinue
+final readonly class ErrorPresenceCheck implements CanDecideToContinue, CanProvideStopReason
 {
     /** @var Closure(TState): bool */
     private Closure $hasErrorsResolver;
@@ -40,5 +42,13 @@ final readonly class ErrorPresenceCheck implements CanDecideToContinue
         return $hasErrors
             ? ContinuationDecision::ForbidContinuation
             : ContinuationDecision::AllowContinuation;
+    }
+
+    #[\Override]
+    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
+        return match ($decision) {
+            ContinuationDecision::ForbidContinuation => StopReason::GuardForbade,
+            default => null,
+        };
     }
 }

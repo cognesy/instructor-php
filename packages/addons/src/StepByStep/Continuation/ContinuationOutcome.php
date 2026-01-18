@@ -48,6 +48,7 @@ final readonly class ContinuationOutcome
                     'criterion' => $evaluation->criterionClass,
                     'decision' => $evaluation->decision->value,
                     'reason' => $evaluation->reason,
+                    'stopReason' => $evaluation->stopReason?->value,
                     'context' => $evaluation->context,
                 ],
                 $this->evaluations,

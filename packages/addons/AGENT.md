@@ -354,6 +354,7 @@ $agent = AgentBuilder::base()
     ->addContinuationCriteria($customCriteria)
     ->build();
 ```
+Custom criteria can implement `CanProvideStopReason` to set explicit `stopReason` values in `ContinuationOutcome`.
 
 ### State Processors
 Modify state after each step:
@@ -603,7 +604,10 @@ $state->stepAt(0);          // Step by index
 $state->messages();         // All messages
 $state->usage();            // Token usage
 $state->metadata();         // Key-value store
+$state->recordStep($step);  // Add step + stamp start time
+$state->failWith($error);   // Mark failed + record failure step
 ```
+AgentState implements optional execution hook interfaces (`CanMarkExecutionStarted`, `CanMarkStepStarted`, `CanTrackExecutionTime`) used by StepByStep for timing and lifecycle tracking.
 
 ### AgentStep
 Single execution step with inference response and tool results.

@@ -22,6 +22,8 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
+use Cognesy\Addons\StepByStep\State\Contracts\CanMarkStepStarted;
+use Cognesy\Addons\StepByStep\State\Contracts\CanTrackExecutionTime;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
@@ -100,12 +102,7 @@ class Agent extends StepByStep
     protected function applyStep(object $state, object $nextStep): AgentState {
         assert($state instanceof AgentState);
         assert($nextStep instanceof AgentStep);
-        // Mark when step execution started (for duration calculation)
-        $startedAt = $state->currentStepStartedAt ?? new DateTimeImmutable();
-        $newState = $state
-            ->withCurrentStepStartedAt($startedAt)
-            ->withAddedStep($nextStep)
-            ->withCurrentStep($nextStep);
+        $newState = $state->recordStep($nextStep);
         $this->emitAgentStateUpdated($newState);
         return $newState;
     }
@@ -140,14 +137,8 @@ class Agent extends StepByStep
         $failure = $error instanceof AgentException
             ? $error
             : AgentException::fromThrowable($error);
-        $failureStep = AgentStep::failure(
-            inputMessages: $state->messages(),
-            error: $failure,
-        );
-        $failedState = $this->applyStep(
-            state: $state->withStatus(AgentStatus::Failed),
-            nextStep: $failureStep,
-        );
+        $failedState = $state->failWith($failure);
+        $this->emitAgentStateUpdated($failedState);
         $this->emitAgentFailed($failedState, $failure);
         return $failedState;
     }
@@ -333,16 +324,17 @@ class Agent extends StepByStep
     }
 
     private function markStepStartedIfSupported(object $state): object {
-        if (method_exists($state, 'markStepStarted')) {
+        if ($state instanceof CanMarkStepStarted) {
             return $state->markStepStarted();
         }
         return $state;
     }
 
     private function addExecutionTimeIfSupported(AgentState $state, float $seconds): AgentState {
-        return $state->withStateInfo(
-            $state->stateInfo()->addExecutionTime($seconds),
-        );
+        if ($state instanceof CanTrackExecutionTime) {
+            return $state->withAddedExecutionTime($seconds);
+        }
+        return $state;
     }
 
     /**

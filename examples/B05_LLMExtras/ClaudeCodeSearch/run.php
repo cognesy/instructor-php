@@ -15,12 +15,11 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
 use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 
-$claudePath = trim((string) shell_exec('command -v claude'));
-$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
-if ($claudePath === '' || $stdbufPath === '') {
-    print("Claude CLI or stdbuf not found. Install Claude Code CLI and coreutils before running this example.\n");
-    exit(0);
+if (ProcUtils::findOnPath('claude', ProcUtils::defaultBinPaths()) === null) {
+    print("Claude CLI not found. Install Claude Code CLI before running this example.\n");
+    exit(1);
 }
 
 // Ensure we're running from monorepo root

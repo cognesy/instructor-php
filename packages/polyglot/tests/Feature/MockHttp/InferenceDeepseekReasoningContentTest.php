@@ -32,3 +32,31 @@ it('captures reasoning content from Deepseek responses', function () {
     expect($response->content())->toBe('Paris');
     expect($response->reasoningContent())->toBe('France capital lookup reasoning.');
 });
+
+it('extracts reasoning content from think tags when field is missing', function () {
+    $mock = new MockHttpDriver();
+    $mock->on()
+        ->post('https://api.deepseek.com/chat/completions')
+        ->replyJson([
+            'choices' => [[
+                'message' => [
+                    'content' => '<think>Reasoning steps.</think>Paris',
+                ],
+                'finish_reason' => 'stop',
+            ]],
+            'usage' => [
+                'prompt_tokens' => 5,
+                'completion_tokens' => 1,
+            ],
+        ]);
+    $http = (new HttpClientBuilder())->withDriver($mock)->create();
+
+    $response = (new Inference())
+        ->withHttpClient($http)
+        ->using('deepseek-r')
+        ->withMessages('Q?')
+        ->response();
+
+    expect($response->content())->toBe('Paris');
+    expect($response->reasoningContent())->toBe('Reasoning steps.');
+});

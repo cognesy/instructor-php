@@ -208,3 +208,18 @@ it('accumulates reasoning content across deltas', function () {
     $res = InferenceResponse::fromAccumulatedPartial($acc);
     expect($res->reasoningContent())->toBe('First I think about it');
 });
+
+it('extracts reasoning content from think tags in accumulated content', function () {
+    $partials = [
+        new PartialInferenceResponse(contentDelta: '<think>Because it is.</think>Paris', usage: new Usage()),
+    ];
+
+    $acc = PartialInferenceResponse::empty();
+    foreach ($partials as $p) {
+        if ($p) { $acc = $p->withAccumulatedContent($acc); }
+    }
+
+    $res = InferenceResponse::fromAccumulatedPartial($acc);
+    expect($res->reasoningContent())->toBe('Because it is.')
+        ->and($res->content())->toBe('Paris');
+});

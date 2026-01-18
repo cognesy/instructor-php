@@ -6,6 +6,7 @@ use Cognesy\AgentCtrl\Common\Value\Argv;
 use Cognesy\AgentCtrl\Common\Value\CommandSpec;
 use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 use InvalidArgumentException;
 
 /**
@@ -20,8 +21,7 @@ final class OpenCodeCommandBuilder
     {
         $this->validate($request);
 
-        // Use stdbuf for unbuffered output (Linux only)
-        $argv = Argv::of(['stdbuf', '-o0', 'opencode', 'run']);
+        $argv = $this->baseArgv(['opencode', 'run']);
 
         // Add flags before prompt
         $argv = $this->appendOutputFormat($argv, $request->outputFormat());
@@ -173,5 +173,42 @@ final class OpenCodeCommandBuilder
                 'Cannot set both continueSession and sessionId'
             );
         }
+    }
+
+    /**
+     * @param list<string> $command
+     */
+    private function baseArgv(array $command): Argv
+    {
+        $prefix = $this->stdbufPrefix();
+        return match (true) {
+            $prefix === null => Argv::of($command),
+            default => Argv::of(array_merge($prefix, $command)),
+        };
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    private function stdbufPrefix(): ?array
+    {
+        $override = getenv('COGNESY_STDBUF');
+        return match (true) {
+            $override === '0' => null,
+            $override === '1' => ['stdbuf', '-o0'],
+            $this->isWindows() => null,
+            $this->isStdbufAvailable() => ['stdbuf', '-o0'],
+            default => null,
+        };
+    }
+
+    private function isStdbufAvailable(): bool
+    {
+        return ProcUtils::findOnPath('stdbuf', ProcUtils::defaultBinPaths()) !== null;
+    }
+
+    private function isWindows(): bool
+    {
+        return str_starts_with(strtoupper(PHP_OS), 'WIN');
     }
 }

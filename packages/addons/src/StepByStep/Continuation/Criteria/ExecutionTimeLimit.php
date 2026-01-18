@@ -4,7 +4,9 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
 use Cognesy\Utils\Time\ClockInterface;
 use Cognesy\Utils\Time\SystemClock;
 use DateTimeImmutable;
@@ -24,7 +26,7 @@ use DateTimeImmutable;
  * @template TState of object
  * @implements CanDecideToContinue<TState>
  */
-final readonly class ExecutionTimeLimit implements CanDecideToContinue
+final readonly class ExecutionTimeLimit implements CanDecideToContinue, CanProvideStopReason
 {
     /** @var Closure(TState): DateTimeImmutable */
     private Closure $startedAtResolver;
@@ -65,5 +67,13 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue
         return $elapsedSeconds < $this->maxSeconds
             ? ContinuationDecision::AllowContinuation
             : ContinuationDecision::ForbidContinuation;
+    }
+
+    #[\Override]
+    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
+        return match ($decision) {
+            ContinuationDecision::ForbidContinuation => StopReason::TimeLimitReached,
+            default => null,
+        };
     }
 }

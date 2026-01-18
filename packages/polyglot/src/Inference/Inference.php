@@ -90,21 +90,23 @@ class Inference
     // INVOCATION //////////////////////////////////////////////////////////
 
     public function with(
-        string|array $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = [],
-        array        $responseFormat = [],
-        array        $options = [],
+        string|array|null $messages = null,
+        ?string      $model = null,
+        ?array       $tools = null,
+        string|array|null $toolChoice = null,
+        ?array       $responseFormat = null,
+        ?array       $options = null,
         ?OutputMode  $mode = null,
     ) : static {
-        $this->requestBuilder->withMessages($messages);
-        $this->requestBuilder->withModel($model);
-        $this->requestBuilder->withTools($tools);
-        $this->requestBuilder->withToolChoice($toolChoice);
-        $this->requestBuilder->withResponseFormat($responseFormat);
-        $this->requestBuilder->withOptions($options);
-        $this->requestBuilder->withOutputMode($mode);
+        $this->requestBuilder->with(
+            messages: $messages,
+            model: $model,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            responseFormat: $responseFormat,
+            options: $options,
+            mode: $mode,
+        );
         return $this;
     }
 

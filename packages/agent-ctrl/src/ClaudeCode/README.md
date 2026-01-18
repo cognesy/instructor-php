@@ -652,13 +652,13 @@ $policy = ExecutionPolicy::custom(baseDir: '/path/to/your/project');
 
 ### 5. stdbuf Prefix
 
-The `ClaudeCommandBuilder` automatically prefixes commands with `stdbuf -o0`:
+The `ClaudeCommandBuilder` prefixes commands with `stdbuf -o0` when it is available:
 
 ```bash
 stdbuf -o0 claude -p "..." --output-format stream-json
 ```
 
-This disables output buffering for better real-time streaming. **Do not remove this** unless you know what you're doing.
+This disables output buffering for better real-time streaming. If `stdbuf` is missing (common on macOS), the builder falls back to running the CLI directly. You can override behavior with `COGNESY_STDBUF=1` (force) or `COGNESY_STDBUF=0` (disable).
 
 ### 6. Permission Modes
 

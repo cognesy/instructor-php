@@ -4,12 +4,16 @@ namespace Cognesy\Addons\Agent\Core\Data;
 
 use Cognesy\Addons\Agent\Core\Collections\AgentSteps;
 use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Addons\Agent\Core\Traits\State\HandlesAgentSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMetadata;
 use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
 use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
 use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
+use Cognesy\Addons\StepByStep\State\Contracts\CanMarkExecutionStarted;
+use Cognesy\Addons\StepByStep\State\Contracts\CanMarkStepStarted;
+use Cognesy\Addons\StepByStep\State\Contracts\CanTrackExecutionTime;
 use Cognesy\Addons\StepByStep\State\StateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesMessageStore;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
@@ -24,7 +28,7 @@ use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 /** @implements HasSteps<AgentStep> */
-final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadata, HasUsage, HasStateInfo
+final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadata, HasUsage, HasStateInfo, CanMarkExecutionStarted, CanMarkStepStarted, CanTrackExecutionTime
 {
     use HandlesMessageStore;
     use HandlesMetadata;
@@ -135,6 +139,38 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
      */
     public function markExecutionStarted() : self {
         return $this->with(executionStartedAt: new DateTimeImmutable());
+    }
+
+    public function withAddedExecutionTime(float $seconds) : self {
+        return $this->withStateInfo(
+            $this->stateInfo()->addExecutionTime($seconds),
+        );
+    }
+
+    public function recordStep(AgentStep $step, ?DateTimeImmutable $startedAt = null) : self {
+        $resolvedStartedAt = $startedAt;
+        if ($resolvedStartedAt === null) {
+            $resolvedStartedAt = $this->currentStepStartedAt;
+        }
+        if ($resolvedStartedAt === null) {
+            $resolvedStartedAt = new DateTimeImmutable();
+        }
+
+        return $this
+            ->withCurrentStepStartedAt($resolvedStartedAt)
+            ->withAddedStep($step)
+            ->withCurrentStep($step);
+    }
+
+    public function failWith(AgentException $error) : self {
+        $failureStep = AgentStep::failure(
+            inputMessages: $this->messages(),
+            error: $error,
+        );
+
+        return $this
+            ->withStatus(AgentStatus::Failed)
+            ->recordStep($failureStep);
     }
 
     /**

@@ -8,14 +8,14 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Value\Argv;
 use Cognesy\AgentCtrl\Common\Value\CommandSpec;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 
 final class ClaudeCommandBuilder
 {
     public function buildHeadless(ClaudeRequest $request) : CommandSpec {
         $this->validate($request);
 
-        // Use stdbuf to disable output buffering for real-time streaming
-        $argv = Argv::of(['stdbuf', '-o0', 'claude']);
+        $argv = $this->baseArgv(['claude']);
         $argv = $this->appendSessionFlags($argv, $request->continueMostRecent(), $request->resumeSessionId());
         $argv = $argv->with('-p')->with($request->prompt());
         $argv = $this->appendPermissionMode($argv, $request->permissionMode());
@@ -182,5 +182,38 @@ final class ClaudeCommandBuilder
         if ($request->inputFormat() === InputFormat::StreamJson && $request->outputFormat() !== OutputFormat::StreamJson) {
             throw new \InvalidArgumentException('stream-json input requires output format stream-json');
         }
+    }
+
+    /**
+     * @param list<string> $command
+     */
+    private function baseArgv(array $command) : Argv {
+        $prefix = $this->stdbufPrefix();
+        return match (true) {
+            $prefix === null => Argv::of($command),
+            default => Argv::of(array_merge($prefix, $command)),
+        };
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    private function stdbufPrefix() : ?array {
+        $override = getenv('COGNESY_STDBUF');
+        return match (true) {
+            $override === '0' => null,
+            $override === '1' => ['stdbuf', '-o0'],
+            $this->isWindows() => null,
+            $this->isStdbufAvailable() => ['stdbuf', '-o0'],
+            default => null,
+        };
+    }
+
+    private function isStdbufAvailable() : bool {
+        return ProcUtils::findOnPath('stdbuf', ProcUtils::defaultBinPaths()) !== null;
+    }
+
+    private function isWindows() : bool {
+        return str_starts_with(strtoupper(PHP_OS), 'WIN');
     }
 }

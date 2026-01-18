@@ -5,6 +5,7 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicBodyFormat;
+use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 
 it('Anthropic: system + user mapping and cache_control on cached system', function () {
@@ -75,3 +76,35 @@ it('Anthropic: tool_choice includes disable_parallel_tool_use flag', function ()
     expect($json['tool_choice']['disable_parallel_tool_use'] ?? null)->toBeTrue();
 });
 
+it('Anthropic: cache_control applied to last cached message', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://api.anthropic.com',
+        apiKey: 'KEY',
+        endpoint: '/v1/messages',
+        model: 'claude-3-sonnet',
+        driver: 'anthropic',
+    );
+
+    $body = new AnthropicBodyFormat($config, new AnthropicMessageFormat());
+
+    $cached = new CachedContext(
+        messages: [
+            ['role' => 'user', 'content' => 'Cached one.'],
+            ['role' => 'assistant', 'content' => 'Cached two.'],
+        ],
+    );
+
+    $req = new InferenceRequest(
+        messages: Messages::fromAny([['role' => 'user', 'content' => 'Live message.']]),
+        model: 'claude-3-sonnet',
+        cachedContext: $cached,
+    );
+
+    $json = $body->toRequestBody($req);
+    $messages = $json['messages'] ?? [];
+
+    expect(is_array($messages[0]['content'] ?? null))->toBeFalse();
+    expect(is_array($messages[1]['content'] ?? null))->toBeTrue();
+    expect($messages[1]['content'][0]['cache_control']['type'] ?? null)->toBe('ephemeral');
+    expect(is_array($messages[2]['content'] ?? null))->toBeFalse();
+});

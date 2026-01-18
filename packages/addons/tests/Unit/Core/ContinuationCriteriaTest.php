@@ -3,6 +3,7 @@
 namespace Tests\Addons\Unit\Core;
 
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
@@ -44,6 +45,26 @@ final class CountingToolUseCriterion implements CanDecideToContinue
     {
         $this->counter->increment();
         return $this->result;
+    }
+}
+
+final class StopReasonCriterion implements CanDecideToContinue, CanProvideStopReason
+{
+    public function __construct(private StopReason $stopReason) {}
+
+    #[\Override]
+    public function decide(object $state): ContinuationDecision
+    {
+        return ContinuationDecision::ForbidContinuation;
+    }
+
+    #[\Override]
+    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason
+    {
+        return match ($decision) {
+            ContinuationDecision::ForbidContinuation => $this->stopReason,
+            default => null,
+        };
     }
 }
 
@@ -182,6 +203,16 @@ it('evaluation returns forbid outcome when guard forbids', function () {
     expect($outcome->decision)->toBe(ContinuationDecision::AllowStop);
     expect($outcome->getForbiddingCriterion())->toBe(CountingToolUseCriterion::class);
     expect($outcome->stopReason)->toBe(StopReason::GuardForbade);
+});
+
+it('uses explicit stop reason from criteria when provided', function () {
+    $criteria = new ContinuationCriteria(
+        new StopReasonCriterion(StopReason::UserRequested),
+    );
+
+    $outcome = $criteria->evaluate(new ToolUseState());
+
+    expect($outcome->stopReason)->toBe(StopReason::UserRequested);
 });
 
 it('evaluation returns request outcome when work is requested', function () {

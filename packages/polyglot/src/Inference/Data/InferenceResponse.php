@@ -15,6 +15,9 @@ use DateTimeImmutable;
  */
 final readonly class InferenceResponse
 {
+    private const THINK_START_TAG = '<think>';
+    private const THINK_END_TAG = '</think>';
+
     public string $id;
     public DateTimeImmutable $createdAt;
     public DateTimeImmutable $updatedAt;
@@ -65,7 +68,7 @@ final readonly class InferenceResponse
     }
 
     public static function fromAccumulatedPartial(PartialInferenceResponse $partial): InferenceResponse {
-        return new InferenceResponse(
+        $response = new InferenceResponse(
             content: $partial->content(),
             finishReason: $partial->finishReason(),
             toolCalls: $partial->toolCalls(),
@@ -74,6 +77,7 @@ final readonly class InferenceResponse
             responseData: $partial->responseData,
             isPartial: false,
         );
+        return $response->withReasoningContentFallbackFromContent();
     }
 
     // ACCESSORS /////////////////////////////////////////////
@@ -191,6 +195,20 @@ final readonly class InferenceResponse
         return $this->with(content: $content);
     }
 
+    public function withReasoningContentFallbackFromContent(): self {
+        if ($this->reasoningContent !== '') {
+            return $this;
+        }
+        $split = self::splitThinkTags($this->content);
+        if ($split === null) {
+            return $this;
+        }
+        return $this->with(
+            content: $split->content,
+            reasoningContent: $split->reasoningContent,
+        );
+    }
+
     // SERIALIZATION /////////////////////////////////////////
 
     public function toArray(): array {
@@ -231,5 +249,31 @@ final readonly class InferenceResponse
             InferenceFinishReason::ContentFilter,
             InferenceFinishReason::Length,
         );
+    }
+
+    private static function splitThinkTags(string $content): ?ReasoningContentSplit {
+        $start = strpos($content, self::THINK_START_TAG);
+        if ($start === false) {
+            return null;
+        }
+        $end = strpos($content, self::THINK_END_TAG);
+        if ($end === false) {
+            return null;
+        }
+        if ($end <= $start) {
+            return null;
+        }
+
+        $startPos = $start + strlen(self::THINK_START_TAG);
+        $reasoning = substr($content, $startPos, $end - $startPos);
+        if ($reasoning === '') {
+            return null;
+        }
+
+        $before = substr($content, 0, $start);
+        $after = substr($content, $end + strlen(self::THINK_END_TAG));
+        $cleanContent = trim($before . $after);
+
+        return new ReasoningContentSplit($cleanContent, $reasoning);
     }
 }

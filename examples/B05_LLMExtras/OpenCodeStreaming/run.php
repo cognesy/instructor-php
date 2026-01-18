@@ -10,12 +10,11 @@ use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\ToolUseEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StepFinishEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 
-$openCodePath = trim((string) shell_exec('command -v opencode'));
-$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
-if ($openCodePath === '' || $stdbufPath === '') {
-    print("OpenCode CLI or stdbuf not found. Install OpenCode CLI and coreutils before running this example.\n");
-    exit(0);
+if (ProcUtils::findOnPath('opencode', ProcUtils::defaultBinPaths()) === null) {
+    print("OpenCode CLI not found. Install OpenCode CLI before running this example.\n");
+    exit(1);
 }
 
 // Create a request - using JSON format for streaming events

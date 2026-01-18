@@ -5,8 +5,10 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
+use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
  * Guard: Forbids continuation once cumulative execution time exceeds the limit.
@@ -14,7 +16,7 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
  * @template TState of object
  * @implements CanDecideToContinue<TState>
  */
-final readonly class CumulativeExecutionTimeLimit implements CanDecideToContinue, CanExplainContinuation
+final readonly class CumulativeExecutionTimeLimit implements CanDecideToContinue, CanExplainContinuation, CanProvideStopReason
 {
     /** @var Closure(TState): float */
     private Closure $cumulativeTimeResolver;
@@ -73,6 +75,15 @@ final readonly class CumulativeExecutionTimeLimit implements CanDecideToContinue
                 'cumulativeSeconds' => $cumulativeSeconds,
                 'maxSeconds' => $this->maxSeconds,
             ],
+            stopReason: $this->stopReason($state, $decision),
         );
+    }
+
+    #[\Override]
+    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
+        return match ($decision) {
+            ContinuationDecision::ForbidContinuation => StopReason::TimeLimitReached,
+            default => null,
+        };
     }
 }

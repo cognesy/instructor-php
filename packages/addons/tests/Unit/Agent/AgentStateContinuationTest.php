@@ -5,6 +5,7 @@ namespace Tests\Addons\Unit\Agent;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Data\AgentStep;
 use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
+use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -40,4 +41,28 @@ it('resets execution state for continuation', function () {
         ->and($continued->currentStepStartedAt)->toBeNull()
         ->and($continued->executionStartedAt)->toBeNull()
         ->and($continued->messages()->count())->toBe(1);
+});
+
+it('records a step and stamps the start time', function () {
+    $state = AgentState::empty();
+    $step = new AgentStep();
+
+    $next = $state->recordStep($step);
+
+    expect($next->currentStep())->toBe($step)
+        ->and($next->stepCount())->toBe(1)
+        ->and($next->currentStepStartedAt)->not->toBeNull();
+});
+
+it('fails with an error and records a failure step', function () {
+    $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
+    $error = AgentException::fromThrowable(new \RuntimeException('boom'));
+
+    $failed = $state->failWith($error);
+    $currentStep = $failed->currentStep();
+
+    expect($failed->status())->toBe(AgentStatus::Failed)
+        ->and($failed->stepCount())->toBe(1)
+        ->and($currentStep)->not->toBeNull()
+        ->and($currentStep?->hasErrors())->toBeTrue();
 });

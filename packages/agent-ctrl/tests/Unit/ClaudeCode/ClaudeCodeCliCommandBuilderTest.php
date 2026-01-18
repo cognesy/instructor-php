@@ -9,6 +9,20 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Value\PathList;
 
+beforeEach(function () {
+    $this->previousStdbuf = getenv('COGNESY_STDBUF');
+    putenv('COGNESY_STDBUF=1');
+});
+
+afterEach(function () {
+    $prev = $this->previousStdbuf;
+    if ($prev === false || $prev === null) {
+        putenv('COGNESY_STDBUF');
+        return;
+    }
+    putenv('COGNESY_STDBUF=' . $prev);
+});
+
 it('builds default headless argv', function () {
     $request = new ClaudeRequest(
         prompt: 'hello',
@@ -164,4 +178,22 @@ it('validates conflicting options', function () {
         continueMostRecent: true,
         resumeSessionId: 'abc',
     )))->toThrow(InvalidArgumentException::class);
+});
+
+it('builds argv without stdbuf when disabled', function () {
+    putenv('COGNESY_STDBUF=0');
+
+    $request = new ClaudeRequest(
+        prompt: 'hello',
+        outputFormat: OutputFormat::Text,
+    );
+    $spec = (new ClaudeCommandBuilder())->buildHeadless($request);
+
+    expect($spec->argv()->toArray())->toBe([
+        'claude',
+        '-p',
+        'hello',
+        '--output-format',
+        'text',
+    ]);
 });

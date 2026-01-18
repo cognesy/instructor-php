@@ -9,16 +9,19 @@ final readonly class ContinuationEvaluation
         public ContinuationDecision $decision,
         public string $reason,
         public array $context = [],
+        public ?StopReason $stopReason = null,
     ) {}
 
     public static function fromDecision(
         string $criterionClass,
         ContinuationDecision $decision,
+        ?StopReason $stopReason = null,
     ): self {
         return new self(
             criterionClass: $criterionClass,
             decision: $decision,
             reason: self::defaultReason($criterionClass, $decision),
+            stopReason: $stopReason,
         );
     }
 

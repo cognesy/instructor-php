@@ -17,7 +17,6 @@ use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
-use Cognesy\Utils\Json\Json;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Messages\Messages;
 use DateTimeImmutable;
@@ -106,7 +105,9 @@ class PendingInference
      * @return string The JSON representation of the content as a JSON string.
      */
     public function asJson() : string {
-        return Json::fromString($this->get())->toString();
+        return $this->response()
+            ->findJsonData($this->execution->request()->outputMode())
+            ->toString();
     }
 
     /**
@@ -115,7 +116,9 @@ class PendingInference
      * @return array The JSON representation of the content as an associative array.
      */
     public function asJsonData() : array {
-        return Json::fromString($this->get())->toArray();
+        return $this->response()
+            ->findJsonData($this->execution->request()->outputMode())
+            ->toArray();
     }
 
     /**

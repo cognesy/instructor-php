@@ -109,11 +109,10 @@ class AnthropicBodyFormat implements CanMapRequestBody
     protected function toSystemMessages(InferenceRequest $request) : array {
         $cachedMessages = $request->cachedContext()?->messages() ?? [];
 
-        $systemCached = Messages::fromAny($cachedMessages)
-            ->headWithRoles([MessageRole::System, MessageRole::Developer]);
-        if (!$systemCached->isEmpty()) {
-            $systemCached = $systemCached->appendContentField('cache_control', ['type' => 'ephemeral']);
-        }
+        $systemCached = $this->markCachedMessages(
+            Messages::fromAny($cachedMessages)
+                ->headWithRoles([MessageRole::System, MessageRole::Developer])
+        );
 
         $systemMessages = Messages::fromAny($request->messages())
             ->headWithRoles([MessageRole::System, MessageRole::Developer]);
@@ -152,11 +151,10 @@ class AnthropicBodyFormat implements CanMapRequestBody
     protected function toMessages(InferenceRequest $request) : array {
         $cachedMessages = $request->cachedContext()?->messages() ?? [];
 
-        $postSystemCached = Messages::fromAny($cachedMessages)
-            ->tailAfterRoles([MessageRole::System, MessageRole::Developer]);
-        if (!$postSystemCached->isEmpty()) {
-            $postSystemCached = $postSystemCached->appendContentField('cache_control', ['type' => 'ephemeral']);
-        }
+        $postSystemCached = $this->markCachedMessages(
+            Messages::fromAny($cachedMessages)
+                ->tailAfterRoles([MessageRole::System, MessageRole::Developer])
+        );
 
         $postSystemMessages = Messages::fromAny($request->messages())
             ->tailAfterRoles([MessageRole::System, MessageRole::Developer]);
@@ -166,5 +164,25 @@ class AnthropicBodyFormat implements CanMapRequestBody
             ->toArray();
 
         return $this->messageFormat->map($messages);
+    }
+
+    private function markCachedMessages(Messages $messages) : Messages {
+        if ($messages->isEmpty()) {
+            return $messages;
+        }
+        $list = $messages->messageList()->all();
+        $targetIndex = count($list) > 0 ? count($list) - 1 : null;
+        if ($targetIndex === null) {
+            return $messages;
+        }
+        $marked = Messages::empty();
+        foreach ($list as $index => $message) {
+            if ($index === $targetIndex) {
+                $content = $message->content()->appendContentField('cache_control', ['type' => 'ephemeral']);
+                $message = $message->withContent($content);
+            }
+            $marked = $marked->appendMessage($message);
+        }
+        return $marked;
     }
 }

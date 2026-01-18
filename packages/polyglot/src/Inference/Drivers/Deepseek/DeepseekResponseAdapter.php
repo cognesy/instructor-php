@@ -13,14 +13,15 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
     public function fromResponse(HttpResponse $response): ?InferenceResponse {
         $responseBody = $response->body();
         $data = json_decode($responseBody, true);
-        return new InferenceResponse(
+        $inferenceResponse = new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            reasoningContent: $data['choices'][0]['message']['reasoning_content'] ?? '',
+            reasoningContent: $this->makeReasoningContent($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $response,
         );
+        return $inferenceResponse->withReasoningContentFallbackFromContent();
     }
 
     #[\Override]
@@ -31,7 +32,7 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
         }
         return new PartialInferenceResponse(
             contentDelta: $this->makeContentDelta($data),
-            reasoningContentDelta: $data['choices'][0]['delta']['reasoning_content'] ?? '',
+            reasoningContentDelta: $this->makeReasoningContentDelta($data),
             toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
@@ -39,5 +40,25 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
             usage: $this->usageFormat->fromData($data),
             responseData: $responseData,
         );
+    }
+
+    private function makeReasoningContent(array $data): string {
+        $message = $data['choices'][0]['message'] ?? [];
+        return match (true) {
+            array_key_exists('reasoning_content', $message) => (string) $message['reasoning_content'],
+            array_key_exists('reasoning', $message) => (string) $message['reasoning'],
+            array_key_exists('analysis', $message) => (string) $message['analysis'],
+            default => '',
+        };
+    }
+
+    private function makeReasoningContentDelta(array $data): string {
+        $delta = $data['choices'][0]['delta'] ?? [];
+        return match (true) {
+            array_key_exists('reasoning_content', $delta) => (string) $delta['reasoning_content'],
+            array_key_exists('reasoning', $delta) => (string) $delta['reasoning'],
+            array_key_exists('analysis', $delta) => (string) $delta['analysis'],
+            default => '',
+        };
     }
 }

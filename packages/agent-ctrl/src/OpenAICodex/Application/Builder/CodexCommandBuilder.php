@@ -7,6 +7,7 @@ use Cognesy\AgentCtrl\Common\Value\CommandSpec;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 
 /**
  * Builds command line arguments for Codex CLI exec command
@@ -20,8 +21,7 @@ final class CodexCommandBuilder
     {
         $this->validate($request);
 
-        // Use stdbuf for unbuffered output (Linux only)
-        $argv = Argv::of(['stdbuf', '-o0', 'codex', 'exec']);
+        $argv = $this->baseArgv(['codex', 'exec']);
 
         // Handle resume subcommand - must come before prompt
         $argv = $this->appendResumeSubcommand($argv, $request);
@@ -233,6 +233,43 @@ final class CodexCommandBuilder
         }
 
         return $current;
+    }
+
+    /**
+     * @param list<string> $command
+     */
+    private function baseArgv(array $command): Argv
+    {
+        $prefix = $this->stdbufPrefix();
+        return match (true) {
+            $prefix === null => Argv::of($command),
+            default => Argv::of(array_merge($prefix, $command)),
+        };
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    private function stdbufPrefix(): ?array
+    {
+        $override = getenv('COGNESY_STDBUF');
+        return match (true) {
+            $override === '0' => null,
+            $override === '1' => ['stdbuf', '-o0'],
+            $this->isWindows() => null,
+            $this->isStdbufAvailable() => ['stdbuf', '-o0'],
+            default => null,
+        };
+    }
+
+    private function isStdbufAvailable(): bool
+    {
+        return ProcUtils::findOnPath('stdbuf', ProcUtils::defaultBinPaths()) !== null;
+    }
+
+    private function isWindows(): bool
+    {
+        return str_starts_with(strtoupper(PHP_OS), 'WIN');
     }
 
     private function validate(CodexRequest $request): void

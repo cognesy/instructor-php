@@ -34,3 +34,60 @@ it('applies cached context when set', function () {
     expect($req->messages()[0]['role'])->toBe('system');
 });
 
+it('with() does not reset model when model param is null', function () {
+    $b = new InferenceRequestBuilder();
+    $req = $b
+        ->withModel('gpt-4o')
+        ->with(messages: 'Hello') // model not specified, should preserve previous
+        ->create();
+
+    expect($req->model())->toBe('gpt-4o');
+});
+
+it('with() does not reset tools when tools param is null', function () {
+    $b = new InferenceRequestBuilder();
+    $tools = [['type' => 'function', 'function' => ['name' => 'test', 'parameters' => []]]];
+    $req = $b
+        ->withTools($tools)
+        ->with(messages: 'Hello') // tools not specified, should preserve previous
+        ->create();
+
+    expect($req->tools())->toBe($tools);
+});
+
+it('with() does not reset options when options param is null', function () {
+    $b = new InferenceRequestBuilder();
+    $req = $b
+        ->withOptions(['temperature' => 0.5])
+        ->with(messages: 'Hello') // options not specified, should preserve previous
+        ->create();
+
+    expect($req->options()['temperature'])->toBe(0.5);
+});
+
+it('with() does not reset outputMode when mode param is null', function () {
+    $b = new InferenceRequestBuilder();
+    $req = $b
+        ->withOutputMode(OutputMode::Json)
+        ->with(messages: 'Hello') // mode not specified, should preserve previous
+        ->create();
+
+    expect($req->outputMode())->toBe(OutputMode::Json);
+});
+
+it('with() allows overriding previously set values', function () {
+    $b = new InferenceRequestBuilder();
+    $req = $b
+        ->withModel('gpt-4o')
+        ->withOptions(['temperature' => 0.5])
+        ->with(
+            messages: 'Hello',
+            model: 'claude-3-opus',
+            options: ['temperature' => 0.9],
+        )
+        ->create();
+
+    expect($req->model())->toBe('claude-3-opus');
+    expect($req->options()['temperature'])->toBe(0.9);
+});
+

@@ -116,13 +116,22 @@ class ContinuationCriteria implements CanDecideToContinue
             if ($criterion instanceof CanExplainContinuation) {
                 $evaluation = $criterion->explain($state);
             } else {
-                $evaluation = ContinuationEvaluation::fromDecision($criterion::class, $criterion->decide($state));
+                $decision = $criterion->decide($state);
+                $criterionStopReason = null;
+                if ($criterion instanceof CanProvideStopReason) {
+                    $criterionStopReason = $criterion->stopReason($state, $decision);
+                }
+                $evaluation = ContinuationEvaluation::fromDecision(
+                    $criterion::class,
+                    $decision,
+                    $criterionStopReason,
+                );
             }
             $evaluations[] = $evaluation;
 
             if ($evaluation->decision === ContinuationDecision::ForbidContinuation && $resolvedBy === null) {
                 $resolvedBy = $evaluation->criterionClass;
-                $stopReason = $this->inferStopReason($evaluation);
+                $stopReason = $evaluation->stopReason ?? StopReason::GuardForbade;
             }
         }
 
@@ -154,16 +163,5 @@ class ContinuationCriteria implements CanDecideToContinue
             stopReason: $stopReason,
             evaluations: $evaluations,
         );
-    }
-
-    private function inferStopReason(ContinuationEvaluation $evaluation): StopReason {
-        return match (true) {
-            str_contains($evaluation->criterionClass, 'StepsLimit') => StopReason::StepsLimitReached,
-            str_contains($evaluation->criterionClass, 'TokenUsageLimit') => StopReason::TokenLimitReached,
-            str_contains($evaluation->criterionClass, 'ExecutionTimeLimit') => StopReason::TimeLimitReached,
-            str_contains($evaluation->criterionClass, 'ErrorPolicy') => StopReason::ErrorForbade,
-            str_contains($evaluation->criterionClass, 'FinishReason') => StopReason::FinishReasonReceived,
-            default => StopReason::GuardForbade,
-        };
     }
 }

@@ -31,6 +31,10 @@
 - Tool-call JSON encoding failures return `Result` errors instead of throwing.
 - `ResponseModel::toArray()` guards non-object instances; fluent methods return `static`.
 
+### Addons
+- Continuation stop reasons are explicit on evaluations instead of inferred from class names.
+- AgentState adds `recordStep()` and `failWith()` helpers, plus explicit execution hook interfaces for timing.
+
 ## Tests
 
 - Added coverage for attempt IDs, streaming completion events, serialization, validation failures, and ResponseModel immutability.

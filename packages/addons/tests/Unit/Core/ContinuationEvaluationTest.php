@@ -11,6 +11,7 @@ it('builds default reasons from decisions', function (ContinuationDecision $deci
     expect($evaluation->criterionClass)->toBe('Acme\\Limits\\StepsLimit');
     expect($evaluation->decision)->toBe($decision);
     expect($evaluation->reason)->toBe($expected);
+    expect($evaluation->stopReason)->toBeNull();
 })->with([
     [ContinuationDecision::ForbidContinuation, 'StepsLimit forbade continuation'],
     [ContinuationDecision::RequestContinuation, 'StepsLimit requested continuation'],

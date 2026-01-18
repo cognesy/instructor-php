@@ -5,12 +5,14 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 use Cognesy\Addons\Agent\Core\Continuation\AgentErrorContextResolver;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
 use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
+use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
 use Cognesy\Addons\StepByStep\Continuation\CanResolveErrorContext;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\ErrorContext;
 use Cognesy\Addons\StepByStep\Continuation\ErrorHandlingDecision;
 use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
  * Guard: Evaluates error policy and decides whether to continue.
@@ -18,7 +20,7 @@ use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
  * @template TState of object
  * @implements CanDecideToContinue<TState>
  */
-final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExplainContinuation
+final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExplainContinuation, CanProvideStopReason
 {
     public function __construct(
         private ErrorPolicy $policy,
@@ -65,7 +67,16 @@ final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExp
                 'handling' => $handling->value,
                 'toolName' => $context->toolName,
             ],
+            stopReason: $this->stopReason($state, $decision),
         );
+    }
+
+    #[\Override]
+    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
+        return match ($decision) {
+            ContinuationDecision::ForbidContinuation => StopReason::ErrorForbade,
+            default => null,
+        };
     }
 
     private function buildReason(ErrorContext $context, ErrorHandlingDecision $handling): string {

@@ -4,7 +4,9 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
 use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
  * Guard: Forbids continuation when accumulated token usage reaches or exceeds the configured limit.
@@ -15,7 +17,7 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
  * @template TState of object
  * @implements CanDecideToContinue<TState>
  */
-final readonly class TokenUsageLimit implements CanDecideToContinue
+final readonly class TokenUsageLimit implements CanDecideToContinue, CanProvideStopReason
 {
     /** @var Closure(TState): int */
     private Closure $usageCounter;
@@ -43,5 +45,13 @@ final readonly class TokenUsageLimit implements CanDecideToContinue
         return $currentUsage < $this->maxTokens
             ? ContinuationDecision::AllowContinuation
             : ContinuationDecision::ForbidContinuation;
+    }
+
+    #[\Override]
+    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
+        return match ($decision) {
+            ContinuationDecision::ForbidContinuation => StopReason::TokenLimitReached,
+            default => null,
+        };
     }
 }

@@ -10,12 +10,11 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\AgentMessage;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
 
-$codexPath = trim((string) shell_exec('command -v codex'));
-$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
-if ($codexPath === '' || $stdbufPath === '') {
-    print("Codex CLI or stdbuf not found. Install Codex CLI and coreutils before running this example.\n");
-    exit(0);
+if (ProcUtils::findOnPath('codex', ProcUtils::defaultBinPaths()) === null) {
+    print("Codex CLI not found. Install Codex CLI before running this example.\n");
+    exit(1);
 }
 
 // Step 1: Create a request with a simple prompt

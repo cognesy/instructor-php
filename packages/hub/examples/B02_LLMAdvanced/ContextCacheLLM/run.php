@@ -31,6 +31,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 $data = file_get_contents(__DIR__ . '/../../../README.md');
+$cacheNonce = bin2hex(random_bytes(8));
 
 $inference = (new Inference)
     //->wiretap(fn($e) => $e->print()) // wiretap to print all events
@@ -41,7 +42,7 @@ $inference = (new Inference)
             ['role' => 'user', 'content' => 'Here is content of README.md file'],
             ['role' => 'user', 'content' => $data],
             ['role' => 'user', 'content' => 'Generate a short, very domain specific pitch of the project described in README.md. List relevant, domain specific problems that this project could solve. Use domain specific concepts and terminology to make the description resonate with the target audience.'],
-            ['role' => 'assistant', 'content' => 'For whom do you want to generate the pitch?'],
+            ['role' => 'assistant', 'content' => "For whom do you want to generate the pitch?\nCache nonce: {$cacheNonce}"],
         ],
     );
 
