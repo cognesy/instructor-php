@@ -1,22 +1,4 @@
----
-title: 'Minimaxi'
-docname: 'minimaxi'
----
-
-## Overview
-
-Support for Minimaxi's API.
-
-Mode compatibility:
-- OutputMode::MdJson (supported)
-- OutputMode::Tools (not supported)
-- OutputMode::Json (not supported)
-- OutputMode::JsonSchema (not supported)
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -71,4 +53,3 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
-```

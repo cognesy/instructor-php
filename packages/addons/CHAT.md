@@ -268,8 +268,19 @@ $finishCheck = new FinishReasonCheck([
 ], fn(ChatState $state) => $state->currentStep()?->finishReason());
 ```
 
+### `ErrorPolicyCriterion`
+Unified error handling and retry policy.
+```php
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+
+$errorPolicy = ErrorPolicy::retryToolErrors(2);
+$policyCriterion = ErrorPolicyCriterion::withPolicy($errorPolicy);
+```
+
 ### `ErrorPresenceCheck`
 Stop when errors are present in the current step.
+Legacy: prefer `ErrorPolicyCriterion` for retries and error handling.
 ```php
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 
@@ -280,6 +291,7 @@ $errorCheck = new ErrorPresenceCheck(
 
 ### `RetryLimit`
 Stop after a maximum number of retries on errors.
+Legacy: prefer `ErrorPolicyCriterion` for retries and error handling.
 ```php
 use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 

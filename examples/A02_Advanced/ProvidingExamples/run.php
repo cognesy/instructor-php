@@ -1,21 +1,4 @@
----
-title: 'Providing example inputs and outputs'
-docname: 'demonstrations'
----
-
-## Overview
-
-To improve the results of LLM inference you can provide examples of the expected output.
-This will help LLM to understand the context and the expected structure of the output.
-
-It is typically useful in the `OutputMode::Json` and `OutputMode::MdJson` modes, where the output
-is expected to be a JSON object.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
@@ -53,4 +36,3 @@ dump($user);
 assert($user->name === 'Jason');
 assert($user->age === 25);
 ?>
-```

@@ -1,16 +1,4 @@
----
-title: 'Reconstruct Prompt from Reasoning Steps'
-docname: 'reconstruct_prompt'
----
-
-## Overview
-
-Reverse Chain-of-Thought (RCoT) reconstructs a likely prompt from reasoning steps, compares condition lists, and refines the answer with targeted feedback.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -137,8 +125,3 @@ if (!$feedback->is_equal) {
 
 dump($reconstructed, $originalList, $reconstructedList, $feedback, $response);
 ?>
-```
-
-## References
-
-1. RCoT: Detecting And Rectifying Factual Inconsistency In Reasoning By Reversing Chain-Of-Thought (https://arxiv.org/pdf/2305.11499)

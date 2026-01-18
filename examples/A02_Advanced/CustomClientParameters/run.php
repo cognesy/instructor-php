@@ -1,18 +1,4 @@
----
-title: 'Customize parameters of LLM driver'
-docname: 'custom_config'
----
-
-## Overview
-
-You can provide your own LLM configuration instance to Instructor. This is useful
-when you want to initialize OpenAI client with custom values - e.g. to call
-other LLMs which support OpenAI API.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Config\Env;
@@ -84,4 +70,3 @@ dump($user);
 assert(isset($user->name));
 assert(isset($user->age));
 ?>
-```

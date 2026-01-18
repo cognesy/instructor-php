@@ -1,33 +1,4 @@
----
-title: 'Context caching (structured output)'
-docname: 'context_cache_structured'
----
-
-## Overview
-
-Instructor offers a simplified way to work with LLM providers' APIs supporting caching,
-so you can focus on your business logic while still being able to take advantage of lower
-latency and costs.
-
-> **Note 1:** Instructor supports context caching for Anthropic API and OpenAI API.
-
-> **Note 2:** Context caching is automatic for all OpenAI API calls. Read more
-> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
-
-
-## Example
-
-When you need to process multiple requests with the same context, you can use context
-caching to improve performance and reduce costs.
-
-In our example we will be analyzing the README.md file of this Github project and
-generating its structured description for multiple audiences.
-
-Let's start by defining the data model for the project details and the properties
-that we want to extract or generate based on README file.
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -54,12 +25,8 @@ class Project {
 }
 ?>
 ```
-
-We read the content of the README.md file and cache the context, so it can be reused for
-multiple requests.
-
 ```php
-\<\?php
+<?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
 $cached = (new StructuredOutput)->using('anthropic')->withCachedContext(
@@ -69,13 +36,8 @@ $cached = (new StructuredOutput)->using('anthropic')->withCachedContext(
 );//->withDebugPreset('on');
 ?>
 ```
-At this point we can use Instructor structured output processing to extract the project
-details from the README.md file into the `Project` data model.
-
-Let's start by asking the user to describe the project for a specific audience: P&C insurance CIOs.
-
 ```php
-\<\?php
+<?php
 // get StructuredOutputResponse object to get access to usage and other metadata
 $response1 = $cached->with(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
@@ -95,14 +57,8 @@ $usage1 = $response1->response()->usage();
 echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
-Now we can use the same context to ask the user to describe the project for a different
-audience: boutique CMS consulting company owner.
-
-Anthropic API will use the context cached in the previous request to provide the response,
-which results in faster processing and lower costs.
-
 ```php
-\<\?php
+<?php
 // get StructuredOutputResponse object to get access to usage and other metadata
 $response2 = $cached->with(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
@@ -122,4 +78,3 @@ $usage2 = $response2->response()->usage();
 echo "Usage: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
 assert($usage2->cacheReadTokens > 0, 'Expected cache read tokens');
 ?>
-```

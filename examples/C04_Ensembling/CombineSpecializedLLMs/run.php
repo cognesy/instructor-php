@@ -1,16 +1,4 @@
----
-title: 'Combine Different Specialized LLMs'
-docname: 'combine_specialized_llms'
----
-
-## Overview
-
-Mixture of Reasoning Experts (MoRE) combines specialized experts (e.g., factual with evidence, and multi-hop reasoning) and selects the best answer using a scorer.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -69,8 +57,3 @@ if (max($fScore, $mScore) < $threshold) {
 
 dump($answer);
 ?>
-```
-
-### References
-
-1) Getting MoRE out of Mixture of Language Model Reasoning Experts (https://arxiv.org/pdf/2305.14628)

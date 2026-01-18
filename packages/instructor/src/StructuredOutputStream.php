@@ -180,6 +180,8 @@ class StructuredOutputStream
     private function streamResponses(): Generator {
         /** @var StructuredOutputExecution $execution */
         foreach ($this->getStream($this->execution) as $execution) {
+            // Update execution reference to capture accumulated state (including usage)
+            $this->execution = $execution;
             $response = $execution->inferenceResponse();
             if ($response === null) {
                 continue;

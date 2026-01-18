@@ -1,18 +1,4 @@
----
-title: 'Generating JSON Schema from PHP classes'
-docname: 'schema'
----
-
-## Overview
-
-Instructor has a built-in support for generating JSON Schema from
-the classes or objects. This is useful as it helps you avoid writing
-the JSON Schema manually, which can be error-prone and time-consuming.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -40,4 +26,3 @@ assert(is_int($city->population));
 assert(is_int($city->founded));
 
 ?>
-```

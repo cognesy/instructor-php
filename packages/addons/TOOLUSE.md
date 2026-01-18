@@ -142,6 +142,29 @@ Default criteria from `ToolUseFactory::defaultContinuationCriteria()`:
 - `ToolCallPresenceCheck()` — continue only if tool calls present
 - `FinishReasonCheck([])` — stop when finish reason matches
 
+To use the unified error policy (recommended), replace `RetryLimit` and `ErrorPresenceCheck`:
+
+```php
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
+use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
+use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
+
+$toolUse = ToolUseFactory::default(
+    continuationCriteria: new ContinuationCriteria(
+        new StepsLimit(10, fn(HasSteps $state) => $state->stepCount()),
+        new TokenUsageLimit(4096, fn(HasUsage $state) => $state->usage()->total()),
+        new ExecutionTimeLimit(30, fn(HasStateInfo $state) => $state->stateInfo()->startedAt()),
+        ErrorPolicyCriterion::withPolicy(ErrorPolicy::retryToolErrors(3)),
+    )
+);
+```
+
 Customize with factory or direct instantiation:
 
 ```php

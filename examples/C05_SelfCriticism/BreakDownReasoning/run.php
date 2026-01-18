@@ -1,16 +1,4 @@
----
-title: 'Break Down Reasoning Into Multiple Steps'
-docname: 'break_down_reasoning'
----
-
-## Overview
-
-Cumulative Reasoning separates reasoning into propose → verify → report for better logical inference.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -121,8 +109,3 @@ $report = $pipeline->report($verified, $hypothesis, $premises);
 
 dump($proposal, $verified, $report);
 ?>
-```
-
-### References
-
-1: Cumulative Reasoning with Large Language Models (https://arxiv.org/pdf/2308.04371)

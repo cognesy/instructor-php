@@ -1,16 +1,4 @@
----
-title: 'Use Distinct Example Subsets'
-docname: 'distinct_examples'
----
-
-## Overview
-
-Demonstration Ensembling (DENSE) runs multiple prompts, each with a different subset of examples, then aggregates the outputs.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -67,8 +55,3 @@ arsort($counts);
 $mostCommon = array_key_first($counts);
 dump($mostCommon);
 ?>
-```
-
-### References
-
-1) Exploring Demonstration Ensembling for In-Context Learning (https://arxiv.org/pdf/2308.08780)

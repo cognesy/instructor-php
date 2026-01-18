@@ -1,16 +1,4 @@
----
-title: 'Summary with Keywords'
-docname: 'summary_with_keywords'
----
-
-## Overview
-
-This is an example of a simple summarization with keyword extraction.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -57,4 +45,3 @@ $summary = (new StructuredOutput)
 
 dump($summary);
 ?>
-```

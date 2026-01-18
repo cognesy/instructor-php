@@ -1,18 +1,4 @@
----
-title: 'OpenAI Codex CLI - Streaming'
-docname: 'codex_streaming'
----
-
-## Overview
-
-This example demonstrates real-time streaming output from the Codex CLI.
-Events are parsed and displayed as they arrive, providing live feedback
-on the agent's progress.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
@@ -28,6 +14,13 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\CommandExecution;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+
+$codexPath = trim((string) shell_exec('command -v codex'));
+$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
+if ($codexPath === '' || $stdbufPath === '') {
+    print("Codex CLI or stdbuf not found. Install Codex CLI and coreutils before running this example.\n");
+    exit(0);
+}
 
 // Create a request - must specify working directory for sandbox access
 $request = new CodexRequest(
@@ -118,4 +111,3 @@ if ($execResult->exitCode() !== 0) {
     exit(1);
 }
 ?>
-```

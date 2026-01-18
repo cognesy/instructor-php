@@ -1,21 +1,4 @@
----
-title: 'Limiting the length of lists'
-docname: 'limiting_lists'
----
-
-## Overview
-
-When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage
-the length of list. You can use prompting and enumeration to limit the list length, ensuring
-a manageable set of properties.
-
-> To be 100% certain the list does not exceed the limit, add extra
-> validation, e.g. using ValidationMixin (see: Validation).
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -69,4 +52,3 @@ assert($user->age === 25);
 assert($user->name === "Jason");
 assert(count($user->properties) < 3);
 ?>
-```

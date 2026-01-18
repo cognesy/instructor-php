@@ -1,18 +1,4 @@
----
-title: 'Claude Code CLI - Basic'
-docname: 'claude_code_basic'
----
-
-## Overview
-
-This example demonstrates how to use the Claude Code CLI integration to execute
-simple prompts. The ClaudeCodeCli component provides a PHP API for invoking the
-`claude` CLI in headless mode with sandboxing support.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
@@ -21,6 +7,13 @@ use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+
+$claudePath = trim((string) shell_exec('command -v claude'));
+$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
+if ($claudePath === '' || $stdbufPath === '') {
+    print("Claude CLI or stdbuf not found. Install Claude Code CLI and coreutils before running this example.\n");
+    exit(0);
+}
 
 // Step 1: Create a request with a simple prompt
 $request = new ClaudeRequest(
@@ -62,4 +55,3 @@ if ($execResult->exitCode() !== 0) {
     exit(1);
 }
 ?>
-```

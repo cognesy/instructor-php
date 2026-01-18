@@ -3,11 +3,11 @@
 namespace Cognesy\Addons\Agent\Tools;
 
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
-use Cognesy\Addons\Agent\Contracts\ToolRegistryContract;
+use Cognesy\Addons\Agent\Contracts\ToolRegistryInterface;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Exceptions\InvalidToolException;
 
-final class ToolRegistry implements ToolRegistryContract
+final class ToolRegistry implements ToolRegistryInterface
 {
     /** @var array<string, callable(): ToolInterface> */
     private array $factories = [];

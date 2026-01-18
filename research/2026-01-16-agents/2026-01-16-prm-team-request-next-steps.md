@@ -441,13 +441,13 @@ $events->listen(AgentStepCompleted::class, function(AgentStepCompleted $event) {
 });
 ```
 
-#### 2. DeterministicDriver for Testing
+#### 2. DeterministicAgentDriver for Testing
 
 For reproducible testing without LLM calls:
 ```php
-use Cognesy\Addons\Agent\Drivers\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 
-$driver = new DeterministicDriver([
+$driver = new DeterministicAgentDriver([
     ['content' => 'First response', 'tool_calls' => [...]],
     ['content' => 'Second response'],
 ]);

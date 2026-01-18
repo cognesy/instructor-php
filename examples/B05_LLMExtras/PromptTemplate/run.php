@@ -1,18 +1,4 @@
----
-title: 'Prompt Templates'
-docname: 'prompt_templates'
----
-
-## Overview
-
-`Template` class in Instructor PHP provides a way to define and use
-prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -49,4 +35,3 @@ echo "\n";
 assert(Str::contains($answer, 'Berlin'));
 
 ?>
-```

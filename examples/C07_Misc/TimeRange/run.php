@@ -1,17 +1,4 @@
----
-title: 'Reusing components'
-docname: 'component_reuse'
----
-
-## Overview
-
-You can reuse the same component for different contexts within a model. In this
-example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -46,4 +33,3 @@ assert($user->workTime->endTime === 14);
 assert($user->leisureTime->startTime === 17);
 assert($user->leisureTime->endTime === 19);
 ?>
-```

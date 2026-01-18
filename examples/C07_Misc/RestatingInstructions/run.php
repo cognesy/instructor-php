@@ -1,17 +1,4 @@
----
-title: 'Restating instructions'
-docname: 'restate_instructions'
----
-
-## Overview
-
-Make Instructor restate long or complex instructions and rules to improve inference
-accuracy.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -60,4 +47,3 @@ assert($user->name === "Jason");
 assert($user->age === 28);
 //assert(!empty($user->role->title));
 ?>
-```

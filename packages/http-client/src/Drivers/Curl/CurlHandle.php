@@ -67,7 +67,8 @@ final class CurlHandle
 
     public function close(): void {
         if ($this->handle !== null) {
-            curl_close($this->handle);
+            // Note: curl_close() is a no-op since PHP 8.0 and deprecated since PHP 8.5
+            // The handle is automatically cleaned up when set to null
             $this->handle = null;
         }
     }

@@ -1,15 +1,15 @@
-# Feedback: Improving ReverbAgentEventAdapter
+# Feedback: Improving AgentEventEnvelopeAdapter
 
 **Date**: 2026-01-16
 **From**: Partnerspot PRM Team
 **To**: InstructorPHP/Cognesy Team
-**Re**: ReverbAgentEventAdapter Enhancement Recommendations
+**Re**: AgentEventEnvelopeAdapter Enhancement Recommendations
 
 ---
 
 ## Executive Summary
 
-Thank you for creating `ReverbAgentEventAdapter` based on our implementation patterns. After comparing it with our production `AssistantEventBroadcaster`, we've identified several enhancements that would make it more useful for real-world chat applications.
+Thank you for creating `AgentEventEnvelopeAdapter` based on our implementation patterns. After comparing it with our production `AssistantEventBroadcaster`, we've identified several enhancements that would make it more useful for real-world chat applications.
 
 **Key gaps identified:**
 1. No streaming text support (critical for chat UX)
@@ -58,7 +58,7 @@ private function handleStreamChunk(StreamEventReceived $event): void
 ### Recommended Addition
 
 ```php
-// ReverbAgentEventAdapter.php
+// AgentEventEnvelopeAdapter.php
 
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 
@@ -112,7 +112,7 @@ Current usage requires manually wiring each event type:
 
 ```php
 // Current: Verbose, error-prone
-$adapter = new ReverbAgentEventAdapter($broadcaster, $sessionId, $executionId);
+$adapter = new AgentEventEnvelopeAdapter($broadcaster, $sessionId, $executionId);
 
 $agent->onEvent(AgentStepStarted::class, [$adapter, 'onAgentStepStarted']);
 $agent->onEvent(AgentStepCompleted::class, [$adapter, 'onAgentStepCompleted']);
@@ -150,7 +150,7 @@ $agent->wiretap($broadcaster->wiretap());
 Add a `wiretap()` method that returns a callable handling all events:
 
 ```php
-// ReverbAgentEventAdapter.php
+// AgentEventEnvelopeAdapter.php
 
 use Cognesy\Events\Event;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
@@ -159,7 +159,7 @@ use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
  * Returns a wiretap callable that handles all supported events.
  *
  * Usage:
- *   $adapter = new ReverbAgentEventAdapter($broadcaster, $sessionId, $executionId);
+ *   $adapter = new AgentEventEnvelopeAdapter($broadcaster, $sessionId, $executionId);
  *   $agent->wiretap($adapter->wiretap());
  *
  * @return callable(Event): void
@@ -199,7 +199,7 @@ public function wiretap(): callable
 Track status internally and emit on transitions:
 
 ```php
-// ReverbAgentEventAdapter.php
+// AgentEventEnvelopeAdapter.php
 
 private string $currentStatus = 'idle';
 
@@ -420,9 +420,9 @@ Constructor has multiple parameters, some optional. Adding more features increas
 ### Recommended: Fluent Builder
 
 ```php
-// ReverbAgentEventAdapterBuilder.php
+// AgentEventEnvelopeAdapterBuilder.php
 
-final class ReverbAgentEventAdapterBuilder
+final class AgentEventEnvelopeAdapterBuilder
 {
     private ?CanBroadcastAgentEvents $broadcaster = null;
     private ?string $sessionId = null;
@@ -469,7 +469,7 @@ final class ReverbAgentEventAdapterBuilder
         return $this;
     }
 
-    public function build(): ReverbAgentEventAdapter
+    public function build(): AgentEventEnvelopeAdapter
     {
         if ($this->broadcaster === null) {
             throw new \InvalidArgumentException('Broadcaster is required');
@@ -478,7 +478,7 @@ final class ReverbAgentEventAdapterBuilder
             throw new \InvalidArgumentException('Session and execution IDs are required');
         }
 
-        return new ReverbAgentEventAdapter(
+        return new AgentEventEnvelopeAdapter(
             broadcaster: $this->broadcaster,
             sessionId: $this->sessionId,
             executionId: $this->executionId,
@@ -493,7 +493,7 @@ final class ReverbAgentEventAdapterBuilder
 }
 
 // Usage:
-$adapter = ReverbAgentEventAdapterBuilder::create()
+$adapter = AgentEventEnvelopeAdapterBuilder::create()
     ->withBroadcaster(new LaravelReverbBroadcaster())
     ->forSession($sessionId, $executionId)
     ->withContinuationTrace()
@@ -525,7 +525,7 @@ use Cognesy\Events\Event;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use DateTimeImmutable;
 
-final class ReverbAgentEventAdapter
+final class AgentEventEnvelopeAdapter
 {
     private int $chunkCounter = 0;
     private string $currentStatus = 'idle';
@@ -810,7 +810,7 @@ Thank you for the collaborative approach. These enhancements would make the adap
 
 **Files referenced:**
 - `packages/platform-feat-assistant/src/.../Services/AssistantEventBroadcaster.php` (our implementation)
-- `packages/addons/src/Agent/Broadcasting/ReverbAgentEventAdapter.php` (your implementation)
+- `packages/addons/src/Agent/Broadcasting/AgentEventEnvelopeAdapter.php` (your implementation)
 
 ---
 
@@ -859,10 +859,10 @@ packages/addons/src/Agent/Broadcasting/BroadcastConfig.php
 
 Configuration value object with static factory presets.
 
-### Modified: `ReverbAgentEventAdapter`
+### Modified: `AgentEventEnvelopeAdapter`
 
 ```
-packages/addons/src/Agent/Broadcasting/ReverbAgentEventAdapter.php
+packages/addons/src/Agent/Broadcasting/AgentEventEnvelopeAdapter.php
 ```
 
 Added streaming, wiretap(), and automatic status tracking.
@@ -896,10 +896,10 @@ Added streaming, wiretap(), and automatic status tracking.
 Single-line setup using wiretap:
 
 ```php
-use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+use Cognesy\Addons\Agent\Broadcasting\AgentEventEnvelopeAdapter;
 
 // Create adapter
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     broadcaster: $myBroadcaster,
     sessionId: $sessionId,
     executionId: $executionId,
@@ -918,19 +918,19 @@ $result = $agent->run($task);
 use Cognesy\Addons\Agent\Broadcasting\BroadcastConfig;
 
 // Minimal: status events only (no streaming)
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     $broadcaster, $sessionId, $executionId,
     BroadcastConfig::minimal(),
 );
 
 // Standard: status + streaming (default)
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     $broadcaster, $sessionId, $executionId,
     BroadcastConfig::standard(),
 );
 
 // Debug: everything including continuation trace and full tool args
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     $broadcaster, $sessionId, $executionId,
     BroadcastConfig::debug(),
 );
@@ -939,7 +939,7 @@ $adapter = new ReverbAgentEventAdapter(
 ### Pattern 3: Custom Configuration
 
 ```php
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     broadcaster: $broadcaster,
     sessionId: $sessionId,
     executionId: $executionId,
@@ -998,7 +998,7 @@ final class ConsoleBroadcaster implements CanBroadcastAgentEvents
 ### Pattern 5: Reusing Adapter Across Executions
 
 ```php
-$adapter = new ReverbAgentEventAdapter($broadcaster, $sessionId, $executionId);
+$adapter = new AgentEventEnvelopeAdapter($broadcaster, $sessionId, $executionId);
 $agent->wiretap($adapter->wiretap());
 
 // First execution

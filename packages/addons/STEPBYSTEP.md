@@ -89,11 +89,15 @@ $criteria = new ContinuationCriteria(
 - `StepsLimit` - Maximum number of steps
 - `TokenUsageLimit` - Maximum token consumption
 - `ExecutionTimeLimit` - Maximum execution time
-- `RetryLimit` - Maximum consecutive failures
-- `ErrorPresenceCheck` - Stop on errors
+- `CumulativeExecutionTimeLimit` - Maximum cumulative execution time
+- `ErrorPolicyCriterion` - Configurable error handling and retries
 - `FinishReasonCheck` - Stop on specific finish reasons
 - `ResponseContentCheck` - Stop based on response content
 - `ToolCallPresenceCheck` - Continue only if tool calls present
+
+Legacy (still supported):
+- `RetryLimit` - Maximum consecutive failures
+- `ErrorPresenceCheck` - Stop on errors
 
 ### State Processors
 

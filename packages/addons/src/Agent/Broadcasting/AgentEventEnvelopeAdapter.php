@@ -17,11 +17,11 @@ use DateTimeImmutable;
  * Adapts agent events to a broadcast-friendly envelope format for real-time UIs.
  *
  * Usage with wiretap (recommended):
- *   $adapter = new ReverbAgentEventAdapter($broadcaster, $sessionId, $executionId);
+ *   $adapter = new AgentEventEnvelopeAdapter($broadcaster, $sessionId, $executionId);
  *   $agent->wiretap($adapter->wiretap());
  *
  * Usage with config preset:
- *   $adapter = new ReverbAgentEventAdapter(
+ *   $adapter = new AgentEventEnvelopeAdapter(
  *       $broadcaster, $sessionId, $executionId,
  *       BroadcastConfig::debug()
  *   );
@@ -30,7 +30,7 @@ use DateTimeImmutable;
  * Legacy usage (still supported):
  *   $agent->onEvent(AgentStepStarted::class, [$adapter, 'onAgentStepStarted']);
  */
-final class ReverbAgentEventAdapter
+final class AgentEventEnvelopeAdapter
 {
     private int $chunkCounter = 0;
     private string $currentStatus = 'idle';

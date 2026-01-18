@@ -481,13 +481,13 @@ Create broadcasting interface.
 
 ---
 
-### 6.2 ReverbAgentEventAdapter
+### 6.2 AgentEventEnvelopeAdapter
 **Effort**: 4 hours | **Dependencies**: 2.3, 6.1 | **Risk**: Medium
 
 Create Reverb event adapter.
 
 **New Files**:
-- `packages/addons/src/Agent/Broadcasting/ReverbAgentEventAdapter.php`
+- `packages/addons/src/Agent/Broadcasting/AgentEventEnvelopeAdapter.php`
 
 **Tests**:
 - [ ] `agent.step.started` emitted correctly
@@ -603,7 +603,7 @@ Phase 7 (Docs)
 | StateInfo | `StateInfoTest.php` | Cumulative time |
 | CumulativeExecutionTimeLimit | `CumulativeExecutionTimeLimitTest.php` | Limits |
 | SlimAgentStateSerializer | `SlimAgentStateSerializerTest.php` | Round-trip |
-| ReverbAgentEventAdapter | `ReverbAgentEventAdapterTest.php` | All events |
+| AgentEventEnvelopeAdapter | `AgentEventEnvelopeAdapterTest.php` | All events |
 
 ### Integration Tests
 

@@ -1,16 +1,4 @@
----
-title: 'Self-Verify Responses'
-docname: 'self_verify'
----
-
-## Overview
-
-Self-Verification generates multiple candidates via CoT, rewrites them as declaratives, and verifies them via TFV to select the best candidate.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -76,10 +64,3 @@ class SelfVerifyPipeline {
 $query = 'What month is it now if it has been 3 weeks, 10 days, and 2 hours since May 1, 2024 6pm?';
 (new SelfVerifyPipeline)->run($query);
 ?>
-```
-
-## References
-
-1. Large Language Models are Better Reasoners with Self-Verification (https://arxiv.org/abs/2212.09561)
-2. The Prompt Report: A Systematic Survey of Prompting Techniques (https://arxiv.org/abs/2406.06608)
-

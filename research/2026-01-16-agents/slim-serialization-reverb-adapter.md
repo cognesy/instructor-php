@@ -371,7 +371,7 @@ interface CanBroadcastAgentEvents
     public function broadcast(string $channel, array $envelope): void;
 }
 
-final class ReverbAgentEventAdapter
+final class AgentEventEnvelopeAdapter
 {
     public function __construct(
         private CanBroadcastAgentEvents $broadcaster,
@@ -494,7 +494,7 @@ final class ReverbAgentEventAdapter
 
 ```php
 // In a service provider or event subscriber
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     broadcaster: new LaravelReverbBroadcaster(),
     sessionId: $session->id,
     executionId: $execution->id,
@@ -529,7 +529,7 @@ $events->listen(ContinuationEvaluated::class, [$adapter, 'onContinuationEvaluate
 | `packages/addons/src/Agent/Serialization/CanSerializeAgentState.php` | New | Interface |
 | `packages/addons/src/Agent/Serialization/SlimAgentStateSerializer.php` | New | Implementation |
 | `packages/addons/src/Agent/Broadcasting/CanBroadcastAgentEvents.php` | New | Interface |
-| `packages/addons/src/Agent/Broadcasting/ReverbAgentEventAdapter.php` | New | Reverb adapter |
+| `packages/addons/src/Agent/Broadcasting/AgentEventEnvelopeAdapter.php` | New | Reverb adapter |
 | `packages/addons/src/Agent/Events/ToolCallStarted.php` | Verify | Confirm `tool` key exists |
 | `packages/addons/src/Agent/Events/ToolCallCompleted.php` | Verify | Confirm `tool`, `success`, `error` keys |
 
@@ -539,7 +539,7 @@ $events->listen(ContinuationEvaluated::class, [$adapter, 'onContinuationEvaluate
 
 ### For Partnerspot
 1. Replace `AgentState::toArray()` calls with `SlimAgentStateSerializer::serialize()`.
-2. Update `AssistantEventBroadcaster` to use `ReverbAgentEventAdapter`.
+2. Update `AssistantEventBroadcaster` to use `AgentEventEnvelopeAdapter`.
 3. Fix event key mappings: `tool` not `name`, `success` not `status`.
 4. Add `execution_id` and `timestamp` to envelope.
 5. Frontend can progressively adopt new envelope format while keeping old field names in payload.

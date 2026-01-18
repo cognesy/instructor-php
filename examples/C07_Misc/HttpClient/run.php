@@ -1,10 +1,4 @@
----
-title: 'HTTP Client – Basics'
-docname: 'http_client_basics'
----
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Creation\HttpClientBuilder;
@@ -43,4 +37,3 @@ echo "Status:  " . $response->statusCode() . "\n";
 echo "Headers: " . json_encode($response->headers()) . "\n";
 echo "Body:    " . $response->body() . "\n";
 ?>
-```

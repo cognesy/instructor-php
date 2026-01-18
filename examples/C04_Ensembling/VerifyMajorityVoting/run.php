@@ -1,16 +1,4 @@
----
-title: 'Verify Responses over Majority Voting'
-docname: 'verify_majority_voting'
----
-
-## Overview
-
-Diverse verifier scoring aggregates quality over unique answers, improving over majority vote.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -65,8 +53,3 @@ $query = 'Betty needs $100; has half; parents give $15; grandparents twice paren
 $best = (new DiverseVerifier)($query, $examples, k: 6);
 dump($best);
 ?>
-```
-
-### References
-
-1) Making Language Models Better Reasoners with Step-Aware Verifier (https://aclanthology.org/2023.acl-long.291/)

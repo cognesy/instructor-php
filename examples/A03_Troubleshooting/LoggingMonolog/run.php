@@ -1,17 +1,4 @@
----
-title: 'Monolog Logging with Functional Pipeline'
-docname: 'logging_monolog'
-path: ''
----
-
-## Overview
-
-Monolog integration with Instructor's functional logging pipeline.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -66,4 +53,3 @@ echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 // [2025-12-07T01:18:14.640213+00:00] instructor.DEBUG: HttpResponseReceived
 // [2025-12-07T01:18:14.659417+00:00] instructor.DEBUG: ✅ Completed extraction: User
 ?>
-```

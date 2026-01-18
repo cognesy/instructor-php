@@ -1,16 +1,4 @@
----
-title: 'Generate Multiple Candidate Responses'
-docname: 'multiple_candidates'
----
-
-## Overview
-
-Generate multiple candidate responses and pick the most common answer (Self-Consistency).
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -49,8 +37,3 @@ TXT;
 $answer = (new SelfConsistency)($prompt, k: 5);
 dump($answer);
 ?>
-```
-
-### References
-
-1) Self-Consistency Improves Chain Of Thought Reasoning In Language Models (https://arxiv.org/pdf/2210.03350)

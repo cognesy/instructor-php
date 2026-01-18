@@ -1,17 +1,4 @@
----
-title: 'Embeddings Logging with Laravel'
-docname: 'llm_logging_laravel_embeddings'
-path: ''
----
-
-## Overview
-
-Simple Embeddings operation logging with Laravel-style context.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Logging\Enrichers\LazyEnricher;
@@ -77,4 +64,3 @@ echo "📊 Vector dimensions: " . count($vectors->first()?->values() ?? []) . "\
 // 📊 Generated 2 embedding vectors
 // 📊 Vector dimensions: 1536
 ?>
-```

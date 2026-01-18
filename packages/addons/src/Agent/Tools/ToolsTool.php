@@ -2,12 +2,12 @@
 
 namespace Cognesy\Addons\Agent\Tools;
 
-use Cognesy\Addons\Agent\Contracts\ToolRegistryContract;
+use Cognesy\Addons\Agent\Contracts\ToolRegistryInterface;
 
 final class ToolsTool extends BaseTool
 {
     public function __construct(
-        private readonly ToolRegistryContract $registry,
+        private readonly ToolRegistryInterface $registry,
         private readonly ?string $locale = null,
     ) {
         parent::__construct(

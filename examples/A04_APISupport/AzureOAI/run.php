@@ -1,19 +1,4 @@
----
-title: 'Azure OpenAI'
-docname: 'azure_openai'
----
-
-## Overview
-
-You can connect to Azure OpenAI instance using a dedicated client provided
-by Instructor. Please note it requires setting up your own model deployment
-using Azure OpenAI service console.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -65,4 +50,3 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
-```

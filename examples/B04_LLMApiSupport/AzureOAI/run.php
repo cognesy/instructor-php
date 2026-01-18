@@ -1,19 +1,4 @@
----
-title: 'Azure OpenAI'
-docname: 'azure_openai'
----
-
-## Overview
-
-You can connect to Azure OpenAI instance using a dedicated client provided
-by Instructor. Please note it requires setting up your own model deployment
-using Azure OpenAI service console.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
@@ -32,4 +17,3 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

@@ -7,7 +7,7 @@ use Cognesy\Addons\Agent\Core\Collections\NameList;
 use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition;
-use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Events\AgentFinished;
 use Cognesy\Addons\Agent\Events\AgentStateUpdated;
 use Cognesy\Addons\Agent\Events\AgentStepCompleted;
@@ -68,7 +68,7 @@ final class EventAgentDefinition extends AbstractAgentDefinition
     protected function buildAgent(): \Cognesy\Addons\Agent\Agent
     {
         return AgentBuilder::base()
-            ->withDriver(new DeterministicDriver())
+            ->withDriver(new DeterministicAgentDriver())
             ->build();
     }
 

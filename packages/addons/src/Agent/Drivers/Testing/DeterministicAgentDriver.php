@@ -13,7 +13,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
-final class DeterministicDriver implements CanUseTools
+final class DeterministicAgentDriver implements CanUseTools
 {
     /** @var array<int, ScenarioStep|AgentStep> */
     private array $steps;

@@ -87,11 +87,18 @@ class InferenceExecution
     public function usage(): Usage {
         $attemptsUsage = $this->attempts->usage();
         $current = $this->currentAttempt;
-        if ($current !== null && !$current->isFinalized()) {
-            $partialUsage = $current->partialResponse()?->usage() ?? Usage::none();
-            return $attemptsUsage->withAccumulated($partialUsage);
+        if ($current === null) {
+            return $attemptsUsage;
         }
-        return $attemptsUsage;
+        // Check if current attempt is already counted in attempts list
+        $isInAttempts = $this->attempts->count() > 0
+            && $this->attempts->last()?->id === $current->id;
+        if ($isInAttempts) {
+            // Already counted via attempts->usage()
+            return $attemptsUsage;
+        }
+        // Include current attempt's usage (whether finalized or streaming)
+        return $attemptsUsage->withAccumulated($current->usage());
     }
 
     public function hasErrors(): bool {
@@ -237,10 +244,11 @@ class InferenceExecution
     }
 
     public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
-        $currentAttempt = $this->currentAttempt ?? new InferenceAttempt(
-            accumulatedPartial: null,
-            isFinalized: false,
-        );
+        $currentAttempt = match (true) {
+            $this->currentAttempt === null => InferenceAttempt::started(),
+            $this->currentAttempt->isFinalized() => InferenceAttempt::started(),
+            default => $this->currentAttempt,
+        };
         return $this->with(
             currentAttempt: $currentAttempt->withNewPartialResponse($partialResponse),
             isFinalized: false,

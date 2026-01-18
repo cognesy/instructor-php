@@ -1,24 +1,4 @@
----
-title: 'Generate Follow-Up Questions'
-docname: 'follow_up_questions'
----
-
-## Overview
-
-Models can sometimes correctly answer sub-problems but incorrectly answer the overall query. This is known as the compositionality gap1.
-
-How can we encourage a model to use the answers to sub-problems to correctly generate the overall solution?
-
-Self-Ask is a technique which use a single prompt to:
- - decide if follow-up questions are required
- - generate the follow-up questions
- - answer the follow-up questions
- - answer the main query
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -60,8 +40,3 @@ $response = (new RespondWithFollowUp)(
 echo "Answer:\n";
 dump($response);
 ?>
-```
-
-## References
-
- 1. [Measuring and Narrowing the Compositionality Gap in Language Models](https://arxiv.org/abs/2210.03350)

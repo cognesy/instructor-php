@@ -28,7 +28,7 @@ Thank you for the detailed, actionable feedback with specific code references. Y
 | 2 | ContinuationCriteria lacks observability | Rich decision objects with reasons | `ContinuationOutcome` with full trace, `ContinuationEvaluated` event, `StopReason` enum |
 | 3 | Time-based serialization issues | Cumulative execution time | Per-execution timing (`executionStartedAt`) + cumulative tracking + `withCumulativeTimeout()` |
 | 4 | MessageRole not exported | `isAssistant()`, `isTool()`, `isUser()` helpers | All requested + `isSystem()`, `isDeveloper()`, `hasRole(MessageRole...)` |
-| 5 | No built-in execution tracing | Structured trace + PSR-3 logger | `ContinuationEvaluated` event, `SlimAgentStateSerializer`, `ReverbAgentEventAdapter` |
+| 5 | No built-in execution tracing | Structured trace + PSR-3 logger | `ContinuationEvaluated` event, `SlimAgentStateSerializer`, `AgentEventEnvelopeAdapter` |
 | 6 | Agent stops after one step | Better continuation visibility | Root cause was #2 - now fully debuggable via `ContinuationOutcome` |
 
 ---
@@ -316,10 +316,10 @@ $serializer = new SlimAgentStateSerializer($config);
 $payload = $serializer->serialize($state);
 ```
 
-**3. ReverbAgentEventAdapter** matching your event envelope format:
+**3. AgentEventEnvelopeAdapter** matching your event envelope format:
 
 ```php
-use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+use Cognesy\Addons\Agent\Broadcasting\AgentEventEnvelopeAdapter;
 
 // Emits envelopes like:
 {
@@ -342,7 +342,7 @@ use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
 
 ### Action for Partnerspot
 
-**Consider using `ReverbAgentEventAdapter`** in `AssistantEventBroadcaster.php` for standardized envelopes, or use it as reference for your existing implementation.
+**Consider using `AgentEventEnvelopeAdapter`** in `AssistantEventBroadcaster.php` for standardized envelopes, or use it as reference for your existing implementation.
 
 **Use slim serialization** for `state_snapshot` storage:
 ```php
@@ -467,7 +467,7 @@ Updated documentation is available in `packages/addons/AGENT.md`:
 - **Troubleshooting** section with common issues
 - **Migration Guide** (2026-01-16) for ErrorPolicy transition
 - **Event Reference** with all event payloads
-- **Testing Utilities** including `DeterministicDriver`
+- **Testing Utilities** including `DeterministicAgentDriver`
 
 ---
 
@@ -479,7 +479,7 @@ A few clarifying questions to ensure our fixes fully address your needs:
 
 2. **Are you seeing `Result::failure` from your tools** (SearchEntities, CreateProgramLead, DeleteProgramLead)? The new error policy may help if tools occasionally fail.
 
-3. **Do you need the `ReverbAgentEventAdapter`** as a standalone package, or is the reference implementation in `packages/addons/src/Agent/Broadcasting/` sufficient?
+3. **Do you need the `AgentEventEnvelopeAdapter`** as a standalone package, or is the reference implementation in `packages/addons/src/Agent/Broadcasting/` sufficient?
 
 ---
 
@@ -503,6 +503,6 @@ Your detailed feedback with code references made this work possible. The workaro
 - `packages/addons/src/Agent/AgentBuilder.php`
 - `packages/addons/src/Agent/Events/ContinuationEvaluated.php` (new)
 - `packages/addons/src/Agent/Serialization/SlimAgentStateSerializer.php` (new)
-- `packages/addons/src/Agent/Broadcasting/ReverbAgentEventAdapter.php` (new)
+- `packages/addons/src/Agent/Broadcasting/AgentEventEnvelopeAdapter.php` (new)
 - `packages/messages/src/Message.php`
 - `packages/addons/AGENT.md`

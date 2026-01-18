@@ -5,7 +5,7 @@ namespace Cognesy\Addons\Agent\Contracts;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Tools\ToolPolicy;
 
-interface ToolRegistryContract
+interface ToolRegistryInterface
 {
     public function register(ToolInterface $tool): void;
 

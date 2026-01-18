@@ -1,17 +1,4 @@
----
-title: 'Generating JSON Schema from PHP classes'
-docname: 'json_schema_api'
----
-
-## Overview
-
-Polyglot has a built-in support for dynamically constructing tool calling schema using
-`JsonSchema` class.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -27,7 +14,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'population', 'founded'],
 );
 
-$data = (new Inference)
+$response = (new Inference)
     ->using('openai')
     //->withDebugPreset('on')
     ->with(
@@ -49,7 +36,9 @@ $data = (new Inference)
         options: ['max_tokens' => 64],
         mode: OutputMode::Tools,
     )
-    ->asJsonData();
+    ->response();
+
+$data = $response->findJsonData(OutputMode::Tools)->toArray();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";
@@ -60,4 +49,3 @@ assert(is_string($data['name']));
 assert(is_int($data['population']));
 assert(is_int($data['founded']));
 ?>
-```

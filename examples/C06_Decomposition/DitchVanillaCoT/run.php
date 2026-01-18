@@ -1,25 +1,4 @@
----
-title: 'Ditch Vanilla Chain Of Thought'
-docname: 'ditch_vanilla_cot'
----
-
-## Overview
-
-How can we improve the effectiveness of Zero-Shot Chain of Thought (CoT) prompts?
-
-Plan and Solve improves the use of Zero-Shot Chain of Thought by adding more detailed instructions to the prompt given to large language models.
-
-**Plan and Solve Process:**
-
-1. **Generate Reasoning**: Prompt the model to explicitly devise a plan for solving a problem before generating intermediate reasoning
-2. **Extract Answer**: Extract the final answer from the model's chain of thought
-
-The key improvement is guiding the LLM to pay more attention to calculation and intermediate results to ensure they are correctly performed.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -88,8 +67,3 @@ $result = (new PlanAndSolveSolver)(
 
 dump($result);
 ?>
-```
-
-## References
-
-1. [Plan-and-Solve Prompting: Improving Zero-Shot Chain-of-Thought Reasoning by Large Language Models](https://arxiv.org/pdf/2305.04091)

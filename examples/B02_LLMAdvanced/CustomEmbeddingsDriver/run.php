@@ -1,14 +1,4 @@
----
-title: 'Custom Embeddings Config'
-docname: 'custom_embeddings_config'
----
-
-## Overview
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Config\Env;
@@ -50,4 +40,3 @@ $bestMatches = EmbedUtils::findSimilar(
 
 dump($bestMatches);
 ?>
-```

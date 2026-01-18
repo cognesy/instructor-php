@@ -1,23 +1,4 @@
----
-title: 'Break Down Complex Tasks'
-docname: 'break_down_complexity'
----
-
-## Overview
-
-How can we help LLMs handle complex tasks more effectively?
-
-Decomposed Prompting leverages a Language Model (LLM) to deconstruct a complex task into a series of manageable sub-tasks. Each sub-task is then processed by specific functions, enabling the LLM to handle intricate problems more effectively and systematically.
-
-This approach breaks down complexity by:
-- Generating an action plan using the LLM
-- Executing each step systematically
-- Using specific operations like Split, StrPos, and Merge
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -110,8 +91,3 @@ $result = (new DecomposedTaskSolver)('Concatenate the second letter of every wor
 
 dump($result);
 ?>
-```
-
-## References
-
-1. [Decomposed Prompting: A Modular Approach for Solving Complex Tasks](https://arxiv.org/pdf/2210.02406)

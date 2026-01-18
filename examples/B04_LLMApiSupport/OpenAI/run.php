@@ -1,22 +1,4 @@
----
-title: 'OpenAI'
-docname: 'openai'
----
-
-## Overview
-
-This is the default client used by Instructor.
-
-Mode compatibility:
- - OutputMode::Tools (supported)
- - OutputMode::Json (supported)
- - OutputMode::JsonSchema (recommended for new models)
- - OutputMode::MdJson (fallback)
-
-## Example
-
-```php
-\<\?php
+<?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
@@ -35,4 +17,3 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

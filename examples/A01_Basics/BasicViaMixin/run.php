@@ -1,20 +1,3 @@
----
-title: 'Basic use via mixin'
-docname: 'basic_use_mixin'
----
-
-## Overview
-
-Instructor provides `HandlesSelfInference` trait that you can use to enable
-extraction capabilities directly on class via static `infer()` method.
-
-`infer()` method returns an instance of the class with the data extracted
-using the Instructor.
-
-`infer()` method has following signature (you can also find it in the
-`CanSelfInfer` interface):
-
-```php
 static public function infer(
     string|array $messages, // (required) The message(s) to infer data from
     string $prompt = '',    // (optional) The prompt to use for inference
@@ -26,11 +9,8 @@ static public function infer(
     ?LLM $llm = null         // (optional) LLM instance to use for inference
 ) : static;
 ```
-
-## Example
-
 ```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
@@ -51,4 +31,3 @@ assert(isset($user->age));
 assert($user->name === 'Jason');
 assert($user->age === 25);
 ?>
-```

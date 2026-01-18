@@ -1,23 +1,4 @@
----
-title: 'Use Ensembles To Test Prompts'
-docname: 'ensemble_test_prompts'
----
-
-## Overview
-
-### What's Max Mutual Information?
-Max Mutual Information Method aims to find the best prompt to elicit the desired response from an LLM by maximizing a mutual information proxy — i.e., reducing model uncertainty with the prompt.
-
-### Entropy
-When a language model receives a prompt, it produces a distribution over outputs. Lower entropy suggests higher confidence.
-
-### Mutual Information
-We approximate mutual information as the difference between marginal and conditional entropies of outputs across multiple samples for a given prompt. Below, we use a lightweight proxy based on answer diversity and rationale repetitiveness.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -65,9 +46,3 @@ $question = 'If a store sold 93 in the morning and 39 in the afternoon from 200 
 $scores = (new PromptEnsembler)->evaluate($prompts, $question);
 dump($scores);
 ?>
-```
-
-### References
-
-1) https://learnprompting.org/docs/advanced/ensembling/max_mutual_information_method
-

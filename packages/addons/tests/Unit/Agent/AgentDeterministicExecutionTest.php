@@ -4,7 +4,7 @@ namespace Tests\Addons\Unit\Agent;
 
 use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
 use Cognesy\Addons\Agent\Tools\Testing\MockTool;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
@@ -14,7 +14,7 @@ use Cognesy\Messages\Messages;
 describe('Deterministic agent execution', function () {
     it('runs a trivial scenario without tools or LLM', function () {
         $agent = AgentBuilder::base()
-            ->withDriver(DeterministicDriver::fromResponses('Paris'))
+            ->withDriver(DeterministicAgentDriver::fromResponses('Paris'))
             ->build();
 
         $state = AgentState::empty()
@@ -38,7 +38,7 @@ describe('Deterministic agent execution', function () {
             },
         );
 
-        $driver = DeterministicDriver::fromSteps(
+        $driver = DeterministicAgentDriver::fromSteps(
             ScenarioStep::toolCall('get_capital', ['country' => 'France'], response: 'using tool'),
             ScenarioStep::final('Paris'),
         );

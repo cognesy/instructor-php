@@ -1,21 +1,4 @@
----
-title: 'Google Gemini'
-docname: 'google_gemini'
----
-
-## Overview
-
-Google offers Gemini models which perform well in benchmarks.
-
-Supported modes:
- - OutputMode::MdJson - fallback mode
- - OutputMode::Json - recommended
- - OutputMode::Tools - supported
-
-Here's how you can use Instructor with Gemini API.
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -71,4 +54,3 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
-```

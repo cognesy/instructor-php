@@ -1,18 +1,4 @@
----
-title: 'OpenCode CLI - Basic'
-docname: 'opencode_basic'
----
-
-## Overview
-
-This example demonstrates how to use the OpenCode CLI integration to execute
-simple prompts. The OpenCode component provides a PHP API for invoking the
-`opencode run` command in headless mode with JSON streaming output.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\OpenCode\Application\Builder\OpenCodeCommandBuilder;
@@ -20,6 +6,13 @@ use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Application\Parser\ResponseParser;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+
+$openCodePath = trim((string) shell_exec('command -v opencode'));
+$stdbufPath = trim((string) shell_exec('command -v stdbuf'));
+if ($openCodePath === '' || $stdbufPath === '') {
+    print("OpenCode CLI or stdbuf not found. Install OpenCode CLI and coreutils before running this example.\n");
+    exit(0);
+}
 
 // Step 1: Create a request with a simple prompt
 $request = new OpenCodeRequest(
@@ -70,4 +63,3 @@ if ($response->messageText() === '') {
     exit(1);
 }
 ?>
-```

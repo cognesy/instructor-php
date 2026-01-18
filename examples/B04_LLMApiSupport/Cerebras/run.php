@@ -1,23 +1,4 @@
----
-title: 'Cerebras'
-docname: 'cerebras'
----
-
-## Overview
-
-Support for Cerebras API which uses custom hardware for super fast inference.
-Cerebras provides Llama models.
-
-Mode compatibility:
-- OutputMode::Tools (supported)
-- OutputMode::Json (supported)
-- OutputMode::JsonSchema (supported)
-- OutputMode::MdJson (fallback)
-
-## Example
-
-```php
-\<\?php
+<?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
@@ -36,4 +17,3 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

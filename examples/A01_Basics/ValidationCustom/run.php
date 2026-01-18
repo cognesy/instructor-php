@@ -1,18 +1,4 @@
----
-title: 'Custom validation using Symfony Validator'
-docname: 'custom_validation'
----
-
-## Overview
-
-Instructor uses Symfony validation component to validate properties of extracted data. Symfony
-offers you #[Assert/Callback] annotation to build fully customized validation logic.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -48,4 +34,3 @@ dump($user);
 
 assert($user->name === "JASON");
 ?>
-```

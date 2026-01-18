@@ -1,10 +1,4 @@
----
-title: 'HTTP Client – Pool Basics'
-docname: 'http_client_pool_basics'
----
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\HttpClient;
@@ -56,4 +50,3 @@ foreach ($results as $i => $result) {
     }
 }
 ?>
-```

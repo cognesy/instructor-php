@@ -1,18 +1,4 @@
----
-title: 'Messages API'
-docname: 'messages_api'
-path: ''
----
-
-## Overview
-
-Instructor allows you to use `Messages` and `Message` classes to work with chat
-messages and their sequences.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -54,4 +40,3 @@ assert(!empty($code->code));
 assert(!empty($code->codeDescription));
 assert(Str::contains(strtolower($code->programmingLanguage), 'php'));
 ?>
-```

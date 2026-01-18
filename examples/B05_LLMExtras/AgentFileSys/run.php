@@ -1,25 +1,4 @@
----
-title: 'Agent with File System Tools'
-docname: 'agent_file_system'
----
-
-## Overview
-
-Agents can be equipped with file system capabilities to read, write, search, and edit files
-within a specified working directory. This enables code analysis, documentation generation,
-refactoring assistance, and other file-based operations. The agent determines which file
-operations to perform based on the task.
-
-Key concepts:
-- `UseFileTools`: Capability that adds file system tools to the agent
-- Working directory: Root path for all file operations (security boundary)
-- Available tools: `read_file`, `write_file`, `edit_file`, `list_dir`, `search_files`
-- Multi-step execution: Agent reads files, analyzes content, and responds
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentBuilder;
@@ -73,38 +52,3 @@ echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
 echo "  Status: {$state->status()->value}\n";
 ?>
-```
-
-## Expected Output
-
-```
-Step 1: [tool_use]
-  → read_file()
-
-Step 2: [response]
-
-Answer:
-Based on composer.json:
-1. Project name: cognesy/instructor-php
-2. PHP version: >=8.2
-3. First 5 dependencies:
-   - symfony/serializer: ^7.1
-   - symfony/property-info: ^7.1
-   - phpdocumentor/reflection-docblock: ^5.4
-   - symfony/http-client: ^7.1
-   - saloonphp/saloon: ^3.10
-
-Stats:
-  Steps: 2
-  Status: finished
-```
-
-## Key Points
-
-- **Working directory**: File tools are restricted to specified directory for security
-- **Tool discovery**: Agent automatically determines which file operations to use
-- **Multi-step execution**: Agent reads files in one step, analyzes in the next
-- **Available operations**: Read, write, edit, list directories, search by pattern
-- **Security boundary**: All file paths are validated against working directory
-- **Automatic tool use**: No manual tool specification required - agent decides
-- **Use cases**: Code analysis, documentation generation, refactoring, file migrations

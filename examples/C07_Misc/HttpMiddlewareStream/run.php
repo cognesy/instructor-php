@@ -1,10 +1,4 @@
----
-title: 'HTTP Middleware (Stream)'
-docname: 'http_middleware_stream'
----
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
@@ -59,4 +53,3 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     echo $chunk; // chunks will be prefixed by middleware
 }
 ?>
-```

@@ -1,16 +1,4 @@
----
-title: 'Combine Multiple Reasoning Chains'
-docname: 'combine_reasoning_chains'
----
-
-## Overview
-
-Meta Chain-of-Thought (Meta-CoT) decomposes a query into sub-queries, solves each with its own reasoning chain, then composes a final answer from those chains.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -89,9 +77,3 @@ $query = "Would Arnold Schwarzenegger have been able to deadlift an adult Black 
 $result = (new MetaCOT)($query);
 dump($result);
 ?>
-```
-
-### References
-
-1) Answering Questions by Meta-Reasoning over Multiple Chains of Thought (https://arxiv.org/pdf/2304.13007)
-

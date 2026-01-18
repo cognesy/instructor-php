@@ -1,22 +1,4 @@
----
-title: 'Using structured data as an input'
-docname: 'structured_input'
----
-
-## Overview
-
-Instructor offers a way to use structured data as an input. This is
-useful when you want to use object data as input and get another object
-with a result of LLM inference.
-
-The `input` field of Instructor's `create()` method
-can be an object, but also an array or just a string.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -57,4 +39,3 @@ if ($translatedEmail->body === $email->body) {
     exit(1);
 }
 ?>
-```

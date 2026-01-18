@@ -1098,7 +1098,7 @@ interface CanBroadcastAgentEvents
 
 ---
 
-### Task 6.2: Create ReverbAgentEventAdapter
+### Task 6.2: Create AgentEventEnvelopeAdapter
 
 **Status**: 🔲 TODO
 **Priority**: MEDIUM
@@ -1111,10 +1111,10 @@ Create adapter that transforms agent events into Reverb-compatible format.
 
 #### Implementation Requirements
 
-**Create** `packages/addons/src/Agent/Broadcasting/ReverbAgentEventAdapter.php`:
+**Create** `packages/addons/src/Agent/Broadcasting/AgentEventEnvelopeAdapter.php`:
 
 ```php
-final class ReverbAgentEventAdapter implements CanBroadcastAgentEvents
+final class AgentEventEnvelopeAdapter implements CanBroadcastAgentEvents
 {
     public function broadcast(AgentEvent $event): void {
         $envelope = $this->toEnvelope($event);
@@ -1279,7 +1279,7 @@ Document breaking changes and migration path.
 | 5.1 | SlimSerializationConfig | 🔲 TODO | MEDIUM | 2h |
 | 5.2 | SlimAgentStateSerializer | 🔲 TODO | MEDIUM | 4h |
 | 6.1 | Event adapter interface | 🔲 TODO | MEDIUM | 1h |
-| 6.2 | ReverbAgentEventAdapter | 🔲 TODO | MEDIUM | 4h |
+| 6.2 | AgentEventEnvelopeAdapter | 🔲 TODO | MEDIUM | 4h |
 | 6.3 | Verify tool event keys | 🔲 TODO | MEDIUM | 1h |
 | 7.1 | Troubleshooting guide | 🔲 TODO | LOW | 2h |
 | 7.2 | Migration guide | 🔲 TODO | LOW | 2h |

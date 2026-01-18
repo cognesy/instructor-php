@@ -1,14 +1,4 @@
----
-title: 'Mixed Type Property'
-docname: 'mixed_type_property'
----
-
-## Overview
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -37,4 +27,3 @@ dump($user);
 assert($user->name === "Jason");
 assert($user->extraInfo !== ''); // not empty, but can be any type
 ?>
-```

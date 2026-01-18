@@ -1,17 +1,4 @@
----
-title: 'Perplexity'
-docname: 'perplexity'
----
-
-## Overview
-
-Perplexity is a search engine that provides an API for generating text. It is designed to
-be used in a variety of applications, including chatbots, content generation, and more.
-
-## Example
-
-```php
-\<\?php
+<?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
@@ -30,4 +17,3 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

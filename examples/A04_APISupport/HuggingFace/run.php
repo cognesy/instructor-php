@@ -1,18 +1,4 @@
----
-title: 'Hugging Face'
-docname: 'huggingface'
----
-
-## Overview
-
-You can use Instructor to parse structured output from LLMs using Hugging Face API.
-This example demonstrates how to parse user data into a structured model using
-JSON Schema.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -73,4 +59,3 @@ assert($user->age === 25);
 assert($user->firstName === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
-```

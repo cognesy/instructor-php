@@ -16,4 +16,6 @@ Addons expand LLM capabilities but are not required for basic functionality.
 - **Continuation Observability**: `ContinuationOutcome` and `ContinuationEvaluation` provide full decision tracing
 - **Error Policy**: Configurable retry behavior with `ErrorPolicy::retryToolErrors()`, `stopOnAnyError()`, etc.
 - **Time Tracking**: Per-execution timing (`executionStartedAt`) and cumulative timeout support
+- **Slim Serialization**: `SlimAgentStateSerializer` for compact state payloads
 - **Message Helpers**: `isAssistant()`, `isTool()`, `isUser()`, `isSystem()`, `hasRole()` on Message class
+- **Broadcasting**: `AgentEventEnvelopeAdapter` supports Laravel Reverb/Pusher with a wiretap integration

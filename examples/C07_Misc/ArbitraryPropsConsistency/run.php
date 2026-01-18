@@ -1,18 +1,4 @@
----
-title: 'Consistent values of arbitrary properties'
-docname: 'arbitrary_properties_consistent'
----
-
-## Overview
-
-For multiple records containing arbitrary properties, instruct LLM to get more
-consistent key names when extracting properties.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -46,5 +32,3 @@ dump($list);
 
 assert(!empty($list->users));
 ?>
-```
-

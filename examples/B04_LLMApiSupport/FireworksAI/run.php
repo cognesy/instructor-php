@@ -1,23 +1,4 @@
----
-title: 'Fireworks.ai'
-docname: 'fireworks'
----
-
-## Overview
-
-Please note that the larger Mistral models support OutputMode::Json, which is much more
-reliable than OutputMode::MdJson.
-
-Mode compatibility:
-- OutputMode::Tools - selected models
-- OutputMode::Json - selected models
-- OutputMode::MdJson
-
-
-## Example
-
-```php
-\<\?php
+<?php
 
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
@@ -36,4 +17,3 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

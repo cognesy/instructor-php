@@ -1,14 +1,4 @@
----
-title: 'Use custom HTTP client instance - Laravel'
-docname: 'custom_http_client_laravel'
----
-
-## Overview
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -41,4 +31,3 @@ dump($user);
 assert(isset($user->name));
 assert(isset($user->age));
 ?>
-```

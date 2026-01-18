@@ -1,21 +1,4 @@
----
-title: 'Getters and setters'
-docname: 'getters_and_setters'
----
-
-## Overview
-
-Instructor can extract data from the LLM response and use it
-to instantiate an object via setter methods.
-
-If given property is not public and has no matching constructor
-params Instructor will use the setter method parameter nullability
-and default value to determine if property is required.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -88,4 +71,3 @@ assert($user->getAge() === 0); // not called - property value not inferred by LL
 assert($user->getPassword() === '123admin'); // called - but set to default value as LLM inferred empty password
 assert($user->getLocation() === 'San Francisco'); // called - LLM inferred location from the text
 ?>
-```

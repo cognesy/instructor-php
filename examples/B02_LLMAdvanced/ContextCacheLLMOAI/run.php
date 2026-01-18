@@ -1,28 +1,4 @@
----
-title: 'Context caching (text inference, OpenAI)'
-docname: 'context_cache_llm_oai'
----
-
-## Overview
-
-Instructor offers a simplified way to work with LLM providers' APIs supporting caching,
-so you can focus on your business logic while still being able to take advantage of lower
-latency and costs.
-
-> **Note:** Context caching is automatic for all OpenAI API calls. Read more
-> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
-
-## Example
-
-When you need to process multiple requests with the same context, you can use context
-caching to improve performance and reduce costs.
-
-In our example we will be analyzing the README.md file of this Github project and
-generating its summary for 2 target audiences.
-
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -83,4 +59,3 @@ if ($response2->usage()->cacheReadTokens === 0) {
     print("Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n");
 }
 ?>
-```

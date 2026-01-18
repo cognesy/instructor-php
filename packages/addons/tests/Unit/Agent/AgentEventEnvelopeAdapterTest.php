@@ -4,7 +4,7 @@ namespace Tests\Addons\Unit\Agent;
 
 use Cognesy\Addons\Agent\Broadcasting\BroadcastConfig;
 use Cognesy\Addons\Agent\Broadcasting\CanBroadcastAgentEvents;
-use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+use Cognesy\Addons\Agent\Broadcasting\AgentEventEnvelopeAdapter;
 use Cognesy\Addons\Agent\Events\AgentStepCompleted;
 use Cognesy\Addons\Agent\Events\AgentStepStarted;
 use Cognesy\Addons\Agent\Events\ContinuationEvaluated;
@@ -30,7 +30,7 @@ final class FakeBroadcaster implements CanBroadcastAgentEvents
 
 it('emits agent step events', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     $adapter->onAgentStepStarted(new AgentStepStarted(
         agentId: 'agent-1',
@@ -65,7 +65,7 @@ it('emits agent step events', function () {
 
 it('emits tool call events', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     $adapter->onToolCallStarted(new ToolCallStarted(
         tool: 'search',
@@ -93,7 +93,7 @@ it('emits tool call events', function () {
 
 it('emits continuation events when enabled', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter(
+    $adapter = new AgentEventEnvelopeAdapter(
         $broadcaster,
         'session-1',
         'exec-1',
@@ -128,7 +128,7 @@ it('emits continuation events when enabled', function () {
 
 it('returns wiretap callable that handles all events', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     $wiretap = $adapter->wiretap();
     expect($wiretap)->toBeCallable();
@@ -157,7 +157,7 @@ it('returns wiretap callable that handles all events', function () {
 
 it('handles StreamEventReceived for real-time chat', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     $adapter->onStreamChunk(new StreamEventReceived('Hello'));
     $adapter->onStreamChunk(new StreamEventReceived(' world'));
@@ -177,7 +177,7 @@ it('handles StreamEventReceived for real-time chat', function () {
 
 it('filters empty stream content', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     $adapter->onStreamChunk(new StreamEventReceived(''));
     $adapter->onStreamChunk(new StreamEventReceived('Hello'));
@@ -189,7 +189,7 @@ it('filters empty stream content', function () {
 
 it('auto-transitions status on lifecycle events', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     // Start step -> status becomes 'processing'
     $adapter->onAgentStepStarted(new AgentStepStarted(
@@ -232,7 +232,7 @@ it('auto-transitions status on lifecycle events', function () {
 
 it('maps StopReason to correct status', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     // Start step first to get 'processing' status
     $adapter->onAgentStepStarted(new AgentStepStarted(
@@ -269,7 +269,7 @@ it('maps StopReason to correct status', function () {
 
 it('does not duplicate status when already in same state', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     // Two step starts should only emit 'processing' once
     $adapter->onAgentStepStarted(new AgentStepStarted(
@@ -317,7 +317,7 @@ it('supports config presets', function () {
 
 it('respects minimal config - no streaming', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter(
+    $adapter = new AgentEventEnvelopeAdapter(
         $broadcaster,
         'session-1',
         'exec-1',
@@ -331,7 +331,7 @@ it('respects minimal config - no streaming', function () {
 
 it('includes full tool args in debug mode', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter(
+    $adapter = new AgentEventEnvelopeAdapter(
         $broadcaster,
         'session-1',
         'exec-1',
@@ -353,7 +353,7 @@ it('includes full tool args in debug mode', function () {
 
 it('can be reset for new executions', function () {
     $broadcaster = new FakeBroadcaster();
-    $adapter = new ReverbAgentEventAdapter($broadcaster, 'session-1', 'exec-1');
+    $adapter = new AgentEventEnvelopeAdapter($broadcaster, 'session-1', 'exec-1');
 
     // First execution
     $adapter->onStreamChunk(new StreamEventReceived('Hello'));

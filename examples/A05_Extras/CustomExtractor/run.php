@@ -1,31 +1,4 @@
----
-title: 'Custom Content Extractors'
-docname: 'custom_extractor'
----
-
-## Overview
-
-Instructor uses a pluggable extraction system to parse structured content from LLM responses.
-Different LLMs and output modes may return content in various formats - wrapped in markdown,
-embedded in explanatory text, or with trailing commas.
-
-You can create custom extractors to handle specific response formats from
-your LLM or API. Extractors are tried in order until one succeeds.
-
-## Built-in Extractors
-
-Instructor provides these content extractors:
-
-- `DirectJsonExtractor` - Parses content directly as JSON (fastest)
-- `BracketMatchingExtractor` - Finds JSON by matching first `{` to last `}`
-- `MarkdownBlockExtractor` - Extracts from markdown code blocks
-- `ResilientJsonExtractor` - Handles trailing commas, missing braces
-- `SmartBraceExtractor` - Smart brace matching with string escaping
-
-## Example: Custom XML Wrapper Extractor
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
@@ -119,47 +92,8 @@ echo "Age: {$person->age}\n";
 echo "City: {$person->city}\n";
 ?>
 ```
-
-## Expected Output
-
-```
-=== Demonstrating Custom Extraction Strategy ===
-
-Raw LLM response:
---------------------------------------------------
-Here is the extracted information:
-
-<json>
-{
-    "name": "Alice Johnson",
-    "age": 28,
-    "city": "San Francisco"
-}
-</json>
-
-The data has been successfully extracted from the input.
---------------------------------------------------
-
-Person {
-  +name: "Alice Johnson"
-  +age: 28
-  +city: "San Francisco"
-}
-
-Extracted data:
-Name: Alice Johnson
-Age: 28
-City: San Francisco
-```
-
-## Streaming with Custom Extractors
-
-Custom extractors are automatically used for both sync and streaming modes.
-The `ResponseExtractor` handles buffer creation internally, using a subset
-of extractors optimized for streaming (fast extractors by default).
-
 ```php
-\<\?php
+<?php
 // Custom extractors work for streaming too
 $stream = (new StructuredOutput)
     ->withResponseClass(Person::class)
@@ -178,11 +112,6 @@ $person = $stream->finalValue();
 echo "Final: {$person->name}\n";
 ?>
 ```
-
-## Creating Your Own Extractor
-
-Implement `CanExtractContent` interface:
-
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Utils\Result\Result;
@@ -201,16 +130,3 @@ class MyCustomExtractor implements CanExtractContent
         return 'my_custom';  // For logging/debugging
     }
 }
-```
-
-## Extractor Chain Behavior
-
-Extractors are tried in order until one succeeds:
-
-1. First extractor is called with raw content
-2. If it returns `Result::success()`, extraction is complete
-3. If it returns `Result::failure()`, next extractor is tried
-4. If all fail, an error is raised
-
-This allows graceful degradation - try fast/simple extractors first,
-fall back to more complex ones only when needed.

@@ -36,13 +36,13 @@ The LLM is expected to call the functions in the correct order to get the final 
 require 'examples/boot.php';
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
-use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
@@ -60,7 +60,7 @@ $toolUse = ToolUseFactory::default(
         new StepsLimit(6, fn(ToolUseState $state) => $state->stepCount()),
         new TokenUsageLimit(8192, fn(ToolUseState $state) => $state->usage()->total()),
         new ExecutionTimeLimit(60, fn(ToolUseState $state) => $state->startedAt()),
-        new RetryLimit(2, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
+        ErrorPolicyCriterion::withPolicy(ErrorPolicy::retryToolErrors(2)),
         new StopOnFinalDecision(),
     ),
 );

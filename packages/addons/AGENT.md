@@ -333,14 +333,19 @@ Note: This tool is **opt‑in** and not included in default agent builds. It cre
 ### Continuation Criteria
 Controls when agent stops:
 ```php
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\*;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
 
 $criteria = new ContinuationCriteria(
-    new StepsLimit(20, fn($s) => $s->stepCount()),
-    new TokenUsageLimit(32768, fn($s) => $s->usage()->total()),
-    new ExecutionTimeLimit(300, fn($s) => $s->startedAt()),
-    new RetryLimit(3, fn($s) => $s->steps(), fn($step) => $step->hasErrors()),
+    new StepsLimit(20, fn(AgentState $state) => $state->stepCount()),
+    new TokenUsageLimit(32768, fn(AgentState $state) => $state->usage()->total()),
+    new ExecutionTimeLimit(300, fn(AgentState $state) => $state->executionStartedAt() ?? $state->startedAt()),
+    ErrorPolicyCriterion::withPolicy(ErrorPolicy::retryToolErrors(3)),
 );
 
 // Build agent with custom criteria
@@ -641,16 +646,16 @@ $agent = AgentBuilder::base()
 
 ## Broadcasting
 
-The broadcasting system enables real-time UI updates by adapting agent events to a broadcast-friendly envelope format. Use `ReverbAgentEventAdapter` to broadcast events over WebSockets, Pusher, Laravel Reverb, or any custom transport.
+The broadcasting system enables real-time UI updates by adapting agent events to a broadcast-friendly envelope format. Use `AgentEventEnvelopeAdapter` to broadcast events over WebSockets, Pusher, Laravel Reverb, or any custom transport.
 
 ### Quick Start
 
 ```php
-use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+use Cognesy\Addons\Agent\Broadcasting\AgentEventEnvelopeAdapter;
 use Cognesy\Addons\Agent\Broadcasting\BroadcastConfig;
 
 // Create adapter
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     broadcaster: $myBroadcaster,  // Implements CanBroadcastAgentEvents
     sessionId: $sessionId,
     executionId: $executionId,
@@ -669,25 +674,25 @@ $result = $agent->run($state);
 use Cognesy\Addons\Agent\Broadcasting\BroadcastConfig;
 
 // Minimal: status events only (no streaming)
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     $broadcaster, $sessionId, $executionId,
     BroadcastConfig::minimal(),
 );
 
 // Standard: status + streaming (default)
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     $broadcaster, $sessionId, $executionId,
     BroadcastConfig::standard(),
 );
 
 // Debug: everything including continuation trace and full tool args
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     $broadcaster, $sessionId, $executionId,
     BroadcastConfig::debug(),
 );
 
 // Custom configuration
-$adapter = new ReverbAgentEventAdapter(
+$adapter = new AgentEventEnvelopeAdapter(
     broadcaster: $broadcaster,
     sessionId: $sessionId,
     executionId: $executionId,
@@ -873,17 +878,17 @@ $agent = AgentBuilder::base()
 
 ## Testing
 
-### DeterministicDriver
+### DeterministicAgentDriver
 
 Test agent behavior without LLM API calls by replaying pre-scripted responses.
 
 ```php
-use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
 use Cognesy\Addons\Agent\AgentBuilder;
 
 // Create agent with deterministic responses
-$driver = DeterministicDriver::fromResponses(
+$driver = DeterministicAgentDriver::fromResponses(
     'First response',
     'Second response',
     'Final response'
@@ -895,7 +900,7 @@ $agent = AgentBuilder::base()
     ->build();
 
 // Or build a scenario with tool calls
-$driver = DeterministicDriver::fromSteps(
+$driver = DeterministicAgentDriver::fromSteps(
     ScenarioStep::toolCall('read_file', ['path' => '/tmp/test.txt']),
     ScenarioStep::final('Task completed successfully')
 );
@@ -949,7 +954,7 @@ $agent = AgentBuilder::base()
 │   ├── Broadcasting/               # REAL-TIME UI EVENTS
 │   │   ├── BroadcastConfig.php     # Configuration with presets
 │   │   ├── CanBroadcastAgentEvents.php  # Broadcaster interface
-│   │   └── ReverbAgentEventAdapter.php  # Event-to-envelope adapter
+│   │   └── AgentEventEnvelopeAdapter.php  # Event-to-envelope adapter
 │   ├── Capabilities/               # MODULAR FEATURES
 │   │   ├── Bash/                   # Bash capability & tool
 │   │   ├── File/                   # File tools (read, write, edit, search, list_dir)
@@ -1005,7 +1010,7 @@ $agent = AgentBuilder::base()
 │   │   │   ├── ReActDriver.php
 │   │   │   └── Utils/              # ReActFormatter, ReActValidator
 │   │   ├── Testing/                # Testing utilities
-│   │   │   └── DeterministicDriver.php  # Deterministic test driver & ScenarioStep
+│   │   │   └── DeterministicAgentDriver.php  # Deterministic test driver & ScenarioStep
 │   │   └── ToolCalling/            # Native function calling
 │   │       ├── ToolCallingDriver.php
 │   │       └── ToolExecutionFormatter.php
@@ -1121,7 +1126,7 @@ $payload = $serializer->serialize($state);
 ```
 
 ### Broadcasting with wiretap()
-The `ReverbAgentEventAdapter` now supports single-line integration via `wiretap()`:
+The `AgentEventEnvelopeAdapter` now supports single-line integration via `wiretap()`:
 
 ```php
 // Old approach (verbose)

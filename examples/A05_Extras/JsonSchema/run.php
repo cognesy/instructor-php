@@ -1,18 +1,4 @@
----
-title: 'Generating JSON Schema from PHP classes'
-docname: 'schema'
----
-
-## Overview
-
-Instructor has a built-in support for dynamically constructing JSON Schema using
-`JsonSchema` class. It is useful when you want to shape the structures during
-runtime.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -44,4 +30,3 @@ assert($user->name === 'Jason');
 assert($user->age === 25);
 
 ?>
-```

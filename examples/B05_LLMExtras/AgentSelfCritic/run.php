@@ -1,44 +1,4 @@
----
-title: 'Agent Self-Critique Pattern'
-docname: 'agent_self_critique'
----
-
-## Overview
-
-Self-critique enables agents to evaluate their own outputs and request revisions when
-answers are incomplete or incorrect. This pattern uses a critic subagent that reviews
-each final response and decides whether it meets quality standards or needs refinement.
-
-This significantly improves accuracy by:
-- Catching incomplete answers
-- Detecting logical errors
-- Ensuring answers match the original question
-- Forcing deeper investigation when initial responses are superficial
-
-Key concepts:
-- `UseSelfCritique`: Capability that adds self-evaluation after each response
-- `maxIterations`: Maximum number of critique-revision cycles (default: 2)
-- `verbose`: Enable/disable critique feedback output (default: true)
-- Revision loop: Agent revises answers based on critic feedback
-- State processor: Evaluates responses and requests revisions when needed
-
-## Key Points
-
-- **Quality enforcement**: Critic rejects superficial or incorrect answers
-- **Automatic revision**: Agent revises responses based on critic feedback
-- **Evidence-based**: Critic encourages fact-checking over speculation
-- **Iteration limits**: Prevent infinite loops with `maxIterations` setting
-- **Verbose mode**: Enable `verbose` to see critique feedback in real-time
-- **Metadata tracking**: Track critique iterations and feedback
-- **Critic as processor**: Uses state processor to evaluate responses
-- **Continuation criteria**: Adds criteria to continue loop based on critique
-- **Use cases**: Research tasks, fact-checking, technical analysis, quality-sensitive outputs
-- **Trade-offs**: Higher accuracy at cost of more LLM calls and longer execution time
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentBuilder;
@@ -92,4 +52,3 @@ echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
 echo "  Status: {$state->status()->value}\n";
 ?>
-```

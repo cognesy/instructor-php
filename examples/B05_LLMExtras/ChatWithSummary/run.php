@@ -1,16 +1,4 @@
----
-title: 'Chat with summary'
-docname: 'chat_with_summary'
----
-
-## Overview
-
-
-## Example
-
-
-```php
-\<\?php
+<?php
 
 require 'examples/boot.php';
 
@@ -114,4 +102,3 @@ while ($chat->hasNextStep($state)) {
 //    echo "=====================\n";
 }
 ?>
-```

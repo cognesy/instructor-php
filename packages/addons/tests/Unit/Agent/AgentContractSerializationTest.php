@@ -7,7 +7,7 @@ use Cognesy\Addons\Agent\Core\Collections\NameList;
 use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition;
-use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Result\Result;
 
@@ -33,7 +33,7 @@ final class ConfiguredAgentDefinition extends AbstractAgentDefinition
     {
         return AgentBuilder::base()
             ->withMaxSteps($this->maxSteps)
-            ->withDriver(new DeterministicDriver())
+            ->withDriver(new DeterministicAgentDriver())
             ->build();
     }
 

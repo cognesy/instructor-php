@@ -35,8 +35,8 @@ class InferenceExecution {
     private bool $isFinalized;
 
     // State transitions:
-    public function withNewResponse(InferenceResponse $response): self;
-    public function withFailedResponse(?InferenceResponse $response, ...): self;
+    public function withSuccessfulAttempt(InferenceResponse $response): self;
+    public function withFailedAttempt(?InferenceResponse $response, ...): self;
     public function withNewPartialResponse(PartialInferenceResponse $partial): self;
     public function withFinalizedPartialResponse(): self;
 

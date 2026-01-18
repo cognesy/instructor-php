@@ -1,18 +1,4 @@
----
-title: 'Generating JSON Schema from PHP classes'
-docname: 'json_schema_api'
----
-
-## Overview
-
-Polyglot has a built-in support for dynamically constructing JSON Schema using
-`JsonSchema` class. It is useful when you want to shape the structures during
-runtime.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -53,4 +39,3 @@ assert(is_string($data['name']));
 assert(is_int($data['population']));
 assert(is_int($data['founded']));
 ?>
-```

@@ -1,17 +1,4 @@
----
-title: 'Streaming metrics (Polyglot)'
-docname: 'metrics_streaming'
----
-
-## Overview
-
-Collect simple streaming metrics from Polyglot inference events: time to first chunk,
-stream duration, chunk count (streamed deltas), and average output tokens per second.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -151,4 +138,3 @@ function aggregatedValue(array $aggregate): float {
     };
 }
 ?>
-```

@@ -1,16 +1,4 @@
----
-title: 'Use LLMs to Combine Different Responses'
-docname: 'combine_responses'
----
-
-## Overview
-
-Universal Self-Consistency uses a second LLM to judge the quality of multiple responses to a query and select the most consistent one.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -49,8 +37,3 @@ $query = "The three-digit number 'ab5' is divisible by 3. How many different thr
 $result = (new CombineResponses)($query, k: 3);
 dump($result);
 ?>
-```
-
-### References
-
-1) Universal Self-Consistency For Large Language Model Generation (https://arxiv.org/pdf/2311.17311)

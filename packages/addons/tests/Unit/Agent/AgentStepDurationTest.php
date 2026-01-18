@@ -8,14 +8,14 @@ use Cognesy\Addons\Agent\Core\Contracts\CanUseTools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Data\AgentStep;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
-use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Messages\Messages;
 
 final class SlowDriver implements CanUseTools
 {
-    public function __construct(private DeterministicDriver $driver) {}
+    public function __construct(private DeterministicAgentDriver $driver) {}
 
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep
@@ -26,7 +26,7 @@ final class SlowDriver implements CanUseTools
 }
 
 it('tracks cumulative execution time across steps', function () {
-    $driver = new SlowDriver(DeterministicDriver::fromResponses('one', 'two'));
+    $driver = new SlowDriver(DeterministicAgentDriver::fromResponses('one', 'two'));
     $criteria = ContinuationCriteria::when(
         static fn(AgentState $state): ContinuationDecision => match (true) {
             $state->stepCount() < 2 => ContinuationDecision::RequestContinuation,

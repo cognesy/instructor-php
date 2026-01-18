@@ -1,21 +1,4 @@
----
-title: 'Ask LLM to rewrite instructions'
-docname: 'rewrite_instructions'
----
-
-## Overview
-
-Asking LLM to rewrite the instructions and rules is another way to improve
-inference results.
-
-You can provide arbitrary instructions on the data handling in the class
-and property PHPDocs. Instructor will use these instructions to guide LLM
-in the inference process.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -63,5 +46,3 @@ assert($user->name === "Jason");
 assert($user->age === 28);
 assert(!empty($user->role->title));
 ?>
-```
-

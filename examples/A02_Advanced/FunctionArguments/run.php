@@ -1,21 +1,4 @@
----
-title: 'Extracting arguments of function or method'
-docname: 'function_calls'
----
-
-## Overview
-
-Instructor offers FunctionCall class to extract arguments of a function
-or method from content.
-
-This is useful when you want to build tool use capability, e.g. for AI
-chatbots or agents.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\FunctionCall\FunctionCallFactory;
@@ -47,4 +30,3 @@ expect($args['name'] === 'Jason');
 expect($args['age'] == 28);
 expect($args['country'] === 'Germany');
 ?>
-```

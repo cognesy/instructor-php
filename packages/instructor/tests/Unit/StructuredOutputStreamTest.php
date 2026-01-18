@@ -38,3 +38,35 @@ it('assembles streamed content into final typed value and accumulates usage', fu
     // Usage accumulated after consumption (1+2+3)
     expect($stream->lastResponse()->usage()->output())->toBeGreaterThanOrEqual(6);
 });
+
+it('accumulates usage correctly via stream->usage() after iterating responses', function () {
+    $chunks = [
+        new PartialInferenceResponse(contentDelta: '{"name":"Bob"', usage: new Usage(inputTokens: 50, outputTokens: 1)),
+        new PartialInferenceResponse(contentDelta: ',"age":', usage: new Usage(inputTokens: 50, outputTokens: 2)),
+        new PartialInferenceResponse(contentDelta: '25}', finishReason: 'stop', usage: new Usage(inputTokens: 50, outputTokens: 3)),
+    ];
+
+    $driver = new FakeInferenceDriver(
+        responses: [],
+        streamBatches: [ $chunks ]
+    );
+
+    $stream = (new StructuredOutput)
+        ->withDriver($driver)
+        ->with(
+            messages: 'Extract user',
+            responseModel: StreamUserStruct::class,
+            mode: OutputMode::Json,
+        )
+        ->stream();
+
+    // Consume stream via responses()
+    foreach ($stream->responses() as $response) {
+        // iterating...
+    }
+
+    // stream->usage() should return accumulated usage
+    $usage = $stream->usage();
+    expect($usage->total())->toBeGreaterThan(0);
+    expect($usage->outputTokens)->toBeGreaterThanOrEqual(6); // 1+2+3
+});
