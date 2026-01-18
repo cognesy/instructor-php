@@ -25,7 +25,7 @@
   },
   "require": {
     "php": "^8.3",
-    "cognesy/instructor-events": "^1.18",
+    "cognesy/instructor-events": "^1.19",
     "psr/event-dispatcher": "^1.0",
     "psr/log": "^3.0"
   },

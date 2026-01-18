@@ -1,0 +1,36 @@
+# Release Notes - v1.19.0
+
+## Highlights
+
+- Cleaned inference attempt lifecycle and event ownership in Polyglot.
+- Fixed serialization and caching edge cases across inference requests/partials.
+- Structured output handling is more robust with safer validation and immutable models.
+
+## Breaking Changes
+
+- `InferenceExecution::withNewResponse()` renamed to `withSuccessfulAttempt()`.
+- `InferenceExecution::withFailedResponse()` renamed to `withFailedAttempt()`.
+- `InferenceExecution::withFailedFinalizedResponse()` removed.
+- `InferenceAttempt::withFailedResponse()` removed; create attempts via `startAttempt()` / `InferenceAttempt::started()`.
+- `Usage::accumulate()` removed; use `withAccumulated()` for immutable usage totals.
+- `ValidationResult::invalid()` now accepts `ValidationError|ValidationError[]` only.
+- `ResponseModel::setPropertyValues()` removed; use `withPropertyValues()`.
+
+## Fixes and Improvements
+
+### Polyglot
+- `InferenceRequest::toArray()` now serializes `messages` and `response_format` as arrays.
+- `InferenceRequest::hasMessages()` and `withCacheApplied()` use explicit emptiness checks.
+- `PartialInferenceResponse::toArray()` now serializes `response_data`, with clearer tool accumulation.
+- `InferenceStream` no longer double-dispatches completion events.
+- `HandlesRequestBuilder::withToolChoice()` accepts `string|array`.
+
+### Instructor
+- `StructuredOutputStream` reuses its generator and emits `StructuredOutputStarted` once.
+- Response validation captures thrown exceptions as `ValidationResult::invalid()`.
+- Tool-call JSON encoding failures return `Result` errors instead of throwing.
+- `ResponseModel::toArray()` guards non-object instances; fluent methods return `static`.
+
+## Tests
+
+- Added coverage for attempt IDs, streaming completion events, serialization, validation failures, and ResponseModel immutability.
