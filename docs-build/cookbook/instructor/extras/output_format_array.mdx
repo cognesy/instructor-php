@@ -1,24 +1,4 @@
----
-title: 'Return extracted data as array'
-docname: 'output_format_array'
----
-
-## Overview
-
-By default, Instructor deserializes extracted data into PHP objects. Sometimes you
-may want to work with raw associative arrays instead - for example, when storing
-data in a database, passing to a JSON API, or when you don't need the overhead
-of object instantiation.
-
-The `intoArray()` method allows you to use a PHP class to define the schema
-(structure and validation sent to the LLM) while receiving the result as a plain
-associative array.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -53,22 +33,3 @@ echo "Name: {$personArray['name']}\n";
 echo "Age: {$personArray['age']}\n";
 echo "Occupation: {$personArray['occupation']}\n";
 ?>
-```
-
-## Expected Output
-
-```
-array(3) {
-  'name' =>
-  string(5) "Jason"
-  'age' =>
-  int(25)
-  'occupation' =>
-  string(18) "software engineer"
-}
-
-Extracted data as array:
-Name: Jason
-Age: 25
-Occupation: software engineer
-```

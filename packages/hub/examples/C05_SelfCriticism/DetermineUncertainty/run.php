@@ -1,16 +1,4 @@
----
-title: 'Determine Uncertainty of Reasoning Chain'
-docname: 'determine_uncertainty'
----
-
-## Overview
-
-We want models to assess confidence in their own answers. Self-Calibration asks the model to justify an answer and state whether it is valid.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -59,8 +47,3 @@ MODEL;
 $result = (new EvaluateModelOutput)($originalPrompt, $modelResponse);
 dump($result);
 ?>
-```
-
-## References
-
-1. Language Models (Mostly) Know What They Know (https://arxiv.org/pdf/2207.05221)

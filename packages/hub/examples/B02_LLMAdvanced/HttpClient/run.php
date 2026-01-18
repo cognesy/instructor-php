@@ -1,14 +1,4 @@
----
-title: 'Work directly with HTTP client facade'
-docname: 'http_client'
----
-
-## Overview
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\HttpClient;
@@ -30,4 +20,3 @@ echo "ASSISTANT: $answer\n";
 
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

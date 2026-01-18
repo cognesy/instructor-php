@@ -1,32 +1,4 @@
----
-title: 'Using LLM API connection presets from config file'
-docname: 'using_config'
----
-
-## Overview
-
-Instructor allows you to define multiple API connection presets in `llm.php` file.
-This is useful when you want to use different LLMs or API providers in your application.
-
-Connecting to LLM API via predefined connection is as simple as calling `withPreset`
-method with the preset name.
-
-### Configuration file
-
-Default LLM configuration file is located in `/config/llm.php` in the root directory
-of Instructor codebase.
-
-You can set the location of the configuration file via `INSTRUCTOR_CONFIG_PATHS` environment
-variable (comma-separated list of paths). You can use a copy of the default configuration
-file as a starting point.
-
-LLM config file defines available connection presets to LLM APIs and their parameters.
-It also specifies the default provider and parameters to be used when calling Instructor.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -50,4 +22,3 @@ dump($user);
 assert(isset($user->name));
 assert(isset($user->age));
 ?>
-```

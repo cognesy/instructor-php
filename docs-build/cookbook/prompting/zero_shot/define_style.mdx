@@ -1,25 +1,4 @@
----
-title: 'Define Style'
-docname: 'define_style'
----
-
-## Overview
-
-How can we constrain model outputs through prompting alone?
-
-To constrain a model's response to fit the boundaries of our task, we can specify a style.
-
-Stylistic constraints can include:
- - writing style: write a flowery description
- - tone: write a dramatic description
- - mood: write a happy description
- - genre: write a journalistic description
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -62,8 +41,3 @@ $companies = (new GenerateCompanyProfiles)(
 
 dump($companies);
 ?>
-```
-
-## References
-
- 1. [Bounding the Capabilities of Large Language Models in Open Text Generation with Prompt Constraints](https://arxiv.org/abs/2302.09185)

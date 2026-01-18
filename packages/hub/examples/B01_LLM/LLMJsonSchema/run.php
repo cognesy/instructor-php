@@ -1,26 +1,4 @@
----
-title: 'Working directly with LLMs and JSON - JSON Schema mode'
-docname: 'llm_json_schema'
----
-
-## Overview
-
-While working with `Inference` class, you can also generate JSON output
-from the model inference. This is useful for example when you need to
-process the response in a structured way or when you want to store the
-elements of the response in a database.
-
-## Example
-
-In this example we will use OpenAI JSON Schema mode, which guarantees
-that the response will be in a JSON format that matches the provided
-schema.
-
-> NOTE: Json Schema mode with guaranteed structured outputs is not
-supported by all language model providers.
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -74,4 +52,3 @@ assert(strpos($data['name'], 'Paris') !== false, 'City name should be Paris');
 assert(isset($data['population']), 'Response should have "population" field');
 assert(isset($data['founded']), 'Response should have "founded" field');
 ?>
-```

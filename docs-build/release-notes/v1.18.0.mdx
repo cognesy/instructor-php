@@ -142,10 +142,10 @@ $state = $serializer->deserialize($serialized);
 Test agents without LLM calls:
 
 ```php
-use Cognesy\Addons\Agent\Drivers\Testing\DeterministicDriver;
+use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
 
-$driver = new DeterministicDriver([
+$driver = new DeterministicAgentDriver([
     ScenarioStep::toolCall('search', ['query' => 'test']),
     ScenarioStep::response('Search completed'),
 ]);
@@ -160,9 +160,9 @@ $agent = AgentBuilder::base()
 Broadcast agent events via Laravel Reverb/Pusher:
 
 ```php
-use Cognesy\Addons\Agent\Broadcasting\ReverbAgentEventAdapter;
+use Cognesy\Addons\Agent\Broadcasting\AgentEventEnvelopeAdapter;
 
-$adapter = new ReverbAgentEventAdapter($events);
+$adapter = new AgentEventEnvelopeAdapter($events);
 $adapter->broadcast($agentId);
 ```
 

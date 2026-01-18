@@ -1,29 +1,4 @@
----
-title: 'Image processing - car damage detection'
-docname: 'image_car_damage'
----
-
-## Overview
-
-This is an example of how to extract structured data from an image using
-Instructor. The image is loaded from a file and converted to base64 format
-before sending it to OpenAI API.
-
-In this example we will be extracting structured data from an image of a car
-with visible damage. The response model will contain information about the
-location of the damage and the type of damage.
-
-## Scanned image
-
-Here's the image we're going to extract data from.
-
-![Car Photo](/images/car-damage.jpg)
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
@@ -79,4 +54,3 @@ assert(Str::contains($assessment->model, 'Prius', false));
 assert(Str::contains($assessment->bodyColor, 'white', false));
 assert(count($assessment->damages) > 0);
 ?>
-```

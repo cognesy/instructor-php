@@ -1,16 +1,4 @@
----
-title: 'Automate Example Selection'
-docname: 'automate_selection'
----
-
-## Overview
-
-Few-shot CoT requires curated examples. We can automate selection by clustering candidate questions via embeddings, sampling per cluster, and filtering using a simple criterion (e.g., ≤ 5 reasoning steps).
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -126,10 +114,3 @@ $selected = $selector($questions);
 // Selected examples per cluster, each with limited reasoning steps
 dump($selected);
 ?>
-```
-
-### References
-
-1) Automatic Chain of Thought Prompting in Large Language Models (https://arxiv.org/abs/2210.03493)
-2) The Prompt Report: A Systematic Survey of Prompting Techniques (https://arxiv.org/abs/2406.06608)
-

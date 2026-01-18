@@ -1,23 +1,4 @@
----
-title: 'Generate Code for Intermediate Steps'
-docname: 'generate_code'
----
-
-## Overview
-
-How can we leverage external code execution to generate intermediate reasoning steps?
-
-Program of Thought aims to leverage an external code interpreter to generate intermediate reasoning steps. This helps achieve greater performance in mathematical and programming-related tasks by grounding our final response in deterministic code.
-
-The approach involves:
-1. **Generate Code**: Create a solver function that implements step-by-step logic
-2. **Execute Code**: Run the generated code to get deterministic results
-3. **Extract Answer**: Use the computed result to make final predictions
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -43,7 +24,7 @@ class ProgramExecution {
 }
 
 class ProgramOfThoughtSolver {
-    private const PREFIX = '\\<\?php
+    private const PREFIX = '\<?php
 // Answer this question by implementing a solver()
 // function, use for loop if necessary.
 function solver() {
@@ -68,7 +49,7 @@ function solver() {
 
 Make sure to begin your generated program with the following structure:
 ```php
-\<\?php
+<?php
 function solver() {
     // Your step-by-step logic here
     // Define variables, perform calculations
@@ -101,7 +82,7 @@ return solver();
         $code = preg_replace('/^\s*```[a-zA-Z]*\s*/', '', $code);
         $code = preg_replace('/```\s*$/', '', (string) $code);
         // Remove PHP open/close tags — eval() expects pure PHP code body
-        $code = str_replace(['\<\?php', '<?', '?>'], '', (string) $code);
+        $code = str_replace(['<?php', '<?', '?>'], '', (string) $code);
         // Normalize line endings and trim
         $code = trim((string) $code);
         return $code;
@@ -133,8 +114,3 @@ $result = (new ProgramOfThoughtSolver)(
 
 dump($result);
 ?>
-```
-
-## References
-
-1. [Program of Thoughts Prompting: Disentangling Computation from Reasoning for Numerical Reasoning Tasks](https://arxiv.org/abs/2211.12588)

@@ -1,25 +1,4 @@
----
-title: 'Agent Control Runtime Switching'
-docname: 'agent_ctrl_switching'
----
-
-## Overview
-
-AgentCtrl provides a unified API that works across multiple CLI-based code agents. This
-enables runtime switching between different backends (Claude Code, OpenCode, Codex, Gemini)
-without changing your application code. Useful for comparing agent performance, failover
-scenarios, or A/B testing.
-
-Key concepts:
-- `AgentType` enum: Specify which agent backend to use
-- Unified API: Same methods work across all agent types
-- Runtime selection: Choose agent dynamically based on configuration or logic
-- Agent-specific configuration: Apply custom settings per agent type
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
@@ -70,40 +49,3 @@ foreach ($agents as $agentId => $agentName) {
     echo "\n";
 }
 ?>
-```
-
-## Expected Output
-
-```
-▶ Testing: OpenCode
-  ✓ Response (1234ms):
-    The Factory Method pattern, which uses a static method to create
-    and return instances of different subclasses based on parameters.
-    Tokens: 38 in / 24 out
-    Cost: $0.0008
-
-▶ Testing: Claude Code
-  ✓ Response (2156ms):
-    This is the Factory Method pattern, where a static factory method
-    determines which concrete class to instantiate based on input.
-    Tokens: 38 in / 26 out
-    Cost: $0.0015
-
-▶ Testing: Codex
-  ✓ Response (987ms):
-    A class using static make() for conditional instantiation typically
-    implements the Factory Method or Static Factory pattern.
-    Tokens: 38 in / 22 out
-    Cost: $0.0012
-```
-
-## Key Points
-
-- **Unified API**: Same interface across all agent backends
-- **Runtime selection**: Choose agent dynamically based on requirements
-- **Agent comparison**: Run the same prompt across multiple agents to compare
-- **Failover capability**: Try alternative agents if primary fails
-- **Agent-specific tuning**: Apply configuration based on agent characteristics
-- **Performance comparison**: Measure response time and cost across agents
-- **Use cases**: A/B testing, load balancing, fallback strategies, feature parity testing
-- **Available agents**: Claude Code, OpenCode, Codex, Gemini (via `AgentType` enum)

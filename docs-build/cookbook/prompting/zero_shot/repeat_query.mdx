@@ -1,28 +1,4 @@
----
-title: 'Ask Model to Repeat the Query'
-docname: 'repeat_query'
----
-
-## Overview
-
-How can we enhance a model's understanding of a query?
-
-Re2 (Re-Reading) is a technique that asks the model to read the question again.
-
-<Tip>
-### Re-Reading Prompting
-
-Prompt Template:
- - Read the question again: [query]
- - [critical thinking prompt]
-
-A common critical thinking prompt is: "Let's think step by step."
-</Tip>
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -56,8 +32,3 @@ $response = (new RereadAndRespond)(
 echo "Answer:\n";
 dump($response);
 ?>
-```
-
-## References
-
- 1. [Re-Reading Improves Reasoning in Large Language Models](https://arxiv.org/abs/2309.06275)

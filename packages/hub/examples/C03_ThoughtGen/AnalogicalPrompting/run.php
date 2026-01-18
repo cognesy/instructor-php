@@ -1,38 +1,4 @@
----
-title: 'Analogical Prompting'
-docname: 'analogical_prompting'
----
-
-## Overview
-
-### Generate Examples First
-
-Analogical Prompting is a method that aims to get LLMs to generate
-examples that are relevant to the problem before starting to address
-the user's query.
-
-This takes advantage of the various forms of knowledge that the LLM
-has acquired during training and explicitly prompts them to recall
-the relevant problems and solutions. We can use Analogical Prompting
-using the following template
-
-<Tip>
-Analogical Prompting Prompt Template
-
- - Problem: `[user prompt]`
- - Relevant Problems: Recall `[n]` relevant and distinct problems.
- - For each problem, describe it and explain the solution
-</Tip>
-
-
-## Example
-
-We can implement this using Instructor to solve the problem, as seen below
-with some slight modifications.
-
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -74,8 +40,3 @@ $solution = (new SolvePerAnalogy)('What is the area of the square with the four 
 
 dump($solution);
 ?>
-```
-
-## References
-
- 1. [Large Language Models As Analogical Reasoners](https://arxiv.org/pdf/2310.01714)

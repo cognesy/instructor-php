@@ -1,19 +1,4 @@
----
-title: 'Reflection Prompting'
-docname: 'reflection_prompting'
----
-
-## Overview
-
-This implementation of Reflection Prompting with Instructor provides a structured way
-to encourage LLM to engage in more thorough and self-critical thinking processes,
-potentially leading to higher quality and more reliable outputs.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -63,4 +48,3 @@ print("Problem:\n$problem\n\n");
 dump($solution);
 
 ?>
-```

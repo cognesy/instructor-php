@@ -1,16 +1,4 @@
----
-title: 'Use Translation for Paraphrasing'
-docname: 'translation_paraphrasing'
----
-
-## Overview
-
-Back-translation can produce diverse paraphrases: translate to another language and back to English, encouraging varied phrasing.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -47,8 +35,3 @@ $languages = ['spanish','french','german'];
 $variants = (new Paraphraser)->generate($prompt, $languages, permutations: 3);
 dump($variants);
 ?>
-```
-
-### References
-
-1) Prompt paraphrasing approaches

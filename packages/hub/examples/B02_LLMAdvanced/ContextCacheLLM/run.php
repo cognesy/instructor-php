@@ -1,30 +1,4 @@
----
-title: 'Context caching (text inference)'
-docname: 'context_cache_llm'
----
-
-## Overview
-
-Instructor offers a simplified way to work with LLM providers' APIs supporting caching
-(currently only Anthropic API), so you can focus on your business logic while still being
-able to take advantage of lower latency and costs.
-
-> **Note 1:** Instructor supports context caching for Anthropic API and OpenAI API.
-
-> **Note 2:** Context caching is automatic for all OpenAI API calls. Read more
-> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
-
-## Example
-
-When you need to process multiple requests with the same context, you can use context
-caching to improve performance and reduce costs.
-
-In our example we will be analyzing the README.md file of this Github project and
-generating its summary for 2 target audiences.
-
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -32,6 +6,13 @@ use Cognesy\Utils\Str;
 
 $data = file_get_contents(__DIR__ . '/../../../README.md');
 $cacheNonce = bin2hex(random_bytes(8));
+
+// Note: Prompt caching has minimum token requirements that vary by model:
+// - Claude Opus/Sonnet: 1,024 tokens minimum
+// - Claude Haiku 3.5: 2,048 tokens minimum
+// - Claude Haiku 4.5: 4,096 tokens minimum
+// If cached content is below threshold, caching silently doesn't occur.
+$model = 'claude-sonnet-4-20250514'; // Using Sonnet for lower cache threshold (1,024 tokens)
 
 $inference = (new Inference)
     //->wiretap(fn($e) => $e->print()) // wiretap to print all events
@@ -49,6 +30,7 @@ $inference = (new Inference)
 $response = $inference
     ->with(
         messages: [['role' => 'user', 'content' => 'founder of lead gen SaaS startup']],
+        model: $model,
         options: ['max_tokens' => 512],
     )
     ->response();
@@ -62,11 +44,12 @@ print($response->content() . "\n");
 assert(!empty($response->content()));
 assert(Str::contains($response->content(), 'Instructor'));
 assert(Str::contains($response->content(), 'lead', false));
-assert($response->usage()->cacheReadTokens > 0 || $response->usage()->cacheWriteTokens > 0);
+assert($response->usage()->cacheWriteTokens > 0);
 
 $response2 = $inference
     ->with(
         messages: [['role' => 'user', 'content' => 'CIO of insurance company']],
+        model: $model,
         options: ['max_tokens' => 512],
     )
     ->response();
@@ -82,4 +65,3 @@ assert(Str::contains($response2->content(), 'Instructor'));
 assert(Str::contains($response2->content(), 'insurance', false));
 assert($response2->usage()->cacheReadTokens > 0);
 ?>
-```

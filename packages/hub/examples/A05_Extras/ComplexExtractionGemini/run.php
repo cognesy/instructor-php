@@ -1,17 +1,4 @@
----
-title: 'Extraction of complex objects (Gemini)'
-docname: 'complex_extraction_gemini'
----
-
-## Overview
-
-This is an example of extraction of a very complex structure from
-the provided text with Google Gemini model.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -135,4 +122,3 @@ function displayEvent(ProjectEvent $event) : void {
     echo "\n";
 }
 ?>
-```

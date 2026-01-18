@@ -1,22 +1,4 @@
----
-title: 'Inception'
-docname: 'inception'
----
-
-## Overview
-
-Inception API provides OpenAI-compatible endpoints for chat completions.
-
-Mode compatibility:
- - OutputMode::Tools (supported)
- - OutputMode::Json (supported)
- - OutputMode::JsonSchema (supported)
- - OutputMode::MdJson (fallback)
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -68,4 +50,3 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
-```

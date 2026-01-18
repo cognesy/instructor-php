@@ -1,22 +1,4 @@
----
-title: 'Claude Code CLI - Agentic Search'
-docname: 'claude_code_search'
----
-
-## Overview
-
-This example demonstrates the agentic capabilities of Claude Code CLI by having
-it search through the codebase to find and explain validation examples. This
-showcases how Claude CLI can autonomously explore files, understand code structure,
-and provide comprehensive explanations.
-
-The agent searches the ./examples directory for response validation examples,
-reads the code, and explains how validation works.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
@@ -33,6 +15,12 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
 use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
+
+if (ProcUtils::findOnPath('claude', ProcUtils::defaultBinPaths()) === null) {
+    print("Claude CLI not found. Install Claude Code CLI before running this example.\n");
+    exit(1);
+}
 
 // Ensure we're running from monorepo root
 $projectRoot = dirname(__DIR__, 3);
@@ -196,4 +184,3 @@ if ($execResult->exitCode() === 0) {
     exit(1);
 }
 ?>
-```

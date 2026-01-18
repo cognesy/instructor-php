@@ -1,14 +1,4 @@
----
-title: 'Use custom HTTP client instance'
-docname: 'custom_http_client'
----
-
-## Overview
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Events\Dispatchers\SymfonyEventDispatcher;
@@ -50,4 +40,3 @@ dump($user);
 assert(isset($user->name));
 assert(isset($user->age));
 ?>
-```

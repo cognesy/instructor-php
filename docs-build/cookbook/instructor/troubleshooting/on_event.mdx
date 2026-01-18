@@ -1,27 +1,4 @@
----
-title: 'Receive specific internal event with onEvent()'
-docname: 'on_event'
----
-
-## Overview
-
-`(new StructuredOutput)->onEvent(string $class, callable $callback)` method allows
-you to receive callback when specified type of event is dispatched by Instructor.
-
-This way you can plug into the execution process and monitor it, for example logging
-or reacting to the events which are of interest to your application.
-
-This example demonstrates how you can monitor outgoing requests and received responses
-via Instructor's events.
-
-Check the `Cognesy\Instructor\Events` namespace for the list of available events
-and their properties.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Events\Event;
@@ -55,4 +32,3 @@ $user = (new StructuredOutput)
 
 dump($user);
 ?>
-```

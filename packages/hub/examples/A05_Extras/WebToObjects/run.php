@@ -1,33 +1,4 @@
----
-title: 'Web page to PHP objects'
-docname: 'web_to_objects'
----
-
-## Overview
-
-This example demonstrates how to extract structured data from a web page and get
-it as PHP object.
-
-## Example
-
-In this example we will be extracting list of Laravel companies from The Manifest
-website. The result will be a list of `Company` objects.
-
-We use Webpage extractor to get the content of the page and specify 'none' scraper,
-which means that we will be using built-in `file_get_contents` function to get the
-content of the page.
-
-In production environment you might want to use one of the supported scrapers:
- - `browsershot`
- - `scrapingbee`
- - `scrapfly`
- - `jinareader`
-
-Commercial scrapers require API key, which can be set in the configuration file
-(`/config/web.php`).
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Auxiliary\Web\Webpage;
@@ -47,13 +18,12 @@ class Company {
     public array $clients = [];
 }
 
-$companyGen = Webpage::withScraper('none')
-    ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
-    ->cleanup()
+$sourceHtml = file_get_contents(__DIR__ . '/companies.html');
+$companyGen = Webpage::withHtml($sourceHtml, 'https://example.local/companies')
     ->select('.directory-providers__list')
     ->selectMany(
         selector: '.provider-card',
-        callback: fn($item) => $item->asMarkdown(),
+        callback: fn($item) => $item->cleanup()->asMarkdown(),
         limit: 3
     );
 
@@ -75,4 +45,3 @@ foreach($companyGen as $companyDiv) {
 
 assert(count($companies) === 3);
 ?>
-```

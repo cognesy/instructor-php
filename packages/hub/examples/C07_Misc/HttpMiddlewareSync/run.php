@@ -1,10 +1,4 @@
----
-title: 'HTTP Middleware (Sync)'
-docname: 'http_middleware_sync'
----
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Data\HttpRequest;
@@ -66,4 +60,3 @@ $response = $client->withRequest($request)->get();
 echo "Status: {$response->statusCode()}\n";
 echo "Body:   {$response->body()}\n";
 ?>
-```

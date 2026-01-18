@@ -1,21 +1,4 @@
----
-title: 'Multi-Participant AI Chat Panel Discussion'
-docname: 'chat_with_many_participants'
----
-
-## Overview
-
-This example demonstrates a sophisticated multi-participant chat system featuring:
-- **System prompt isolation** - each AI participant has their own persona
-- **Role normalization** - proper LLM role mapping for multi-participant conversations
-- **AI-powered moderation** - LLM coordinator decides who should speak next based on context
-- **Clean state management** - everything configured in immutable ChatState
-- **Type-safe participant selection** - StructuredOutput for decision making
-
-## Example
-
-```php
-\<\?php
+<?php
 
 require 'examples/boot.php';
 
@@ -98,4 +81,3 @@ while ($chat->hasNextStep($state)) {
 }
 echo "🎬 Panel discussion concluded!\n";
 ?>
-```

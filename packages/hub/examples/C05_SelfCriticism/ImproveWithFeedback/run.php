@@ -1,16 +1,4 @@
----
-title: 'Improve With Feedback'
-docname: 'improve_with_feedback'
----
-
-## Overview
-
-Self-Refine iteratively generates an answer, critiques it, and refines it until a stopping condition is met.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -116,9 +104,3 @@ while (true) {
 
 dump($history, $response);
 ?>
-```
-
-## References
-
-1. Self-Refine: Iterative Refinement with Self-Feedback (https://arxiv.org/abs/2303.17651)
-2. The Prompt Report: A Systematic Survey of Prompting Techniques (https://arxiv.org/abs/2406.06608)

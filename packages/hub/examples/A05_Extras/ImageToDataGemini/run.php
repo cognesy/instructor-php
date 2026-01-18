@@ -1,29 +1,4 @@
----
-title: 'Image to data (Gemini)'
-docname: 'image_to_data_gemini'
----
-
-## Overview
-
-This is an example of how to extract structured data from an image using
-Instructor. The image is loaded from a file and converted to base64 format
-before sending it to OpenAI API.
-
-The response model is a PHP class that represents the structured receipt
-information with data of vendor, items, subtotal, tax, tip, and total.
-
-
-## Scanned image
-
-Here's the image we're going to extract data from.
-
-![Receipt](/images/receipt.png)
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
@@ -64,4 +39,3 @@ dump($receipt);
 
 assert(is_numeric($receipt->total));
 ?>
-```

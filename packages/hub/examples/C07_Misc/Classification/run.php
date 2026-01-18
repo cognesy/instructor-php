@@ -1,19 +1,4 @@
----
-title: 'Single label classification'
-docname: 'classification'
----
-
-## Overview
-
-For single-label classification, we first define an `enum` for possible labels
-and a PHP class for the output.
-
-## Example
-
-Let's start by defining the data structures.
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -30,12 +15,8 @@ class SinglePrediction {
 }
 ?>
 ```
-## Classifying Text
-
-The function classify will perform the single-label classification.
-
 ```php
-\<\?php
+<?php
 // Perform single-label classification on the input text.
 function classify(string $data) : SinglePrediction {
     return (new StructuredOutput)->with(
@@ -48,13 +29,8 @@ function classify(string $data) : SinglePrediction {
 }
 ?>
 ```
-
-## Testing and Evaluation
-
-Let's run an example to see if it correctly identifies a spam message.
-
 ```php
-\<\?php
+<?php
 // Test single-label classification
 $prediction = classify("Hello there I'm a Nigerian prince and I want to give you money");
 
@@ -62,4 +38,3 @@ dump($prediction);
 
 assert($prediction->classLabel == Label::SPAM);
 ?>
-```

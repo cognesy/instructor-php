@@ -1,24 +1,4 @@
----
-title: 'Solve Simpler Subproblems'
-docname: 'solve_simpler_subtasks'
----
-
-## Overview
-
-How can we encourage an LLM to solve complex problems by breaking them down?
-
-Least-to-Most is a prompting technique that breaks a complex problem down into a series of increasingly complex subproblems.
-
-**Subproblems Example:**
-- Original problem: Adam is twice as old as Mary. Adam will be 11 in 1 year. How old is Mary?
-- Subproblems: (1) How old is Adam now? (2) What is half of Adam's current age?
-
-These subproblems are solved sequentially, allowing the answers from earlier (simpler) subproblems to inform the LLM while solving later (more complex) subproblems.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -110,9 +90,3 @@ foreach ($results as $result) {
 
 dump($results);
 ?>
-```
-
-## References
-
-1. [Least-to-Most Prompting Enables Complex Reasoning in Large Language Models](https://arxiv.org/abs/2205.10625)
-2. [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)

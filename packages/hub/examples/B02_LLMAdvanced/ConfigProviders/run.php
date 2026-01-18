@@ -1,17 +1,4 @@
----
-title: 'Customize configuration providers of LLM driver'
-docname: 'config_providers'
----
-
-## Overview
-
-You can provide your own LLM configuration instance to `Inference` object. This is useful
-when you want to initialize LLM client with custom values.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Adbar\Dot;
@@ -132,4 +119,3 @@ echo "ASSISTANT: $answer\n";
 
 assert(Str::contains($answer, 'Paris'));
 ?>
-```

@@ -1,16 +1,4 @@
----
-title: 'Prioritize Complex Examples'
-docname: 'complex_examples'
----
-
-## Overview
-
-Choose more complex examples (longer reasoning or more steps) to improve model performance. When no examples exist, sample multiple responses, pick the most complex few, and aggregate answers. This is Complexity-Based Consistency.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -65,8 +53,3 @@ $finals = array_keys(array_filter($counts, fn($c) => $c === $max));
 $final = $finals[array_rand($finals)];
 dump($final);
 ?>
-```
-
-### References
-
-1) Complexity-based prompting for multi-step reasoning (https://arxiv.org/pdf/2210.00720)

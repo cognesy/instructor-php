@@ -1,18 +1,4 @@
----
-title: 'Perplexity'
-docname: 'perplexity'
----
-
-## Overview
-
-You can use Instructor with Perplexity API. Perplexity is an API that provides access
-to a large language model (LLM) for various tasks, including search and text generation.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -67,4 +53,3 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
-```

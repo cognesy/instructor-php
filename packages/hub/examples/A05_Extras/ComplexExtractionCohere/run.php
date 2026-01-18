@@ -1,17 +1,4 @@
----
-title: 'Extraction of complex objects (Cohere)'
-docname: 'complex_extraction_cohere'
----
-
-## Overview
-
-This is an example of extraction of a very complex structure from
-the provided text with Cohere R models.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -132,4 +119,3 @@ function displayEvent(ProjectEvent $event) : void {
     echo "\n";
 }
 ?>
-```

@@ -1,47 +1,28 @@
----
-title: 'Generating JSON Schema from PHP classes'
-docname: 'schema'
----
-
-## Overview
-
-Instructor has a built-in support for dynamically constructing JSON Schema using
-`JsonSchema` class. It is useful when you want to shape the structures during
-runtime.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Schema\Factories\SchemaFactory;
 
-$schema = JsonSchema::object(
-    properties: [
-        JsonSchema::string('name', 'User name'),
-        JsonSchema::integer('age', 'User age'),
-    ],
-    requiredProperties: ['name', 'age'],
-);
+class City {
+    public string $name;
+    public int $population;
+    public int $founded;
+}
 
-$user = (new StructuredOutput)
-    ->withDebugPreset('on')
-    ->withMessages("Jason is 25 years old and works as an engineer")
-    ->withResponseJsonSchema($schema)
-    ->withDeserializers()
-    ->withDefaultToStdClass()
-    ->get();
+$schema = (new SchemaFactory)->schema(City::class);
 
-dump($user);
+$city = (new StructuredOutput)->with(
+    messages: "What is capital of France",
+    responseModel: $schema,
+)->get();
 
-assert(gettype($user) === 'object');
-assert(get_class($user) === 'stdClass');
-assert(isset($user->name));
-assert(isset($user->age));
-assert($user->name === 'Jason');
-assert($user->age === 25);
+dump($city);
+
+assert(gettype($city) === 'object');
+assert(get_class($city) === 'City');
+assert($city->name === 'Paris');
+assert(is_int($city->population));
+assert(is_int($city->founded));
 
 ?>
-```

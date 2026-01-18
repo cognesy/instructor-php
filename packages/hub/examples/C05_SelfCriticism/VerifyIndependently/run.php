@@ -1,16 +1,4 @@
----
-title: 'Independently Verify Responses'
-docname: 'verify_independently'
----
-
-## Overview
-
-Chain-of-Verification (CoVe) verifies an answer by generating validation questions, answering them independently, and judging the original answer.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -93,8 +81,3 @@ $query = 'What was the primary cause of the Mexican-American War and how long di
 $final = (new CoVeVerifier)->run($query);
 dump($final);
 ?>
-```
-
-## References
-
-1. Chain-Of-Verification Reduces Hallucination In Large Language Models (https://arxiv.org/pdf/2309.11495)

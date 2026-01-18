@@ -1,16 +1,4 @@
----
-title: 'Include Incorrect Examples'
-docname: 'incorrect_examples'
----
-
-## Overview
-
-Including examples of incorrect reasoning alongside correct ones helps the model learn what to avoid. This is Contrastive Chain-of-Thought.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -67,8 +55,3 @@ $correct = [
 $resp = (new ContrastiveCoT)($query, $context, $sample, $correct, $incorrect);
 dump($resp);
 ?>
-```
-
-### References
-
-1) Contrastive Chain-of-Thought Prompting (https://arxiv.org/pdf/2311.09277)

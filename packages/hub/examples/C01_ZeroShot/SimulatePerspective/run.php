@@ -1,39 +1,4 @@
----
-title: 'Simulate a Perspective'
-docname: 'simulate_perspective'
----
-
-## Overview
-
-How can we encourage the model to focus on relevant information?
-
-SimToM (Simulated Theory of Mind) is a two-step prompting technique that
-encourages a model to consider a specific perspective.
-
-This can be useful for complex questions with multiple entities. For example,
-if the prompt contains information about two individuals, we can ask the
-model to answer our query from the perspective of one of the individuals.
-
-This is implemented in two steps. Given an entity:
- - Identify and isolate information relevant to the entity
- - Ask the model to answer the query from the entity's perspective
-
-<Tip>
-### Sample Template
-
- - Step 1:
-   - Given the following context, list the facts that `{entity}` would know.
-   - Context: `{context}`
- - Step 2:
-   - You are `{entity}`.
-   - Answer the following question based only on these facts you know: `{facts}`.
-   - Question: `{query}`
-</Tip>
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
@@ -110,8 +75,3 @@ $location = (new SimulatePerspective)(
     perspective: $povEntity,
 );
 ?>
-```
-
-## References
-
- 1. [Think Twice: Perspective-Taking Improves Large Language Models' Theory-of-Mind Capabilities](https://arxiv.org/abs/2311.10227)

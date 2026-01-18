@@ -1,34 +1,4 @@
----
-title: 'Prioritize Consistent Examples'
-docname: 'consistent_examples'
----
-Consistency Based Self Adaptive Prompting (COSP)1 aims to improve LLM output quality by generating high quality few shot examples to be included in the final prompt. These are examples without labelled ground truth so they use self-consistency and a metric known as normalized entropy to select the best examples.
-
-Once they've selected the examples, they then append them to the prompt and generate multiple reasoning chains before selecting the final result using Self-Consistency.
-
-COSP process¶
-
-
-How does this look in practice? Let's dive into greater detail.
-
-Step 1 - Selecting Examples¶
-In the first step, we try to generate high quality examples from questions that don't have ground truth labels. This is challenging because we want to find a way to automatically determine answer quality when sampling our model multiple times.
-
-In this case, we have n questions which we want to generate m possible reasoning chains for each question. This gives a total of nm examples. We then want to filter out k final few shot examples from these nm examples to be included inside our final prompt.
-
-Using chain of thought, we first generate m responses for each question. These responses contain a final answer and a rationale behind that answer.
-We compute a score for each response using a weighted sum of two values - normalized entropy and repetitiveness ( How many times this rationale appears for this amswer )
-We rank all of our nm responses using this score and choose the k examples with the lowest scores as our final few shot examples.
-
-Normalized Entropy
-
-In the paper, the authors write that normalized entropy is a good proxy over a number of different tasks where low entropy is positively correlated with correctness. Entropy is also supposed to range from 0 to 1.
-
-Therefore in order to do so, we introduce a - term in our implementation so that the calculated values range from 0 to 1.
-
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -94,8 +64,3 @@ $selector = new COSPSelector(m: 3);
 $best = $selector->select($questions, k: 3);
 dump($best);
 ?>
-```
-
-### References
-
-1: Better Zero-Shot Reasoning with Self-Adaptive Prompting (https://arxiv.org/pdf/2305.14106)

@@ -1,16 +1,4 @@
----
-title: 'Use Majority Voting'
-docname: 'majority_voting'
----
-
-## Overview
-
-Uncertainty-Routed Chain-of-Thought generates multiple chains (e.g., 8 or 32), then takes the majority answer if its proportion exceeds a threshold; otherwise, fall back to a single response.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -69,8 +57,3 @@ $options = [
 $answer = (new MajorityVoting)($question, $options, k: 8, threshold: 0.6);
 dump($answer);
 ?>
-```
-
-### References
-
-1) Gemini: A Family of Highly Capable Multimodal Models (https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf)

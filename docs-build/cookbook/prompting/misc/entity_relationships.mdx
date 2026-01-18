@@ -1,21 +1,4 @@
----
-title: 'Entity relationship extraction'
-docname: 'entity_relationships'
----
-
-## Overview
-
-In cases where relationships exist between entities, it's vital to define them
-explicitly in the model.
-
-Following example demonstrates how to define relationships between users by
-incorporating an `$id` and `$coworkers` fields.
-
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -56,4 +39,3 @@ dump($relationships);
 
 assert(!empty($relationships->users));
 ?>
-```

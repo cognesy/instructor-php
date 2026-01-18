@@ -1,23 +1,4 @@
----
-title: 'Chain of Summaries'
-docname: 'chain_of_summaries'
----
-
-## Overview
-
-This is an example of summarization with increasing amount of details.
-Instructor is provided with data structure containing instructions on how to
-create increasingly detailed summaries of the project report.
-
-It starts with generating an overview of the project, followed by X iterations
-of increasingly detailed summaries. Each iteration should contain all the
-information from the previous summary, plus a few additional facts from the
-content which are most relevant and missing from the previous iteration.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -85,4 +66,3 @@ foreach ($summaries->summaries as $summary) {
     print("{$summary->expandedSummary}\n\n");
 }
 ?>
-```

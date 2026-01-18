@@ -1,21 +1,4 @@
----
-title: 'Automatic correction based on validation results'
-docname: 'self_correction'
----
-
-## Overview
-
-Instructor uses validation errors to inform LLM on the problems identified
-in the response, so that LLM can try self-correcting in the next attempt.
-
-In case maxRetries parameter is provided and LLM response does not meet
-validation criteria, Instructor will make subsequent inference attempts
-until results meet the requirements or maxRetries is reached.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
@@ -53,4 +36,3 @@ dump($user);
 
 assert($user->email === "jason@wp.pl");
 ?>
-```

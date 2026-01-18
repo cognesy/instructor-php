@@ -1,23 +1,4 @@
----
-title: 'Generate in Parallel'
-docname: 'generate_in_parallel'
----
-
-## Overview
-
-How can we decrease the latency of an LLM pipeline?
-
-Skeleton-of-Thought is a technique which prompts an LLM to generate a skeleton outline of the response, then completes each point in the skeleton in parallel. The parallelism can be achieved by parallel API calls or batched processing.
-
-The approach involves:
-1. **Generate Skeleton**: Create a brief outline of the response structure
-2. **Parallel Expansion**: Complete each skeleton point concurrently  
-3. **Assembly**: Combine the expanded points into the final response
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
@@ -129,9 +110,3 @@ foreach ($results as $result) {
 
 dump($results);
 ?>
-```
-
-## References
-
-1. [Skeleton-of-Thought: Prompting LLMs for Efficient Parallel Generation](https://arxiv.org/abs/2307.15337)
-2. [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)

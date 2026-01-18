@@ -1,18 +1,4 @@
----
-title: 'OpenAI Codex CLI - Basic'
-docname: 'codex_basic'
----
-
-## Overview
-
-This example demonstrates how to use the OpenAI Codex CLI integration to execute
-simple prompts. The OpenAICodex component provides a PHP API for invoking the
-`codex exec` command in headless mode with sandboxing support.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
@@ -24,6 +10,12 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\AgentMessage;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\Utils\Sandbox\Utils\ProcUtils;
+
+if (ProcUtils::findOnPath('codex', ProcUtils::defaultBinPaths()) === null) {
+    print("Codex CLI not found. Install Codex CLI before running this example.\n");
+    exit(1);
+}
 
 // Step 1: Create a request with a simple prompt
 $request = new CodexRequest(
@@ -82,4 +74,3 @@ if ($answer === null) {
     exit(1);
 }
 ?>
-```

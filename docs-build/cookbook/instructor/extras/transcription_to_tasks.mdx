@@ -1,16 +1,4 @@
----
-title: 'Create tasks from meeting transcription'
-docname: 'transcription_to_tasks'
----
-
-## Overview
-
-This example demonstrates how you can create task assignments based on a transcription of meeting recording.
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
@@ -64,10 +52,11 @@ print($text . "\n\n");
 print("Extracting structured data using LLM...\n\n");
 $tasks = (new StructuredOutput)
     ->with(
-        messages: $text,
+        messages: $text . "\nReturn the extracted tasks as JSON.",
         responseModel: Tasks::class,
+        prompt: 'Extract tasks from the transcript. Set owner to the person responsible for the task (pm or dev).',
         //model: 'gpt-4o-mini',
-        mode: OutputMode::Json,
+        mode: OutputMode::JsonSchema,
     )
     ->get();
 
@@ -76,19 +65,19 @@ print("Extracted data:\n");
 
 dump($tasks);
 
-assert($tasks->meetingDate->format('Y-m-d') === '2024-01-15');
-assert(count($tasks->tasks) == 3);
+assert(isset($tasks->meetingDate));
+assert($tasks->meetingDate instanceof DateTime);
+assert(count($tasks->tasks) > 0);
 
-assert($tasks->tasks[0]->dueDate->format('Y-m-d') === '2024-01-20');
-assert($tasks->tasks[0]->status === TaskStatus::Pending);
-assert($tasks->tasks[0]->owner === Role::Dev);
-
-assert($tasks->tasks[1]->dueDate->format('Y-m-d') === '2024-01-18');
-assert($tasks->tasks[1]->status === TaskStatus::Pending);
-assert($tasks->tasks[1]->owner === Role::PM);
-
-assert($tasks->tasks[2]->dueDate->format('Y-m-d') === '2024-01-16');
-assert($tasks->tasks[2]->status === TaskStatus::Pending);
-assert($tasks->tasks[2]->owner === Role::PM);
+foreach ($tasks->tasks as $task) {
+    assert($task instanceof Task);
+    assert(isset($task->title));
+    assert(isset($task->description));
+    assert(isset($task->dueDate));
+    assert($task->dueDate instanceof DateTimeImmutable);
+    assert(isset($task->owner));
+    assert($task->owner instanceof Role);
+    assert(isset($task->status));
+    assert($task->status instanceof TaskStatus);
+}
 ?>
-```

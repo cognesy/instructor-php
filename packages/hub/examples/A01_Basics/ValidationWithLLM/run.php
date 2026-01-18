@@ -1,18 +1,4 @@
----
-title: 'Validation with LLM'
-docname: 'validation_with_llm'
----
-
-## Overview
-
-You can use LLM capability to semantically process the context to validate
-the response following natural language instructions. This way you can
-implement more complex validation logic that would be difficult (or impossible)
-to achieve using traditional, code-based validation.
-
-## Example
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Events\Event;
@@ -71,4 +57,3 @@ dump($user);
 
 assert(!Str::contains(implode('\n', $user->details), '123-45-6789'));
 ?>
-```

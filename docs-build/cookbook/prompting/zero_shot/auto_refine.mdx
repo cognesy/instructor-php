@@ -1,24 +1,4 @@
----
-title: 'Auto-Refine The Prompt'
-docname: 'auto_refine'
----
-
-## Overview
-
-How do we remove irrelevant information from the prompt?
-
-The S2A (System 2 Attention) technique auto-refines a prompt by asking the model to
-rewrite the prompt to include only relevant information.
-
-We implement this in two steps:
-
- 1. Ask the model to rewrite the prompt
- 2. Pass the rewritten prompt back to the model
-
-## Example
-
-```php
-\<\?php
+<?php
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
@@ -71,11 +51,3 @@ $answer = (new RefineAndSolve)(problem: <<<PROBLEM
 
 echo $answer . "\n";
 ?>
-```
-
-## References
-
- 1. [System 2 Attention (is something you might need too)](https://arxiv.org/abs/2311.11829)
-
-
-
