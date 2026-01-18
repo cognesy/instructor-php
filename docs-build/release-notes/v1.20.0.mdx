@@ -1,0 +1,56 @@
+---
+title: 'v1.20.0'
+---
+
+## Breaking Changes
+
+### Renames
+- `ReverbAgentEventAdapter` → `AgentEventEnvelopeAdapter`
+- `ToolRegistryContract` → `ToolRegistryInterface`
+- `DeterministicDriver` → `DeterministicAgentDriver`
+
+## Agent
+
+- `AgentState` now implements `CanMarkExecutionStarted`, `CanMarkStepStarted`, `CanTrackExecutionTime`
+- Added `AgentState::recordStep()`, `AgentState::failWith()`, `AgentState::withAddedExecutionTime()`
+- `Agent::applyStep()` and `Agent::handleError()` delegate to `AgentState` methods
+
+## StepByStep / Continuation
+
+- New `CanProvideStopReason` interface for criteria to provide explicit stop reasons
+- All continuation criteria implement `CanProvideStopReason`:
+  - `StepsLimit` → `StopReason::StepsLimitReached`
+  - `TokenUsageLimit` → `StopReason::TokenLimitReached`
+  - `ExecutionTimeLimit`, `CumulativeExecutionTimeLimit` → `StopReason::TimeLimitReached`
+  - `ErrorPolicyCriterion` → `StopReason::ErrorForbade`
+  - `FinishReasonCheck` → `StopReason::FinishReasonReceived`
+  - `ErrorPresenceCheck`, `RetryLimit` → `StopReason::GuardForbade`
+- `ContinuationEvaluation` includes `stopReason` field
+- Removed `ContinuationCriteria::inferStopReason()` (stop reasons now come from criteria directly)
+- New state contracts: `CanMarkExecutionStarted`, `CanMarkStepStarted`, `CanTrackExecutionTime`
+
+## Command Builders (agent-ctrl)
+
+`ClaudeCommandBuilder`, `CodexCommandBuilder`, `OpenCodeCommandBuilder`:
+- `stdbuf -o0` prefix now conditional (checks availability)
+- Skipped on Windows
+- Skipped when `stdbuf` not found on PATH (fixes macOS)
+- Override via `COGNESY_STDBUF` env var: `0` = disable, `1` = force
+
+## Polyglot / Inference
+
+- `InferenceExecution::usage()`: fixed double-counting of current attempt
+- `InferenceResponse`: added `<think>...</think>` tag parsing for reasoning content fallback
+- New `ReasoningContentSplit` data class
+- `AnthropicBodyFormat`: cache marking applies only to last message in sequence (was all messages)
+- `DeepseekResponseAdapter`: supports `reasoning`, `analysis` fields as alternatives to `reasoning_content`
+- `Inference::with()`: parameters now nullable (pass `null` to skip, was required empty values)
+- `PendingInference::asJson()`, `asJsonData()`: use proper JSON extraction with output mode
+
+## HTTP Client
+
+- `CurlHandle::close()`: removed `curl_close()` call (no-op since PHP 8.0, deprecated in PHP 8.5)
+
+## Instructor
+
+- `StructuredOutputStream`: fixed execution reference update during streaming to capture accumulated usage

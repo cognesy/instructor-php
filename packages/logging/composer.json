@@ -26,7 +26,7 @@
   "require": {
     "php": "^8.3",
     "psr/log": "^3.0",
-    "cognesy/instructor-events": "^1.19"
+    "cognesy/instructor-events": "^1.20"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
