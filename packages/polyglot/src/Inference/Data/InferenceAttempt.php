@@ -45,6 +45,10 @@ class InferenceAttempt
         return new self(response: $response, isFinalized: true);
     }
 
+    public static function started(): self {
+        return new self(isFinalized: false);
+    }
+
     public static function fromFailedResponse(
         ?InferenceResponse $response = null,
         ?PartialInferenceResponse $accumulatedPartial = null,
@@ -173,21 +177,6 @@ class InferenceAttempt
         return $this->with(
             response: InferenceResponse::fromAccumulatedPartial($partial),
             isFinalized: true
-        );
-    }
-
-    public function withFailedResponse(
-        InferenceResponse $response,
-        ?PartialInferenceResponse $partialResponse,
-        string|Throwable $error
-    ): self {
-        $errors = $this->errors ?? [];
-        $errors[] = $error;
-        return $this->with(
-            response: $response,
-            accumulatedPartial: $partialResponse ?? $this->accumulatedPartial,
-            isFinalized: true,
-            errors: $errors,
         );
     }
 

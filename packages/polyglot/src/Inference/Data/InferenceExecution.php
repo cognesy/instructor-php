@@ -60,6 +60,10 @@ class InferenceExecution
         return $this->attempts;
     }
 
+    public function currentAttempt(): ?InferenceAttempt {
+        return $this->currentAttempt;
+    }
+
     public function response(): ?InferenceResponse {
         return $this->currentAttempt?->response();
     }
@@ -193,30 +197,43 @@ class InferenceExecution
         return $this->with(request: $request, isFinalized: false);
     }
 
-    public function withNewResponse(InferenceResponse $response): self {
-        $newAttempt = InferenceAttempt::fromResponse($response);
+    public function startAttempt(?InferenceAttempt $attempt = null): self {
+        $newAttempt = $attempt ?? InferenceAttempt::started();
         return $this->with(
-            attempts: $this->attempts->withNewAttempt($newAttempt),
             currentAttempt: $newAttempt,
-            isFinalized: true,
+            isFinalized: false,
         );
     }
 
-    public function withFailedResponse(
+    public function withSuccessfulAttempt(InferenceResponse $response): self {
+        $newAttempt = $this->currentAttempt !== null && !$this->currentAttempt->isFinalized()
+            ? $this->currentAttempt->with(
+                response: $response,
+                isFinalized: true,
+                errors: [],
+            )
+            : InferenceAttempt::fromResponse($response);
+        return $this->withFinalizedAttempt($newAttempt);
+    }
+
+    public function withFailedAttempt(
         ?InferenceResponse $response = null,
         ?PartialInferenceResponse $partialResponse = null,
         string|Throwable ...$errors,
     ): self {
-        $newAttempt = InferenceAttempt::fromFailedResponse(
-            response: $response,
-            accumulatedPartial: $partialResponse,
-            errors: $errors,
-        );
-        return $this->with(
-            attempts: $this->attempts->withNewAttempt($newAttempt),
-            currentAttempt: $newAttempt,
-            isFinalized: true,
-        );
+        $newAttempt = $this->currentAttempt !== null && !$this->currentAttempt->isFinalized()
+            ? $this->currentAttempt->with(
+                response: $response,
+                accumulatedPartial: $partialResponse ?? $this->currentAttempt->partialResponse(),
+                isFinalized: true,
+                errors: array_merge($this->currentAttempt->errors(), $errors),
+            )
+            : InferenceAttempt::fromFailedResponse(
+                response: $response,
+                accumulatedPartial: $partialResponse,
+                errors: $errors,
+            );
+        return $this->withFinalizedAttempt($newAttempt);
     }
 
     public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
@@ -246,16 +263,10 @@ class InferenceExecution
             isFinalized: true,
         );
     }
-
-    public function withFailedFinalizedResponse(string|Throwable ...$errors): self {
-        $newAttempt = InferenceAttempt::fromFailedResponse(
-            response: $this->currentAttempt?->response(),
-            accumulatedPartial: $this->currentAttempt?->partialResponse(),
-            errors: $errors,
-        );
+    private function withFinalizedAttempt(InferenceAttempt $attempt): self {
         return $this->with(
-            attempts: $this->attempts->withNewAttempt($newAttempt),
-            currentAttempt: $newAttempt,
+            attempts: $this->attempts->withNewAttempt($attempt),
+            currentAttempt: $attempt,
             isFinalized: true,
         );
     }

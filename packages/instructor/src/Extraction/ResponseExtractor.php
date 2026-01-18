@@ -130,7 +130,11 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     public function extract(InferenceResponse $response, OutputMode $mode): Result
     {
         // 1. DATA ACCESS: Get content string based on mode (uniform for all modes)
-        $content = $this->getContentString($response, $mode);
+        $contentResult = $this->getContentString($response, $mode);
+        if ($contentResult->isFailure()) {
+            return Result::failure($contentResult->error());
+        }
+        $content = $contentResult->unwrap();
 
         if (empty($content)) {
             return Result::failure('Empty response content');
@@ -169,31 +173,36 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Uniform data access - no special cases, just different sources.
      */
-    private function getContentString(InferenceResponse $response, OutputMode $mode): string
+    /**
+     * @return Result<string, Throwable>
+     */
+    private function getContentString(InferenceResponse $response, OutputMode $mode): Result
     {
         return match ($mode) {
             OutputMode::Tools => $this->getToolCallContent($response),
-            default => $response->content(),
+            default => Result::success($response->content()),
         };
     }
 
     /**
      * Get content from tool calls as JSON string.
+     *
+     * @return Result<string, Throwable>
      */
-    private function getToolCallContent(InferenceResponse $response): string
+    private function getToolCallContent(InferenceResponse $response): Result
     {
         $toolCalls = $response->toolCalls();
 
         if ($toolCalls->isEmpty()) {
             // Fallback for providers that return tool-call JSON in content.
-            return $response->content();
+            return Result::success($response->content());
         }
 
         if ($toolCalls->hasSingle()) {
-            return json_encode($toolCalls->first()?->args() ?? [], JSON_THROW_ON_ERROR);
+            return Result::try(fn() => json_encode($toolCalls->first()?->args() ?? [], JSON_THROW_ON_ERROR));
         }
 
-        return json_encode($toolCalls->toArray(), JSON_THROW_ON_ERROR);
+        return Result::try(fn() => json_encode($toolCalls->toArray(), JSON_THROW_ON_ERROR));
     }
 
     /**

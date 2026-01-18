@@ -60,6 +60,28 @@ it('should not allow retry when max retries reached', function () {
     expect($shouldRetry)->toBeFalse();
 });
 
+it('allows a single retry when maxRetries is one', function () {
+    $events = new EventDispatcher();
+    $policy = new DefaultRetryPolicy($events);
+
+    $execution = (new StructuredOutputExecution())
+        ->with(
+            responseModel: makeAnyResponseModel(RetryPolicyTestModel::class),
+            config: (new StructuredOutputConfig())->with(maxRetries: 1)
+        );
+
+    $execution = $execution->withFailedAttempt(
+        inferenceResponse: new InferenceResponse(content: 'bad'),
+        errors: ['First error'],
+    );
+
+    $validationResult = Result::failure('Validation failed again');
+
+    $shouldRetry = $policy->shouldRetry($execution, $validationResult);
+
+    expect($shouldRetry)->toBeTrue();
+});
+
 it('records failure and dispatches event', function () {
     $events = new EventDispatcher();
     $eventFired = false;

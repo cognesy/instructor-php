@@ -139,6 +139,18 @@ class ResponseFormat
     }
 
     // SERIALIZATION //////////////////////////////////////////////////
+    public function toArray(): array {
+        if ($this->isEmpty()) {
+            return [];
+        }
+
+        return $this->filterEmptyValues([
+            'type' => $this->type,
+            'schema' => $this->schema,
+            'name' => $this->name,
+            'strict' => $this->strict,
+        ]);
+    }
 
     // INTERNAL //////////////////////////////////////////////////////
 

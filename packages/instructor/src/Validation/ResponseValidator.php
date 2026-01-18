@@ -72,8 +72,14 @@ class ResponseValidator implements CanValidateResponse
                 $validator instanceof CanValidateObject => $validator,
                 default => throw new Exception('Validator must implement CanValidateObject interface'),
             };
-            // TODO: how do we handle exceptions here?
-            $results[] = $validator->validate($response);
+            try {
+                $results[] = $validator->validate($response);
+            } catch (\Throwable $error) {
+                $results[] = ValidationResult::invalid(
+                    new ValidationError(field: 'exception', value: null, message: $error->getMessage()),
+                    'Validator threw an exception',
+                );
+            }
         }
         return ValidationResult::merge($results);
     }

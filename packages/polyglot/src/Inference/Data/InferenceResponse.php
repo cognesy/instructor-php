@@ -91,11 +91,11 @@ final readonly class InferenceResponse
     }
 
     public function usage(): Usage {
-        return $this->usage ?? new Usage();
+        return $this->usage;
     }
 
     public function toolCalls(): ToolCalls {
-        return $this->toolCalls ?? new ToolCalls();
+        return $this->toolCalls;
     }
 
     public function finishReason(): InferenceFinishReason {

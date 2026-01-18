@@ -134,16 +134,14 @@ class Inference
     private function makeInferenceDriver(HttpClient $httpClient) : CanHandleInference {
         // Prefer explicit driver if provided via interface
         $resolver = $this->llmResolver ?? $this->llmProvider;
-        if ($resolver instanceof HasExplicitInferenceDriver) {
-            $explicit = $resolver->explicitInferenceDriver();
-            if ($explicit !== null) {
-                return $explicit;
-            }
-            return $this->getInferenceFactory()->makeDriver(
-                config: $resolver->resolveConfig(),
-                httpClient: $httpClient
-            );
+        $explicit = $resolver instanceof HasExplicitInferenceDriver
+            ? $resolver->explicitInferenceDriver()
+            : null;
+
+        if ($explicit !== null) {
+            return $explicit;
         }
+
         return $this->getInferenceFactory()->makeDriver(
             config: $resolver->resolveConfig(),
             httpClient: $httpClient

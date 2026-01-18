@@ -24,7 +24,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
 
     private ConfigPresets $presets;
 
-    // Configuration - all immutable after construction
+    // Configuration - mutable via with* methods
     private ?string $dsn;
     private ?string $llmPreset;
     private ?array $configOverrides = null;

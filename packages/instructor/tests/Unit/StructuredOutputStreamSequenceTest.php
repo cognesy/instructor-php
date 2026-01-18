@@ -44,7 +44,7 @@ it('yields sequence updates only when new items complete and dispatches events',
         // helper to wrap a value into a StructuredOutputExecution carrying an InferenceResponse
         $wrap = function($value) {
             $response = (new InferenceResponse())->withValue($value);
-            $infExec = InferenceExecution::empty()->withNewResponse($response);
+            $infExec = InferenceExecution::empty()->withSuccessfulAttempt($response);
             $attempt = new \Cognesy\Instructor\Data\StructuredOutputAttempt(
                 inferenceExecution: $infExec,
                 isFinalized: false,
@@ -73,7 +73,7 @@ it('yields sequence updates only when new items complete and dispatches events',
     $initial = (function () {
         $seq = new Sequence();
         $response = (new InferenceResponse())->withValue($seq);
-        $infExec = InferenceExecution::empty()->withNewResponse($response);
+        $infExec = InferenceExecution::empty()->withSuccessfulAttempt($response);
         $attempt = new \Cognesy\Instructor\Data\StructuredOutputAttempt(
             inferenceExecution: $infExec,
             isFinalized: false,

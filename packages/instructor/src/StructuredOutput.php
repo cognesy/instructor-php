@@ -121,9 +121,9 @@ class StructuredOutput
         return $this;
     }
 
-    public function withHttpClientPreset(string $string): static {
+    public function withHttpClientPreset(string $preset): static {
         $builder = new HttpClientBuilder(events: $this->events);
-        $this->httpClient = $builder->withPreset($string)->create();
+        $this->httpClient = $builder->withPreset($preset)->create();
         return $this;
     }
 
@@ -132,7 +132,7 @@ class StructuredOutput
         return $this;
     }
 
-    public function withClientInstance(string $driverName, object $clientInstance): self {
+    public function withClientInstance(string $driverName, object $clientInstance): static {
         $builder = new HttpClientBuilder(events: $this->events);
         $this->httpClient = $builder->withClientInstance(
             driverName: $driverName,
@@ -222,7 +222,7 @@ class StructuredOutput
         string $system = '',
         string $prompt = '',
         array $examples = [],
-    ): ?self {
+    ): static {
         $this->requestBuilder->withCachedContext($messages, $system, $prompt, $examples);
         return $this;
     }

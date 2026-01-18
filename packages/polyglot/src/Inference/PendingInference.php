@@ -76,6 +76,7 @@ class PendingInference
      * Initiates and returns an inference stream for the response.
      *
      * @return InferenceStream The initialized inference stream.
+     * Streaming via this method does not apply retry logic; errors propagate to the caller.
      * @throws InvalidArgumentException If the response is not configured for streaming.
      */
     public function stream() : InferenceStream {
@@ -159,8 +160,8 @@ class PendingInference
             }
 
             $this->execution = match(true) {
-                $response->hasFinishedWithFailure() => $this->execution->withFailedResponse($response),
-                default => $this->execution->withNewResponse($response),
+                $response->hasFinishedWithFailure() => $this->execution->withFailedAttempt(response: $response),
+                default => $this->execution->withSuccessfulAttempt(response: $response),
             };
 
             if ($response->hasFinishedWithFailure()) {
@@ -201,9 +202,9 @@ class PendingInference
             $this->handleAttemptSuccess($response);
             $this->dispatchInferenceCompleted(isSuccess: true);
 
-        if ($this->shouldCache()) {
-            $this->cachedResponse = $response;
-        }
+            if ($this->shouldCache()) {
+                $this->cachedResponse = $response;
+            }
 
             return $response;
         }
@@ -243,8 +244,9 @@ class PendingInference
     private function dispatchAttemptStarted(): void {
         $this->attemptNumber++;
         $this->attemptStartedAt = new DateTimeImmutable();
+        $this->execution = $this->execution->startAttempt();
 
-        $attemptId = $this->getCurrentAttemptId();
+        $attemptId = $this->currentAttemptId();
 
         $this->events->dispatch(new InferenceAttemptStarted(
             executionId: $this->execution->id,
@@ -255,7 +257,7 @@ class PendingInference
     }
 
     private function handleAttemptSuccess(InferenceResponse $response): void {
-        $attemptId = $this->getCurrentAttemptId();
+        $attemptId = $this->currentAttemptId();
 
         $this->events->dispatch(new InferenceAttemptSucceeded(
             executionId: $this->execution->id,
@@ -279,7 +281,7 @@ class PendingInference
         ?InferenceResponse $response = null,
         bool $willRetry = false
     ): void {
-        $attemptId = $this->getCurrentAttemptId();
+        $attemptId = $this->currentAttemptId();
         $partialUsage = $response?->usage() ?? $this->execution->partialResponse()?->usage();
         $statusCode = $error instanceof HttpRequestException ? $error->getStatusCode() : null;
 
@@ -333,9 +335,11 @@ class PendingInference
         ));
     }
 
-    private function getCurrentAttemptId(): string {
-        return $this->execution->attempts()->count() > 0
-            ? $this->execution->attempts()->last()?->id ?? $this->execution->id
-            : $this->execution->id;
+    private function currentAttemptId(): string {
+        $currentAttempt = $this->execution->currentAttempt();
+        if ($currentAttempt === null) {
+            throw new \LogicException('Attempt not started before event dispatch.');
+        }
+        return $currentAttempt->id;
     }
 }

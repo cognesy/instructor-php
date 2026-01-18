@@ -4,7 +4,7 @@
 
 - Prevent null dereference when finalizing streaming responses with no current attempt
   - packages/polyglot/src/Inference/Data/InferenceExecution.php
-    - Null-safe access to `currentAttempt` in `withFinalizedPartialResponse()` and `withFailedFinalizedResponse()`
+    - Null-safe access to `currentAttempt` in `withFinalizedPartialResponse()` and `withFailedAttempt()`
   - packages/polyglot/src/Inference/Data/InferenceAttempt.php
     - Null-safe `withFinalizedPartialResponse()` using empty `PartialInferenceResponseList` when needed
 
@@ -36,4 +36,3 @@
 - This release focuses on correctness and immutability:
   - Eliminates potential fatals in streaming finalization and console display
   - Standardizes usage accumulation to immutable patterns across modules
-

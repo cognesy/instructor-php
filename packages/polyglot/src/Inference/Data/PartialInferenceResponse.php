@@ -219,47 +219,7 @@ class PartialInferenceResponse
             }
         }
 
-        // Accumulate tool calls across deltas
-        // Merge previous accumulated tools/state
-        $this->tools = $previous->tools;
-        $this->toolsCount = $previous->toolsCount;
-        $this->lastToolKey = $previous->lastToolKey;
-
-        // Determine if there is a tool delta in the current chunk
-        $hasToolDelta = ($this->toolId !== '') || ($this->toolName !== '') || ($this->toolArgs !== '');
-        if ($hasToolDelta) {
-            // Determine the key to use for this tool delta
-            $key = $this->resolveToolKey($this->toolId, $this->toolName);
-
-            // Handle tool creation/updating based on the resolved key
-            if ($this->toolId !== '' && ($key !== $this->lastToolKey || !isset($this->tools[$key]))) {
-                // New tool call by id
-                $this->toolsCount += 1;
-                $this->tools[$key] = [
-                    'id' => $this->toolId,
-                    'name' => $this->toolName, // may be empty on first delta
-                    'args' => '',
-                ];
-            } elseif ($this->toolId !== '' && $this->toolName !== '' && isset($this->tools[$key])) {
-                // Update name if arrives later for existing tool
-                $this->tools[$key]['name'] = $this->toolName;
-            } elseif ($this->toolName !== '' && $key !== $this->lastToolKey) {
-                // New tool by name
-                $this->tools[$key] = [
-                    'id' => '',
-                    'name' => $this->toolName,
-                    'args' => '',
-                ];
-            }
-
-            // Update last key
-            $this->lastToolKey = $key;
-
-            // Append args delta if provided
-            if ($this->toolArgs !== '' && $key !== '' && isset($this->tools[$key])) {
-                $this->tools[$key]['args'] .= $this->toolArgs;
-            }
-        }
+        $this->accumulateTools($previous);
         return $this;
     }
 
@@ -303,6 +263,73 @@ class PartialInferenceResponse
         return 'name:' . $name . '#' . $seq;
     }
 
+    private function accumulateTools(PartialInferenceResponse $previous): void {
+        $this->tools = $previous->tools;
+        $this->toolsCount = $previous->toolsCount;
+        $this->lastToolKey = $previous->lastToolKey;
+
+        if (!$this->hasToolDelta()) {
+            return;
+        }
+
+        $key = $this->resolveToolKey($this->toolId, $this->toolName);
+
+        if ($this->shouldStartToolById($key)) {
+            $this->startToolById($key);
+        }
+
+        if ($this->shouldUpdateToolName($key)) {
+            $this->tools[$key]['name'] = $this->toolName;
+        }
+
+        if ($this->shouldStartToolByName($key)) {
+            $this->startToolByName($key);
+        }
+
+        $this->lastToolKey = $key;
+        $this->appendToolArgs($key);
+    }
+
+    private function hasToolDelta(): bool {
+        return $this->toolId !== '' || $this->toolName !== '' || $this->toolArgs !== '';
+    }
+
+    private function shouldStartToolById(string $key): bool {
+        return $this->toolId !== '' && ($key !== $this->lastToolKey || !isset($this->tools[$key]));
+    }
+
+    private function startToolById(string $key): void {
+        $this->toolsCount += 1;
+        $this->tools[$key] = [
+            'id' => $this->toolId,
+            'name' => $this->toolName,
+            'args' => '',
+        ];
+    }
+
+    private function shouldUpdateToolName(string $key): bool {
+        return $this->toolId !== '' && $this->toolName !== '' && isset($this->tools[$key]);
+    }
+
+    private function shouldStartToolByName(string $key): bool {
+        return $this->toolId === '' && $this->toolName !== '' && $key !== $this->lastToolKey;
+    }
+
+    private function startToolByName(string $key): void {
+        $this->tools[$key] = [
+            'id' => '',
+            'name' => $this->toolName,
+            'args' => '',
+        ];
+    }
+
+    private function appendToolArgs(string $key): void {
+        if ($this->toolArgs === '' || $key === '' || !isset($this->tools[$key])) {
+            return;
+        }
+        $this->tools[$key]['args'] .= $this->toolArgs;
+    }
+
     // TRANSFORMATIONS //////////////////////////////////////////////
 
     public function json(): string {
@@ -324,7 +351,7 @@ class PartialInferenceResponse
             'finish_reason' => $this->finishReason,
             'usage' => $this->usage?->toArray(),
             'usage_is_cumulative' => $this->usageIsCumulative,
-            'response_data' => $this->responseData,
+            'response_data' => $this->responseData?->toArray(),
             'id' => $this->id,
             'created_at' => $this->createdAt->format(DATE_ATOM),
             'updated_at' => $this->updatedAt->format(DATE_ATOM),

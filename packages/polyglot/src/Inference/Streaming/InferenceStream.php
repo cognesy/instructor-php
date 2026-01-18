@@ -9,10 +9,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
-use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
-use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use DateTimeImmutable;
@@ -234,48 +231,6 @@ class InferenceStream
 
         $this->events->dispatch(new InferenceResponseCreated($response));
 
-        // Dispatch observability events
-        if ($response !== null) {
-            $this->dispatchStreamCompletionEvents($response);
-        }
-    }
-
-    /**
-     * Dispatches observability events when stream is finalized.
-     */
-    private function dispatchStreamCompletionEvents(InferenceResponse $response): void {
-        $usage = $response->usage();
-        $finishReason = $response->finishReason();
-        $isSuccess = !$response->hasFinishedWithFailure();
-        $model = $this->execution->request()->model();
-        $startedAt = $this->startedAt ?? new DateTimeImmutable();
-        $attemptId = $this->execution->attempts()->last()?->id ?? $this->execution->id;
-
-        $this->events->dispatch(new InferenceUsageReported(
-            executionId: $this->execution->id,
-            usage: $usage,
-            model: $model,
-            isFinal: true,
-        ));
-
-        $this->events->dispatch(new InferenceAttemptSucceeded(
-            executionId: $this->execution->id,
-            attemptId: $attemptId,
-            attemptNumber: 1,
-            finishReason: $finishReason,
-            usage: $usage,
-            startedAt: $startedAt,
-        ));
-
-        $this->events->dispatch(new InferenceCompleted(
-            executionId: $this->execution->id,
-            isSuccess: $isSuccess,
-            finishReason: $finishReason,
-            usage: $usage,
-            attemptCount: 1,
-            startedAt: $startedAt,
-            response: $response,
-        ));
     }
 
     private function shouldCache(): bool

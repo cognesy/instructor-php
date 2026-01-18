@@ -12,7 +12,7 @@ use Cognesy\Polyglot\Inference\Data\Usage as PgUsage;
 it('accumulates usage for synchronous finalized attempts only', function () {
     // Build a finalized Polyglot execution with usage 2 in, 3 out
     $pg = PgInferenceExecution::fromRequest(new PgInferenceRequest());
-    $pg = $pg->withNewResponse(new PgInferenceResponse(usage: new PgUsage(inputTokens: 2, outputTokens: 3)));
+    $pg = $pg->withSuccessfulAttempt(new PgInferenceResponse(usage: new PgUsage(inputTokens: 2, outputTokens: 3)));
 
     $attempt = new StructuredOutputAttempt(
         inferenceExecution: $pg,
@@ -35,7 +35,7 @@ it('accumulates usage for synchronous finalized attempts only', function () {
 it('accumulates usage for finalized attempts plus current partials until finalized', function () {
     // Finalized previous attempt: 1 in, 1 out
     $pg1 = PgInferenceExecution::fromRequest(new PgInferenceRequest());
-    $pg1 = $pg1->withNewResponse(new PgInferenceResponse(usage: new PgUsage(inputTokens: 1, outputTokens: 1)));
+    $pg1 = $pg1->withSuccessfulAttempt(new PgInferenceResponse(usage: new PgUsage(inputTokens: 1, outputTokens: 1)));
     $attempt1 = new StructuredOutputAttempt(
         inferenceExecution: $pg1,
         isFinalized: true,

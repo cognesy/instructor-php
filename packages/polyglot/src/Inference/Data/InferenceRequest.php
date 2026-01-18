@@ -32,11 +32,11 @@ class InferenceRequest
     protected ResponseCachePolicy $responseCachePolicy;
 
     public function __construct(
-        ?Messages $messages = null,
+        Messages|string|array|null $messages = null,
         ?string $model = null,
         ?array $tools = null,
         null|string|array $toolChoice = null,
-        ?ResponseFormat $responseFormat = null,
+        ResponseFormat|array|null $responseFormat = null,
         ?array $options = null,
         ?OutputMode $mode = null,
         ?CachedContext $cachedContext = null,
@@ -60,6 +60,7 @@ class InferenceRequest
         $this->toolChoice = $toolChoice ?? [];
         $this->responseFormat = match(true) {
             $responseFormat instanceof ResponseFormat => $responseFormat,
+            is_array($responseFormat) => ResponseFormat::fromData($responseFormat),
             default => new ResponseFormat(),
         };
 
@@ -191,7 +192,9 @@ class InferenceRequest
     }
 
     public function hasMessages() : bool {
-        return !empty($this->messages) || !$this->cachedContext?->messages()->isEmpty();
+        $hasOwn = !$this->messages->isEmpty();
+        $hasCached = $this->cachedContext !== null && !$this->cachedContext->messages()->isEmpty();
+        return $hasOwn || $hasCached;
     }
 
     public function hasModel() : bool {
@@ -294,7 +297,9 @@ class InferenceRequest
             model: $this->model,
             tools: empty($this->tools) ? $this->cachedContext->tools() : $this->tools,
             toolChoice: empty($this->toolChoice) ? $this->cachedContext->toolChoice() : $this->toolChoice,
-            responseFormat: empty($this->responseFormat) ? $this->cachedContext->responseFormat() : $this->responseFormat,
+            responseFormat: $this->responseFormat->isEmpty()
+                ? $this->cachedContext->responseFormat()
+                : $this->responseFormat,
             options: $this->options,
             mode: $this->mode,
             cachedContext: new CachedContext(),
@@ -313,11 +318,11 @@ class InferenceRequest
      */
     public function toArray() : array {
         return [
-            'messages' => $this->messages,
+            'messages' => $this->messages->toArray(),
             'model' => $this->model,
             'tools' => $this->tools,
             'tool_choice' => $this->toolChoice,
-            'response_format' => $this->responseFormat,
+            'response_format' => $this->responseFormat->toArray(),
             'options' => $this->options,
             'mode' => $this->mode?->value,
             'response_cache_policy' => $this->responseCachePolicy->value,

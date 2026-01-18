@@ -186,6 +186,10 @@ final readonly class StructuredOutputConfig
         return $this->useObjectReferences;
     }
 
+    /**
+     * Maximum number of retries after the first attempt.
+     * Total attempts allowed = maxRetries + 1.
+     */
     public function maxRetries(): int {
         return $this->maxRetries;
     }

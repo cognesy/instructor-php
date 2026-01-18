@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\Data\Usage as PgUsage;
 
 it('reports success for latest finalized attempt (instructor)', function () {
     $pg = PgExec::fromRequest(new PgReq());
-    $pg = $pg->withNewResponse(new PgResp(usage: new PgUsage(inputTokens: 1, outputTokens: 1)));
+    $pg = $pg->withSuccessfulAttempt(new PgResp(usage: new PgUsage(inputTokens: 1, outputTokens: 1)));
     $attempt = new StructuredOutputAttempt(inferenceExecution: $pg, isFinalized: true);
 
     $exec = new StructuredOutputExecution(
@@ -28,7 +28,7 @@ it('reports success for latest finalized attempt (instructor)', function () {
 
 it('reports failure for latest finalized attempt (instructor)', function () {
     $pg = PgExec::fromRequest(new PgReq());
-    $pg = $pg->withFailedResponse(new PgResp(), null, 'err');
+    $pg = $pg->withFailedAttempt(new PgResp(), null, 'err');
     $attempt = new StructuredOutputAttempt(inferenceExecution: $pg, isFinalized: true, errors: ['err']);
 
     $exec = new StructuredOutputExecution(

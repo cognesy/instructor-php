@@ -133,16 +133,18 @@ class ResponseModel implements CanProvideJsonSchema
     }
 
     /** @param array<string, mixed> $values */
-    public function setPropertyValues(array $values) : void {
+    public function withPropertyValues(array $values) : static {
         if (!is_object($this->instance)) {
-            return;
+            return $this;
         }
+        $instance = clone $this->instance;
         foreach ($values as $name => $value) {
-            if (property_exists($this->instance, $name)) {
+            if (property_exists($instance, $name)) {
                 /** @phpstan-ignore-next-line */
-                $this->instance->$name = $value;
+                $instance->$name = $value;
             }
         }
+        return $this->with(instance: $instance);
     }
 
     // CONVERSION //////////////////////////////////////////////////////
@@ -200,7 +202,7 @@ class ResponseModel implements CanProvideJsonSchema
     public function toArray() : array {
         return [
             'class' => $this->class,
-            'instance' => get_object_vars($this->instance),
+            'instance' => is_object($this->instance) ? get_object_vars($this->instance) : [],
             'schema' => $this->schema->toArray(),
             'jsonSchema' => $this->jsonSchema,
             'schemaName' => $this->schemaName,

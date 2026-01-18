@@ -23,14 +23,15 @@ class ValidationResult
         return new ValidationResult();
     }
 
-    static public function invalid(string|array $errors, string $message = ''): ValidationResult {
-        if (is_string($errors)) {
-            $errors = [$errors];
-        }
-        if (count($errors) === 0) {
+    /**
+     * @param ValidationError|ValidationError[] $errors
+     */
+    static public function invalid(ValidationError|array $errors, string $message = ''): ValidationResult {
+        $normalized = self::normalizeErrors($errors);
+        if (count($normalized) === 0) {
             throw new \InvalidArgumentException('Errors must be provided when creating an invalid ValidationResult');
         }
-        return new ValidationResult($errors, $message);
+        return new ValidationResult($normalized, $message);
     }
 
     static public function make(array $errors = [], string $message = ''): ValidationResult {
@@ -55,6 +56,18 @@ class ValidationResult
             true => self::invalid(array_merge(...$errors), $message ?: "Data validation failed"),
             false => self::valid(),
         };
+    }
+
+    /**
+     * @param ValidationError|ValidationError[] $errors
+     * @return ValidationError[]
+     */
+    private static function normalizeErrors(ValidationError|array $errors): array {
+        $list = $errors instanceof ValidationError ? [$errors] : $errors;
+        return array_values(array_filter(
+            $list,
+            fn (mixed $error): bool => $error instanceof ValidationError
+        ));
     }
 
     /// CONVENIENCE METHODS //////////////////////////////////////////////////////////////////

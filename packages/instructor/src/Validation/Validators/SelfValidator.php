@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Validation\Validators;
 
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Validation\ValidationError;
 use Cognesy\Instructor\Validation\ValidationResult;
 
 class SelfValidator implements CanValidateObject
@@ -14,7 +15,11 @@ class SelfValidator implements CanValidateObject
             return $dataObject->validate();
         }
         return ValidationResult::invalid(
-            ['Object does not implement CanValidateSelf interface'],
+            new ValidationError(
+                field: 'object',
+                value: $dataObject,
+                message: 'Object does not implement CanValidateSelf interface',
+            ),
             'Validation failed',
         );
     }

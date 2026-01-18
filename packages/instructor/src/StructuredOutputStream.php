@@ -35,6 +35,7 @@ class StructuredOutputStream
     private StructuredOutputExecution $execution;
     private InferenceResponse|null $lastResponse = null;
     private ResponseCachePolicy $cachePolicy;
+    private bool $started = false;
 
     /**
      * @param Generator<StructuredOutputExecution> $stream
@@ -141,9 +142,8 @@ class StructuredOutputStream
      * Processes response stream and returns only the final response.
      */
     public function finalResponse() : InferenceResponse {
-        foreach ($this->streamResponses() as $partialResponse) {
+        foreach ($this->streamResponses() as $_) {
             // Just consume the stream, processStream() handles the updates
-            $tmp = $partialResponse;
         }
         if (is_null($this->lastResponse)) {
             throw new RuntimeException('Expected final InferenceResponse, got null');
@@ -153,8 +153,8 @@ class StructuredOutputStream
 
     /**
      * Returns raw stream for custom processing.
-     * Processing with this method does not trigger any events or dispatch any notifications.
-     * It also does not update usage data on the stream object.
+     * StructuredOutputStarted may have already been dispatched when the stream was created.
+     * Processing with this method does not emit response update events or usage updates.
      *
      * @return Generator<StructuredOutputExecution>
      */
@@ -200,7 +200,10 @@ class StructuredOutputStream
      * @return Generator<StructuredOutputExecution> A generator yielding structured output execution updates.
      */
     private function getStream(StructuredOutputExecution $execution) : Generator {
-        $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
+        if (!$this->started) {
+            $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
+            $this->started = true;
+        }
 
         return match($this->shouldCache()) {
             false => $this->streamWithoutCaching($execution),

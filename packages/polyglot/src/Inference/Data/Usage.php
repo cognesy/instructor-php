@@ -64,15 +64,6 @@ class Usage
 
     // MUTATORS ///////////////////////////////////////////////////////////
 
-    public function accumulate(Usage $usage) : self {
-        $this->inputTokens = $this->safeAdd($this->inputTokens, $usage->inputTokens, 'inputTokens');
-        $this->outputTokens = $this->safeAdd($this->outputTokens, $usage->outputTokens, 'outputTokens');
-        $this->cacheWriteTokens = $this->safeAdd($this->cacheWriteTokens, $usage->cacheWriteTokens, 'cacheWriteTokens');
-        $this->cacheReadTokens = $this->safeAdd($this->cacheReadTokens, $usage->cacheReadTokens, 'cacheReadTokens');
-        $this->reasoningTokens = $this->safeAdd($this->reasoningTokens, $usage->reasoningTokens, 'reasoningTokens');
-        return $this;
-    }
-
     /**
      * Safely adds two integers, throwing an exception if the result would overflow
      *
@@ -96,13 +87,13 @@ class Usage
     }
 
     public function withAccumulated(Usage $usage) : self {
-        return (new self(
-            inputTokens: $this->inputTokens,
-            outputTokens: $this->outputTokens,
-            cacheWriteTokens: $this->cacheWriteTokens,
-            cacheReadTokens: $this->cacheReadTokens,
-            reasoningTokens: $this->reasoningTokens,
-        ))->accumulate($usage);
+        return new self(
+            inputTokens: $this->safeAdd($this->inputTokens, $usage->inputTokens, 'inputTokens'),
+            outputTokens: $this->safeAdd($this->outputTokens, $usage->outputTokens, 'outputTokens'),
+            cacheWriteTokens: $this->safeAdd($this->cacheWriteTokens, $usage->cacheWriteTokens, 'cacheWriteTokens'),
+            cacheReadTokens: $this->safeAdd($this->cacheReadTokens, $usage->cacheReadTokens, 'cacheReadTokens'),
+            reasoningTokens: $this->safeAdd($this->reasoningTokens, $usage->reasoningTokens, 'reasoningTokens'),
+        );
     }
 
     // TRANSFORMERS ////////////////////////////////////////////////////////

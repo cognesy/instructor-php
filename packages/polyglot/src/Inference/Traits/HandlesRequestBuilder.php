@@ -32,7 +32,7 @@ trait HandlesRequestBuilder
         return $this;
     }
 
-    public function withToolChoice(string $toolChoice): static {
+    public function withToolChoice(string|array $toolChoice): static {
         $this->requestBuilder->withToolChoice($toolChoice);
         return $this;
     }

@@ -10,10 +10,10 @@ it('computes usage from finalized attempts only (no double count)', function () 
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
 
     // First finalized response with usage (2 in, 3 out)
-    $exec = $exec->withNewResponse(new InferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3)));
 
     // Second finalized response with usage (5 in, 7 out)
-    $exec = $exec->withNewResponse(new InferenceResponse(usage: new Usage(inputTokens: 5, outputTokens: 7)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 5, outputTokens: 7)));
 
     $usage = $exec->usage();
 
@@ -27,7 +27,7 @@ it('includes current attempt usage until finalized', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
 
     // One finalized response
-    $exec = $exec->withNewResponse(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
 
     // Simulate streaming: add partial responses to current (not finalized) attempt
     $exec = $exec->withNewPartialResponse(new PartialInferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3)));

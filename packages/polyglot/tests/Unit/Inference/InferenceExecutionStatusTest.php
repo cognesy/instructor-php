@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 
 it('reports success for latest finalized attempt', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
-    $exec = $exec->withNewResponse(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
+    $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
 
     expect($exec->isSuccessful())->toBeTrue()
         ->and($exec->isFailedFinal())->toBeFalse()
@@ -18,7 +18,7 @@ it('reports success for latest finalized attempt', function () {
 
 it('reports failure for latest finalized attempt', function () {
     $exec = InferenceExecution::fromRequest(new InferenceRequest());
-    $exec = $exec->withFailedResponse(
+    $exec = $exec->withFailedAttempt(
         response: new InferenceResponse(usage: new Usage()),
         partialResponse: null,
         errors: 'boom'
