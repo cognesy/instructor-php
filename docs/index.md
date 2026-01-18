@@ -3,11 +3,11 @@ title: 'Instructor for PHP'
 ---
 
 
-Instructor for PHP is a lightweight library that makes it easy to get structured outputs from Large Language Models (LLMs). Built on top of modern PHP 8.2+ features, it provides a simple, type-safe way to work with AI models.
+Instructor for PHP is a lightweight library that makes it easy to get structured outputs from Large Language Models (LLMs). Built on top of modern PHP 8.3+ features, it provides a simple, type-safe way to work with AI models.
 
 ## Key Features
 
-- **Type Safety**: Full PHP 8.2+ type system support with strict typing
+- **Type Safety**: Full PHP 8.3+ type system support with strict typing
 - **Multiple LLM Support**: Works with OpenAI, Anthropic, Gemini, Cohere, and more
 - **Validation**: Built-in validation with custom rules and LLM-powered validation
 - **Streaming**: Real-time partial object updates for better UX

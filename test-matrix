@@ -18,7 +18,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Test matrix configuration (from .github/workflows/php.yml)
-PHP_VERSIONS=("8.2" "8.3" "8.4")
+PHP_VERSIONS=("8.3" "8.4" "8.5")
 COMPOSER_FLAGS=("--prefer-stable" "--prefer-lowest")
 
 # Parse arguments

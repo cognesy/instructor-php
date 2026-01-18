@@ -25,10 +25,10 @@
     "files": []
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "cognesy/instructor-utils": "^1.18",
     "cognesy/instructor-pipeline": "^1.18",
-    "symfony/property-info": "^6.4|^7.3"
+    "symfony/property-info": "^7.0"
   },
   "require-dev": {
     "icanhazstring/composer-unused": "^0.9.0",
@@ -46,7 +46,7 @@
     "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
-    "symfony/type-info": "TypeInfo replaces deprecated PropertyInfo types in Symfony 7.3+, but is not supported in Symfony 6.4."
+    "symfony/type-info": "TypeInfo replaces deprecated PropertyInfo types in Symfony 7.3+."
   },
   "config": {
     "allow-plugins": {

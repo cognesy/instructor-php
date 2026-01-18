@@ -24,7 +24,7 @@
     }
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "cognesy/instructor-config": "^1.18",
     "cognesy/instructor-messages": "^1.18",
     "cognesy/instructor-utils": "^1.18"

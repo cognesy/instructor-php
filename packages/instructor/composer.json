@@ -48,7 +48,7 @@
     "sort-packages": true
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "cognesy/instructor-config": "^1.18",
     "cognesy/instructor-events": "^1.18",
     "cognesy/instructor-messages": "^1.18",
@@ -59,10 +59,10 @@
     "cognesy/instructor-utils": "^1.18",
     "phpdocumentor/reflection-docblock": "^5.4",
     "phpstan/phpdoc-parser": "^1.29",
-    "symfony/property-access": "^6.4 || ^7.0",
-    "symfony/property-info": "^6.4 || ^7.0",
-    "symfony/serializer": "^6.4 || ^7.0",
-    "symfony/validator": "^6.4 || ^7.0"
+    "symfony/property-access": "^7.0",
+    "symfony/property-info": "^7.0",
+    "symfony/serializer": "^7.0",
+    "symfony/validator": "^7.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -75,8 +75,7 @@
     "vimeo/psalm": "^6.0"
   },
   "suggest": {
-    "cognesy/instructor-schema": "For Symfony 7+ schema validation and management",
-    "cognesy/instructor-schema-v6": "For Symfony 6 schema validation and management"
+    "cognesy/instructor-schema": "For schema validation and management"
   },
   "scripts": {
     "tests": "@php vendor/bin/pest",

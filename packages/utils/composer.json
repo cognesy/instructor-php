@@ -30,7 +30,7 @@
     "sort-packages": true
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "ext-ctype": "*",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
@@ -41,7 +41,7 @@
     "psr/log": "^3.0",
     "psr/container": "^2.0",
     "vlucas/phpdotenv": "^5.6",
-    "symfony/yaml": "^6.0|^7.0",
+    "symfony/yaml": "^7.0",
     "twig/twig": "^3.0",
     "gioni06/gpt3-tokenizer": "^1.2"
   },

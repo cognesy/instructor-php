@@ -28,7 +28,7 @@ $request = new HttpRequest(
     body: [],
     options: []
 );
-// @doctest id="acb5"
+// @doctest id="fbfc"
 ```
 
 The parameters are:
@@ -61,7 +61,7 @@ $options = $request->options();
 
 // Check if the request is configured for streaming
 $isStreaming = $request->isStreamed();
-// @doctest id="5116"
+// @doctest id="b0d8"
 ```
 
 ### Modifying Requests
@@ -71,7 +71,7 @@ You can also modify a request after it's been created:
 ```php
 // Enable streaming for this request
 $streamingRequest = $request->withStreaming(true);
-// @doctest id="9b15"
+// @doctest id="826e"
 ```
 
 Note that the `with*` methods return a new request instance rather than modifying the original one.
@@ -92,7 +92,7 @@ $getRequest = new HttpRequest(
     body: [],
     options: []
 );
-// @doctest id="7d74"
+// @doctest id="cdd1"
 ```
 
 For GET requests with query parameters, include them in the URL:
@@ -105,7 +105,7 @@ $getRequestWithParams = new HttpRequest(
     body: [],
     options: []
 );
-// @doctest id="219e"
+// @doctest id="b3d9"
 ```
 
 ### POST Requests
@@ -126,7 +126,7 @@ $postRequest = new HttpRequest(
     ],
     options: []
 );
-// @doctest id="e45b"
+// @doctest id="8a26"
 ```
 
 ### PUT Requests
@@ -147,7 +147,7 @@ $putRequest = new HttpRequest(
     ],
     options: []
 );
-// @doctest id="7a51"
+// @doctest id="0523"
 ```
 
 ### PATCH Requests
@@ -167,7 +167,7 @@ $patchRequest = new HttpRequest(
     ],
     options: []
 );
-// @doctest id="7b7c"
+// @doctest id="addd"
 ```
 
 ### DELETE Requests
@@ -182,7 +182,7 @@ $deleteRequest = new HttpRequest(
     body: [],
     options: []
 );
-// @doctest id="262d"
+// @doctest id="4d16"
 ```
 
 ### Other Methods
@@ -205,7 +205,7 @@ $optionsRequest = new HttpRequest(
     body: [],
     options: []
 );
-// @doctest id="cde9"
+// @doctest id="7745"
 ```
 
 ## Setting Headers
@@ -225,7 +225,7 @@ $request = new HttpRequest(
     body: [],
     options: []
 );
-// @doctest id="e0b6"
+// @doctest id="9ffe"
 ```
 
 ### Common Headers
@@ -235,37 +235,37 @@ Some commonly used HTTP headers include:
 - **Content-Type**: Specifies the format of the request body
 ```php
 'Content-Type' => 'application/json'
-// @doctest id="2bfe"
+// @doctest id="7f08"
 ```
 
 - **Accept**: Indicates what response format the client can understand
 ```php
 'Accept' => 'application/json'
-// @doctest id="5e17"
+// @doctest id="7955"
 ```
 
 - **Authorization**: Provides authentication credentials
 ```php
 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-// @doctest id="4989"
+// @doctest id="d1b2"
 ```
 
 - **User-Agent**: Identifies the client application
 ```php
 'User-Agent' => 'MyApp/1.0 (https://example.com)'
-// @doctest id="b577"
+// @doctest id="8a98"
 ```
 
 - **Cache-Control**: Directives for caching mechanisms
 ```php
 'Cache-Control' => 'no-cache'
-// @doctest id="93f1"
+// @doctest id="eef4"
 ```
 
 - **Accept-Language**: Indicates the preferred language
 ```php
 'Accept-Language' => 'en-US,en;q=0.9'
-// @doctest id="0cbb"
+// @doctest id="80cb"
 ```
 
 ## Request Body
@@ -294,7 +294,7 @@ $request = new HttpRequest(
     ],
     options: []
 );
-// @doctest id="0554"
+// @doctest id="025d"
 ```
 
 When using an array for the body, you should set the `Content-Type` header to `application/json`.
@@ -317,7 +317,7 @@ $request = new HttpRequest(
     body: $jsonBody,
     options: []
 );
-// @doctest id="649e"
+// @doctest id="4ca2"
 ```
 
 This approach is useful for other content types:
@@ -336,7 +336,7 @@ $request = new HttpRequest(
     body: $formBody,
     options: []
 );
-// @doctest id="3011"
+// @doctest id="4277"
 ```
 
 ### Working with Request Body
@@ -349,7 +349,7 @@ $bodyString = $request->body()->toString();
 
 // Get the body as an array (for JSON bodies)
 $bodyArray = $request->body()->toArray();
-// @doctest id="d7cb"
+// @doctest id="d719"
 ```
 
 ## Request Options
@@ -366,7 +366,7 @@ $request = new HttpRequest(
         'stream' => true,  // Enable streaming response
     ]
 );
-// @doctest id="094c"
+// @doctest id="b2a2"
 ```
 
 ### Available Options
@@ -381,7 +381,7 @@ You can check if a request is configured for streaming:
 if ($request->isStreamed()) {
     // Handle streaming response
 }
-// @doctest id="b9f8"
+// @doctest id="84c5"
 ```
 
 ### Example: Streaming Request
@@ -406,7 +406,7 @@ $streamingRequest = new HttpRequest(
         'stream' => true, // Enable streaming in the client
     ]
 );
-// @doctest id="3ebb"
+// @doctest id="8a21"
 ```
 
 In the following chapters, we'll explore how to handle responses, including streaming responses, and how to use more advanced features like request pools and middleware.

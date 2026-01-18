@@ -24,7 +24,7 @@
     }
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "cognesy/instructor-struct": "^1.18",
     "cognesy/instructor-auxiliary": "^1.18",
     "cognesy/instructor-utils": "^1.18",

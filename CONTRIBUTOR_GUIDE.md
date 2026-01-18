@@ -19,7 +19,7 @@ Each package is independently publishable to Packagist with its own `composer.js
 ## Getting Started
 
 ### Prerequisites
-- PHP 8.2+
+- PHP 8.3+
 - Composer
 - Git
 - `jq` (for version synchronization scripts)

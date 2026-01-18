@@ -28,7 +28,7 @@ foreach ($stream->responses() as $_) {
     // The callback is called for each partial response
     // We don't need to do anything here
 }
-// @doctest id="464e"
+// @doctest id="f26a"
 ```
 
 
@@ -62,7 +62,7 @@ foreach ($stream as $partialResponse) {
         echo $content;
     }
 }
-// @doctest id="ce21"
+// @doctest id="3d03"
 ```
 
 
@@ -115,7 +115,7 @@ try {
 } catch (\JsonException $e) {
     echo "Error parsing final JSON: " . $e->getMessage() . "\n";
 }
-// @doctest id="a35a"
+// @doctest id="620d"
 ```
 
 
@@ -151,7 +151,7 @@ foreach ($stream as $partialResponse) {
         break;  // Exit the loop early
     }
 }
-// @doctest id="8314"
+// @doctest id="7c67"
 ```
 
 Note that when you break out of the loop, the request to the provider continues in the background, but your application stops processing the response.
@@ -198,5 +198,5 @@ foreach ($stream as $partialResponse) {
 
 fclose($outputFile);
 echo "\nGeneration complete. Story saved to generated_story.txt\n";
-// @doctest id="81d7"
+// @doctest id="ceea"
 ```

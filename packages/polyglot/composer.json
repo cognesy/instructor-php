@@ -13,7 +13,7 @@
     }
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "cognesy/instructor-config": "^1.18",
     "cognesy/instructor-events": "^1.18",
     "cognesy/instructor-http-client": "^1.18",

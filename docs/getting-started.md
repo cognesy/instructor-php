@@ -7,7 +7,7 @@ Get structured data from LLMs in under 5 minutes.
 
 ## Prerequisites
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - An API key from any [supported LLM provider](/packages/instructor/misc/llm_providers)
 
