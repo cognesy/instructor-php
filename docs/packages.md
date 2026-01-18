@@ -20,48 +20,7 @@ Instructor is built on a modular architecture. If you need to work at a lower le
 
 ### The Stack
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    YOUR APPLICATION                      │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────┐
-│                      INSTRUCTOR                          │
-│                                                          │
-│   • Define a PHP class                                   │
-│   • Get a validated object back                          │
-│   • Automatic retries with LLM feedback                  │
-│                                                          │
-│   composer require cognesy/instructor-php                │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────┐
-│                       POLYGLOT                           │
-│                                                          │
-│   • One API for 20+ LLM providers                        │
-│   • Swap OpenAI ↔ Claude ↔ Gemini with one line         │
-│   • Embeddings, streaming, tool calling                  │
-│                                                          │
-│   composer require cognesy/polyglot                      │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────┐
-│                      HTTP CLIENT                         │
-│                                                          │
-│   • Streaming-first HTTP layer                           │
-│   • Connection pooling, middleware                       │
-│   • Multiple backends (Guzzle, Symfony, native)          │
-│                                                          │
-│   composer require cognesy/http-client                   │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────┐
-│                    LLM PROVIDER APIs                     │
-│                                                          │
-│   OpenAI • Anthropic • Google • Mistral • Cohere         │
-│   Groq • Fireworks • Together • Ollama • Azure • ...     │
-└─────────────────────────────────────────────────────────┘
-```
+![Instructor Stack](images/instructor-diagram.png)
 
 ---
 
