@@ -3,16 +3,23 @@
 namespace Tests\Addons\Unit\Tools;
 
 use Cognesy\Addons\ToolUse\Collections\Tools;
+use Cognesy\Addons\ToolUse\Contracts\CanExecuteToolCalls;
+use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\ToolExecutor;
+use Cognesy\Addons\ToolUse\ToolUse;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Tests\Addons\Support\FakeInferenceDriver;
 
 
@@ -140,4 +147,36 @@ it('round-trips message collections through ToolUseStep serialization', function
     expect($hydrated->inputMessages()->toArray())->toBe($input->toArray());
     expect($hydrated->outputMessages()->toArray())->toBe($output->toArray());
     expect($hydrated->outputMessages()->count())->toBe($output->count());
+});
+
+it('records a step result when tool use fails', function () {
+    $driver = new class implements CanUseTools {
+        public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor): ToolUseStep {
+            throw new \RuntimeException('Tool failure');
+        }
+    };
+
+    $toolUse = new ToolUse(
+        tools: new Tools(),
+        toolExecutor: new ToolExecutor(new Tools()),
+        processors: StateProcessors::empty(),
+        continuationCriteria: new ContinuationCriteria(),
+        driver: $driver,
+        events: null,
+    );
+
+    $state = (new ToolUseState())->withMessages(Messages::fromString('Trigger failure'));
+    $failedState = $toolUse->nextStep($state);
+
+    expect($failedState->status())->toBe(ToolUseStatus::Failed);
+    expect($failedState->stepCount())->toBe(1);
+    expect($failedState->stepResults())->toHaveCount(1);
+    expect($failedState->currentStep())->not->toBeNull();
+
+    $errors = $failedState->currentStep()?->errors() ?? [];
+    $error = reset($errors);
+
+    expect($error)->toBeInstanceOf(\Throwable::class);
+    expect($error?->getMessage())->toBe('Tool failure');
+    expect($toolUse->hasNextStep($failedState))->toBeFalse();
 });

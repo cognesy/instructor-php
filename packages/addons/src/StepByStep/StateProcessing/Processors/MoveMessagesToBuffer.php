@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\StepByStep\StateProcessing\Processors;
 
-use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\MessagesMovedToBuffer;
 use Cognesy\Addons\Chat\Utils\SplitMessages;
+use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -27,7 +27,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
 
     #[\Override]
     public function canProcess(object $state): bool {
-        return $state instanceof ChatState
+        return $state instanceof HasMessageStore
             && $this->shouldProcess($state->messages()->toString());
     }
 
@@ -35,7 +35,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
     public function process(object $state, ?callable $next = null): object {
         $newState = $next ? $next($state) : $state;
 
-        assert($newState instanceof ChatState);
+        assert($newState instanceof HasMessageStore);
 
         [$keep, $overflow] = (new SplitMessages)->split(
             messages: $newState->messages(),
@@ -50,7 +50,7 @@ final readonly class MoveMessagesToBuffer implements CanProcessAnyState
         $newMessageStore = $newState->store()
             ->section($this->bufferSection)
             ->appendMessages($overflow)
-            ->section(ChatState::DEFAULT_SECTION)
+            ->section('messages')
             ->setMessages($keep);
 
         return $newState->withMessageStore($newMessageStore);

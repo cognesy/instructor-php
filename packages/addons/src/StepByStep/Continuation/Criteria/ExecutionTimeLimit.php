@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 use Cognesy\Utils\Time\ClockInterface;
 use Cognesy\Utils\Time\SystemClock;
@@ -24,9 +24,9 @@ use DateTimeImmutable;
  * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class ExecutionTimeLimit implements CanDecideToContinue, CanProvideStopReason
+final readonly class ExecutionTimeLimit implements CanEvaluateContinuation
 {
     /** @var Closure(TState): DateTimeImmutable */
     private Closure $startedAtResolver;
@@ -56,24 +56,30 @@ final readonly class ExecutionTimeLimit implements CanDecideToContinue, CanProvi
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $startedAt = ($this->startedAtResolver)($state);
         $now = $this->clock->now();
         $elapsedSeconds = $now->getTimestamp() - $startedAt->getTimestamp();
+        $exceeded = $elapsedSeconds >= $this->maxSeconds;
 
-        // Under limit: allow continuation (guard permits)
-        // At/over limit: forbid continuation (guard denies)
-        return $elapsedSeconds < $this->maxSeconds
-            ? ContinuationDecision::AllowContinuation
-            : ContinuationDecision::ForbidContinuation;
-    }
+        $decision = $exceeded
+            ? ContinuationDecision::ForbidContinuation
+            : ContinuationDecision::AllowContinuation;
 
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::TimeLimitReached,
-            default => null,
-        };
+        $reason = $exceeded
+            ? sprintf('Execution time limit reached: %ds/%ds', $elapsedSeconds, $this->maxSeconds)
+            : sprintf('Execution time under limit: %ds/%ds', $elapsedSeconds, $this->maxSeconds);
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: [
+                'elapsedSeconds' => $elapsedSeconds,
+                'maxSeconds' => $this->maxSeconds,
+            ],
+            stopReason: $exceeded ? StopReason::TimeLimitReached : null,
+        );
     }
 }

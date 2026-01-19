@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use InvalidArgumentException;
 
 class EmbeddingsRequest
@@ -9,11 +10,13 @@ class EmbeddingsRequest
     protected array $inputs = [];
     protected array $options = [];
     protected string $model = '';
+    protected ?EmbeddingsRetryPolicy $retryPolicy;
 
     public function __construct(
         string|array $input = [],
         array $options = [],
         string $model = '',
+        ?EmbeddingsRetryPolicy $retryPolicy = null,
     ) {
         $this->inputs = match(true) {
             is_string($input) => [$input],
@@ -22,6 +25,8 @@ class EmbeddingsRequest
         };
         $this->model = $model;
         $this->options = $options;
+        $this->assertNoRetryPolicyInOptions($this->options);
+        $this->retryPolicy = $retryPolicy;
 
         if (empty($this->inputs)) {
             throw new InvalidArgumentException("Input data is required");
@@ -42,6 +47,10 @@ class EmbeddingsRequest
         return $this->model;
     }
 
+    public function retryPolicy() : ?EmbeddingsRetryPolicy {
+        return $this->retryPolicy;
+    }
+
     // TRANSFORMATIONS
 
     public function toArray() : array {
@@ -50,5 +59,13 @@ class EmbeddingsRequest
             'options' => $this->options,
             'model' => $this->model,
         ];
+    }
+
+    private function assertNoRetryPolicyInOptions(array $options) : void {
+        if (!array_key_exists('retryPolicy', $options) && !array_key_exists('retry_policy', $options)) {
+            return;
+        }
+
+        throw new InvalidArgumentException('retryPolicy must be set via withRetryPolicy().');
     }
 }

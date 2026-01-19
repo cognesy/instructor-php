@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
@@ -23,7 +23,12 @@ $agent->onEvent(AgentExecutionStarted::class, function(AgentExecutionStarted $ev
 });
 
 $agent->onEvent(AgentTextReceived::class, function(AgentTextReceived $event): void {
-    $preview = strlen($event->text) > 50 ? substr($event->text, 0, 50) . '...' : $event->text;
+    $preview = $event->text;
+    if (strlen($event->text) > 50) {
+        $preview = substr($event->text, 0, 50) . '...';
+        // replace new lines with spaces to keep output clean
+        $preview = str_replace("\n", ' ', $preview);
+    }
     echo "-> Text: \"{$preview}\"\n";
 });
 
@@ -32,7 +37,11 @@ $agent->onEvent(AgentToolUsed::class, function(AgentToolUsed $event): void {
 });
 
 $agent->onEvent(AgentExecutionCompleted::class, function(AgentExecutionCompleted $event): void {
-    echo "-> Completed: {$event->toolCallCount} tool calls, cost: $" . number_format($event->cost, 4) . "\n";
+    $costLabel = 'n/a';
+    if ($event->cost !== null) {
+        $costLabel = '$' . number_format($event->cost, 4);
+    }
+    echo "-> Completed: {$event->toolCallCount} tool calls, cost: {$costLabel}\n";
 });
 
 // Execute with streaming to see events in real-time

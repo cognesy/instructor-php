@@ -4,6 +4,7 @@ namespace Cognesy\Addons\Agent\Capabilities\Metadata;
 
 use Cognesy\Addons\Agent\Tools\BaseTool;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\EmptyObject;
 
 /**
  * Tool for listing all keys in agent metadata.
@@ -77,7 +78,7 @@ DESC,
                 'description' => $this->description(),
                 'parameters' => [
                     'type' => 'object',
-                    'properties' => [],
+                    'properties' => new EmptyObject(),
                     'required' => [],
                 ],
             ],

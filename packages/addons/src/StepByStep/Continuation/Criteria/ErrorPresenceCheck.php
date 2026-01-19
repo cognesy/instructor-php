@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
@@ -15,9 +15,9 @@ use Cognesy\Addons\StepByStep\Continuation\StopReason;
  * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class ErrorPresenceCheck implements CanDecideToContinue, CanProvideStopReason
+final readonly class ErrorPresenceCheck implements CanEvaluateContinuation
 {
     /** @var Closure(TState): bool */
     private Closure $hasErrorsResolver;
@@ -33,22 +33,24 @@ final readonly class ErrorPresenceCheck implements CanDecideToContinue, CanProvi
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $hasErrors = ($this->hasErrorsResolver)($state);
 
-        // No errors: allow continuation (guard permits)
-        // Has errors: forbid continuation (guard denies)
-        return $hasErrors
+        $decision = $hasErrors
             ? ContinuationDecision::ForbidContinuation
             : ContinuationDecision::AllowContinuation;
-    }
 
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::GuardForbade,
-            default => null,
-        };
+        $reason = $hasErrors
+            ? 'Errors present, forbidding continuation'
+            : 'No errors, allowing continuation';
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: ['hasErrors' => $hasErrors],
+            stopReason: $hasErrors ? StopReason::ErrorForbade : null,
+        );
     }
 }

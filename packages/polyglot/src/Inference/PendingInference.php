@@ -135,7 +135,7 @@ class PendingInference
             return $this->cachedResponse;
         }
 
-        $policy = InferenceRetryPolicy::fromOptions($this->execution->request()->options());
+        $policy = $this->execution->request()->retryPolicy() ?? new InferenceRetryPolicy();
         $maxAttempts = max(1, $policy->maxAttempts);
 
         $lengthRetries = 0;

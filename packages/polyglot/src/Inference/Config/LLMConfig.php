@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Config;
 
 use Cognesy\Config\Exceptions\ConfigurationException;
+use InvalidArgumentException;
 use Throwable;
 
 final class LLMConfig
@@ -25,7 +26,9 @@ final class LLMConfig
         public int    $maxOutputLength = 4096,
         public string $driver = 'openai-compatible',
         public array  $options = [],
-    ) {}
+    ) {
+        $this->assertNoRetryPolicyInOptions($this->options);
+    }
 
     public static function fromArray(array $config) : LLMConfig {
         try {
@@ -60,5 +63,13 @@ final class LLMConfig
             'driver' => $this->driver,
             'options' => $this->options,
         ];
+    }
+
+    private function assertNoRetryPolicyInOptions(array $options) : void {
+        if (!array_key_exists('retryPolicy', $options) && !array_key_exists('retry_policy', $options)) {
+            return;
+        }
+
+        throw new InvalidArgumentException('retryPolicy must be configured via an explicit retry policy, not LLM options.');
     }
 }

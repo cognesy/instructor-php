@@ -145,15 +145,7 @@ Default criteria from `ToolUseFactory::defaultContinuationCriteria()`:
 To use the unified error policy (recommended), replace `RetryLimit` and `ErrorPresenceCheck`:
 
 ```php
-use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
-use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
-use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;
-use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;use Cognesy\Addons\StepByStep\State\Contracts\HasSteps;use Cognesy\Addons\StepByStep\State\Contracts\HasUsage;
 
 $toolUse = ToolUseFactory::default(
     continuationCriteria: new ContinuationCriteria(

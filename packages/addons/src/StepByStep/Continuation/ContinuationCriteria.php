@@ -23,17 +23,17 @@ namespace Cognesy\Addons\StepByStep\Continuation;
  *   );
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-class ContinuationCriteria implements CanDecideToContinue
+class ContinuationCriteria implements CanEvaluateContinuation
 {
-    /** @var list<CanDecideToContinue<TState>> */
+    /** @var list<CanEvaluateContinuation<TState>> */
     private array $criteria;
 
     /**
-     * @param CanDecideToContinue<TState> ...$criteria
+     * @param CanEvaluateContinuation<TState> ...$criteria
      */
-    public function __construct(CanDecideToContinue ...$criteria) {
+    public function __construct(CanEvaluateContinuation ...$criteria) {
         $this->criteria = $criteria;
     }
 
@@ -41,10 +41,10 @@ class ContinuationCriteria implements CanDecideToContinue
      * Create criteria collection.
      *
      * @template T of object
-     * @param CanDecideToContinue<T> ...$criteria
+     * @param CanEvaluateContinuation<T> ...$criteria
      * @return self<T>
      */
-    public static function from(CanDecideToContinue ...$criteria): self {
+    public static function from(CanEvaluateContinuation ...$criteria): self {
         return new self(...$criteria);
     }
 
@@ -53,10 +53,10 @@ class ContinuationCriteria implements CanDecideToContinue
      *
      * @template T of object
      * @param callable(T): ContinuationDecision $predicate
-     * @return CanDecideToContinue<T>
+     * @return CanEvaluateContinuation<T>
      */
-    public static function when(callable $predicate): CanDecideToContinue {
-        /** @var CanDecideToContinue<T> */
+    public static function when(callable $predicate): CanEvaluateContinuation {
+        /** @var CanEvaluateContinuation<T> */
         return new CallableCriterion($predicate); // @phpstan-ignore argument.type
     }
 
@@ -65,10 +65,10 @@ class ContinuationCriteria implements CanDecideToContinue
     }
 
     /**
-     * @param CanDecideToContinue<TState> ...$criteria
+     * @param CanEvaluateContinuation<TState> ...$criteria
      * @return self<TState>
      */
-    public function withCriteria(CanDecideToContinue ...$criteria): self {
+    public function withCriteria(CanEvaluateContinuation ...$criteria): self {
         return new self(...[...$this->criteria, ...$criteria]);
     }
 
@@ -79,17 +79,25 @@ class ContinuationCriteria implements CanDecideToContinue
      * @param TState $state
      */
     public function canContinue(object $state): bool {
-        return $this->evaluate($state)->shouldContinue();
+        return $this->evaluateAll($state)->shouldContinue();
     }
 
     /**
-     * Collect all decisions and resolve using priority logic.
+     * Evaluate this composite criterion and return a single evaluation.
+     * Implements CanEvaluateContinuation for composability.
      *
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
-        return $this->evaluate($state)->decision;
+    public function evaluate(object $state): ContinuationEvaluation {
+        $outcome = $this->evaluateAll($state);
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $outcome->decision(),
+            reason: sprintf('Aggregate of %d criteria', count($this->criteria)),
+            context: ['criteriaCount' => count($this->criteria)],
+            stopReason: $outcome->stopReason(),
+        );
     }
 
     /**
@@ -97,71 +105,16 @@ class ContinuationCriteria implements CanDecideToContinue
      *
      * @param TState $state
      */
-    public function evaluate(object $state): ContinuationOutcome {
+    public function evaluateAll(object $state): ContinuationOutcome {
         if ($this->criteria === []) {
-            return new ContinuationOutcome(
-                decision: ContinuationDecision::AllowStop,
-                shouldContinue: false,
-                resolvedBy: self::class,
-                stopReason: StopReason::Completed,
-                evaluations: [],
-            );
+            return ContinuationOutcome::empty();
         }
 
         $evaluations = [];
-        $resolvedBy = null;
-        $stopReason = StopReason::Completed;
-
         foreach ($this->criteria as $criterion) {
-            if ($criterion instanceof CanExplainContinuation) {
-                $evaluation = $criterion->explain($state);
-            } else {
-                $decision = $criterion->decide($state);
-                $criterionStopReason = null;
-                if ($criterion instanceof CanProvideStopReason) {
-                    $criterionStopReason = $criterion->stopReason($state, $decision);
-                }
-                $evaluation = ContinuationEvaluation::fromDecision(
-                    $criterion::class,
-                    $decision,
-                    $criterionStopReason,
-                );
-            }
-            $evaluations[] = $evaluation;
-
-            if ($evaluation->decision === ContinuationDecision::ForbidContinuation && $resolvedBy === null) {
-                $resolvedBy = $evaluation->criterionClass;
-                $stopReason = $evaluation->stopReason ?? StopReason::GuardForbade;
-            }
+            $evaluations[] = $criterion->evaluate($state);
         }
 
-        $decisions = array_map(
-            static fn(ContinuationEvaluation $evaluation): ContinuationDecision => $evaluation->decision,
-            $evaluations,
-        );
-
-        $shouldContinue = ContinuationDecision::canContinueWith(...$decisions);
-        if ($shouldContinue && $resolvedBy === null) {
-            foreach ($evaluations as $evaluation) {
-                if ($evaluation->decision === ContinuationDecision::RequestContinuation) {
-                    $resolvedBy = $evaluation->criterionClass;
-                    break;
-                }
-            }
-        }
-
-        $decision = ContinuationDecision::AllowStop;
-        if ($shouldContinue) {
-            $decision = ContinuationDecision::RequestContinuation;
-            $stopReason = StopReason::Completed;
-        }
-
-        return new ContinuationOutcome(
-            decision: $decision,
-            shouldContinue: $shouldContinue,
-            resolvedBy: $resolvedBy ?? 'aggregate',
-            stopReason: $stopReason,
-            evaluations: $evaluations,
-        );
+        return ContinuationOutcome::fromEvaluations($evaluations);
     }
 }

@@ -48,7 +48,7 @@ $data = (new Inference)
         mode: OutputMode::JsonSchema,
     )
     ->asJsonData();
-// @doctest id="14f1"
+// @doctest id="ef39"
 ```
 
 ## Why Use JsonSchema?
@@ -74,7 +74,7 @@ $nameSchema = JsonSchema::string(
     name: 'full_name',
     description: 'The user\'s full name'
 );
-// @doctest id="343b"
+// @doctest id="4832"
 ```
 
 ### Number & Integer
@@ -91,7 +91,7 @@ $priceSchema = JsonSchema::number(
     name: 'price',
     description: 'Product price'
 );
-// @doctest id="99ac"
+// @doctest id="473f"
 ```
 
 ### Boolean
@@ -103,7 +103,7 @@ $activeSchema = JsonSchema::boolean(
     name: 'is_active',
     description: 'Whether the user account is active'
 );
-// @doctest id="a766"
+// @doctest id="fe9b"
 ```
 
 ### Array
@@ -116,7 +116,7 @@ $tagsSchema = JsonSchema::array(
     description: 'List of tags associated with the post',
     itemSchema: JsonSchema::string()
 );
-// @doctest id="0649"
+// @doctest id="f41d"
 ```
 
 ### Enum
@@ -129,7 +129,7 @@ $statusSchema = JsonSchema::enum(
     description: 'The current status of the post',
     enumValues: ['draft', 'published', 'archived']
 );
-// @doctest id="b2f0"
+// @doctest id="3d06"
 ```
 
 ### Object
@@ -147,7 +147,7 @@ $profileSchema = JsonSchema::object(
     ],
     requiredProperties: ['username']
 );
-// @doctest id="613a"
+// @doctest id="c0c6"
 ```
 
 ## Working with Required and Nullable Fields
@@ -165,7 +165,7 @@ $userSchema = JsonSchema::object(
     ],
     requiredProperties: ['email', 'name'] // email and name must be present
 );
-// @doctest id="8656"
+// @doctest id="4072"
 ```
 
 ### Nullable Fields
@@ -178,7 +178,7 @@ $bioSchema = JsonSchema::string(
     description: 'Optional user biography',
     nullable: true
 );
-// @doctest id="6d6f"
+// @doctest id="3d4b"
 ```
 
 ## Understanding Required vs. Nullable
@@ -206,7 +206,7 @@ JsonSchema::string('phone', 'Phone number', nullable: false);
 // Optional and Nullable (most permissive)
 JsonSchema::string('website', 'Personal website', nullable: true);
 // requiredProperties: [] (doesn't include 'website')
-// @doctest id="acc2"
+// @doctest id="28d6"
 ```
 
 ## Working with OpenAI and Other Providers
@@ -224,7 +224,7 @@ $userSchema = JsonSchema::object(
     ],
     requiredProperties: ['email', 'bio'] // Note: bio is required but nullable
 );
-// @doctest id="dff9"
+// @doctest id="34a4"
 ```
 
 ## Building Complex Schemas
@@ -252,7 +252,7 @@ $userSchema = JsonSchema::object(
     ],
     requiredProperties: ['name', 'address']
 );
-// @doctest id="8162"
+// @doctest id="b978"
 ```
 
 ## Fluent API for Schema Creation
@@ -264,7 +264,7 @@ $schema = JsonSchema::array('tags')
     ->withItemSchema(JsonSchema::string())
     ->withDescription('A list of tags')
     ->withNullable(true);
-// @doctest id="1f4a"
+// @doctest id="49d6"
 ```
 
 Available methods include:
@@ -297,7 +297,7 @@ $schema->description();         // Get schema description
 $schema->title();               // Get schema title
 $schema->meta();                // Get all meta fields
 $schema->meta('key');           // Get specific meta field
-// @doctest id="7e82"
+// @doctest id="2ad3"
 ```
 
 ## Converting Schemas to Arrays and Function Calls
@@ -317,7 +317,7 @@ $functionCall = $schema->toFunctionCall(
     functionDescription: 'Gets the user profile information',
     strict: true
 );
-// @doctest id="2cb8"
+// @doctest id="bc65"
 ```
 
 ## Meta Fields
@@ -334,7 +334,7 @@ $schema = JsonSchema::string(
         'pattern' => '^[a-zA-Z0-9_]+$',
     ]
 );
-// @doctest id="85a6"
+// @doctest id="7f5e"
 ```
 
 Meta fields will be transformed to include the `x-` prefix when converted to arrays (e.g., `x-min_length`).
@@ -349,7 +349,7 @@ JsonSchema::string('name', 'the name');
 
 // ✅ Much better
 JsonSchema::string('name', 'The user\'s display name (2-50 characters)');
-// @doctest id="ccc5"
+// @doctest id="2f48"
 ```
 
 2. **Only Mark Required Fields**: Only mark fields as required if they're truly necessary.
@@ -365,7 +365,7 @@ $contactSchema = JsonSchema::object(/*...*/);
 $userSchema = JsonSchema::object(
     properties: [$addressSchema, $contactSchema]
 );
-// @doctest id="0713"
+// @doctest id="a7b5"
 ```
 
 4. **Be Explicit About Requirements**: Specify both the nullable status and required fields for clarity.
@@ -452,7 +452,7 @@ $userData = (new Inference)
     ->asJsonData();
 
 print_r($userData);
-// @doctest id="7355"
+// @doctest id="e2e4"
 ```
 
 ## Advanced: Creating Function Calls
@@ -496,5 +496,5 @@ $result = (new Inference)
         // Additional configuration...
     )
     ->create();
-// @doctest id="a285"
+// @doctest id="2325"
 ```

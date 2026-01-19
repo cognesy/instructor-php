@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Creation;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
@@ -20,6 +21,7 @@ class InferenceRequestBuilder
     private ?array $options;
     private ?OutputMode $mode;
     private ?ResponseCachePolicy $responseCachePolicy;
+    private ?InferenceRetryPolicy $retryPolicy;
 
     private ?bool $streaming;
     private ?int $maxTokens;
@@ -38,6 +40,7 @@ class InferenceRequestBuilder
         ?bool $streaming = null,
         ?int $maxTokens = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
     ) {
         $this->messages = $messages;
         $this->model = $model;
@@ -50,6 +53,7 @@ class InferenceRequestBuilder
         $this->maxTokens = $maxTokens;
         $this->cachedContext = $cachedContext ?? new CachedContext();
         $this->responseCachePolicy = $responseCachePolicy;
+        $this->retryPolicy = $retryPolicy;
     }
 
     /**
@@ -132,6 +136,11 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static {
+        $this->retryPolicy = $retryPolicy;
+        return $this;
+    }
+
     /**
      * Sets a cached context with provided messages, tools, tool choices, and response format.
      *
@@ -165,6 +174,7 @@ class InferenceRequestBuilder
         $this->mode = $request->outputMode();
         $this->cachedContext = $request->cachedContext();
         $this->responseCachePolicy = $request->responseCachePolicy();
+        $this->retryPolicy = $request->retryPolicy();
         return $this;
     }
 
@@ -183,6 +193,7 @@ class InferenceRequestBuilder
             mode: $this->mode,
             cachedContext: $this->cachedContext,
             responseCachePolicy: $this->responseCachePolicy,
+            retryPolicy: $this->retryPolicy,
         );
     }
 

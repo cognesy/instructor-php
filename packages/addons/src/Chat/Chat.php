@@ -16,7 +16,9 @@ use Cognesy\Addons\Chat\Events\ChatStepFailed;
 use Cognesy\Addons\Chat\Events\ChatStepStarting;
 use Cognesy\Addons\Chat\Exceptions\ChatException;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
+use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -70,10 +72,30 @@ class Chat extends StepByStep
         return $participant;
     }
 
+    /**
+     * Check if we should continue.
+     * Pre-evaluates criteria before the first step, then reads from StepResult.
+     */
     #[\Override]
     protected function canContinue(object $state): bool {
         assert($state instanceof ChatState);
-        return $this->continuationCriteria->canContinue($state);
+
+        $stepCount = $state->stepCount();
+        if ($stepCount === 0) {
+            return $this->continuationCriteria->canContinue($state);
+        }
+
+        $lastResult = $state->lastStepResult();
+        $stepResultsCount = count($state->stepResults());
+        if ($lastResult === null || $stepResultsCount !== $stepCount) {
+            throw new \LogicException(sprintf(
+                'Step results count (%d) does not match step count (%d).',
+                $stepResultsCount,
+                $stepCount,
+            ));
+        }
+
+        return $lastResult->shouldContinue();
     }
 
     #[\Override]
@@ -121,15 +143,55 @@ class Chat extends StepByStep
             participantName: $state->currentStep()?->participantName() ?? '?',
             inputMessages: $state->messages(),
         );
-        $failedState = $this->applyStep(
-            state: $state,
-            nextStep: $failureStep
-        );
+        $transitionState = $state
+            ->withAddedStep($failureStep)
+            ->withCurrentStep($failureStep)
+            ->withAccumulatedUsage($failureStep->usage());
+        $outcome = $this->evaluateOutcomeOnFailure($transitionState);
+        $stepResult = new StepResult($failureStep, $outcome);
+        $failedState = $state
+            ->recordStepResult($stepResult)
+            ->withAccumulatedUsage($failureStep->usage());
+        $this->emitChatStateUpdated($failedState);
         $this->emitChatTurnFailed($failedState, $failure);
         if ($this->forceThrowOnFailure) {
             throw $failure;
         }
         return $failedState;
+    }
+
+    /**
+     * Perform a single step: create step, evaluate continuation, bundle into StepResult, record.
+     */
+    #[\Override]
+    protected function performStep(object $state): object {
+        try {
+            assert($state instanceof ChatState);
+
+            // 1. Create raw step from driver
+            $rawStep = $this->makeNextStep($state);
+
+            // 2. Create transition state with step recorded (for correct stepCount during evaluation)
+            // Also accumulate usage so TokenUsageLimit can evaluate correctly
+            $transitionState = $state
+                ->withAddedStep($rawStep)
+                ->withCurrentStep($rawStep)
+                ->withAccumulatedUsage($rawStep->usage());
+
+            // 3. Evaluate continuation criteria on state with this step
+            $outcome = $this->continuationCriteria->evaluateAll($transitionState);
+
+            // 4. Bundle step + outcome into StepResult
+            $stepResult = new StepResult($rawStep, $outcome);
+
+            // 5. Record the StepResult to the original state
+            $nextState = $state->recordStepResult($stepResult);
+            $this->emitChatStateUpdated($nextState);
+
+            return $this->onStepCompleted($nextState);
+        } catch (Throwable $error) {
+            return $this->onFailure($error, $state);
+        }
     }
 
     // MUTATORS ///////////////////////////////////////////////////
@@ -174,6 +236,14 @@ class Chat extends StepByStep
 
     public function withEventBus(CanHandleEvents $events): Chat {
         return $this->with(events: $events);
+    }
+
+    private function evaluateOutcomeOnFailure(ChatState $state): ContinuationOutcome {
+        try {
+            return $this->continuationCriteria->evaluateAll($state);
+        } catch (Throwable $error) {
+            return ContinuationOutcome::fromEvaluationError($error);
+        }
     }
 
     // EVENTS ////////////////////////////////////////////

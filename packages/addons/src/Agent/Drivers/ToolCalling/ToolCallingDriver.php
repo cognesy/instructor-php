@@ -13,6 +13,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
@@ -37,6 +38,7 @@ class ToolCallingDriver implements CanUseTools
     private array $responseFormat;
     private OutputMode $mode;
     private array $options;
+    private ?InferenceRetryPolicy $retryPolicy;
     private bool $parallelToolCalls = false;
     private ToolExecutionFormatter $formatter;
 
@@ -48,6 +50,7 @@ class ToolCallingDriver implements CanUseTools
         string       $model = '',
         array        $options = [],
         OutputMode   $mode = OutputMode::Tools,
+        ?InferenceRetryPolicy $retryPolicy = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -56,6 +59,7 @@ class ToolCallingDriver implements CanUseTools
         $this->responseFormat = $responseFormat;
         $this->mode = $mode;
         $this->options = $options;
+        $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
     }
 
@@ -81,11 +85,12 @@ class ToolCallingDriver implements CanUseTools
         $toolCalls = $this->getToolsToCall($response);
         $executions = $executor->useTools($toolCalls, $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
+        $context = $state->messagesForInference();
         return $this->buildStepFromResponse(
             response: $response,
             executions: $executions,
             followUps: $messages,
-            context: $state->messages(),
+            context: $context,
         );
     }
 
@@ -93,7 +98,7 @@ class ToolCallingDriver implements CanUseTools
 
     private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
         $cache = $this->resolveCachedContext($state, $tools);
-        return $this->buildPendingInference($state->messages(), $tools, $cache)->response();
+        return $this->buildPendingInference($state->messagesForInference(), $tools, $cache)->response();
     }
 
     private function getToolsToCall(InferenceResponse $response): ToolCalls {
@@ -133,6 +138,9 @@ class ToolCallingDriver implements CanUseTools
             ->withResponseFormat($this->responseFormat)
             ->withOptions($options)
             ->withOutputMode($this->mode);
+        if ($this->retryPolicy !== null) {
+            $inference = $inference->withRetryPolicy($this->retryPolicy);
+        }
         if ($cache !== null) {
             $inference = $inference->withCachedContext(
                 messages: $cache->messages()->toArray(),

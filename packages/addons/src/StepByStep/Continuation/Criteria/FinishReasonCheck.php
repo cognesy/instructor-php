@@ -4,9 +4,9 @@ namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use BackedEnum;
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
@@ -16,9 +16,9 @@ use Cognesy\Addons\StepByStep\Continuation\StopReason;
  * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class FinishReasonCheck implements CanDecideToContinue, CanProvideStopReason
+final readonly class FinishReasonCheck implements CanEvaluateContinuation
 {
     /** @var Closure(TState): mixed */
     private Closure $finishReasonResolver;
@@ -41,35 +41,50 @@ final readonly class FinishReasonCheck implements CanDecideToContinue, CanProvid
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         if ($this->normalizedStopReasons === []) {
-            return ContinuationDecision::AllowContinuation;
+            return new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::AllowContinuation,
+                reason: 'No stop reasons configured',
+                context: ['finishReason' => null, 'stopReasons' => []],
+            );
         }
 
         /** @var TState $state */
         $reason = ($this->finishReasonResolver)($state);
+        $originalReason = $reason;
         if ($reason instanceof BackedEnum) {
             $reason = $reason->value;
         }
         if ($reason === null) {
-            return ContinuationDecision::AllowContinuation;
+            return new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::AllowContinuation,
+                reason: 'No finish reason available',
+                context: ['finishReason' => null, 'stopReasons' => $this->normalizedStopReasons],
+            );
         }
 
         $shouldStop = in_array($reason, $this->normalizedStopReasons, true);
-
-        // Stop reason matched: forbid continuation (guard denies)
-        // No match: allow continuation (guard permits)
-        return $shouldStop
+        $decision = $shouldStop
             ? ContinuationDecision::ForbidContinuation
             : ContinuationDecision::AllowContinuation;
-    }
 
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::FinishReasonReceived,
-            default => null,
-        };
+        $reasonText = $shouldStop
+            ? sprintf('Finish reason "%s" matched stop condition', $reason)
+            : sprintf('Finish reason "%s" does not match stop conditions', $reason);
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reasonText,
+            context: [
+                'finishReason' => $originalReason instanceof BackedEnum ? $originalReason->value : $originalReason,
+                'stopReasons' => $this->normalizedStopReasons,
+            ],
+            stopReason: $shouldStop ? StopReason::FinishReasonReceived : null,
+        );
     }
 
     /**

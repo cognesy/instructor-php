@@ -2,10 +2,10 @@
 
 namespace Tests\Addons\Unit\Core;
 
-use Cognesy\Addons\StepByStep\Continuation\ErrorContext;
-use Cognesy\Addons\StepByStep\Continuation\ErrorHandlingDecision;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
-use Cognesy\Addons\StepByStep\Continuation\ErrorType;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorContext;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorHandlingDecision;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorType;
 
 it('stops on any error with the default policy', function (ErrorType $type) {
     $policy = ErrorPolicy::stopOnAnyError();

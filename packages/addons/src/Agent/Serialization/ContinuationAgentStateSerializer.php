@@ -4,7 +4,6 @@ namespace Cognesy\Addons\Agent\Serialization;
 
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
-use Cognesy\Addons\StepByStep\State\Traits\HandlesMessageStore;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
 
@@ -167,7 +166,7 @@ final readonly class ContinuationAgentStateSerializer implements CanSerializeAge
         return [
             'sections' => [
                 [
-                    'name' => HandlesMessageStore::DEFAULT_SECTION,
+                    'name' => 'messages',
                     'messages' => $storeData,
                 ],
             ],

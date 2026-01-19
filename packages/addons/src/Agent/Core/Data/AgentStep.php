@@ -25,6 +25,9 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;
 
 /**
+ * Immutable step data from agent execution.
+ * Continuation outcome is stored separately in StepResult, not on the step itself.
+ *
  * @implements HasStepErrors<Throwable>
  */
 final readonly class AgentStep implements
@@ -43,16 +46,15 @@ final readonly class AgentStep implements
     use HandlesStepUsage;
 
     public function __construct(
-        ?Messages          $inputMessages = null,
-        ?Messages          $outputMessages = null,
-        ?Usage             $usage = null,
-        ?ToolCalls         $toolCalls = null,
-        ?ToolExecutions    $toolExecutions = null,
-        ?InferenceResponse $inferenceResponse = null,
-        ?AgentStepType     $stepType = null,
-        array              $errors = [],
-
-        ?StepInfo          $stepInfo = null, // for deserialization
+        ?Messages            $inputMessages = null,
+        ?Messages            $outputMessages = null,
+        ?Usage               $usage = null,
+        ?ToolCalls           $toolCalls = null,
+        ?ToolExecutions      $toolExecutions = null,
+        ?InferenceResponse   $inferenceResponse = null,
+        ?AgentStepType       $stepType = null,
+        array                $errors = [],
+        ?StepInfo            $stepInfo = null,
     ) {
         $this->stepInfo = $stepInfo ?? StepInfo::new();
 

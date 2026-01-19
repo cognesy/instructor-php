@@ -2,9 +2,9 @@
 
 namespace Tests\Addons\Unit\Core;
 
-use Cognesy\Addons\StepByStep\Continuation\ErrorContext;
-use Cognesy\Addons\StepByStep\Continuation\ErrorHandlingDecision;
-use Cognesy\Addons\StepByStep\Continuation\ErrorType;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorContext;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorHandlingDecision;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorType;
 
 it('defines all error types', function () {
     $values = array_map(

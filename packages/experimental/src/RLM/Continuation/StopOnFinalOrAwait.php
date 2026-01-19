@@ -2,7 +2,9 @@
 
 namespace Cognesy\Experimental\RLM\Continuation;
 
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 
 /**
  * Stop when state indicates final or await has been reached.
@@ -10,16 +12,27 @@ use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
  * This is a lightweight criterion; the concrete state class should expose
  * a simple boolean for terminal/await conditions.
  */
-final class StopOnFinalOrAwait implements CanDecideToContinue
+final class StopOnFinalOrAwait implements CanEvaluateContinuation
 {
     #[\Override]
-    public function canContinue(object $state): bool {
+    public function evaluate(object $state): ContinuationEvaluation {
         if (!method_exists($state, 'isTerminal')) {
-            return true;
+            return ContinuationEvaluation::fromDecision(
+                self::class,
+                ContinuationDecision::AllowContinuation,
+            );
         }
         /** @var bool $terminal */
         $terminal = (bool) $state->isTerminal();
-        return !$terminal;
+        if ($terminal) {
+            return ContinuationEvaluation::fromDecision(
+                self::class,
+                ContinuationDecision::AllowStop,
+            );
+        }
+        return ContinuationEvaluation::fromDecision(
+            self::class,
+            ContinuationDecision::AllowContinuation,
+        );
     }
 }
-

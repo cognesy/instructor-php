@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentBuilder;
 use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\Agent\Capabilities\Subagent\SpawnSubagentTool;
 use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Registry\AgentRegistry;
@@ -31,6 +32,8 @@ $registry->register(new AgentSpec(
     tools: ['read_file'],
 ));
 
+SpawnSubagentTool::clearSubagentStates();
+
 // Build main orchestration agent
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
@@ -40,9 +43,9 @@ $agent = AgentBuilder::base()
 // Task requiring multiple isolated reviews
 $task = <<<TASK
 Review these three files and provide a summary:
-1. src/Agent/AgentBuilder.php
-2. src/Agent/AgentState.php
-3. src/Agent/Agent.php
+1. packages/addons/src/Agent/AgentBuilder.php
+2. packages/addons/src/Agent/Core/Data/AgentState.php
+3. packages/addons/src/Agent/Agent.php
 
 For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;
@@ -81,6 +84,6 @@ echo $summary . "\n\n";
 
 echo "Stats:\n";
 echo "  Steps: {$state->stepCount()}\n";
-echo "  Subagents spawned: " . ($state->metadata()->get('subagent_count') ?? 0) . "\n";
+echo "  Subagents spawned: " . count(SpawnSubagentTool::getSubagentStates()) . "\n";
 echo "  Status: {$state->status()->value}\n";
 ?>

@@ -42,7 +42,7 @@ class PendingEmbeddings
     }
 
     public function makeResponse() : EmbeddingsResponse {
-        $policy = EmbeddingsRetryPolicy::fromOptions($this->request->options());
+        $policy = $this->request->retryPolicy() ?? new EmbeddingsRetryPolicy();
         $maxAttempts = max(1, $policy->maxAttempts);
         $attempt = 0;
 

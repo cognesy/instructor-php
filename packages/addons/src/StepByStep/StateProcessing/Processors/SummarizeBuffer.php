@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\StepByStep\StateProcessing\Processors;
 
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
-use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Events\MessageBufferSummarized;
+use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -31,17 +31,21 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
 
     #[\Override]
     public function canProcess(object $state): bool {
-        return $state instanceof ChatState;
+        return $state instanceof HasMessageStore;
     }
 
     #[\Override]
     public function process(object $state, ?callable $next = null): object {
         $newState = $next ? $next($state) : $state;
 
-        assert($newState instanceof ChatState);
+        assert($newState instanceof HasMessageStore);
 
         $buffer = $newState->store()
             ->section($this->bufferSection)
+            ->get()
+            ->messages();
+        $summaryMessages = $newState->store()
+            ->section($this->summarySection)
             ->get()
             ->messages();
 
@@ -49,7 +53,12 @@ final readonly class SummarizeBuffer implements CanProcessAnyState
             return $newState;
         }
 
-        $summary = $this->summarizer->summarize($buffer, $this->maxSummaryTokens);
+        $summarizedInput = match (true) {
+            $summaryMessages->isEmpty() => $buffer,
+            $buffer->isEmpty() => $summaryMessages,
+            default => $buffer->appendMessages($summaryMessages),
+        };
+        $summary = $this->summarizer->summarize($summarizedInput, $this->maxSummaryTokens);
         $this->events->dispatch(new MessageBufferSummarized([
             'summary' => $summary,
             'buffer' => $buffer->toArray(),

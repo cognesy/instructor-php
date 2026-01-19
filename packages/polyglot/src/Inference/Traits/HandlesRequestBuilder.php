@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Traits;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
@@ -59,6 +60,11 @@ trait HandlesRequestBuilder
 
     public function withResponseCachePolicy(ResponseCachePolicy $policy): static {
         $this->requestBuilder->withResponseCachePolicy($policy);
+        return $this;
+    }
+
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy): static {
+        $this->requestBuilder->withRetryPolicy($retryPolicy);
         return $this;
     }
 

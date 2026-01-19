@@ -350,49 +350,35 @@ $finalState = $process->finalStep($initialState);
 
 ### Creating Custom Criteria
 
-Implement `CanDecideToContinue` with the `decide()` method:
+Implement `CanEvaluateContinuation` with the `evaluate()` method:
 
 ```php
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
-
-class CustomCriteria implements CanDecideToContinue
-{
-    public function decide(object $state): ContinuationDecision
-    {
-        if ($this->shouldStop($state)) {
-            return ContinuationDecision::ForbidContinuation;
-        }
-        if ($this->wantsMore($state)) {
-            return ContinuationDecision::RequestContinuation;
-        }
-        return ContinuationDecision::AllowContinuation;
-    }
-}
-```
-
-For observability, also implement `CanExplainContinuation`:
-
-```php
-use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
-class CustomCriteria implements CanDecideToContinue, CanExplainContinuation
+class CustomCriteria implements CanEvaluateContinuation
 {
-    public function decide(object $state): ContinuationDecision { /* ... */ }
-
-    public function explain(object $state): ContinuationEvaluation
+    public function evaluate(object $state): ContinuationEvaluation
     {
-        $decision = $this->decide($state);
-        return new ContinuationEvaluation(
-            criterionClass: self::class,
-            decision: $decision,
-            reason: $this->buildReason($state),
-            stopReason: $decision === ContinuationDecision::ForbidContinuation
-                ? StopReason::GuardForbade
-                : null,
-            context: ['custom_metric' => $this->metric],
+        if ($this->shouldStop($state)) {
+            return new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::ForbidContinuation,
+                reason: 'Custom guard forbade continuation',
+                stopReason: StopReason::GuardForbade,
+            );
+        }
+        if ($this->wantsMore($state)) {
+            return ContinuationEvaluation::fromDecision(
+                self::class,
+                ContinuationDecision::RequestContinuation,
+            );
+        }
+        return ContinuationEvaluation::fromDecision(
+            self::class,
+            ContinuationDecision::AllowStop,
         );
     }
 }
@@ -407,16 +393,18 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 
 enum ContinuationDecision: string
 {
-    case AllowContinuation = 'allow';      // Doesn't oppose continuing
+    case AllowContinuation = 'allow';      // Guards permit continuation (bootstrap)
     case ForbidContinuation = 'forbid';    // Vetoes continuation (guards)
     case RequestContinuation = 'request';  // Actively wants to continue
+    case AllowStop = 'stop';               // Work driver completed
 }
 ```
 
 **Decision priority**:
 - If any criterion returns `ForbidContinuation`, the process stops
 - If at least one criterion returns `RequestContinuation` and none forbid, process continues
-- If all return `AllowContinuation`, the process stops (no active request to continue)
+- If any criterion returns `AllowStop` and none forbid/request, process stops
+- If any criterion returns `AllowContinuation` and none forbid/request/stop, process continues
 
 ### Criteria Evaluation
 

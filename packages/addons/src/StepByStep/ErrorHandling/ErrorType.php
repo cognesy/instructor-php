@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\StepByStep\Continuation;
+namespace Cognesy\Addons\StepByStep\ErrorHandling;
 
 enum ErrorType: string
 {

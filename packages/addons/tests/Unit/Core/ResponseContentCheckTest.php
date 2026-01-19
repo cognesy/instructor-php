@@ -34,10 +34,10 @@ it('calls predicate with correct Messages type', function () {
     $check = new ResponseContentCheck($responseResolver, $predicate);
     $state = new TestState($testMessages);
 
-    $result = $check->decide($state);
+    $result = $check->evaluate($state);
 
     // Predicate returns true → RequestContinuation (work driver has work to do)
-    expect($result)->toBe(ContinuationDecision::RequestContinuation);
+    expect($result->decision)->toBe(ContinuationDecision::RequestContinuation);
     expect($predicateCalls)->toHaveCount(1);
     expect($predicateCalls[0]['type'])->toBe('Cognesy\Messages\Messages');
     expect($predicateCalls[0]['count'])->toBe(2);
@@ -51,10 +51,10 @@ it('returns AllowContinuation when response resolver returns null (permits boots
     $check = new ResponseContentCheck($responseResolver, $predicate);
     $state = new TestState();
 
-    $result = $check->decide($state);
+    $result = $check->evaluate($state);
 
     // Null response means "no step yet, permit bootstrap" (act like a guard)
-    expect($result)->toBe(ContinuationDecision::AllowContinuation);
+    expect($result->decision)->toBe(ContinuationDecision::AllowContinuation);
 });
 
 it('correctly evaluates non-empty content predicate', function () {
@@ -67,12 +67,12 @@ it('correctly evaluates non-empty content predicate', function () {
     $check = new ResponseContentCheck($responseResolver, $predicate);
 
     // Test with non-empty content: predicate true → RequestContinuation
-    $result1 = $check->decide(new TestState($nonEmptyMessages));
-    expect($result1)->toBe(ContinuationDecision::RequestContinuation);
+    $result1 = $check->evaluate(new TestState($nonEmptyMessages));
+    expect($result1->decision)->toBe(ContinuationDecision::RequestContinuation);
 
     // Test with empty content: predicate false → AllowStop
-    $result2 = $check->decide(new TestState($emptyMessages));
-    expect($result2)->toBe(ContinuationDecision::AllowStop);
+    $result2 = $check->evaluate(new TestState($emptyMessages));
+    expect($result2->decision)->toBe(ContinuationDecision::AllowStop);
 });
 
 it('works with multiple messages and evaluates last message correctly', function () {
@@ -89,10 +89,10 @@ it('works with multiple messages and evaluates last message correctly', function
     $check = new ResponseContentCheck($responseResolver, $predicate);
     $state = new TestState($multipleMessages);
 
-    $result = $check->decide($state);
+    $result = $check->evaluate($state);
 
     // Should return AllowStop because predicate returns false (last message is empty)
-    expect($result)->toBe(ContinuationDecision::AllowStop);
+    expect($result->decision)->toBe(ContinuationDecision::AllowStop);
 });
 
 it('can be used with different predicate logic', function () {
@@ -109,15 +109,15 @@ it('can be used with different predicate logic', function () {
     $check = new ResponseContentCheck($responseResolver, $lengthPredicate);
     $state = new TestState($messages);
 
-    $result = $check->decide($state);
+    $result = $check->evaluate($state);
     // Long content → predicate true → RequestContinuation
-    expect($result)->toBe(ContinuationDecision::RequestContinuation);
+    expect($result->decision)->toBe(ContinuationDecision::RequestContinuation);
 
     // Test with short content
     $shortMessages = new Messages(new Message('assistant', 'Short'));
-    $shortResult = $check->decide(new TestState($shortMessages));
+    $shortResult = $check->evaluate(new TestState($shortMessages));
     // Short content → predicate false → AllowStop
-    expect($shortResult)->toBe(ContinuationDecision::AllowStop);
+    expect($shortResult->decision)->toBe(ContinuationDecision::AllowStop);
 });
 
 it('handles Messages collection properly when checking for continuation patterns', function () {
@@ -132,16 +132,16 @@ it('handles Messages collection properly when checking for continuation patterns
 
     // Test continuation with valid content: predicate true → RequestContinuation
     $validMessages = new Messages(new Message('assistant', 'Valid response'));
-    $result1 = $check->decide(new TestState($validMessages));
-    expect($result1)->toBe(ContinuationDecision::RequestContinuation);
+    $result1 = $check->evaluate(new TestState($validMessages));
+    expect($result1->decision)->toBe(ContinuationDecision::RequestContinuation);
 
     // Test stopping with empty content: predicate false → AllowStop
     $emptyMessages = new Messages(new Message('assistant', ''));
-    $result2 = $check->decide(new TestState($emptyMessages));
-    expect($result2)->toBe(ContinuationDecision::AllowStop);
+    $result2 = $check->evaluate(new TestState($emptyMessages));
+    expect($result2->decision)->toBe(ContinuationDecision::AllowStop);
 
     // Test with whitespace-only content: predicate true (whitespace != empty string) → RequestContinuation
     $whitespaceMessages = new Messages(new Message('assistant', '   '));
-    $result3 = $check->decide(new TestState($whitespaceMessages));
-    expect($result3)->toBe(ContinuationDecision::RequestContinuation); // trim() is not used in the predicate
+    $result3 = $check->evaluate(new TestState($whitespaceMessages));
+    expect($result3->decision)->toBe(ContinuationDecision::RequestContinuation); // trim() is not used in the predicate
 });

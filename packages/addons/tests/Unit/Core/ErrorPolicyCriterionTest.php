@@ -2,15 +2,14 @@
 
 namespace Tests\Addons\Unit\Core;
 
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
-use Cognesy\Addons\StepByStep\Continuation\CanResolveErrorContext;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Addons\StepByStep\Continuation\ErrorContext;
-use Cognesy\Addons\StepByStep\Continuation\ErrorHandlingDecision;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
-use Cognesy\Addons\StepByStep\Continuation\ErrorType;
+use Cognesy\Addons\StepByStep\ErrorHandling\CanResolveErrorContext;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorContext;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorHandlingDecision;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorType;
 
 final class StaticErrorContextResolver implements CanResolveErrorContext
 {
@@ -21,7 +20,7 @@ final class StaticErrorContextResolver implements CanResolveErrorContext
     }
 }
 
-it('implements continuation decision and explanation interfaces', function () {
+it('implements CanEvaluateContinuation interface', function () {
     $context = new ErrorContext(
         type: ErrorType::Tool,
         consecutiveFailures: 1,
@@ -32,8 +31,7 @@ it('implements continuation decision and explanation interfaces', function () {
         new StaticErrorContextResolver($context),
     );
 
-    expect($criterion)->toBeInstanceOf(CanDecideToContinue::class);
-    expect($criterion)->toBeInstanceOf(CanExplainContinuation::class);
+    expect($criterion)->toBeInstanceOf(CanEvaluateContinuation::class);
 });
 
 it('maps handling decisions to continuation decisions', function (ErrorPolicy $policy, ContinuationDecision $expected) {
@@ -47,7 +45,7 @@ it('maps handling decisions to continuation decisions', function (ErrorPolicy $p
         new StaticErrorContextResolver($context),
     );
 
-    expect($criterion->decide(new \stdClass()))->toBe($expected);
+    expect($criterion->evaluate(new \stdClass())->decision)->toBe($expected);
 })->with([
     [ErrorPolicy::stopOnAnyError(), ContinuationDecision::ForbidContinuation],
     [ErrorPolicy::retryToolErrors(3), ContinuationDecision::AllowContinuation],
@@ -68,7 +66,7 @@ it('exposes error policy context in evaluation', function () {
         new StaticErrorContextResolver($context),
     );
 
-    $evaluation = $criterion->explain(new \stdClass());
+    $evaluation = $criterion->evaluate(new \stdClass());
 
     expect($evaluation->context)->toMatchArray([
         'errorType' => 'tool',

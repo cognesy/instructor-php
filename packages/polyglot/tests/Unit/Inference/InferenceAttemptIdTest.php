@@ -5,6 +5,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
@@ -56,11 +57,7 @@ it('uses a unique attempt id for each retry', function () {
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Retry')
-        ->withOptions([
-            'retryPolicy' => [
-                'maxAttempts' => 2,
-            ],
-        ])
+        ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 2))
         ->create();
     $execution = InferenceExecution::fromRequest($request);
 

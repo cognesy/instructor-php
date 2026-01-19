@@ -3,24 +3,22 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Cognesy\Addons\Agent\Core\Continuation\AgentErrorContextResolver;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
-use Cognesy\Addons\StepByStep\Continuation\CanResolveErrorContext;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
-use Cognesy\Addons\StepByStep\Continuation\ErrorContext;
-use Cognesy\Addons\StepByStep\Continuation\ErrorHandlingDecision;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
+use Cognesy\Addons\StepByStep\ErrorHandling\CanResolveErrorContext;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorContext;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorHandlingDecision;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 
 /**
  * Guard: Evaluates error policy and decides whether to continue.
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExplainContinuation, CanProvideStopReason
+final readonly class ErrorPolicyCriterion implements CanEvaluateContinuation
 {
     public function __construct(
         private ErrorPolicy $policy,
@@ -35,15 +33,7 @@ final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExp
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
-        return $this->explain($state)->decision;
-    }
-
-    /**
-     * @param TState $state
-     */
-    #[\Override]
-    public function explain(object $state): ContinuationEvaluation {
+    public function evaluate(object $state): ContinuationEvaluation {
         $context = $this->contextResolver->resolve($state);
         $handling = $this->policy->evaluate($context);
 
@@ -54,6 +44,9 @@ final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExp
         };
 
         $reason = $this->buildReason($context, $handling);
+        $stopReason = $decision === ContinuationDecision::ForbidContinuation
+            ? StopReason::ErrorForbade
+            : null;
 
         return new ContinuationEvaluation(
             criterionClass: self::class,
@@ -67,16 +60,8 @@ final readonly class ErrorPolicyCriterion implements CanDecideToContinue, CanExp
                 'handling' => $handling->value,
                 'toolName' => $context->toolName,
             ],
-            stopReason: $this->stopReason($state, $decision),
+            stopReason: $stopReason,
         );
-    }
-
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::ErrorForbade,
-            default => null,
-        };
     }
 
     private function buildReason(ErrorContext $context, ErrorHandlingDecision $handling): string {

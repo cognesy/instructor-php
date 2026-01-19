@@ -3,8 +3,9 @@
 namespace Cognesy\Addons\Agent\Core\Continuation;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 
 /**
  * Work driver: Requests continuation when the current step contains tool calls.
@@ -13,9 +14,9 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
  * AllowStop when no tool calls (work complete from this criterion's perspective).
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class ToolCallPresenceCheck implements CanDecideToContinue
+final readonly class ToolCallPresenceCheck implements CanEvaluateContinuation
 {
     /** @var Closure(TState): bool */
     private Closure $hasToolCallsResolver;
@@ -31,12 +32,23 @@ final readonly class ToolCallPresenceCheck implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $hasToolCalls = ($this->hasToolCallsResolver)($state);
 
-        return $hasToolCalls
+        $decision = $hasToolCalls
             ? ContinuationDecision::RequestContinuation
             : ContinuationDecision::AllowStop;
+
+        $reason = $hasToolCalls
+            ? 'Tool calls present, requesting continuation'
+            : 'No tool calls, allowing stop';
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: ['hasToolCalls' => $hasToolCalls],
+        );
     }
 }

@@ -147,7 +147,7 @@ final class AgentEventEnvelopeAdapter
     {
         // Auto-transition status on stop
         if ($this->config->autoStatusTracking && !$event->outcome->shouldContinue) {
-            $finalStatus = match ($event->outcome->stopReason) {
+            $finalStatus = match ($event->outcome->stopReason()) {
                 StopReason::Completed => 'completed',
                 StopReason::ErrorForbade => 'failed',
                 StopReason::UserRequested => 'cancelled',
@@ -166,8 +166,8 @@ final class AgentEventEnvelopeAdapter
         $this->emit('agent.continuation', [
             'step_number' => $event->stepNumber,
             'should_continue' => $event->outcome->shouldContinue,
-            'stop_reason' => $event->outcome->stopReason->value,
-            'resolved_by' => $event->outcome->resolvedBy,
+            'stop_reason' => $event->outcome->stopReason()->value,
+            'resolved_by' => $event->outcome->resolvedBy(),
             'evaluations' => array_map(
                 static fn(ContinuationEvaluation $evaluation): array => [
                     'criterion' => basename(str_replace('\\', '/', $evaluation->criterionClass)),

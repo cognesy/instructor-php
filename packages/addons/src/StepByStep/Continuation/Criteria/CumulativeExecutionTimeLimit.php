@@ -3,9 +3,7 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanExplainContinuation;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
@@ -14,9 +12,9 @@ use Cognesy\Addons\StepByStep\Continuation\StopReason;
  * Guard: Forbids continuation once cumulative execution time exceeds the limit.
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class CumulativeExecutionTimeLimit implements CanDecideToContinue, CanExplainContinuation, CanProvideStopReason
+final readonly class CumulativeExecutionTimeLimit implements CanEvaluateContinuation
 {
     /** @var Closure(TState): float */
     private Closure $cumulativeTimeResolver;
@@ -38,34 +36,18 @@ final readonly class CumulativeExecutionTimeLimit implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
-        return $this->explain($state)->decision;
-    }
-
-    /**
-     * @param TState $state
-     */
-    #[\Override]
-    public function explain(object $state): ContinuationEvaluation {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $cumulativeSeconds = ($this->cumulativeTimeResolver)($state);
         $exceeded = $cumulativeSeconds >= $this->maxSeconds;
 
-        $decision = ContinuationDecision::AllowContinuation;
-        $reason = sprintf(
-            'Cumulative execution time %.1fs under limit %ds',
-            $cumulativeSeconds,
-            $this->maxSeconds,
-        );
+        $decision = $exceeded
+            ? ContinuationDecision::ForbidContinuation
+            : ContinuationDecision::AllowContinuation;
 
-        if ($exceeded) {
-            $decision = ContinuationDecision::ForbidContinuation;
-            $reason = sprintf(
-                'Cumulative execution time %.1fs exceeded limit %ds',
-                $cumulativeSeconds,
-                $this->maxSeconds,
-            );
-        }
+        $reason = $exceeded
+            ? sprintf('Cumulative execution time %.1fs exceeded limit %ds', $cumulativeSeconds, $this->maxSeconds)
+            : sprintf('Cumulative execution time %.1fs under limit %ds', $cumulativeSeconds, $this->maxSeconds);
 
         return new ContinuationEvaluation(
             criterionClass: self::class,
@@ -75,15 +57,7 @@ final readonly class CumulativeExecutionTimeLimit implements CanDecideToContinue
                 'cumulativeSeconds' => $cumulativeSeconds,
                 'maxSeconds' => $this->maxSeconds,
             ],
-            stopReason: $this->stopReason($state, $decision),
+            stopReason: $exceeded ? StopReason::TimeLimitReached : null,
         );
-    }
-
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::TimeLimitReached,
-            default => null,
-        };
     }
 }

@@ -6,6 +6,10 @@ use Cognesy\Addons\Agent\Core\Collections\AgentSteps;
 use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Addons\Agent\Core\Traits\State\HandlesAgentSteps;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
+use Cognesy\Addons\StepByStep\Continuation\StopReason;
+use Cognesy\Addons\StepByStep\MessageCompilation\Compilers\SelectedSections;
+use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMessageStore;
 use Cognesy\Addons\StepByStep\State\Contracts\HasMetadata;
 use Cognesy\Addons\StepByStep\State\Contracts\HasStateInfo;
@@ -20,6 +24,7 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesMetadata;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesStateInfo;
 use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
 use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -38,6 +43,8 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     private AgentStatus $status;
     private CachedContext $cache;
+    /** @var StepResult[] */
+    private array $stepResults;
 
     public string $agentId;
     public ?string $parentAgentId;
@@ -45,19 +52,20 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     public ?DateTimeImmutable $executionStartedAt;
 
     public function __construct(
-        ?AgentStatus        $status = null,
-        ?AgentSteps         $steps = null,
-        ?AgentStep          $currentStep = null,
+        ?AgentStatus           $status = null,
+        ?AgentSteps            $steps = null,
+        ?AgentStep             $currentStep = null,
 
-        Metadata|array|null $variables = null,
-        ?Usage              $usage = null,
-        ?MessageStore       $store = null,
-        ?StateInfo          $stateInfo = null,
-        ?string             $agentId = null,
-        ?string             $parentAgentId = null,
-        ?DateTimeImmutable  $currentStepStartedAt = null,
-        ?DateTimeImmutable  $executionStartedAt = null,
-        ?CachedContext      $cache = null,
+        Metadata|array|null    $variables = null,
+        ?Usage                 $usage = null,
+        ?MessageStore          $store = null,
+        ?StateInfo             $stateInfo = null,
+        ?string                $agentId = null,
+        ?string                $parentAgentId = null,
+        ?DateTimeImmutable     $currentStepStartedAt = null,
+        ?DateTimeImmutable     $executionStartedAt = null,
+        ?CachedContext         $cache = null,
+        ?array                 $stepResults = null,
     ) {
         $this->agentId = $agentId ?? Uuid::uuid4();
         $this->parentAgentId = $parentAgentId;
@@ -78,6 +86,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         $this->cache = $cache ?? new CachedContext();
         $this->usage = $usage ?? new Usage();
         $this->store = $store ?? new MessageStore();
+        $this->stepResults = $stepResults ?? [];
     }
 
     // CONSTRUCTORS ////////////////////////////////////////////
@@ -89,19 +98,20 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?AgentStatus        $status = null,
-        ?AgentSteps         $steps = null,
-        ?AgentStep          $currentStep = null,
+        ?AgentStatus           $status = null,
+        ?AgentSteps            $steps = null,
+        ?AgentStep             $currentStep = null,
 
-        ?Metadata           $variables = null,
-        ?Usage              $usage = null,
-        ?MessageStore       $store = null,
-        ?StateInfo          $stateInfo = null,
-        ?string             $agentId = null,
-        ?string             $parentAgentId = null,
-        ?DateTimeImmutable  $currentStepStartedAt = null,
-        ?DateTimeImmutable  $executionStartedAt = null,
-        ?CachedContext      $cache = null,
+        ?Metadata              $variables = null,
+        ?Usage                 $usage = null,
+        ?MessageStore          $store = null,
+        ?StateInfo             $stateInfo = null,
+        ?string                $agentId = null,
+        ?string                $parentAgentId = null,
+        ?DateTimeImmutable     $currentStepStartedAt = null,
+        ?DateTimeImmutable     $executionStartedAt = null,
+        ?CachedContext         $cache = null,
+        ?array                 $stepResults = null,
     ): self {
         return new self(
             status: $status ?? $this->status,
@@ -116,6 +126,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             parentAgentId: $parentAgentId ?? $this->parentAgentId,
             currentStepStartedAt: $currentStepStartedAt ?? $this->currentStepStartedAt,
             executionStartedAt: $executionStartedAt ?? $this->executionStartedAt,
+            stepResults: $stepResults ?? $this->stepResults,
         );
     }
 
@@ -212,6 +223,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             currentStepStartedAt: null,
             executionStartedAt: null,
             cache: new CachedContext(),
+            stepResults: [],
         );
     }
 
@@ -227,6 +239,92 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     public function withCachedContext(CachedContext $cache) : self {
         return $this->with(cache: $cache);
+    }
+
+    public function messagesForInference(): Messages {
+        return (new SelectedSections(['summary', 'buffer', self::DEFAULT_SECTION]))
+            ->compile($this);
+    }
+
+    // STEP RESULT ACCESSORS ////////////////////////////////////
+
+    /**
+     * Get all step results.
+     *
+     * @return StepResult[]
+     */
+    public function stepResults(): array {
+        return $this->stepResults;
+    }
+
+    /**
+     * Get the last step result.
+     */
+    public function lastStepResult(): ?StepResult {
+        if ($this->stepResults === []) {
+            return null;
+        }
+        return $this->stepResults[array_key_last($this->stepResults)];
+    }
+
+    /**
+     * Record a step result (step + continuation outcome bundled).
+     */
+    public function recordStepResult(StepResult $result, ?DateTimeImmutable $startedAt = null): self {
+        $resolvedStartedAt = $startedAt ?? $this->currentStepStartedAt ?? new DateTimeImmutable();
+
+        /** @var AgentStep $step */
+        $step = $result->step;
+
+        return $this
+            ->withCurrentStepStartedAt($resolvedStartedAt)
+            ->withAddedStep($step)
+            ->withCurrentStep($step)
+            ->with(stepResults: [...$this->stepResults, $result]);
+    }
+
+    /**
+     * Get the continuation outcome from the last step result.
+     */
+    public function continuationOutcome(): ?ContinuationOutcome {
+        return $this->lastStepResult()?->outcome;
+    }
+
+    /**
+     * Alias for continuationOutcome() for forward compatibility with SlimAgentStateSerializer.
+     */
+    public function lastContinuationOutcome(): ?ContinuationOutcome {
+        return $this->continuationOutcome();
+    }
+
+    /**
+     * Get the stop reason from the last step result's continuation outcome.
+     */
+    public function stopReason(): ?StopReason {
+        return $this->continuationOutcome()?->stopReason();
+    }
+
+    // DEBUG ////////////////////////////////////////////////
+
+    /**
+     * Get a summary of the agent state for debugging.
+     * This is the primary way to understand what happened during execution.
+     */
+    public function debug() : array {
+        $currentStep = $this->currentStep();
+        $outcome = $this->continuationOutcome();
+
+        return [
+            'status' => $this->status->value,
+            'steps' => $this->stepCount(),
+            'stopReason' => $outcome?->stopReason()?->value,
+            'resolvedBy' => $outcome?->resolvedBy(),
+            'shouldContinue' => $outcome?->shouldContinue(),
+            'hasErrors' => $currentStep?->hasErrors() ?? false,
+            'errors' => $currentStep?->errorsAsString(),
+            'finishReason' => $currentStep?->finishReason()?->value,
+            'usage' => $this->usage->toArray(),
+        ];
     }
 
     // SERIALIZATION ////////////////////////////////////////
@@ -245,10 +343,25 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             'currentStep' => $this->currentStep?->toArray(),
             'status' => $this->status->value,
             'steps' => array_map(static fn(AgentStep $step) => $step->toArray(), $this->steps->all()),
+            'stepResults' => array_map(
+                static fn(StepResult $result) => $result->toArray(static fn(object $step) => $step->toArray()),
+                $this->stepResults,
+            ),
         ];
     }
 
     public static function fromArray(array $data) : self {
+        $stepResults = [];
+        if (isset($data['stepResults']) && is_array($data['stepResults'])) {
+            $stepResults = array_map(
+                static fn(array $resultData) => StepResult::fromArray(
+                    $resultData,
+                    static fn(array $stepData) => AgentStep::fromArray($stepData),
+                ),
+                $data['stepResults'],
+            );
+        }
+
         return new self(
             status: isset($data['status']) ? AgentStatus::from($data['status']) : AgentStatus::InProgress,
             steps: isset($data['steps']) ? AgentSteps::fromArray($data['steps']) : new AgentSteps(),
@@ -266,6 +379,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             // Each new execution should start fresh - markExecutionStarted() will be called
             // when the execution begins. This prevents timeouts in multi-turn conversations.
             executionStartedAt: null,
+            stepResults: $stepResults,
         );
     }
 

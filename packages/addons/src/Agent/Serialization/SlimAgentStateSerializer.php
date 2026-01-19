@@ -192,8 +192,8 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
 
         return [
             'should_continue' => $outcome->shouldContinue(),
-            'stop_reason' => $outcome->stopReason->value,
-            'resolved_by' => $outcome->resolvedBy,
+            'stop_reason' => $outcome->stopReason()->value,
+            'resolved_by' => $outcome->resolvedBy(),
         ];
     }
 }

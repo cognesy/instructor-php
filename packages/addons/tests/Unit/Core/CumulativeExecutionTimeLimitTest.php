@@ -16,7 +16,7 @@ it('allows continuation when cumulative time is under limit', function () {
         static fn(CumulativeTimeState $state): float => $state->seconds,
     );
 
-    $evaluation = $criterion->explain(new CumulativeTimeState(9.5));
+    $evaluation = $criterion->evaluate(new CumulativeTimeState(9.5));
 
     expect($evaluation->decision)->toBe(ContinuationDecision::AllowContinuation);
     expect($evaluation->context['cumulativeSeconds'])->toBe(9.5);
@@ -29,7 +29,7 @@ it('forbids continuation when cumulative time exceeds limit', function () {
         static fn(CumulativeTimeState $state): float => $state->seconds,
     );
 
-    $evaluation = $criterion->explain(new CumulativeTimeState(10.0));
+    $evaluation = $criterion->evaluate(new CumulativeTimeState(10.0));
 
     expect($evaluation->decision)->toBe(ContinuationDecision::ForbidContinuation);
     expect($evaluation->context['cumulativeSeconds'])->toBe(10.0);

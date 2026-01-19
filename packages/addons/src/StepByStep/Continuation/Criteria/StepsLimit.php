@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
@@ -15,9 +15,9 @@ use Cognesy\Addons\StepByStep\Continuation\StopReason;
  * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class StepsLimit implements CanDecideToContinue, CanProvideStopReason
+final readonly class StepsLimit implements CanEvaluateContinuation
 {
     /** @var Closure(TState): int */
     private Closure $stepCounter;
@@ -36,22 +36,28 @@ final readonly class StepsLimit implements CanDecideToContinue, CanProvideStopRe
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $currentSteps = ($this->stepCounter)($state);
+        $exceeded = $currentSteps >= $this->maxSteps;
 
-        // Under limit: allow continuation (guard permits)
-        // At/over limit: forbid continuation (guard denies)
-        return $currentSteps < $this->maxSteps
-            ? ContinuationDecision::AllowContinuation
-            : ContinuationDecision::ForbidContinuation;
-    }
+        $decision = $exceeded
+            ? ContinuationDecision::ForbidContinuation
+            : ContinuationDecision::AllowContinuation;
 
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::StepsLimitReached,
-            default => null,
-        };
+        $reason = $exceeded
+            ? sprintf('Step limit reached: %d/%d', $currentSteps, $this->maxSteps)
+            : sprintf('Steps under limit: %d/%d', $currentSteps, $this->maxSteps);
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: [
+                'currentSteps' => $currentSteps,
+                'maxSteps' => $this->maxSteps,
+            ],
+            stopReason: $exceeded ? StopReason::StepsLimitReached : null,
+        );
     }
 }

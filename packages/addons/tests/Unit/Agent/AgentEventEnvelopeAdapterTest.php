@@ -13,6 +13,8 @@ use Cognesy\Addons\Agent\Events\ToolCallStarted;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
@@ -101,17 +103,12 @@ it('emits continuation events when enabled', function () {
     );
 
     $evaluation = new ContinuationEvaluation(
-        criterionClass: 'StepsLimit',
+        criterionClass: StepsLimit::class,
         decision: ContinuationDecision::ForbidContinuation,
         reason: 'limit reached',
-    );
-    $outcome = new ContinuationOutcome(
-        decision: ContinuationDecision::AllowStop,
-        shouldContinue: false,
-        resolvedBy: 'StepsLimit',
         stopReason: StopReason::StepsLimitReached,
-        evaluations: [$evaluation],
     );
+    $outcome = ContinuationOutcome::fromEvaluations([$evaluation]);
 
     $adapter->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',
@@ -205,13 +202,8 @@ it('auto-transitions status on lifecycle events', function () {
     expect($broadcaster->calls[0]['envelope']['payload']['previous_status'])->toBe('idle');
 
     // Complete with Completed stop reason -> status becomes 'completed'
-    $outcome = new ContinuationOutcome(
-        decision: ContinuationDecision::AllowStop,
-        shouldContinue: false,
-        resolvedBy: 'Completer',
-        stopReason: StopReason::Completed,
-        evaluations: [],
-    );
+    // Empty evaluations with AllowStop = Completed (no work to do)
+    $outcome = ContinuationOutcome::empty();
 
     $adapter->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',
@@ -244,13 +236,13 @@ it('maps StopReason to correct status', function () {
     ));
 
     // ErrorForbade -> 'failed'
-    $outcome = new ContinuationOutcome(
+    $evaluation = new ContinuationEvaluation(
+        criterionClass: ErrorPolicyCriterion::class,
         decision: ContinuationDecision::ForbidContinuation,
-        shouldContinue: false,
-        resolvedBy: 'ErrorHandler',
+        reason: 'Error policy forbade continuation',
         stopReason: StopReason::ErrorForbade,
-        evaluations: [],
     );
+    $outcome = ContinuationOutcome::fromEvaluations([$evaluation]);
 
     $adapter->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',

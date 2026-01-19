@@ -25,6 +25,12 @@ use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Result\Result;
 use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
+use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
+use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
+use Cognesy\Addons\ToolUse\Continuation\ToolCallPresenceCheck;
 
 
 function _sum(int $a, int $b): int { return $a + $b; }
@@ -96,7 +102,7 @@ it('stops on configured finish reasons (FinishReasonCheck)', function () {
 
     $check = new FinishReasonCheck([InferenceFinishReason::Stop], static fn(ToolUseState $s) => $s->currentStep()?->finishReason());
     // Matching finish reason triggers ForbidContinuation (hard stop)
-    expect($check->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($check->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('limits retries based on consecutive failed steps (RetryLimit)', function () {
@@ -121,5 +127,87 @@ it('limits retries based on consecutive failed steps (RetryLimit)', function () 
 
     $limit = new RetryLimit(2, static fn(ToolUseState $s) => $s->steps()->all(), static fn(ToolUseStep $step) => $step->hasErrors());
     // tail failures == maxRetries => ForbidContinuation (hard stop)
-    expect($limit->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
+});
+
+it('stops after a failure because continuation outcome is recorded', function () {
+    $driver = new class implements CanUseTools {
+        private int $calls = 0;
+
+        public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor): ToolUseStep {
+            $this->calls++;
+            if ($this->calls === 1) {
+                return new ToolUseStep(
+                    toolCalls: new ToolCalls(new ToolCall('_noop', []))
+                );
+            }
+            throw new \RuntimeException('driver boom');
+        }
+    };
+
+    $criteria = new ContinuationCriteria(
+        new StepsLimit(5, static fn(ToolUseState $state): int => $state->stepCount()),
+        new ErrorPresenceCheck(static fn(ToolUseState $state): bool => $state->currentStep()?->hasErrors() ?? false),
+        new ToolCallPresenceCheck(
+            static fn(ToolUseState $state): bool => $state->stepCount() === 0
+                ? true
+                : ($state->currentStep()?->hasToolCalls() ?? false)
+        ),
+    );
+
+    $toolUse = ToolUseFactory::default(
+        tools: new Tools(),
+        continuationCriteria: $criteria,
+        driver: $driver,
+    );
+
+    $state = new ToolUseState();
+    $state = $toolUse->nextStep($state);
+    $failedState = $toolUse->nextStep($state);
+
+    expect($failedState->status())->toBe(ToolUseStatus::Failed);
+    expect($toolUse->hasNextStep($failedState))->toBeFalse();
+});
+
+it('evaluates continuation before post-step processors run', function () {
+    $driver = new class implements CanUseTools {
+        public function useTools(ToolUseState $state, Tools $tools, CanExecuteToolCalls $executor): ToolUseStep {
+            return new ToolUseStep(
+                toolCalls: new ToolCalls(new ToolCall('_noop', []))
+            );
+        }
+    };
+
+    $criteria = new ContinuationCriteria(
+        new StepsLimit(2, static fn(ToolUseState $state): int => $state->stepCount()),
+        ContinuationCriteria::when(
+            static fn(ToolUseState $state): ContinuationDecision => match (true) {
+                $state->metadata()->get('stop') === true => ContinuationDecision::AllowStop,
+                default => ContinuationDecision::RequestContinuation,
+            }
+        ),
+    );
+
+    $processor = new class implements CanProcessAnyState {
+        public function canProcess(object $state): bool {
+            return $state instanceof ToolUseState;
+        }
+
+        public function process(object $state, ?callable $next = null): object {
+            $newState = $next ? $next($state) : $state;
+            assert($newState instanceof ToolUseState);
+            return $newState->withMetadata('stop', true);
+        }
+    };
+
+    $toolUse = ToolUseFactory::default(
+        tools: new Tools(),
+        processors: new StateProcessors($processor),
+        continuationCriteria: $criteria,
+        driver: $driver,
+    );
+
+    $finalState = $toolUse->finalStep(new ToolUseState());
+
+    expect($finalState->stepCount())->toBe(2);
 });

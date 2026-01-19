@@ -6,7 +6,7 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;

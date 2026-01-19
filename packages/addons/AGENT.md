@@ -332,14 +332,9 @@ Note: This tool is **opt‑in** and not included in default agent builds. It cre
 
 ### Continuation Criteria
 Controls when agent stops:
+
 ```php
-use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 
 $criteria = new ContinuationCriteria(
     new StepsLimit(20, fn(AgentState $state) => $state->stepCount()),
@@ -354,7 +349,7 @@ $agent = AgentBuilder::base()
     ->addContinuationCriteria($customCriteria)
     ->build();
 ```
-Custom criteria can implement `CanProvideStopReason` to set explicit `stopReason` values in `ContinuationOutcome`.
+Custom criteria can set `stopReason` on the `ContinuationEvaluation` they return to influence `ContinuationOutcome`.
 
 ### State Processors
 Modify state after each step:
@@ -1075,8 +1070,9 @@ $agent = AgentBuilder::base()
 
 ### Configuring error policies
 Use `withErrorPolicy()` to control retries and stop behavior:
+
 ```php
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 
 $agent = AgentBuilder::base()
     ->withErrorPolicy(ErrorPolicy::retryToolErrors(3))
@@ -1100,9 +1096,9 @@ Old:
 new ErrorPresenceCheck(static fn($state) => $state->currentStep()?->hasErrors() ?? false);
 ```
 New (builder default):
+
 ```php
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 
 ErrorPolicyCriterion::withPolicy(ErrorPolicy::stopOnAnyError());
 ```

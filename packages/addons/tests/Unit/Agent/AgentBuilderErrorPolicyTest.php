@@ -9,7 +9,7 @@ use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Data\AgentStep;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 
@@ -54,7 +54,7 @@ it('defaults to stop on any error', function () {
         ->build();
 
     $criteria = getCriteria($agent);
-    $outcome = $criteria->evaluate(makeErrorState());
+    $outcome = $criteria->evaluateAll(makeErrorState());
 
     expect($outcome->shouldContinue())->toBeFalse();
 });
@@ -66,7 +66,7 @@ it('applies custom error policy in continuation criteria', function () {
         ->build();
 
     $criteria = getCriteria($agent);
-    $outcome = $criteria->evaluate(makeErrorState());
+    $outcome = $criteria->evaluateAll(makeErrorState());
 
     expect($outcome->shouldContinue())->toBeTrue();
 });

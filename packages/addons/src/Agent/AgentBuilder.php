@@ -10,15 +10,15 @@ use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\StateProcessing\Processors\ApplyCachedContext;
 use Cognesy\Addons\Agent\Core\ToolExecutor;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\CumulativeExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\FinishReasonCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
@@ -28,6 +28,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -49,8 +50,9 @@ class AgentBuilder
 {
     private Tools $tools;
     private array $processors = [];
+    private array $preProcessors = [];
 
-    /** @var CanDecideToContinue[] Flat list of continuation criteria */
+    /** @var CanEvaluateContinuation[] Flat list of continuation criteria */
     private array $criteria = [];
 
     private ?CanUseTools $driver = null;
@@ -125,6 +127,11 @@ class AgentBuilder
         return $this;
     }
 
+    public function addPreProcessor(CanProcessAnyState $processor): self {
+        $this->preProcessors[] = $processor;
+        return $this;
+    }
+
     /**
      * Add continuation criterion to the flat criteria list.
      *
@@ -136,7 +143,7 @@ class AgentBuilder
      * Hard limits (StepsLimit, TokenUsageLimit) return ForbidContinuation when exceeded.
      * Continue signals (ToolCallPresence, SelfCritic) return AllowContinuation when they have work.
      */
-    public function addContinuationCriteria(CanDecideToContinue $criteria): self {
+    public function addContinuationCriteria(CanEvaluateContinuation $criteria): self {
         $this->criteria[] = $criteria;
         return $this;
     }
@@ -301,7 +308,7 @@ class AgentBuilder
         $baseProcessors[] = new AppendContextMetadata();
         $baseProcessors[] = new AppendStepMessages();
 
-        $allProcessors = array_merge($baseProcessors, $this->processors);
+        $allProcessors = array_merge($this->preProcessors, $baseProcessors, $this->processors);
 
         /** @var StateProcessors<AgentState> */
         return new StateProcessors(...$allProcessors);
@@ -332,7 +339,7 @@ class AgentBuilder
         return ContinuationCriteria::from(...$allCriteria);
     }
 
-    private function buildTimeLimitCriterion(): CanDecideToContinue {
+    private function buildTimeLimitCriterion(): CanEvaluateContinuation {
         if ($this->cumulativeTimeout !== null) {
             return new CumulativeExecutionTimeLimit(
                 $this->cumulativeTimeout,
@@ -356,13 +363,12 @@ class AgentBuilder
             ? LLMProvider::using($this->llmPreset)
             : LLMProvider::new();
 
-        // Pass maxRetries to inference via retryPolicy options
-        $options = [];
+        $retryPolicy = null;
         if ($this->maxRetries > 1) {
-            $options['retryPolicy'] = ['maxAttempts' => $this->maxRetries];
+            $retryPolicy = new InferenceRetryPolicy(maxAttempts: $this->maxRetries);
         }
 
-        return new ToolCallingDriver(llm: $llmProvider, options: $options);
+        return new ToolCallingDriver(llm: $llmProvider, retryPolicy: $retryPolicy);
     }
 
     private function hasSystemPrompt(Messages $messages, string $prompt): bool {

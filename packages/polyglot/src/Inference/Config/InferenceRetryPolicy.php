@@ -22,33 +22,10 @@ final readonly class InferenceRetryPolicy
             NetworkException::class,
         ],
         public string $lengthRecovery = 'none', // none|continue|increase_max_tokens
-        public int $lengthMaxAttempts = 1,
-        public string $lengthContinuePrompt = 'Continue.',
-        public int $maxTokensIncrement = 512,
-    ) {}
-
-    public static function fromOptions(array $options): self {
-        $retryPolicy = $options['retryPolicy'] ?? [];
-        if (!is_array($retryPolicy)) {
-            $retryPolicy = [];
-        }
-
-        return new self(
-            maxAttempts: (int) ($retryPolicy['maxAttempts'] ?? 1),
-            baseDelayMs: (int) ($retryPolicy['baseDelayMs'] ?? 250),
-            maxDelayMs: (int) ($retryPolicy['maxDelayMs'] ?? 8000),
-            jitter: (string) ($retryPolicy['jitter'] ?? 'full'),
-            retryOnStatus: array_values($retryPolicy['retryOnStatus'] ?? [408, 429, 500, 502, 503, 504]),
-            retryOnExceptions: array_values($retryPolicy['retryOnExceptions'] ?? [
-                TimeoutException::class,
-                NetworkException::class,
-            ]),
-            lengthRecovery: (string) ($retryPolicy['lengthRecovery'] ?? 'none'),
-            lengthMaxAttempts: (int) ($retryPolicy['lengthMaxAttempts'] ?? 1),
-            lengthContinuePrompt: (string) ($retryPolicy['lengthContinuePrompt'] ?? 'Continue.'),
-            maxTokensIncrement: (int) ($retryPolicy['maxTokensIncrement'] ?? 512),
-        );
-    }
+    public int $lengthMaxAttempts = 1,
+    public string $lengthContinuePrompt = 'Continue.',
+    public int $maxTokensIncrement = 512,
+) {}
 
     public function shouldRetryException(\Throwable $error): bool {
         if ($error instanceof ProviderException) {

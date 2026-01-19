@@ -3,6 +3,7 @@
 namespace Cognesy\Addons\Agent\Tools\Testing;
 
 use Cognesy\Addons\Agent\Contracts\ToolInterface;
+use Cognesy\Utils\Json\EmptyObject;
 use Cognesy\Utils\Result\Result;
 
 final readonly class MockTool implements ToolInterface
@@ -65,7 +66,7 @@ final readonly class MockTool implements ToolInterface
                 'description' => $this->description,
                 'parameters' => [
                     'type' => 'object',
-                    'properties' => [],
+                    'properties' => new EmptyObject(),
                 ],
             ],
         ];

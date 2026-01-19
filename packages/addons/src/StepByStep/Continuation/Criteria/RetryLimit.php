@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
@@ -16,9 +16,9 @@ use Cognesy\Addons\StepByStep\Continuation\StopReason;
  *
  * @template TState of object
  * @template TStep of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class RetryLimit implements CanDecideToContinue, CanProvideStopReason
+final readonly class RetryLimit implements CanEvaluateContinuation
 {
     /** @var Closure(TState): iterable<TStep> */
     private Closure $stepSequence;
@@ -42,11 +42,19 @@ final readonly class RetryLimit implements CanDecideToContinue, CanProvideStopRe
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $steps = $this->collectSteps($state);
         if ($steps === []) {
-            return ContinuationDecision::AllowContinuation;
+            return new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::AllowContinuation,
+                reason: 'No steps yet, allowing continuation',
+                context: [
+                    'consecutiveFailures' => 0,
+                    'maxConsecutiveFailures' => $this->maxConsecutiveFailures,
+                ],
+            );
         }
 
         $failedTail = 0;
@@ -61,19 +69,25 @@ final readonly class RetryLimit implements CanDecideToContinue, CanProvideStopRe
             }
         }
 
-        // Under limit: allow continuation (guard permits)
-        // At/over limit: forbid continuation (guard denies)
-        return $failedTail < $this->maxConsecutiveFailures
-            ? ContinuationDecision::AllowContinuation
-            : ContinuationDecision::ForbidContinuation;
-    }
+        $exceeded = $failedTail >= $this->maxConsecutiveFailures;
+        $decision = $exceeded
+            ? ContinuationDecision::ForbidContinuation
+            : ContinuationDecision::AllowContinuation;
 
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::GuardForbade,
-            default => null,
-        };
+        $reason = $exceeded
+            ? sprintf('Retry limit reached: %d/%d consecutive failures', $failedTail, $this->maxConsecutiveFailures)
+            : sprintf('Consecutive failures under limit: %d/%d', $failedTail, $this->maxConsecutiveFailures);
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: [
+                'consecutiveFailures' => $failedTail,
+                'maxConsecutiveFailures' => $this->maxConsecutiveFailures,
+            ],
+            stopReason: $exceeded ? StopReason::RetryLimitReached : null,
+        );
     }
 
     /**

@@ -88,6 +88,19 @@ final readonly class AgentExecution
             : null;
     }
 
+    public function errorMessage() : string {
+        if (!$this->result->isFailure()) {
+            return '';
+        }
+
+        $failure = $this->result;
+        if ($failure instanceof Failure) {
+            return $failure->errorMessage();
+        }
+
+        return '';
+    }
+
     public function hasError() : bool {
         return $this->result->isFailure();
     }

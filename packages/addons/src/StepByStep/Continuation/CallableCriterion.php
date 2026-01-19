@@ -8,9 +8,9 @@ use Closure;
  * Wraps a callable predicate as a continuation criterion.
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class CallableCriterion implements CanDecideToContinue
+final readonly class CallableCriterion implements CanEvaluateContinuation
 {
     /** @var Closure(TState): ContinuationDecision */
     private Closure $predicate;
@@ -26,8 +26,13 @@ final readonly class CallableCriterion implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
-        return ($this->predicate)($state);
+        $decision = ($this->predicate)($state);
+
+        return ContinuationEvaluation::fromDecision(
+            criterionClass: self::class,
+            decision: $decision,
+        );
     }
 }

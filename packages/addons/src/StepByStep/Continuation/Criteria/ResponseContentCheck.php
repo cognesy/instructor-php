@@ -3,8 +3,9 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 
 /**
  * Work driver: Uses a predicate to decide whether to continue based on the latest response content.
@@ -16,9 +17,9 @@ use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
  *
  * @template TState of object
  * @template TResponse of object|null
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class ResponseContentCheck implements CanDecideToContinue
+final readonly class ResponseContentCheck implements CanEvaluateContinuation
 {
     /** @var Closure(TState): TResponse */
     private Closure $responseResolver;
@@ -38,18 +39,32 @@ final readonly class ResponseContentCheck implements CanDecideToContinue
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $response = ($this->responseResolver)($state);
         if ($response === null) {
-            // No response yet - permit bootstrap (act like a guard)
-            return ContinuationDecision::AllowContinuation;
+            return new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::AllowContinuation,
+                reason: 'No response yet, allowing bootstrap',
+                context: ['hasResponse' => false],
+            );
         }
 
         $shouldContinue = ($this->predicate)($response);
-
-        return $shouldContinue
+        $decision = $shouldContinue
             ? ContinuationDecision::RequestContinuation
             : ContinuationDecision::AllowStop;
+
+        $reason = $shouldContinue
+            ? 'Response content check requests continuation'
+            : 'Response content check allows stop';
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: ['hasResponse' => true, 'shouldContinue' => $shouldContinue],
+        );
     }
 }

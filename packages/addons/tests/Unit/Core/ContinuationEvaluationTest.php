@@ -4,11 +4,12 @@ namespace Tests\Addons\Unit\Core;
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 
 it('builds default reasons from decisions', function (ContinuationDecision $decision, string $expected) {
-    $evaluation = ContinuationEvaluation::fromDecision('Acme\\Limits\\StepsLimit', $decision);
+    $evaluation = ContinuationEvaluation::fromDecision(StepsLimit::class, $decision);
 
-    expect($evaluation->criterionClass)->toBe('Acme\\Limits\\StepsLimit');
+    expect($evaluation->criterionClass)->toBe(StepsLimit::class);
     expect($evaluation->decision)->toBe($decision);
     expect($evaluation->reason)->toBe($expected);
     expect($evaluation->stopReason)->toBeNull();

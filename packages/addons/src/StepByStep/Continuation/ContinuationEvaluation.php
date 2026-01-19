@@ -4,6 +4,10 @@ namespace Cognesy\Addons\StepByStep\Continuation;
 
 final readonly class ContinuationEvaluation
 {
+    /**
+     * @param class-string $criterionClass
+     * @param array<string, mixed> $context
+     */
     public function __construct(
         public string $criterionClass,
         public ContinuationDecision $decision,
@@ -12,6 +16,9 @@ final readonly class ContinuationEvaluation
         public ?StopReason $stopReason = null,
     ) {}
 
+    /**
+     * @param class-string $criterionClass
+     */
     public static function fromDecision(
         string $criterionClass,
         ContinuationDecision $decision,
@@ -33,5 +40,15 @@ final readonly class ContinuationEvaluation
             ContinuationDecision::AllowContinuation => "{$shortName} permits continuation",
             ContinuationDecision::AllowStop => "{$shortName} allows stop",
         };
+    }
+
+    public static function fromArray(array $data): self {
+        return new self(
+            criterionClass: $data['criterion'] ?? 'unknown',
+            decision: ContinuationDecision::from($data['decision'] ?? 'allow_continuation'),
+            reason: $data['reason'] ?? '',
+            context: $data['context'] ?? [],
+            stopReason: isset($data['stopReason']) ? StopReason::from($data['stopReason']) : null,
+        );
     }
 }

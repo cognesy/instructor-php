@@ -2,11 +2,14 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
+
 trait HandlesFluentMethods
 {
     private string|array $inputs = [];
     private string $model = '';
     private array $options = [];
+    private ?EmbeddingsRetryPolicy $retryPolicy = null;
 
     public function withInputs(string|array $input) : self {
         $this->inputs = $input;
@@ -30,6 +33,11 @@ trait HandlesFluentMethods
      */
     public function withOptions(array $options) : self {
         $this->options = $options;
+        return $this;
+    }
+
+    public function withRetryPolicy(EmbeddingsRetryPolicy $retryPolicy) : self {
+        $this->retryPolicy = $retryPolicy;
         return $this;
     }
 }

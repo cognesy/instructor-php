@@ -160,6 +160,9 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
         // We always want a handler to emit events, even if user didn't provide callbacks
         return new CallbackStreamHandler(
             onText: function(string $text): void {
+                if ($text === '') {
+                    return;
+                }
                 $this->dispatch(new AgentTextReceived($this->agentType(), $text));
                 if ($this->onTextCallback !== null) {
                     ($this->onTextCallback)($text);

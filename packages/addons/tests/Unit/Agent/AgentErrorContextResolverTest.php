@@ -2,12 +2,12 @@
 
 namespace Tests\Addons\Unit\Agent;
 
+use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Core\Continuation\AgentErrorContextResolver;
 use Cognesy\Addons\Agent\Core\Data\AgentExecution;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Data\AgentStep;
-use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
-use Cognesy\Addons\StepByStep\Continuation\ErrorType;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorType;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderRateLimitException;
 use Cognesy\Utils\Result\Result;

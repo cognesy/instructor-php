@@ -1,0 +1,47 @@
+---
+title: 'v1.21.0'
+---
+
+## Highlights
+
+- StepResult pattern across Agent, Chat, ToolUse, and Collaboration with immutable steps and explicit continuation outcomes.
+- Continuation evaluation is unified around `ContinuationEvaluation` and `ContinuationOutcome`, with clearer stop reasons.
+- Retry policy handling is explicit for Inference and Embeddings (no more `retryPolicy` inside options).
+- Hub status persistence now tolerates malformed UTF-8 output instead of failing to write status data.
+
+## Breaking Changes
+
+- Continuation interfaces `CanDecideToContinue`, `CanExplainContinuation`, and `CanProvideStopReason` were removed. Custom criteria must implement `CanEvaluateContinuation` and return `ContinuationEvaluation`.
+- Error handling classes moved from `Cognesy\Addons\StepByStep\Continuation` to `Cognesy\Addons\StepByStep\ErrorHandling`.
+- `retryPolicy` is no longer accepted in `options` or `LLMConfig` options. Use explicit retry policy objects.
+- Continuation outcomes are no longer stored on step objects. Use `StepResult` or state accessors instead.
+
+## Agent, Chat, ToolUse, Collaboration
+
+- States now store `StepResult` collections and serialize them.
+- `canContinue()` reads from the last step result; mismatches between steps and step results now raise a logic error.
+- Message compilation supports `summary` and `buffer` sections for inference context.
+- Token usage is accumulated before continuation evaluation so usage limits are accurate.
+
+## StepByStep / Continuation
+
+- `ContinuationCriteria` composes `CanEvaluateContinuation` criteria and exposes `evaluateAll()` with aggregated outcomes.
+- Criteria classes return richer `ContinuationEvaluation` objects with explicit decisions and stop reasons.
+- New outcome helpers provide derived decision, resolver, and stop reason from evaluations.
+
+## Polyglot / Inference and Embeddings
+
+- `InferenceRequest` and `EmbeddingsRequest` now carry retry policies explicitly.
+- `InferenceRequestBuilder` and request builder traits expose `withRetryPolicy()`.
+- `PendingInference` and `PendingEmbeddings` pull retry policies from requests rather than `options`.
+
+## Hub
+
+- Status JSON encoding now substitutes invalid UTF-8 bytes to avoid failures when saving example output.
+
+## Migration from v1.20.0
+
+- Update custom continuation criteria to implement `CanEvaluateContinuation` and return `ContinuationEvaluation` (replace `CanDecideToContinue`, `CanExplainContinuation`, `CanProvideStopReason`).
+- Update imports to the new error handling namespace: `Cognesy\Addons\StepByStep\ErrorHandling\*`.
+- Remove `retryPolicy` from LLM or request options. Use `withRetryPolicy()` on inference/embeddings builders or requests.
+- Replace any step-level continuation outcome access with `state->continuationOutcome()` or `state->lastStepResult()`.

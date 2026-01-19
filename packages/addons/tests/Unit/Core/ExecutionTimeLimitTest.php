@@ -17,7 +17,7 @@ it('stops when execution time exceeds limit using a frozen clock', function () {
 
     $limit = new CoreExecutionTimeLimit($limitSeconds, static fn(ToolUseState $state) => $state->startedAt(), $clock);
     // Over limit - forbid continuation
-    expect($limit->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('continues when within the time limit using a frozen clock', function () {
@@ -30,5 +30,5 @@ it('continues when within the time limit using a frozen clock', function () {
 
     $limit = new CoreExecutionTimeLimit($limitSeconds, static fn(ToolUseState $state) => $state->startedAt(), $clock);
     // Under limit - allow continuation (guard permits)
-    expect($limit->decide($state))->toBe(ContinuationDecision::AllowContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::AllowContinuation);
 });

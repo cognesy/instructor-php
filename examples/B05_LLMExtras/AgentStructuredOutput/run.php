@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 require 'examples/boot.php';
 
 use Cognesy\Addons\Agent\AgentBuilder;
@@ -183,6 +183,14 @@ while ($agent->hasNextStep($state)) {
     $step = $state->currentStep();
     echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 
+    if ($step->hasErrors()) {
+        $errors = $step->errorsAsString();
+        if ($errors !== '') {
+            $errors = str_replace("\n", "\n  !! ", $errors);
+            echo "  !! {$errors}\n";
+        }
+    }
+
     if ($step->hasToolCalls()) {
         foreach ($step->toolCalls()->all() as $toolCall) {
             $args = $toolCall->args();
@@ -197,6 +205,15 @@ while ($agent->hasNextStep($state)) {
 
     // Show tool execution results
     foreach ($step->toolExecutions()->all() as $execution) {
+        if ($execution->hasError()) {
+            $errorMessage = $execution->errorMessage();
+            $label = 'Unknown tool execution error';
+            if ($errorMessage !== '') {
+                $label = $errorMessage;
+            }
+            echo "    ← Error: {$label}\n";
+            continue;
+        }
         $result = $execution->value();
         $resultStr = match (true) {
             is_string($result) => $result,

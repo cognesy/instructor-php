@@ -69,7 +69,7 @@ final class ReActDriver implements CanUseTools
 
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
-        $messages = $state->messages();
+        $messages = $state->messagesForInference();
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
         $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext));

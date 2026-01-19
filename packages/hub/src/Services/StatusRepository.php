@@ -29,7 +29,10 @@ class StatusRepository implements CanPersistStatus
 
         $json = json_encode(
             $statusData,
-            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            JSON_PRETTY_PRINT
+            | JSON_UNESCAPED_SLASHES
+            | JSON_UNESCAPED_UNICODE
+            | JSON_INVALID_UTF8_SUBSTITUTE
         );
 
         if ($json === false) {

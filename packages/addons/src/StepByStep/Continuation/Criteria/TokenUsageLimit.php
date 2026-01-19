@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
 use Closure;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 /**
@@ -15,9 +15,9 @@ use Cognesy\Addons\StepByStep\Continuation\StopReason;
  * AllowContinuation otherwise (guard approval - permits continuation).
  *
  * @template TState of object
- * @implements CanDecideToContinue<TState>
+ * @implements CanEvaluateContinuation<TState>
  */
-final readonly class TokenUsageLimit implements CanDecideToContinue, CanProvideStopReason
+final readonly class TokenUsageLimit implements CanEvaluateContinuation
 {
     /** @var Closure(TState): int */
     private Closure $usageCounter;
@@ -36,22 +36,28 @@ final readonly class TokenUsageLimit implements CanDecideToContinue, CanProvideS
      * @param TState $state
      */
     #[\Override]
-    public function decide(object $state): ContinuationDecision {
+    public function evaluate(object $state): ContinuationEvaluation {
         /** @var TState $state */
         $currentUsage = ($this->usageCounter)($state);
+        $exceeded = $currentUsage >= $this->maxTokens;
 
-        // Under limit: allow continuation (guard permits)
-        // At/over limit: forbid continuation (guard denies)
-        return $currentUsage < $this->maxTokens
-            ? ContinuationDecision::AllowContinuation
-            : ContinuationDecision::ForbidContinuation;
-    }
+        $decision = $exceeded
+            ? ContinuationDecision::ForbidContinuation
+            : ContinuationDecision::AllowContinuation;
 
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => StopReason::TokenLimitReached,
-            default => null,
-        };
+        $reason = $exceeded
+            ? sprintf('Token limit reached: %d/%d', $currentUsage, $this->maxTokens)
+            : sprintf('Tokens under limit: %d/%d', $currentUsage, $this->maxTokens);
+
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: $decision,
+            reason: $reason,
+            context: [
+                'currentUsage' => $currentUsage,
+                'maxTokens' => $this->maxTokens,
+            ],
+            stopReason: $exceeded ? StopReason::TokenLimitReached : null,
+        );
     }
 }

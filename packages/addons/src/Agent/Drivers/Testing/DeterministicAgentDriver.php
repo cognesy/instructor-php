@@ -98,7 +98,7 @@ final class DeterministicAgentDriver implements CanUseTools
             : new ToolExecutions();
 
         return new AgentStep(
-            inputMessages: $state->messages(),
+            inputMessages: $state->messagesForInference(),
             outputMessages: Messages::fromString($step->response, 'assistant'),
             usage: $step->usage,
             toolCalls: $step->toolCalls,
@@ -109,7 +109,7 @@ final class DeterministicAgentDriver implements CanUseTools
 
     private function defaultStep(AgentState $state): AgentStep {
         return new AgentStep(
-            inputMessages: $state->messages(),
+            inputMessages: $state->messagesForInference(),
             outputMessages: Messages::fromString($this->defaultResponse, 'assistant'),
             usage: $this->defaultUsage,
             stepType: $this->defaultStepType,
@@ -171,7 +171,7 @@ final readonly class ScenarioStep
 
     public function toAgentStep(AgentState $state): AgentStep {
         return new AgentStep(
-            inputMessages: $state->messages(),
+            inputMessages: $state->messagesForInference(),
             outputMessages: Messages::fromString($this->response, 'assistant'),
             usage: $this->usage,
             stepType: $this->stepType,

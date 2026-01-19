@@ -37,7 +37,7 @@ it('uses wall-clock execution time by default', function () {
     );
 
     $criteria = getAgentCriteria($agent);
-    $outcome = $criteria->evaluate($state);
+    $outcome = $criteria->evaluateAll($state);
 
     expect($outcome->shouldContinue())->toBeFalse();
 });
@@ -56,7 +56,7 @@ it('uses cumulative timeout when configured', function () {
     );
 
     $criteria = getAgentCriteria($agent);
-    $outcome = $criteria->evaluate($state);
+    $outcome = $criteria->evaluateAll($state);
 
     expect($outcome->shouldContinue())->toBeTrue();
 });

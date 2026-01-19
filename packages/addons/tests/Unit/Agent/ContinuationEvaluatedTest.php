@@ -4,17 +4,23 @@ namespace Tests\Addons\Unit\Agent;
 
 use Cognesy\Addons\Agent\Events\ContinuationEvaluated;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
 
 it('renders continuation evaluated event summary', function () {
-    $outcome = new ContinuationOutcome(
-        decision: ContinuationDecision::AllowStop,
-        shouldContinue: false,
-        resolvedBy: 'LimitCriterion',
-        stopReason: StopReason::StepsLimitReached,
-        evaluations: [],
-    );
+    // Create evaluations that result in ForbidContinuation to trigger StepsLimitReached stop reason
+    $evaluations = [
+        new ContinuationEvaluation(
+            criterionClass: StepsLimit::class,
+            decision: ContinuationDecision::ForbidContinuation,
+            reason: 'Steps limit reached',
+            stopReason: StopReason::StepsLimitReached,
+        ),
+    ];
+
+    $outcome = ContinuationOutcome::fromEvaluations($evaluations);
 
     $event = new ContinuationEvaluated(
         agentId: 'agent-12345678',

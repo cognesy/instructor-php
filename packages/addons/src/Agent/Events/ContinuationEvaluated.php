@@ -17,19 +17,19 @@ final class ContinuationEvaluated extends AgentEvent
             'parentAgentId' => $this->parentAgentId,
             'step' => $this->stepNumber,
             'shouldContinue' => $this->outcome->shouldContinue,
-            'stopReason' => $this->outcome->stopReason->value,
-            'resolvedBy' => $this->outcome->resolvedBy,
+            'stopReason' => $this->outcome->stopReason()->value,
+            'resolvedBy' => $this->outcome->resolvedBy(),
         ]);
     }
 
     #[\Override]
     public function __toString(): string {
         $action = 'STOP';
-        $reason = $this->outcome->stopReason->value;
+        $reason = $this->outcome->stopReason()->value;
 
         if ($this->outcome->shouldContinue) {
             $action = 'CONTINUE';
-            $reason = "requested by {$this->outcome->resolvedBy}";
+            $reason = "requested by {$this->outcome->resolvedBy()}";
         }
 
         return sprintf(

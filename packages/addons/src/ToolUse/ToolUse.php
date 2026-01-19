@@ -2,11 +2,13 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
+use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Addons\StepByStep\StepByStep;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Contracts\CanExecuteToolCalls;
@@ -69,10 +71,30 @@ class ToolUse extends StepByStep
 
     // INTERNAL /////////////////////////////////////////////
 
+    /**
+     * Check if we should continue.
+     * Pre-evaluates criteria before the first step, then reads from StepResult.
+     */
     #[\Override]
     protected function canContinue(object $state): bool {
         assert($state instanceof ToolUseState);
-        return $this->continuationCriteria->canContinue($state);
+
+        $stepCount = $state->stepCount();
+        if ($stepCount === 0) {
+            return $this->continuationCriteria->canContinue($state);
+        }
+
+        $lastResult = $state->lastStepResult();
+        $stepResultsCount = count($state->stepResults());
+        if ($lastResult === null || $stepResultsCount !== $stepCount) {
+            throw new \LogicException(sprintf(
+                'Step results count (%d) does not match step count (%d).',
+                $stepResultsCount,
+                $stepCount,
+            ));
+        }
+
+        return $lastResult->shouldContinue();
     }
 
     #[\Override]
@@ -121,12 +143,54 @@ class ToolUse extends StepByStep
             inputMessages: $state->messages(),
             error: $failure,
         );
-        $failedState = $this->applyStep(
-            state: $state->withStatus(ToolUseStatus::Failed),
-            nextStep: $failureStep,
-        );
+        $transitionState = $state
+            ->withStatus(ToolUseStatus::Failed)
+            ->withAddedStep($failureStep)
+            ->withCurrentStep($failureStep)
+            ->withAccumulatedUsage($failureStep->usage());
+        $outcome = $this->evaluateOutcomeOnFailure($transitionState);
+        $stepResult = new StepResult($failureStep, $outcome);
+        $failedState = $state
+            ->withStatus(ToolUseStatus::Failed)
+            ->recordStepResult($stepResult)
+            ->withAccumulatedUsage($failureStep->usage());
+        $this->emitToolUseStateUpdated($failedState);
         $this->emitToolUseFailed($failedState, $failure);
         return $failedState;
+    }
+
+    /**
+     * Perform a single step: create step, evaluate continuation, bundle into StepResult, record.
+     */
+    #[\Override]
+    protected function performStep(object $state): object {
+        try {
+            assert($state instanceof ToolUseState);
+
+            // 1. Create raw step from driver
+            $rawStep = $this->makeNextStep($state);
+
+            // 2. Create transition state with step recorded (for correct stepCount during evaluation)
+            // Also accumulate usage so TokenUsageLimit can evaluate correctly
+            $transitionState = $state
+                ->withAddedStep($rawStep)
+                ->withCurrentStep($rawStep)
+                ->withAccumulatedUsage($rawStep->usage());
+
+            // 3. Evaluate continuation criteria on state with this step
+            $outcome = $this->continuationCriteria->evaluateAll($transitionState);
+
+            // 4. Bundle step + outcome into StepResult
+            $stepResult = new StepResult($rawStep, $outcome);
+
+            // 5. Record the StepResult to the original state
+            $nextState = $state->recordStepResult($stepResult);
+            $this->emitToolUseStateUpdated($nextState);
+
+            return $this->onStepCompleted($nextState);
+        } catch (Throwable $error) {
+            return $this->onFailure($error, $state);
+        }
     }
 
     // ACCESSORS ////////////////////////////////////////////
@@ -141,6 +205,14 @@ class ToolUse extends StepByStep
 
     public function driver() : CanUseTools {
         return $this->driver;
+    }
+
+    private function evaluateOutcomeOnFailure(ToolUseState $state): ContinuationOutcome {
+        try {
+            return $this->continuationCriteria->evaluateAll($state);
+        } catch (Throwable $error) {
+            return ContinuationOutcome::fromEvaluationError($error);
+        }
     }
 
     // MUTATORS /////////////////////////////////////////////
@@ -179,7 +251,7 @@ class ToolUse extends StepByStep
         return $this->with(driver: $driver);
     }
 
-    public function withContinuationCriteria(CanDecideToContinue ...$continuationCriteria) : self {
+    public function withContinuationCriteria(CanEvaluateContinuation ...$continuationCriteria) : self {
         return $this->with(continuationCriteria: new ContinuationCriteria(...$continuationCriteria));
     }
 

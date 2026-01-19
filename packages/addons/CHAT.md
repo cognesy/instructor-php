@@ -270,9 +270,9 @@ $finishCheck = new FinishReasonCheck([
 
 ### `ErrorPolicyCriterion`
 Unified error handling and retry policy.
+
 ```php
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 
 $errorPolicy = ErrorPolicy::retryToolErrors(2);
 $policyCriterion = ErrorPolicyCriterion::withPolicy($errorPolicy);

@@ -18,10 +18,11 @@ use Cognesy\Addons\Agent\Events\AgentStepStarted;
 use Cognesy\Addons\Agent\Events\ContinuationEvaluated;
 use Cognesy\Addons\Agent\Events\TokenUsageReported;
 use Cognesy\Addons\Agent\Exceptions\AgentException;
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationOutcome;
 use Cognesy\Addons\StepByStep\Continuation\StopReason;
+use Cognesy\Addons\StepByStep\Step\StepResult;
 use Cognesy\Addons\StepByStep\State\Contracts\CanMarkStepStarted;
 use Cognesy\Addons\StepByStep\State\Contracts\CanTrackExecutionTime;
 use Cognesy\Addons\StepByStep\StateProcessing\CanApplyProcessors;
@@ -52,7 +53,7 @@ class Agent extends StepByStep
     private readonly CanExecuteToolCalls $toolExecutor;
     private readonly CanUseTools $driver;
     private readonly ContinuationCriteria $continuationCriteria;
-    private ?ContinuationOutcome $lastContinuationOutcome = null;
+
 
     /**
      * @param CanApplyProcessors<AgentState> $processors
@@ -78,15 +79,35 @@ class Agent extends StepByStep
 
     // INTERNAL /////////////////////////////////////////////
 
+    /**
+     * Check if we should continue.
+     * Pre-evaluates criteria before the first step, then reads from StepResult.
+     */
     #[\Override]
     protected function canContinue(object $state): bool {
         assert($state instanceof AgentState);
-        $outcome = $this->continuationCriteria->evaluate($state);
-        $this->lastContinuationOutcome = $outcome;
-        $this->emitContinuationEvaluated($state, $outcome);
-        return $outcome->shouldContinue();
+
+        $stepCount = $state->stepCount();
+        if ($stepCount === 0) {
+            return $this->continuationCriteria->canContinue($state);
+        }
+
+        $lastResult = $state->lastStepResult();
+        $stepResultsCount = count($state->stepResults());
+        if ($lastResult === null || $stepResultsCount !== $stepCount) {
+            throw new \LogicException(sprintf(
+                'Step results count (%d) does not match step count (%d).',
+                $stepResultsCount,
+                $stepCount,
+            ));
+        }
+
+        return $lastResult->shouldContinue();
     }
 
+    /**
+     * Create a raw step from the driver (without continuation outcome).
+     */
     #[\Override]
     protected function makeNextStep(object $state): AgentStep {
         assert($state instanceof AgentState);
@@ -98,6 +119,9 @@ class Agent extends StepByStep
         );
     }
 
+    /**
+     * Apply a complete step (with outcome) to the state.
+     */
     #[\Override]
     protected function applyStep(object $state, object $nextStep): AgentState {
         assert($state instanceof AgentState);
@@ -110,14 +134,14 @@ class Agent extends StepByStep
     #[\Override]
     protected function onNoNextStep(object $state): AgentState {
         assert($state instanceof AgentState);
-        $finalStatus = $this->determineFinalStatus();
+        $finalStatus = $this->determineFinalStatus($state);
         $finalState = $state->withStatus($finalStatus);
         $this->emitAgentFinished($finalState);
         return $finalState;
     }
 
-    private function determineFinalStatus(): AgentStatus {
-        $stopReason = $this->lastContinuationOutcome?->stopReason;
+    private function determineFinalStatus(AgentState $state): AgentStatus {
+        $stopReason = $state->stopReason();
         return match ($stopReason) {
             StopReason::ErrorForbade => AgentStatus::Failed,
             default => AgentStatus::Completed,
@@ -137,20 +161,55 @@ class Agent extends StepByStep
         $failure = $error instanceof AgentException
             ? $error
             : AgentException::fromThrowable($error);
-        $failedState = $state->failWith($failure);
+        $failureStep = AgentStep::failure(
+            inputMessages: $state->messages(),
+            error: $failure,
+        );
+        $transitionState = $state
+            ->withStatus(AgentStatus::Failed)
+            ->recordStep($failureStep)
+            ->withAccumulatedUsage($failureStep->usage());
+        $outcome = $this->evaluateOutcomeOnFailure($transitionState);
+        $stepResult = new StepResult($failureStep, $outcome);
+        $failedState = $state
+            ->withStatus(AgentStatus::Failed)
+            ->recordStepResult($stepResult)
+            ->withAccumulatedUsage($failureStep->usage());
         $this->emitAgentStateUpdated($failedState);
         $this->emitAgentFailed($failedState, $failure);
         return $failedState;
     }
 
+    /**
+     * Perform a single step: create step, evaluate continuation, bundle into StepResult, record.
+     */
     #[\Override]
     protected function performStep(object $state): object {
         try {
             $stepStartedAt = microtime(true);
             $stateWithStart = $this->markStepStartedIfSupported($state);
             assert($stateWithStart instanceof AgentState);
-            $nextStep = $this->makeNextStep($stateWithStart);
-            $nextState = $this->applyStep(state: $stateWithStart, nextStep: $nextStep);
+
+            // 1. Create raw step from driver
+            $rawStep = $this->makeNextStep($stateWithStart);
+
+            // 2. Create transition state with step recorded (for correct stepCount during evaluation)
+            // Also accumulate usage so TokenUsageLimit can evaluate correctly
+            $transitionState = $stateWithStart
+                ->recordStep($rawStep)
+                ->withAccumulatedUsage($rawStep->usage());
+
+            // 3. Evaluate continuation criteria on state with this step
+            $outcome = $this->continuationCriteria->evaluateAll($transitionState);
+            $this->emitContinuationEvaluated($transitionState, $outcome);
+
+            // 4. Bundle step + outcome into StepResult
+            $stepResult = new StepResult($rawStep, $outcome);
+
+            // 5. Record the StepResult to the original state
+            $nextState = $stateWithStart->recordStepResult($stepResult);
+            $this->emitAgentStateUpdated($nextState);
+
             $durationSeconds = microtime(true) - $stepStartedAt;
             $nextState = $this->addExecutionTimeIfSupported($nextState, $durationSeconds);
             return $this->onStepCompleted($nextState);
@@ -221,7 +280,7 @@ class Agent extends StepByStep
         return $this->with(driver: $driver);
     }
 
-    public function withContinuationCriteria(CanDecideToContinue ...$continuationCriteria) : self {
+    public function withContinuationCriteria(CanEvaluateContinuation ...$continuationCriteria) : self {
         return $this->with(continuationCriteria: new ContinuationCriteria(...$continuationCriteria));
     }
 
@@ -321,6 +380,14 @@ class Agent extends StepByStep
             stepNumber: $state->stepCount(),
             outcome: $outcome,
         ));
+    }
+
+    private function evaluateOutcomeOnFailure(AgentState $state): ContinuationOutcome {
+        try {
+            return $this->continuationCriteria->evaluateAll($state);
+        } catch (Throwable $error) {
+            return ContinuationOutcome::fromEvaluationError($error);
+        }
     }
 
     private function markStepStartedIfSupported(object $state): object {

@@ -3,10 +3,12 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
+use InvalidArgumentException;
 
 /**
  * Represents a request for an inference operation, holding configuration parameters
@@ -30,6 +32,7 @@ class InferenceRequest
 
     protected ?CachedContext $cachedContext;
     protected ResponseCachePolicy $responseCachePolicy;
+    protected ?InferenceRetryPolicy $retryPolicy;
 
     public function __construct(
         Messages|string|array|null $messages = null,
@@ -41,6 +44,7 @@ class InferenceRequest
         ?OutputMode $mode = null,
         ?CachedContext $cachedContext = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
         //
         ?string $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
@@ -54,7 +58,9 @@ class InferenceRequest
 
         $this->model = $model ?? '';
         $this->options = $options ?? [];
+        $this->assertNoRetryPolicyInOptions($this->options);
         $this->mode = $mode ?? OutputMode::Unrestricted;
+        $this->retryPolicy = $retryPolicy;
 
         $this->tools = $tools ?? [];
         $this->toolChoice = $toolChoice ?? [];
@@ -146,6 +152,10 @@ class InferenceRequest
         return $this->responseCachePolicy;
     }
 
+    public function retryPolicy() : ?InferenceRetryPolicy {
+        return $this->retryPolicy;
+    }
+
     /**
      * Retrieves the response format configuration based on the current mode.
      *
@@ -217,6 +227,7 @@ class InferenceRequest
         ?OutputMode $mode = null,
         ?CachedContext $cachedContext = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
     ) : self {
         $normalizedMessages = match(true) {
             $messages instanceof Messages => $messages,
@@ -234,6 +245,7 @@ class InferenceRequest
             mode: $mode ?? $this->mode,
             cachedContext: $cachedContext ?? $this->cachedContext,
             responseCachePolicy: $responseCachePolicy ?? $this->responseCachePolicy,
+            retryPolicy: $retryPolicy ?? $this->retryPolicy,
             id: $this->id,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
@@ -282,6 +294,10 @@ class InferenceRequest
         return $this->with(responseCachePolicy: $policy);
     }
 
+    public function withRetryPolicy(InferenceRetryPolicy $retryPolicy) : self {
+        return $this->with(retryPolicy: $retryPolicy);
+    }
+
     /**
      * Returns a copy of the current object with cached context applied if it is available.
      * If no cached context is set, it returns the current instance unchanged.
@@ -304,6 +320,7 @@ class InferenceRequest
             mode: $this->mode,
             cachedContext: new CachedContext(),
             responseCachePolicy: $this->responseCachePolicy,
+            retryPolicy: $this->retryPolicy,
             id: $this->id,
             createdAt: $this->createdAt,
         );
@@ -351,5 +368,13 @@ class InferenceRequest
             is_array($messages) => Messages::fromAnyArray($messages),
             default => new Messages(),
         };
+    }
+
+    private function assertNoRetryPolicyInOptions(array $options) : void {
+        if (!array_key_exists('retryPolicy', $options) && !array_key_exists('retry_policy', $options)) {
+            return;
+        }
+
+        throw new InvalidArgumentException('retryPolicy must be set via withRetryPolicy().');
     }
 }

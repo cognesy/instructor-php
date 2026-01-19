@@ -390,7 +390,7 @@ $agent->onEvent(ContinuationEvaluated::class, function($e) {
 Beyond your requests, we identified that default error handling was too aggressive. We've added a configurable error policy system:
 
 ```php
-use Cognesy\Addons\StepByStep\Continuation\ErrorPolicy;
+use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 
 // Presets
 ErrorPolicy::stopOnAnyError();        // Default - matches previous behavior

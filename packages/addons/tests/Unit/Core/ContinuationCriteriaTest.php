@@ -2,8 +2,7 @@
 
 namespace Tests\Addons\Unit\Core;
 
-use Cognesy\Addons\StepByStep\Continuation\CanDecideToContinue;
-use Cognesy\Addons\StepByStep\Continuation\CanProvideStopReason;
+use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
@@ -33,7 +32,7 @@ final class ToolUseCriterionCounter
     }
 }
 
-final class CountingToolUseCriterion implements CanDecideToContinue
+final class CountingToolUseCriterion implements CanEvaluateContinuation
 {
     public function __construct(
         private ToolUseCriterionCounter $counter,
@@ -41,30 +40,29 @@ final class CountingToolUseCriterion implements CanDecideToContinue
     ) {}
 
     #[\Override]
-    public function decide(object $state): ContinuationDecision
+    public function evaluate(object $state): ContinuationEvaluation
     {
         $this->counter->increment();
-        return $this->result;
+        return ContinuationEvaluation::fromDecision(
+            criterionClass: self::class,
+            decision: $this->result,
+        );
     }
 }
 
-final class StopReasonCriterion implements CanDecideToContinue, CanProvideStopReason
+final class StopReasonCriterion implements CanEvaluateContinuation
 {
     public function __construct(private StopReason $stopReason) {}
 
     #[\Override]
-    public function decide(object $state): ContinuationDecision
+    public function evaluate(object $state): ContinuationEvaluation
     {
-        return ContinuationDecision::ForbidContinuation;
-    }
-
-    #[\Override]
-    public function stopReason(object $state, ContinuationDecision $decision): ?StopReason
-    {
-        return match ($decision) {
-            ContinuationDecision::ForbidContinuation => $this->stopReason,
-            default => null,
-        };
+        return new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: ContinuationDecision::ForbidContinuation,
+            reason: 'Stop reason criterion triggered',
+            stopReason: $this->stopReason,
+        );
     }
 }
 
@@ -72,11 +70,11 @@ it('steps limit boundary works', function () {
     $state = new ToolUseState();
     $limit = new StepsLimit(1, static fn(ToolUseState $state): int => $state->stepCount());
     // Under limit - allow continuation (guard permits)
-    expect($limit->decide($state))->toBe(ContinuationDecision::AllowContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::AllowContinuation);
 
     $state = $state->withAddedStep(new ToolUseStep());
     // At/over limit - forbid continuation (guard denies)
-    expect($limit->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('token usage limit boundary works', function () {
@@ -84,7 +82,7 @@ it('token usage limit boundary works', function () {
     $state = $state->withAccumulatedUsage(new Usage(10, 0));
     $limit = new TokenUsageLimit(10, static fn(ToolUseState $state): int => $state->usage()->total());
     // At/over limit - forbid continuation
-    expect($limit->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('execution time limit uses clock deterministically', function () {
@@ -93,37 +91,37 @@ it('execution time limit uses clock deterministically', function () {
     $clock = new FrozenClock($start->modify('+61 seconds'));
     $limit = new ExecutionTimeLimit(60, static fn(ToolUseState $state) => $state->startedAt(), $clock);
     // Over limit - forbid continuation
-    expect($limit->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($limit->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('tool call presence check reflects current step calls', function () {
     $state = new ToolUseState();
     $check = new ToolCallPresenceCheck(static fn(ToolUseState $state): bool => $state->currentStep()?->hasToolCalls() ?? false);
     // No tool calls - allow stop (work driver has no work)
-    expect($check->decide($state))->toBe(ContinuationDecision::AllowStop);
+    expect($check->evaluate($state)->decision)->toBe(ContinuationDecision::AllowStop);
 
     $state = $state->withCurrentStep(new ToolUseStep());
     // Still no tool calls
-    expect($check->decide($state))->toBe(ContinuationDecision::AllowStop);
+    expect($check->evaluate($state)->decision)->toBe(ContinuationDecision::AllowStop);
 
     $calls = new ToolCalls(new ToolCall('a', []));
     $state = $state->withCurrentStep(new ToolUseStep(toolCalls: $calls));
     // Has tool calls - request continuation (work driver has work)
-    expect($check->decide($state))->toBe(ContinuationDecision::RequestContinuation);
+    expect($check->evaluate($state)->decision)->toBe(ContinuationDecision::RequestContinuation);
 });
 
 it('error presence check stops on failures', function () {
     $state = new ToolUseState();
     $check = new ErrorPresenceCheck(static fn(ToolUseState $state): bool => $state->currentStep()?->hasErrors() ?? false);
     // No errors - allow continuation (guard permits)
-    expect($check->decide($state))->toBe(ContinuationDecision::AllowContinuation);
+    expect($check->evaluate($state)->decision)->toBe(ContinuationDecision::AllowContinuation);
 
     $execs = new ToolExecutions(
         new ToolExecution(new ToolCall('no', []), Result::failure(new \Exception('x')), new \DateTimeImmutable(), new \DateTimeImmutable())
     );
     $state = $state->withCurrentStep(new ToolUseStep(toolExecutions: $execs));
     // Has errors - forbid continuation (guard denies)
-    expect($check->decide($state))->toBe(ContinuationDecision::ForbidContinuation);
+    expect($check->evaluate($state)->decision)->toBe(ContinuationDecision::ForbidContinuation);
 });
 
 it('tool use continuation criteria reports emptiness', function () {
@@ -140,9 +138,10 @@ it('tool use continuation criteria uses priority resolution', function () {
         new CountingToolUseCriterion($counter, ContinuationDecision::RequestContinuation),
     );
 
-    expect($criteria->decide(new ToolUseState()))->toBe(ContinuationDecision::AllowStop);
-    // Note: ContinuationCriteria.decide() returns AllowStop when resolution is false
-    expect($counter->calls)->toBe(2);
+    // decision() returns ForbidContinuation when guard forbade, shouldContinue() returns false
+    expect($criteria->evaluateAll(new ToolUseState())->decision())->toBe(ContinuationDecision::ForbidContinuation);
+    expect($criteria->evaluateAll(new ToolUseState())->shouldContinue())->toBeFalse();
+    expect($counter->calls)->toBe(4); // 2 calls per evaluate
 });
 
 it('tool use continuation criteria resolves RequestContinuation when no forbid', function () {
@@ -154,7 +153,7 @@ it('tool use continuation criteria resolves RequestContinuation when no forbid',
         new CountingToolUseCriterion($counter, ContinuationDecision::RequestContinuation),
     );
 
-    expect($criteria->decide(new ToolUseState()))->toBe(ContinuationDecision::RequestContinuation);
+    expect($criteria->evaluateAll(new ToolUseState())->decision())->toBe(ContinuationDecision::RequestContinuation);
 });
 
 it('tool use continuation criteria resolves AllowStop when all AllowStop', function () {
@@ -166,7 +165,7 @@ it('tool use continuation criteria resolves AllowStop when all AllowStop', funct
         new CountingToolUseCriterion($counter, ContinuationDecision::AllowStop),
     );
 
-    expect($criteria->decide(new ToolUseState()))->toBe(ContinuationDecision::AllowStop);
+    expect($criteria->evaluateAll(new ToolUseState())->decision())->toBe(ContinuationDecision::AllowStop);
 });
 
 it('tool use continuation criteria withCriteria appends to set', function () {
@@ -175,18 +174,18 @@ it('tool use continuation criteria withCriteria appends to set', function () {
     $extended = $criteria->withCriteria(new CountingToolUseCriterion($counter, ContinuationDecision::RequestContinuation));
 
     // Original: just AllowStop → AllowStop (no work requested)
-    expect($criteria->decide(new ToolUseState()))->toBe(ContinuationDecision::AllowStop);
+    expect($criteria->evaluateAll(new ToolUseState())->decision())->toBe(ContinuationDecision::AllowStop);
     // Extended: AllowStop + RequestContinuation → RequestContinuation (work requested overrides stop)
-    expect($extended->decide(new ToolUseState()))->toBe(ContinuationDecision::RequestContinuation);
+    expect($extended->evaluateAll(new ToolUseState())->decision())->toBe(ContinuationDecision::RequestContinuation);
 });
 
 it('evaluation returns allow stop for empty criteria', function () {
     $criteria = new ContinuationCriteria();
-    $outcome = $criteria->evaluate(new ToolUseState());
+    $outcome = $criteria->evaluateAll(new ToolUseState());
 
-    expect($outcome->decision)->toBe(ContinuationDecision::AllowStop);
+    expect($outcome->decision())->toBe(ContinuationDecision::AllowStop);
     expect($outcome->shouldContinue())->toBeFalse();
-    expect($outcome->stopReason)->toBe(StopReason::Completed);
+    expect($outcome->stopReason())->toBe(StopReason::Completed);
     expect($outcome->evaluations)->toBe([]);
 });
 
@@ -197,12 +196,13 @@ it('evaluation returns forbid outcome when guard forbids', function () {
         new CountingToolUseCriterion($counter, ContinuationDecision::RequestContinuation),
     );
 
-    $outcome = $criteria->evaluate(new ToolUseState());
+    $outcome = $criteria->evaluateAll(new ToolUseState());
 
     expect($outcome->shouldContinue())->toBeFalse();
-    expect($outcome->decision)->toBe(ContinuationDecision::AllowStop);
+    // decision() returns ForbidContinuation to indicate a guard actively denied
+    expect($outcome->decision())->toBe(ContinuationDecision::ForbidContinuation);
     expect($outcome->getForbiddingCriterion())->toBe(CountingToolUseCriterion::class);
-    expect($outcome->stopReason)->toBe(StopReason::GuardForbade);
+    expect($outcome->stopReason())->toBe(StopReason::GuardForbade);
 });
 
 it('uses explicit stop reason from criteria when provided', function () {
@@ -210,9 +210,9 @@ it('uses explicit stop reason from criteria when provided', function () {
         new StopReasonCriterion(StopReason::UserRequested),
     );
 
-    $outcome = $criteria->evaluate(new ToolUseState());
+    $outcome = $criteria->evaluateAll(new ToolUseState());
 
-    expect($outcome->stopReason)->toBe(StopReason::UserRequested);
+    expect($outcome->stopReason())->toBe(StopReason::UserRequested);
 });
 
 it('evaluation returns request outcome when work is requested', function () {
@@ -222,11 +222,11 @@ it('evaluation returns request outcome when work is requested', function () {
         new CountingToolUseCriterion($counter, ContinuationDecision::RequestContinuation),
     );
 
-    $outcome = $criteria->evaluate(new ToolUseState());
+    $outcome = $criteria->evaluateAll(new ToolUseState());
 
     expect($outcome->shouldContinue())->toBeTrue();
-    expect($outcome->decision)->toBe(ContinuationDecision::RequestContinuation);
-    expect($outcome->resolvedBy)->toBe(CountingToolUseCriterion::class);
+    expect($outcome->decision())->toBe(ContinuationDecision::RequestContinuation);
+    expect($outcome->resolvedBy())->toBe(CountingToolUseCriterion::class);
 });
 
 it('evaluation includes all criterion evaluations', function () {
@@ -236,21 +236,20 @@ it('evaluation includes all criterion evaluations', function () {
         new CountingToolUseCriterion($counter, ContinuationDecision::AllowStop),
     );
 
-    $outcome = $criteria->evaluate(new ToolUseState());
+    $outcome = $criteria->evaluateAll(new ToolUseState());
 
     expect(count($outcome->evaluations))->toBe(2);
     expect($outcome->evaluations[0])->toBeInstanceOf(ContinuationEvaluation::class);
 });
 
-it('canContinue and decide delegate to evaluate', function () {
+it('canContinue delegates to evaluateAll', function () {
     $counter = new ToolUseCriterionCounter();
     $criteria = new ContinuationCriteria(
         new CountingToolUseCriterion($counter, ContinuationDecision::RequestContinuation),
     );
 
     $state = new ToolUseState();
-    $outcome = $criteria->evaluate($state);
+    $outcome = $criteria->evaluateAll($state);
 
     expect($criteria->canContinue($state))->toBe($outcome->shouldContinue());
-    expect($criteria->decide($state))->toBe($outcome->decision);
 });

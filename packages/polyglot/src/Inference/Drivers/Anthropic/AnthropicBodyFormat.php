@@ -22,7 +22,9 @@ class AnthropicBodyFormat implements CanMapRequestBody
         $options = array_merge($this->config->options, $request->options());
 
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
-        unset($options['parallel_tool_calls']);
+        unset(
+            $options['parallel_tool_calls'],
+        );
 
         $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,

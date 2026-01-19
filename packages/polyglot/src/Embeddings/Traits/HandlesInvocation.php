@@ -24,6 +24,7 @@ trait HandlesInvocation
             options: $request->options(),
             model: $request->model()
         );
+        $this->retryPolicy = $request->retryPolicy();
         return $this;
     }
 
@@ -52,7 +53,8 @@ trait HandlesInvocation
         $request = new EmbeddingsRequest(
             input: $this->inputs,
             options: $this->options,
-            model: $this->model
+            model: $this->model,
+            retryPolicy: $this->retryPolicy,
         );
         // EmbeddingsRequested will be emitted by the driver with normalized payload
 
