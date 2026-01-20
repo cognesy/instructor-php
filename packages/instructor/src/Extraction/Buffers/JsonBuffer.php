@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Extraction\Buffers;
 
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Utils\Json\Json;
-use Cognesy\Utils\Result\Result;
 
 /**
  * JSON content buffer for structured output mode.
@@ -53,8 +52,16 @@ final readonly class JsonBuffer implements CanBufferContent
     }
 
     #[\Override]
-    public function parsed(): Result {
-        return Result::try(fn() => Json::fromPartial($this->normalized())->toArray());
+    public function parsed(): ?array {
+        if ($this->normalized === '') {
+            return null;
+        }
+
+        try {
+            return Json::fromPartial($this->normalized())->toArray();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     #[\Override]

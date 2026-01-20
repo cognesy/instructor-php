@@ -1,11 +1,11 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
-use Cognesy\Addons\Agent\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
 use Cognesy\Messages\Messages;
 
 // Configure working directory

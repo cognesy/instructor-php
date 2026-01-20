@@ -28,11 +28,11 @@ composer require cognesy/instructor-laravel
 Use these namespaces in your Laravel app:
 
 ```
-Cognesy\Addons\Agent\AgentBuilder
+Cognesy\Addons\AgentBuilder\AgentBuilder
 Cognesy\Addons\Agent\Core\Data\AgentState
 Cognesy\Addons\Agent\Contracts\AgentContract
-Cognesy\Addons\Agent\Registry\AgentContractRegistry
-Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition
+Cognesy\Addons\AgentBuilder\Contracts\AgentFactory
+Cognesy\Addons\AgentBuilder\Support\AbstractAgent
 Cognesy\Addons\Agent\Core\Data\AgentDescriptor
 Cognesy\Addons\Agent\Core\Collections\NameList
 Cognesy\Events\EventBus
@@ -86,7 +86,7 @@ Add JSON casts for input/output/state_snapshot/metadata.
 
 Minimal responsibilities:
 
-- Resolve agent via `AgentContractRegistry` (deterministic, no serialization)
+- Resolve agent via an `AgentFactory` implementation (deterministic, no serialization)
 - Initialize `AgentState` (new or from snapshot)
 - Run iterator loop
 - Update step_count, token_usage
@@ -107,7 +107,7 @@ Keep tools minimal per agent to reduce context.
 Minimal registry flow:
 
 - Job payload includes `agent_name` + `agent_config` (array)
-- Worker resolves agent via `AgentContractRegistry`
+- Worker resolves agent via an `AgentFactory` implementation
 - `AgentContract->build()` or `->iterator()` executes the run
 - Optional: attach logging / observability via `wiretap()` / `onEvent()`
 

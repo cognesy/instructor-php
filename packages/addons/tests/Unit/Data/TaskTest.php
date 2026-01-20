@@ -2,8 +2,8 @@
 
 namespace Tests\Addons\Unit\Data;
 
-use Cognesy\Addons\Agent\Capabilities\Tasks\Task;
-use Cognesy\Addons\Agent\Capabilities\Tasks\TaskStatus;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\Task;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\TaskStatus;
 
 describe('Task', function () {
 

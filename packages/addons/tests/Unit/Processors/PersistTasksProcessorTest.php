@@ -2,9 +2,9 @@
 
 namespace Tests\Addons\Unit\Processors;
 
-use Cognesy\Addons\Agent\Capabilities\Tasks\PersistTasksProcessor;
-use Cognesy\Addons\Agent\Capabilities\Tasks\TodoResult;
-use Cognesy\Addons\Agent\Capabilities\Tasks\TodoWriteTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\TodoResult;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
 use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Core\Data\AgentExecution;
 use Cognesy\Addons\Agent\Core\Data\AgentState;

@@ -3,8 +3,7 @@
 namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
 
 use Closure;
-use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
-use Cognesy\Instructor\Extraction\Buffers\ToolsBuffer;
+use Cognesy\Instructor\Extraction\Buffers\ExtractingBuffer;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\FrameMetadata;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
@@ -86,10 +85,7 @@ final class ExtractDeltaReducer implements Reducer
         }
 
         // Default buffer selection
-        return match ($this->mode) {
-            OutputMode::Tools => ToolsBuffer::empty(),
-            default => JsonBuffer::empty(),
-        };
+        return ExtractingBuffer::empty($this->mode);
     }
 
     private function createFrame(

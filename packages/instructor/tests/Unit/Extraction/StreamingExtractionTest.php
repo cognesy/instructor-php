@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction;
 
-use Cognesy\Instructor\Extraction\Buffers\ExtractingJsonBuffer;
-use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
+use Cognesy\Instructor\Extraction\Buffers\ExtractingBuffer;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\BracketMatchingExtractor;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\Extractors\PartialJsonExtractor;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDeltaReducer;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
-use Cognesy\Utils\Result\Result;
 
 /**
  * Helper to collect frames during streaming.
@@ -47,22 +48,21 @@ function makeStreamingFrameCollector(): Reducer
 /**
  * Custom extractor that strips XML wrapper before parsing.
  */
-class XmlWrapperExtractor implements CanExtractContent
+class XmlWrapperExtractor implements CanExtractResponse
 {
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
         // Pattern: <json>{"key": "value"}</json>
-        if (preg_match('/<json>(.*?)<\/json>/s', $content, $matches)) {
+        if (preg_match('/<json>(.*?)<\/json>/s', $input->content, $matches)) {
             $json = trim($matches[1]);
-            try {
-                json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-                return Result::success($json);
-            } catch (\JsonException $e) {
-                return Result::failure("Invalid JSON in XML wrapper: {$e->getMessage()}");
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+            if (!is_array($decoded)) {
+                throw new ExtractionException('Invalid JSON in XML wrapper');
             }
+            return $decoded;
         }
-        return Result::failure('No <json> wrapper found');
+        throw new ExtractionException('No <json> wrapper found');
     }
 
     #[\Override]
@@ -75,7 +75,7 @@ class XmlWrapperExtractor implements CanExtractContent
 /**
  * Custom extractor that extracts from YAML-like delimiter.
  */
-class DelimiterExtractor implements CanExtractContent
+class DelimiterExtractor implements CanExtractResponse
 {
     public function __construct(
         private string $startDelimiter = '---JSON_START---',
@@ -83,27 +83,27 @@ class DelimiterExtractor implements CanExtractContent
     ) {}
 
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        $start = strpos($content, $this->startDelimiter);
-        $end = strpos($content, $this->endDelimiter);
+        $start = strpos($input->content, $this->startDelimiter);
+        $end = strpos($input->content, $this->endDelimiter);
 
         if ($start === false || $end === false || $end <= $start) {
-            return Result::failure('Delimiters not found');
+            throw new ExtractionException('Delimiters not found');
         }
 
         $json = trim(substr(
-            $content,
+            $input->content,
             $start + strlen($this->startDelimiter),
             $end - $start - strlen($this->startDelimiter)
         ));
 
-        try {
-            json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-            return Result::success($json);
-        } catch (\JsonException $e) {
-            return Result::failure("Invalid JSON between delimiters: {$e->getMessage()}");
+        $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+        if (!is_array($decoded)) {
+            throw new ExtractionException('Invalid JSON between delimiters');
         }
+
+        return $decoded;
     }
 
     #[\Override]
@@ -115,7 +115,7 @@ class DelimiterExtractor implements CanExtractContent
 
 describe('Streaming-Aware Extraction', function () {
     describe('ExtractDeltaReducer with buffer factory', function () {
-        it('uses default JsonBuffer when no factory provided', function () {
+        it('uses default ExtractingBuffer when no factory provided', function () {
             $collector = makeStreamingFrameCollector();
             $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema);
 
@@ -125,12 +125,12 @@ describe('Streaming-Aware Extraction', function () {
                 usage: Usage::none(),
             ));
 
-            expect($collector->collected[0]->buffer)->toBeInstanceOf(JsonBuffer::class);
+            expect($collector->collected[0]->buffer)->toBeInstanceOf(ExtractingBuffer::class);
         });
 
         it('uses custom buffer from factory', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::empty();
+            $factory = fn(OutputMode $mode) => ExtractingBuffer::empty($mode);
             $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema, bufferFactory: $factory);
 
             $reducer->init();
@@ -139,7 +139,7 @@ describe('Streaming-Aware Extraction', function () {
                 usage: Usage::none(),
             ));
 
-            expect($collector->collected[0]->buffer)->toBeInstanceOf(ExtractingJsonBuffer::class);
+            expect($collector->collected[0]->buffer)->toBeInstanceOf(ExtractingBuffer::class);
         });
 
         it('passes OutputMode to buffer factory', function () {
@@ -147,7 +147,7 @@ describe('Streaming-Aware Extraction', function () {
             $collector = makeStreamingFrameCollector();
             $factory = function (OutputMode $mode) use (&$receivedMode): CanBufferContent {
                 $receivedMode = $mode;
-                return ExtractingJsonBuffer::empty();
+                return ExtractingBuffer::empty($mode);
             };
 
             $reducer = new ExtractDeltaReducer(
@@ -166,39 +166,44 @@ describe('Streaming-Aware Extraction', function () {
         });
     });
 
-    describe('ExtractingJsonBuffer with custom extractors', function () {
+    describe('ExtractingBuffer with custom extractors', function () {
         it('applies custom extractor during streaming', function () {
-            $buffer = ExtractingJsonBuffer::withExtractors(new XmlWrapperExtractor());
+            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new XmlWrapperExtractor());
 
             $buffer = $buffer->assemble('<json>{"name":"John"}</json>');
 
-            expect($buffer->normalized())->toBe('{"name":"John"}');
+            expect($buffer->parsed())->toBe(['name' => 'John']);
         });
 
         it('applies delimiter extractor during streaming', function () {
-            $buffer = ExtractingJsonBuffer::withExtractors(new DelimiterExtractor());
+            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new DelimiterExtractor());
 
             $buffer = $buffer->assemble('Some text ---JSON_START--- {"id": 42} ---JSON_END--- more text');
 
-            expect($buffer->normalized())->toBe('{"id": 42}');
+            expect($buffer->parsed())->toBe(['id' => 42]);
         });
 
         it('tries extractors in order until success', function () {
             // DelimiterExtractor will fail, XmlWrapperExtractor will succeed
-            $buffer = ExtractingJsonBuffer::withExtractors(
+            $buffer = ExtractingBuffer::withExtractors(
+                OutputMode::Json,
                 new DelimiterExtractor(),
                 new XmlWrapperExtractor(),
             );
 
             $buffer = $buffer->assemble('<json>{"found": true}</json>');
 
-            expect($buffer->normalized())->toBe('{"found": true}');
+            expect($buffer->parsed())->toBe(['found' => true]);
         });
 
         it('falls back to partial JSON when all extractors fail', function () {
-            $buffer = ExtractingJsonBuffer::withExtractors(new XmlWrapperExtractor());
+            $buffer = ExtractingBuffer::withExtractors(
+                OutputMode::Json,
+                new XmlWrapperExtractor(),
+                new PartialJsonExtractor(),
+            );
 
-            // No XML wrapper, so extractor fails, falls back to partial parser
+            // No XML wrapper, so partial JSON will handle parsing
             $buffer = $buffer->assemble('{"name":"Jo');
 
             // Partial parser should complete the incomplete JSON
@@ -206,12 +211,12 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('accumulates deltas and re-extracts each time', function () {
-            $buffer = ExtractingJsonBuffer::withExtractors(new BracketMatchingExtractor());
+            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, new BracketMatchingExtractor());
 
             // Feed in chunks with surrounding text
             $buffer = $buffer->assemble('Response: {"na');
             expect($buffer->raw())->toBe('Response: {"na');
-            // Still incomplete, partial parser used
+            // Still incomplete, no parsed content yet
 
             $buffer = $buffer->assemble('me":"John"}');
             expect($buffer->raw())->toBe('Response: {"name":"John"}');
@@ -219,7 +224,8 @@ describe('Streaming-Aware Extraction', function () {
         });
 
         it('works with streaming chunks progressively', function () {
-            $buffer = ExtractingJsonBuffer::withExtractors(
+            $buffer = ExtractingBuffer::withExtractors(
+                OutputMode::Json,
                 new DirectJsonExtractor(),
                 new BracketMatchingExtractor(),
             );
@@ -238,7 +244,8 @@ describe('Streaming-Aware Extraction', function () {
     describe('Integration: custom extractors in streaming pipeline', function () {
         it('integrates custom buffer with ExtractDeltaReducer', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::withExtractors(
+            $factory = fn(OutputMode $mode) => ExtractingBuffer::withExtractors(
+                $mode,
                 new BracketMatchingExtractor(),
             );
 
@@ -268,7 +275,8 @@ describe('Streaming-Aware Extraction', function () {
 
         it('preserves buffer state across streaming frames', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::withExtractors(
+            $factory = fn(OutputMode $mode) => ExtractingBuffer::withExtractors(
+                $mode,
                 new XmlWrapperExtractor(),
                 new DirectJsonExtractor(),
             );
@@ -299,31 +307,31 @@ describe('Streaming-Aware Extraction', function () {
     });
 
     describe('Edge cases', function () {
-        it('handles empty extractors array by falling back to partial parser', function () {
-            $buffer = ExtractingJsonBuffer::empty([]);
+        it('handles empty extractors array by leaving parsed content empty', function () {
+            $buffer = ExtractingBuffer::empty(OutputMode::Json, []);
 
             $buffer = $buffer->assemble('{"name":"John"}');
 
-            // With no extractors, falls back to partial parser
-            expect($buffer->normalized())->toBe('{"name":"John"}');
+            // With no extractors, no parsing occurs
+            expect($buffer->parsed())->toBeNull();
         });
 
         it('handles extractor that modifies JSON format', function () {
             // Extractor that strips comments before parsing
-            $commentStripper = new class implements CanExtractContent {
+            $commentStripper = new class implements CanExtractResponse {
                 #[\Override]
-                public function extract(string $content): Result
+                public function extract(ExtractionInput $input): array
                 {
                     // Remove single-line comments (not real JSON, but some APIs return this)
-                    $cleaned = preg_replace('/\/\/.*$/m', '', $content);
+                    $cleaned = preg_replace('/\/\/.*$/m', '', $input->content);
                     $cleaned = trim($cleaned);
 
-                    try {
-                        json_decode($cleaned, associative: true, flags: JSON_THROW_ON_ERROR);
-                        return Result::success($cleaned);
-                    } catch (\JsonException $e) {
-                        return Result::failure("Invalid: {$e->getMessage()}");
+                    $decoded = json_decode($cleaned, associative: true, flags: JSON_THROW_ON_ERROR);
+                    if (!is_array($decoded)) {
+                        throw new ExtractionException('Invalid JSON after comment stripping');
                     }
+
+                    return $decoded;
                 }
 
                 #[\Override]
@@ -333,7 +341,7 @@ describe('Streaming-Aware Extraction', function () {
                 }
             };
 
-            $buffer = ExtractingJsonBuffer::withExtractors($commentStripper);
+            $buffer = ExtractingBuffer::withExtractors(OutputMode::Json, $commentStripper);
             $buffer = $buffer->assemble('{"name":"John"} // this is a comment');
 
             expect($buffer->normalized())->toBe('{"name":"John"}');
@@ -341,7 +349,7 @@ describe('Streaming-Aware Extraction', function () {
 
         it('resets buffer state on init', function () {
             $collector = makeStreamingFrameCollector();
-            $factory = fn(OutputMode $mode) => ExtractingJsonBuffer::empty();
+            $factory = fn(OutputMode $mode) => ExtractingBuffer::empty($mode);
 
             $reducer = new ExtractDeltaReducer(
                 inner: $collector,

@@ -1218,13 +1218,13 @@ namespace App\Service;
 
 use App\Entity\AgentExecution;
 use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
-use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
-use Cognesy\Addons\Agent\Capabilities\Metadata\UseMetadataTools;
-use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
 use Cognesy\Events\EventBus;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
@@ -2642,8 +2642,8 @@ services:
 
 namespace App\Service;
 
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
-use Cognesy\Addons\Agent\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
 
 final class AgentRegistryFactory
 {

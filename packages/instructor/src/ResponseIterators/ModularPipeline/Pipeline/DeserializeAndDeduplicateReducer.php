@@ -60,14 +60,11 @@ final class DeserializeAndDeduplicateReducer implements Reducer
 
         // Use buffer's parsed content as single source of truth
         $parsed = $reducible->buffer->parsed();
-
-        if ($parsed->isFailure()) {
-             // If parsing fails (invalid/incomplete JSON), we forward failure.
-             $frame = $reducible->withObject($parsed);
-             return $this->inner->step($accumulator, $frame);
+        if ($parsed === null) {
+            return $this->inner->step($accumulator, $reducible);
         }
 
-        $result = $this->createObject($parsed->unwrap());
+        $result = $this->createObject($parsed);
 
         // Handle errors - forward with error in Result, no dedup update
         if ($result->isFailure()) {

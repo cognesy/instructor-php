@@ -1,10 +1,11 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Utils\Result\Result;
 
 /**
  * Custom extractor that extracts JSON from XML-like wrappers.
@@ -12,30 +13,38 @@ use Cognesy\Utils\Result\Result;
  * Some LLMs or custom APIs return JSON wrapped in XML tags like:
  * <response><json>{"name":"John"}</json></response>
  */
-class XmlJsonExtractor implements CanExtractContent
+class XmlJsonExtractor implements CanExtractResponse
 {
     public function __construct(
         private string $tagName = 'json',
     ) {}
 
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
         // Match: <json>{"key": "value"}</json>
         $pattern = sprintf('/<%s>(.*?)<\/%s>/s', $this->tagName, $this->tagName);
 
-        if (preg_match($pattern, $content, $matches)) {
-            $json = trim($matches[1]);
-
-            try {
-                json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-                return Result::success($json);
-            } catch (\JsonException $e) {
-                return Result::failure("Invalid JSON in <{$this->tagName}>: {$e->getMessage()}");
-            }
+        if (!preg_match($pattern, $input->content, $matches)) {
+            throw new ExtractionException("No <{$this->tagName}> wrapper found");
         }
 
-        return Result::failure("No <{$this->tagName}> wrapper found");
+        $json = trim($matches[1]);
+        if ($json === '') {
+            throw new ExtractionException("Empty <{$this->tagName}> wrapper");
+        }
+
+        try {
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new ExtractionException("Invalid JSON in <{$this->tagName}>: {$e->getMessage()}", $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException("Expected object or array in <{$this->tagName}>");
+        }
+
+        return $decoded;
     }
 
     #[\Override]
@@ -67,7 +76,7 @@ Here is the extracted information:
 The data has been successfully extracted from the input.
 EOT;
 
-echo "=== Demonstrating Custom Content Extractor ===\n\n";
+echo "=== Example 1: Custom extractor for XML-wrapped JSON (sync) ===\n\n";
 echo "Raw LLM response:\n";
 echo str_repeat('-', 50) . "\n";
 echo $xmlWrappedResponse . "\n";
@@ -91,42 +100,3 @@ echo "Name: {$person->name}\n";
 echo "Age: {$person->age}\n";
 echo "City: {$person->city}\n";
 ?>
-```
-```php
-<?php
-// Custom extractors work for streaming too
-$stream = (new StructuredOutput)
-    ->withResponseClass(Person::class)
-    ->withExtractors(
-        new DirectJsonExtractor(),
-        new XmlJsonExtractor('json'),
-    )
-    ->withMessages("Extract person data...")
-    ->stream();
-
-foreach ($stream->responses() as $partial) {
-    echo "Partial: " . ($partial->name ?? '...') . "\n";
-}
-
-$person = $stream->finalValue();
-echo "Final: {$person->name}\n";
-?>
-```
-```php
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
-
-class MyCustomExtractor implements CanExtractContent
-{
-    public function extract(string $content): Result
-    {
-        // Your extraction logic here
-        // Return Result::success($json) on success
-        // Return Result::failure($reason) on failure
-    }
-
-    public function name(): string
-    {
-        return 'my_custom';  // For logging/debugging
-    }
-}

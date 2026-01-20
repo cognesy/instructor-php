@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Feature\Instructor;
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
-use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\MockHttp;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Result\Result;
 
 class CustomExtractorUser
 {
@@ -27,22 +24,33 @@ class FixedDataExtractor implements CanExtractResponse
 {
     public function __construct(private array $data) {}
 
-    public function extract(InferenceResponse $response, OutputMode $mode): Result
+    public function extract(ExtractionInput $input): array
     {
-        return Result::success($this->data);
+        return $this->data;
+    }
+
+    public function name(): string
+    {
+        return 'fixed_data';
     }
 }
 
 // Custom extractor that extracts from XML-like format
-class XmlJsonExtractor implements CanExtractContent
+class XmlJsonExtractor implements CanExtractResponse
 {
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
         // Simple pattern: <json>{"data":"here"}</json>
-        if (preg_match('/<json>(.*?)<\/json>/s', $content, $matches)) {
-            return Result::success($matches[1]);
+        if (preg_match('/<json>(.*?)<\/json>/s', $input->content, $matches)) {
+            $json = trim($matches[1]);
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+            if (!is_array($decoded)) {
+                throw new ExtractionException('XML-wrapped JSON must decode to object or array');
+            }
+            return $decoded;
         }
-        return Result::failure('No XML-wrapped JSON found');
+
+        throw new ExtractionException('No XML-wrapped JSON found');
     }
 
     public function name(): string

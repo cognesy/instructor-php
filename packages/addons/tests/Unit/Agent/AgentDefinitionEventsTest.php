@@ -2,19 +2,19 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Collections\NameList;
 use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition;
+use Cognesy\Addons\AgentBuilder\Support\AbstractAgent;
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Events\AgentFinished;
 use Cognesy\Addons\Agent\Events\AgentStateUpdated;
 use Cognesy\Addons\Agent\Events\AgentStepCompleted;
 use Cognesy\Addons\Agent\Events\AgentStepStarted;
 use Cognesy\Addons\Agent\Events\ContinuationEvaluated;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Utils\Result\Result;
 use Cognesy\Messages\Messages;
 
 final class TestEventHandler implements CanHandleEvents
@@ -53,7 +53,7 @@ final class TestEventHandler implements CanHandleEvents
     }
 }
 
-final class EventAgentDefinition extends AbstractAgentDefinition
+final class EventAgentDefinition extends AbstractAgent
 {
     public function descriptor(): AgentDescriptor
     {
@@ -77,13 +77,13 @@ final class EventAgentDefinition extends AbstractAgentDefinition
         return ['ok' => true];
     }
 
-    public static function fromConfig(array $config): Result
+    public static function fromConfig(array $config): AgentInterface
     {
-        return Result::success(new self());
+        return new self();
     }
 }
 
-describe('AbstractAgentDefinition events', function () {
+describe('AbstractAgent events', function () {
     it('emits core agent lifecycle events', function () {
         $definition = new EventAgentDefinition();
         $captured = [];

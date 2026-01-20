@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Tools;
 
-use Cognesy\Addons\Agent\Capabilities\File\ReadFileTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\ReadFileTool;
 
 describe('ReadFileTool', function () {
 

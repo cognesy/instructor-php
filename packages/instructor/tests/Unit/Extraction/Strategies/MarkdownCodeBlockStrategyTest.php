@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction\Strategies;
 
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 describe('MarkdownBlockExtractor', function () {
     beforeEach(function () {
@@ -23,10 +26,9 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('{"name":"John","age":30}');
+        expect($result)->toBe(['name' => 'John', 'age' => 30]);
     });
 
     it('extracts JSON from ```JSON block (uppercase)', function () {
@@ -36,10 +38,9 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('{"name":"John"}');
+        expect($result)->toBe(['name' => 'John']);
     });
 
     it('extracts JSON from plain ``` block', function () {
@@ -49,10 +50,9 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('{"name":"John"}');
+        expect($result)->toBe(['name' => 'John']);
     });
 
     it('handles newlines in JSON', function () {
@@ -65,18 +65,15 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        $decoded = json_decode($result->unwrap(), true);
-        expect($decoded)->toBe(['name' => 'John', 'age' => 30]);
+        expect($result)->toBe(['name' => 'John', 'age' => 30]);
     });
 
     it('fails when no code block present', function () {
-        $result = $this->extractor->extract('{"name":"John"}');
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toBe('No markdown code block found');
+        $input = ExtractionInput::fromContent('{"name":"John"}', OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'No markdown code block found');
     });
 
     it('fails on empty code block', function () {
@@ -85,10 +82,9 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toBe('Empty code block');
+        $input = ExtractionInput::fromContent($content, OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Empty code block');
     });
 
     it('fails on invalid JSON in code block', function () {
@@ -98,10 +94,9 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toContain('Invalid JSON in code block');
+        $input = ExtractionInput::fromContent($content, OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Invalid JSON in code block');
     });
 
     it('extracts first code block when multiple present', function () {
@@ -115,18 +110,16 @@ describe('MarkdownBlockExtractor', function () {
         ```
         MD;
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('{"first":"one"}');
+        expect($result)->toBe(['first' => 'one']);
     });
 
     it('handles code block with no space after json', function () {
         $content = '```json{"name":"John"}```';
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('{"name":"John"}');
+        expect($result)->toBe(['name' => 'John']);
     });
 });

@@ -3,5 +3,15 @@
 namespace Cognesy\Addons\Chat\Exceptions;
 
 use Cognesy\Addons\StepByStep\Exceptions\StepByStepException;
+use Throwable;
 
-class ChatException extends StepByStepException {}
+/**
+ * @phpstan-consistent-constructor
+ */
+class ChatException extends StepByStepException
+{
+    #[\Override]
+    public static function fromThrowable(Throwable $throwable): self {
+        return new self($throwable->getMessage(), (int)$throwable->getCode(), $throwable);
+    }
+}

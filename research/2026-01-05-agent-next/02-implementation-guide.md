@@ -260,9 +260,9 @@ public function toSystemPrompt(): string {
 
 ```php
 // packages/addons/src/Agent/Capabilities/Suggestion/UseAgentSuggestions.php
-namespace Cognesy\Addons\Agent\Capabilities\Suggestion;
+namespace Cognesy\Addons\AgentBuilder\Capabilities\Suggestion;
 
-use Cognesy\Addons\Agent\Capabilities\Capability;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\Capability;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
 
 class UseAgentSuggestions implements Capability
 {
@@ -560,7 +560,7 @@ $registry->loadFromDirectory('agents/');
 <?php
 require 'vendor/autoload.php';
 
-use Cognesy\Addons\Agent\AgentBuilder;use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;use Cognesy\Addons\Agent\Capabilities\Suggestion\UseAgentSuggestions;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Registry\AgentRegistry;use Cognesy\Messages\Messages;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;use Cognesy\Addons\AgentBuilder\Capabilities\Suggestion\UseAgentSuggestions;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Messages\Messages;
 
 // 1. Load agent definitions from markdown
 $registry = new AgentRegistry();

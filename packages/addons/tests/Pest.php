@@ -11,7 +11,9 @@
 |
 */
 
-// uses(Tests\TestCase::class)->in('Feature');
+use Cognesy\Addons\Tests\TestCase;
+
+uses(TestCase::class)->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -25,19 +27,22 @@
 */
 
 expect()->extend('toBeOne', function () {
+    /** @phpstan-ignore-next-line */
     return $this->toBe(1);
 });
 
 expect()->extend('toBeCloseTo', function (float $expected, int $precision = 8) {
     $epsilon = 1 / (10 ** $precision);
+    /** @phpstan-ignore-next-line */
     $actual = $this->value;
     $diff = abs($expected - $actual);
     $message = "Failed asserting that %.{$precision}f matches expected %.{$precision}f within epsilon %.{$precision}f.";
     PHPUnit\Framework\Assert::assertLessThanOrEqual(
-        expected: $epsilon,
+        maximum: $epsilon,
         actual: $diff,
         message: sprintf($message, $actual, $expected, $epsilon)
     );
+    /** @phpstan-ignore-next-line */
     return $this;
 });
 

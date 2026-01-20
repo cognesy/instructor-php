@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Tests\Unit\Extraction\Strategies;
 
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 describe('DirectJsonExtractor', function () {
     beforeEach(function () {
@@ -18,71 +21,69 @@ describe('DirectJsonExtractor', function () {
     it('extracts valid JSON object', function () {
         $content = '{"name":"John","age":30}';
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe($content);
+        expect($result)->toBe(['name' => 'John', 'age' => 30]);
     });
 
     it('extracts valid JSON array', function () {
         $content = '[1, 2, 3]';
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe($content);
+        expect($result)->toBe([1, 2, 3]);
     });
 
     it('handles whitespace around JSON', function () {
         $content = "  \n  {\"name\":\"John\"}  \n  ";
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('{"name":"John"}');
+        expect($result)->toBe(['name' => 'John']);
     });
 
     it('fails on empty content', function () {
-        $result = $this->extractor->extract('');
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toBe('Empty content');
+        $input = ExtractionInput::fromContent('', OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Empty content');
     });
 
     it('fails on whitespace-only content', function () {
-        $result = $this->extractor->extract("   \n\t  ");
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toBe('Empty content');
+        $input = ExtractionInput::fromContent("   \n\t  ", OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Empty content');
     });
 
     it('fails on invalid JSON', function () {
-        $result = $this->extractor->extract('{invalid}');
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toContain('Not valid JSON');
+        $input = ExtractionInput::fromContent('{invalid}', OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Not valid JSON');
     });
 
     it('fails on plain text', function () {
-        $result = $this->extractor->extract('This is just plain text');
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toContain('Not valid JSON');
+        $input = ExtractionInput::fromContent('This is just plain text', OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Not valid JSON');
     });
 
     it('fails on JSON with surrounding text', function () {
-        $result = $this->extractor->extract('Here is some JSON: {"name":"John"}');
-
-        expect($result->isFailure())->toBeTrue();
-        expect($result->errorMessage())->toContain('Not valid JSON');
+        $input = ExtractionInput::fromContent('Here is some JSON: {"name":"John"}', OutputMode::Json);
+        expect(fn() => $this->extractor->extract($input))
+            ->toThrow(ExtractionException::class, 'Not valid JSON');
     });
 
     it('extracts nested JSON', function () {
         $content = '{"user":{"name":"John","address":{"city":"NYC"}}}';
 
-        $result = $this->extractor->extract($content);
+        $result = $this->extractor->extract(ExtractionInput::fromContent($content, OutputMode::Json));
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe($content);
+        expect($result)->toBe([
+            'user' => [
+                'name' => 'John',
+                'address' => [
+                    'city' => 'NYC',
+                ],
+            ],
+        ]);
     });
 });

@@ -1,7 +1,10 @@
 <?php
 namespace Cognesy\Addons\Tests\Examples\Call;
 
-class TestClass {
+/**
+ * @phpstan-consistent-constructor
+ */
+final class TestClass {
     public int $intField;
     public string $stringField;
     public bool $boolField;

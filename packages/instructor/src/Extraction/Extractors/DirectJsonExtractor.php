@@ -2,8 +2,9 @@
 
 namespace Cognesy\Instructor\Extraction\Extractors;
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use JsonException;
 
 /**
@@ -14,23 +15,28 @@ use JsonException;
  *
  * Best for: Clean API responses, structured output modes
  */
-class DirectJsonExtractor implements CanExtractContent
+class DirectJsonExtractor implements CanExtractResponse
 {
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        $trimmed = trim($content);
+        $trimmed = trim($input->content);
 
         if ($trimmed === '') {
-            return Result::failure('Empty content');
+            throw new ExtractionException('Empty content');
         }
 
         try {
-            json_decode($trimmed, associative: true, flags: JSON_THROW_ON_ERROR);
-            return Result::success($trimmed);
+            $decoded = json_decode($trimmed, associative: true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            return Result::failure("Not valid JSON: {$e->getMessage()}");
+            throw new ExtractionException("Not valid JSON: {$e->getMessage()}", $e);
         }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException('JSON must decode to object or array');
+        }
+
+        return $decoded;
     }
 
     #[\Override]

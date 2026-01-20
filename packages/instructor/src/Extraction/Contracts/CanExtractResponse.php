@@ -1,14 +1,8 @@
-<?php
-
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Cognesy\Instructor\Extraction\Contracts;
 
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Result\Result;
-use Throwable;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 
 /**
  * Contract for extracting structured data from LLM responses.
@@ -19,11 +13,15 @@ use Throwable;
 interface CanExtractResponse
 {
     /**
-     * Extract structured data from an inference response.
+     * Extract structured data from prepared input.
      *
-     * @param InferenceResponse $response The raw LLM response
-     * @param OutputMode $mode The output mode used for the request
-     * @return Result<array<array-key, mixed>, Throwable> Success with extracted array or Failure
+     * @return array<array-key, mixed>
+     * @throws \Throwable
      */
-    public function extract(InferenceResponse $response, OutputMode $mode): Result;
+    public function extract(ExtractionInput $input): array;
+
+    /**
+     * Extractor name for debugging and logging.
+     */
+    public function name(): string;
 }

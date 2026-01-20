@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
 use Cognesy\Messages\Messages;

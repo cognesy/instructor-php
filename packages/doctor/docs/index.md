@@ -58,5 +58,6 @@ examples/                # Cookbook examples
 ## Topics
 
 - [LLM Documentation](llm-docs.md) - Generate LLM-friendly documentation (llms.txt)
+- [Examples Configuration](examples-configuration.md) - Control example sources and cookbook grouping
 - [Navigation Ordering](navigation-ordering.md) - Control documentation structure with metadata
 - [Package Discovery](package-discovery.md) - How packages are autodiscovered

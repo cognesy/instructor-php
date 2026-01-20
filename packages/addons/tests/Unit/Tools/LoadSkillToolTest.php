@@ -2,8 +2,8 @@
 
 namespace Tests\Addons\Unit\Tools;
 
-use Cognesy\Addons\Agent\Capabilities\Skills\LoadSkillTool;
-use Cognesy\Addons\Agent\Capabilities\Skills\SkillLibrary;
+use Cognesy\Addons\AgentBuilder\Capabilities\Skills\LoadSkillTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Skills\SkillLibrary;
 
 describe('LoadSkillTool', function () {
 

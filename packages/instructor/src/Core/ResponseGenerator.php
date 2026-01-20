@@ -8,6 +8,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Validation\ValidationResult;
@@ -42,15 +43,16 @@ class ResponseGenerator implements CanGenerateResponse
         }
 
         // Array-first pipeline: extract → deserialize → validate → transform
-        $extractResult = $this->extractor->extract($response, $mode);
-        if ($extractResult->isFailure()) {
-            $this->events->dispatch(new ResponseGenerationFailed(['error' => $extractResult->error()]));
-            return $extractResult;
+        try {
+            $data = $this->extractor->extract(ExtractionInput::fromResponse($response, $mode));
+        } catch (Throwable $error) {
+            $this->events->dispatch(new ResponseGenerationFailed(['error' => $error]));
+            return Result::failure($error->getMessage());
         }
 
         // Stage 2-4: Deserialize, Validate, Transform via pipeline
         $pipeline = $this->makePipeline($responseModel);
-        return $pipeline->executeWith(ProcessingState::with($extractResult->unwrap()))->result();
+        return $pipeline->executeWith(ProcessingState::with($data))->result();
     }
 
     /**

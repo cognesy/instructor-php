@@ -2,7 +2,8 @@
 
 namespace Cognesy\InstructorHub;
 
-use Cognesy\Config\BasePath;
+use Cognesy\InstructorHub\Config\ExampleSourcesConfig;
+use Cognesy\InstructorHub\Config\ExampleGroupingConfig;
 use Cognesy\InstructorHub\Commands\CleanCommand;
 use Cognesy\InstructorHub\Commands\EnhancedRunAllExamples;
 use Cognesy\InstructorHub\Commands\ErrorsCommand;
@@ -82,9 +83,9 @@ HELP;
 
     private function registerServices(): void
     {
-        $this->exampleRepo = new ExampleRepository(
-            BasePath::get('examples'),
-        );
+        $sources = (new ExampleSourcesConfig())->load();
+        $grouping = (new ExampleGroupingConfig())->load();
+        $this->exampleRepo = new ExampleRepository($sources, $grouping);
 
         $this->statusRepo = new StatusRepository();
 

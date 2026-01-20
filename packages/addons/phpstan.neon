@@ -3,8 +3,9 @@ parameters:
   paths:
     - src
     - tests
-    - src-hub
-    - config
   reportUnmatchedIgnoredErrors: false
-  checkGenericClassInNonGenericObjectType: false
+  universalObjectCratesClasses:
+    - PHPUnit\Framework\TestCase
+  ignoreErrors:
+    - identifier: missingType.generics
   tmpDir: /tmp

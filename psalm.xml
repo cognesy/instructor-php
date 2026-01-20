@@ -51,8 +51,8 @@
         <!-- Suppress covariance issues with generic state processors (AgentState vs object) -->
         <InvalidArgument>
             <errorLevel type="suppress">
-                <referencedFunction name="Cognesy\Addons\Agent\AgentBuilder::addProcessor"/>
-                <referencedFunction name="Cognesy\Addons\Agent\AgentBuilder::addContinuationCriteria"/>
+                <referencedFunction name="Cognesy\Addons\AgentBuilder\AgentBuilder::addProcessor"/>
+                <referencedFunction name="Cognesy\Addons\AgentBuilder\AgentBuilder::addContinuationCriteria"/>
                 <referencedFunction name="Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria::from"/>
                 <!-- CachedContext type mismatch - needs API update -->
                 <referencedFunction name="Cognesy\Instructor\StructuredOutput::withCachedContext"/>

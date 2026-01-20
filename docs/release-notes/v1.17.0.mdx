@@ -7,10 +7,10 @@
 Overhaul of the Agent system with a modular, capability-based design:
 
 ```php
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
-use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
-use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning;
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
@@ -110,8 +110,8 @@ All 14+ drivers now declare support for:
 Declarative agent definitions with registry-based discovery:
 
 ```php
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
-use Cognesy\Addons\Agent\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
 
 $registry = new AgentRegistry();
 $registry->register('researcher', AgentSpec::from([

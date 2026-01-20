@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Feature\Core;
 
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Enums\AgentStepType;

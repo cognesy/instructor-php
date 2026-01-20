@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataListTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\MetadataListTool;
 use Cognesy\Utils\Json\EmptyObject;
 
 describe('MetadataListTool schema', function () {

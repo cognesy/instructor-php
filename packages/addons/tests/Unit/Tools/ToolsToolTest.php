@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\Tools\ToolRegistry;
-use Cognesy\Addons\Agent\Tools\ToolsTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tools\ToolRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tools\ToolsTool;
 use Cognesy\Addons\Agent\Tools\Testing\MockTool;
 
 it('lists available tools', function () {

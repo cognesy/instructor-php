@@ -2,11 +2,11 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\Definitions\AgentDefinition;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionExecution;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionLlm;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionRegistry;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionTools;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionExecution;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionLlm;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionRegistry;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionTools;
 use Cognesy\Addons\Agent\Exceptions\AgentNotFoundException;
 use Tests\Addons\Support\TestHelpers;
 

@@ -3,6 +3,8 @@
 namespace Cognesy\Doctor;
 
 use Cognesy\Config\BasePath;
+use Cognesy\InstructorHub\Config\ExampleGroupingConfig;
+use Cognesy\InstructorHub\Config\ExampleSourcesConfig;
 use Cognesy\Doctor\Docgen\MintlifyDocumentation;
 use Cognesy\Doctor\Docgen\MkDocsDocumentation;
 use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
@@ -57,9 +59,9 @@ class Docs extends Application
     private function registerServices(): void
     {
         // Example repository for docs generation
-        $this->examples = new ExampleRepository(
-            BasePath::get('examples'),
-        );
+        $sources = (new ExampleSourcesConfig())->load();
+        $grouping = (new ExampleGroupingConfig())->load();
+        $this->examples = new ExampleRepository($sources, $grouping);
 
         $this->docsSourceDir = BasePath::get('docs');
         $this->docsTargetDir = BasePath::get('docs-build');

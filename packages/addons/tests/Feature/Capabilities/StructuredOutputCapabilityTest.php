@@ -2,10 +2,10 @@
 
 namespace Tests\Addons\Feature\Capabilities;
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaRegistry;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\StructuredOutputResult;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputResult;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;

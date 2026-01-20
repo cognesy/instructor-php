@@ -2,8 +2,9 @@
 
 namespace Cognesy\Instructor\Extraction\Extractors;
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use JsonException;
 
 /**
@@ -16,19 +17,19 @@ use JsonException;
  *
  * Best for: Complex JSON with nested objects and strings containing braces
  */
-class SmartBraceExtractor implements CanExtractContent
+class SmartBraceExtractor implements CanExtractResponse
 {
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        $length = strlen($content);
+        $length = strlen($input->content);
         $depth = 0;
         $start = null;
         $inString = false;
         $escaped = false;
 
         for ($i = 0; $i < $length; $i++) {
-            $char = $content[$i];
+            $char = $input->content[$i];
 
             // Handle escape sequences
             if ($escaped) {
@@ -63,20 +64,27 @@ class SmartBraceExtractor implements CanExtractContent
 
                 // Found complete JSON object
                 if ($depth === 0 && $start !== null) {
-                    $json = substr($content, $start, $i - $start + 1);
+                    $json = substr($input->content, $start, $i - $start + 1);
 
                     try {
-                        json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-                        return Result::success($json);
+                        $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
                     } catch (JsonException) {
                         // Continue searching for another valid object
                         $start = null;
+                        continue;
                     }
+
+                    if (!is_array($decoded)) {
+                        $start = null;
+                        continue;
+                    }
+
+                    return $decoded;
                 }
             }
         }
 
-        return Result::failure('No valid JSON found with smart brace matching');
+        throw new ExtractionException('No valid JSON found with smart brace matching');
     }
 
     #[\Override]

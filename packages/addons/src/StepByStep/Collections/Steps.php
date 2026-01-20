@@ -12,6 +12,7 @@ use Traversable;
  * @template TStep of object
  * @implements HasSteps<TStep>
  * @implements IteratorAggregate<int, TStep>
+ * @phpstan-consistent-constructor
  */
 readonly class Steps implements HasSteps, Countable, IteratorAggregate
 {

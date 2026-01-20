@@ -2,14 +2,21 @@
 namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\Config\BasePath;
+use Cognesy\InstructorHub\Config\ExampleGrouping;
+use Cognesy\InstructorHub\Config\ExampleSource;
+use Cognesy\InstructorHub\Config\ExampleSources;
 use Cognesy\InstructorHub\Data\Example;
+use Cognesy\InstructorHub\Data\ExampleGroupAssignment;
 use Cognesy\InstructorHub\Data\ExampleGroup;
+use Cognesy\InstructorHub\Data\ExampleLocation;
 
 class ExampleRepository {
-    public string $baseDir = '';
+    private ExampleSources $sources;
+    private ExampleGrouping $grouping;
 
-    public function __construct(string $baseDir) {
-        $this->baseDir = $this->withEndingSlash($baseDir ?: ($this->guessBaseDir() . '/'));
+    public function __construct(?ExampleSources $sources = null, ?ExampleGrouping $grouping = null) {
+        $this->sources = $sources ?? ExampleSources::legacy($this->guessBaseDir());
+        $this->grouping = $grouping ?? ExampleGrouping::empty();
     }
 
     /** @return ExampleGroup[] */
@@ -22,16 +29,11 @@ class ExampleRepository {
      * @return array<Example>
      */
     public function forEachExample(callable $callback, string $path = '') : array {
-        $directories = $this->getExampleDirectories();
-        // loop through the files and select only directories
+        $locations = $this->getExampleLocations();
         $index = 1;
         $list = [];
-        foreach ($directories as $file) {
-            // check if run.php exists in the directory
-            if (!$this->exampleExists($file)) {
-                continue;
-            }
-            $example = $this->getExample($file, $index);
+        foreach ($locations as $location) {
+            $example = $this->getExample($location, $index);
             if (!$callback($example)) {
                 break;
             }
@@ -45,16 +47,17 @@ class ExampleRepository {
         // handle example provided by index
         $example = (int) $input;
         if ($example > 0) {
-            $list = $this->getExampleDirectories();
-            $index = $example - 1;
-            if (isset($list[$index])) {
-                return $this->getExample($list[$index], $index);
+            $locations = $this->getExampleLocations();
+            $offset = $example - 1;
+            if (isset($locations[$offset])) {
+                return $this->getExample($locations[$offset], $offset);
             }
         }
-        if (!$this->exampleExists($input)) {
+        $location = $this->findExampleLocation($input);
+        if ($location === null) {
             return null;
         }
-        return $this->getExample($input);
+        return $this->getExample($location);
     }
 
     /** @return array<Example> */
@@ -93,17 +96,18 @@ class ExampleRepository {
         return $groups;
     }
 
-    private function getExample(string $path, int $index = 0) : Example {
-        return Example::fromFile($this->baseDir, $path, $index);
+    private function getExample(ExampleLocation $location, int $index = 0) : Example {
+        $assignment = $this->groupAssignment($location);
+        return Example::fromFile($location->source->baseDir, $location->path, $index, $assignment);
     }
 
-    private function getRunPath(string $path) : string {
-        return $this->baseDir . $path . '/run.php';
+    private function getRunPath(ExampleSource $source, string $path) : string {
+        return $source->baseDir . $path . '/run.php';
     }
 
     /** @phpstan-ignore-next-line */
-    private function getContent(string $path) : string {
-        $runPath = $this->getRunPath($path);
+    private function getContent(ExampleSource $source, string $path) : string {
+        $runPath = $this->getRunPath($source, $path);
         $content = file_get_contents($runPath);
         if ($content === false) {
             throw new \RuntimeException("Failed to read file: {$runPath}");
@@ -116,8 +120,8 @@ class ExampleRepository {
         return $this->cleanStr($header, 60);
     }
 
-    private function exampleExists(string $path) : bool {
-        $runPath = $this->getRunPath($path);
+    private function exampleExists(ExampleSource $source, string $path) : bool {
+        $runPath = $this->getRunPath($source, $path);
         return file_exists($runPath);
     }
 
@@ -126,21 +130,54 @@ class ExampleRepository {
         return BasePath::get('examples');
     }
 
-    private function getExampleDirectories() : array {
-        $files = $this->getSubdirectories('');
+    /**
+     * @return ExampleLocation[]
+     */
+    private function getExampleLocations() : array {
+        $locations = [];
+        $seen = [];
+        foreach ($this->sources as $source) {
+            $directories = $this->getExampleDirectories($source);
+            foreach ($directories as $path) {
+                if (!$this->exampleExists($source, $path)) {
+                    continue;
+                }
+                if (isset($seen[$path])) {
+                    continue;
+                }
+                $locations[] = new ExampleLocation($source, $path);
+                $seen[$path] = true;
+            }
+        }
+        return $this->grouping->sortLocations($locations);
+    }
+
+    private function getExampleDirectories(ExampleSource $source) : array {
+        $files = $this->getSubdirectories($source->baseDir, '');
         $directories = [];
-        foreach ($files as $key => $file) {
-            // check if the file is a directory
-            if (!is_dir($this->baseDir . '/' . $file)) {
+        foreach ($files as $file) {
+            if (!is_dir($source->baseDir . $file)) {
                 continue;
             }
-            $directories[] = $this->getSubdirectories($file);
+            $directories[] = $this->getSubdirectories($source->baseDir, $file);
         }
         return array_merge([], ...$directories);
     }
 
-    private function getSubdirectories(string $path) : array {
-        $fullPath = $this->baseDir . $path;
+    private function findExampleLocation(string $path) : ?ExampleLocation {
+        foreach ($this->sources as $source) {
+            if ($this->exampleExists($source, $path)) {
+                return new ExampleLocation($source, $path);
+            }
+        }
+        return null;
+    }
+
+    private function getSubdirectories(string $baseDir, string $path) : array {
+        $fullPath = $baseDir . $path;
+        if (!is_dir($fullPath)) {
+            return [];
+        }
         $files = scandir($fullPath) ?: [];
         $files = array_diff($files, ['.', '..']);
         $directories = [];
@@ -152,13 +189,22 @@ class ExampleRepository {
         return array_merge([], $directories);
     }
 
+    private function groupAssignment(ExampleLocation $location): ?ExampleGroupAssignment
+    {
+        if ($this->grouping->isEmpty()) {
+            return null;
+        }
+
+        return $this->grouping->assignmentFor($location);
+    }
+
     /** @phpstan-ignore-next-line */
-    private function hasSubdirectories(string $path) : bool {
-        $runPath = $this->baseDir . $path;
+    private function hasSubdirectories(ExampleSource $source, string $path) : bool {
+        $runPath = $source->baseDir . $path;
         if (!is_dir($runPath)) {
             return false;
         }
-        $directories = $this->getSubdirectories($path);
+        $directories = $this->getSubdirectories($source->baseDir, $path);
         return count($directories) > 0;
     }
 
@@ -192,7 +238,4 @@ class ExampleRepository {
         return '';
     }
 
-    private function withEndingSlash(string $path) : string {
-        return rtrim($path, '/') . '/';
-    }
 }

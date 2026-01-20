@@ -2,8 +2,9 @@
 
 namespace Cognesy\Instructor\Extraction\Extractors;
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use JsonException;
 
 /**
@@ -16,33 +17,38 @@ use JsonException;
  *
  * Best for: LLM responses that wrap JSON in markdown formatting
  */
-class MarkdownBlockExtractor implements CanExtractContent
+class MarkdownBlockExtractor implements CanExtractResponse
 {
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        $trimmed = trim($content);
+        $trimmed = trim($input->content);
 
         // Pattern matches: ```json ... ``` or ``` ... ```
         // Captures content between code fence markers
         $pattern = '/```(?:json|JSON)?\s*\n?(.*?)\n?\s*```/s';
 
         if (!preg_match($pattern, $trimmed, $matches)) {
-            return Result::failure('No markdown code block found');
+            throw new ExtractionException('No markdown code block found');
         }
 
         $json = trim($matches[1]);
 
         if ($json === '') {
-            return Result::failure('Empty code block');
+            throw new ExtractionException('Empty code block');
         }
 
         try {
-            json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-            return Result::success($json);
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            return Result::failure("Invalid JSON in code block: {$e->getMessage()}");
+            throw new ExtractionException("Invalid JSON in code block: {$e->getMessage()}", $e);
         }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException('Code block JSON must decode to object or array');
+        }
+
+        return $decoded;
     }
 
     #[\Override]

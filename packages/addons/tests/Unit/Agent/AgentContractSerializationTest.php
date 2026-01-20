@@ -2,16 +2,16 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Collections\NameList;
 use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition;
+use Cognesy\Addons\AgentBuilder\Support\AbstractAgent;
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Messages\Messages;
-use Cognesy\Utils\Result\Result;
 
-final class ConfiguredAgentDefinition extends AbstractAgentDefinition
+final class ConfiguredAgentDefinition extends AbstractAgent
 {
     public function __construct(
         private readonly string $workspace,
@@ -45,23 +45,23 @@ final class ConfiguredAgentDefinition extends AbstractAgentDefinition
         ];
     }
 
-    public static function fromConfig(array $config): Result
+    public static function fromConfig(array $config): AgentInterface
     {
         $workspace = $config['workspace'] ?? '/tmp';
         $maxSteps = $config['max_steps'] ?? 1;
 
         if (!is_string($workspace) || !is_int($maxSteps)) {
-            return Result::failure(new \InvalidArgumentException('Invalid agent config.'));
+            throw new \InvalidArgumentException('Invalid agent config.');
         }
 
-        return Result::success(new self($workspace, $maxSteps));
+        return new self($workspace, $maxSteps);
     }
 }
 
 describe('Agent contract serialization', function () {
     it('round-trips agent config via serializeConfig/fromConfig', function () {
         $config = ['workspace' => '/var/app', 'max_steps' => 3];
-        $agent = ConfiguredAgentDefinition::fromConfig($config)->unwrap();
+        $agent = ConfiguredAgentDefinition::fromConfig($config);
 
         expect($agent->serializeConfig())->toBe($config);
     });
@@ -70,7 +70,7 @@ describe('Agent contract serialization', function () {
         $agent = ConfiguredAgentDefinition::fromConfig([
             'workspace' => '/var/app',
             'max_steps' => 1,
-        ])->unwrap();
+        ]);
 
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('ping'));

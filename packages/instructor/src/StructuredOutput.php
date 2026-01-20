@@ -20,7 +20,6 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
@@ -65,7 +64,7 @@ class StructuredOutput
     protected array $transformers = [];
     protected array $deserializers = [];
     protected ?CanExtractResponse $extractor = null;
-    /** @var array<CanExtractContent|class-string<CanExtractContent>> */
+    /** @var array<CanExtractResponse|class-string<CanExtractResponse>> */
     protected array $extractors = [];
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
@@ -517,9 +516,9 @@ class StructuredOutput
      * a ResponseExtractor with the specified extractors for both sync and
      * streaming operations.
      *
-     * @param CanExtractContent|class-string<CanExtractContent> ...$extractors Custom extractors
+     * @param CanExtractResponse|class-string<CanExtractResponse> ...$extractors Custom extractors
      */
-    public function withExtractors(CanExtractContent|string ...$extractors): static {
+    public function withExtractors(CanExtractResponse|string ...$extractors): static {
         $this->extractors = $extractors;
         return $this;
     }

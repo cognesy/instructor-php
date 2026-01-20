@@ -398,10 +398,7 @@ class Agent extends StepByStep
     }
 
     private function addExecutionTimeIfSupported(AgentState $state, float $seconds): AgentState {
-        if ($state instanceof CanTrackExecutionTime) {
-            return $state->withAddedExecutionTime($seconds);
-        }
-        return $state;
+        return $state->withAddedExecutionTime($seconds);
     }
 
     /**

@@ -1,3 +1,16 @@
+---
+title: 'Generating JSON Schema from PHP classes'
+docname: 'json_schema_api'
+---
+
+## Overview
+
+Polyglot has a built-in support for dynamically constructing tool calling schema using
+`JsonSchema` class.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -47,3 +60,4 @@ assert(is_string($data['name']));
 assert(is_int($data['population']));
 assert(is_int($data['founded']));
 ?>
+```

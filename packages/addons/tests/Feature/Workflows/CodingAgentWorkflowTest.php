@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Bash\BashTool;
-use Cognesy\Addons\Agent\Capabilities\File\EditFileTool;
-use Cognesy\Addons\Agent\Capabilities\File\ReadFileTool;
-use Cognesy\Addons\Agent\Capabilities\File\WriteFileTool;
-use Cognesy\Addons\Agent\Capabilities\Tasks\PersistTasksProcessor;
-use Cognesy\Addons\Agent\Capabilities\Tasks\TodoWriteTool;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\BashTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\EditFileTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\ReadFileTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\WriteFileTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\Enums\AgentStepType;

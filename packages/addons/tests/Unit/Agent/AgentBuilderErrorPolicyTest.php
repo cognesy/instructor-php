@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Collections\ToolExecutions;
 use Cognesy\Addons\Agent\Core\Data\AgentExecution;
 use Cognesy\Addons\Agent\Core\Data\AgentState;

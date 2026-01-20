@@ -5,9 +5,12 @@ namespace Cognesy\Addons\StepByStep\Exceptions;
 use RuntimeException;
 use Throwable;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class StepByStepException extends RuntimeException
 {
-    public static function fromThrowable(Throwable $throwable): static {
-        return new static($throwable->getMessage(), (int)$throwable->getCode(), $throwable);
+    public static function fromThrowable(Throwable $throwable): self {
+        return new self($throwable->getMessage(), (int)$throwable->getCode(), $throwable);
     }
 }

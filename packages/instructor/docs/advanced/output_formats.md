@@ -423,18 +423,31 @@ $result = (new StructuredOutput)
 Create your own extractor for special formats:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 
-class XmlJsonExtractor implements CanExtractContent
+class XmlJsonExtractor implements CanExtractResponse
 {
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
         // Extract JSON from <data>...</data> tags
-        if (preg_match('/<data>(.*?)<\/data>/s', $content, $matches)) {
-            return Result::success($matches[1]);
+        if (!preg_match('/<data>(.*?)<\/data>/s', $input->content, $matches)) {
+            throw new ExtractionException('No data tags found');
         }
-        return Result::failure('No data tags found');
+
+        $json = trim($matches[1]);
+        try {
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new ExtractionException('Invalid JSON in data tags', $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException('Expected object or array in data tags');
+        }
+
+        return $decoded;
     }
 
     public function name(): string
@@ -460,24 +473,27 @@ For complete control over the extraction pipeline, implement `CanExtractResponse
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 
 class CustomExtractor implements CanExtractResponse
 {
-    public function extract(InferenceResponse $response, OutputMode $mode): Result
+    public function extract(ExtractionInput $input): array
     {
-        $content = $response->content();
+        $content = $input->content;
 
         // Custom extraction logic
         $data = $this->parseCustomFormat($content);
 
-        return Result::success($data);
+        return $data;
     }
 
     private function parseCustomFormat(string $content): array
     {
+        if ($content === '') {
+            throw new ExtractionException('Empty content');
+        }
+
         // Your custom parsing logic
         return ['parsed' => 'data'];
     }

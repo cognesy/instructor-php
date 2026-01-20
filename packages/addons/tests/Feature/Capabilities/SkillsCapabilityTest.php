@@ -2,9 +2,9 @@
 
 namespace Tests\Addons\Feature\Capabilities;
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Skills\SkillLibrary;
-use Cognesy\Addons\Agent\Capabilities\Skills\UseSkills;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Skills\SkillLibrary;
+use Cognesy\Addons\AgentBuilder\Capabilities\Skills\UseSkills;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;

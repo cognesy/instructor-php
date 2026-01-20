@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Extraction\Buffers;
 
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
-use Cognesy\Utils\Result\Result;
 
 /**
  * Text content buffer for text-based modes.
@@ -36,8 +35,8 @@ final readonly class TextBuffer implements CanBufferContent
     }
 
     #[\Override]
-    public function parsed(): Result {
-        return Result::failure('Text buffer does not support structured parsing');
+    public function parsed(): ?array {
+        return null;
     }
 
     #[\Override]

@@ -24,7 +24,7 @@ $data = (new StructuredOutput)
     ->intoArray()
     ->get();
 // Returns: ['name' => 'John', 'age' => 30]
-// @doctest id="7664"
+// @doctest id="8a2e"
 ```
 
 ## Available Output Formats
@@ -42,7 +42,7 @@ $data = (new StructuredOutput)
 
 // Result: ['name' => 'John Doe', 'age' => 30]
 dump($data['name']);  // 'John Doe'
-// @doctest id="568d"
+// @doctest id="5b42"
 ```
 
 **Use cases:**
@@ -73,7 +73,7 @@ DB::table('users')->insert($userData);
 
 // Or return as JSON API response
 return response()->json($userData);
-// @doctest id="e947"
+// @doctest id="a954"
 ```
 
 ---
@@ -90,7 +90,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Result: UserDTO instance with subset of fields
-// @doctest id="7fcb"
+// @doctest id="d0d4"
 ```
 
 **Use cases:**
@@ -130,7 +130,7 @@ $user = (new StructuredOutput)
 echo $user->fullName;  // 'John Smith'
 echo $user->email;     // 'john@example.com'
 // phoneNumber and address were extracted but not included in output
-// @doctest id="07a9"
+// @doctest id="5a5b"
 ```
 
 ---
@@ -147,7 +147,7 @@ $scalar = (new StructuredOutput)
     ->get();
 
 // Result: Scalar object with custom deserialization logic
-// @doctest id="21e7"
+// @doctest id="07aa"
 ```
 
 **Use cases:**
@@ -177,7 +177,7 @@ $sentiment = (new StructuredOutput)
     ->get();
 
 dump($sentiment);  // 'positive' (string)
-// @doctest id="0195"
+// @doctest id="ba37"
 ```
 
 **Custom self-deserializing object:**
@@ -217,7 +217,7 @@ $price = (new StructuredOutput)
     ->get();
 
 // $price is Money instance with custom deserialization
-// @doctest id="1cbd"
+// @doctest id="d9c9"
 ```
 
 ---
@@ -246,7 +246,7 @@ foreach ($stream->partials() as $partial) {
 // Get final result as array
 $finalArticle = $stream->finalValue();
 // Returns: ['title' => '...', 'author' => '...', 'content' => '...']
-// @doctest id="efcd"
+// @doctest id="6756"
 ```
 
 **Why this design?**
@@ -288,7 +288,7 @@ if ($data['age'] < 18) {
 } else {
     $user = new AdultUser(...$data);
 }
-// @doctest id="601d"
+// @doctest id="0447"
 ```
 
 ### Pattern 2: Data Enrichment
@@ -308,7 +308,7 @@ $data['age_group'] = $data['age'] < 30 ? 'young' : 'senior';
 
 // Then create object
 $person = new Person(...$data);
-// @doctest id="7d64"
+// @doctest id="8acd"
 ```
 
 ### Pattern 3: Multi-Layer Architecture
@@ -339,7 +339,7 @@ $order = (new StructuredOutput)
     ->intoInstanceOf(OrderDTO::class)        // Simple application DTO
     ->with(messages: 'Extract order details')
     ->get();
-// @doctest id="7c3f"
+// @doctest id="b5fb"
 ```
 
 ---
@@ -358,7 +358,7 @@ $data = (new StructuredOutput)
 
 // Schema sent to LLM still includes all 5 fields from UserProfile
 // Only the deserialization step is different
-// @doctest id="245a"
+// @doctest id="8154"
 ```
 
 ### Validation Behavior
@@ -384,7 +384,7 @@ $data = (new StructuredOutput)
     ->intoArray()  // ← New
     ->get();
 // Returns: array
-// @doctest id="58a0"
+// @doctest id="8575"
 ```
 
 ---
@@ -430,7 +430,7 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="a3f5"
+// @doctest id="c818"
 ```
 
 ### Custom Extractor Implementation
@@ -438,18 +438,31 @@ $result = (new StructuredOutput)
 Create your own extractor for special formats:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 
-class XmlJsonExtractor implements CanExtractContent
+class XmlJsonExtractor implements CanExtractResponse
 {
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
         // Extract JSON from <data>...</data> tags
-        if (preg_match('/<data>(.*?)<\/data>/s', $content, $matches)) {
-            return Result::success($matches[1]);
+        if (!preg_match('/<data>(.*?)<\/data>/s', $input->content, $matches)) {
+            throw new ExtractionException('No data tags found');
         }
-        return Result::failure('No data tags found');
+
+        $json = trim($matches[1]);
+        try {
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new ExtractionException('Invalid JSON in data tags', $e);
+        }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException('Expected object or array in data tags');
+        }
+
+        return $decoded;
     }
 
     public function name(): string
@@ -467,7 +480,7 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="5e7a"
+// @doctest id="6ca8"
 ```
 
 ### Custom Response Extractor
@@ -476,24 +489,27 @@ For complete control over the extraction pipeline, implement `CanExtractResponse
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 
 class CustomExtractor implements CanExtractResponse
 {
-    public function extract(InferenceResponse $response, OutputMode $mode): Result
+    public function extract(ExtractionInput $input): array
     {
-        $content = $response->content();
+        $content = $input->content;
 
         // Custom extraction logic
         $data = $this->parseCustomFormat($content);
 
-        return Result::success($data);
+        return $data;
     }
 
     private function parseCustomFormat(string $content): array
     {
+        if ($content === '') {
+            throw new ExtractionException('Empty content');
+        }
+
         // Your custom parsing logic
         return ['parsed' => 'data'];
     }
@@ -505,7 +521,7 @@ $result = (new StructuredOutput)
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
-// @doctest id="f84e"
+// @doctest id="6952"
 ```
 
 ### When to Customize Extraction

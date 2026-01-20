@@ -109,7 +109,7 @@ class StructuredOutputRequestBuilder
         return $this;
     }
 
-    public function withOption(string $key, bool $value): static {
+    public function withOption(string $key, mixed $value): static {
         $this->options[$key] = $value;
         return $this;
     }

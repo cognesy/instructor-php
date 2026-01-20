@@ -2,9 +2,10 @@
 
 namespace Cognesy\Instructor\Extraction\Extractors;
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Utils\Json\Partial\ResilientJson;
-use Cognesy\Utils\Result\Result;
 
 /**
  * Attempts to parse content using resilient JSON parsing.
@@ -17,15 +18,15 @@ use Cognesy\Utils\Result\Result;
  *
  * Best for: LLM responses with minor JSON formatting issues
  */
-class ResilientJsonExtractor implements CanExtractContent
+class ResilientJsonExtractor implements CanExtractResponse
 {
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        $trimmed = trim($content);
+        $trimmed = trim($input->content);
 
         if ($trimmed === '') {
-            return Result::failure('Empty content');
+            throw new ExtractionException('Empty content');
         }
 
         try {
@@ -33,15 +34,13 @@ class ResilientJsonExtractor implements CanExtractContent
 
             // Only accept objects/arrays - scalars indicate parsing of non-JSON text
             if (!is_array($parsed)) {
-                return Result::failure("Resilient parsing produced scalar, not object/array");
+                throw new ExtractionException('Resilient parsing produced scalar, not object/array');
             }
-
-            // ResilientJson::parse returns mixed, encode back to JSON string
-            $json = json_encode($parsed, JSON_THROW_ON_ERROR);
-            return Result::success($json);
         } catch (\Throwable $e) {
-            return Result::failure("Resilient parsing failed: {$e->getMessage()}");
+            throw new ExtractionException("Resilient parsing failed: {$e->getMessage()}", $e);
         }
+
+        return $parsed;
     }
 
     #[\Override]

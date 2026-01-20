@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionLoader;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionLoader;
 use Tests\Addons\Support\TestHelpers;
 
 describe('AgentDefinitionLoader', function () {

@@ -28,17 +28,26 @@ $obj = StructuredOutput::with(...)
 Custom JSON extraction strategies:
 
 ```php
-class CustomExtractor implements CanExtractContent {
-    public function extract(string $content): string {
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
+
+class CustomExtractor implements CanExtractResponse {
+    public function extract(ExtractionInput $input): array {
         // custom extraction logic
+        // throw ExtractionException on failure
+    }
+
+    public function name(): string {
+        return 'custom';
     }
 }
 
 StructuredOutput::with(...)
-    ->withExtractor(new ResponseExtractor([
+    ->withExtractors(
         new CustomExtractor(),
         new ResilientJsonExtractor(),
-    ]))
+    )
     ->get();
 ```
 

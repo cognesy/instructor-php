@@ -60,7 +60,7 @@
 │  ┌────────────────────▼─────────────────────────────────────┐  │
 │  │              Queue Job: ProcessAgentMessage              │  │
 │  │  • Load AgentExecution + previous state                  │  │
-│  │  • Resolve agent via AgentContractRegistry               │  │
+│  │  • Resolve agent via AgentFactory                        │  │
 │  │  • Run agent iterator with event streaming               │  │
 │  │  • Broadcast events via Laravel Echo                     │  │
 │  │  • Persist state snapshot + output                       │  │
@@ -163,7 +163,7 @@ Schema::create('agent_executions', function (Blueprint $table) {
     $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
     // Agent identity
-    $table->string('agent_name'); // Resolves via AgentContractRegistry
+    $table->string('agent_name'); // Resolves via AgentFactory
     $table->json('agent_config')->nullable(); // Constructor params
 
     // Execution state
@@ -595,30 +595,24 @@ use App\Events\AgentStepCompleted;
 use App\Events\AgentStatusUpdated;
 use App\Models\AgentExecution;
 use App\Models\AgentStatusEvent;
-use Cognesy\Addons\Agent\Contracts\AgentContract;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentInterface;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentFactory;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Registry\AgentContractRegistry;
 use Cognesy\Events\Event;
 use Illuminate\Support\Facades\Log;
 
 class AgentExecutionService
 {
     public function __construct(
-        private AgentContractRegistry $agentRegistry
+        private AgentFactory $agentFactory
     ) {}
 
     /**
      * Resolve agent from registry (deterministic).
      */
-    public function buildAgent(string $agentName, array $config = []): AgentContract
+    public function buildAgent(string $agentName, array $config = []): AgentInterface
     {
-        $agent = $this->agentRegistry->get($agentName);
-
-        if (!$agent) {
-            throw new \RuntimeException("Agent '{$agentName}' not found in registry");
-        }
-
-        return $agent;
+        return $this->agentFactory->create($agentName, $config);
     }
 
     /**
@@ -1292,11 +1286,11 @@ Define concrete agent implementations.
 
 namespace App\Agents;
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\UseFileTools;
-use Cognesy\Addons\Agent\Capabilities\UseTaskPlanning;
-use Cognesy\Addons\Agent\Capabilities\UseWebSearch;
-use Cognesy\Addons\Agent\Contracts\AgentContract;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\UseFileTools;
+use Cognesy\Addons\AgentBuilder\Capabilities\UseTaskPlanning;
+use Cognesy\Addons\AgentBuilder\Capabilities\UseWebSearch;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Addons\Agent\Core\Collections\NameList;
 use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
@@ -1305,7 +1299,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class GeneralAssistantAgent implements AgentContract
+class GeneralAssistantAgent implements AgentInterface
 {
     private ?CanHandleEvents $eventHandler = null;
     private ?callable $wiretapListener = null;
@@ -1394,22 +1388,16 @@ class GeneralAssistantAgent implements AgentContract
 
 namespace App\Providers;
 
-use App\Agents\GeneralAssistantAgent;
-use Cognesy\Addons\Agent\Registry\AgentContractRegistry;
+use App\Agents\AppAgentFactory;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentFactory;
 use Illuminate\Support\ServiceProvider;
 
 class AgentServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(AgentContractRegistry::class, function () {
-            $registry = new AgentContractRegistry();
-
-            // Register available agents
-            $registry->register('general-assistant', new GeneralAssistantAgent());
-            // Add more agents as needed
-
-            return $registry;
+        $this->app->singleton(AgentFactory::class, function () {
+            return new AppAgentFactory();
         });
     }
 }

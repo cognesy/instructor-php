@@ -3,7 +3,7 @@
 namespace Tests\Addons\Unit\Agent;
 
 use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Addons\Agent\Core\Contracts\CanUseTools;

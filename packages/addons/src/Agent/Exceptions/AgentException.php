@@ -3,5 +3,15 @@
 namespace Cognesy\Addons\Agent\Exceptions;
 
 use Cognesy\Addons\StepByStep\Exceptions\StepByStepException;
+use Throwable;
 
-class AgentException extends StepByStepException {}
+/**
+ * @phpstan-consistent-constructor
+ */
+class AgentException extends StepByStepException
+{
+    #[\Override]
+    public static function fromThrowable(Throwable $throwable): self {
+        return new self($throwable->getMessage(), (int)$throwable->getCode(), $throwable);
+    }
+}

@@ -2,9 +2,6 @@
 
 namespace Cognesy\Instructor\Extraction\Contracts;
 
-use Cognesy\Utils\Result\Result;
-use Throwable;
-
 /**
  * Buffer abstraction for assembling streaming content.
  *
@@ -31,9 +28,9 @@ interface CanBufferContent
     /**
      * Get parsed structured content.
      *
-     * @return Result<array<array-key, mixed>, Throwable>
+     * @return array<array-key, mixed>|null
      */
-    public function parsed(): Result;
+    public function parsed(): ?array;
 
     /**
      * Check if buffer is empty.

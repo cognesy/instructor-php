@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Tools;
 
-use Cognesy\Addons\Agent\Capabilities\Tasks\TodoWriteTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
 
 describe('TodoWriteTool', function () {
 

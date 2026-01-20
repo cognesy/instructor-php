@@ -2,12 +2,12 @@
 
 namespace Tests\Addons\Feature\Capabilities;
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Tools\UseToolRegistry;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tools\UseToolRegistry;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
-use Cognesy\Addons\Agent\Tools\ToolRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tools\ToolRegistry;
 use Cognesy\Addons\Agent\Tools\Testing\MockTool;
 
 describe('ToolRegistry Capability', function () {

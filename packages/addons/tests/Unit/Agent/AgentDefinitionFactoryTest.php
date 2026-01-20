@@ -2,28 +2,71 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\Contracts\AgentBlueprint;
-use Cognesy\Addons\Agent\Definitions\AgentDefinition;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionExecution;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionFactory;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionLlm;
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionTools;
-use Cognesy\Addons\Agent\Registry\AgentBlueprintRegistry;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Addons\AgentTemplate\Contracts\AgentBlueprint;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentInterface;
+use Cognesy\Addons\Agent\Core\Collections\NameList;
+use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionExecution;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionFactory;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionLlm;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionTools;
+use Cognesy\Addons\AgentBuilder\Support\AbstractAgent;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
+use Cognesy\Addons\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
+use Cognesy\Addons\AgentTemplate\Registry\AgentBlueprintRegistry;
+
+final class BlueprintAgentDefinition extends AbstractAgent
+{
+    public function __construct(private readonly string $name)
+    {
+    }
+
+    public function descriptor(): AgentDescriptor
+    {
+        return new AgentDescriptor(
+            name: $this->name,
+            description: 'Blueprint test agent',
+            tools: new NameList(),
+            capabilities: new NameList(),
+        );
+    }
+
+    protected function buildAgent(): \Cognesy\Addons\Agent\Agent
+    {
+        return AgentBuilder::base()->build();
+    }
+
+    public function serializeConfig(): array
+    {
+        return ['name' => $this->name];
+    }
+
+    public static function fromConfig(array $config): AgentInterface
+    {
+        $name = $config['name'] ?? 'blueprint-agent';
+        if (!is_string($name) || $name === '') {
+            throw new \InvalidArgumentException('Invalid agent config.');
+        }
+
+        return new self($name);
+    }
+}
 
 final class FactoryBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(AgentDefinition $definition): Result
+    public static function fromDefinition(AgentDefinition $definition): AgentInterface
     {
-        return Result::success('blueprint:' . $definition->id);
+        return new BlueprintAgentDefinition('blueprint:' . $definition->id);
     }
 }
 
 final class AlternateFactoryBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(AgentDefinition $definition): Result
+    public static function fromDefinition(AgentDefinition $definition): AgentInterface
     {
-        return Result::success('alt:' . $definition->id);
+        return new BlueprintAgentDefinition('alt:' . $definition->id);
     }
 }
 
@@ -49,8 +92,8 @@ describe('AgentDefinitionFactory', function () {
 
         $result = $factory->create($definition);
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('blueprint:agent-a');
+        expect($result)->toBeInstanceOf(AgentInterface::class);
+        expect($result->descriptor()->name)->toBe('blueprint:agent-a');
     });
 
     it('resolves blueprint_class directly', function () {
@@ -71,8 +114,8 @@ describe('AgentDefinitionFactory', function () {
 
         $result = $factory->create($definition);
 
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe('alt:agent-b');
+        expect($result)->toBeInstanceOf(AgentInterface::class);
+        expect($result->descriptor()->name)->toBe('alt:agent-b');
     });
 
     it('fails when blueprint alias is missing', function () {
@@ -91,10 +134,9 @@ describe('AgentDefinitionFactory', function () {
             tools: new AgentDefinitionTools(),
         );
 
-        $result = $factory->create($definition);
+        $create = fn() => $factory->create($definition);
 
-        expect($result->isFailure())->toBeTrue();
-        expect($result->exception()->getMessage())->toContain('Blueprint');
+        expect($create)->toThrow(AgentBlueprintNotFoundException::class);
     });
 
     it('fails for invalid blueprint_class', function () {
@@ -113,9 +155,8 @@ describe('AgentDefinitionFactory', function () {
             tools: new AgentDefinitionTools(),
         );
 
-        $result = $factory->create($definition);
+        $create = fn() => $factory->create($definition);
 
-        expect($result->isFailure())->toBeTrue();
-        expect($result->exception()->getMessage())->toContain('AgentBlueprint');
+        expect($create)->toThrow(InvalidAgentBlueprintException::class);
     });
 });

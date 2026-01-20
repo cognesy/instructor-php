@@ -292,258 +292,264 @@ nav:
       -
         Contributing: cookbook/contributing.md
       -
-        'Cookbook \ Instructor \ Basics':
-          - { Basic: cookbook/instructor/basics/basic.md }
-          - { BasicConstructor: cookbook/instructor/basics/basic_constructor.md }
-          - { BasicGetSet: cookbook/instructor/basics/basic_get_set.md }
-          - { BasicPrivateVsPublicFields: cookbook/instructor/basics/basic_private_vs_public_fields.md }
-          - { BasicViaMixin: cookbook/instructor/basics/basic_via_mixin.md }
-          - { FluentAPI: cookbook/instructor/basics/fluent_api.md }
-          - { Maybe: cookbook/instructor/basics/maybe.md }
-          - { Messages: cookbook/instructor/basics/messages.md }
-          - { MixedTypeProperty: cookbook/instructor/basics/mixed_type_property.md }
-          - { Modes: cookbook/instructor/basics/modes.md }
-          - { OptionalFields: cookbook/instructor/basics/optional_fields.md }
-          - { SelfCorrection: cookbook/instructor/basics/self_correction.md }
-          - { UsingAttributes: cookbook/instructor/basics/using_attributes.md }
-          - { UsingConfig: cookbook/instructor/basics/using_config.md }
-          - { Validation: cookbook/instructor/basics/validation.md }
-          - { ValidationCustom: cookbook/instructor/basics/validation_custom.md }
-          - { ValidationMixin: cookbook/instructor/basics/validation_mixin.md }
-          - { ValidationWithLLM: cookbook/instructor/basics/validation_with_llm.md }
+        'Structured Outputs \ Basics':
+          - { 'Basic use': cookbook/structured_outputs/basics/basic_use.md }
+          - { 'Specifying required and optional parameters via constructor': cookbook/structured_outputs/basics/constructor_parameters.md }
+          - { 'Getters and setters': cookbook/structured_outputs/basics/getters_and_setters.md }
+          - { 'Private vs public object field': cookbook/structured_outputs/basics/public_vs_private.md }
+          - { 'Basic use via mixin': cookbook/structured_outputs/basics/basic_use_mixin.md }
+          - { 'Fluent API': cookbook/structured_outputs/basics/fluent_api.md }
+          - { 'Handling errors with `Maybe` helper class': cookbook/structured_outputs/basics/maybe.md }
+          - { 'Messages API': cookbook/structured_outputs/basics/messages_api.md }
+          - { 'Mixed Type Property': cookbook/structured_outputs/basics/mixed_type_property.md }
+          - { Modes: cookbook/structured_outputs/basics/modes.md }
+          - { 'Making some fields optional': cookbook/structured_outputs/basics/optional_fields.md }
+          - { 'Automatic correction based on validation results': cookbook/structured_outputs/basics/self_correction.md }
+          - { 'Using attributes': cookbook/structured_outputs/basics/attributes.md }
+          - { 'Using LLM API connection presets from config file': cookbook/structured_outputs/basics/using_config.md }
+          - { Validation: cookbook/structured_outputs/basics/validation.md }
+          - { 'Custom validation using Symfony Validator': cookbook/structured_outputs/basics/custom_validation.md }
+          - { 'Validation across multiple fields': cookbook/structured_outputs/basics/validation_multifield.md }
+          - { 'Validation with LLM': cookbook/structured_outputs/basics/validation_with_llm.md }
       -
-        'Cookbook \ Instructor \ Advanced':
-          - { ConfigProviders: cookbook/instructor/advanced/config_providers.md }
-          - { ContextCaching: cookbook/instructor/advanced/context_caching.md }
-          - { ContextCachingOAI: cookbook/instructor/advanced/context_caching_oai.md }
-          - { CustomClientParameters: cookbook/instructor/advanced/custom_client_parameters.md }
-          - { CustomHttpClient: cookbook/instructor/advanced/custom_http_client.md }
-          - { CustomHttpClientLaravel: cookbook/instructor/advanced/custom_http_client_laravel.md }
-          - { CustomPrompts: cookbook/instructor/advanced/custom_prompts.md }
-          - { DSN: cookbook/instructor/advanced/dsn.md }
-          - { FunctionArguments: cookbook/instructor/advanced/function_arguments.md }
-          - { ManualSchemas: cookbook/instructor/advanced/manual_schemas.md }
-          - { PartialUpdates: cookbook/instructor/advanced/partial_updates.md }
-          - { ProvidingExamples: cookbook/instructor/advanced/providing_examples.md }
-          - { Scalars: cookbook/instructor/advanced/scalars.md }
-          - { Sequences: cookbook/instructor/advanced/sequences.md }
-          - { Streaming: cookbook/instructor/advanced/streaming.md }
-          - { Structures: cookbook/instructor/advanced/structures.md }
+        'Structured Outputs \ Advanced':
+          - { 'Use custom configuration providers': cookbook/structured_outputs/advanced/config_providers.md }
+          - { 'Context caching (structured output)': cookbook/structured_outputs/advanced/context_cache_structured.md }
+          - { 'Context caching (structured output, OpenAI)': cookbook/structured_outputs/advanced/context_cache_structured_oai.md }
+          - { 'Customize parameters of LLM driver': cookbook/structured_outputs/advanced/custom_config.md }
+          - { 'Use custom HTTP client instance': cookbook/structured_outputs/advanced/custom_http_client.md }
+          - { 'Use custom HTTP client instance - Laravel': cookbook/structured_outputs/advanced/custom_http_client_laravel.md }
+          - { 'Custom prompts': cookbook/structured_outputs/advanced/custom_prompts.md }
+          - { 'Customize parameters via DSN': cookbook/structured_outputs/advanced/custom_llm_with_dsn.md }
+          - { 'Extracting arguments of function or method': cookbook/structured_outputs/advanced/function_calls.md }
+          - { 'Manual Schema Building': cookbook/structured_outputs/advanced/manual_schemas.md }
+          - { 'Streaming partial updates during inference': cookbook/structured_outputs/advanced/partials.md }
+          - { 'Providing example inputs and outputs': cookbook/structured_outputs/advanced/demonstrations.md }
+          - { 'Extracting scalar values': cookbook/structured_outputs/advanced/scalars.md }
+          - { 'Extracting sequences of objects': cookbook/structured_outputs/advanced/sequences.md }
+          - { Streaming: cookbook/structured_outputs/advanced/streaming.md }
+          - { Structures: cookbook/structured_outputs/advanced/structures.md }
       -
-        'Cookbook \ Instructor \ Troubleshooting':
-          - { Debugging: cookbook/instructor/troubleshooting/debugging.md }
-          - { LoggingLaravel: cookbook/instructor/troubleshooting/logging_laravel.md }
-          - { LoggingMonolog: cookbook/instructor/troubleshooting/logging_monolog.md }
-          - { LoggingPSR: cookbook/instructor/troubleshooting/logging_psr.md }
-          - { LoggingSymfony: cookbook/instructor/troubleshooting/logging_symfony.md }
-          - { OnEvent: cookbook/instructor/troubleshooting/on_event.md }
-          - { Settings: cookbook/instructor/troubleshooting/settings.md }
-          - { TokenUsage: cookbook/instructor/troubleshooting/token_usage.md }
-          - { Wiretap: cookbook/instructor/troubleshooting/wiretap.md }
+        'Structured Outputs \ Troubleshooting':
+          - { Debugging: cookbook/structured_outputs/troubleshooting/debugging.md }
+          - { 'Laravel Logging Integration': cookbook/structured_outputs/troubleshooting/logging_laravel.md }
+          - { 'Monolog Logging with Functional Pipeline': cookbook/structured_outputs/troubleshooting/logging_monolog.md }
+          - { 'PSR-3 Logging with Functional Pipeline': cookbook/structured_outputs/troubleshooting/logging_psr.md }
+          - { 'Symfony Logging Integration': cookbook/structured_outputs/troubleshooting/logging_symfony.md }
+          - { 'Receive specific internal event with onEvent()': cookbook/structured_outputs/troubleshooting/on_event.md }
+          - { 'Modifying Settings Path': cookbook/structured_outputs/troubleshooting/settings.md }
+          - { 'Tracking token usage via events': cookbook/structured_outputs/troubleshooting/token_usage_events.md }
+          - { 'Receive all internal events with wiretap()': cookbook/structured_outputs/troubleshooting/wiretap.md }
       -
-        'Cookbook \ Instructor \ LLM API Support':
-          - { A21: cookbook/instructor/api_support/a21.md }
-          - { Anthropic: cookbook/instructor/api_support/anthropic.md }
-          - { AzureOAI: cookbook/instructor/api_support/azure_oai.md }
-          - { Cerebras: cookbook/instructor/api_support/cerebras.md }
-          - { Cohere2: cookbook/instructor/api_support/cohere2.md }
-          - { DeepSeek: cookbook/instructor/api_support/deep_seek.md }
-          - { FireworksAI: cookbook/instructor/api_support/fireworks_ai.md }
-          - { Gemini: cookbook/instructor/api_support/gemini.md }
-          - { GeminiOAI: cookbook/instructor/api_support/gemini_oai.md }
-          - { Groq: cookbook/instructor/api_support/groq.md }
-          - { HuggingFace: cookbook/instructor/api_support/hugging_face.md }
-          - { Inception: cookbook/instructor/api_support/inception.md }
-          - { Meta: cookbook/instructor/api_support/meta.md }
-          - { Minimaxi: cookbook/instructor/api_support/minimaxi.md }
-          - { Mistral: cookbook/instructor/api_support/mistral.md }
-          - { Moonshot: cookbook/instructor/api_support/moonshot.md }
-          - { Ollama: cookbook/instructor/api_support/ollama.md }
-          - { OpenAI: cookbook/instructor/api_support/open_ai.md }
-          - { OpenRouter: cookbook/instructor/api_support/open_router.md }
-          - { Perplexity: cookbook/instructor/api_support/perplexity.md }
-          - { SambaNova: cookbook/instructor/api_support/samba_nova.md }
-          - { TogetherAI: cookbook/instructor/api_support/together_ai.md }
-          - { xAI: cookbook/instructor/api_support/x_ai.md }
+        'Structured Outputs \ LLM API Support':
+          - { A21: cookbook/structured_outputs/api_support/a21.md }
+          - { Anthropic: cookbook/structured_outputs/api_support/anthropic.md }
+          - { 'Azure OpenAI': cookbook/structured_outputs/api_support/azure_openai.md }
+          - { Cerebras: cookbook/structured_outputs/api_support/cerebras.md }
+          - { Cohere: cookbook/structured_outputs/api_support/cohere.md }
+          - { DeepSeek: cookbook/structured_outputs/api_support/deepseek.md }
+          - { Fireworks.ai: cookbook/structured_outputs/api_support/fireworks.md }
+          - { 'Google Gemini': cookbook/structured_outputs/api_support/google_gemini.md }
+          - { 'Google Gemini (OpenAI compatible API)': cookbook/structured_outputs/api_support/google_gemini_oai.md }
+          - { Groq: cookbook/structured_outputs/api_support/groq.md }
+          - { 'Hugging Face': cookbook/structured_outputs/api_support/huggingface.md }
+          - { Inception: cookbook/structured_outputs/api_support/inception.md }
+          - { Meta: cookbook/structured_outputs/api_support/meta.md }
+          - { Minimaxi: cookbook/structured_outputs/api_support/minimaxi.md }
+          - { 'Mistral AI': cookbook/structured_outputs/api_support/mistralai.md }
+          - { MoonshotAI: cookbook/structured_outputs/api_support/moonshotai.md }
+          - { 'Local / Ollama': cookbook/structured_outputs/api_support/ollama.md }
+          - { OpenAI: cookbook/structured_outputs/api_support/openai.md }
+          - { OpenRouter: cookbook/structured_outputs/api_support/openrouter.md }
+          - { Perplexity: cookbook/structured_outputs/api_support/perplexity.md }
+          - { SambaNova: cookbook/structured_outputs/api_support/sambanova.md }
+          - { Together.ai: cookbook/structured_outputs/api_support/togetherai.md }
+          - { 'xAI / Grok': cookbook/structured_outputs/api_support/xai.md }
       -
-        'Cookbook \ Instructor \ Extras':
-          - { ComplexExtraction: cookbook/instructor/extras/complex_extraction.md }
-          - { ComplexExtractionClaude: cookbook/instructor/extras/complex_extraction_claude.md }
-          - { ComplexExtractionCohere: cookbook/instructor/extras/complex_extraction_cohere.md }
-          - { ComplexExtractionGemini: cookbook/instructor/extras/complex_extraction_gemini.md }
-          - { CustomExtractor: cookbook/instructor/extras/custom_extractor.md }
-          - { DataInputs: cookbook/instructor/extras/data_inputs.md }
-          - { ImageCarDamage: cookbook/instructor/extras/image_car_damage.md }
-          - { ImageToData: cookbook/instructor/extras/image_to_data.md }
-          - { ImageToDataAnthropic: cookbook/instructor/extras/image_to_data_anthropic.md }
-          - { ImageToDataGemini: cookbook/instructor/extras/image_to_data_gemini.md }
-          - { JsonSchema: cookbook/instructor/extras/json_schema.md }
-          - { OutputFormatArray: cookbook/instructor/extras/output_format_array.md }
-          - { OutputFormatInstanceOf: cookbook/instructor/extras/output_format_instance_of.md }
-          - { OutputFormatStreaming: cookbook/instructor/extras/output_format_streaming.md }
-          - { PureArrayProcessing: cookbook/instructor/extras/pure_array_processing.md }
-          - { Schema: cookbook/instructor/extras/schema.md }
-          - { SchemaDynamic: cookbook/instructor/extras/schema_dynamic.md }
-          - { TranscriptionToTasks: cookbook/instructor/extras/transcription_to_tasks.md }
-          - { TranslateUIFields: cookbook/instructor/extras/translate_ui_fields.md }
-          - { WebToObjects: cookbook/instructor/extras/web_to_objects.md }
+        'Structured Outputs \ Extras':
+          - { 'Extraction of complex objects': cookbook/structured_outputs/extras/complex_extraction.md }
+          - { 'Extraction of complex objects (Anthropic)': cookbook/structured_outputs/extras/complex_extraction_claude.md }
+          - { 'Extraction of complex objects (Cohere)': cookbook/structured_outputs/extras/complex_extraction_cohere.md }
+          - { 'Extraction of complex objects (Gemini)': cookbook/structured_outputs/extras/complex_extraction_gemini.md }
+          - { 'Custom Content Extractors': cookbook/structured_outputs/extras/custom_extractor.md }
+          - { 'Using structured data as an input': cookbook/structured_outputs/extras/structured_input.md }
+          - { 'Image processing - car damage detection': cookbook/structured_outputs/extras/image_car_damage.md }
+          - { 'Image to data (OpenAI)': cookbook/structured_outputs/extras/image_to_data.md }
+          - { 'Image to data (Anthropic)': cookbook/structured_outputs/extras/image_to_data_anthropic.md }
+          - { 'Image to data (Gemini)': cookbook/structured_outputs/extras/image_to_data_gemini.md }
+          - { 'Generating JSON Schema from PHP classes': cookbook/structured_outputs/extras/schema.md }
+          - { 'Return extracted data as array': cookbook/structured_outputs/extras/output_format_array.md }
+          - { 'Use different class for schema and output': cookbook/structured_outputs/extras/output_format_instance_of.md }
+          - { 'Streaming with array output format': cookbook/structured_outputs/extras/output_format_streaming.md }
+          - { 'Pure Array Processing (No Classes)': cookbook/structured_outputs/extras/pure_array_processing.md }
+          - { 'Generating JSON Schema from PHP classes': cookbook/structured_outputs/extras/schema.md }
+          - { 'Generating JSON Schema dynamically': cookbook/structured_outputs/extras/schema_dynamic.md }
+          - { 'Create tasks from meeting transcription': cookbook/structured_outputs/extras/transcription_to_tasks.md }
+          - { 'Translating UI text fields': cookbook/structured_outputs/extras/translate_ui_fields.md }
+          - { 'Web page to PHP objects': cookbook/structured_outputs/extras/web_to_objects.md }
       -
-        'Cookbook \ Polyglot \ LLM Basics':
-          - { LLM: cookbook/polyglot/llm_basics/llm.md }
-          - { LLMJson: cookbook/polyglot/llm_basics/llm_json.md }
-          - { LLMJsonSchema: cookbook/polyglot/llm_basics/llm_json_schema.md }
-          - { LLMMdJson: cookbook/polyglot/llm_basics/llm_md_json.md }
-          - { LLMTools: cookbook/polyglot/llm_basics/llm_tools.md }
-          - { LLMWithSchemaHelper: cookbook/polyglot/llm_basics/llm_with_schema_helper.md }
-          - { LLMWithToolsHelper: cookbook/polyglot/llm_basics/llm_with_tools_helper.md }
+        'LLM Inference and Embeddings \ LLM Basics':
+          - { 'Working directly with LLMs': cookbook/llm_inference/llm_basics/inference.md }
+          - { 'Working directly with LLMs and JSON - JSON mode': cookbook/llm_inference/llm_basics/llm_json.md }
+          - { 'Working directly with LLMs and JSON - JSON Schema mode': cookbook/llm_inference/llm_basics/llm_json_schema.md }
+          - { 'Working directly with LLMs and JSON - MdJSON mode': cookbook/llm_inference/llm_basics/llm_md_json.md }
+          - { 'Working directly with LLMs and JSON - Tools mode': cookbook/llm_inference/llm_basics/llm_tools.md }
+          - { 'Generating JSON Schema from PHP classes': cookbook/llm_inference/llm_basics/json_schema_api.md }
+          - { 'Generating JSON Schema from PHP classes': cookbook/llm_inference/llm_basics/json_schema_api.md }
       -
-        'Cookbook \ Polyglot \ LLM Advanced':
-          - { ConfigProviders: cookbook/polyglot/llm_advanced/config_providers.md }
-          - { ContextCacheLLM: cookbook/polyglot/llm_advanced/context_cache_llm.md }
-          - { ContextCacheLLMOAI: cookbook/polyglot/llm_advanced/context_cache_llmoai.md }
-          - { CustomClientParameters: cookbook/polyglot/llm_advanced/custom_client_parameters.md }
-          - { CustomEmbeddingsDriver: cookbook/polyglot/llm_advanced/custom_embeddings_driver.md }
-          - { CustomLLMDriver: cookbook/polyglot/llm_advanced/custom_llm_driver.md }
-          - { DSN: cookbook/polyglot/llm_advanced/dsn.md }
-          - { EmbedUtils: cookbook/polyglot/llm_advanced/embed_utils.md }
-          - { Embeddings: cookbook/polyglot/llm_advanced/embeddings.md }
-          - { HttpClient: cookbook/polyglot/llm_advanced/http_client.md }
-          - { ParallelCalls: cookbook/polyglot/llm_advanced/parallel_calls.md }
-          - { ReasoningContent: cookbook/polyglot/llm_advanced/reasoning_content.md }
+        'LLM Inference and Embeddings \ LLM Advanced':
+          - { 'Customize configuration providers of LLM driver': cookbook/llm_inference/llm_advanced/config_providers.md }
+          - { 'Context caching (text inference)': cookbook/llm_inference/llm_advanced/context_cache_llm.md }
+          - { 'Context caching (text inference, OpenAI)': cookbook/llm_inference/llm_advanced/context_cache_llm_oai.md }
+          - { 'Customize configuration of LLM driver': cookbook/llm_inference/llm_advanced/custom_config.md }
+          - { 'Custom Embeddings Config': cookbook/llm_inference/llm_advanced/custom_embeddings_config.md }
+          - { 'Using custom LLM driver': cookbook/llm_inference/llm_advanced/custom_llm_driver.md }
+          - { 'Customize LLM Configuration with DSN string': cookbook/llm_inference/llm_advanced/custom_llm_via_dsn.md }
+          - { 'Embeddings utils': cookbook/llm_inference/llm_advanced/embed_utils.md }
+          - { Embeddings: cookbook/llm_inference/llm_advanced/embeddings.md }
+          - { 'Work directly with HTTP client facade': cookbook/llm_inference/llm_advanced/http_client.md }
+          - { 'Parallel Calls': cookbook/llm_inference/llm_advanced/parallel_calls.md }
+          - { 'Reasoning Content Access': cookbook/llm_inference/llm_advanced/reasoning_content.md }
       -
-        'Cookbook \ Polyglot \ LLM Troubleshooting':
-          - { HttpDebug: cookbook/polyglot/llm_troubleshooting/http_debug.md }
-          - { LoggingLaravelEmbeddings: cookbook/polyglot/llm_troubleshooting/logging_laravel_embeddings.md }
-          - { LoggingLaravelInference: cookbook/polyglot/llm_troubleshooting/logging_laravel_inference.md }
-          - { LoggingMonolog: cookbook/polyglot/llm_troubleshooting/logging_monolog.md }
-          - { LoggingSymfony: cookbook/polyglot/llm_troubleshooting/logging_symfony.md }
+        'LLM Inference and Embeddings \ LLM Troubleshooting':
+          - { 'Debugging HTTP Calls': cookbook/llm_inference/llm_troubleshooting/http_debug.md }
+          - { 'Embeddings Logging with Laravel': cookbook/llm_inference/llm_troubleshooting/llm_logging_laravel_embeddings.md }
+          - { 'Inference Logging with Laravel': cookbook/llm_inference/llm_troubleshooting/llm_logging_laravel_inference.md }
+          - { 'Inference Logging with Monolog': cookbook/llm_inference/llm_troubleshooting/llm_logging_monolog.md }
+          - { 'Inference Logging with Symfony': cookbook/llm_inference/llm_troubleshooting/llm_logging_symfony.md }
       -
-        'Cookbook \ Polyglot \ LLM API Support':
-          - { A21: cookbook/polyglot/llm_api_support/a21.md }
-          - { Anthropic: cookbook/polyglot/llm_api_support/anthropic.md }
-          - { AzureOAI: cookbook/polyglot/llm_api_support/azure_oai.md }
-          - { Cerebras: cookbook/polyglot/llm_api_support/cerebras.md }
-          - { Cohere: cookbook/polyglot/llm_api_support/cohere.md }
-          - { DeepSeek: cookbook/polyglot/llm_api_support/deep_seek.md }
-          - { FireworksAI: cookbook/polyglot/llm_api_support/fireworks_ai.md }
-          - { Gemini: cookbook/polyglot/llm_api_support/gemini.md }
-          - { GeminiOAI: cookbook/polyglot/llm_api_support/gemini_oai.md }
-          - { Groq: cookbook/polyglot/llm_api_support/groq.md }
-          - { Inception: cookbook/polyglot/llm_api_support/inception.md }
-          - { Meta: cookbook/polyglot/llm_api_support/meta.md }
-          - { Minimaxi: cookbook/polyglot/llm_api_support/minimaxi.md }
-          - { Mistral: cookbook/polyglot/llm_api_support/mistral.md }
-          - { Moonshot: cookbook/polyglot/llm_api_support/moonshot.md }
-          - { Ollama: cookbook/polyglot/llm_api_support/ollama.md }
-          - { OpenAI: cookbook/polyglot/llm_api_support/open_ai.md }
-          - { OpenRouter: cookbook/polyglot/llm_api_support/open_router.md }
-          - { Perplexity: cookbook/polyglot/llm_api_support/perplexity.md }
-          - { SambaNova: cookbook/polyglot/llm_api_support/samba_nova.md }
-          - { TogetherAI: cookbook/polyglot/llm_api_support/together_ai.md }
-          - { xAI: cookbook/polyglot/llm_api_support/x_ai.md }
+        'LLM Inference and Embeddings \ LLM API Support':
+          - { A21: cookbook/llm_inference/llm_api_support/a21.md }
+          - { Anthropic: cookbook/llm_inference/llm_api_support/anthropic.md }
+          - { 'Azure OpenAI': cookbook/llm_inference/llm_api_support/azure_openai.md }
+          - { Cerebras: cookbook/llm_inference/llm_api_support/cerebras.md }
+          - { Cohere: cookbook/llm_inference/llm_api_support/cohere.md }
+          - { DeepSeek: cookbook/llm_inference/llm_api_support/deepseek.md }
+          - { Fireworks.ai: cookbook/llm_inference/llm_api_support/fireworks.md }
+          - { 'Google Gemini': cookbook/llm_inference/llm_api_support/google_gemini.md }
+          - { 'Google Gemini (OpenAI-compatible)': cookbook/llm_inference/llm_api_support/google_gemini_oai.md }
+          - { Groq: cookbook/llm_inference/llm_api_support/groq.md }
+          - { Inception: cookbook/llm_inference/llm_api_support/inception.md }
+          - { Meta: cookbook/llm_inference/llm_api_support/meta.md }
+          - { Minimaxi: cookbook/llm_inference/llm_api_support/minimaxi.md }
+          - { 'Mistral AI': cookbook/llm_inference/llm_api_support/mistralai.md }
+          - { MoonshotAI: cookbook/llm_inference/llm_api_support/moonshotai.md }
+          - { 'Local / Ollama': cookbook/llm_inference/llm_api_support/ollama.md }
+          - { OpenAI: cookbook/llm_inference/llm_api_support/openai.md }
+          - { OpenRouter: cookbook/llm_inference/llm_api_support/openrouter.md }
+          - { Perplexity: cookbook/llm_inference/llm_api_support/perplexity.md }
+          - { SambaNova: cookbook/llm_inference/llm_api_support/sambanova.md }
+          - { Together.ai: cookbook/llm_inference/llm_api_support/togetherai.md }
+          - { 'xAI / Grok': cookbook/llm_inference/llm_api_support/xai.md }
       -
-        'Cookbook \ Polyglot \ LLM Extras':
-          - { AgentBasic: cookbook/polyglot/llm_extras/agent_basic.md }
-          - { AgentCtrlBasic: cookbook/polyglot/llm_extras/agent_ctrl_basic.md }
-          - { AgentCtrlEvents: cookbook/polyglot/llm_extras/agent_ctrl_events.md }
-          - { AgentCtrlStreaming: cookbook/polyglot/llm_extras/agent_ctrl_streaming.md }
-          - { AgentCtrlSwitching: cookbook/polyglot/llm_extras/agent_ctrl_switching.md }
-          - { AgentFileSys: cookbook/polyglot/llm_extras/agent_file_sys.md }
-          - { AgentSearch: cookbook/polyglot/llm_extras/agent_search.md }
-          - { AgentSelfCritic: cookbook/polyglot/llm_extras/agent_self_critic.md }
-          - { AgentStructuredOutput: cookbook/polyglot/llm_extras/agent_structured_output.md }
-          - { AgentSubagents: cookbook/polyglot/llm_extras/agent_subagents.md }
-          - { ChatWithManyParticipants: cookbook/polyglot/llm_extras/chat_with_many_participants.md }
-          - { ChatWithSummary: cookbook/polyglot/llm_extras/chat_with_summary.md }
-          - { ClaudeCode: cookbook/polyglot/llm_extras/claude_code.md }
-          - { ClaudeCodeSearch: cookbook/polyglot/llm_extras/claude_code_search.md }
-          - { CodexBasic: cookbook/polyglot/llm_extras/codex_basic.md }
-          - { CodexStreaming: cookbook/polyglot/llm_extras/codex_streaming.md }
-          - { Image: cookbook/polyglot/llm_extras/image.md }
-          - { MetricsCollection: cookbook/polyglot/llm_extras/metrics_collection.md }
-          - { OpenCodeBasic: cookbook/polyglot/llm_extras/open_code_basic.md }
-          - { OpenCodeStreaming: cookbook/polyglot/llm_extras/open_code_streaming.md }
-          - { PromptTemplate: cookbook/polyglot/llm_extras/prompt_template.md }
-          - { SummaryLLM: cookbook/polyglot/llm_extras/summary_llm.md }
-          - { ToolUse: cookbook/polyglot/llm_extras/tool_use.md }
-          - { ToolUseReAct: cookbook/polyglot/llm_extras/tool_use_re_act.md }
+        'LLM Inference and Embeddings \ LLM Extras':
+          - { 'Multi-Participant AI Chat Panel Discussion': cookbook/llm_inference/llm_extras/chat_with_many_participants.md }
+          - { 'Chat with summary': cookbook/llm_inference/llm_extras/chat_with_summary.md }
+          - { 'Using images in prompts': cookbook/llm_inference/llm_extras/image_data.md }
+          - { 'Streaming metrics (Polyglot)': cookbook/llm_inference/llm_extras/metrics_streaming.md }
+          - { 'Prompt Templates': cookbook/llm_inference/llm_extras/prompt_templates.md }
+          - { 'Simple content summary': cookbook/llm_inference/llm_extras/summary_with_llm.md }
+          - { 'Inference and tool use': cookbook/llm_inference/llm_extras/tool_use.md }
+          - { 'Inference and tool use (ReAct driver)': cookbook/llm_inference/llm_extras/tool_use_react.md }
       -
-        'Cookbook \ Prompting \ Zero-Shot Prompting':
-          - { AssignRole: cookbook/prompting/zero_shot/assign_role.md }
-          - { AutoRefine: cookbook/prompting/zero_shot/auto_refine.md }
-          - { ClarifyAmbiguity: cookbook/prompting/zero_shot/clarify_ambiguity.md }
-          - { DefineStyle: cookbook/prompting/zero_shot/define_style.md }
-          - { EmotionalLanguage: cookbook/prompting/zero_shot/emotional_language.md }
-          - { FollowUpQuestions: cookbook/prompting/zero_shot/follow_up_questions.md }
-          - { RepeatQuery: cookbook/prompting/zero_shot/repeat_query.md }
-          - { SimulatePerspective: cookbook/prompting/zero_shot/simulate_perspective.md }
+        'HTTP Client \ HTTP Client':
+          - { 'HTTP Client – Basics': cookbook/http_client/http_client/http_client_basics.md }
+          - { 'HTTP Client – Streaming Basics': cookbook/http_client/http_client/http_client_streaming_basics.md }
+          - { 'HTTP Middleware (Hooks + Conditional Decoration)': cookbook/http_client/http_client/http_middleware_hooks.md }
+          - { 'HTTP Middleware (Stream)': cookbook/http_client/http_client/http_middleware_stream.md }
+          - { 'HTTP Middleware (Sync)': cookbook/http_client/http_client/http_middleware_sync.md }
+          - { 'HTTP Client – Pool Basics': cookbook/http_client/http_client/http_client_pool_basics.md }
       -
-        'Cookbook \ Prompting \ Few-Shot Prompting':
+        'Agents and Agent Controllers \ Agents':
+          - { 'Basic Agent Usage': cookbook/agents/agents/agent_basic.md }
+          - { 'Agent with File System Tools': cookbook/agents/agents/agent_file_system.md }
+          - { 'Agent-Driven Codebase Search': cookbook/agents/agents/agent_search.md }
+          - { 'Agent Self-Critique Pattern': cookbook/agents/agents/agent_self_critique.md }
+          - { 'Agent with Structured Output Extraction': cookbook/agents/agents/agent_structured_output.md }
+          - { 'Agent Subagent Orchestration': cookbook/agents/agents/agent_subagents.md }
+      -
+        'Agents and Agent Controllers \ Agent Controllers':
+          - { 'Basic Agent Control Usage': cookbook/agents/agent_controllers/agent_ctrl_basic.md }
+          - { 'Agent Control Events & Monitoring': cookbook/agents/agent_controllers/agent_ctrl_events.md }
+          - { 'Agent Control Streaming': cookbook/agents/agent_controllers/agent_ctrl_streaming.md }
+          - { 'Agent Control Runtime Switching': cookbook/agents/agent_controllers/agent_ctrl_switching.md }
+          - { 'Claude Code CLI - Basic': cookbook/agents/agent_controllers/claude_code_basic.md }
+          - { 'Claude Code CLI - Agentic Search': cookbook/agents/agent_controllers/claude_code_search.md }
+          - { 'OpenAI Codex CLI - Basic': cookbook/agents/agent_controllers/codex_basic.md }
+          - { 'OpenAI Codex CLI - Streaming': cookbook/agents/agent_controllers/codex_streaming.md }
+          - { 'OpenCode CLI - Basic': cookbook/agents/agent_controllers/opencode_basic.md }
+          - { 'OpenCode CLI - Streaming': cookbook/agents/agent_controllers/opencode_streaming.md }
+      -
+        'Prompting \ Zero-Shot':
+          - { 'Assign a Role': cookbook/prompting/zero_shot/assign_role.md }
+          - { 'Auto-Refine The Prompt': cookbook/prompting/zero_shot/auto_refine.md }
+          - { 'Clarify Ambiguous Information': cookbook/prompting/zero_shot/clarify_ambiguity.md }
+          - { 'Define Style': cookbook/prompting/zero_shot/define_style.md }
+          - { 'Emotional Stimuli': cookbook/prompting/zero_shot/emotional_stimuli.md }
+          - { 'Generate Follow-Up Questions': cookbook/prompting/zero_shot/follow_up_questions.md }
+          - { 'Ask Model to Repeat the Query': cookbook/prompting/zero_shot/repeat_query.md }
+          - { 'Simulate a Perspective': cookbook/prompting/zero_shot/simulate_perspective.md }
+      -
+        'Prompting \ Few-Shot':
           - { 'Initialize COSP selector': cookbook/prompting/few_shot/consistency_based_examples.md }
           - { ExampleOrdering: cookbook/prompting/few_shot/example_ordering.md }
-          - { InContextExamples: cookbook/prompting/few_shot/in_context_examples.md }
+          - { 'Generate In-Context Examples': cookbook/prompting/few_shot/in_context_examples.md }
           - { SelectEffectiveSamples: cookbook/prompting/few_shot/select_effective_samples.md }
       -
-        'Cookbook \ Prompting \ Thought Generation':
-          - { AnalogicalPrompting: cookbook/prompting/thought_gen/analogical_prompting.md }
-          - { AutomateSelection: cookbook/prompting/thought_gen/automate_selection.md }
-          - { ComplexExamples: cookbook/prompting/thought_gen/complex_examples.md }
-          - { ExamineContext: cookbook/prompting/thought_gen/examine_context.md }
-          - { HigherLevelContext: cookbook/prompting/thought_gen/higher_level_context.md }
-          - { IncorrectExamples: cookbook/prompting/thought_gen/incorrect_examples.md }
-          - { MajorityVoting: cookbook/prompting/thought_gen/majority_voting.md }
-          - { PromptVariations: cookbook/prompting/thought_gen/prompt_variations.md }
-          - { StructureReasoning: cookbook/prompting/thought_gen/structure_reasoning.md }
-          - { UncertainExamples: cookbook/prompting/thought_gen/uncertain_examples.md }
+        'Prompting \ Thought Generation':
+          - { 'Analogical Prompting': cookbook/prompting/thought_generation/analogical_prompting.md }
+          - { 'Automate Example Selection': cookbook/prompting/thought_generation/automate_selection.md }
+          - { 'Prioritize Complex Examples': cookbook/prompting/thought_generation/complex_examples.md }
+          - { 'Examine The Context': cookbook/prompting/thought_generation/examine_context.md }
+          - { HigherLevelContext: cookbook/prompting/thought_generation/higher_level_context.md }
+          - { 'Include Incorrect Examples': cookbook/prompting/thought_generation/incorrect_examples.md }
+          - { 'Use Majority Voting': cookbook/prompting/thought_generation/majority_voting.md }
+          - { 'Generate Prompt Variations': cookbook/prompting/thought_generation/prompt_variations.md }
+          - { 'Structure The Reasoning': cookbook/prompting/thought_generation/structure_reasoning.md }
+          - { UncertainExamples: cookbook/prompting/thought_generation/uncertain_examples.md }
       -
-        'Cookbook \ Prompting \ Ensembling':
-          - { CombineReasoningChains: cookbook/prompting/ensembling/combine_reasoning_chains.md }
-          - { CombineResponses: cookbook/prompting/ensembling/combine_responses.md }
-          - { CombineSpecializedLLMs: cookbook/prompting/ensembling/combine_specialized_ll_ms.md }
-          - { ConsistentExamples: cookbook/prompting/ensembling/consistent_examples.md }
-          - { DistinctExamples: cookbook/prompting/ensembling/distinct_examples.md }
-          - { EnsembleTestPrompts: cookbook/prompting/ensembling/ensemble_test_prompts.md }
-          - { MultipleCandidates: cookbook/prompting/ensembling/multiple_candidates.md }
-          - { TaskSpecificEvals: cookbook/prompting/ensembling/task_specific_evals.md }
-          - { TranslationParaphrasing: cookbook/prompting/ensembling/translation_paraphrasing.md }
-          - { VerifyMajorityVoting: cookbook/prompting/ensembling/verify_majority_voting.md }
+        'Prompting \ Ensembling':
+          - { 'Combine Multiple Reasoning Chains': cookbook/prompting/ensembling/combine_reasoning_chains.md }
+          - { 'Use LLMs to Combine Different Responses': cookbook/prompting/ensembling/combine_responses.md }
+          - { 'Combine Different Specialized LLMs': cookbook/prompting/ensembling/combine_specialized_llms.md }
+          - { 'Prioritize Consistent Examples': cookbook/prompting/ensembling/consistent_examples.md }
+          - { 'Use Distinct Example Subsets': cookbook/prompting/ensembling/distinct_examples.md }
+          - { 'Use Ensembles To Test Prompts': cookbook/prompting/ensembling/ensemble_test_prompts.md }
+          - { 'Generate Multiple Candidate Responses': cookbook/prompting/ensembling/multiple_candidates.md }
+          - { 'Use Task Specific Evaluation Metrics': cookbook/prompting/ensembling/task_specific_evals.md }
+          - { 'Use Translation for Paraphrasing': cookbook/prompting/ensembling/translation_paraphrasing.md }
+          - { 'Verify Responses over Majority Voting': cookbook/prompting/ensembling/verify_majority_voting.md }
       -
-        'Cookbook \ Prompting \ Self-Criticism':
-          - { BreakDownReasoning: cookbook/prompting/self_criticism/break_down_reasoning.md }
-          - { DetermineUncertainty: cookbook/prompting/self_criticism/determine_uncertainty.md }
-          - { ImproveWithFeedback: cookbook/prompting/self_criticism/improve_with_feedback.md }
-          - { ReconstructPrompt: cookbook/prompting/self_criticism/reconstruct_prompt.md }
-          - { SelfVerify: cookbook/prompting/self_criticism/self_verify.md }
-          - { VerifyIndependently: cookbook/prompting/self_criticism/verify_independently.md }
+        'Prompting \ Self-Criticism':
+          - { 'Break Down Reasoning Into Multiple Steps': cookbook/prompting/self_criticism/break_down_reasoning.md }
+          - { 'Determine Uncertainty of Reasoning Chain': cookbook/prompting/self_criticism/determine_uncertainty.md }
+          - { 'Improve With Feedback': cookbook/prompting/self_criticism/improve_with_feedback.md }
+          - { 'Reconstruct Prompt from Reasoning Steps': cookbook/prompting/self_criticism/reconstruct_prompt.md }
+          - { 'Self-Verify Responses': cookbook/prompting/self_criticism/self_verify.md }
+          - { 'Independently Verify Responses': cookbook/prompting/self_criticism/verify_independently.md }
       -
-        'Cookbook \ Prompting \ Decomposition':
-          - { BreakDownComplexity: cookbook/prompting/decomposition/break_down_complexity.md }
-          - { DitchVanillaCoT: cookbook/prompting/decomposition/ditch_vanilla_cot.md }
-          - { GenerateCode: cookbook/prompting/decomposition/generate_code.md }
-          - { GenerateInParallel: cookbook/prompting/decomposition/generate_in_parallel.md }
-          - { SolveSimplerSubtasks: cookbook/prompting/decomposition/solve_simpler_subtasks.md }
-          - { TaskSpecificSystems: cookbook/prompting/decomposition/task_specific_systems.md }
+        'Prompting \ Decomposition':
+          - { 'Break Down Complex Tasks': cookbook/prompting/decomposition/break_down_complexity.md }
+          - { 'Ditch Vanilla Chain Of Thought': cookbook/prompting/decomposition/ditch_vanilla_cot.md }
+          - { 'Generate Code for Intermediate Steps': cookbook/prompting/decomposition/generate_code.md }
+          - { 'Generate in Parallel': cookbook/prompting/decomposition/generate_in_parallel.md }
+          - { 'Solve Simpler Subproblems': cookbook/prompting/decomposition/solve_simpler_subtasks.md }
+          - { 'Leverage Task Specific Systems': cookbook/prompting/decomposition/task_specific_systems.md }
       -
-        'Cookbook \ Prompting \ Miscellaneous':
-          - { ArbitraryProps: cookbook/prompting/misc/arbitrary_props.md }
-          - { ArbitraryPropsConsistency: cookbook/prompting/misc/arbitrary_props_consistency.md }
-          - { ChainOfSummaries: cookbook/prompting/misc/chain_of_summaries.md }
-          - { ChainOfThought: cookbook/prompting/misc/chain_of_thought.md }
-          - { Classification: cookbook/prompting/misc/classification.md }
-          - { ClassificationMulticlass: cookbook/prompting/misc/classification_multiclass.md }
-          - { EntityRelationships: cookbook/prompting/misc/entity_relationships.md }
-          - { HandlingErrors: cookbook/prompting/misc/handling_errors.md }
-          - { HttpClient: cookbook/prompting/misc/http_client.md }
-          - { HttpClientStreaming: cookbook/prompting/misc/http_client_streaming.md }
-          - { HttpMiddlewareHooks: cookbook/prompting/misc/http_middleware_hooks.md }
-          - { HttpMiddlewareStream: cookbook/prompting/misc/http_middleware_stream.md }
-          - { HttpMiddlewareSync: cookbook/prompting/misc/http_middleware_sync.md }
-          - { HttpPool: cookbook/prompting/misc/http_pool.md }
-          - { LimitingLengthOfLists: cookbook/prompting/misc/limiting_length_of_lists.md }
-          - { ReflectionPrompting: cookbook/prompting/misc/reflection_prompting.md }
-          - { RestatingInstructions: cookbook/prompting/misc/restating_instructions.md }
-          - { RewritingInstructions: cookbook/prompting/misc/rewriting_instructions.md }
-          - { SearchCriteria: cookbook/prompting/misc/search_criteria.md }
-          - { Summary: cookbook/prompting/misc/summary.md }
-          - { TimeRange: cookbook/prompting/misc/time_range.md }
-          - { TimeRangeWithCOT: cookbook/prompting/misc/time_range_with_cot.md }
+        'Prompting \ Miscellaneous':
+          - { 'Arbitrary properties': cookbook/prompting/misc/arbitrary_properties.md }
+          - { 'Consistent values of arbitrary properties': cookbook/prompting/misc/arbitrary_properties_consistent.md }
+          - { 'Chain of Summaries': cookbook/prompting/misc/chain_of_summaries.md }
+          - { 'Chain of Thought': cookbook/prompting/misc/chain_of_thought.md }
+          - { 'Single label classification': cookbook/prompting/misc/classification.md }
+          - { 'Multiclass classification': cookbook/prompting/misc/classification_multiclass.md }
+          - { 'Entity relationship extraction': cookbook/prompting/misc/entity_relationships.md }
+          - { 'Handling errors': cookbook/prompting/misc/handling_errors.md }
+          - { 'Limiting the length of lists': cookbook/prompting/misc/limiting_lists.md }
+          - { 'Reflection Prompting': cookbook/prompting/misc/reflection_prompting.md }
+          - { 'Restating instructions': cookbook/prompting/misc/restate_instructions.md }
+          - { 'Ask LLM to rewrite instructions': cookbook/prompting/misc/rewrite_instructions.md }
+          - { 'Expanding search queries': cookbook/prompting/misc/search_query_expansion.md }
+          - { 'Summary with Keywords': cookbook/prompting/misc/summary_with_keywords.md }
+          - { 'Reusing components': cookbook/prompting/misc/component_reuse.md }
+          - { 'Using CoT to improve interpretation of component data': cookbook/prompting/misc/component_reuse_cot.md }

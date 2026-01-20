@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Metadata\UseMetadataTools;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaDefinition;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaRegistry;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\StructuredOutputPolicy;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Tools\BaseTool;

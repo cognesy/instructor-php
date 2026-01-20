@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Tests\Unit\Extraction;
 
 use Cognesy\Instructor\Extraction\ResponseExtractor;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -21,20 +23,18 @@ it('extracts array from valid JSON content', function () {
     $response = new InferenceResponse(content: '{"name":"John","age":30}');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+    expect($result)->toBe(['name' => 'John', 'age' => 30]);
 });
 
 it('extracts array from JSON Schema mode', function () {
     $response = new InferenceResponse(content: '{"name":"Jane","age":25}');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::JsonSchema);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::JsonSchema));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'Jane', 'age' => 25]);
+    expect($result)->toBe(['name' => 'Jane', 'age' => 25]);
 });
 
 it('extracts from tool calls in Tools mode', function () {
@@ -44,20 +44,18 @@ it('extracts from tool calls in Tools mode', function () {
     $response = new InferenceResponse(content: '', toolCalls: $toolCalls);
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Tools);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Tools));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+    expect($result)->toBe(['name' => 'John', 'age' => 30]);
 });
 
 it('falls back to content in Tools mode when tool calls are missing', function () {
     $response = new InferenceResponse(content: '{"name":"John","age":30}');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Tools);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Tools));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+    expect($result)->toBe(['name' => 'John', 'age' => 30]);
 });
 
 it('handles markdown-wrapped JSON', function () {
@@ -74,10 +72,9 @@ MD;
     $response = new InferenceResponse(content: $content);
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+    expect($result)->toBe(['name' => 'John', 'age' => 30]);
 });
 
 it('handles JSON wrapped in text (bracket matching)', function () {
@@ -85,10 +82,9 @@ it('handles JSON wrapped in text (bracket matching)', function () {
     $response = new InferenceResponse(content: $content);
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+    expect($result)->toBe(['name' => 'John', 'age' => 30]);
 });
 
 it('handles nested objects', function () {
@@ -96,10 +92,9 @@ it('handles nested objects', function () {
     $response = new InferenceResponse(content: $json);
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe([
+    expect($result)->toBe([
         'user' => [
             'name' => 'John',
             'address' => [
@@ -116,10 +111,9 @@ it('handles arrays in JSON', function () {
     $response = new InferenceResponse(content: $json);
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe([
+    expect($result)->toBe([
         'users' => [
             ['name' => 'John'],
             ['name' => 'Jane'],
@@ -132,18 +126,16 @@ it('returns failure for invalid JSON', function () {
     $response = new InferenceResponse(content: 'this is not json at all');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
-
-    expect($result->isFailure())->toBeTrue();
+    $input = ExtractionInput::fromResponse($response, OutputMode::Json);
+    expect(fn() => $extractor->extract($input))->toThrow(ExtractionException::class);
 });
 
 it('returns failure for empty content', function () {
     $response = new InferenceResponse(content: '');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
-
-    expect($result->isFailure())->toBeTrue();
+    $input = ExtractionInput::fromResponse($response, OutputMode::Json);
+    expect(fn() => $extractor->extract($input))->toThrow(ExtractionException::class);
 });
 
 it('handles malformed JSON with trailing comma (resilient parsing)', function () {
@@ -151,11 +143,10 @@ it('handles malformed JSON with trailing comma (resilient parsing)', function ()
     $response = new InferenceResponse(content: '{"name":"John","age":30,}');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::Json);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
     // Resilient parser should fix trailing comma
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John', 'age' => 30]);
+    expect($result)->toBe(['name' => 'John', 'age' => 30]);
 });
 
 it('handles MdJson mode (markdown with JSON)', function () {
@@ -164,8 +155,7 @@ it('handles MdJson mode (markdown with JSON)', function () {
 ```');
     $extractor = new ResponseExtractor();
 
-    $result = $extractor->extract($response, OutputMode::MdJson);
+    $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::MdJson));
 
-    expect($result->isSuccess())->toBeTrue();
-    expect($result->unwrap())->toBe(['name' => 'John']);
+    expect($result)->toBe(['name' => 'John']);
 });

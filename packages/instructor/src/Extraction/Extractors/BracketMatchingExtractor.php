@@ -2,8 +2,9 @@
 
 namespace Cognesy\Instructor\Extraction\Extractors;
 
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use JsonException;
 
 /**
@@ -15,34 +16,39 @@ use JsonException;
  * Best for: Text with embedded JSON where content wraps the JSON
  * Limitation: Doesn't handle escaped braces inside strings
  */
-class BracketMatchingExtractor implements CanExtractContent
+class BracketMatchingExtractor implements CanExtractResponse
 {
     #[\Override]
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        $firstBrace = strpos($content, '{');
-        $lastBrace = strrpos($content, '}');
+        $firstBrace = strpos($input->content, '{');
+        $lastBrace = strrpos($input->content, '}');
 
         if ($firstBrace === false) {
-            return Result::failure('No opening brace found');
+            throw new ExtractionException('No opening brace found');
         }
 
         if ($lastBrace === false) {
-            return Result::failure('No closing brace found');
+            throw new ExtractionException('No closing brace found');
         }
 
         if ($lastBrace <= $firstBrace) {
-            return Result::failure('Invalid brace positions');
+            throw new ExtractionException('Invalid brace positions');
         }
 
-        $json = substr($content, $firstBrace, $lastBrace - $firstBrace + 1);
+        $json = substr($input->content, $firstBrace, $lastBrace - $firstBrace + 1);
 
         try {
-            json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
-            return Result::success($json);
+            $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            return Result::failure("Invalid JSON between braces: {$e->getMessage()}");
+            throw new ExtractionException("Invalid JSON between braces: {$e->getMessage()}", $e);
         }
+
+        if (!is_array($decoded)) {
+            throw new ExtractionException('Bracket-matched JSON must decode to object or array');
+        }
+
+        return $decoded;
     }
 
     #[\Override]

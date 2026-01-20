@@ -9,7 +9,6 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
@@ -24,7 +23,7 @@ final readonly class StructuredOutputPipelineFactory
     /** @param array<CanValidateObject|class-string<CanValidateObject>> $validators */
     /** @param array<CanTransformData|class-string<CanTransformData>> $transformers */
     /** @param array<CanDeserializeClass|class-string<CanDeserializeClass>> $deserializers */
-    /** @param array<CanExtractContent|class-string<CanExtractContent>> $extractors */
+    /** @param array<CanExtractResponse|class-string<CanExtractResponse>> $extractors */
     public function __construct(
         private CanHandleEvents $events,
         private StructuredOutputConfig $config,

@@ -13,7 +13,7 @@ Restructure the `packages/addons` test suite into four distinct categories:
 ## What Was Done
 
 ### 1. Fixed Namespace Resolution Errors
-**Problem:** 4 tests were failing with `Class "Cognesy\Addons\Agent\Capabilities\Tasks\InvalidArgumentException" not found`.
+**Problem:** 4 tests were failing with `Class "Cognesy\Addons\AgentBuilder\Capabilities\Tasks\InvalidArgumentException" not found`.
 
 **Root Cause:** The production code in `TaskList.php` was missing a `use InvalidArgumentException;` statement, causing PHP to look for the exception class in the wrong namespace.
 

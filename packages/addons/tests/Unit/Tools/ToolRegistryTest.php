@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Addons\Agent\Exceptions\InvalidToolException;
-use Cognesy\Addons\Agent\Tools\ToolPolicy;
-use Cognesy\Addons\Agent\Tools\ToolRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tools\ToolPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tools\ToolRegistry;
 use Cognesy\Addons\Agent\Tools\Testing\MockTool;
 
 it('registers and lists tool metadata', function () {

@@ -5,7 +5,7 @@ Tool-calling agent with iterative execution, state management, and extensible ca
 ## Quick Start
 
 ```php
-use Cognesy\Addons\Agent\AgentBuilder;use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Messages\Messages;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Messages\Messages;
 
 // Create agent with tools using builder
 $agent = AgentBuilder::base()
@@ -29,9 +29,9 @@ echo $finalState->currentStep()->outputMessages()->toString();
 Use `AgentBuilder` for composable agent configuration with fluent API. The builder uses **Capabilities** to add modular features to the agent.
 
 ```php
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
-use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
 
 // Basic agent with custom tools
 $agent = AgentBuilder::base()
@@ -90,7 +90,7 @@ $agent = AgentBuilder::base()
 Cached context is used for stable prompt parts that should persist across steps and benefit from provider prompt caching.
 
 ```php
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 
 $cache = new CachedContext(
@@ -128,12 +128,12 @@ Capabilities are modular features that can be added to an agent. They can regist
 | `UseMetadataTools` | `...\Metadata` | Adds scratchpad for storing data between tool calls |
 | `UseStructuredOutputs` | `...\StructuredOutput` | Adds LLM-powered structured data extraction |
 
-(Note: `...` represents `Cognesy\Addons\Agent\Capabilities`)
+(Note: `...` represents `Cognesy\Addons\AgentBuilder\Capabilities`)
 
 ### Example: Using Self-Critique
 ```php
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
-use Cognesy\Addons\Agent\Capabilities\SelfCritique\UseSelfCritique;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Addons\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
@@ -143,8 +143,8 @@ $agent = AgentBuilder::base()
 
 ### Example: Using Metadata Tools
 ```php
-use Cognesy\Addons\Agent\Capabilities\Metadata\UseMetadataTools;
-use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\MetadataPolicy;
 
 // Basic usage - agent gets scratchpad for storing intermediate results
 $agent = AgentBuilder::base()
@@ -160,10 +160,10 @@ $agent = AgentBuilder::base()
 
 ### Example: Using Structured Outputs
 ```php
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\UseStructuredOutputs;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaRegistry;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaDefinition;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\StructuredOutputPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;
 
 // Register schemas for extraction
 $schemas = new SchemaRegistry();
@@ -210,8 +210,8 @@ foreach ($agent->iterator($state) as $currentState) {
 ### BashTool
 Execute shell commands via sandboxed process.
 ```php
-use Cognesy\Addons\Agent\Capabilities\Bash\BashTool;
-use Cognesy\Addons\Agent\Capabilities\Bash\BashPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\BashTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\BashPolicy;
 
 $bashPolicy = new BashPolicy(maxOutputChars: 50000, headChars: 8000, tailChars: 40000);
 new BashTool(baseDir: '/tmp', timeout: 120, outputPolicy: $bashPolicy);
@@ -258,11 +258,11 @@ Structured task management.
 Limits and render cadence can be customized via `TodoPolicy` passed to `withTaskPlanning()`.
 
 ```php
-use Cognesy\Addons\Agent\Capabilities\Tasks\TodoPolicy;
-use Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning;
-use Cognesy\Addons\Agent\Capabilities\Subagent\SubagentPolicy;
-use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\TodoPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SubagentPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
 
 $policy = new TodoPolicy(
     maxItems: 25,
@@ -284,9 +284,9 @@ $agent = AgentBuilder::base()
 ### MetadataReadTool / MetadataWriteTool / MetadataListTool
 Scratchpad for storing data between tool calls.
 ```php
-use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataWriteTool;
-use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataReadTool;
-use Cognesy\Addons\Agent\Capabilities\Metadata\MetadataListTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\MetadataWriteTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\MetadataReadTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\MetadataListTool;
 
 // Usually added via UseMetadataTools capability
 // Tools: metadata_write, metadata_read, metadata_list
@@ -296,8 +296,8 @@ Useful for multi-step workflows where one tool produces data another needs.
 ### StructuredOutputTool
 Extract structured data from unstructured text using Instructor.
 ```php
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\StructuredOutputTool;
-use Cognesy\Addons\Agent\Capabilities\StructuredOutput\SchemaRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
 
 // Usually added via UseStructuredOutputs capability
 // Tool: extract_data
@@ -313,20 +313,12 @@ LoadSkillTool::withLibrary(new SkillLibrary('./skills'));
 ### SpawnSubagentTool
 Spawn isolated subagents from registered agent specifications.
 ```php
-use Cognesy\Addons\Agent\Capabilities\Subagent\SpawnSubagentTool;
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
 
 // Usually added via UseSubagents capability with AgentRegistry
 // The registry defines available subagent types and their tools/prompts
 ```
-
-### LlmQueryTool
-Send queries to the LLM for knowledge questions, reasoning, or text generation.
-```php
-new LlmQueryTool(); // Uses default LLM
-LlmQueryTool::using('openai'); // Uses specific preset
-```
-Note: This tool is **opt‑in** and not included in default agent builds. It creates a nested LLM call inside the agent loop, which adds cost and latency. Prefer the main agent loop unless you have a specialized workflow.
 
 ## Configuration
 
@@ -380,7 +372,7 @@ $agent = AgentBuilder::base()
 ```php
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 
-use Cognesy\Addons\Agent\Capabilities\Bash\UseBash;
+use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
 
 $policy = ExecutionPolicy::in('/project')
     ->withTimeout(120)
@@ -400,8 +392,8 @@ The `AgentRegistry` manages named agent specifications that can be spawned as su
 
 ### AgentSpec
 ```php
-use Cognesy\Addons\Agent\Registry\AgentSpec;
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
+use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
 
 // Define an agent specification
 $spec = new AgentSpec(
@@ -432,15 +424,15 @@ $registry->loadFromDirectory('/path/to/agents', recursive: true);
 $registry->autoDiscover();
 ```
 
-## Agent Contracts (Laravel-Friendly)
+## Agent Interfaces (Laravel-Friendly)
 
-For queue workers and jobs, use deterministic agent classes implementing `AgentContract`.
+For queue workers and jobs, use deterministic agent classes implementing `AgentInterface`.
 These expose self‑description plus execution and can be instantiated without serialization.
 
-### AgentContract Interface
+### AgentInterface
 
 ```php
-interface AgentContract
+interface AgentInterface
 {
     public function descriptor(): AgentDescriptor;
     public function build(): Agent;
@@ -452,21 +444,22 @@ interface AgentContract
     public function withEventHandler($events): self;
     public function wiretap(?callable $listener): self;
     public function onEvent(string $class, ?callable $listener): self;
+    public static function fromConfig(array $config): AgentInterface;
 }
 ```
 
-### AbstractAgentDefinition
+### AbstractAgent
 
-Base class that implements `AgentContract` with event handling and lazy agent building.
+Base class that implements `AgentInterface` with event handling and lazy agent building.
 
 ```php
-use Cognesy\Addons\Agent\Definitions\AbstractAgentDefinition;
+use Cognesy\Addons\AgentBuilder\Support\AbstractAgent;
 use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
 use Cognesy\Addons\Agent\Core\Collections\NameList;
 use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 
-class CodeAssistantAgent extends AbstractAgentDefinition
+class CodeAssistantAgent extends AbstractAgent
 {
     public function __construct(
         private readonly string $workspace,
@@ -489,47 +482,6 @@ class CodeAssistantAgent extends AbstractAgentDefinition
             ->withCapability(new UseBash())
             ->withMaxSteps(15)
             ->build();
-    }
-}
-```
-
-### AgentContractRegistry
-
-Registry for agent contract classes, enabling dynamic instantiation.
-
-```php
-use Cognesy\Addons\Agent\Registry\AgentContractRegistry;
-
-$registry = new AgentContractRegistry();
-$registry = $registry->register('code-assistant', \App\Agents\CodeAssistantAgent::class);
-
-// Create instance with constructor args
-$result = $registry->create('code-assistant', ['workspace' => '/var/app']);
-// $result is Result<AgentContract>
-
-if ($result->isSuccess()) {
-    $agent = $result->unwrap();
-    $descriptor = $agent->descriptor();
-    $finalState = $agent->run($initialState);
-}
-```
-
-### AgentFactory Interface
-
-Implement this for custom agent creation logic.
-
-```php
-use Cognesy\Addons\Agent\Contracts\AgentFactory;
-use Cognesy\Utils\Result\Result;
-
-class MyAgentFactory implements AgentFactory
-{
-    public function create(string $agentName, array $config = []): Result {
-        return match ($agentName) {
-            'code-assistant' => Result::success(new CodeAssistantAgent($config['workspace'])),
-            'researcher' => Result::success(new ResearcherAgent($config['sources'])),
-            default => Result::failure("Unknown agent: {$agentName}"),
-        };
     }
 }
 ```
@@ -577,7 +529,7 @@ Instructions, examples, patterns...
 
 Load skills:
 ```php
-use Cognesy\Addons\Agent\Capabilities\Skills\SkillLibrary;
+use Cognesy\Addons\AgentBuilder\Capabilities\Skills\SkillLibrary;
 
 $library = new SkillLibrary('./skills');
 $skill = $library->get('skill-name');
@@ -884,7 +836,7 @@ Test agent behavior without LLM API calls by replaying pre-scripted responses.
 ```php
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;
-use Cognesy\Addons\Agent\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
 
 // Create agent with deterministic responses
 $driver = DeterministicAgentDriver::fromResponses(
@@ -949,27 +901,12 @@ $agent = AgentBuilder::base()
 ```
 ├── src/Agent/
 │   ├── Agent.php                   # Main orchestrator
-│   ├── AgentBuilder.php            # Fluent builder for agents
 │   ├── Broadcasting/               # REAL-TIME UI EVENTS
 │   │   ├── BroadcastConfig.php     # Configuration with presets
 │   │   ├── CanBroadcastAgentEvents.php  # Broadcaster interface
 │   │   └── AgentEventEnvelopeAdapter.php  # Event-to-envelope adapter
-│   ├── Capabilities/               # MODULAR FEATURES
-│   │   ├── Bash/                   # Bash capability & tool
-│   │   ├── File/                   # File tools (read, write, edit, search, list_dir)
-│   │   ├── Metadata/               # Scratchpad capability & tools
-│   │   ├── SelfCritique/           # Self-critique capability & processor
-│   │   ├── Skills/                 # Skills capability & tool
-│   │   ├── StructuredOutput/       # LLM-powered data extraction
-│   │   ├── Subagent/               # Subagent capability & tool
-│   │   └── Tasks/                  # Task planning capability & tool
 │   ├── Contracts/
-│   │   ├── AgentCapability.php     # Capability interface
-│   │   ├── AgentContract.php       # Agent contract interface for Laravel/jobs
-│   │   ├── AgentFactory.php        # Factory interface for custom agent creation
 │   │   └── ToolInterface.php       # Tool interface
-│   ├── Definitions/
-│   │   └── AbstractAgentDefinition.php  # Base class for AgentContract implementations
 │   ├── Core/                       # CORE INFRASTRUCTURE
 │   │   ├── Collections/
 │   │   │   ├── AgentSteps.php      # Step collection
@@ -1029,17 +966,60 @@ $agent = AgentBuilder::base()
 │   │   ├── InvalidToolArgumentsException.php
 │   │   ├── InvalidToolException.php
 │   │   └── ToolExecutionException.php
-│   ├── Registry/
-│   │   ├── AgentContractRegistry.php  # Registry for AgentContract classes
-│   │   ├── AgentRegistry.php       # Manages agent specifications
-│   │   ├── AgentSpec.php           # Agent definition (name, tools, prompt)
-│   │   └── AgentSpecParser.php     # Parse agents from markdown
 │   └── Tools/
 │       ├── BaseTool.php            # Base class for tools
 │       ├── FunctionTool.php        # Wrap PHP functions as tools
-│       ├── LlmQueryTool.php        # Opt-in LLM reasoning tool
 │       └── Testing/
 │           └── MockTool.php        # Mock tool for testing
+├── src/AgentBuilder/
+│   ├── AgentBuilder.php            # Fluent builder for agents
+│   ├── Capabilities/               # MODULAR FEATURES
+│   │   ├── Bash/                   # Bash capability & tool
+│   │   ├── File/                   # File tools (read, write, edit, search, list_dir)
+│   │   ├── Metadata/               # Scratchpad capability & tools
+│   │   ├── SelfCritique/           # Self-critique capability & processor
+│   │   ├── Skills/                 # Skills capability & tool
+│   │   ├── StructuredOutput/       # LLM-powered data extraction
+│   │   ├── Subagent/               # Subagent capability & tool
+│   │   │   ├── SubagentDefinition.php  # Subagent definition contract
+│   │   │   └── SubagentProvider.php    # Subagent provider contract
+│   │   ├── Summarization/          # Summarization capability
+│   │   ├── Tasks/                  # Task planning capability & tool
+│   │   └── Tools/                  # Tool registry capability & tool discovery
+│   │       ├── ToolPolicy.php      # Tool selection policy
+│   │       ├── ToolRegistry.php    # Tool registry implementation
+│   │       ├── ToolRegistryInterface.php  # Tool registry contract
+│   │       ├── ToolsTool.php       # Tool discovery/meta tool
+│   │       └── UseToolRegistry.php # Capability for registry tool exposure
+│   ├── Contracts/
+│   │   ├── AgentCapability.php     # Capability interface
+│   │   ├── AgentInterface.php      # Agent interface for Laravel/jobs
+│   ├── Support/
+│   │   └── AbstractAgent.php  # Base class for AgentInterface implementations
+└── src/AgentTemplate/                  # Declarative agent templates (namespace: Cognesy\Addons\AgentTemplate)
+    ├── Contracts/
+    │   └── AgentBlueprint.php          # Blueprint contract for definitions
+    ├── Definitions/
+    │   ├── AgentDefinition.php         # Declarative agent definition DTO
+    │   ├── AgentDefinitionExecution.php
+    │   ├── AgentDefinitionFactory.php
+    │   ├── AgentDefinitionLlm.php
+    │   ├── AgentDefinitionLoader.php
+    │   ├── AgentDefinitionLoadResult.php
+    │   ├── AgentDefinitionParser.php
+    │   ├── AgentDefinitionRegistry.php
+    │   └── AgentDefinitionTools.php
+    ├── Exceptions/
+    │   ├── AgentBlueprintCreationException.php
+    │   ├── AgentBlueprintMissingException.php
+    │   ├── AgentBlueprintNotFoundException.php
+    │   └── InvalidAgentBlueprintException.php
+    └── Registry/
+        ├── AgentBlueprintRegistry.php
+        ├── AgentCapabilityRegistry.php
+        ├── AgentRegistry.php           # Manages agent specifications
+        ├── AgentSpec.php               # Agent spec (name, tools, prompt)
+        └── AgentSpecParser.php         # Parse agents from markdown
 ```
 
 ## Troubleshooting

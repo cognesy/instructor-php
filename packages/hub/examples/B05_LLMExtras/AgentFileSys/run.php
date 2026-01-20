@@ -1,8 +1,8 @@
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\File\UseFileTools;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 

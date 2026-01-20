@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Skills;
 
-use Cognesy\Addons\Agent\Capabilities\Skills\Skill;
+use Cognesy\Addons\AgentBuilder\Capabilities\Skills\Skill;
 
 describe('Skill', function () {
 

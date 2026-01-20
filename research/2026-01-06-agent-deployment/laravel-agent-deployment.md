@@ -162,7 +162,7 @@ class ExecuteAgentJob implements ShouldQueue
 
 namespace App\Services;
 
-use App\Events\AgentStatusChanged;use App\Events\AgentStepCompleted;use App\Models\AgentExecution;use App\Models\AgentLog;use App\Models\AgentSignal;use Cognesy\Addons\Agent\Agent;use Cognesy\Addons\Agent\AgentBuilder;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Events\AgentStepCompleted as AgentStepCompletedEvent;use Cognesy\Addons\Agent\Events\ToolCallCompleted;use Cognesy\Events\EventBus;use Cognesy\Messages\Messages;
+use App\Events\AgentStatusChanged;use App\Events\AgentStepCompleted;use App\Models\AgentExecution;use App\Models\AgentLog;use App\Models\AgentSignal;use Cognesy\Addons\Agent\Agent;use Cognesy\Addons\AgentBuilder\AgentBuilder;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Events\AgentStepCompleted as AgentStepCompletedEvent;use Cognesy\Addons\Agent\Events\ToolCallCompleted;use Cognesy\Events\EventBus;use Cognesy\Messages\Messages;
 
 class AgentExecutionService
 {
@@ -397,9 +397,9 @@ class AgentExecutionService
     private function buildCodeAssistant(EventBus $events): Agent
     {
         return AgentBuilder::base()
-            ->withCapability(new \Cognesy\Addons\Agent\Capabilities\Bash\UseBash())
-            ->withCapability(new \Cognesy\Addons\Agent\Capabilities\File\UseFileTools('/var/www/workspace'))
-            ->withCapability(new \Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning())
+            ->withCapability(new \Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash())
+            ->withCapability(new \Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools('/var/www/workspace'))
+            ->withCapability(new \Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning())
             ->withMaxSteps(50)
             ->withTimeout(300)
             ->withEvents($events)
@@ -409,7 +409,7 @@ class AgentExecutionService
     private function buildResearchAgent(EventBus $events): Agent
     {
         return AgentBuilder::base()
-            ->withCapability(new \Cognesy\Addons\Agent\Capabilities\File\UseFileTools('/var/www/workspace'))
+            ->withCapability(new \Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools('/var/www/workspace'))
             ->withMaxSteps(100)
             ->withTimeout(600)
             ->withEvents($events)
@@ -1444,10 +1444,10 @@ namespace App\Services;
 use App\Jobs\ExecuteAgentJob;
 use App\Models\AgentExecution;
 use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\Agent\Registry\AgentRegistry;
-use Cognesy\Addons\Agent\Registry\AgentSpec;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
 
 class ResearchAgentService
 {
@@ -1462,7 +1462,7 @@ class ResearchAgentService
         $registry = $this->buildSubagentRegistry();
 
         return AgentBuilder::base()
-            ->withCapability(new \Cognesy\Addons\Agent\Capabilities\File\UseFileTools(
+            ->withCapability(new \Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools(
                 storage_path('app/research/' . $execution->id)
             ))
             ->withCapability(UseSubagents::withDepth(
@@ -1470,7 +1470,7 @@ class ResearchAgentService
                 registry: $registry,
                 summaryMaxChars: 12000,
             ))
-            ->withCapability(new \Cognesy\Addons\Agent\Capabilities\Tasks\UseTaskPlanning())
+            ->withCapability(new \Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning())
             ->withMaxSteps(100)
             ->withMaxTokens(100000)
             ->withTimeout(1800) // 30 minutes

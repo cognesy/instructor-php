@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Tools;
 
-use Cognesy\Addons\Agent\Capabilities\File\WriteFileTool;
+use Cognesy\Addons\AgentBuilder\Capabilities\File\WriteFileTool;
 use Tests\Addons\Support\TestHelpers;
 
 

@@ -138,6 +138,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         return $this->with(currentStepStartedAt: $startedAt);
     }
 
+    #[\Override]
     public function markStepStarted() : self {
         return $this->with(currentStepStartedAt: new DateTimeImmutable());
     }
@@ -148,10 +149,12 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
      * NOT at session creation. Used by ExecutionTimeLimit to prevent
      * runaway single-query processing.
      */
+    #[\Override]
     public function markExecutionStarted() : self {
         return $this->with(executionStartedAt: new DateTimeImmutable());
     }
 
+    #[\Override]
     public function withAddedExecutionTime(float $seconds) : self {
         return $this->withStateInfo(
             $this->stateInfo()->addExecutionTime($seconds),

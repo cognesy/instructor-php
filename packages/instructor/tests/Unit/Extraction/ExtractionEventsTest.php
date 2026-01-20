@@ -11,6 +11,8 @@ use Cognesy\Instructor\Events\Extraction\ExtractionStrategyAttempted;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategyFailed;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategySucceeded;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\ResponseExtractor;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -35,9 +37,8 @@ describe('Extraction Events', function () {
         );
 
         $response = makeResponse('{"name":"John","age":30}');
-        $result = $extractor->extract($response, OutputMode::Json);
-
-        expect($result->isSuccess())->toBeTrue();
+        $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
+        expect($result)->toBe(['name' => 'John', 'age' => 30]);
 
         $eventTypes = array_map(fn($e) => get_class($e), $events);
 
@@ -57,9 +58,8 @@ describe('Extraction Events', function () {
         );
 
         $response = makeResponse('This is not JSON at all');
-        $result = $extractor->extract($response, OutputMode::Json);
-
-        expect($result->isFailure())->toBeTrue();
+        $input = ExtractionInput::fromResponse($response, OutputMode::Json);
+        expect(fn() => $extractor->extract($input))->toThrow(ExtractionException::class);
 
         $eventTypes = array_map(fn($e) => get_class($e), $events);
 
@@ -81,9 +81,8 @@ describe('Extraction Events', function () {
 
         // Content that will fail DirectJson but succeed with BracketMatching
         $response = makeResponse('Here is some JSON: {"name":"John"}');
-        $result = $extractor->extract($response, OutputMode::Json);
-
-        expect($result->isSuccess())->toBeTrue();
+        $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
+        expect($result)->toBe(['name' => 'John']);
 
         $attemptedEvents = array_filter($events, fn($e) => $e instanceof ExtractionStrategyAttempted);
         expect(count($attemptedEvents))->toBeGreaterThanOrEqual(1);
@@ -103,7 +102,7 @@ describe('Extraction Events', function () {
         );
 
         $response = makeResponse('{"name":"John"}');
-        $extractor->extract($response, OutputMode::Json);
+        $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
         $attemptedEvent = array_filter($events, fn($e) => $e instanceof ExtractionStrategyAttempted);
         $attemptedEvent = array_values($attemptedEvent)[0];
@@ -122,7 +121,7 @@ describe('Extraction Events', function () {
 
         $content = '{"name":"John"}';
         $response = makeResponse($content);
-        $extractor->extract($response, OutputMode::Json);
+        $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
         $startedEvent = array_filter($events, fn($e) => $e instanceof ExtractionStarted);
         $startedEvent = array_values($startedEvent)[0];
@@ -140,7 +139,8 @@ describe('Extraction Events', function () {
         );
 
         $response = makeResponse('not json');
-        $extractor->extract($response, OutputMode::Json);
+        $input = ExtractionInput::fromResponse($response, OutputMode::Json);
+        expect(fn() => $extractor->extract($input))->toThrow(ExtractionException::class);
 
         $failedEvent = array_filter($events, fn($e) => $e instanceof ExtractionFailed);
         $failedEvent = array_values($failedEvent)[0];
@@ -157,10 +157,8 @@ describe('Extraction Events', function () {
         );
 
         $response = makeResponse('{"name":"John"}');
-        $result = $extractor->extract($response, OutputMode::Json);
-
-        expect($result->isSuccess())->toBeTrue();
-        expect($result->unwrap())->toBe(['name' => 'John']);
+        $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
+        expect($result)->toBe(['name' => 'John']);
     });
 
     it('withEvents returns new instance with dispatcher', function () {
@@ -173,7 +171,7 @@ describe('Extraction Events', function () {
         expect($withEvents)->not->toBe($extractor);
 
         $response = makeResponse('{"name":"John"}');
-        $withEvents->extract($response, OutputMode::Json);
+        $withEvents->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
         expect(count($events))->toBeGreaterThan(0);
     });

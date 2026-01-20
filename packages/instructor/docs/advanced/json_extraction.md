@@ -230,23 +230,29 @@ Most responses succeed on first strategy (direct parsing).
 You can add custom extractors to handle non-standard response formats:
 
 ```php
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 
-class XmlCdataExtractor implements CanExtractContent
+class XmlCdataExtractor implements CanExtractResponse
 {
-    public function extract(string $content): Result
+    public function extract(ExtractionInput $input): array
     {
-        if (preg_match('/<!\[CDATA\[(.*?)\]\]>/s', $content, $matches)) {
+        if (preg_match('/<!\[CDATA\[(.*?)\]\]>/s', $input->content, $matches)) {
             $json = trim($matches[1]);
             try {
-                json_decode($json, flags: JSON_THROW_ON_ERROR);
-                return Result::success($json);
-            } catch (\JsonException) {
-                return Result::failure('Invalid JSON in CDATA');
+                $decoded = json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                throw new ExtractionException('Invalid JSON in CDATA', $e);
             }
+
+            if (!is_array($decoded)) {
+                throw new ExtractionException('Expected object or array in CDATA');
+            }
+
+            return $decoded;
         }
-        return Result::failure('No CDATA found');
+        throw new ExtractionException('No CDATA found');
     }
 
     public function name(): string

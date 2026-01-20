@@ -3,5 +3,15 @@
 namespace Cognesy\Addons\ToolUse\Exceptions;
 
 use Cognesy\Addons\StepByStep\Exceptions\StepByStepException;
+use Throwable;
 
-class ToolUseException extends StepByStepException {}
+/**
+ * @phpstan-consistent-constructor
+ */
+class ToolUseException extends StepByStepException
+{
+    #[\Override]
+    public static function fromThrowable(Throwable $throwable): self {
+        return new self($throwable->getMessage(), (int)$throwable->getCode(), $throwable);
+    }
+}

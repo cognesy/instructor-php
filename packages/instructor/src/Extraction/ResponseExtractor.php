@@ -2,61 +2,39 @@
 
 namespace Cognesy\Instructor\Extraction;
 
-use Cognesy\Instructor\Events\Extraction\ExtractionCompleted;
-use Cognesy\Instructor\Events\Extraction\ExtractionFailed;
-use Cognesy\Instructor\Events\Extraction\ExtractionStarted;
-use Cognesy\Instructor\Events\Extraction\ExtractionStrategyAttempted;
-use Cognesy\Instructor\Events\Extraction\ExtractionStrategyFailed;
-use Cognesy\Instructor\Events\Extraction\ExtractionStrategySucceeded;
-use Cognesy\Instructor\Extraction\Buffers\ExtractingJsonBuffer;
-use Cognesy\Instructor\Extraction\Buffers\ToolsBuffer;
+use Cognesy\Instructor\Extraction\Buffers\ExtractingBuffer;
 use Cognesy\Instructor\Extraction\Contracts\CanBufferContent;
-use Cognesy\Instructor\Extraction\Contracts\CanExtractContent;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
-use Cognesy\Instructor\Extraction\Contracts\CanParseContent;
 use Cognesy\Instructor\Extraction\Contracts\CanProvideContentBuffer;
-use Cognesy\Instructor\Extraction\Enums\DataFormat;
+use Cognesy\Instructor\Extraction\Data\ExtractionInput;
+use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
 use Cognesy\Instructor\Extraction\Extractors\BracketMatchingExtractor;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\MarkdownBlockExtractor;
+use Cognesy\Instructor\Extraction\Extractors\PartialJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\ResilientJsonExtractor;
 use Cognesy\Instructor\Extraction\Extractors\SmartBraceExtractor;
-use Cognesy\Instructor\Extraction\Parsers\JsonParser;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Throwable;
 
 /**
  * Service class for extracting structured content from LLM responses.
  *
- * This is the main extraction service that orchestrates CanExtractContent extractors.
- * It follows the same service pattern as ResponseValidator and ResponseDeserializer:
- * - Orchestrates multiple extractors with first-success-wins behavior
- * - Supports lazy instantiation from class strings
- * - Emits events for debugging and monitoring
- *
- * The architecture uses two distinct layers:
- * 1. Data Access Layer: Gets content string from response based on mode
- * 2. Extraction Layer: Applies extractors to find structured content (format-agnostic)
- *
- * Tool calls are NOT treated specially - they're just a different data source.
- * The extraction logic is the same for all output modes.
+ * Orchestrates extractors with first-success-wins behavior and optional events.
  */
 class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
 {
-    /** @var array<CanExtractContent|class-string<CanExtractContent>> */
+    /** @var array<CanExtractResponse|class-string<CanExtractResponse>> */
     private array $extractors;
 
-    /** @var array<CanExtractContent|class-string<CanExtractContent>>|null */
+    /** @var array<CanExtractResponse|class-string<CanExtractResponse>>|null */
     private ?array $streamingExtractors;
 
     private ?EventDispatcherInterface $events;
 
     /**
-     * @param array<CanExtractContent|class-string<CanExtractContent>>|null $extractors Custom extractors (default: standard chain)
-     * @param array<CanExtractContent|class-string<CanExtractContent>>|null $streamingExtractors Streaming-specific extractors (null = use subset of $extractors)
+     * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $extractors Custom extractors (default: standard chain)
+     * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $streamingExtractors Streaming-specific extractors (null = use subset of $extractors)
      * @param EventDispatcherInterface|null $events Optional event dispatcher
      */
     public function __construct(
@@ -90,9 +68,9 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Create extractor with custom extractors.
      *
-     * @param CanExtractContent|class-string<CanExtractContent> ...$extractors
+     * @param CanExtractResponse|class-string<CanExtractResponse> ...$extractors
      */
-    public static function withExtractors(CanExtractContent|string ...$extractors): self
+    public static function withExtractors(CanExtractResponse|string ...$extractors): self
     {
         return new self($extractors);
     }
@@ -100,7 +78,7 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Get the default extraction chain in order.
      *
-     * @return array<class-string<CanExtractContent>>
+     * @return array<class-string<CanExtractResponse>>
      */
     public static function defaultExtractors(): array
     {
@@ -116,216 +94,127 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
     /**
      * Get the default streaming extractors (fast subset).
      *
-     * @return array<class-string<CanExtractContent>>
+     * @return array<class-string<CanExtractResponse>>
      */
     public static function defaultStreamingExtractors(): array
     {
         return [
             DirectJsonExtractor::class,
             ResilientJsonExtractor::class,
+            PartialJsonExtractor::class,
         ];
     }
 
     #[\Override]
-    public function extract(InferenceResponse $response, OutputMode $mode): Result
+    public function extract(ExtractionInput $input): array
     {
-        // 1. DATA ACCESS: Get content string based on mode (uniform for all modes)
-        $contentResult = $this->getContentString($response, $mode);
-        if ($contentResult->isFailure()) {
-            return Result::failure($contentResult->error());
-        }
-        $content = $contentResult->unwrap();
-
-        if (empty($content)) {
-            return Result::failure('Empty response content');
+        if (trim($input->content) === '') {
+            throw new ExtractionException('Empty response content');
         }
 
-        // 2. RESOLVE PARSER
-        $format = $this->resolveFormat($mode);
-        $parser = $this->resolveParser($format);
+        $buffer = ExtractingBuffer::empty(
+            mode: $input->mode,
+            extractors: $this->resolveExtractors(),
+            response: $input->response,
+            events: $this->events,
+        )->assemble($input->content);
 
-        // 3. EXTRACTION: Try extractors in order (format-agnostic)
-        return $this->extractFromContent($content, $parser);
+        $parsed = $buffer->parsed();
+        if ($parsed !== null) {
+            return $parsed;
+        }
+
+        $summary = $this->formatErrors($buffer->errors());
+        $message = 'No structured content found in response';
+        if ($summary !== '') {
+            $message = "No structured content found in response. Tried: {$summary}";
+        }
+
+        throw new ExtractionException($message);
     }
 
     #[\Override]
     public function makeContentBuffer(OutputMode $mode): CanBufferContent
     {
-        $extractors = $this->resolveStreamingExtractors();
-        return match ($mode) {
-            OutputMode::Tools => ToolsBuffer::empty(),
-            default => ExtractingJsonBuffer::empty($extractors),
-        };
+        return ExtractingBuffer::empty(
+            mode: $mode,
+            extractors: $this->resolveStreamingExtractors(),
+            response: null,
+            events: null,
+        );
     }
 
     /**
      * Get extractors currently configured for this service.
      *
-     * @return array<CanExtractContent|class-string<CanExtractContent>>
+     * @return array<CanExtractResponse|class-string<CanExtractResponse>>
      */
     public function extractors(): array
     {
         return $this->extractors;
     }
 
+    #[\Override]
+    public function name(): string
+    {
+        return 'response_extractor';
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////////
-
-    /**
-     * Uniform data access - no special cases, just different sources.
-     */
-    /**
-     * @return Result<string, Throwable>
-     */
-    private function getContentString(InferenceResponse $response, OutputMode $mode): Result
-    {
-        return match ($mode) {
-            OutputMode::Tools => $this->getToolCallContent($response),
-            default => Result::success($response->content()),
-        };
-    }
-
-    /**
-     * Get content from tool calls as JSON string.
-     *
-     * @return Result<string, Throwable>
-     */
-    private function getToolCallContent(InferenceResponse $response): Result
-    {
-        $toolCalls = $response->toolCalls();
-
-        if ($toolCalls->isEmpty()) {
-            // Fallback for providers that return tool-call JSON in content.
-            return Result::success($response->content());
-        }
-
-        if ($toolCalls->hasSingle()) {
-            return Result::try(fn() => json_encode($toolCalls->first()?->args() ?? [], JSON_THROW_ON_ERROR));
-        }
-
-        return Result::try(fn() => json_encode($toolCalls->toArray(), JSON_THROW_ON_ERROR));
-    }
-
-    /**
-     * Format-agnostic extraction - same logic for all content types.
-     *
-     * @return Result<array<array-key, mixed>, Throwable>
-     */
-    private function extractFromContent(string $content, CanParseContent $parser): Result
-    {
-        $this->dispatch(new ExtractionStarted([
-            'content_length' => strlen($content),
-            'extractors_count' => count($this->extractors),
-        ]));
-
-        $errors = [];
-        $attemptIndex = 0;
-
-        foreach ($this->extractors as $extractor) {
-            $extractor = $this->resolveExtractor($extractor);
-            $extractorName = $extractor->name();
-
-            $this->dispatch(new ExtractionStrategyAttempted([
-                'strategy' => $extractorName,
-                'attempt_index' => $attemptIndex++,
-            ]));
-
-            $result = $extractor->extract($content);
-
-            if ($result->isSuccess()) {
-                $rawContent = $result->unwrap();
-
-                $this->dispatch(new ExtractionStrategySucceeded([
-                    'strategy' => $extractorName,
-                    'content_length' => strlen($rawContent),
-                ]));
-
-                // Parse content to array
-                $decoded = $parser->parse($rawContent);
-
-                if ($decoded->isSuccess()) {
-                    $this->dispatch(new ExtractionCompleted([
-                        'strategy' => $extractorName,
-                        'content_length' => strlen($rawContent),
-                    ]));
-                }
-
-                return $decoded;
-            }
-
-            $errorMessage = $result->exception()->getMessage();
-            $this->dispatch(new ExtractionStrategyFailed([
-                'strategy' => $extractorName,
-                'error' => $errorMessage,
-            ]));
-
-            $errors[$extractorName] = $errorMessage;
-        }
-
-        $extractorNames = array_keys($errors);
-        $errorSummary = implode('; ', array_map(
-            fn($name, $error) => "[{$name}] {$error}",
-            $extractorNames,
-            $errors,
-        ));
-
-        $this->dispatch(new ExtractionFailed([
-            'strategies_tried' => $extractorNames,
-            'errors' => $errors,
-        ]));
-
-        return Result::failure("No structured content found in response. Tried: {$errorSummary}");
-    }
 
     /**
      * Resolve extractor from class string if needed.
      *
-     * @param CanExtractContent|class-string<CanExtractContent> $extractor
+     * @param CanExtractResponse|class-string<CanExtractResponse> $extractor
      */
-    private function resolveExtractor(CanExtractContent|string $extractor): CanExtractContent
+    private function resolveExtractor(CanExtractResponse|string $extractor): CanExtractResponse
     {
         if (is_string($extractor)) {
             return new $extractor();
         }
+
         return $extractor;
+    }
+
+    /**
+     * @return CanExtractResponse[]
+     */
+    private function resolveExtractors(): array
+    {
+        return array_map(
+            fn($extractor) => $this->resolveExtractor($extractor),
+            $this->extractors,
+        );
     }
 
     /**
      * Get streaming extractors, resolved to instances.
      *
-     * @return CanExtractContent[]
+     * @return CanExtractResponse[]
      */
     private function resolveStreamingExtractors(): array
     {
         $extractors = $this->streamingExtractors ?? self::defaultStreamingExtractors();
         return array_map(
             fn($extractor) => $this->resolveExtractor($extractor),
-            $extractors
+            $extractors,
         );
     }
 
-    private function resolveFormat(OutputMode $mode): DataFormat
-    {
-        return match($mode) {
-            OutputMode::Tools, OutputMode::Json, OutputMode::JsonSchema, OutputMode::MdJson => DataFormat::Json,
-            // Future:
-            // OutputMode::MdYaml, OutputMode::Yaml => DataFormat::Yaml,
-            default => DataFormat::Json,
-        };
-    }
-
-    private function resolveParser(DataFormat $format): CanParseContent
-    {
-        return match($format) {
-            DataFormat::Json => new JsonParser(),
-            DataFormat::Yaml, DataFormat::Xml => throw new \RuntimeException("Parser for format {$format->value} is not yet implemented"),
-        };
-    }
-
     /**
-     * Dispatch an event if event dispatcher is available.
+     * @param array<string, string> $errors
      */
-    private function dispatch(object $event): void
+    private function formatErrors(array $errors): string
     {
-        $this->events?->dispatch($event);
+        if ($errors === []) {
+            return '';
+        }
+
+        $messages = [];
+        foreach ($errors as $name => $error) {
+            $messages[] = "[{$name}] {$error}";
+        }
+
+        return implode('; ', $messages);
     }
 }

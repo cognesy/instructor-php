@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Capabilities\Summarization\SummarizationPolicy;
-use Cognesy\Addons\Agent\Capabilities\Summarization\UseSummarization;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Capabilities\Summarization\SummarizationPolicy;
+use Cognesy\Addons\AgentBuilder\Capabilities\Summarization\UseSummarization;
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Addons\Agent\Drivers\Testing\ScenarioStep;

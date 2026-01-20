@@ -14,8 +14,8 @@
 - `AgentBuilder::withMaxRetries()` now actually works - the value is passed to `ToolCallingDriver` via inference retry policy
 - Previously the property was set but never used
 
-### AbstractAgentDefinition Event Handler Fix
-- Fixed `AbstractAgentDefinition::build()` returning stale agent instance without the configured event handler
+### AbstractAgent Event Handler Fix
+- Fixed `AbstractAgent::build()` returning stale agent instance without the configured event handler
 - Event handlers and listeners set via `withEventHandler()`, `wiretap()`, `onEvent()` now correctly propagate to the built agent
 
 ## Static Analysis Improvements

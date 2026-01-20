@@ -2,7 +2,7 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\Definitions\AgentDefinitionParser;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinitionParser;
 use InvalidArgumentException;
 
 describe('AgentDefinitionParser', function () {

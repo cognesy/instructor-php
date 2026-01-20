@@ -2,9 +2,9 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\AgentBuilder;
-use Cognesy\Addons\Agent\Contracts\AgentCapability;
-use Cognesy\Addons\Agent\Registry\AgentCapabilityRegistry;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Addons\AgentTemplate\Registry\AgentCapabilityRegistry;
 use InvalidArgumentException;
 
 final class TestCapability implements AgentCapability

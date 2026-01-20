@@ -2,17 +2,59 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Addons\Agent\Contracts\AgentBlueprint;
-use Cognesy\Addons\Agent\Definitions\AgentDefinition;
-use Cognesy\Addons\Agent\Registry\AgentBlueprintRegistry;
-use Cognesy\Utils\Result\Result;
-use InvalidArgumentException;
+use Cognesy\Addons\AgentTemplate\Contracts\AgentBlueprint;
+use Cognesy\Addons\AgentBuilder\Contracts\AgentInterface;
+use Cognesy\Addons\Agent\Core\Collections\NameList;
+use Cognesy\Addons\Agent\Core\Data\AgentDescriptor;
+use Cognesy\Addons\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Addons\AgentBuilder\Support\AbstractAgent;
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
+use Cognesy\Addons\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
+use Cognesy\Addons\AgentTemplate\Registry\AgentBlueprintRegistry;
+
+final class RegistryAgentDefinition extends AbstractAgent
+{
+    public function __construct(private readonly string $name)
+    {
+    }
+
+    public function descriptor(): AgentDescriptor
+    {
+        return new AgentDescriptor(
+            name: $this->name,
+            description: 'Registry test agent',
+            tools: new NameList(),
+            capabilities: new NameList(),
+        );
+    }
+
+    protected function buildAgent(): \Cognesy\Addons\Agent\Agent
+    {
+        return AgentBuilder::base()->build();
+    }
+
+    public function serializeConfig(): array
+    {
+        return ['name' => $this->name];
+    }
+
+    public static function fromConfig(array $config): AgentInterface
+    {
+        $name = $config['name'] ?? 'registry-agent';
+        if (!is_string($name) || $name === '') {
+            throw new \InvalidArgumentException('Invalid agent config.');
+        }
+
+        return new self($name);
+    }
+}
 
 final class TestBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(AgentDefinition $definition): Result
+    public static function fromDefinition(AgentDefinition $definition): AgentInterface
     {
-        return Result::success($definition->id);
+        return new RegistryAgentDefinition($definition->id);
     }
 }
 
@@ -31,7 +73,7 @@ describe('AgentBlueprintRegistry', function () {
 
         $register = fn() => $registry->register('bad', \stdClass::class);
 
-        expect($register)->toThrow(InvalidArgumentException::class);
+        expect($register)->toThrow(InvalidAgentBlueprintException::class);
     });
 
     it('fails when blueprint alias is missing', function () {
@@ -39,6 +81,6 @@ describe('AgentBlueprintRegistry', function () {
 
         $get = fn() => $registry->get('missing');
 
-        expect($get)->toThrow(InvalidArgumentException::class);
+        expect($get)->toThrow(AgentBlueprintNotFoundException::class);
     });
 });

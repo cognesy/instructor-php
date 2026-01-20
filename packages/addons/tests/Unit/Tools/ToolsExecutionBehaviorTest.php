@@ -11,7 +11,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 
 function _ok(int $x): int { return $x + 1; }
-function _boom(): int { throw new Exception('fail'); }
+function _boom(): int { throw new \RuntimeException('fail'); }
 
 it('throws on tool failure when configured', function () {
     $tools = new Tools(FunctionTool::fromCallable(_boom(...)));
