@@ -1,3 +1,23 @@
+---
+title: 'Pure Array Processing (No Classes)'
+docname: 'pure_array_processing'
+---
+
+## Overview
+
+This example demonstrates extraction using ONLY arrays - no PHP classes,
+no serialization, no deserialization. Just JSON Schema definition and array output.
+
+This is useful when:
+- Working with dynamic schemas defined at runtime
+- Avoiding class creation overhead
+- Integrating with systems that expect plain arrays
+- Building schema-driven extraction pipelines
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -53,6 +73,42 @@ foreach ($article as $key => $value) {
 echo "\n✓ Pure array processing verified - no classes, no serialization!\n";
 ?>
 ```
+
+## Expected Output
+
+```
+=== PURE ARRAY PROCESSING (NO CLASSES) ===
+
+=== RESULT (PURE ARRAY) ===
+array:4 [
+  "title" => "Introduction to PHP 8.4"
+  "author" => "Jane Doe"
+  "wordCount" => 1500
+  "tags" => array:3 [
+    0 => "php"
+    1 => "tutorial"
+    2 => "programming"
+  ]
+]
+
+Field types:
+  title: string
+  author: string
+  wordCount: integer
+  tags: array
+
+✓ Pure array processing verified - no classes, no serialization!
+```
+
+## How It Works
+
+1. **Schema definition**: `JsonSchema` fluent API defines the expected structure
+2. **No PHP classes**: No `Article` class, no `@var` annotations, no type hints
+3. **intoArray()**: Forces output to be plain PHP array
+4. **Result**: Pure associative array with primitive values
+
+## JsonSchema API
+
 ```php
 // Basic types
 JsonSchema::string('name', 'description')
@@ -71,3 +127,11 @@ JsonSchema::object('address', [
 
 // Enums
 JsonSchema::enum('status', ['pending', 'active', 'closed'])
+```
+
+## Use Cases
+
+- **Dynamic schemas**: Define extraction shapes at runtime
+- **API-driven extraction**: Schema comes from external API/database
+- **No-class pipelines**: Avoid PHP class overhead entirely
+- **Array-first architectures**: When your system expects arrays throughout

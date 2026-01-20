@@ -1,3 +1,16 @@
+---
+title: 'Streaming metrics (Polyglot)'
+docname: 'metrics_streaming'
+---
+
+## Overview
+
+Collect simple streaming metrics from Polyglot inference events: time to first chunk,
+stream duration, chunk count (streamed deltas), and average output tokens per second.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -138,3 +151,4 @@ function aggregatedValue(array $aggregate): float {
     };
 }
 ?>
+```

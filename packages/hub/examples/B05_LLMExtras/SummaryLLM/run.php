@@ -1,3 +1,15 @@
+---
+title: 'Simple content summary'
+docname: 'summary_with_llm'
+---
+
+## Overview
+
+This is an example of a simple summarization.
+
+## Example
+
+```php
 <?php
 
 require 'examples/boot.php';
@@ -39,3 +51,4 @@ $summary = (new Inference)
 
 dump($summary);
 ?>
+```

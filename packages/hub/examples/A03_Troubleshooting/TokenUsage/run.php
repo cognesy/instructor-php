@@ -1,3 +1,20 @@
+---
+title: 'Tracking token usage via events'
+docname: 'token_usage_events'
+---
+
+## Overview
+
+Some use cases require tracking the token usage of the API responses.
+This can be done by getting `Usage` object from Instructor LLM response
+object.
+
+Code below demonstrates how it can be retrieved for both sync and
+streamed requests.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -40,11 +57,9 @@ $stream = (new StructuredOutput)
     )
     ->stream();
 
-// Consume the stream to get final usage
-foreach ($stream->partials() as $partial) {
-    // streaming...
-}
+$response = $stream->finalValue();
 echo "\nTEXT: $text\n";
 assert($stream->usage()->total() > 0);
 printUsage($stream->usage());
 ?>
+```

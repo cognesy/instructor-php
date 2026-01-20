@@ -1,3 +1,15 @@
+---
+title: 'Fluent API'
+docname: 'fluent_api'
+path: ''
+---
+
+## Overview
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -30,3 +42,4 @@ assert(isset($user->age));
 assert($user->name === 'Jason');
 assert($user->age === 25);
 ?>
+```

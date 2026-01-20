@@ -1,3 +1,24 @@
+---
+title: 'Embeddings utils'
+docname: 'embed_utils'
+---
+
+## Overview
+
+`EmbedUtils` class offers convenient methods to find top K vectors
+or documents most similar to provided query.
+
+Check out the `EmbedUtils` class for more details.
+ - `EmbedUtils::findTopK()`
+ - `EmbedUtils::findSimilar()`
+
+Embeddings providers access details can be found and modified via
+`/config/embed.php`.
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -38,3 +59,4 @@ foreach($presets as $preset) {
     dump($bestMatches);
 }
 ?>
+```

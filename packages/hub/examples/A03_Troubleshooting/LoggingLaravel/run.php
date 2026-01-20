@@ -1,3 +1,16 @@
+---
+title: 'Laravel Logging Integration'
+docname: 'logging_laravel'
+path: ''
+---
+
+## Overview
+
+Laravel integration with Instructor's functional logging pipeline.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -62,3 +75,4 @@ echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 // [2025-12-07 01:18:13] instructor.DEBUG: 🔄 [Laravel] Starting extraction: User
 // [2025-12-07 01:18:14] instructor.DEBUG: ✅ [Laravel] Completed extraction: User
 ?>
+```

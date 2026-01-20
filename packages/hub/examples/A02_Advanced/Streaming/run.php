@@ -1,3 +1,17 @@
+---
+title: 'Streaming'
+docname: 'streaming'
+---
+
+## Overview
+
+Instructor can process LLM's streamed responses to provide partial response model
+updates that you can use to update the model with new data as the response is being
+generated.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -37,6 +51,11 @@ function partialUpdate($partial) {
 }
 ?>
 ```
+Now we can use this data model to extract arbitrary properties from a text message.
+As the tokens are streamed from LLM API, the `partialUpdate` function will be called
+with partially updated object of type `UserDetail` that you can use, usually to update
+the UI.
+
 ```php
 <?php
 $text = <<<TEXT
@@ -61,3 +80,4 @@ $user = $stream->lastUpdate();
 assert($user->name === 'Jason');
 assert($user->age === 25);
 ?>
+```

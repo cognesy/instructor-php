@@ -1,3 +1,20 @@
+---
+title: 'Google Gemini'
+docname: 'google_gemini'
+---
+
+## Overview
+
+Google offers Gemini models which perform well in benchmarks.
+
+Supported modes:
+ - OutputMode::MdJson - fallback mode
+ - OutputMode::Json - recommended
+ - OutputMode::Tools - supported
+
+Here's how you can use Instructor with Gemini API.
+
+```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -19,3 +36,4 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

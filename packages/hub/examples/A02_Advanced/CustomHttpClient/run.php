@@ -1,3 +1,13 @@
+---
+title: 'Use custom HTTP client instance'
+docname: 'custom_http_client'
+---
+
+## Overview
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -40,3 +50,4 @@ dump($user);
 assert(isset($user->name));
 assert(isset($user->age));
 ?>
+```

@@ -1,3 +1,33 @@
+---
+title: 'Embeddings'
+docname: 'embeddings'
+---
+
+## Overview
+
+`Embeddings` class offers access to embeddings APIs which allows to generate
+vector representations of inputs. These embeddings can be used to compare
+semantic similarity between inputs, e.g. to find relevant documents based
+on a query.
+
+`Embeddings` class supports following embeddings providers:
+ - Azure
+ - Cohere
+ - Gemini
+ - Jina
+ - Mistral
+ - OpenAI
+
+Embeddings providers access details can be found and modified via
+`/config/embed.php`.
+
+To store and search across large sets of vector embeddings you may
+want to use one of the popular vector databases: PGVector, Chroma,
+Pinecone, Weaviate, Milvus, etc.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -45,3 +75,4 @@ foreach($similarities as $index => $similarity) {
 
 assert(!empty($similarities));
 ?>
+```

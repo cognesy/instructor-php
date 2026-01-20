@@ -1,3 +1,22 @@
+---
+title: 'Debugging'
+docname: 'debugging'
+---
+
+## Overview
+
+The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.
+
+It displays detailed information about the request being sent to LLM API and response received from it,
+including:
+ - request headers, URI, method and body,
+ - response status, headers, and body.
+
+This is useful for debugging the request and response when you are not getting the expected results.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -74,3 +93,4 @@ try {
     echo "\nCaught exception: " . $msg . "\n";
 }
 ?>
+```

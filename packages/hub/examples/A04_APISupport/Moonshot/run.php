@@ -1,3 +1,21 @@
+---
+title: 'MoonshotAI'
+docname: 'moonshotai'
+---
+
+## Overview
+
+Support for MoonshotAI's API.
+
+Mode compatibility:
+- OutputMode::MdJson (supported)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +68,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

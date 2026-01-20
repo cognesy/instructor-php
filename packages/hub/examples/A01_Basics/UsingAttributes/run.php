@@ -1,3 +1,16 @@
+---
+title: 'Using attributes'
+docname: 'attributes'
+---
+
+## Overview
+
+Instructor supports `Description` and `Instructions` attributes to provide more
+context to the language model or to provide additional instructions to the model.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -43,3 +56,4 @@ assert($user->age === 25);
 assert(isset($user->job));
 assert($user->job === "engineer");
 ?>
+```

@@ -1,3 +1,13 @@
+---
+title: 'Custom Embeddings Config'
+docname: 'custom_embeddings_config'
+---
+
+## Overview
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -40,3 +50,4 @@ $bestMatches = EmbedUtils::findSimilar(
 
 dump($bestMatches);
 ?>
+```

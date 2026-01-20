@@ -1,3 +1,17 @@
+---
+title: 'Validation with LLM'
+docname: 'validation_with_llm'
+---
+
+## Overview
+
+You can use LLM capability to semantically process the context to validate
+the response following natural language instructions. This way you can
+implement more complex validation logic that would be difficult (or impossible)
+to achieve using traditional, code-based validation.
+
+## Example
+```php
 <?php
 require 'examples/boot.php';
 
@@ -13,38 +27,17 @@ class UserDetails
 {
     use ValidationMixin;
 
-    #[Description('User name extracted from the text.')]
     public string $name;
-    #[Description('User details in format: key=value.')]
+    #[Description('User details in format: key=value')]
     /** @var string[]  */
     public array $details;
 
     public function validate() : ValidationResult {
-        $details = $this->requireDetails();
-        return match($details->isValid()) {
-            true => $this->requireNoPII(),
-            false => $details,
-        };
-    }
-
-    private function requireDetails() : ValidationResult {
-        $data = implode('\n', $this->details);
-        return match(trim($data) === '') {
-            true => ValidationResult::fieldError(
-                field: 'details',
-                value: $data,
-                message: "Provide at least one detail in key=value format.",
-            ),
-            false => ValidationResult::valid(),
-        };
-    }
-
-    private function requireNoPII() : ValidationResult {
         return match($this->hasPII()) {
             true => ValidationResult::fieldError(
                 field: 'details',
                 value: implode('\n', $this->details),
-                message: "Details contain sensitive PII (phone, SSN, email). Remove only sensitive identifiers."
+                message: "Details contain PII, remove it from the response."
             ),
             false => ValidationResult::valid(),
         };
@@ -52,19 +45,12 @@ class UserDetails
 
     private function hasPII() : bool {
         $data = implode('\n', $this->details);
-        $prompt = <<<TEXT
-Determine if the context contains sensitive PII such as phone numbers, SSNs, credit card numbers, or email addresses.
-Ignore names, ages, and job titles for this check.
-TEXT;
-        return match($data === '') {
-            true => false,
-            false => (new StructuredOutput)
-                ->with(
-                    messages: "Context:\n$data\n\n$prompt",
-                    responseModel: Scalar::boolean('hasSensitivePII', 'Does the context contain sensitive PII?'),
-                )
-                ->getBoolean(),
-        };
+        return (new StructuredOutput)
+            ->with(
+                messages: "Context:\n$data\n",
+                responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
+            )
+            ->getBoolean();
     }
 }
 
@@ -83,6 +69,6 @@ $user = (new StructuredOutput)
 
 dump($user);
 
-assert($user->details !== []);
 assert(!Str::contains(implode('\n', $user->details), '123-45-6789'));
 ?>
+```

@@ -1,3 +1,17 @@
+---
+title: 'Handling errors with `Maybe` helper class'
+docname: 'maybe'
+---
+
+## Overview
+
+You can create a wrapper class to hold either the result of an operation or an error message.
+This allows you to remain within a function call even if an error occurs, facilitating
+better error handling without breaking the code flow.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -47,3 +61,4 @@ assert(empty($maybeUser->error()));
 assert($maybeUser->get() != null);
 assert($maybeUser->get() instanceof User);
 ?>
+```

@@ -1,3 +1,30 @@
+---
+title: 'Context caching (structured output, OpenAI)'
+docname: 'context_cache_structured_oai'
+---
+
+## Overview
+
+Instructor offers a simplified way to work with LLM providers' APIs supporting caching,
+so you can focus on your business logic while still being able to take advantage of lower
+latency and costs.
+
+> **Note:** Context caching is automatic for all OpenAI API calls. Read more
+> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
+
+
+## Example
+
+When you need to process multiple requests with the same context, you can use context
+caching to improve performance and reduce costs.
+
+In our example we will be analyzing the README.md file of this Github project and
+generating its structured description for multiple audiences.
+
+Let's start by defining the data model for the project details and the properties
+that we want to extract or generate based on README file.
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -25,6 +52,10 @@ class Project {
 }
 ?>
 ```
+
+We read the content of the README.md file and cache the context, so it can be reused for
+multiple requests.
+
 ```php
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
@@ -36,6 +67,11 @@ $cached = (new StructuredOutput)->using('openai')->withCachedContext(
 );//->withDebugPreset('on');
 ?>
 ```
+At this point we can use Instructor structured output processing to extract the project
+details from the README.md file into the `Project` data model.
+
+Let's start by asking the user to describe the project for a specific audience: P&C insurance CIOs.
+
 ```php
 <?php
 // get StructuredOutputResponse object to get access to usage and other metadata
@@ -57,6 +93,12 @@ $usage1 = $response1->response()->usage();
 echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
+Now we can use the same context to ask the user to describe the project for a different
+audience: boutique CMS consulting company owner.
+
+OpenAI API can reuse the cached prefix from the previous request to provide the response,
+which results in faster processing and lower costs when prompt caching applies.
+
 ```php
 <?php
 // get StructuredOutputResponse object to get access to usage and other metadata
@@ -80,3 +122,4 @@ if ($usage2->cacheReadTokens === 0) {
     echo "Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n";
 }
 ?>
+```

@@ -1,3 +1,26 @@
+---
+title: 'Together.ai'
+docname: 'togetherai'
+---
+
+## Overview
+
+Together.ai hosts a number of language models and offers inference API with support for
+chat completion, JSON completion, and tools call. You can use Instructor with Together.ai
+as demonstrated below.
+
+Please note that some Together.ai models support OutputMode::Tools or OutputMode::Json, which are much
+more reliable than OutputMode::MdJson.
+
+Mode compatibility:
+- OutputMode::Tools - supported for selected models
+- OutputMode::Json - supported for selected models
+- OutputMode::MdJson - fallback mode
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -53,3 +76,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

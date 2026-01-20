@@ -1,3 +1,20 @@
+---
+title: 'Google Gemini (OpenAI-compatible)'
+docname: 'google_gemini_oai'
+---
+
+## Overview
+
+Google offers Gemini models which perform well in benchmarks.
+
+Supported modes:
+ - OutputMode::MdJson - fallback mode
+ - OutputMode::Json - recommended
+ - OutputMode::Tools - supported
+
+Here's how you can use Instructor with Gemini API in OpenAI-compatible mode.
+
+```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -19,3 +36,4 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

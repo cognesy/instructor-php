@@ -1,3 +1,16 @@
+---
+title: 'A21'
+docname: 'a21'
+---
+
+## Overview
+
+Support for A21 Jamba - MAMBA architecture models, very strong at handling
+long context.
+
+## Example
+
+```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -17,3 +30,4 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

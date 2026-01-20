@@ -1,3 +1,20 @@
+---
+title: 'Specifying required and optional parameters via constructor'
+docname: 'constructor_parameters'
+---
+
+## Overview
+
+Instructor can extract data from the LLM response and use it
+to instantiate an object via constructor parameters.
+
+Instructor will use the constructor parameters nullability
+and default values to determine which parameters are required
+and which are optional.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -52,3 +69,4 @@ assert($user->getAge() === 25);
 assert($user->getPassword() === '123admin');
 assert($user->getLocation() === ''); // default value for location
 ?>
+```

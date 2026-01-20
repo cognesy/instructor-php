@@ -24,7 +24,7 @@ echo "Top cities:\n";
 foreach ($response['cities'] as $city) {
     echo "- {$city['name']}: {$city['population']} million\n";
 }
-// @doctest id="c18f"
+// @doctest id="1d9c"
 ```
 
 ### Structuring JSON Responses with Instructions
@@ -64,7 +64,7 @@ echo "Top cities by population:\n";
 foreach ($response['cities'] as $index => $city) {
     echo ($index + 1) . ". {$city['name']}, {$city['country']}: {$city['population']} million\n";
 }
-// @doctest id="4eb9"
+// @doctest id="47a1"
 ```
 
 ### Provider-Specific JSON Options
@@ -89,7 +89,7 @@ $response = $inference->with(
 )->asJsonData();
 
 // The response will be a JSON object
-// @doctest id="c27d"
+// @doctest id="3a95"
 ```
 
 ### When to Use JSON Mode

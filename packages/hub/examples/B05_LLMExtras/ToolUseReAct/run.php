@@ -1,14 +1,23 @@
+---
+title: 'Inference and tool use (ReAct driver)'
+docname: 'tool_use_react'
+---
+
+## Overview
+
+### Example
+```php
 <?php
 require 'examples/boot.php';
 
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
-use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPolicyCriterion;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Addons\StepByStep\Continuation\Criteria\RetryLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Addons\StepByStep\ErrorHandling\ErrorPolicy;
 use Cognesy\Addons\ToolUse\Collections\Tools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
+use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
@@ -33,7 +42,7 @@ $toolUse = ToolUseFactory::default(
         new StepsLimit(6, fn(ToolUseState $state) => $state->stepCount()),
         new TokenUsageLimit(8192, fn(ToolUseState $state) => $state->usage()->total()),
         new ExecutionTimeLimit(60, fn(ToolUseState $state) => $state->startedAt()),
-        ErrorPolicyCriterion::withPolicy(ErrorPolicy::retryToolErrors(2)),
+        new RetryLimit(2, fn(ToolUseState $state) => $state->steps(), fn(ToolUseStep $step) => $step->hasErrors()),
         new StopOnFinalDecision(),
     ),
     driver: $driver
@@ -86,3 +95,4 @@ $result = $finalState->currentStep()->outputMessages()->toString();
 print("RESULT: " . $result . "\n");
 
 ?>
+```

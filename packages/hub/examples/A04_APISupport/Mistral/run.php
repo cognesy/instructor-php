@@ -1,3 +1,25 @@
+---
+title: 'Mistral AI'
+docname: 'mistralai'
+---
+
+## Overview
+
+Mistral.ai is a company that builds OS language models, but also offers a platform
+hosting those models. You can use Instructor with Mistral API by configuring the
+client as demonstrated below.
+
+Please note that the larger Mistral models support OutputMode::Json, which is much more
+reliable than OutputMode::MdJson.
+
+Mode compatibility:
+ - OutputMode::Tools - supported (Mistral-Small / Mistral-Medium / Mistral-Large)
+ - OutputMode::Json - recommended (Mistral-Small / Mistral-Medium / Mistral-Large)
+ - OutputMode::MdJson - fallback mode (Mistral 7B / Mixtral 8x7B)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -52,3 +74,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

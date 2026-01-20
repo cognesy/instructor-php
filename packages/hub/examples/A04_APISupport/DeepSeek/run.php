@@ -1,3 +1,21 @@
+---
+title: 'DeepSeek'
+docname: 'deepseek'
+---
+
+## Overview
+
+Support for DeepSeek API which provides strong models at affordable price.
+
+Mode compatibility:
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +68,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

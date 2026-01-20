@@ -1,3 +1,24 @@
+---
+title: 'Use different class for schema and output'
+docname: 'output_format_instance_of'
+---
+
+## Overview
+
+Sometimes you want to define the extraction schema using one class but receive
+the result as a different class. This is useful when:
+
+- You have a rich domain model for the LLM schema but want a simpler DTO for output
+- You want to separate API contracts from internal representations
+- You need different validation rules for input vs output
+
+The `intoInstanceOf()` method allows you to specify a different target class for
+deserialization while keeping the original class for schema generation.
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -48,3 +69,25 @@ echo "\nExtracted as UserDTO:\n";
 echo "Name: {$user->fullName}\n";
 echo "Email: {$user->email}\n";
 ?>
+```
+
+## Expected Output
+
+```
+object(UserDTO)#123 (2) {
+  ["fullName"]=>
+  string(10) "John Smith"
+  ["email"]=>
+  string(17) "john@example.com"
+}
+
+Extracted as UserDTO:
+Name: John Smith
+Email: john@example.com
+```
+
+## Note
+
+The LLM receives the UserProfile schema (with 5 fields: name, age, email, phone, address),
+but the result is deserialized into UserDTO (with only 2 fields: name, email).
+Extra fields that don't exist in UserDTO are ignored during deserialization.

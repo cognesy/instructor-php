@@ -1,3 +1,16 @@
+---
+title: 'Embeddings Logging with Laravel'
+docname: 'llm_logging_laravel_embeddings'
+path: ''
+---
+
+## Overview
+
+Simple Embeddings operation logging with Laravel-style context.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -64,3 +77,4 @@ echo "📊 Vector dimensions: " . count($vectors->first()?->values() ?? []) . "\
 // 📊 Generated 2 embedding vectors
 // 📊 Vector dimensions: 1536
 ?>
+```

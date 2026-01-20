@@ -1,3 +1,20 @@
+---
+title: 'Translating UI text fields'
+docname: 'translate_ui_fields'
+---
+
+## Overview
+
+You can use Instructor to translate text fields in your UI. We can instruct the model to
+translate only the text fields from one language to another, but leave the other fields,
+like emails or URLs, unchanged.
+
+This example demonstrates how to translate text fields from English to German using
+structure-to-structure processing with LLM.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -46,3 +63,4 @@ if (!str_contains($url, 'https://translation.com/')) {
     exit(1);
 }
 ?>
+```

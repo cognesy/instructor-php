@@ -1,0 +1,40 @@
+---
+title: 'v1.22.0'
+---
+
+## Highlights
+
+- Agent builder and capability namespaces are reorganized into `Cognesy\Addons\AgentBuilder\*`, with agent templates in `Cognesy\Addons\AgentTemplate\*`.
+- Structured extraction is reworked with `ExtractionInput`, `ResponseContent`, and streaming-friendly `ExtractingBuffer` + `PartialJsonExtractor`.
+- Hub example discovery now supports configurable sources and grouping via YAML config files.
+
+## Breaking Changes
+
+- Agent builder, capabilities, and tool registry classes moved from `Cognesy\Addons\Agent\*` to `Cognesy\Addons\AgentBuilder\*`.
+- Agent template definitions, registries, and blueprints moved to `Cognesy\Addons\AgentTemplate\*`; `AgentContract` is now `AgentInterface` and `fromConfig()` returns an `AgentInterface` (no `Result` wrapper).
+- Task planning capability (`UseTaskPlanning`, `Todo*` classes) and `LlmQueryTool` were removed.
+- Instructor extraction contracts changed: `CanExtractResponse::extract()` now accepts `ExtractionInput` and returns an array, throwing on failure. `CanExtractContent`, `CanParseContent`, `DataFormat`, `JsonParser`, and `ExtractingJsonBuffer` were removed.
+
+## Addons / Agents
+
+- Agent builder moved to `Cognesy\Addons\AgentBuilder\AgentBuilder` with capabilities under `Cognesy\Addons\AgentBuilder\Capabilities\*`.
+- New `SubagentProvider`/`SubagentDefinition` contracts and `EmptySubagentProvider`; `AgentTemplate\Registry\AgentRegistry` implements `SubagentProvider`.
+- Agent template registry and definition flow now live under `Cognesy\Addons\AgentTemplate\*` with explicit blueprint exceptions.
+
+## Instructor
+
+- `ResponseExtractor` now consumes `ExtractionInput` and uses `ResponseContent` for tool-mode extraction.
+- Streaming extraction uses `ExtractingBuffer` and `PartialJsonExtractor` for more resilient partial JSON handling.
+
+## Hub
+
+- Example sources can be configured via `config/examples.yaml` (multiple source roots supported).
+- Example grouping and ordering can be configured via `config/examples-groups.yaml` (subgroup include/exclude rules).
+
+## Migration from v1.21.0
+
+- Update imports to `Cognesy\Addons\AgentBuilder\*` (including `AgentBuilder`, all `Capabilities`, and `Capabilities\Tools`).
+- Move agent templates and registries to `Cognesy\Addons\AgentTemplate\*` and update `AgentContract` implementations to `AgentBuilder\Contracts\AgentInterface` with `fromConfig()` returning an `AgentInterface`.
+- Remove task planning usage (`UseTaskPlanning`, `Todo*`) and `LlmQueryTool` references; replace with custom tools or direct inference calls.
+- Update custom extractors to `CanExtractResponse::extract(ExtractionInput $input): array` and throw `ExtractionException` (or any `Throwable`); call with `ExtractionInput::fromResponse(...)` or `ExtractionInput::fromContent(...)`.
+- Replace any direct usage of `ExtractingJsonBuffer`/`JsonParser`/`DataFormat` with `ExtractingBuffer` and the new extractor chain.

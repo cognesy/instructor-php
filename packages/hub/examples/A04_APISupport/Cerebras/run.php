@@ -1,3 +1,22 @@
+---
+title: 'Cerebras'
+docname: 'cerebras'
+---
+
+## Overview
+
+Support for Cerebras API which uses custom hardware for super fast inference.
+Cerebras provides Llama models.
+
+Mode compatibility:
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +69,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

@@ -1,3 +1,16 @@
+---
+title: 'PSR-3 Logging with Functional Pipeline'
+docname: 'logging_psr'
+path: ''
+---
+
+## Overview
+
+Simple PSR-3 logging integration using Instructor's functional pipeline.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -52,3 +65,4 @@ echo "📊 Result: User: {$user->name}, Age: {$user->age}\n";
 // [2025-12-07T01:18:13.475202+00:00] instructor.DEBUG: 🎯 [PSR-3] Starting extraction: User
 // [2025-12-07T01:18:14.659417+00:00] instructor.DEBUG: ✅ [PSR-3] Completed extraction: User
 ?>
+```

@@ -1,3 +1,20 @@
+---
+title: 'Custom prompts'
+docname: 'custom_prompts'
+---
+
+## Overview
+
+In case you want to take control over the prompts sent by Instructor
+to LLM for different modes, you can use the `prompt` parameter in the
+`request()` or `create()` methods.
+
+It will override the default Instructor prompts, allowing you to fully
+customize how LLM is instructed to process the input.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -48,3 +65,4 @@ echo "\nRESPONSE:\n";
 dump($user);
 
 ?>
+```

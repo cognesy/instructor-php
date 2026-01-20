@@ -1,3 +1,23 @@
+---
+title: 'Private vs public object field'
+docname: 'public_vs_private'
+---
+
+## Overview
+
+Instructor only sets accessible fields of the object with the data provided by LLM.
+
+Private and protected fields are left unchanged, unless:
+ - class has constructor with parameters matching one or more property names - in such
+   situation object will be hydrated with data from LLM via constructor params,
+ - class has getXxx() and setXxx() methods with xxx matching one of the property names -
+   in such situation object will be hydrated with data from LLM via setter methods
+
+If you want to access them directly after extraction, provide default values for them.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -62,3 +82,4 @@ dump($userPriv);
 assert($userPriv->getAge() === 0);
 assert($userPriv->getPassword() === '');
 ?>
+```

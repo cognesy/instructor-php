@@ -1,3 +1,21 @@
+---
+title: 'Working directly with LLMs'
+docname: 'inference'
+---
+
+## Overview
+
+`Inference` class offers access to LLM APIs and convenient methods to execute
+model inference, incl. chat completions, tool calling or JSON output
+generation.
+
+LLM providers access details can be found and modified via
+`/config/llm.php`.
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -46,3 +64,4 @@ foreach ($stream as $partial) {
 }
 echo "\n";
 ?>
+```

@@ -1,3 +1,21 @@
+---
+title: 'MoonshotAI'
+docname: 'moonshotai'
+---
+
+## Overview
+
+Support for MoonshotAI's API.
+
+Mode compatibility:
+- OutputMode::MdJson (supported)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (not supported)
+
+## Example
+
+```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -17,3 +35,4 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

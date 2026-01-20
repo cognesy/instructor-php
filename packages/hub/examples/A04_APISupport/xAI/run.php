@@ -1,3 +1,21 @@
+---
+title: 'xAI / Grok'
+docname: 'xai'
+---
+
+## Overview
+
+Support for xAI's API, which offers access to X.com's Grok model.
+
+Mode compatibility:
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -48,3 +66,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

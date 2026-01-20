@@ -1,3 +1,21 @@
+---
+title: 'Minimaxi'
+docname: 'minimaxi'
+---
+
+## Overview
+
+Support for Minimaxi's API.
+
+Mode compatibility:
+- OutputMode::MdJson (supported)
+- OutputMode::Tools (not supported)
+- OutputMode::Json (not supported)
+- OutputMode::JsonSchema (not supported)
+
+## Example
+
+```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -17,3 +35,4 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

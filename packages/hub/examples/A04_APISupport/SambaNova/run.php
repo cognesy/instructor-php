@@ -1,3 +1,21 @@
+---
+title: 'SambaNova'
+docname: 'sambanova'
+---
+
+## Overview
+
+Support for SambaNova's API, which provide fast inference endpoints for Llama and Qwen LLMs.
+
+Mode compatibility:
+- OutputMode::MdJson (supported)
+- OutputMode::Tools (not supported)
+- OutputMode::Json (not supported)
+- OutputMode::JsonSchema (not supported)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +68,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

@@ -1,3 +1,27 @@
+---
+title: 'Working directly with LLMs and JSON - MdJSON mode'
+docname: 'llm_md_json'
+---
+
+## Overview
+
+While working with `Inference` class, you can also generate JSON output
+from the model inference. This is useful for example when you need to
+process the response in a structured way or when you want to store the
+elements of the response in a database.
+
+## Example
+
+In this example we will use emulation mode - MdJson, which tries to
+force the model to generate a JSON output by asking it to respond
+with a JSON object within a Markdown code block.
+
+This is useful for the models which do not support JSON output directly.
+
+We will also provide an example of the expected JSON output in the prompt
+to guide the model in generating the correct response.
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -10,7 +34,7 @@ $data = (new Inference)
         messages: [['role' => 'user', 'content' => 'What is capital of France? \
            Respond with a JSON object in a ```json``` code block containing "name", "population", and "founded". \
            Use integer values for population and founded year (negative for BC). Do not include extra text. \
-           Example: {"name": "Berlin", "population": 3700000, "founded": 1237}']],
+           Example: {"name":"Paris","population":2139000,"founded":-250}']],
         options: ['max_tokens' => 64, 'temperature' => 0],
         mode: OutputMode::MdJson,
     )
@@ -26,3 +50,4 @@ assert(strpos($data['name'], 'Paris') !== false, 'City name should be Paris');
 assert(isset($data['population']), 'Response should have "population" field');
 assert(isset($data['founded']), 'Response should have "founded" field');
 ?>
+```

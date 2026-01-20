@@ -1,3 +1,17 @@
+---
+title: 'Use custom configuration providers'
+docname: 'config_providers'
+---
+
+## Overview
+
+You can inject your own configuration providers to StructuredOutput class.
+This is useful for integration with your preferred framework (e.g. Symfony,
+Laravel).
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -159,3 +173,4 @@ dump($user);
 assert(isset($user->name));
 assert(isset($user->age));
 ?>
+```

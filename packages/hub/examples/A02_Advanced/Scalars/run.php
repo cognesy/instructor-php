@@ -1,3 +1,18 @@
+---
+title: 'Extracting scalar values'
+docname: 'scalars'
+---
+
+## Overview
+
+Sometimes we just want to get quick results without defining a class for
+the response model, especially if we're trying to get a straight, simple
+answer in a form of string, integer, boolean or float. Instructor provides
+a simplified API for such cases.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -24,3 +39,4 @@ dump($value);
 assert($value instanceof CitizenshipGroup);
 expect($value == CitizenshipGroup::Other);
 ?>
+```

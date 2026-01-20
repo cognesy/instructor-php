@@ -1,3 +1,34 @@
+---
+title: 'Basic use'
+docname: 'basic_use'
+path: ''
+---
+
+## Overview
+
+Instructor allows you to use large language models to extract information
+from the text (or content of chat messages), while following the structure
+you define.
+
+LLM does not 'parse' the text to find and retrieve the information.
+Extraction leverages LLM ability to comprehend provided text and infer
+the meaning of the information it contains to fill fields of the
+response object with values that match the types and semantics of the
+class fields.
+
+The simplest way to use the Instructor is to call the `respond` method
+on the Instructor instance. This method takes a string (or an array of
+strings in the format of OpenAI chat messages) as input and returns a
+data extracted from provided text (or chat) using the LLM inference.
+
+Returned object will contain the values of fields extracted from the text.
+
+The format of the extracted data is defined by the response model, which
+in this case is a simple PHP class with some public properties.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -32,3 +63,4 @@ assert(isset($user->age));
 assert($user->name === 'Jason');
 assert($user->age === 25);
 ?>
+```

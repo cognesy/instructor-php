@@ -1,3 +1,22 @@
+---
+title: 'Extracting sequences of objects'
+docname: 'sequences'
+---
+
+## Overview
+
+Sequences are a special type of response model that can be used to represent
+a list of objects.
+
+It is usually more convenient not create a dedicated class with a single array
+property just to handle a list of objects of a given class.
+
+Additional, unique feature of sequences is that they can be streamed per each
+completed item in a sequence, rather than on any property update.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -32,3 +51,4 @@ dump(count($list));
 
 assert(count($list) === 4);
 ?>
+```

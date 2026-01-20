@@ -1,3 +1,24 @@
+---
+title: 'Manual Schema Building'
+docname: 'manual_schemas'
+---
+
+## Overview
+
+While InstructorPHP can automatically generate schemas from PHP classes,
+you can also build schemas manually using the `JsonSchema` API.
+
+This provides full control over the JSON Schema structure and is useful for:
+- Dynamic schemas determined at runtime
+- Provider-specific optimizations
+- Legacy JSON Schema integration
+- Performance-sensitive scenarios
+
+See more: [Manual Schema Building](../../../packages/instructor/docs/advanced/manual_schemas.md)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -83,6 +104,9 @@ print("- Working with legacy JSON Schema specs\n");
 print("- Reflection overhead is a concern\n");
 ?>
 ```
+
+## Advanced Example: Dynamic Schema
+
 ```php
 <?php
 require 'examples/boot.php';
@@ -131,3 +155,4 @@ print("Quantity: " . $data['quantity'] . "\n");
 print("Price: $" . $data['price'] . "\n");
 print("In Stock: " . ($data['inStock'] ? 'Yes' : 'No') . "\n");
 ?>
+```

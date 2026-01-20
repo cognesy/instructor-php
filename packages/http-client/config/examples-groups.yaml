@@ -1,0 +1,144 @@
+# Example grouping and ordering for cookbook navigation
+version: 1
+groups:
+  - id: structured_outputs
+    title: Structured Outputs
+    subgroups:
+      - id: basics
+        title: Basics
+        include:
+          - source: instructor
+            path: A01_Basics
+          - source: root
+            path: A01_Basics
+      - id: advanced
+        title: Advanced
+        include:
+          - source: instructor
+            path: A02_Advanced
+          - source: root
+            path: A02_Advanced
+      - id: troubleshooting
+        title: Troubleshooting
+        include:
+          - source: instructor
+            path: A03_Troubleshooting
+          - source: root
+            path: A03_Troubleshooting
+      - id: api_support
+        title: LLM API Support
+        include:
+          - source: instructor
+            path: A04_APISupport
+          - source: root
+            path: A04_APISupport
+      - id: extras
+        title: Extras
+        include:
+          - source: instructor
+            path: A05_Extras
+          - source: root
+            path: A05_Extras
+  - id: llm_inference
+    title: LLM Inference and Embeddings
+    subgroups:
+      - id: llm_basics
+        title: LLM Basics
+        include:
+          - source: polyglot
+            path: B01_LLM
+          - source: root
+            path: B01_LLM
+      - id: llm_advanced
+        title: LLM Advanced
+        include:
+          - source: polyglot
+            path: B02_LLMAdvanced
+          - source: root
+            path: B02_LLMAdvanced
+      - id: llm_troubleshooting
+        title: LLM Troubleshooting
+        include:
+          - source: polyglot
+            path: B03_LLMTroubleshooting
+          - source: root
+            path: B03_LLMTroubleshooting
+      - id: llm_api_support
+        title: LLM API Support
+        include:
+          - source: polyglot
+            path: B04_LLMApiSupport
+          - source: root
+            path: B04_LLMApiSupport
+      - id: llm_extras
+        title: LLM Extras
+        include:
+          - source: polyglot
+            path: B05_LLMExtras
+          - source: root
+            path: B05_LLMExtras
+  - id: http_client
+    title: HTTP Client
+    subgroups:
+      - id: http_client
+        title: HTTP Client
+        include:
+          - source: http-client
+            path: '*'
+          - source: root
+            path: C01_Http
+  - id: agents
+    title: Agents and Agent Controllers
+    subgroups:
+      - id: agents
+        title: Agents
+        include:
+          - source: addons
+            path: '*'
+          - source: root
+            path: D01_Agents
+      - id: agent_controllers
+        title: Agent Controllers
+        include:
+          - source: agent-ctrl
+            path: '*'
+          - source: root
+            path: D02_AgentCtrl
+  - id: prompting
+    title: Prompting
+    subgroups:
+      - id: zero_shot
+        title: Zero-Shot
+        include:
+          - source: root
+            path: Z01_ZeroShot
+      - id: few_shot
+        title: Few-Shot
+        include:
+          - source: root
+            path: Z02_FewShot
+      - id: thought_generation
+        title: Thought Generation
+        include:
+          - source: root
+            path: Z03_ThoughtGen
+      - id: ensembling
+        title: Ensembling
+        include:
+          - source: root
+            path: Z04_Ensembling
+      - id: self_criticism
+        title: Self-Criticism
+        include:
+          - source: root
+            path: Z05_SelfCriticism
+      - id: decomposition
+        title: Decomposition
+        include:
+          - source: root
+            path: Z06_Decomposition
+      - id: misc
+        title: Miscellaneous
+        include:
+          - source: root
+            path: Z07_Misc

@@ -1,3 +1,15 @@
+---
+title: 'Meta'
+docname: 'meta'
+---
+
+## Overview
+
+Instructor supports Meta LLM inference API. You can find the details on how to configure
+
+## Example
+
+```php
 <?php
 
 use Cognesy\Polyglot\Inference\Inference;
@@ -18,3 +30,4 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

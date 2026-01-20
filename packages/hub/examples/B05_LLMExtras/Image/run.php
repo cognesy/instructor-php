@@ -1,3 +1,18 @@
+---
+title: 'Using images in prompts'
+docname: 'image_data'
+---
+
+## Overview
+
+`Image` class in Instructor PHP provides an easy way to include images in your prompts.
+It supports loading images from files, URLs, or base64 encoded strings. The image can
+be sent as part of the message content to the LLM.
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 

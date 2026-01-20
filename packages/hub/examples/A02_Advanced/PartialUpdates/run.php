@@ -1,3 +1,19 @@
+---
+title: 'Streaming partial updates during inference'
+docname: 'partials'
+---
+
+## Overview
+
+Instructor can process LLM's streamed responses to provide partial updates that you
+can use to update the model with new data as the response is being generated. You can
+use it to improve user experience by updating the UI with partial data before the full
+response is received.
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -37,6 +53,11 @@ function partialUpdate($partial) {
 }
 ?>
 ```
+Now we can use this data model to extract arbitrary properties from a text message.
+As the tokens are streamed from LLM API, the `partialUpdate` function will be called
+with partially updated object of type `UserDetail` that you can use, usually to update
+the UI.
+
 ```php
 <?php
 $text = <<<TEXT
@@ -63,3 +84,4 @@ assert($user->location === 'San Francisco');
 assert($user->age == 25);
 assert($user->name === 'Jason');
 ?>
+```

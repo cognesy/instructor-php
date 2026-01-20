@@ -137,6 +137,7 @@ nav:
       -
         'Release Notes':
           - { Overview: release-notes/versions.md }
+          - { v1.22.0: release-notes/v1.22.0.md }
           - { v1.21.0: release-notes/v1.21.0.md }
           - { v1.20.0: release-notes/v1.20.0.md }
           - { v1.19.0: release-notes/v1.19.0.md }
@@ -491,22 +492,22 @@ nav:
           - { 'Simulate a Perspective': cookbook/prompting/zero_shot/simulate_perspective.md }
       -
         'Prompting \ Few-Shot':
-          - { 'Initialize COSP selector': cookbook/prompting/few_shot/consistency_based_examples.md }
-          - { ExampleOrdering: cookbook/prompting/few_shot/example_ordering.md }
+          - { 'Consistency Based Self Adaptive Prompting (COSP)': cookbook/prompting/few_shot/consistency_based_examples.md }
+          - { 'Example Ordering': cookbook/prompting/few_shot/example_ordering.md }
           - { 'Generate In-Context Examples': cookbook/prompting/few_shot/in_context_examples.md }
-          - { SelectEffectiveSamples: cookbook/prompting/few_shot/select_effective_samples.md }
+          - { 'Select Effective Examples': cookbook/prompting/few_shot/select_effective_samples.md }
       -
         'Prompting \ Thought Generation':
           - { 'Analogical Prompting': cookbook/prompting/thought_generation/analogical_prompting.md }
           - { 'Automate Example Selection': cookbook/prompting/thought_generation/automate_selection.md }
           - { 'Prioritize Complex Examples': cookbook/prompting/thought_generation/complex_examples.md }
           - { 'Examine The Context': cookbook/prompting/thought_generation/examine_context.md }
-          - { HigherLevelContext: cookbook/prompting/thought_generation/higher_level_context.md }
+          - { 'Consider Higher-Level Context': cookbook/prompting/thought_generation/higher_level_context.md }
           - { 'Include Incorrect Examples': cookbook/prompting/thought_generation/incorrect_examples.md }
           - { 'Use Majority Voting': cookbook/prompting/thought_generation/majority_voting.md }
           - { 'Generate Prompt Variations': cookbook/prompting/thought_generation/prompt_variations.md }
           - { 'Structure The Reasoning': cookbook/prompting/thought_generation/structure_reasoning.md }
-          - { UncertainExamples: cookbook/prompting/thought_generation/uncertain_examples.md }
+          - { 'Prioritize Uncertain Examples': cookbook/prompting/thought_generation/uncertain_examples.md }
       -
         'Prompting \ Ensembling':
           - { 'Combine Multiple Reasoning Chains': cookbook/prompting/ensembling/combine_reasoning_chains.md }

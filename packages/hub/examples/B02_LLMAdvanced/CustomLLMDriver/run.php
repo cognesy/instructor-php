@@ -1,3 +1,16 @@
+---
+title: 'Using custom LLM driver'
+docname: 'custom_llm_driver'
+---
+
+## Overview
+
+You can register and use your own LLM driver, either using a new driver name
+or overriding an existing driver bundled with Polyglot.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -43,3 +56,4 @@ echo "ASSISTANT: $answer\n";
 
 assert(Str::contains($answer, 'Paris'));
 ?>
+```

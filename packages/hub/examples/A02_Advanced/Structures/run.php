@@ -1,3 +1,26 @@
+---
+title: 'Structures'
+docname: 'structures'
+---
+
+## Overview
+
+Structures allow dynamically define the shape of data to be extracted
+by LLM, e.g. during runtime.
+
+Use `Structure::define()` to define the structure and pass it to Instructor
+as response model.
+
+If `Structure` instance has been provided as a response model, Instructor
+returns a `Structure` object with dynamic properties matching the shape you defined.
+
+You access the data using object property syntax (not array syntax):
+
+See more: [Structures](../../structures.md)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -57,3 +80,4 @@ foreach ($person->favourite_books as $book) {
 // Note: Array access does NOT work:
 // print($person['name']);  // ❌ Error - Structure is not an array
 ?>
+```

@@ -1,3 +1,23 @@
+---
+title: 'Groq'
+docname: 'groq'
+---
+
+## Overview
+
+Groq is LLM providers offering a very fast inference thanks to their
+custom hardware. They provide a several models - Llama2, Mixtral and Gemma.
+
+Supported modes depend on the specific model, but generally include:
+ - OutputMode::MdJson - fallback mode
+ - OutputMode::Json - recommended
+ - OutputMode::Tools - supported
+
+Here's how you can use Instructor with Groq API.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -57,3 +77,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

@@ -1,3 +1,17 @@
+---
+title: 'Reasoning Content Access'
+docname: 'reasoning_content'
+path: ''
+---
+
+## Overview
+
+Deepseek API allows to access reasoning content, which is a detailed explanation of how the response was generated.
+This feature is useful for debugging and understanding the reasoning behind the response.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -42,7 +56,8 @@ foreach ($stream->responses() as $partial) {
 }
 echo "\n";
 echo "REASONING: {$stream->final()->reasoningContent()}\n";
+assert($stream->final()->reasoningContent() !== '');
 assert($stream->final()->content() !== '');
 assert(Str::contains($stream->final()->content(), 'Brasília'));
-assert($stream->final()->reasoningContent() !== '');
 ?>
+```

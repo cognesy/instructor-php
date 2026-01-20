@@ -1,0 +1,15 @@
+# Example sources for hub/docs
+version: 1
+sources:
+  - package: instructor
+    path: ./packages/instructor/examples
+  - package: polyglot
+    path: ./packages/polyglot/examples
+  - package: agent-ctrl
+    path: ./packages/agent-ctrl/examples
+  - package: addons
+    path: ./packages/addons/examples
+  - package: http-client
+    path: ./packages/http-client/examples
+  - package: root
+    path: ./examples

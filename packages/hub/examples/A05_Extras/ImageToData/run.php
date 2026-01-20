@@ -1,3 +1,28 @@
+---
+title: 'Image to data (OpenAI)'
+docname: 'image_to_data'
+---
+
+## Overview
+
+This is an example of how to extract structured data from an image using
+Instructor. The image is loaded from a file and converted to base64 format
+before sending it to OpenAI API.
+
+The response model is a PHP class that represents the structured receipt
+information with data of vendor, items, subtotal, tax, tip, and total.
+
+
+## Scanned image
+
+Here's the image we're going to extract data from.
+
+![Receipt](/images/receipt.png)
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -37,3 +62,4 @@ dump($receipt);
 
 assert($receipt->total === 169.82);
 ?>
+```

@@ -1,3 +1,16 @@
+---
+title: 'Modifying Settings Path'
+docname: 'settings'
+---
+
+## Overview
+
+This example demonstrates how to modify the settings path for the Instructor library.
+This is useful when you want to use a custom configuration directory instead of the default one.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -24,3 +37,4 @@ dump($user);
 
 assert(!isset($user->lastName) || $user->lastName === '');
 ?>
+```

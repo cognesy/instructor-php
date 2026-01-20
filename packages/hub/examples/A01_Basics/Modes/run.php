@@ -1,3 +1,27 @@
+---
+title: 'Modes'
+docname: 'modes'
+---
+
+## Overview
+
+Instructor supports several ways to extract data from the response:
+
+ - `OutputMode::Tools` - uses OpenAI-style tool calls to get the language
+   model to generate JSON following the schema,
+ - `OutputMode::JsonSchema` - guarantees output matching JSON Schema via
+   Context Free Grammar, does not support optional properties,
+ - `OutputMode::Json` - JSON mode, response follows provided JSON Schema,
+ - `OutputMode::MdJson` - uses prompting to get the language model to
+   generate JSON following the schema.
+
+Note: not all modes are supported by all models or providers.
+
+Mode can be set via parameter of `StructuredOutput::create()` method.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -63,3 +87,4 @@ function check(User $user) {
     assert($user->age === 25);
 }
 ?>
+```

@@ -1,3 +1,21 @@
+---
+title: 'Anthropic'
+docname: 'anthropic'
+---
+
+## Overview
+
+Instructor supports Anthropic API - you can find the details on how to configure
+the client in the example below.
+
+Mode compatibility:
+- OutputMode::MdJson, OutputMode::Json - supported
+- OutputMode::Tools - not supported yet
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +68,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

@@ -1,3 +1,21 @@
+---
+title: 'OpenAI'
+docname: 'openai'
+---
+
+## Overview
+
+This is the default client used by Instructor.
+
+Mode compatibility:
+ - OutputMode::Tools (supported)
+ - OutputMode::Json (supported)
+ - OutputMode::JsonSchema (recommended for new models)
+ - OutputMode::MdJson (fallback)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +68,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

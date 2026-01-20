@@ -1,3 +1,22 @@
+---
+title: 'A21'
+docname: 'a21'
+---
+
+## Overview
+
+Support for A21 Jamba - MAMBA architecture models, very strong at handling
+long context.
+
+Mode compatibility:
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -49,3 +68,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```

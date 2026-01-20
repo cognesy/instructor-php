@@ -1,3 +1,23 @@
+---
+title: 'Generating JSON Schema dynamically'
+docname: 'schema_dynamic'
+---
+
+## Overview
+
+Instructor has a built-in support for generating JSON Schema from
+dynamic objects with `Structure` class.
+
+This is useful when the data model is built during runtime or defined
+by your app users.
+
+`Structure` helps you flexibly design and modify data models that
+can change with every request or user input and allows you to generate
+JSON Schema for them.
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -33,3 +53,4 @@ assert(strpos($data['name'], 'Paris') !== false, 'City name should be Paris');
 assert(isset($data['population']), 'Response should have "population" field');
 assert(isset($data['founded']), 'Response should have "founded" field');
 ?>
+```

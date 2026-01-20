@@ -1,3 +1,22 @@
+---
+title: 'Fireworks.ai'
+docname: 'fireworks'
+---
+
+## Overview
+
+Please note that the larger Mistral models support OutputMode::Json, which is much more
+reliable than OutputMode::MdJson.
+
+Mode compatibility:
+- OutputMode::Tools - selected models
+- OutputMode::Json - selected models
+- OutputMode::MdJson
+
+
+## Example
+
+```php
 <?php
 require 'examples/boot.php';
 
@@ -50,3 +69,4 @@ assert($user->age === 25);
 assert($user->name === 'Jason');
 assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
+```
