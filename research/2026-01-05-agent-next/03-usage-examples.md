@@ -15,7 +15,7 @@ This document provides practical examples comparing current usage patterns with 
 
 ```php
 <?php
-use Cognesy\Addons\AgentBuilder\AgentBuilder;use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;use Cognesy\Messages\Messages;
+use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\AgentBuilder\AgentBuilder;use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;use Cognesy\Messages\Messages;
 
 // Define explorer agent
 $registry = new AgentRegistry();
@@ -127,7 +127,7 @@ while ($agent->hasNextStep($state)) {
 
 ```php
 <?php
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 
 // Define reviewer with explicit constraints
 $registry = new AgentRegistry();

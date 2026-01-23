@@ -2,6 +2,7 @@
 
 namespace Cognesy\Addons\AgentBuilder;
 
+use Closure;
 use Cognesy\Addons\Agent\Agent;
 use Cognesy\Addons\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
@@ -11,6 +12,23 @@ use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Core\StateProcessing\Processors\ApplyCachedContext;
 use Cognesy\Addons\Agent\Core\ToolExecutor;
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Addons\Agent\Hooks\Contracts\Hook;
+use Cognesy\Addons\Agent\Hooks\Contracts\HookMatcher;
+use Cognesy\Addons\Agent\Hooks\Data\ExecutionHookContext;
+use Cognesy\Addons\Agent\Hooks\Data\FailureHookContext;
+use Cognesy\Addons\Agent\Hooks\Data\HookEvent;
+use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Addons\Agent\Hooks\Data\StopHookContext;
+use Cognesy\Addons\Agent\Hooks\Hooks\AfterToolHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\AgentFailedHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\BeforeToolHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\CallableHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\ExecutionEndHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\ExecutionStartHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\StopHook;
+use Cognesy\Addons\Agent\Hooks\Hooks\SubagentStopHook;
+use Cognesy\Addons\Agent\Hooks\Matchers\ToolNameMatcher;
+use Cognesy\Addons\Agent\Hooks\Stack\HookStack;
 use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\CumulativeExecutionTimeLimit;
@@ -24,6 +42,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendContextMetadata;
 use Cognesy\Addons\StepByStep\StateProcessing\Processors\AppendStepMessages;
+use Cognesy\Addons\StepByStep\StateProcessing\Processors\CallableProcessor;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -73,8 +92,12 @@ class AgentBuilder
     /** @var array<callable(Agent): Agent> */
     private array $onBuildCallbacks = [];
 
+    /** @var HookStack Unified hook stack for lifecycle and tool hooks */
+    private HookStack $hookStack;
+
     private function __construct() {
         $this->tools = new Tools();
+        $this->hookStack = new HookStack();
     }
 
     /**
@@ -263,6 +286,287 @@ class AgentBuilder
         return $this;
     }
 
+    // TOOL HOOKS ////////////////////////////////////////////////
+
+    /**
+     * Register a callback to run before tool execution.
+     *
+     * The callback receives ToolHookContext and can:
+     * - Return HookOutcome::proceed() to allow the tool call
+     * - Return HookOutcome::proceed($modifiedContext) to modify the tool call
+     * - Return HookOutcome::block($reason) to prevent the tool call
+     * - Return null to block the tool call (legacy support)
+     * - Return a ToolCall to proceed with a modified call (legacy support)
+     * - Return void to proceed with the original call
+     *
+     * @param callable(ToolHookContext): (HookOutcome|ToolCall|null|void) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     * @param string|HookMatcher|null $matcher Tool name pattern or custom matcher
+     *
+     * @example
+     * // Block dangerous bash commands
+     * $builder->onBeforeToolUse(
+     *     callback: function (ToolHookContext $ctx): HookOutcome {
+     *         $command = $ctx->toolCall()->args()['command'] ?? '';
+     *         if (str_contains($command, 'rm -rf')) {
+     *             return HookOutcome::block('Dangerous command blocked');
+     *         }
+     *         return HookOutcome::proceed();
+     *     },
+     *     matcher: 'bash',
+     *     priority: 100,
+     * );
+     */
+    public function onBeforeToolUse(
+        callable $callback,
+        int $priority = 0,
+        string|HookMatcher|null $matcher = null,
+    ): self {
+        $matcherObj = $this->resolveMatcher($matcher);
+        $hook = new BeforeToolHook(
+            Closure::fromCallable($callback),
+            $matcherObj,
+        );
+        $this->hookStack = $this->hookStack->with($hook, $priority);
+        return $this;
+    }
+
+    /**
+     * Register a callback to run after tool execution.
+     *
+     * The callback receives ToolHookContext and can:
+     * - Return HookOutcome::proceed() to continue unchanged
+     * - Return HookOutcome::proceed($modifiedContext) to modify the execution result
+     * - Return HookOutcome::stop($reason) to halt agent execution
+     * - Return an AgentExecution to replace the result (legacy support)
+     * - Return anything else (or void) to keep the original result
+     *
+     * @param callable(ToolHookContext): (HookOutcome|AgentExecution|mixed) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     * @param string|HookMatcher|null $matcher Tool name pattern or custom matcher
+     *
+     * @example
+     * // Log all tool executions
+     * $builder->onAfterToolUse(
+     *     callback: function (ToolHookContext $ctx): HookOutcome {
+     *         $execution = $ctx->execution();
+     *         $this->logger->info("Tool {$ctx->toolCall()->name()} completed");
+     *         return HookOutcome::proceed();
+     *     },
+     *     priority: -100,
+     * );
+     */
+    public function onAfterToolUse(
+        callable $callback,
+        int $priority = 0,
+        string|HookMatcher|null $matcher = null,
+    ): self {
+        $matcherObj = $this->resolveMatcher($matcher);
+        $hook = new AfterToolHook(
+            Closure::fromCallable($callback),
+            $matcherObj,
+        );
+        $this->hookStack = $this->hookStack->with($hook, $priority);
+        return $this;
+    }
+
+    // STEP HOOKS ////////////////////////////////////////////////
+
+    /**
+     * Register a callback to run before each step.
+     *
+     * The callback receives the AgentState and must return an AgentState.
+     *
+     * @param callable(AgentState): AgentState $callback
+     *
+     * @example
+     * $builder->onBeforeStep(fn(AgentState $state) => $state->withMetadata('step_started', microtime(true)));
+     */
+    public function onBeforeStep(callable $callback): self {
+        $this->preProcessors[] = new CallableProcessor(
+            Closure::fromCallable($callback),
+            position: 'before',
+            stateClass: AgentState::class,
+        );
+        return $this;
+    }
+
+    /**
+     * Register a callback to run after each step.
+     *
+     * The callback receives the AgentState and must return an AgentState.
+     *
+     * @param callable(AgentState): AgentState $callback
+     *
+     * @example
+     * $builder->onAfterStep(function (AgentState $state) {
+     *     $duration = microtime(true) - $state->metadata('step_started');
+     *     $this->metrics->recordStepDuration($duration);
+     *     return $state;
+     * });
+     */
+    public function onAfterStep(callable $callback): self {
+        $this->processors[] = new CallableProcessor(
+            Closure::fromCallable($callback),
+            position: 'after',
+            stateClass: AgentState::class,
+        );
+        return $this;
+    }
+
+    // UNIFIED HOOK REGISTRATION //////////////////////////////////
+
+    /**
+     * Register a hook for a specific lifecycle event.
+     *
+     * This is the unified hook registration method that works with the
+     * new Hook system. For convenience, use the event-specific methods
+     * like onExecutionStart(), onStop(), etc.
+     *
+     * @param HookEvent $event The lifecycle event to hook into
+     * @param callable|Hook $hook The hook callback or Hook instance
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     * @param string|HookMatcher|null $matcher Optional matcher for conditional execution
+     *
+     * @example
+     * $builder->addHook(
+     *     event: HookEvent::ExecutionStart,
+     *     hook: fn(ExecutionHookContext $ctx) => HookOutcome::proceed(),
+     *     priority: 100,
+     * );
+     */
+    public function addHook(
+        HookEvent $event,
+        callable|Hook $hook,
+        int $priority = 0,
+        string|HookMatcher|null $matcher = null,
+    ): self {
+        $hookInstance = $hook instanceof Hook
+            ? $hook
+            : new CallableHook(
+                Closure::fromCallable($hook),
+                $this->resolveMatcher($matcher),
+            );
+
+        $this->hookStack = $this->hookStack->with($hookInstance, $priority);
+        return $this;
+    }
+
+    /**
+     * Register a callback to run when agent execution starts.
+     *
+     * Fired once when agent.run() begins, before any steps are executed.
+     *
+     * @param callable(ExecutionHookContext): (HookOutcome|void) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     *
+     * @example
+     * $builder->onExecutionStart(function (ExecutionHookContext $ctx): HookOutcome {
+     *     $this->metrics->startTracking($ctx->state()->agentId);
+     *     return HookOutcome::proceed();
+     * });
+     */
+    public function onExecutionStart(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new ExecutionStartHook(Closure::fromCallable($callback)),
+            $priority,
+        );
+        return $this;
+    }
+
+    /**
+     * Register a callback to run when agent execution ends.
+     *
+     * Fired once when agent.run() completes (success or failure).
+     *
+     * @param callable(ExecutionHookContext): (HookOutcome|void) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     *
+     * @example
+     * $builder->onExecutionEnd(function (ExecutionHookContext $ctx): void {
+     *     $this->metrics->stopTracking($ctx->state()->agentId);
+     * });
+     */
+    public function onExecutionEnd(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new ExecutionEndHook(Closure::fromCallable($callback)),
+            $priority,
+        );
+        return $this;
+    }
+
+    /**
+     * Register a callback to run when agent is about to stop.
+     *
+     * Can block the stop to force continuation.
+     *
+     * @param callable(StopHookContext): (HookOutcome|void) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     *
+     * @example
+     * $builder->onStop(function (StopHookContext $ctx): HookOutcome {
+     *     if ($this->hasUnfinishedWork($ctx->state())) {
+     *         return HookOutcome::block('Work remaining');
+     *     }
+     *     return HookOutcome::proceed();
+     * });
+     */
+    public function onStop(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new StopHook(Closure::fromCallable($callback)),
+            $priority,
+        );
+        return $this;
+    }
+
+    /**
+     * Register a callback to run when a subagent is about to stop.
+     *
+     * @param callable(StopHookContext): (HookOutcome|void) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     *
+     * @example
+     * $builder->onSubagentStop(function (StopHookContext $ctx): void {
+     *     $this->logger->info("Subagent completed: {$ctx->state()->agentId}");
+     * });
+     */
+    public function onSubagentStop(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new SubagentStopHook(Closure::fromCallable($callback)),
+            $priority,
+        );
+        return $this;
+    }
+
+    /**
+     * Register a callback to run when agent fails.
+     *
+     * Fired when the agent encounters an unrecoverable error.
+     *
+     * @param callable(FailureHookContext): (HookOutcome|void) $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
+     *
+     * @example
+     * $builder->onAgentFailed(function (FailureHookContext $ctx): void {
+     *     $this->logger->error("Agent failed: {$ctx->errorMessage()}");
+     *     $this->alerting->sendAlert($ctx->exception());
+     * });
+     */
+    public function onAgentFailed(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new AgentFailedHook(Closure::fromCallable($callback)),
+            $priority,
+        );
+        return $this;
+    }
+
+    /**
+     * Get the current hook stack (for testing/debugging).
+     */
+    public function hookStack(): HookStack {
+        return $this->hookStack;
+    }
+
     // BUILD /////////////////////////////////////////////////////
 
     /**
@@ -278,12 +582,18 @@ class AgentBuilder
         // Build driver
         $driver = $this->buildDriver();
 
+        // Build tool executor with unified hook stack
+        $toolExecutor = new ToolExecutor(
+            tools: $this->tools,
+            throwOnToolFailure: false,
+            events: EventBusResolver::using($this->events),
+            toolHookStack: $this->hookStack,
+        );
+
         // Build base agent
         $agent = new Agent(
             tools: $this->tools,
-            toolExecutor: (new ToolExecutor($this->tools))->withEventHandler(
-                EventBusResolver::using($this->events)
-            ),
+            toolExecutor: $toolExecutor,
             processors: $processors,
             continuationCriteria: $continuationCriteria,
             driver: $driver,
@@ -394,5 +704,21 @@ class AgentBuilder
                 'name' => $format->schemaName(),
                 'strict' => $format->strict(),
             ];
+    }
+
+    /**
+     * Convert a string pattern or HookMatcher to a HookMatcher instance.
+     */
+    private function resolveMatcher(string|HookMatcher|null $matcher): ?HookMatcher {
+        if ($matcher === null) {
+            return null;
+        }
+
+        if ($matcher instanceof HookMatcher) {
+            return $matcher;
+        }
+
+        // String = tool name pattern
+        return new ToolNameMatcher($matcher);
     }
 }

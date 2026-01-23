@@ -13,7 +13,11 @@ use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\Agent\Events\ToolCallCompleted;
 use Cognesy\Addons\Agent\Events\ToolCallStarted;
 use Cognesy\Addons\Agent\Exceptions\InvalidToolArgumentsException;
+use Cognesy\Addons\Agent\Exceptions\ToolCallBlockedException;
 use Cognesy\Addons\Agent\Exceptions\ToolExecutionException;
+use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Addons\Agent\Hooks\Data\ToolHookContext;
+use Cognesy\Addons\Agent\Hooks\Stack\HookStack;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -27,21 +31,79 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
     private Tools $tools;
     private bool $throwOnToolFailure;
     private CanHandleEvents $events;
+    private HookStack $toolHookStack;
 
     public function __construct(
         Tools $tools,
         bool $throwOnToolFailure = false,
         ?CanHandleEvents $events = null,
+        ?HookStack $toolHookStack = null,
     ) {
         $this->tools = $tools;
         $this->throwOnToolFailure = $throwOnToolFailure;
         $this->events = EventBusResolver::using($events);
+        $this->toolHookStack = $toolHookStack ?? new HookStack();
     }
 
     // MAIN API /////////////////////////////////////////////
 
     #[\Override]
     public function useTool(ToolCall $toolCall, AgentState $state): AgentExecution {
+        // Process before-tool hooks
+        $beforeContext = ToolHookContext::beforeTool($toolCall, $state);
+        $beforeOutcome = $this->toolHookStack->process(
+            $beforeContext,
+            static fn($ctx) => HookOutcome::proceed($ctx)
+        );
+
+        if ($beforeOutcome->isBlocked()) {
+            throw new ToolCallBlockedException(
+                $toolCall->name(),
+                $beforeOutcome->reason() ?? 'Blocked by hook',
+            );
+        }
+
+        if ($beforeOutcome->isStopped()) {
+            throw new ToolCallBlockedException(
+                $toolCall->name(),
+                $beforeOutcome->reason() ?? 'Stopped by hook',
+            );
+        }
+
+        // Get potentially modified tool call from before hooks
+        $effectiveContext = $beforeOutcome->context();
+        $effectiveToolCall = ($effectiveContext instanceof ToolHookContext)
+            ? $effectiveContext->toolCall()
+            : $toolCall;
+
+        // Execute tool
+        $execution = $this->executeDirectly($effectiveToolCall, $state);
+
+        // Process after-tool hooks
+        $afterContext = ToolHookContext::afterTool($effectiveToolCall, $execution, $state);
+        $afterOutcome = $this->toolHookStack->process(
+            $afterContext,
+            static fn($ctx) => HookOutcome::proceed($ctx)
+        );
+
+        // Get potentially modified execution from after hooks
+        $effectiveAfterContext = $afterOutcome->context();
+        $effectiveExecution = ($effectiveAfterContext instanceof ToolHookContext && $effectiveAfterContext->execution() !== null)
+            ? $effectiveAfterContext->execution()
+            : $execution;
+
+        if ($effectiveExecution->result() instanceof Failure && $this->throwOnToolFailure) {
+            $this->throwOnFailure($effectiveExecution->result());
+        }
+
+        return $effectiveExecution;
+    }
+
+    /**
+     * Execute a tool call directly without middleware.
+     * This is the final handler in the middleware chain.
+     */
+    private function executeDirectly(ToolCall $toolCall, AgentState $state): AgentExecution {
         $startedAt = new DateTimeImmutable();
         $this->emitToolCallStarted($toolCall, $startedAt);
         $result = $this->execute($toolCall, $state);
@@ -53,10 +115,6 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             endedAt: $endedAt,
         );
         $this->emitToolCallCompleted($toolExecution);
-
-        if ($result instanceof Failure && $this->throwOnToolFailure) {
-            $this->throwOnFailure($result);
-        }
 
         return $toolExecution;
     }
@@ -83,6 +141,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             tools: $tools,
             throwOnToolFailure: $this->throwOnToolFailure,
             events: $this->events,
+            toolHookStack: $this->toolHookStack,
         );
     }
 
@@ -91,6 +150,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             tools: $this->tools,
             throwOnToolFailure: $throw,
             events: $this->events,
+            toolHookStack: $this->toolHookStack,
         );
     }
 
@@ -99,7 +159,21 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             tools: $this->tools,
             throwOnToolFailure: $this->throwOnToolFailure,
             events: EventBusResolver::using($events),
+            toolHookStack: $this->toolHookStack,
         );
+    }
+
+    public function withToolHookStack(HookStack $toolHookStack): self {
+        return new self(
+            tools: $this->tools,
+            throwOnToolFailure: $this->throwOnToolFailure,
+            events: $this->events,
+            toolHookStack: $toolHookStack,
+        );
+    }
+
+    public function toolHookStack(): HookStack {
+        return $this->toolHookStack;
     }
 
     // INTERNAL /////////////////////////////////////////////

@@ -2642,8 +2642,7 @@ services:
 
 namespace App\Service;
 
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 
 final class AgentRegistryFactory
 {

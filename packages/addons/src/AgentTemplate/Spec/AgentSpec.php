@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\AgentTemplate\Registry;
+namespace Cognesy\Addons\AgentTemplate\Spec;
 
-use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SubagentDefinition;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SubagentDefinition;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use InvalidArgumentException;

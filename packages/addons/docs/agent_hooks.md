@@ -1,0 +1,648 @@
+# Agent Hooks System
+
+The Agent Hooks system provides a unified, extensible architecture for intercepting and modifying agent behavior at various lifecycle points. It replaces the fragmented approach of separate middleware, processors, and criteria with a consistent API.
+
+## Overview
+
+Hooks are middleware-style processors that intercept specific lifecycle events in agent execution. They can:
+
+- **Allow** execution to proceed (with or without modifications)
+- **Block** a specific action (e.g., prevent a dangerous tool call)
+- **Stop** the entire agent execution
+
+## Quick Start
+
+```php
+use Cognesy\Addons\AgentBuilder\AgentBuilder;
+use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Addons\Agent\Hooks\Data\ToolHookContext;
+use Cognesy\Addons\Agent\Hooks\Data\ExecutionHookContext;
+
+$agent = AgentBuilder::new()
+    // Block dangerous bash commands
+    ->onBeforeToolUse(
+        callback: function (ToolHookContext $ctx): HookOutcome {
+            $command = $ctx->toolCall()->args()['command'] ?? '';
+            if (str_contains($command, 'rm -rf')) {
+                return HookOutcome::block('Dangerous command blocked');
+            }
+            return HookOutcome::proceed();
+        },
+        priority: 100,
+        matcher: 'bash',
+    )
+
+    // Log execution start
+    ->onExecutionStart(function (ExecutionHookContext $ctx): HookOutcome {
+        $this->logger->info("Agent started: {$ctx->state()->agentId}");
+        return HookOutcome::proceed();
+    })
+
+    // Handle failures
+    ->onAgentFailed(function (FailureHookContext $ctx): void {
+        $this->alerting->send("Agent failed: {$ctx->errorMessage()}");
+    })
+
+    ->build();
+```
+
+## Lifecycle Events
+
+The hook system supports 9 lifecycle events organized into categories:
+
+### Tool Lifecycle
+
+| Event | Context Class | Description |
+|-------|---------------|-------------|
+| `PreToolUse` | `ToolHookContext` | Before a tool is executed. Can modify args or block. |
+| `PostToolUse` | `ToolHookContext` | After a tool completes. Can modify the result. |
+
+### Step Lifecycle
+
+| Event | Context Class | Description |
+|-------|---------------|-------------|
+| `BeforeStep` | `StepHookContext` | Before each agent step begins. |
+| `AfterStep` | `StepHookContext` | After each agent step completes. |
+
+### Execution Lifecycle
+
+| Event | Context Class | Description |
+|-------|---------------|-------------|
+| `ExecutionStart` | `ExecutionHookContext` | When agent.run() begins. |
+| `ExecutionEnd` | `ExecutionHookContext` | When agent.run() completes. |
+
+### Continuation
+
+| Event | Context Class | Description |
+|-------|---------------|-------------|
+| `Stop` | `StopHookContext` | When agent is about to stop. Can force continuation. |
+| `SubagentStop` | `StopHookContext` | When a subagent is about to stop. |
+
+### Error Handling
+
+| Event | Context Class | Description |
+|-------|---------------|-------------|
+| `AgentFailed` | `FailureHookContext` | When agent encounters an unrecoverable error. |
+
+## HookOutcome
+
+Every hook returns a `HookOutcome` indicating what should happen next:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
+
+// Allow execution to proceed
+HookOutcome::proceed();
+
+// Proceed with a modified context
+HookOutcome::proceed($modifiedContext);
+
+// Block this specific action (tool call, stop decision)
+// Agent continues but this action is prevented
+HookOutcome::block('Dangerous command detected');
+
+// Stop the entire agent execution
+HookOutcome::stop('Budget exceeded');
+```
+
+### Semantic Differences
+
+- **`block()`**: Prevents a single action but execution continues. Use for filtering dangerous tool calls.
+- **`stop()`**: Halts the entire agent execution immediately. Use for hard limits like budget or time.
+
+## Context Classes
+
+Each event type has a specialized context class providing relevant data:
+
+### ToolHookContext
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\ToolHookContext;
+
+function beforeTool(ToolHookContext $ctx): HookOutcome {
+    // Access the tool call
+    $toolName = $ctx->toolCall()->name();
+    $args = $ctx->toolCall()->args();
+
+    // Access agent state
+    $state = $ctx->state();
+
+    // Check event type
+    if ($ctx->isBeforeTool()) {
+        // PreToolUse event
+    }
+
+    // Modify the tool call (PreToolUse only)
+    $newContext = $ctx->withToolCall($modifiedCall);
+    return HookOutcome::proceed($newContext);
+}
+
+function afterTool(ToolHookContext $ctx): HookOutcome {
+    // Access the execution result (PostToolUse only)
+    $execution = $ctx->execution();
+    $success = $execution->result()->isSuccess();
+
+    return HookOutcome::proceed();
+}
+```
+
+### StepHookContext
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\StepHookContext;
+
+function onStep(StepHookContext $ctx): HookOutcome {
+    // Get step information
+    $stepIndex = $ctx->stepIndex();  // 0-based
+    $stepNumber = $ctx->stepNumber(); // 1-based (for display)
+
+    // AfterStep only: access the completed step
+    $step = $ctx->step();
+    if ($step?->hasErrors()) {
+        // Handle errors
+    }
+
+    return HookOutcome::proceed();
+}
+```
+
+### StopHookContext
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\StopHookContext;
+
+function onStop(StopHookContext $ctx): HookOutcome {
+    // Access continuation outcome
+    $outcome = $ctx->continuationOutcome();
+    $reason = $outcome->stopReason();
+
+    // Force continuation if needed
+    if ($this->hasUnfinishedWork($ctx->state())) {
+        return HookOutcome::block('Work remaining');
+    }
+
+    return HookOutcome::proceed(); // Allow stop
+}
+```
+
+### ExecutionHookContext
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\ExecutionHookContext;
+
+function onExecution(ExecutionHookContext $ctx): HookOutcome {
+    $state = $ctx->state();
+
+    if ($ctx->isStart()) {
+        // ExecutionStart event
+    } else {
+        // ExecutionEnd event
+    }
+
+    return HookOutcome::proceed();
+}
+```
+
+### FailureHookContext
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\FailureHookContext;
+
+function onFailure(FailureHookContext $ctx): HookOutcome {
+    $exception = $ctx->exception();
+    $message = $ctx->errorMessage();
+    $class = $ctx->errorClass();
+
+    // Log, alert, cleanup...
+
+    return HookOutcome::proceed();
+}
+```
+
+## Matchers
+
+Matchers allow hooks to be conditionally executed based on context.
+
+### ToolNameMatcher
+
+Match tool calls by name pattern:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Matchers\ToolNameMatcher;
+
+// Exact match
+new ToolNameMatcher('bash');
+
+// Wildcard patterns
+new ToolNameMatcher('read_*');   // read_file, read_stdin, etc.
+new ToolNameMatcher('*_file');   // read_file, write_file, etc.
+new ToolNameMatcher('*');        // Match all
+
+// Regex patterns
+new ToolNameMatcher('/^(read|write)_.+$/');
+```
+
+### EventTypeMatcher
+
+Filter by event type:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Matchers\EventTypeMatcher;
+use Cognesy\Addons\Agent\Hooks\Data\HookEvent;
+
+// Single event
+new EventTypeMatcher(HookEvent::PreToolUse);
+
+// Multiple events
+new EventTypeMatcher(HookEvent::BeforeStep, HookEvent::AfterStep);
+```
+
+### CompositeMatcher
+
+Combine matchers with AND/OR logic:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Matchers\CompositeMatcher;
+use Cognesy\Addons\Agent\Hooks\Matchers\CallableMatcher;
+
+// AND: all conditions must match
+$matcher = CompositeMatcher::and(
+    new ToolNameMatcher('bash'),
+    new CallableMatcher(fn($ctx) => $ctx->state()->stepCount() < 5),
+);
+
+// OR: any condition can match
+$matcher = CompositeMatcher::or(
+    new ToolNameMatcher('read_*'),
+    new ToolNameMatcher('write_*'),
+);
+
+// Nested combinations
+$matcher = CompositeMatcher::and(
+    CompositeMatcher::or(
+        new ToolNameMatcher('bash'),
+        new ToolNameMatcher('shell'),
+    ),
+    new CallableMatcher(fn($ctx) => $ctx->state()->metadata()->get('safe_mode')),
+);
+```
+
+### CallableMatcher
+
+Custom matching logic:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Matchers\CallableMatcher;
+
+$matcher = new CallableMatcher(function (HookContext $ctx): bool {
+    return $ctx->state()->metadata()->get('priority') === 'high';
+});
+```
+
+## Priority
+
+Hooks are executed in priority order (higher priority runs first):
+
+```php
+$builder
+    // Security hooks run first (high priority)
+    ->onBeforeToolUse($securityCheck, priority: 100)
+
+    // Normal hooks
+    ->onBeforeToolUse($normalHook, priority: 0)
+
+    // Logging hooks run last (low priority)
+    ->onAfterToolUse($logger, priority: -100);
+```
+
+**Priority Guidelines:**
+- `100+`: Security/validation hooks (run first, can block)
+- `0`: Normal hooks (default)
+- `-100`: Logging/monitoring hooks (run last, observe final state)
+
+When priorities are equal, hooks run in registration order.
+
+## AgentBuilder Methods
+
+### Tool Hooks
+
+```php
+// Before tool execution
+$builder->onBeforeToolUse(
+    callback: callable,  // (ToolHookContext) -> HookOutcome|ToolCall|null|void
+    priority: int = 0,
+    matcher: string|HookMatcher|null = null,
+);
+
+// After tool execution
+$builder->onAfterToolUse(
+    callback: callable,  // (ToolHookContext) -> HookOutcome|AgentExecution|void
+    priority: int = 0,
+    matcher: string|HookMatcher|null = null,
+);
+```
+
+### Step Hooks
+
+```php
+// Before each step
+$builder->onBeforeStep(
+    callback: callable,  // (AgentState) -> AgentState
+);
+
+// After each step
+$builder->onAfterStep(
+    callback: callable,  // (AgentState) -> AgentState
+);
+```
+
+### Execution Hooks
+
+```php
+// When execution starts
+$builder->onExecutionStart(
+    callback: callable,  // (ExecutionHookContext) -> HookOutcome|void
+    priority: int = 0,
+);
+
+// When execution ends
+$builder->onExecutionEnd(
+    callback: callable,  // (ExecutionHookContext) -> HookOutcome|void
+    priority: int = 0,
+);
+```
+
+### Continuation Hooks
+
+```php
+// When agent is about to stop
+$builder->onStop(
+    callback: callable,  // (StopHookContext) -> HookOutcome|void
+    priority: int = 0,
+);
+
+// When subagent is about to stop
+$builder->onSubagentStop(
+    callback: callable,  // (StopHookContext) -> HookOutcome|void
+    priority: int = 0,
+);
+```
+
+### Error Hooks
+
+```php
+// When agent fails
+$builder->onAgentFailed(
+    callback: callable,  // (FailureHookContext) -> HookOutcome|void
+    priority: int = 0,
+);
+```
+
+### Unified Registration
+
+For advanced use cases, use the unified `addHook` method:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Data\HookEvent;
+use Cognesy\Addons\Agent\Hooks\Hooks\CallableHook;
+
+$builder->addHook(
+    event: HookEvent::ExecutionStart,
+    hook: new CallableHook($callback, $matcher),
+    priority: 100,
+);
+```
+
+## Creating Custom Hooks
+
+Implement the `Hook` interface for reusable hook logic:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Contracts\Hook;
+use Cognesy\Addons\Agent\Hooks\Contracts\HookContext;
+use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
+
+class RateLimitHook implements Hook
+{
+    public function __construct(
+        private RateLimiter $limiter,
+        private int $maxCallsPerMinute,
+    ) {}
+
+    public function handle(HookContext $context, callable $next): HookOutcome
+    {
+        if (!$this->limiter->check($this->maxCallsPerMinute)) {
+            return HookOutcome::block('Rate limit exceeded');
+        }
+
+        $this->limiter->increment();
+        return $next($context);
+    }
+}
+```
+
+## Using HookStack Directly
+
+For advanced scenarios, use `HookStack` directly:
+
+```php
+use Cognesy\Addons\Agent\Hooks\Stack\HookStack;
+use Cognesy\Addons\Agent\Hooks\Data\ExecutionHookContext;
+use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
+
+$stack = (new HookStack())
+    ->with(new SecurityHook(), priority: 100)
+    ->with(new LoggingHook(), priority: -100)
+    ->with(new MetricsHook());
+
+$context = ExecutionHookContext::onStart($state);
+$outcome = $stack->process($context, fn($ctx) => HookOutcome::proceed($ctx));
+
+if ($outcome->isBlocked()) {
+    // Handle blocked
+} elseif ($outcome->isStopped()) {
+    // Handle stopped
+}
+```
+
+## Backward Compatibility
+
+The legacy `ToolMiddlewareStack` has been removed. All tool hooks now use the unified `HookStack` system with `BeforeToolHook` and `AfterToolHook`.
+
+Adapters are provided for other components:
+
+### StateProcessorAdapter
+
+```php
+use Cognesy\Addons\Agent\Hooks\Adapters\StateProcessorAdapter;
+
+$processor = new YourStateProcessor();
+$hook = new StateProcessorAdapter($processor, position: 'after');
+```
+
+### ContinuationCriteriaAdapter
+
+```php
+use Cognesy\Addons\Agent\Hooks\Adapters\ContinuationCriteriaAdapter;
+
+$criterion = new YourContinuationCriterion();
+$hook = new ContinuationCriteriaAdapter($criterion);
+```
+
+## Common Patterns
+
+### Security Validation
+
+```php
+$builder->onBeforeToolUse(
+    callback: function (ToolHookContext $ctx): HookOutcome {
+        // Block dangerous patterns
+        $command = $ctx->toolCall()->args()['command'] ?? '';
+        $dangerous = ['rm -rf', 'sudo', '> /dev/', 'mkfs'];
+
+        foreach ($dangerous as $pattern) {
+            if (str_contains($command, $pattern)) {
+                return HookOutcome::block("Dangerous command blocked: {$pattern}");
+            }
+        }
+
+        return HookOutcome::proceed();
+    },
+    priority: 100, // Run first
+    matcher: 'bash',
+);
+```
+
+### Execution Timing
+
+```php
+$builder
+    ->onExecutionStart(function (ExecutionHookContext $ctx): HookOutcome {
+        return HookOutcome::proceed(
+            $ctx->withMetadata('started_at', microtime(true))
+        );
+    })
+    ->onExecutionEnd(function (ExecutionHookContext $ctx): void {
+        $started = $ctx->get('started_at');
+        $duration = microtime(true) - $started;
+        $this->metrics->record('execution_duration', $duration);
+    });
+```
+
+### Conditional Continuation
+
+```php
+$builder->onStop(function (StopHookContext $ctx): HookOutcome {
+    $state = $ctx->state();
+
+    // Check for incomplete tasks
+    $tasks = $state->metadata()->get('pending_tasks', []);
+    if (count($tasks) > 0) {
+        return HookOutcome::block('Tasks remaining: ' . count($tasks));
+    }
+
+    // Check for quality threshold
+    $quality = $state->metadata()->get('output_quality', 1.0);
+    if ($quality < 0.8) {
+        return HookOutcome::block('Quality below threshold');
+    }
+
+    return HookOutcome::proceed();
+});
+```
+
+### Error Recovery Logging
+
+```php
+$builder->onAgentFailed(function (FailureHookContext $ctx): void {
+    $state = $ctx->state();
+    $exception = $ctx->exception();
+
+    // Log with full context
+    $this->logger->error('Agent failed', [
+        'agent_id' => $state->agentId,
+        'parent_id' => $state->parentAgentId,
+        'steps_completed' => $state->stepCount(),
+        'error_class' => $ctx->errorClass(),
+        'error_message' => $ctx->errorMessage(),
+        'stack_trace' => $exception->getTraceAsString(),
+        'last_tool' => $state->currentStep()?->toolCalls()->first()?->name(),
+    ]);
+
+    // Send alert for critical errors
+    if ($exception instanceof CriticalException) {
+        $this->alerting->sendCritical($exception);
+    }
+});
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        HookStack                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │ Hook (p:100)│→ │ Hook (p:0)  │→ │ Hook (p:-100)│→ Terminal│
+│  │  Security   │  │   Normal    │  │   Logging   │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                       HookContext                           │
+│  ┌──────────────────┐  ┌──────────────────┐                │
+│  │ ToolHookContext  │  │ StepHookContext  │  ...           │
+│  │ - toolCall       │  │ - stepIndex      │                │
+│  │ - execution      │  │ - step           │                │
+│  │ - state          │  │ - state          │                │
+│  └──────────────────┘  └──────────────────┘                │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                       HookOutcome                           │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
+│  │ proceed  │  │  block   │  │   stop   │                  │
+│  │ Continue │  │ Prevent  │  │   Halt   │                  │
+│  │ execution│  │ action   │  │ entirely │                  │
+│  └──────────┘  └──────────┘  └──────────┘                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## File Structure
+
+```
+packages/addons/src/Agent/Hooks/
+├── Contracts/
+│   ├── Hook.php              # Core hook interface
+│   ├── HookContext.php       # Base context interface
+│   └── HookMatcher.php       # Matcher interface
+├── Data/
+│   ├── HookEvent.php         # Lifecycle events enum
+│   ├── HookOutcome.php       # Hook return type
+│   ├── AbstractHookContext.php
+│   ├── ToolHookContext.php
+│   ├── StepHookContext.php
+│   ├── StopHookContext.php
+│   ├── ExecutionHookContext.php
+│   └── FailureHookContext.php
+├── Stack/
+│   └── HookStack.php         # Priority-based execution
+├── Matchers/
+│   ├── ToolNameMatcher.php
+│   ├── EventTypeMatcher.php
+│   ├── CompositeMatcher.php
+│   └── CallableMatcher.php
+├── Hooks/
+│   ├── CallableHook.php
+│   ├── BeforeToolHook.php
+│   ├── AfterToolHook.php
+│   ├── BeforeStepHook.php
+│   ├── AfterStepHook.php
+│   ├── ExecutionStartHook.php
+│   ├── ExecutionEndHook.php
+│   ├── StopHook.php
+│   ├── SubagentStopHook.php
+│   └── AgentFailedHook.php
+└── Adapters/
+    ├── StateProcessorAdapter.php
+    └── ContinuationCriteriaAdapter.php
+```

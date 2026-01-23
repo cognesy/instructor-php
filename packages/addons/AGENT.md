@@ -391,9 +391,9 @@ $agent = AgentBuilder::base()
 The `AgentRegistry` manages named agent specifications that can be spawned as subagents. Define agents with specific tools, prompts, and models.
 
 ### AgentSpec
+
 ```php
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 
 // Define an agent specification
 $spec = new AgentSpec(

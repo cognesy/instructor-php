@@ -6,14 +6,14 @@
  * This example demonstrates how to define and use subagents with the SubagentRegistry.
  */
 
+use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
 use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Addons\AgentBuilder\Capabilities\Tasks\UseTaskPlanning;
-use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 use Cognesy\Messages\Messages;
 
 require_once __DIR__ . '/../../../vendor/autoload.php';

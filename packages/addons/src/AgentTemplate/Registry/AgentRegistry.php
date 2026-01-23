@@ -2,9 +2,11 @@
 
 namespace Cognesy\Addons\AgentTemplate\Registry;
 
-use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SubagentProvider;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
 use Cognesy\Addons\Agent\Exceptions\AgentNotFoundException;
+use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SubagentProvider;
+use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Spec\AgentSpecParser;
 use InvalidArgumentException;
 
 final class AgentRegistry implements SubagentProvider

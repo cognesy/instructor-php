@@ -232,7 +232,31 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     // ACCESSORS ////////////////////////////////////////////////
 
+    /**
+     * Get the current agent status.
+     *
+     * Status is derived from the continuation outcome when available:
+     * - If explicitly failed, returns Failed
+     * - If continuation outcome says "don't continue", derives status from stop reason
+     * - Otherwise returns the stored status (typically InProgress)
+     *
+     * This allows manual loops (hasNextStep/nextStep) to get correct final
+     * status without requiring explicit finalization.
+     */
     public function status() : AgentStatus {
+        // Already explicitly failed - respect that
+        if ($this->status === AgentStatus::Failed) {
+            return AgentStatus::Failed;
+        }
+
+        // Derive from continuation outcome if execution has stopped
+        $outcome = $this->continuationOutcome();
+        if ($outcome !== null && !$outcome->shouldContinue()) {
+            return $outcome->stopReason() === StopReason::ErrorForbade
+                ? AgentStatus::Failed
+                : AgentStatus::Completed;
+        }
+
         return $this->status;
     }
 

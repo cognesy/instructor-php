@@ -1441,13 +1441,7 @@ class ChunkedAgentJob implements ShouldQueue
 
 namespace App\Services;
 
-use App\Jobs\ExecuteAgentJob;
-use App\Models\AgentExecution;
-use Cognesy\Addons\Agent\Agent;
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use App\Jobs\ExecuteAgentJob;use App\Models\AgentExecution;use Cognesy\Addons\Agent\Agent;use Cognesy\Addons\AgentBuilder\AgentBuilder;use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 
 class ResearchAgentService
 {

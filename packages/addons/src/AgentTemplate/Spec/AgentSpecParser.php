@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Addons\AgentTemplate\Registry;
+namespace Cognesy\Addons\AgentTemplate\Spec;
 
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use InvalidArgumentException;

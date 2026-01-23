@@ -110,8 +110,7 @@ All 14+ drivers now declare support for:
 Declarative agent definitions with registry-based discovery:
 
 ```php
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 
 $registry = new AgentRegistry();
 $registry->register('researcher', AgentSpec::from([

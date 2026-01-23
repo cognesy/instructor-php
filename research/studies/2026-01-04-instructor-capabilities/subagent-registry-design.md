@@ -407,7 +407,7 @@ final class SubagentSpecParser
 
 namespace Cognesy\Addons\Agent\Tools\Subagent;
 
-use Cognesy\Addons\Agent\Agent;use Cognesy\Addons\Agent\AgentFactory;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Core\Enums\AgentStatus;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;use Cognesy\Addons\Agent\Skills\SkillLibrary;use Cognesy\Addons\Agent\Tools\BaseTool;use Cognesy\Messages\Messages;
+use Cognesy\Addons\Agent\Agent;use Cognesy\Addons\Agent\AgentFactory;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\Agent\Core\Enums\AgentStatus;use Cognesy\Addons\Agent\Skills\SkillLibrary;use Cognesy\Addons\Agent\Tools\BaseTool;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;use Cognesy\Messages\Messages;
 
 class SpawnSubagentTool extends BaseTool
 {
@@ -704,9 +704,7 @@ You are an API design expert following REST principles and best practices.
 ### In Code
 
 ```php
-use Cognesy\Addons\Agent\AgentFactory;
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Registry\AgentSpec;
+use Cognesy\Addons\Agent\AgentFactory;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
 
 // Create registry
 $registry = new AgentRegistry();
