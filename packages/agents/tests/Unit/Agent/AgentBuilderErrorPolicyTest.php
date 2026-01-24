@@ -5,16 +5,18 @@ namespace Tests\Addons\Unit\Agent;
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
 use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
 use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Agent\Data\StepResult;
 use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 
 function makeErrorState(): AgentState {
-    $execution = new AgentExecution(
+    $execution = new ToolExecution(
         toolCall: new ToolCall('tool', [], 'call_1'),
         result: Result::failure(new \RuntimeException('tool failed')),
         startedAt: new \DateTimeImmutable(),
@@ -23,10 +25,15 @@ function makeErrorState(): AgentState {
     $step = new AgentStep(
         toolExecutions: new ToolExecutions($execution),
     );
+    $stepResult = new StepResult(
+        step: $step,
+        outcome: ContinuationOutcome::empty(),
+        startedAt: new \DateTimeImmutable(),
+        completedAt: new \DateTimeImmutable(),
+    );
 
     return AgentState::empty()
-        ->withAddedStep($step)
-        ->withCurrentStep($step);
+        ->recordStepResult($stepResult);
 }
 
 function alwaysRequestContinuation(): ContinuationCriteria {

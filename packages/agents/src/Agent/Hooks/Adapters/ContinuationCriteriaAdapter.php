@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Agent\Hooks\Adapters;
 
-use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
-use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
-use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
-use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
 use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
 use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
+use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
+use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
+use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Adapter that wraps existing ContinuationCriteria to work with the new Hook system.
@@ -50,7 +50,7 @@ final readonly class ContinuationCriteriaAdapter implements Hook
         }
 
         // Only process Stop events (not SubagentStop)
-        if ($context->eventType() !== HookEvent::Stop) {
+        if ($context->eventType() !== HookType::Stop) {
             return $next($context);
         }
 

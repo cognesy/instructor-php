@@ -3,23 +3,22 @@
 namespace Cognesy\Agents\Agent\Hooks\Hooks;
 
 use Closure;
-use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
 use Cognesy\Agents\Agent\Hooks\Data\ExecutionHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Hook for intercepting agent execution start.
  *
  * Fired once when agent.run() begins, before any steps are executed.
  *
- * The callback can:
- * - Return HookOutcome::proceed() to continue unchanged
- * - Return HookOutcome::proceed($modifiedContext) to modify the initial state
- * - Return HookOutcome::stop($reason) to prevent execution entirely
+ * The callback must return a HookOutcome:
+ * - HookOutcome::proceed() to continue unchanged
+ * - HookOutcome::proceed($ctx->withState($newState)) to modify the initial state
+ * - HookOutcome::stop($reason) to prevent execution entirely
  *
  * @example
  * // Initialize monitoring
@@ -45,11 +44,11 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  */
 final readonly class ExecutionStartHook implements Hook
 {
-    /** @var Closure(ExecutionHookContext): (HookOutcome|AgentState|void) */
+    /** @var Closure(ExecutionHookContext): HookOutcome */
     private Closure $callback;
 
     /**
-     * @param callable(ExecutionHookContext): (HookOutcome|AgentState|void) $callback
+     * @param callable(ExecutionHookContext): HookOutcome $callback
      * @param HookMatcher|null $matcher Optional matcher for conditional execution
      */
     public function __construct(
@@ -63,7 +62,7 @@ final readonly class ExecutionStartHook implements Hook
     public function handle(HookContext $context, callable $next): HookOutcome
     {
         // Only process ExecutionStart events
-        if (!$context instanceof ExecutionHookContext || $context->eventType() !== HookEvent::ExecutionStart) {
+        if (!$context instanceof ExecutionHookContext || $context->eventType() !== HookType::ExecutionStart) {
             return $next($context);
         }
 
@@ -72,26 +71,16 @@ final readonly class ExecutionStartHook implements Hook
             return $next($context);
         }
 
-        // Execute callback
-        $result = ($this->callback)($context);
+        // Execute callback - must return HookOutcome
+        $outcome = ($this->callback)($context);
 
-        // Handle HookOutcome directly
-        if ($result instanceof HookOutcome) {
-            // If stopped, return immediately
-            if ($result->isStopped()) {
-                return $result;
-            }
-            // If proceed with modified context, pass it along
-            $effectiveContext = $result->context() ?? $context;
-            return $next($effectiveContext);
+        // If stopped, return immediately
+        if ($outcome->isStopped()) {
+            return $outcome;
         }
 
-        // Handle AgentState = proceed with modified state
-        if ($result instanceof AgentState) {
-            return $next($context->withState($result));
-        }
-
-        // Anything else = proceed unchanged
-        return $next($context);
+        // Pass along (with potentially modified context)
+        $effectiveContext = $outcome->context() ?? $context;
+        return $next($effectiveContext);
     }
 }

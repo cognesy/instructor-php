@@ -17,7 +17,12 @@ describe('Bash Capability', function () {
             ->withCapability(new UseBash())
             ->build();
 
-        $next = $agent->nextStep(AgentState::empty());
+        // Get first step from iterate()
+        $next = null;
+        foreach ($agent->iterate(AgentState::empty()) as $state) {
+            $next = $state;
+            break;
+        }
 
         $executions = $next->currentStep()?->toolExecutions()->all() ?? [];
         expect($executions)->toHaveCount(1);

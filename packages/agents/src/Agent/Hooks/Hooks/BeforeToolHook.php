@@ -6,27 +6,21 @@ use Closure;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Hook for intercepting tool calls before execution.
  *
- * The callback can:
- * - Return HookOutcome::proceed() to allow the tool call
- * - Return HookOutcome::proceed($modifiedContext) to modify the tool call
- * - Return HookOutcome::block($reason) to prevent the tool call
- * - Return HookOutcome::stop($reason) to halt agent execution
- *
- * Simplified callback signatures are also supported:
- * - Return null to block the tool call
- * - Return ToolCall to proceed with modified args
- * - Return void/anything else to proceed unchanged
+ * The callback must return a HookOutcome:
+ * - HookOutcome::proceed() to allow the tool call
+ * - HookOutcome::proceed($ctx->withToolCall($modified)) to modify the tool call
+ * - HookOutcome::block($reason) to prevent the tool call
+ * - HookOutcome::stop($reason) to halt agent execution
  *
  * @example
- * // Block dangerous commands using HookOutcome
+ * // Block dangerous commands
  * $hook = new BeforeToolHook(
  *     callback: function (ToolHookContext $ctx): HookOutcome {
  *         $command = $ctx->toolCall()->args()['command'] ?? '';
@@ -51,11 +45,11 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
  */
 final readonly class BeforeToolHook implements Hook
 {
-    /** @var Closure(ToolHookContext): (HookOutcome|ToolCall|null|void) */
+    /** @var Closure(ToolHookContext): HookOutcome */
     private Closure $callback;
 
     /**
-     * @param callable(ToolHookContext): (HookOutcome|ToolCall|null|void) $callback
+     * @param callable(ToolHookContext): HookOutcome $callback
      * @param HookMatcher|null $matcher Optional matcher for conditional execution
      */
     public function __construct(
@@ -69,7 +63,7 @@ final readonly class BeforeToolHook implements Hook
     public function handle(HookContext $context, callable $next): HookOutcome
     {
         // Only process PreToolUse events
-        if (!$context instanceof ToolHookContext || $context->eventType() !== HookEvent::PreToolUse) {
+        if (!$context instanceof ToolHookContext || $context->eventType() !== HookType::PreToolUse) {
             return $next($context);
         }
 
@@ -78,31 +72,16 @@ final readonly class BeforeToolHook implements Hook
             return $next($context);
         }
 
-        // Execute callback
-        $result = ($this->callback)($context);
+        // Execute callback - must return HookOutcome
+        $outcome = ($this->callback)($context);
 
-        // Handle HookOutcome directly
-        if ($result instanceof HookOutcome) {
-            // If blocked or stopped, return immediately
-            if ($result->isBlocked() || $result->isStopped()) {
-                return $result;
-            }
-            // If proceed with modified context, pass it along
-            $effectiveContext = $result->context() ?? $context;
-            return $next($effectiveContext);
+        // If blocked or stopped, return immediately
+        if ($outcome->isBlocked() || $outcome->isStopped()) {
+            return $outcome;
         }
 
-        // Handle null = block
-        if ($result === null) {
-            return HookOutcome::block('Blocked by hook');
-        }
-
-        // Handle ToolCall = proceed with modified call
-        if ($result instanceof ToolCall) {
-            return $next($context->withToolCall($result));
-        }
-
-        // Anything else = proceed unchanged
-        return $next($context);
+        // Pass along (with potentially modified context)
+        $effectiveContext = $outcome->context() ?? $context;
+        return $next($effectiveContext);
     }
 }

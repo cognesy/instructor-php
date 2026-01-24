@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Agent\Continuation\Criteria;
 
-use BackedEnum;
 use Closure;
 use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
 use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
 use Cognesy\Agents\Agent\Continuation\ContinuationEvaluation;
 use Cognesy\Agents\Agent\Continuation\StopReason;
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 /**
  * Guard: Forbids continuation when the current step's finish reason matches a configured set.
@@ -18,26 +18,26 @@ use Cognesy\Agents\Agent\Data\AgentState;
  */
 final readonly class FinishReasonCheck implements CanEvaluateContinuation
 {
-    /** @var Closure(AgentState): mixed */
+    /** @var Closure(AgentState): ?InferenceFinishReason */
     private Closure $finishReasonResolver;
-    /** @var list<string> */
-    private array $normalizedStopReasons;
+    /** @var list<InferenceFinishReason> */
+    private array $stopReasons;
 
     /**
-     * @param array<int, string|int|BackedEnum|null> $stopReasons
-     * @param callable(AgentState): (string|int|BackedEnum|null) $finishReasonResolver
+     * @param array<int, InferenceFinishReason> $stopReasons
+     * @param callable(AgentState): ?InferenceFinishReason $finishReasonResolver
      */
     public function __construct(
         array $stopReasons,
         callable $finishReasonResolver,
     ) {
         $this->finishReasonResolver = Closure::fromCallable($finishReasonResolver);
-        $this->normalizedStopReasons = $this->normalizeStopReasons($stopReasons);
+        $this->stopReasons = array_values($stopReasons);
     }
 
     #[\Override]
     public function evaluate(AgentState $state): ContinuationEvaluation {
-        if ($this->normalizedStopReasons === []) {
+        if ($this->stopReasons === []) {
             return new ContinuationEvaluation(
                 criterionClass: self::class,
                 decision: ContinuationDecision::AllowContinuation,
@@ -47,57 +47,43 @@ final readonly class FinishReasonCheck implements CanEvaluateContinuation
         }
 
         $reason = ($this->finishReasonResolver)($state);
-        $originalReason = $reason;
-        if ($reason instanceof BackedEnum) {
-            $reason = $reason->value;
-        }
         if ($reason === null) {
             return new ContinuationEvaluation(
                 criterionClass: self::class,
                 decision: ContinuationDecision::AllowContinuation,
                 reason: 'No finish reason available',
-                context: ['finishReason' => null, 'stopReasons' => $this->normalizedStopReasons],
+                context: ['finishReason' => null, 'stopReasons' => $this->stopReasonsAsStrings()],
             );
         }
 
-        $shouldStop = in_array($reason, $this->normalizedStopReasons, true);
+        $shouldStop = in_array($reason, $this->stopReasons, true);
         $decision = $shouldStop
             ? ContinuationDecision::ForbidContinuation
             : ContinuationDecision::AllowContinuation;
 
         $reasonText = $shouldStop
-            ? sprintf('Finish reason "%s" matched stop condition', (string) $reason)
-            : sprintf('Finish reason "%s" does not match stop conditions', (string) $reason);
+            ? sprintf('Finish reason "%s" matched stop condition', $reason->value)
+            : sprintf('Finish reason "%s" does not match stop conditions', $reason->value);
 
         return new ContinuationEvaluation(
             criterionClass: self::class,
             decision: $decision,
             reason: $reasonText,
             context: [
-                'finishReason' => $originalReason instanceof BackedEnum ? $originalReason->value : $originalReason,
-                'stopReasons' => $this->normalizedStopReasons,
+                'finishReason' => $reason->value,
+                'stopReasons' => $this->stopReasonsAsStrings(),
             ],
             stopReason: $shouldStop ? StopReason::FinishReasonReceived : null,
         );
     }
 
     /**
-     * @param array<int, string|int|BackedEnum|null> $stopReasons
      * @return list<string>
      */
-    private function normalizeStopReasons(array $stopReasons): array {
-        $normalized = [];
-        foreach ($stopReasons as $reason) {
-            if ($reason instanceof BackedEnum) {
-                $normalized[] = (string) $reason->value;
-                continue;
-            }
-            if ($reason === null) {
-                continue;
-            }
-            $normalized[] = (string) $reason;
-        }
-
-        return $normalized;
+    private function stopReasonsAsStrings(): array {
+        return array_map(
+            static fn(InferenceFinishReason $reason): string => $reason->value,
+            $this->stopReasons,
+        );
     }
 }

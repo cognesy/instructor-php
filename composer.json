@@ -53,6 +53,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Cognesy\\Config\\": "config/",
             "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
             "Cognesy\\Evals\\": "packages/evals/src/",
             "Cognesy\\Tell\\": "packages/tell/src/",
@@ -109,7 +110,7 @@
         "eftec/bladeone": "^4.16",
         "guzzlehttp/guzzle": "^7.0",
         "guzzlehttp/psr7": "^2.0",
-        "icanhazstring/composer-unused": "^0.9.0",
+        "icanhazstring/composer-unused": "^0.9.5",
         "illuminate/database": "^11.47",
         "illuminate/http": "^11.0",
         "illuminate/support": "^11.47",
@@ -174,8 +175,9 @@
         "test": "@php ./vendor/bin/pest --testsuite=Unit,Feature,Regression",
         "tests": "@php ./vendor/bin/pest --testsuite=Unit,Feature,Regression",
         "test-all": "@php ./vendor/bin/pest",
-        "unused": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
-        "unused-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
+        "dead-code": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
+        "dead-code-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
+        "unused-deps": "@php ./vendor/bin/composer-unused",
         "setup": "bin/instructor-setup",
         "make-package": "scripts/make-package"
     },

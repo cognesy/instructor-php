@@ -23,9 +23,7 @@ final readonly class AgentState
 
     private AgentStatus $status;
     private CachedContext $cache;
-    /** @var StepResult[] */
-    private array $stepResults;
-    private AgentSteps $steps;
+    private StepResults $stepResults;
     private ?AgentStep $currentStep;
     private MessageStore $store;
     private Metadata $metadata;
@@ -38,20 +36,19 @@ final readonly class AgentState
     public ?DateTimeImmutable $executionStartedAt;
 
     public function __construct(
-        ?AgentStatus           $status = null,
-        ?AgentSteps            $steps = null,
-        ?AgentStep             $currentStep = null,
+        ?AgentStatus        $status = null,
+        ?AgentStep          $currentStep = null,
 
-        Metadata|array|null    $variables = null,
-        ?Usage                 $usage = null,
-        ?MessageStore          $store = null,
-        ?StateInfo             $stateInfo = null,
-        ?string                $agentId = null,
-        ?string                $parentAgentId = null,
-        ?DateTimeImmutable     $currentStepStartedAt = null,
-        ?DateTimeImmutable     $executionStartedAt = null,
-        ?CachedContext         $cache = null,
-        ?array                 $stepResults = null,
+        Metadata|array|null $variables = null,
+        ?Usage              $usage = null,
+        ?MessageStore       $store = null,
+        ?StateInfo          $stateInfo = null,
+        ?string             $agentId = null,
+        ?string             $parentAgentId = null,
+        ?DateTimeImmutable  $currentStepStartedAt = null,
+        ?DateTimeImmutable  $executionStartedAt = null,
+        ?CachedContext      $cache = null,
+        ?StepResults        $stepResults = null,
     ) {
         $this->agentId = $agentId ?? Uuid::uuid4();
         $this->parentAgentId = $parentAgentId;
@@ -59,7 +56,6 @@ final readonly class AgentState
         $this->executionStartedAt = $executionStartedAt;
 
         $this->status = $status ?? AgentStatus::InProgress;
-        $this->steps = $steps ?? new AgentSteps();
         $this->currentStep = $currentStep ?? null;
 
         $this->stateInfo = $stateInfo ?? StateInfo::new();
@@ -72,7 +68,7 @@ final readonly class AgentState
         $this->cache = $cache ?? new CachedContext();
         $this->usage = $usage ?? new Usage();
         $this->store = $store ?? new MessageStore();
-        $this->stepResults = $stepResults ?? [];
+        $this->stepResults = $stepResults ?? StepResults::empty();
     }
 
     // CONSTRUCTORS ////////////////////////////////////////////
@@ -84,27 +80,23 @@ final readonly class AgentState
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?AgentStatus           $status = null,
-        ?AgentSteps            $steps = null,
-        ?AgentStep             $currentStep = null,
-
-        ?Metadata              $variables = null,
-        ?Usage                 $usage = null,
-        ?MessageStore          $store = null,
-        ?StateInfo             $stateInfo = null,
-        ?string                $agentId = null,
-        ?string                $parentAgentId = null,
-        ?DateTimeImmutable     $currentStepStartedAt = null,
-        ?DateTimeImmutable     $executionStartedAt = null,
-        ?CachedContext         $cache = null,
-        ?array                 $stepResults = null,
+        ?AgentStatus       $status = null,
+        ?AgentStep         $currentStep = null,
+        ?Metadata          $variables = null,
+        ?Usage             $usage = null,
+        ?MessageStore      $store = null,
+        ?StateInfo         $stateInfo = null,
+        ?string            $agentId = null,
+        ?string            $parentAgentId = null,
+        ?DateTimeImmutable $currentStepStartedAt = null,
+        ?DateTimeImmutable $executionStartedAt = null,
+        ?CachedContext     $cache = null,
+        ?StepResults       $stepResults = null,
     ): self {
         return new self(
             status: $status ?? $this->status,
-            steps: $steps ?? $this->steps,
             currentStep: $currentStep ?? $this->currentStep,
             variables: $variables ?? $this->metadata,
-            cache: $cache ?? $this->cache,
             usage: $usage ?? $this->usage,
             store: $store ?? $this->store,
             stateInfo: $stateInfo ?? $this->stateInfo->touch(),
@@ -112,6 +104,7 @@ final readonly class AgentState
             parentAgentId: $parentAgentId ?? $this->parentAgentId,
             currentStepStartedAt: $currentStepStartedAt ?? $this->currentStepStartedAt,
             executionStartedAt: $executionStartedAt ?? $this->executionStartedAt,
+            cache: $cache ?? $this->cache,
             stepResults: $stepResults ?? $this->stepResults,
         );
     }
@@ -210,6 +203,18 @@ final readonly class AgentState
         );
     }
 
+    /**
+     * Track execution time for the current step and clear the step start timestamp.
+     */
+    public function markStepCompleted() : self {
+        if ($this->currentStepStartedAt === null) {
+            return $this;
+        }
+        $started = (float) $this->currentStepStartedAt->format('U.u');
+        $duration = microtime(true) - $started;
+        return $this->withAddedExecutionTime($duration);
+    }
+
     public function recordStep(AgentStep $step, ?DateTimeImmutable $startedAt = null) : self {
         $resolvedStartedAt = $startedAt;
         if ($resolvedStartedAt === null) {
@@ -221,7 +226,6 @@ final readonly class AgentState
 
         return $this
             ->withCurrentStepStartedAt($resolvedStartedAt)
-            ->withAddedStep($step)
             ->withCurrentStep($step);
     }
 
@@ -264,7 +268,6 @@ final readonly class AgentState
     public function forContinuation(): self {
         return new self(
             status: AgentStatus::InProgress,
-            steps: new AgentSteps(),
             currentStep: null,
             variables: $this->metadata,
             usage: new Usage(),
@@ -275,7 +278,7 @@ final readonly class AgentState
             currentStepStartedAt: null,
             executionStartedAt: null,
             cache: new CachedContext(),
-            stepResults: [],
+            stepResults: StepResults::empty(),
         );
     }
 
@@ -283,14 +286,6 @@ final readonly class AgentState
 
     public function withCurrentStep(AgentStep $step): self {
         return $this->with(currentStep: $step);
-    }
-
-    public function withAddedStep(AgentStep $step): self {
-        return $this->with(steps: $this->steps->withAddedStep($step));
-    }
-
-    public function withAddedSteps(AgentStep ...$steps): self {
-        return $this->with(steps: $this->steps->withAddedSteps(...$steps));
     }
 
     // ACCESSORS ////////////////////////////////////////////////
@@ -329,21 +324,24 @@ final readonly class AgentState
         return $this->currentStep;
     }
 
+    /**
+     * Get all completed steps (derived from step results).
+     */
     public function steps() : AgentSteps {
-        return $this->steps;
+        return $this->stepResults->steps();
     }
 
     public function stepCount() : int {
-        return $this->steps->count();
+        return $this->stepResults->count();
     }
 
     public function stepAt(int $index): ?AgentStep {
-        return $this->steps->stepAt($index);
+        return $this->stepResults->stepAt($index);
     }
 
     /** @return iterable<AgentStep> */
     public function eachStep(): iterable {
-        return $this->steps;
+        return $this->stepResults->steps();
     }
 
     public function cache() : CachedContext {
@@ -363,10 +361,8 @@ final readonly class AgentState
 
     /**
      * Get all step results.
-     *
-     * @return StepResult[]
      */
-    public function stepResults(): array {
+    public function stepResults(): StepResults {
         return $this->stepResults;
     }
 
@@ -374,26 +370,16 @@ final readonly class AgentState
      * Get the last step result.
      */
     public function lastStepResult(): ?StepResult {
-        if ($this->stepResults === []) {
-            return null;
-        }
-        return $this->stepResults[array_key_last($this->stepResults)];
+        return $this->stepResults->last();
     }
 
     /**
      * Record a step result (step + continuation outcome bundled).
      */
-    public function recordStepResult(StepResult $result, ?DateTimeImmutable $startedAt = null): self {
-        $resolvedStartedAt = $startedAt ?? $this->currentStepStartedAt ?? new DateTimeImmutable();
-
-        /** @var AgentStep $step */
-        $step = $result->step;
-
+    public function recordStepResult(StepResult $result): self {
         return $this
-            ->withCurrentStepStartedAt($resolvedStartedAt)
-            ->withAddedStep($step)
-            ->withCurrentStep($step)
-            ->with(stepResults: [...$this->stepResults, $result]);
+            ->withCurrentStep($result->step)
+            ->with(stepResults: $this->stepResults->append($result));
     }
 
     /**
@@ -455,29 +441,17 @@ final readonly class AgentState
             'stateInfo' => $this->stateInfo->toArray(),
             'currentStep' => $this->currentStep?->toArray(),
             'status' => $this->status->value,
-            'steps' => array_map(static fn(AgentStep $step) => $step->toArray(), $this->steps->all()),
-            'stepResults' => array_map(
-                static fn(StepResult $result) => $result->toArray(static fn(object $step) => $step->toArray()),
-                $this->stepResults,
-            ),
+            'stepResults' => $this->stepResults->toArray(),
         ];
     }
 
     public static function fromArray(array $data) : self {
-        $stepResults = [];
-        if (isset($data['stepResults']) && is_array($data['stepResults'])) {
-            $stepResults = array_map(
-                static fn(array $resultData) => StepResult::fromArray(
-                    $resultData,
-                    static fn(array $stepData) => AgentStep::fromArray($stepData),
-                ),
-                $data['stepResults'],
-            );
-        }
+        $stepResults = isset($data['stepResults']) && is_array($data['stepResults'])
+            ? StepResults::deserialize($data['stepResults'])
+            : StepResults::empty();
 
         return new self(
             status: isset($data['status']) ? AgentStatus::from($data['status']) : AgentStatus::InProgress,
-            steps: isset($data['steps']) ? AgentSteps::fromArray($data['steps']) : new AgentSteps(),
             currentStep: isset($data['currentStep']) ? AgentStep::fromArray($data['currentStep']) : null,
 
             variables: isset($data['metadata']) ? Metadata::fromArray($data['metadata']) : new Metadata(),

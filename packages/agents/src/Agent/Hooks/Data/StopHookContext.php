@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Agent\Hooks\Data;
 
 use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Context for stop-related hook events (Stop, SubagentStop).
@@ -40,14 +41,14 @@ final readonly class StopHookContext extends AbstractHookContext
     /**
      * @param AgentState $state The current agent state
      * @param ContinuationOutcome $outcome The continuation outcome that triggered the stop
-     * @param HookEvent $event The specific event (Stop or SubagentStop)
+     * @param HookType $event The specific event (Stop or SubagentStop)
      * @param array<string, mixed> $metadata Additional context metadata
      */
     public function __construct(
-        AgentState $state,
+        AgentState                  $state,
         private ContinuationOutcome $outcome,
-        private HookEvent $event = HookEvent::Stop,
-        array $metadata = [],
+        private HookType            $event = HookType::Stop,
+        array                       $metadata = [],
     ) {
         parent::__construct($state, $metadata);
     }
@@ -64,7 +65,7 @@ final readonly class StopHookContext extends AbstractHookContext
         ContinuationOutcome $outcome,
         array $metadata = [],
     ): self {
-        return new self($state, $outcome, HookEvent::Stop, $metadata);
+        return new self($state, $outcome, HookType::Stop, $metadata);
     }
 
     /**
@@ -79,11 +80,11 @@ final readonly class StopHookContext extends AbstractHookContext
         ContinuationOutcome $outcome,
         array $metadata = [],
     ): self {
-        return new self($state, $outcome, HookEvent::SubagentStop, $metadata);
+        return new self($state, $outcome, HookType::SubagentStop, $metadata);
     }
 
     #[\Override]
-    public function eventType(): HookEvent
+    public function eventType(): HookType
     {
         return $this->event;
     }
@@ -101,7 +102,7 @@ final readonly class StopHookContext extends AbstractHookContext
      */
     public function isStop(): bool
     {
-        return $this->event === HookEvent::Stop;
+        return $this->event === HookType::Stop;
     }
 
     /**
@@ -109,7 +110,7 @@ final readonly class StopHookContext extends AbstractHookContext
      */
     public function isSubagentStop(): bool
     {
-        return $this->event === HookEvent::SubagentStop;
+        return $this->event === HookType::SubagentStop;
     }
 
     #[\Override]

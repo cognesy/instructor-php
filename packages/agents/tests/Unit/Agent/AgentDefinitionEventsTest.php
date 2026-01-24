@@ -5,7 +5,8 @@ namespace Tests\Addons\Unit\Agent;
 use Cognesy\Agents\Agent\Collections\NameList;
 use Cognesy\Agents\Agent\Data\AgentDescriptor;
 use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Events\AgentFinished;
+use Cognesy\Agents\Agent\Events\AgentExecutionCompleted;
+use Cognesy\Agents\Agent\Events\AgentExecutionStarted;
 use Cognesy\Agents\Agent\Events\AgentStateUpdated;
 use Cognesy\Agents\Agent\Events\AgentStepCompleted;
 use Cognesy\Agents\Agent\Events\AgentStepStarted;
@@ -105,7 +106,8 @@ describe('AbstractAgent events', function () {
         expect($captured)->toContain(AgentStateUpdated::class);
         expect($captured)->toContain(AgentStepCompleted::class);
         expect($captured)->toContain(ContinuationEvaluated::class);
-        expect($captured)->toContain(AgentFinished::class);
+        expect($captured)->toContain(AgentExecutionStarted::class);
+        expect($captured)->toContain(AgentExecutionCompleted::class);
     });
 
     it('uses provided event handler', function () {

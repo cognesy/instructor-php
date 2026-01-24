@@ -31,15 +31,15 @@ final readonly class AgentStep
     private AgentStepType $stepType;
 
     public function __construct(
-        ?Messages            $inputMessages = null,
-        ?Messages            $outputMessages = null,
-        ?Usage               $usage = null,
-        ?ToolCalls           $toolCalls = null,
-        ?ToolExecutions      $toolExecutions = null,
-        ?InferenceResponse   $inferenceResponse = null,
-        ?AgentStepType       $stepType = null,
-        array                $errors = [],
-        ?StepInfo            $stepInfo = null,
+        ?Messages          $inputMessages = null,
+        ?Messages          $outputMessages = null,
+        ?Usage             $usage = null,
+        ?ToolCalls         $toolCalls = null,
+        ?ToolExecutions   $toolExecutions = null,
+        ?InferenceResponse $inferenceResponse = null,
+        ?AgentStepType     $stepType = null,
+        array              $errors = [],
+        ?StepInfo          $stepInfo = null,
     ) {
         $this->stepInfo = $stepInfo ?? StepInfo::new();
 

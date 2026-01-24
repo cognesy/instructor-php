@@ -11,13 +11,13 @@ use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
-final readonly class AgentExecution
+final readonly class ToolExecution
 {
-    private ToolCall $toolCall;
-    private Result $result;
     private string $id;
     private DateTimeImmutable $startedAt;
     private DateTimeImmutable $endedAt;
+    private ToolCall $toolCall;
+    private Result $result;
 
     public function __construct(
         ToolCall $toolCall,
@@ -35,8 +35,8 @@ final readonly class AgentExecution
 
     // CONSTRUCTORS ////////////////////////////////////////////
 
-    public static function fromArray(array $data) : AgentExecution {
-        return new AgentExecution(
+    public static function fromArray(array $data) : ToolExecution {
+        return new ToolExecution(
             toolCall: self::hydrateToolCall($data),
             result: self::makeResult($data),
             startedAt: self::parseDate($data['startedAt'] ?? null),
@@ -103,6 +103,14 @@ final readonly class AgentExecution
 
     public function hasError() : bool {
         return $this->result->isFailure();
+    }
+
+    public function errorAsString() : ?string {
+        if (!$this->result->isFailure()) {
+            return null;
+        }
+        $message = $this->errorMessage();
+        return $message !== '' ? $message : null;
     }
 
     // TRANSFORMATIONS / CONVERSIONS ////////////////////////////

@@ -3,51 +3,45 @@
 namespace Cognesy\Agents\Agent\Hooks\Hooks;
 
 use Closure;
-use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\StepHookContext;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Hook for intercepting step execution before it begins.
  *
- * The callback can:
- * - Return HookOutcome::proceed() to continue unchanged
- * - Return HookOutcome::proceed($modifiedContext) to modify the state
- * - Return HookOutcome::stop($reason) to halt agent execution
- *
- * Simplified callback signatures are also supported:
- * - Return AgentState to proceed with modified state
- * - Return void/anything else to proceed unchanged
+ * The callback must return a HookOutcome:
+ * - HookOutcome::proceed() to continue unchanged
+ * - HookOutcome::proceed($ctx->withState($newState)) to modify the state
+ * - HookOutcome::stop($reason) to halt agent execution
  *
  * @example
  * // Add timing metadata
  * $hook = new BeforeStepHook(
- *     callback: function (StepHookContext $ctx): HookOutcome {
- *         return HookOutcome::proceed(
- *             $ctx->withMetadata('step_started', microtime(true))
- *         );
- *     },
+ *     callback: fn(StepHookContext $ctx): HookOutcome => HookOutcome::proceed(
+ *         $ctx->withMetadata('step_started', microtime(true))
+ *     ),
  * );
  *
  * @example
- * // Log step start
+ * // Log and proceed
  * $hook = new BeforeStepHook(
- *     callback: function (StepHookContext $ctx): void {
+ *     callback: function (StepHookContext $ctx): HookOutcome {
  *         $this->logger->info("Starting step {$ctx->stepNumber()}");
+ *         return HookOutcome::proceed();
  *     },
  * );
  */
 final readonly class BeforeStepHook implements Hook
 {
-    /** @var Closure(StepHookContext): (HookOutcome|AgentState|void) */
+    /** @var Closure(StepHookContext): HookOutcome */
     private Closure $callback;
 
     /**
-     * @param callable(StepHookContext): (HookOutcome|AgentState|void) $callback
+     * @param callable(StepHookContext): HookOutcome $callback
      * @param HookMatcher|null $matcher Optional matcher for conditional execution
      */
     public function __construct(
@@ -61,7 +55,7 @@ final readonly class BeforeStepHook implements Hook
     public function handle(HookContext $context, callable $next): HookOutcome
     {
         // Only process BeforeStep events
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookEvent::BeforeStep) {
+        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::BeforeStep) {
             return $next($context);
         }
 
@@ -70,26 +64,16 @@ final readonly class BeforeStepHook implements Hook
             return $next($context);
         }
 
-        // Execute callback
-        $result = ($this->callback)($context);
+        // Execute callback - must return HookOutcome
+        $outcome = ($this->callback)($context);
 
-        // Handle HookOutcome directly
-        if ($result instanceof HookOutcome) {
-            // If stopped, return immediately
-            if ($result->isStopped()) {
-                return $result;
-            }
-            // If proceed with modified context, pass it along
-            $effectiveContext = $result->context() ?? $context;
-            return $next($effectiveContext);
+        // If stopped, return immediately
+        if ($outcome->isStopped()) {
+            return $outcome;
         }
 
-        // Handle AgentState = proceed with modified state
-        if ($result instanceof AgentState) {
-            return $next($context->withState($result));
-        }
-
-        // Anything else = proceed unchanged
-        return $next($context);
+        // Pass along (with potentially modified context)
+        $effectiveContext = $outcome->context() ?? $context;
+        return $next($effectiveContext);
     }
 }

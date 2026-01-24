@@ -34,7 +34,12 @@ it('moves overflow messages into the buffer when summarization is enabled', func
         ->appendMessage(Message::fromString('two', 'assistant'));
     $state = (new AgentState)->withMessages($messages);
 
-    $next = $agent->nextStep($state);
+    // Get first step from iterate()
+    $next = null;
+    foreach ($agent->iterate($state) as $stepState) {
+        $next = $stepState;
+        break;
+    }
 
     expect(trim($next->messages()->toString()))->toBe('ok');
     expect(trim($next->store()->section('buffer')->messages()->toString()))

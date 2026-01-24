@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Agent\Hooks\Matchers;
 
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Matcher that matches contexts by event type.
@@ -22,13 +22,13 @@ use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
  */
 final readonly class EventTypeMatcher implements HookMatcher
 {
-    /** @var array<HookEvent> */
+    /** @var array<HookType> */
     private array $events;
 
     /**
-     * @param HookEvent ...$events The events to match
+     * @param HookType ...$events The events to match
      */
-    public function __construct(HookEvent ...$events)
+    public function __construct(HookType ...$events)
     {
         $this->events = $events;
     }

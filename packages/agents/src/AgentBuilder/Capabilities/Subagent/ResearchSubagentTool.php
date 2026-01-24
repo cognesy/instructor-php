@@ -56,7 +56,7 @@ class ResearchSubagentTool extends BaseTool
         );
 
         // Run subagent to completion
-        $finalState = $subagent->finalStep($subState);
+        $finalState = $subagent->execute($subState);
 
         return $finalState->currentStep()?->outputMessages()->toString() ?? 'No findings';
     }

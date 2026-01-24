@@ -27,9 +27,11 @@ final class SlowDriver implements CanUseTools
 
 it('tracks cumulative execution time across steps', function () {
     $driver = new SlowDriver(DeterministicAgentDriver::fromResponses('one', 'two'));
+    // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepResults.
+    // So step counting must include currentStep to reflect the step being evaluated.
     $criteria = ContinuationCriteria::when(
         static fn(AgentState $state): ContinuationDecision => match (true) {
-            $state->stepCount() < 2 => ContinuationDecision::RequestContinuation,
+            ($state->stepCount() + ($state->currentStep() !== null ? 1 : 0)) < 2 => ContinuationDecision::RequestContinuation,
             default => ContinuationDecision::AllowStop,
         }
     );
@@ -40,8 +42,8 @@ it('tracks cumulative execution time across steps', function () {
         ->build();
 
     $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
-    $finalState = $agent->finalStep($state);
+    $finalState = $agent->execute($state);
 
     expect($finalState->stepCount())->toBe(2);
-    expect($finalState->stateInfo()->cumulativeExecutionSeconds())->toBeGreaterThanOrEqual(0.002);
+    expect($finalState->stepResults()->totalDuration())->toBeGreaterThanOrEqual(0.002);
 });

@@ -12,7 +12,8 @@ use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
+use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
+use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\ToolExecutor;
 use Cognesy\Agents\Agent\Tools\MockTool;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
@@ -28,7 +29,7 @@ describe('Deterministic agent execution', function () {
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('What is the capital of France?'));
 
-        $final = $agent->finalStep($state);
+        $final = $agent->execute($state);
 
         expect($final->stepCount())->toBe(1);
         expect($final->currentStep()?->hasToolCalls())->toBeFalse();
@@ -51,13 +52,15 @@ describe('Deterministic agent execution', function () {
             ScenarioStep::final('Paris'),
         );
 
+        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepResults.
+        // So step counting must include currentStep to reflect the step being evaluated.
         $agent = AgentBuilder::base()
             ->withTools([$tool])
             ->withDriver($driver)
             ->addContinuationCriteria(
                 ContinuationCriteria::when(
                     static fn(AgentState $state): ContinuationDecision => match (true) {
-                        $state->stepCount() < 2 => ContinuationDecision::RequestContinuation,
+                        ($state->stepCount() + ($state->currentStep() !== null ? 1 : 0)) < 2 => ContinuationDecision::RequestContinuation,
                         default => ContinuationDecision::AllowStop,
                     }
                 )
@@ -67,7 +70,7 @@ describe('Deterministic agent execution', function () {
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('What is the capital of France?'));
 
-        $final = $agent->finalStep($state);
+        $final = $agent->execute($state);
 
         expect($final->stepCount())->toBe(2);
         expect($toolCalls)->toBe(['France']);
@@ -90,9 +93,11 @@ describe('Deterministic agent execution', function () {
             }
         };
 
+        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepResults.
+        // So step counting must include currentStep to reflect the step being evaluated.
         $criterion = ContinuationCriteria::when(
             static fn(AgentState $state): ContinuationDecision => match (true) {
-                $state->stepCount() < 2 => ContinuationDecision::RequestContinuation,
+                ($state->stepCount() + ($state->currentStep() !== null ? 1 : 0)) < 2 => ContinuationDecision::RequestContinuation,
                 default => ContinuationDecision::AllowStop,
             }
         );
@@ -102,17 +107,23 @@ describe('Deterministic agent execution', function () {
         $agent = new Agent(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
-            processors: new StateProcessors(),
+            errorHandler: AgentErrorHandler::default(),
+            processors: null,
             continuationCriteria: $continuationCriteria,
             driver: $driver,
-            events: null,
+            eventEmitter: new AgentEventEmitter(),
         );
 
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
-        $state = $agent->nextStep($state);
-        $failedState = $agent->nextStep($state);
 
-        expect($failedState->status())->toBe(AgentStatus::Failed);
-        expect($agent->hasNextStep($failedState))->toBeFalse();
+        // Use iterate() to step through and observe failure
+        $states = [];
+        foreach ($agent->iterate($state) as $stepState) {
+            $states[] = $stepState;
+        }
+
+        // First step succeeds, second step fails
+        expect($states)->toHaveCount(2);
+        expect($states[1]->status())->toBe(AgentStatus::Failed);
     });
 });

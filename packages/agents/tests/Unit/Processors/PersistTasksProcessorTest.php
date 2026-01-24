@@ -3,7 +3,7 @@
 namespace Tests\Addons\Unit\Processors;
 
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
@@ -64,7 +64,7 @@ describe('PersistTasksProcessor', function () {
 
         // Create tool execution
         $now = new \DateTimeImmutable();
-        $execution = new AgentExecution(
+        $execution = new ToolExecution(
             toolCall: $toolCall,
             result: Result::success($todoResult),
             startedAt: $now,
@@ -103,7 +103,7 @@ describe('PersistTasksProcessor', function () {
 
         // Create failed execution
         $now = new \DateTimeImmutable();
-        $execution = new AgentExecution(
+        $execution = new ToolExecution(
             toolCall: $toolCall,
             result: Result::failure(new \Exception('Tool failed')),
             startedAt: $now,
@@ -134,7 +134,7 @@ describe('PersistTasksProcessor', function () {
         ]);
 
         $now = new \DateTimeImmutable();
-        $execution = new AgentExecution(
+        $execution = new ToolExecution(
             toolCall: $toolCall,
             result: Result::success('file1.txt'),
             startedAt: $now,

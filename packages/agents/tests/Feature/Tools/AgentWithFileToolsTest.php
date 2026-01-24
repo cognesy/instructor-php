@@ -61,7 +61,7 @@ describe('Agent with File Tools', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert
         expect($finalState->stepCount())->toBe(2);
@@ -106,7 +106,7 @@ describe('Agent with File Tools', function () {
         );
 
         // Act
-        $agent->finalStep($state);
+        $agent->execute($state);
 
         // Assert: Verify file was actually created
         expect(file_exists($testFile))->toBeTrue();
@@ -153,7 +153,7 @@ describe('Agent with File Tools', function () {
         );
 
         // Act
-        $agent->finalStep($state);
+        $agent->execute($state);
 
         // Assert: Verify edit was applied
         expect(file_get_contents($testFile))->toBe('Hello Universe');
@@ -211,7 +211,7 @@ describe('Agent with File Tools', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert - file operations should complete regardless of step count
         expect($finalState->stepCount())->toBeGreaterThanOrEqual(2);

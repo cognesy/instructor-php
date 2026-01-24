@@ -202,8 +202,13 @@ it('auto-transitions status on lifecycle events', function () {
     expect($broadcaster->calls[0]['envelope']['payload']['previous_status'])->toBe('idle');
 
     // Complete with Completed stop reason -> status becomes 'completed'
-    // Empty evaluations with AllowStop = Completed (no work to do)
-    $outcome = ContinuationOutcome::empty();
+    // Use AllowStop evaluation to signal no more work to do
+    $evaluation = new ContinuationEvaluation(
+        criterionClass: StepsLimit::class,
+        decision: ContinuationDecision::AllowStop,
+        reason: 'No more work to do',
+    );
+    $outcome = ContinuationOutcome::fromEvaluations([$evaluation]);
 
     $adapter->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',

@@ -3,7 +3,6 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
 use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 
 /**
@@ -24,7 +23,7 @@ class PersistMetadataProcessor implements CanProcessAgentState
         $newState = $next !== null ? $next($state) : $state;
 
         $currentStep = $newState->currentStep();
-        if (!($currentStep instanceof AgentStep)) {
+        if ($currentStep === null) {
             return $newState;
         }
 

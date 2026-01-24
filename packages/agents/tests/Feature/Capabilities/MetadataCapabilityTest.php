@@ -20,7 +20,12 @@ describe('Metadata Capability', function () {
             ->withCapability(new UseMetadataTools())
             ->build();
 
-        $next = $agent->nextStep(AgentState::empty());
+        // Get first step from iterate()
+        $next = null;
+        foreach ($agent->iterate(AgentState::empty()) as $state) {
+            $next = $state;
+            break;
+        }
 
         expect($next->metadata()->get('current_lead'))->toBe(['name' => 'Ada']);
     });

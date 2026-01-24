@@ -9,7 +9,8 @@ use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Agent\Contracts\CanUseTools;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
+use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
+use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\ToolExecutor;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -28,7 +29,7 @@ final class CountingUsage extends Usage
 }
 
 describe('Agent failure usage accumulation', function () {
-    it('accumulates usage when onFailure records a step result', function () {
+    it('accumulates usage when error handler records a step result', function () {
         $driver = new class implements CanUseTools {
             public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
                 throw new \RuntimeException('driver boom');
@@ -39,17 +40,25 @@ describe('Agent failure usage accumulation', function () {
         $agent = new Agent(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
-            processors: new StateProcessors(),
+            errorHandler: AgentErrorHandler::default(),
+            processors: null,
             continuationCriteria: new ContinuationCriteria(),
             driver: $driver,
-            events: null,
+            eventEmitter: new AgentEventEmitter(),
         );
 
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('ping'))
             ->withUsage(new CountingUsage());
-        $failedState = $agent->nextStep($state);
 
+        // Use iterate() to get the first (failed) state
+        $failedState = null;
+        foreach ($agent->iterate($state) as $stepState) {
+            $failedState = $stepState;
+            break; // Just get the first state (the failure)
+        }
+
+        expect($failedState)->not->toBeNull();
         expect($failedState->usage()->input())->toBe(1);
     });
 });

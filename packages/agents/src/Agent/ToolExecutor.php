@@ -4,12 +4,12 @@ namespace Cognesy\Agents\Agent;
 
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
 use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Agent\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Agent\Contracts\ToolInterface;
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Events\ToolCallCompleted;
-use Cognesy\Agents\Agent\Events\ToolCallStarted;
+use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\Exceptions\InvalidToolArgumentsException;
 use Cognesy\Agents\Agent\Exceptions\ToolCallBlockedException;
 use Cognesy\Agents\Agent\Exceptions\ToolExecutionException;
@@ -17,8 +17,6 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
 use Cognesy\Agents\Agent\Hooks\Stack\HookStack;
 use Cognesy\Agents\Agent\Tools\CanAccessAgentState;
-use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
@@ -29,25 +27,25 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 {
     private Tools $tools;
     private bool $throwOnToolFailure;
-    private CanHandleEvents $events;
+    private CanEmitAgentEvents $eventEmitter;
     private HookStack $toolHookStack;
 
     public function __construct(
         Tools $tools,
         bool $throwOnToolFailure = false,
-        ?CanHandleEvents $events = null,
+        ?CanEmitAgentEvents $eventEmitter = null,
         ?HookStack $toolHookStack = null,
     ) {
         $this->tools = $tools;
         $this->throwOnToolFailure = $throwOnToolFailure;
-        $this->events = EventBusResolver::using($events);
+        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
         $this->toolHookStack = $toolHookStack ?? new HookStack();
     }
 
     // MAIN API /////////////////////////////////////////////
 
     #[\Override]
-    public function useTool(ToolCall $toolCall, AgentState $state): AgentExecution {
+    public function useTool(ToolCall $toolCall, AgentState $state): ToolExecution {
         // Process before-tool hooks
         $beforeContext = ToolHookContext::beforeTool($toolCall, $state);
         $beforeOutcome = $this->toolHookStack->process(
@@ -102,20 +100,21 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
      * Execute a tool call directly without middleware.
      * This is the final handler in the middleware chain.
      */
-    private function executeDirectly(ToolCall $toolCall, AgentState $state): AgentExecution {
+    private function executeDirectly(ToolCall $toolCall, AgentState $state): ToolExecution {
         $startedAt = new DateTimeImmutable();
-        $this->emitToolCallStarted($toolCall, $startedAt);
+        $this->eventEmitter->toolCallStarted($toolCall, $startedAt);
+
         $result = $this->execute($toolCall, $state);
-        $endedAt = new DateTimeImmutable();
-        $toolExecution = new AgentExecution(
+
+        $execution = new ToolExecution(
             toolCall: $toolCall,
             result: $result,
             startedAt: $startedAt,
-            endedAt: $endedAt,
+            endedAt: new DateTimeImmutable(),
         );
-        $this->emitToolCallCompleted($toolExecution);
+        $this->eventEmitter->toolCallCompleted($execution);
 
-        return $toolExecution;
+        return $execution;
     }
 
     #[\Override]
@@ -139,7 +138,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         return new self(
             tools: $tools,
             throwOnToolFailure: $this->throwOnToolFailure,
-            events: $this->events,
+            eventEmitter: $this->eventEmitter,
             toolHookStack: $this->toolHookStack,
         );
     }
@@ -148,16 +147,16 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         return new self(
             tools: $this->tools,
             throwOnToolFailure: $throw,
-            events: $this->events,
+            eventEmitter: $this->eventEmitter,
             toolHookStack: $this->toolHookStack,
         );
     }
 
-    public function withEventHandler(CanHandleEvents $events): self {
+    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
         return new self(
             tools: $this->tools,
             throwOnToolFailure: $this->throwOnToolFailure,
-            events: EventBusResolver::using($events),
+            eventEmitter: $eventEmitter,
             toolHookStack: $this->toolHookStack,
         );
     }
@@ -166,7 +165,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         return new self(
             tools: $this->tools,
             throwOnToolFailure: $this->throwOnToolFailure,
-            events: $this->events,
+            eventEmitter: $this->eventEmitter,
             toolHookStack: $toolHookStack,
         );
     }
@@ -238,34 +237,4 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         );
     }
 
-    // EVENTS ////////////////////////////////////////////////////
-
-    private function emitToolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {
-        $this->events->dispatch(new ToolCallStarted(
-            tool: $toolCall->name(),
-            args: $toolCall->args(),
-            startedAt: $startedAt,
-        ));
-    }
-
-    private function emitToolCallCompleted(AgentExecution $toolExecution): void {
-        $error = null;
-        if ($toolExecution->result()->isFailure()) {
-            $errorValue = $toolExecution->result()->error();
-            $error = match(true) {
-                is_string($errorValue) => $errorValue,
-                $errorValue instanceof \Throwable => $errorValue->getMessage(),
-                is_object($errorValue) && method_exists($errorValue, '__toString') => (string) $errorValue,
-                default => is_scalar($errorValue) ? (string) $errorValue : null,
-            };
-        }
-
-        $this->events->dispatch(new ToolCallCompleted(
-            tool: $toolExecution->toolCall()->name(),
-            success: $toolExecution->result()->isSuccess(),
-            error: $error,
-            startedAt: $toolExecution->startedAt(),
-            endedAt: $toolExecution->endedAt(),
-        ));
-    }
 }

@@ -3,7 +3,6 @@
 namespace Cognesy\Agents\Agent\StateProcessing\Processors;
 
 use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
@@ -19,7 +18,7 @@ final class AccumulateTokenUsage implements CanProcessAgentState
         $newState = $next ? $next($state) : $state;
 
         $step = $newState->currentStep();
-        $usage = $step instanceof AgentStep ? $step->usage() : Usage::none();
+        $usage = $step !== null ? $step->usage() : Usage::none();
 
         return $newState->withAccumulatedUsage($usage);
     }

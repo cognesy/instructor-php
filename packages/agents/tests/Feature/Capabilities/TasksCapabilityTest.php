@@ -25,7 +25,12 @@ describe('Tasks Capability', function () {
             ->withCapability(new UseTaskPlanning())
             ->build();
 
-        $next = $agent->nextStep(AgentState::empty());
+        // Get first step from iterate()
+        $next = null;
+        foreach ($agent->iterate(AgentState::empty()) as $state) {
+            $next = $state;
+            break;
+        }
         $tasks = $next->metadata()->get('tasks');
 
         expect($tasks)->toBeArray();

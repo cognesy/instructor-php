@@ -42,29 +42,17 @@ abstract class AbstractAgent implements AgentInterface
 
     #[\Override]
     public function run(AgentState $state): AgentState {
-        $result = $this->finalStep($state);
-        assert($result instanceof AgentState);
-        return $result;
+        return $this->execute($state);
     }
 
     #[\Override]
-    public function nextStep(object $state): object {
-        return $this->build()->nextStep($state);
+    public function execute(AgentState $state): AgentState {
+        return $this->build()->execute($state);
     }
 
     #[\Override]
-    public function hasNextStep(object $state): bool {
-        return $this->build()->hasNextStep($state);
-    }
-
-    #[\Override]
-    public function finalStep(object $state): object {
-        return $this->build()->finalStep($state);
-    }
-
-    #[\Override]
-    public function iterator(object $state): iterable {
-        return $this->build()->iterator($state);
+    public function iterate(AgentState $state): iterable {
+        return $this->build()->iterate($state);
     }
 
     #[\Override]
@@ -112,10 +100,8 @@ abstract class AbstractAgent implements AgentInterface
         if (!isset($this->events)) {
             return;
         }
-        $events = $this->events;
         $this->agent = $this->agent->with(
-            toolExecutor: (new ToolExecutor($this->agent->tools()))->withEventHandler($events),
-            events: $events,
+            events: $this->events,
         );
     }
 

@@ -12,7 +12,8 @@ use Cognesy\Agents\Agent\Contracts\CanUseTools;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
+use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
+use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\ToolExecutor;
 use Cognesy\Messages\Messages;
 
@@ -35,23 +36,31 @@ describe('Agent continuation evaluation failures', function () {
         $agent = new Agent(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
-            processors: new StateProcessors(),
+            errorHandler: AgentErrorHandler::default(),
+            processors: null,
             continuationCriteria: $continuationCriteria,
             driver: $driver,
-            events: null,
+            eventEmitter: new AgentEventEmitter(),
         );
 
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
-        $failedState = $agent->nextStep($state);
+
+        // Use iterate() to get the failed state
+        $failedState = null;
+        foreach ($agent->iterate($state) as $stepState) {
+            $failedState = $stepState;
+            break;
+        }
+
+        expect($failedState)->not->toBeNull();
         $outcome = $failedState->continuationOutcome();
 
         expect($failedState->status())->toBe(AgentStatus::Failed);
         expect($failedState->stepCount())->toBe(1);
-        expect($failedState->stepResults())->toHaveCount(1);
+        expect($failedState->stepResults()->count())->toBe(1);
         expect($failedState->currentStep()?->errorsAsString())->toContain('criteria boom');
         expect($outcome)->not->toBeNull();
         expect($outcome?->stopReason())->toBe(StopReason::ErrorForbade);
         expect($outcome?->shouldContinue())->toBeFalse();
-        expect($agent->hasNextStep($failedState))->toBeFalse();
     });
 });

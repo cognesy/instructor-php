@@ -1,10 +1,17 @@
 includes:
 	- vendor/shipmonk/dead-code-detector/rules.neon
 
+services:
+	-
+		class: Cognesy\Config\PHPStan\PublicMethodEntrypointProvider
+		tags:
+			- shipmonk.deadCode.entrypointProvider
+
 parameters:
 	level: 8
 	paths:
 		- packages/addons/src
+		- packages/agents/src
 		- packages/auxiliary/src
 		- packages/config/src
 		- packages/doctor/src
@@ -21,7 +28,7 @@ parameters:
 		- packages/polyglot/src
 		- packages/schema/src
 		- packages/setup/src
-        - packages/stream/src
+		- packages/stream/src
 		- packages/tell/src
 		- packages/templates/src
 		- packages/utils/src

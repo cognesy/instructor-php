@@ -2,15 +2,15 @@
 
 namespace Cognesy\Agents\Agent\Collections;
 
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Throwable;
 
 final readonly class ToolExecutions
 {
-    /** @var AgentExecution[] */
+    /** @var ToolExecution[] */
     private array $toolExecutions;
 
-    public function __construct(AgentExecution ...$toolExecutions) {
+    public function __construct(ToolExecution ...$toolExecutions) {
         $this->toolExecutions = $toolExecutions;
     }
 
@@ -18,13 +18,13 @@ final readonly class ToolExecutions
 
     public static function fromArray(array $data): self {
         return new self(
-            ...array_map(fn($executionData) => AgentExecution::fromArray($executionData), $data)
+            ...array_map(fn($executionData) => ToolExecution::fromArray($executionData), $data)
         );
     }
 
     // ACCESSORS ///////////////////////////////////////////////
 
-    public function withAddedExecution(AgentExecution $toolExecution): self {
+    public function withAddedExecution(ToolExecution $toolExecution): self {
         $newExecutions = $this->toolExecutions;
         $newExecutions[] = $toolExecution;
         return new self(...$newExecutions);
@@ -34,7 +34,7 @@ final readonly class ToolExecutions
         return count($this->toolExecutions) > 0;
     }
 
-    /** @return AgentExecution[] */
+    /** @return ToolExecution[] */
     public function all(): array {
         return $this->toolExecutions;
     }
@@ -43,9 +43,9 @@ final readonly class ToolExecutions
         return count($this->havingErrors()) > 0;
     }
 
-    /** @return AgentExecution[] */
+    /** @return ToolExecution[] */
     public function havingErrors(): array {
-        return array_filter($this->toolExecutions, fn(AgentExecution $toolExecution) => $toolExecution->hasError());
+        return array_filter($this->toolExecutions, fn(ToolExecution $toolExecution) => $toolExecution->hasError());
     }
 
     /** @return array<array-key, Throwable> */
@@ -66,7 +66,7 @@ final readonly class ToolExecutions
 
     public function toArray(): array {
         return array_map(
-            fn(AgentExecution $toolExecution) => $toolExecution->toArray(),
+            fn(ToolExecution $toolExecution) => $toolExecution->toArray(),
             $this->toolExecutions
         );
     }

@@ -8,10 +8,10 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
 
 /**
- * Dispatched when an agent fails with an exception.
+ * Dispatched when an agent execution fails with an exception.
  * Contains exception details and execution state at failure.
  */
-final class AgentFailed extends AgentEvent
+final class AgentExecutionFailed extends AgentEvent
 {
     public readonly DateTimeImmutable $failedAt;
 

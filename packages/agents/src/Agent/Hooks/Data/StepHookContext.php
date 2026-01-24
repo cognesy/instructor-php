@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Agent\Hooks\Data;
 
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Context for step-related hook events (BeforeStep, AfterStep).
@@ -43,16 +44,16 @@ final readonly class StepHookContext extends AbstractHookContext
     /**
      * @param AgentState $state The current agent state
      * @param int $stepIndex The current step index (0-based)
-     * @param HookEvent $event The specific event (BeforeStep or AfterStep)
+     * @param HookType $event The specific event (BeforeStep or AfterStep)
      * @param AgentStep|null $step The completed step (AfterStep only)
      * @param array<string, mixed> $metadata Additional context metadata
      */
     public function __construct(
-        AgentState $state,
-        private int $stepIndex,
-        private HookEvent $event = HookEvent::BeforeStep,
+        AgentState         $state,
+        private int        $stepIndex,
+        private HookType   $event = HookType::BeforeStep,
         private ?AgentStep $step = null,
-        array $metadata = [],
+        array              $metadata = [],
     ) {
         parent::__construct($state, $metadata);
     }
@@ -69,7 +70,7 @@ final readonly class StepHookContext extends AbstractHookContext
         int $stepIndex,
         array $metadata = [],
     ): self {
-        return new self($state, $stepIndex, HookEvent::BeforeStep, null, $metadata);
+        return new self($state, $stepIndex, HookType::BeforeStep, null, $metadata);
     }
 
     /**
@@ -86,11 +87,11 @@ final readonly class StepHookContext extends AbstractHookContext
         AgentStep $step,
         array $metadata = [],
     ): self {
-        return new self($state, $stepIndex, HookEvent::AfterStep, $step, $metadata);
+        return new self($state, $stepIndex, HookType::AfterStep, $step, $metadata);
     }
 
     #[\Override]
-    public function eventType(): HookEvent
+    public function eventType(): HookType
     {
         return $this->event;
     }
@@ -126,7 +127,7 @@ final readonly class StepHookContext extends AbstractHookContext
      */
     public function isBeforeStep(): bool
     {
-        return $this->event === HookEvent::BeforeStep;
+        return $this->event === HookType::BeforeStep;
     }
 
     /**
@@ -134,7 +135,7 @@ final readonly class StepHookContext extends AbstractHookContext
      */
     public function isAfterStep(): bool
     {
-        return $this->event === HookEvent::AfterStep;
+        return $this->event === HookType::AfterStep;
     }
 
     #[\Override]

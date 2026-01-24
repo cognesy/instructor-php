@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Agent\Hooks\Data;
 
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Context for execution-related hook events (ExecutionStart, ExecutionEnd).
@@ -37,13 +38,13 @@ final readonly class ExecutionHookContext extends AbstractHookContext
 {
     /**
      * @param AgentState $state The current agent state
-     * @param HookEvent $event The specific event (ExecutionStart or ExecutionEnd)
+     * @param HookType $event The specific event (ExecutionStart or ExecutionEnd)
      * @param array<string, mixed> $metadata Additional context metadata
      */
     public function __construct(
-        AgentState $state,
-        private HookEvent $event = HookEvent::ExecutionStart,
-        array $metadata = [],
+        AgentState       $state,
+        private HookType $event = HookType::ExecutionStart,
+        array            $metadata = [],
     ) {
         parent::__construct($state, $metadata);
     }
@@ -56,7 +57,7 @@ final readonly class ExecutionHookContext extends AbstractHookContext
      */
     public static function onStart(AgentState $state, array $metadata = []): self
     {
-        return new self($state, HookEvent::ExecutionStart, $metadata);
+        return new self($state, HookType::ExecutionStart, $metadata);
     }
 
     /**
@@ -67,11 +68,11 @@ final readonly class ExecutionHookContext extends AbstractHookContext
      */
     public static function onEnd(AgentState $state, array $metadata = []): self
     {
-        return new self($state, HookEvent::ExecutionEnd, $metadata);
+        return new self($state, HookType::ExecutionEnd, $metadata);
     }
 
     #[\Override]
-    public function eventType(): HookEvent
+    public function eventType(): HookType
     {
         return $this->event;
     }
@@ -81,7 +82,7 @@ final readonly class ExecutionHookContext extends AbstractHookContext
      */
     public function isStart(): bool
     {
-        return $this->event === HookEvent::ExecutionStart;
+        return $this->event === HookType::ExecutionStart;
     }
 
     /**
@@ -89,7 +90,7 @@ final readonly class ExecutionHookContext extends AbstractHookContext
      */
     public function isEnd(): bool
     {
-        return $this->event === HookEvent::ExecutionEnd;
+        return $this->event === HookType::ExecutionEnd;
     }
 
     #[\Override]

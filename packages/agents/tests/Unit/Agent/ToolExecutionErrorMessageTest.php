@@ -2,15 +2,15 @@
 
 namespace Tests\Addons\Unit\Agent;
 
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-describe('AgentExecution error message', function () {
+describe('ToolExecution error message', function () {
     it('returns an error message when execution fails', function () {
         $toolCall = new ToolCall('structured_output', ['input' => 'x', 'schema' => 'lead']);
-        $execution = new AgentExecution(
+        $execution = new ToolExecution(
             toolCall: $toolCall,
             result: Result::failure(new \RuntimeException('boom')),
             startedAt: new DateTimeImmutable('2024-01-01T00:00:00Z'),
@@ -22,7 +22,7 @@ describe('AgentExecution error message', function () {
 
     it('returns empty string when execution succeeds', function () {
         $toolCall = new ToolCall('structured_output', ['input' => 'x', 'schema' => 'lead']);
-        $execution = new AgentExecution(
+        $execution = new ToolExecution(
             toolCall: $toolCall,
             result: Result::success('ok'),
             startedAt: new DateTimeImmutable('2024-01-01T00:00:00Z'),

@@ -27,7 +27,12 @@ describe('SelfCritique Capability', function () {
             )
             ->withMetadata(SelfCriticContinuationCheck::ITERATION_KEY, 0);
 
-        $next = $agent->nextStep($state);
+        // Get first step from iterate()
+        $next = null;
+        foreach ($agent->iterate($state) as $stepState) {
+            $next = $stepState;
+            break;
+        }
 
         expect($next->stopReason())->toBe(StopReason::RetryLimitReached);
     });

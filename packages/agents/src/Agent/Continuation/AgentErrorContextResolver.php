@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Agent\Continuation;
 
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\ErrorHandling\CanResolveErrorContext;
@@ -37,9 +37,9 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
     }
 
     private function classifyError(
-        AgentStep $step,
+        AgentStep       $step,
         ToolExecutions $executions,
-        ?Throwable $error,
+        ?Throwable      $error,
     ): ErrorType {
         if ($error instanceof ProviderRateLimitException) {
             return ErrorType::RateLimit;
@@ -57,7 +57,7 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
         return ErrorType::Unknown;
     }
 
-    private function firstErrorExecution(ToolExecutions $executions): ?AgentExecution {
+    private function firstErrorExecution(ToolExecutions $executions): ?ToolExecution {
         foreach ($executions->all() as $execution) {
             if ($execution->hasError()) {
                 return $execution;
@@ -66,7 +66,7 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
         return null;
     }
 
-    private function firstError(AgentStep $step, ?AgentExecution $execution): ?Throwable {
+    private function firstError(AgentStep $step, ?ToolExecution $execution): ?Throwable {
         if ($execution !== null && $execution->hasError()) {
             return $execution->error();
         }
@@ -77,6 +77,18 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
 
     private function countConsecutiveFailures(AgentState $state): int {
         $count = 0;
+
+        // Include current step if it has errors AND is not already in stepResults
+        // (during error handling, currentStep is set before stepResult is recorded)
+        $currentStep = $state->currentStep();
+        $lastResultStep = $state->stepResults()->last()?->step;
+        $currentStepAlreadyCounted = ($currentStep !== null && $lastResultStep === $currentStep);
+
+        if ($currentStep !== null && $currentStep->hasErrors() && !$currentStepAlreadyCounted) {
+            $count++;
+        }
+
+        // Count consecutive failures from recorded steps (most recent first)
         foreach (array_reverse($state->steps()->all()) as $step) {
             if (!$step->hasErrors()) {
                 break;
@@ -87,9 +99,20 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
     }
 
     private function countTotalFailures(AgentState $state): int {
-        return count(array_filter(
+        $count = count(array_filter(
             $state->steps()->all(),
             fn(AgentStep $step) => $step->hasErrors(),
         ));
+
+        // Include current step if it has errors AND is not already in stepResults
+        $currentStep = $state->currentStep();
+        $lastResultStep = $state->stepResults()->last()?->step;
+        $currentStepAlreadyCounted = ($currentStep !== null && $lastResultStep === $currentStep);
+
+        if ($currentStep !== null && $currentStep->hasErrors() && !$currentStepAlreadyCounted) {
+            $count++;
+        }
+
+        return $count;
     }
 }

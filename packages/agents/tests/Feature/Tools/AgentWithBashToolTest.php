@@ -60,7 +60,7 @@ describe('Agent with BashTool', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert
         expect($finalState->stepCount())->toBeGreaterThanOrEqual(1);
@@ -97,16 +97,15 @@ describe('Agent with BashTool', function () {
             Messages::fromString('What is the current directory?')
         );
 
-        // Act: Manual stepping
+        // Act: Manual stepping using iterate()
         $stepCount = 0;
-        while ($agent->hasNextStep($state)) {
-            $state = $agent->nextStep($state);
+        foreach ($agent->iterate($state) as $currentState) {
             $stepCount++;
 
             // First step should have tool call
             if ($stepCount === 1) {
-                expect($state->currentStep()->hasToolCalls())->toBeTrue();
-                expect($state->currentStep()->stepType())->toBe(AgentStepType::ToolExecution);
+                expect($currentState->currentStep()->hasToolCalls())->toBeTrue();
+                expect($currentState->currentStep()->stepType())->toBe(AgentStepType::ToolExecution);
             }
         }
 
@@ -144,9 +143,9 @@ describe('Agent with BashTool', function () {
             Messages::fromString('List files')
         );
 
-        // Act: Use iterator
+        // Act: Use iterate()
         $steps = [];
-        foreach ($agent->iterator($state) as $currentState) {
+        foreach ($agent->iterate($state) as $currentState) {
             $steps[] = $currentState->currentStep();
         }
 

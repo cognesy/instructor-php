@@ -14,9 +14,7 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  * Provides a convenient way to create hooks from closures or callables
  * without implementing the full Hook interface.
  *
- * The callable receives the context and returns a HookOutcome.
- * If the callable returns something other than HookOutcome, it's treated
- * as a proceed signal.
+ * The callable receives the context and $next, and must return a HookOutcome.
  *
  * @example
  * // Simple logging hook
@@ -28,7 +26,7 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  * @example
  * // Hook with matcher
  * $hook = new CallableHook(
- *     callback: fn(HookContext $ctx, callable $next) => $next($ctx),
+ *     callback: fn(HookContext $ctx, callable $next): HookOutcome => $next($ctx),
  *     matcher: new ToolNameMatcher('bash'),
  * );
  */
@@ -56,14 +54,7 @@ final readonly class CallableHook implements Hook
             return $next($context);
         }
 
-        $result = ($this->callback)($context, $next);
-
-        // If callback returns HookOutcome, use it
-        if ($result instanceof HookOutcome) {
-            return $result;
-        }
-
-        // Otherwise, treat as proceed
-        return HookOutcome::proceed();
+        // Execute callback - must return HookOutcome
+        return ($this->callback)($context, $next);
     }
 }

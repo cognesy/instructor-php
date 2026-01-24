@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Agent\Hooks\Data;
+namespace Cognesy\Agents\Agent\Hooks\Enums;
 
 /**
  * Enumeration of all hook lifecycle events in the agent system.
@@ -27,7 +27,7 @@ namespace Cognesy\Agents\Agent\Hooks\Data;
  * Error Handling:
  * - AgentFailed: When agent encounters an unrecoverable error
  */
-enum HookEvent: string
+enum HookType: string
 {
     // Tool lifecycle
     case PreToolUse = 'pre_tool_use';

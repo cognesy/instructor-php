@@ -7,12 +7,12 @@ use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
 
 /**
- * Dispatched when an agent completes execution successfully.
+ * Dispatched when an agent completes execution.
  * Contains final execution metrics and agent state summary.
  */
-final class AgentFinished extends AgentEvent
+final class AgentExecutionCompleted extends AgentEvent
 {
-    public readonly DateTimeImmutable $finishedAt;
+    public readonly DateTimeImmutable $completedAt;
 
     public function __construct(
         public readonly string $agentId,
@@ -22,7 +22,7 @@ final class AgentFinished extends AgentEvent
         public readonly Usage $totalUsage,
         public readonly ?string $errors,
     ) {
-        $this->finishedAt = new DateTimeImmutable();
+        $this->completedAt = new DateTimeImmutable();
 
         parent::__construct([
             'agentId' => $this->agentId,
@@ -39,7 +39,7 @@ final class AgentFinished extends AgentEvent
         $parentInfo = $this->parentAgentId ? sprintf(' [parent=%s]', substr($this->parentAgentId, 0, 8)) : '';
 
         return sprintf(
-            'Agent [%s]%s finished - %d steps, %d tokens%s',
+            'Agent [%s]%s completed - %d steps, %d tokens%s',
             substr($this->agentId, 0, 8),
             $parentInfo,
             $this->totalSteps,

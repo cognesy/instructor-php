@@ -2,8 +2,9 @@
 
 namespace Cognesy\Agents\Agent\Hooks\Data;
 
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 
 /**
@@ -42,16 +43,16 @@ final readonly class ToolHookContext extends AbstractHookContext
     /**
      * @param ToolCall $toolCall The tool call being executed
      * @param AgentState $state The current agent state
-     * @param HookEvent $event The specific event (PreToolUse or PostToolUse)
-     * @param AgentExecution|null $execution The execution result (PostToolUse only)
+     * @param HookType $event The specific event (PreToolUse or PostToolUse)
+     * @param ToolExecution|null $execution The execution result (PostToolUse only)
      * @param array<string, mixed> $metadata Additional context metadata
      */
     public function __construct(
-        private ToolCall $toolCall,
-        AgentState $state,
-        private HookEvent $event = HookEvent::PreToolUse,
-        private ?AgentExecution $execution = null,
-        array $metadata = [],
+        private ToolCall        $toolCall,
+        AgentState              $state,
+        private HookType        $event = HookType::PreToolUse,
+        private ?ToolExecution $execution = null,
+        array                   $metadata = [],
     ) {
         parent::__construct($state, $metadata);
     }
@@ -68,28 +69,28 @@ final readonly class ToolHookContext extends AbstractHookContext
         AgentState $state,
         array $metadata = [],
     ): self {
-        return new self($toolCall, $state, HookEvent::PreToolUse, null, $metadata);
+        return new self($toolCall, $state, HookType::PreToolUse, null, $metadata);
     }
 
     /**
      * Create a context for PostToolUse event.
      *
      * @param ToolCall $toolCall The tool call that was executed
-     * @param AgentExecution $execution The execution result
+     * @param ToolExecution $execution The execution result
      * @param AgentState $state The current agent state
      * @param array<string, mixed> $metadata Additional metadata
      */
     public static function afterTool(
         ToolCall $toolCall,
-        AgentExecution $execution,
+        ToolExecution $execution,
         AgentState $state,
         array $metadata = [],
     ): self {
-        return new self($toolCall, $state, HookEvent::PostToolUse, $execution, $metadata);
+        return new self($toolCall, $state, HookType::PostToolUse, $execution, $metadata);
     }
 
     #[\Override]
-    public function eventType(): HookEvent
+    public function eventType(): HookType
     {
         return $this->event;
     }
@@ -107,7 +108,7 @@ final readonly class ToolHookContext extends AbstractHookContext
      *
      * Only available for PostToolUse events.
      */
-    public function execution(): ?AgentExecution
+    public function execution(): ?ToolExecution
     {
         return $this->execution;
     }
@@ -117,7 +118,7 @@ final readonly class ToolHookContext extends AbstractHookContext
      */
     public function isBeforeTool(): bool
     {
-        return $this->event === HookEvent::PreToolUse;
+        return $this->event === HookType::PreToolUse;
     }
 
     /**
@@ -125,7 +126,7 @@ final readonly class ToolHookContext extends AbstractHookContext
      */
     public function isAfterTool(): bool
     {
-        return $this->event === HookEvent::PostToolUse;
+        return $this->event === HookType::PostToolUse;
     }
 
     #[\Override]
@@ -161,7 +162,7 @@ final readonly class ToolHookContext extends AbstractHookContext
      *
      * Only valid for PostToolUse events (modifying result after execution).
      */
-    public function withExecution(AgentExecution $execution): self
+    public function withExecution(ToolExecution $execution): self
     {
         return new self($this->toolCall, $this->state, $this->event, $execution, $this->metadata);
     }

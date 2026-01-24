@@ -6,9 +6,9 @@ use Closure;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Hook for intercepting subagent stop decisions.
@@ -16,20 +16,21 @@ use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
  * Fired when a subagent is about to stop. Similar to StopHook but
  * specifically for subagent completion.
  *
- * The callback can:
- * - Return HookOutcome::proceed() to allow the stop
- * - Return HookOutcome::block($reason) to force continuation
+ * The callback must return a HookOutcome:
+ * - HookOutcome::proceed() to allow the stop
+ * - HookOutcome::block($reason) to force continuation
  *
  * @example
  * // Log subagent completion
  * $hook = new SubagentStopHook(
- *     callback: function (StopHookContext $ctx): void {
+ *     callback: function (StopHookContext $ctx): HookOutcome {
  *         $state = $ctx->state();
  *         $this->logger->info("Subagent completed", [
  *             'agentId' => $state->agentId,
  *             'parentId' => $state->parentAgentId,
  *             'steps' => $state->stepCount(),
  *         ]);
+ *         return HookOutcome::proceed();
  *     },
  * );
  *
@@ -46,11 +47,11 @@ use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
  */
 final readonly class SubagentStopHook implements Hook
 {
-    /** @var Closure(StopHookContext): (HookOutcome|void) */
+    /** @var Closure(StopHookContext): HookOutcome */
     private Closure $callback;
 
     /**
-     * @param callable(StopHookContext): (HookOutcome|void) $callback
+     * @param callable(StopHookContext): HookOutcome $callback
      * @param HookMatcher|null $matcher Optional matcher for conditional execution
      */
     public function __construct(
@@ -64,7 +65,7 @@ final readonly class SubagentStopHook implements Hook
     public function handle(HookContext $context, callable $next): HookOutcome
     {
         // Only process SubagentStop events
-        if (!$context instanceof StopHookContext || $context->eventType() !== HookEvent::SubagentStop) {
+        if (!$context instanceof StopHookContext || $context->eventType() !== HookType::SubagentStop) {
             return $next($context);
         }
 
@@ -73,25 +74,16 @@ final readonly class SubagentStopHook implements Hook
             return $next($context);
         }
 
-        // Execute callback
-        $result = ($this->callback)($context);
+        // Execute callback - must return HookOutcome
+        $outcome = ($this->callback)($context);
 
-        // Handle HookOutcome directly
-        if ($result instanceof HookOutcome) {
-            // If blocked, return immediately (force continuation)
-            if ($result->isBlocked()) {
-                return $result;
-            }
-            // If stopped, return immediately (confirm stop)
-            if ($result->isStopped()) {
-                return $result;
-            }
-            // If proceed, pass along
-            $effectiveContext = $result->context() ?? $context;
-            return $next($effectiveContext);
+        // If blocked or stopped, return immediately
+        if ($outcome->isBlocked() || $outcome->isStopped()) {
+            return $outcome;
         }
 
-        // Anything else = proceed (allow stop)
-        return $next($context);
+        // Pass along (with potentially modified context)
+        $effectiveContext = $outcome->context() ?? $context;
+        return $next($effectiveContext);
     }
 }

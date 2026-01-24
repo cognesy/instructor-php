@@ -73,7 +73,7 @@ PROMPT;
         );
 
         // Run critic subagent
-        $finalState = $subagent->finalStep($subState);
+        $finalState = $subagent->execute($subState);
 
         if ($finalState->status() === AgentStatus::Failed) {
             $error = $finalState->currentStep()?->errorsAsString() ?? 'Unknown error';

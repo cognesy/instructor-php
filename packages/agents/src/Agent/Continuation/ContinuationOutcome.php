@@ -40,10 +40,11 @@ final readonly class ContinuationOutcome
 
     /**
      * Create an empty outcome (no criteria).
+     * With no stopping criteria defined, continue by default.
      */
     public static function empty(): self {
         return new self(
-            shouldContinue: false,
+            shouldContinue: true,
             evaluations: [],
         );
     }

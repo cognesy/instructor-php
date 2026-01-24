@@ -15,18 +15,19 @@ use Cognesy\Agents\Agent\Continuation\Criteria\StepsLimit;
 use Cognesy\Agents\Agent\Continuation\Criteria\TokenUsageLimit;
 use Cognesy\Agents\Agent\Continuation\ToolCallPresenceCheck;
 use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
 use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
+use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
 use Cognesy\Agents\Agent\Hooks\Data\ExecutionHookContext;
 use Cognesy\Agents\Agent\Hooks\Data\FailureHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
 use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 use Cognesy\Agents\Agent\Hooks\Hooks\AfterToolHook;
 use Cognesy\Agents\Agent\Hooks\Hooks\AgentFailedHook;
 use Cognesy\Agents\Agent\Hooks\Hooks\BeforeToolHook;
@@ -53,7 +54,6 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -90,6 +90,7 @@ class AgentBuilder
     private int $maxTokens = 32768;
     private int $maxExecutionTime = 300;
     private int $maxRetries = 3;
+    /** @var list<InferenceFinishReason> */
     private array $finishReasons = [];
     private ?int $cumulativeTimeout = null;
 
@@ -297,13 +298,11 @@ class AgentBuilder
      *
      * The callback receives ToolHookContext and can:
      * - Return HookOutcome::proceed() to allow the tool call
-     * - Return HookOutcome::proceed($modifiedContext) to modify the tool call
+     * - Return HookOutcome::proceed($ctx->withToolCall($modified)) to modify the tool call
      * - Return HookOutcome::block($reason) to prevent the tool call
-     * - Return null to block the tool call (legacy support)
-     * - Return a ToolCall to proceed with a modified call (legacy support)
-     * - Return void to proceed with the original call
+     * - Return HookOutcome::stop($reason) to halt agent execution
      *
-     * @param callable(ToolHookContext): (HookOutcome|ToolCall|null|void) $callback
+     * @param callable(ToolHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      * @param string|HookMatcher|null $matcher Tool name pattern or custom matcher
      *
@@ -338,14 +337,12 @@ class AgentBuilder
     /**
      * Register a callback to run after tool execution.
      *
-     * The callback receives ToolHookContext and can:
-     * - Return HookOutcome::proceed() to continue unchanged
-     * - Return HookOutcome::proceed($modifiedContext) to modify the execution result
-     * - Return HookOutcome::stop($reason) to halt agent execution
-     * - Return an AgentExecution to replace the result (legacy support)
-     * - Return anything else (or void) to keep the original result
+     * The callback must return a HookOutcome:
+     * - HookOutcome::proceed() to continue unchanged
+     * - HookOutcome::proceed($ctx->withExecution($modified)) to modify the execution result
+     * - HookOutcome::stop($reason) to halt agent execution
      *
-     * @param callable(ToolHookContext): (HookOutcome|AgentExecution|mixed) $callback
+     * @param callable(ToolHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      * @param string|HookMatcher|null $matcher Tool name pattern or custom matcher
      *
@@ -423,7 +420,7 @@ class AgentBuilder
      * new Hook system. For convenience, use the event-specific methods
      * like onExecutionStart(), onStop(), etc.
      *
-     * @param HookEvent $event The lifecycle event to hook into
+     * @param HookType $event The lifecycle event to hook into
      * @param (callable(HookContext, callable(HookContext): HookOutcome): HookOutcome)|Hook $hook The hook callback or Hook instance
      * @param int $priority Higher priority = runs earlier. Default is 0.
      * @param string|HookMatcher|null $matcher Optional matcher for conditional execution
@@ -436,9 +433,9 @@ class AgentBuilder
      * );
      */
     public function addHook(
-        HookEvent $event,
-        callable|Hook $hook,
-        int $priority = 0,
+        HookType                $event,
+        callable|Hook           $hook,
+        int                     $priority = 0,
         string|HookMatcher|null $matcher = null,
     ): self {
         $hookInstance = $hook instanceof Hook
@@ -457,7 +454,7 @@ class AgentBuilder
      *
      * Fired once when agent.run() begins, before any steps are executed.
      *
-     * @param callable(ExecutionHookContext): (HookOutcome|void) $callback
+     * @param callable(ExecutionHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
@@ -479,12 +476,13 @@ class AgentBuilder
      *
      * Fired once when agent.run() completes (success or failure).
      *
-     * @param callable(ExecutionHookContext): (HookOutcome|void) $callback
+     * @param callable(ExecutionHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
-     * $builder->onExecutionEnd(function (ExecutionHookContext $ctx): void {
+     * $builder->onExecutionEnd(function (ExecutionHookContext $ctx): HookOutcome {
      *     $this->metrics->stopTracking($ctx->state()->agentId);
+     *     return HookOutcome::proceed();
      * });
      */
     public function onExecutionEnd(callable $callback, int $priority = 0): self {
@@ -500,7 +498,7 @@ class AgentBuilder
      *
      * Can block the stop to force continuation.
      *
-     * @param callable(StopHookContext): (HookOutcome|void) $callback
+     * @param callable(StopHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
@@ -522,12 +520,13 @@ class AgentBuilder
     /**
      * Register a callback to run when a subagent is about to stop.
      *
-     * @param callable(StopHookContext): (HookOutcome|void) $callback
+     * @param callable(StopHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
-     * $builder->onSubagentStop(function (StopHookContext $ctx): void {
+     * $builder->onSubagentStop(function (StopHookContext $ctx): HookOutcome {
      *     $this->logger->info("Subagent completed: {$ctx->state()->agentId}");
+     *     return HookOutcome::proceed();
      * });
      */
     public function onSubagentStop(callable $callback, int $priority = 0): self {
@@ -543,13 +542,14 @@ class AgentBuilder
      *
      * Fired when the agent encounters an unrecoverable error.
      *
-     * @param callable(FailureHookContext): (HookOutcome|void) $callback
+     * @param callable(FailureHookContext): HookOutcome $callback
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
-     * $builder->onAgentFailed(function (FailureHookContext $ctx): void {
+     * $builder->onAgentFailed(function (FailureHookContext $ctx): HookOutcome {
      *     $this->logger->error("Agent failed: {$ctx->errorMessage()}");
      *     $this->alerting->sendAlert($ctx->exception());
+     *     return HookOutcome::proceed();
      * });
      */
     public function onAgentFailed(callable $callback, int $priority = 0): self {
@@ -582,22 +582,32 @@ class AgentBuilder
         // Build driver
         $driver = $this->buildDriver();
 
+        // Build event emitter (shared between components)
+        $eventEmitter = new AgentEventEmitter($this->events);
+
         // Build tool executor with unified hook stack
         $toolExecutor = new ToolExecutor(
             tools: $this->tools,
             throwOnToolFailure: false,
-            events: EventBusResolver::using($this->events),
+            eventEmitter: $eventEmitter,
             toolHookStack: $this->hookStack,
+        );
+
+        // Build error handler
+        $errorHandler = AgentErrorHandler::withPolicy(
+            policy: $this->errorPolicy ?? ErrorPolicy::stopOnAnyError(),
+            eventEmitter: $eventEmitter,
         );
 
         // Build base agent
         $agent = new Agent(
             tools: $this->tools,
             toolExecutor: $toolExecutor,
+            errorHandler: $errorHandler,
             processors: $processors,
             continuationCriteria: $continuationCriteria,
             driver: $driver,
-            events: $this->events,
+            eventEmitter: $eventEmitter,
         );
 
         foreach ($this->onBuildCallbacks as $callback) {
@@ -627,18 +637,25 @@ class AgentBuilder
         // Base criteria - all in flat list with priority-based resolution
         // Hard limits return ForbidContinuation when exceeded, AllowStop otherwise
         // Continue signals return AllowContinuation when they have work, AllowStop otherwise
+        //
+        // Note: Criteria are evaluated BEFORE the step is added to stepResults,
+        // but currentStep is set to the step being evaluated. So step counting
+        // must account for the currentStep (add 1 if it exists).
         $baseCriteria = [
             // Hard limits (return ForbidContinuation when exceeded)
-            new StepsLimit($this->maxSteps, static fn($state) => $state->stepCount()),
+            new StepsLimit($this->maxSteps, static fn($state) => $state->stepCount() + ($state->currentStep() !== null ? 1 : 0)),
             new TokenUsageLimit($this->maxTokens, static fn($state) => $state->usage()->total()),
             // Uses executionStartedAt (set at start of each execution) with fallback to session startedAt.
             // This prevents timeouts in multi-turn conversations spanning days.
             $this->buildTimeLimitCriterion(),
             ErrorPolicyCriterion::withPolicy($this->errorPolicy ?? ErrorPolicy::stopOnAnyError()),
             new FinishReasonCheck($this->finishReasons, static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
-            // Continue signal (returns AllowContinuation when tool calls present)
+            // Continue signal - returns RequestContinuation when:
+            // - Bootstrap: no step executed yet (currentStep is null) - allows first step
+            // - Work to do: current step contains tool calls
             new ToolCallPresenceCheck(
-                static fn($state) => $state->stepCount() === 0 || ($state->currentStep()?->hasToolCalls() ?? false)
+                static fn($state) => $state->currentStep() === null
+                    || $state->currentStep()->hasToolCalls()
             ),
         ];
 

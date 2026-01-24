@@ -7,8 +7,8 @@ use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
 use Cognesy\Agents\Agent\Hooks\Data\ExecutionHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Hook for intercepting agent execution end.
@@ -16,44 +16,45 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  * Fired once when agent.run() completes (success or failure),
  * after all steps have been executed.
  *
- * The callback can:
- * - Return HookOutcome::proceed() to continue unchanged
- * - Return void/anything else to proceed unchanged
+ * The callback must return a HookOutcome:
+ * - HookOutcome::proceed() to continue (stop/block are ignored since execution is complete)
  *
  * Note: ExecutionEnd hooks cannot stop or block - execution is already complete.
  *
  * @example
  * // Finalize monitoring
  * $hook = new ExecutionEndHook(
- *     callback: function (ExecutionHookContext $ctx): void {
+ *     callback: function (ExecutionHookContext $ctx): HookOutcome {
  *         $started = $ctx->get('execution_started');
  *         if ($started !== null) {
  *             $duration = microtime(true) - $started;
  *             $this->metrics->recordExecution($ctx->state()->agentId, $duration);
  *         }
+ *         return HookOutcome::proceed();
  *     },
  * );
  *
  * @example
  * // Log completion
  * $hook = new ExecutionEndHook(
- *     callback: function (ExecutionHookContext $ctx): void {
+ *     callback: function (ExecutionHookContext $ctx): HookOutcome {
  *         $state = $ctx->state();
  *         $this->logger->info("Execution completed", [
  *             'agentId' => $state->agentId,
  *             'status' => $state->status()->value,
  *             'steps' => $state->stepCount(),
  *         ]);
+ *         return HookOutcome::proceed();
  *     },
  * );
  */
 final readonly class ExecutionEndHook implements Hook
 {
-    /** @var Closure(ExecutionHookContext): (HookOutcome|void) */
+    /** @var Closure(ExecutionHookContext): HookOutcome */
     private Closure $callback;
 
     /**
-     * @param callable(ExecutionHookContext): (HookOutcome|void) $callback
+     * @param callable(ExecutionHookContext): HookOutcome $callback
      * @param HookMatcher|null $matcher Optional matcher for conditional execution
      */
     public function __construct(
@@ -67,7 +68,7 @@ final readonly class ExecutionEndHook implements Hook
     public function handle(HookContext $context, callable $next): HookOutcome
     {
         // Only process ExecutionEnd events
-        if (!$context instanceof ExecutionHookContext || $context->eventType() !== HookEvent::ExecutionEnd) {
+        if (!$context instanceof ExecutionHookContext || $context->eventType() !== HookType::ExecutionEnd) {
             return $next($context);
         }
 
@@ -76,17 +77,11 @@ final readonly class ExecutionEndHook implements Hook
             return $next($context);
         }
 
-        // Execute callback
-        $result = ($this->callback)($context);
+        // Execute callback - must return HookOutcome
+        $outcome = ($this->callback)($context);
 
-        // Handle HookOutcome directly
-        if ($result instanceof HookOutcome) {
-            // ExecutionEnd hooks can't stop - ignore stop/block outcomes
-            $effectiveContext = $result->context() ?? $context;
-            return $next($effectiveContext);
-        }
-
-        // Anything else = proceed unchanged
-        return $next($context);
+        // ExecutionEnd hooks can't stop - ignore stop/block outcomes
+        $effectiveContext = $outcome->context() ?? $context;
+        return $next($effectiveContext);
     }
 }

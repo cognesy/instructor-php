@@ -4,7 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
 use Cognesy\Agents\Agent\Agent;
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Enums\AgentStatus;
 use Cognesy\Agents\Agent\Tools\BaseTool;
@@ -137,7 +137,7 @@ class SpawnSubagentTool extends BaseTool
     }
 
     private function runSubagent(Agent $subagent, AgentState $state): AgentState {
-        return $subagent->finalStep($state);
+        return $subagent->execute($state);
     }
 
     // STATE STORAGE & EXTRACTION ///////////////////////////////////
@@ -208,7 +208,7 @@ class SpawnSubagentTool extends BaseTool
 
             $toolCallId = uniqid('load_skill_', true);
             $toolCall = new ToolCall('load_skill', ['skill_name' => $skillName], $toolCallId);
-            $execution = new AgentExecution(
+            $execution = new ToolExecution(
                 toolCall: $toolCall,
                 result: Result::success($skill->render()),
                 startedAt: new DateTimeImmutable(),

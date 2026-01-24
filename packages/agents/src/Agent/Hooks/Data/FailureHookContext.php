@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Agent\Hooks\Data;
 
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 use Throwable;
 
 /**
@@ -63,9 +64,9 @@ final readonly class FailureHookContext extends AbstractHookContext
     }
 
     #[\Override]
-    public function eventType(): HookEvent
+    public function eventType(): HookType
     {
-        return HookEvent::AgentFailed;
+        return HookType::AgentFailed;
     }
 
     /**

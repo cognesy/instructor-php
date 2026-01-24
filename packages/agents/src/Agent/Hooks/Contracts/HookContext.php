@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Agent\Hooks\Contracts;
 
 use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Base interface for all hook contexts.
@@ -43,9 +43,9 @@ interface HookContext
     /**
      * Get the type of event this context represents.
      *
-     * @return HookEvent The event type
+     * @return HookType The event type
      */
-    public function eventType(): HookEvent;
+    public function eventType(): HookType;
 
     /**
      * Create a new context with modified state.

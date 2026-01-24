@@ -7,8 +7,8 @@ use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
 use Cognesy\Agents\Agent\Hooks\Data\FailureHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 
 /**
  * Hook for handling agent failures.
@@ -16,9 +16,8 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  * Fired when the agent encounters an unrecoverable error.
  * Use this for error logging, alerting, and cleanup.
  *
- * The callback can:
- * - Return HookOutcome::proceed() to continue processing
- * - Return void/anything else to proceed unchanged
+ * The callback must return a HookOutcome:
+ * - HookOutcome::proceed() to continue processing (stop/block are ignored)
  *
  * Note: AgentFailed hooks cannot prevent or recover from the failure -
  * execution has already failed. They are for observation and cleanup.
@@ -26,7 +25,7 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  * @example
  * // Log failures
  * $hook = new AgentFailedHook(
- *     callback: function (FailureHookContext $ctx): void {
+ *     callback: function (FailureHookContext $ctx): HookOutcome {
  *         $exception = $ctx->exception();
  *         $state = $ctx->state();
  *
@@ -35,28 +34,30 @@ use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
  *             'step' => $state->stepCount(),
  *             'trace' => $exception->getTraceAsString(),
  *         ]);
+ *         return HookOutcome::proceed();
  *     },
  * );
  *
  * @example
  * // Send alerts
  * $hook = new AgentFailedHook(
- *     callback: function (FailureHookContext $ctx): void {
+ *     callback: function (FailureHookContext $ctx): HookOutcome {
  *         $this->alerting->sendAlert(
  *             title: "Agent {$ctx->state()->agentId} failed",
  *             message: $ctx->errorMessage(),
  *             severity: 'critical',
  *         );
+ *         return HookOutcome::proceed();
  *     },
  * );
  */
 final readonly class AgentFailedHook implements Hook
 {
-    /** @var Closure(FailureHookContext): (HookOutcome|void) */
+    /** @var Closure(FailureHookContext): HookOutcome */
     private Closure $callback;
 
     /**
-     * @param callable(FailureHookContext): (HookOutcome|void) $callback
+     * @param callable(FailureHookContext): HookOutcome $callback
      * @param HookMatcher|null $matcher Optional matcher for conditional execution
      */
     public function __construct(
@@ -70,7 +71,7 @@ final readonly class AgentFailedHook implements Hook
     public function handle(HookContext $context, callable $next): HookOutcome
     {
         // Only process AgentFailed events
-        if (!$context instanceof FailureHookContext || $context->eventType() !== HookEvent::AgentFailed) {
+        if (!$context instanceof FailureHookContext || $context->eventType() !== HookType::AgentFailed) {
             return $next($context);
         }
 
@@ -79,17 +80,11 @@ final readonly class AgentFailedHook implements Hook
             return $next($context);
         }
 
-        // Execute callback
-        $result = ($this->callback)($context);
+        // Execute callback - must return HookOutcome
+        $outcome = ($this->callback)($context);
 
-        // Handle HookOutcome directly
-        if ($result instanceof HookOutcome) {
-            // AgentFailed hooks can't prevent failure - ignore stop/block outcomes
-            $effectiveContext = $result->context() ?? $context;
-            return $next($effectiveContext);
-        }
-
-        // Anything else = proceed unchanged
-        return $next($context);
+        // AgentFailed hooks can't prevent failure - ignore stop/block outcomes
+        $effectiveContext = $outcome->context() ?? $context;
+        return $next($effectiveContext);
     }
 }

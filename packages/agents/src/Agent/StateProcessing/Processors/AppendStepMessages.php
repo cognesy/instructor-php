@@ -3,7 +3,6 @@
 namespace Cognesy\Agents\Agent\StateProcessing\Processors;
 
 use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 
 final class AppendStepMessages implements CanProcessAgentState
@@ -21,7 +20,7 @@ final class AppendStepMessages implements CanProcessAgentState
 
         // Only append the output message from the step, not all messages
         // This prevents duplication of input messages that are already in the state
-        if (!($currentStep instanceof AgentStep)) {
+        if ($currentStep === null) {
             return $newState;
         }
 

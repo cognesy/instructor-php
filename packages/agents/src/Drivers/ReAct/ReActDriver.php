@@ -6,7 +6,7 @@ use Cognesy\Agents\Agent\Collections\ToolExecutions;
 use Cognesy\Agents\Agent\Collections\Tools;
 use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\Enums\AgentStepType;
@@ -173,7 +173,7 @@ final class ReActDriver implements CanUseTools
         $formatter = new ReActFormatter();
         $error = new \RuntimeException($validation->getErrorMessage());
         $messagesErr = $formatter->decisionExtractionErrorMessages($error);
-        $exec = new AgentExecution(
+        $exec = new ToolExecution(
             new ToolCall('decision_validation', []),
             Result::failure($error),
             new \DateTimeImmutable(),
@@ -195,7 +195,7 @@ final class ReActDriver implements CanUseTools
     private function buildExtractionFailureStep(\Throwable $e, Messages $context): AgentStep {
         $formatter = new ReActFormatter();
         $messagesErr = $formatter->decisionExtractionErrorMessages($e);
-        $exec = new AgentExecution(
+        $exec = new ToolExecution(
             new ToolCall('decision_extraction', []),
             Result::failure($e),
             new \DateTimeImmutable(),

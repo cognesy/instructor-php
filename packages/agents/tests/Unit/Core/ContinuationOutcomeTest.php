@@ -40,11 +40,13 @@ it('derives decision from evaluations', function () {
     expect($outcome->stopReason())->toBe(StopReason::Completed);
 });
 
-it('empty outcome stops with Completed reason', function () {
+it('empty outcome continues by default (no stopping criteria)', function () {
     $outcome = ContinuationOutcome::empty();
 
-    expect($outcome->shouldContinue())->toBeFalse();
-    expect($outcome->decision())->toBe(ContinuationDecision::AllowStop);
+    // With no criteria defined, continue by default
+    expect($outcome->shouldContinue())->toBeTrue();
+    // RequestContinuation indicates work should proceed
+    expect($outcome->decision())->toBe(ContinuationDecision::RequestContinuation);
     expect($outcome->stopReason())->toBe(StopReason::Completed);
     expect($outcome->evaluations)->toBe([]);
 });

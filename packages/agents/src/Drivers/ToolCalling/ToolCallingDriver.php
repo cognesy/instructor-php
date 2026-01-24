@@ -158,9 +158,9 @@ class ToolCallingDriver implements CanUseTools
     /** Builds the final AgentStep from inference response and executions. */
     private function buildStepFromResponse(
         InferenceResponse $response,
-        ToolExecutions $executions,
-        Messages $followUps,
-        Messages $context,
+        ToolExecutions   $executions,
+        Messages          $followUps,
+        Messages          $context,
     ) : AgentStep {
         $outputMessages = $this->appendResponseContent($followUps, $response);
 

@@ -29,7 +29,7 @@ describe('Agent Loop', function () {
             Messages::fromString('Hi')
         );
 
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         expect($finalState->stepCount())->toBe(1);
         expect($finalState->currentStep()->stepType())->toBe(AgentStepType::FinalResponse);
@@ -60,7 +60,7 @@ describe('Agent Loop', function () {
             Messages::fromString('Use the tool')
         );
 
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         expect($finalState->stepCount())->toBe(2);
         expect($finalState->stepAt(0)->stepType())->toBe(AgentStepType::ToolExecution);
@@ -91,7 +91,7 @@ describe('Agent Loop', function () {
             Messages::fromString('Use the tool')
         );
 
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
         $step = $finalState->stepAt(0);
         $messages = $step->outputMessages()->toArray();
         $contents = array_map(
@@ -127,7 +127,7 @@ describe('Agent Loop', function () {
             Messages::fromString('Use the tool')
         );
 
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
         $step = $finalState->stepAt(0);
         $messages = $step->outputMessages()->toArray();
 

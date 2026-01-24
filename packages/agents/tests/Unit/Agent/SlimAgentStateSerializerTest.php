@@ -2,8 +2,10 @@
 
 namespace Tests\Addons\Unit\Agent;
 
+use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Agent\Data\StepResult;
 use Cognesy\Agents\Serialization\SlimAgentStateSerializer;
 use Cognesy\Agents\Serialization\SlimSerializationConfig;
 use Cognesy\Messages\Messages;
@@ -47,7 +49,22 @@ function makeSerializedState(): AgentState {
         usage: new Usage(3, 4),
     );
 
-    return $state->withAddedSteps($step1, $step2);
+    $stepResult1 = new StepResult(
+        step: $step1,
+        outcome: ContinuationOutcome::empty(),
+        startedAt: new \DateTimeImmutable(),
+        completedAt: new \DateTimeImmutable(),
+    );
+    $stepResult2 = new StepResult(
+        step: $step2,
+        outcome: ContinuationOutcome::empty(),
+        startedAt: new \DateTimeImmutable(),
+        completedAt: new \DateTimeImmutable(),
+    );
+
+    return $state
+        ->recordStepResult($stepResult1)
+        ->recordStepResult($stepResult2);
 }
 
 it('serializes messages with truncation', function () {

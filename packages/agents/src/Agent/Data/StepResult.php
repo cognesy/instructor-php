@@ -4,25 +4,37 @@ namespace Cognesy\Agents\Agent\Data;
 
 use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
 use Cognesy\Agents\Agent\Continuation\StopReason;
+use DateTimeImmutable;
 
 /**
- * Immutable wrapper bundling a step with its continuation outcome.
+ * Immutable wrapper bundling a step with its continuation outcome and timing.
  *
  * This abstraction cleanly separates step data from continuation evaluation,
  * avoiding the need to modify step objects after creation.
  *
  * Benefits:
  * - Step objects remain unmodified after creation
- * - Clear ownership: result bundles step + outcome explicitly
+ * - Clear ownership: result bundles step + outcome + timing explicitly
  * - Consistent pattern across all StepByStep orchestrators
  * - Natural for serialization: result is a complete unit
  */
 final readonly class StepResult
 {
     public function __construct(
-        public object $step,
+        public AgentStep $step,
         public ContinuationOutcome $outcome,
+        public DateTimeImmutable $startedAt,
+        public DateTimeImmutable $completedAt,
     ) {}
+
+    /**
+     * Duration of this step in seconds.
+     */
+    public function duration(): float {
+        $start = (float) $this->startedAt->format('U.u');
+        $end = (float) $this->completedAt->format('U.u');
+        return $end - $start;
+    }
 
     /**
      * Whether the orchestrator should continue after this step.
@@ -40,31 +52,26 @@ final readonly class StepResult
 
     /**
      * Serialize to array.
-     *
-     * @param callable(object): array<string, mixed> $stepSerializer
-     * @return array<string, mixed>
      */
-    public function toArray(callable $stepSerializer): array {
+    public function toArray(): array {
         return [
-            'step' => $stepSerializer($this->step),
+            'step' => $this->step->toArray(),
             'outcome' => $this->outcome->toArray(),
+            'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
+            'completedAt' => $this->completedAt->format(DateTimeImmutable::ATOM),
+            'duration' => $this->duration(),
         ];
     }
 
     /**
      * Deserialize from array.
-     *
-     * @param array<string, mixed> $data
-     * @param callable(array<string, mixed>): object $stepDeserializer
      */
-    public static function fromArray(array $data, callable $stepDeserializer): self {
-        /** @var array<string, mixed> $stepData */
-        $stepData = $data['step'];
-        /** @var array<string, mixed> $outcomeData */
-        $outcomeData = $data['outcome'];
+    public static function fromArray(array $data): self {
         return new self(
-            step: $stepDeserializer($stepData),
-            outcome: ContinuationOutcome::fromArray($outcomeData),
+            step: AgentStep::fromArray($data['step'] ?? []),
+            outcome: ContinuationOutcome::fromArray($data['outcome'] ?? []),
+            startedAt: new DateTimeImmutable($data['startedAt'] ?? 'now'),
+            completedAt: new DateTimeImmutable($data['completedAt'] ?? 'now'),
         );
     }
 }

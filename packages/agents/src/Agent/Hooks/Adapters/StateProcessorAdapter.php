@@ -5,9 +5,9 @@ namespace Cognesy\Agents\Agent\Hooks\Adapters;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookEvent;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\StepHookContext;
+use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 
 /**
@@ -51,8 +51,8 @@ final readonly class StateProcessorAdapter implements Hook
 
         // Check if this is the right event type for this processor
         $targetEvent = $this->position === 'before'
-            ? HookEvent::BeforeStep
-            : HookEvent::AfterStep;
+            ? HookType::BeforeStep
+            : HookType::AfterStep;
 
         if ($context->eventType() !== $targetEvent) {
             return $next($context);

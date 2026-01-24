@@ -76,7 +76,7 @@ describe('Coding Agent Workflow', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert workflow completed
         expect($finalState->stepCount())->toBeGreaterThanOrEqual(2);
@@ -130,7 +130,7 @@ describe('Coding Agent Workflow', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert
         expect($finalState->stepCount())->toBe(3);
@@ -168,7 +168,7 @@ describe('Coding Agent Workflow', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert tasks are persisted in metadata
         $tasks = $finalState->metadata()->get(TodoWriteTool::metadataKey());
@@ -207,7 +207,7 @@ describe('Coding Agent Workflow', function () {
 
         // Act - collect step types as we iterate
         $stepTypes = [];
-        foreach ($agent->iterator($state) as $currentState) {
+        foreach ($agent->iterate($state) as $currentState) {
             $stepTypes[] = $currentState->currentStep()->stepType();
         }
 
@@ -271,7 +271,7 @@ describe('Coding Agent Workflow', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert - step count depends on agent implementation
         expect($finalState->stepCount())->toBeGreaterThanOrEqual(2);
@@ -307,7 +307,7 @@ describe('Coding Agent Workflow', function () {
         );
 
         // Act
-        $finalState = $agent->finalStep($state);
+        $finalState = $agent->execute($state);
 
         // Assert - verify we can access tool execution from step
         $firstStep = $finalState->stepAt(0);
