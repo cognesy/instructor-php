@@ -25,6 +25,7 @@
     "autoload": {
         "psr-4": {
             "Cognesy\\Addons\\": "packages/addons/src/",
+            "Cognesy\\Agents\\": "packages/agents/src/",
             "Cognesy\\AgentCtrl\\": "packages/agent-ctrl/src/",
             "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
             "Cognesy\\Config\\": "packages/config/src/",
@@ -57,6 +58,7 @@
             "Cognesy\\Tell\\": "packages/tell/src/",
             "Cognesy\\Experimental\\": "packages/experimental/src/",
             "Cognesy\\Addons\\Tests\\": "packages/addons/tests/",
+            "Cognesy\\Agents\\Tests\\": "packages/agents/tests/",
             "Cognesy\\AgentCtrl\\Tests\\": "packages/agent-ctrl/tests/",
             "Cognesy\\Config\\Tests\\": "packages/config/tests/",
             "Cognesy\\Dynamic\\Tests\\": "packages/dynamic/tests/",

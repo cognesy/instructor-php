@@ -1,0 +1,42 @@
+<?php declare(strict_types=1);
+
+use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
+use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\SummarizationPolicy;
+use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\UseSummarization;
+use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
+use Cognesy\Utils\Tokenizer;
+
+it('moves overflow messages into the buffer when summarization is enabled', function () {
+    $summarizer = new class implements CanSummarizeMessages {
+        public function summarize(Messages $messages, int $tokenLimit): string {
+            return 'summary';
+        }
+    };
+
+    $tokenLimit = Tokenizer::tokenCount('ok');
+    $policy = new SummarizationPolicy(
+        maxMessageTokens: $tokenLimit,
+        maxBufferTokens: 1000,
+        maxSummaryTokens: 64,
+    );
+
+    $agent = AgentBuilder::new()
+        ->withDriver(new DeterministicAgentDriver([ScenarioStep::final('ok')]))
+        ->withCapability(new UseSummarization($policy, $summarizer))
+        ->build();
+
+    $messages = Messages::fromString('one', 'user')
+        ->appendMessage(Message::fromString('two', 'assistant'));
+    $state = (new AgentState)->withMessages($messages);
+
+    $next = $agent->nextStep($state);
+
+    expect(trim($next->messages()->toString()))->toBe('ok');
+    expect(trim($next->store()->section('buffer')->messages()->toString()))
+        ->toBe("one\ntwo");
+});

@@ -1,0 +1,54 @@
+{
+  "name": "cognesy/instructor-agents",
+  "license": "MIT",
+  "description": "Agent framework for building AI agents with tools, continuation criteria, and hooks",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Agents\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Agents\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "ext-fileinfo": "*",
+    "ext-libxml": "*",
+    "cognesy/instructor-dynamic": "^1.22",
+    "cognesy/instructor-events": "^1.22",
+    "cognesy/instructor-http-client": "^1.22",
+    "cognesy/instructor-messages": "^1.22",
+    "cognesy/instructor-polyglot": "^1.22",
+    "cognesy/instructor-schema": "^1.22",
+    "cognesy/instructor-struct": "^1.22",
+    "cognesy/instructor-utils": "^1.22"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "mockery/mockery": "^1.6",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  },
+  "suggest": {
+    "cognesy/instructor-addons": "Provides extra optional capabilities like Chat, ToolUse, etc."
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

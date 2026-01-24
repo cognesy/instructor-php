@@ -1,0 +1,21 @@
+<?php declare(strict_types=1);
+namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
+
+use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+
+class UseSkills implements AgentCapability
+{
+    public function __construct(
+        private ?SkillLibrary $library = null,
+    ) {}
+
+    #[\Override]
+    public function install(AgentBuilder $builder): void {
+        $library = $this->library ?? new SkillLibrary();
+        
+        $builder->withTools(new Tools(LoadSkillTool::withLibrary($library)));
+        $builder->addProcessor(new AppendSkillMetadata($library));
+    }
+}
