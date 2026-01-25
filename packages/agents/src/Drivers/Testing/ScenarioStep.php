@@ -2,11 +2,13 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
+use Cognesy\Agents\Agent\Collections\ErrorList;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 final readonly class ScenarioStep
@@ -66,11 +68,21 @@ final readonly class ScenarioStep
 
     public function toAgentStep(AgentState $state): AgentStep
     {
+        $errors = match ($this->stepType) {
+            AgentStepType::Error => new ErrorList(new \RuntimeException('Scenario step marked as error')),
+            default => ErrorList::empty(),
+        };
+
+        $response = new InferenceResponse(
+            toolCalls: $this->toolCalls ?? ToolCalls::empty(),
+            usage: $this->usage,
+        );
+
         return new AgentStep(
             inputMessages: $state->messagesForInference(),
             outputMessages: Messages::fromString($this->response, 'assistant'),
-            usage: $this->usage,
-            stepType: $this->stepType,
+            inferenceResponse: $response,
+            errors: $errors,
         );
     }
 }

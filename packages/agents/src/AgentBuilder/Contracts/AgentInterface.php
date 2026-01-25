@@ -4,8 +4,8 @@ namespace Cognesy\Agents\AgentBuilder\Contracts;
 
 use Cognesy\Agents\Agent\Agent;
 use Cognesy\Agents\Agent\Contracts\CanControlAgentLoop;
-use Cognesy\Agents\Agent\Data\AgentDescriptor;
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

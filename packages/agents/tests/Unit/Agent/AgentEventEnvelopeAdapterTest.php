@@ -76,13 +76,13 @@ it('emits tool call events', function () {
     ));
 
     $startedAt = new DateTimeImmutable('2026-01-01 00:00:00');
-    $endedAt = $startedAt->modify('+2 seconds');
+    $completedAt = $startedAt->modify('+2 seconds');
     $adapter->onToolCallCompleted(new ToolCallCompleted(
         tool: 'search',
         success: true,
         error: null,
         startedAt: $startedAt,
-        endedAt: $endedAt,
+        completedAt: $completedAt,
     ));
 
     expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.tool.started');

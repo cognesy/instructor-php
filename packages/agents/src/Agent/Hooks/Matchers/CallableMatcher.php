@@ -15,10 +15,7 @@ use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
  * @example
  * // Match when agent has been running for more than 30 seconds
  * $matcher = new CallableMatcher(function (HookContext $ctx): bool {
- *     $started = $ctx->state()->executionStartedAt();
- *     if ($started === null) {
- *         return false;
- *     }
+ *     $started = $ctx->state()->createdAt();
  *     return (new DateTime())->getTimestamp() - $started->getTimestamp() > 30;
  * });
  *

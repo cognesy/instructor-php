@@ -3,7 +3,8 @@
 namespace Cognesy\Agents\Agent\Collections;
 
 use Cognesy\Agents\Agent\Data\ToolExecution;
-use Throwable;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\ToolCall;
 
 final readonly class ToolExecutions
 {
@@ -34,6 +35,15 @@ final readonly class ToolExecutions
         return count($this->toolExecutions) > 0;
     }
 
+    public function toolCalls(): ToolCalls {
+        $calls = array_map(
+            static fn(ToolExecution $execution): ToolCall => $execution->toolCall(),
+            $this->toolExecutions,
+        );
+
+        return new ToolCalls(...$calls);
+    }
+
     /** @return ToolExecution[] */
     public function all(): array {
         return $this->toolExecutions;
@@ -48,16 +58,17 @@ final readonly class ToolExecutions
         return array_filter($this->toolExecutions, fn(ToolExecution $toolExecution) => $toolExecution->hasError());
     }
 
-    /** @return array<array-key, Throwable> */
-    public function errors() : array {
-        $errors = [];
-        foreach($this->toolExecutions as $toolExecution) {
-            if ($toolExecution->hasError()) {
-                $error = $toolExecution->error();
-                if ($error !== null) {
-                    $errors[] = $error;
-                }
+    public function errors() : ErrorList {
+        $errors = ErrorList::empty();
+        foreach ($this->toolExecutions as $toolExecution) {
+            if (!$toolExecution->hasError()) {
+                continue;
             }
+            $error = $toolExecution->error();
+            if ($error === null) {
+                continue;
+            }
+            $errors = $errors->withAppended($error);
         }
         return $errors;
     }

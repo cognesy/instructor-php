@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Agent\Data;
+namespace Cognesy\Agents\AgentBuilder\Data;
 
 use Cognesy\Agents\Agent\Collections\NameList;
 use InvalidArgumentException;

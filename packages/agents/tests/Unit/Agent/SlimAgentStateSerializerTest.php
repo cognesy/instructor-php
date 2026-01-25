@@ -5,11 +5,12 @@ namespace Tests\Addons\Unit\Agent;
 use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepResult;
+use Cognesy\Agents\Agent\Data\StepExecution;
 use Cognesy\Agents\Serialization\SlimAgentStateSerializer;
 use Cognesy\Agents\Serialization\SlimSerializationConfig;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
@@ -36,35 +37,46 @@ function makeSerializedState(): AgentState {
         ->with(agentId: 'agent-1', parentAgentId: 'agent-0')
         ->withMessages($messages);
 
-    $state = $state->withStateInfo(
-        $state->stateInfo()->addExecutionTime(12.5)
-    );
-
-    $step1 = new AgentStep(
+    $stepId1 = 'step-1';
+    $response1 = new InferenceResponse(
         toolCalls: new ToolCalls(new ToolCall('lookup', ['q' => 'x'], 'call_1')),
         usage: new Usage(1, 2),
     );
-    $step2 = new AgentStep(
+    $step1 = new AgentStep(
+        inferenceResponse: $response1,
+        id: $stepId1,
+    );
+
+    $stepId2 = 'step-2';
+    $response2 = new InferenceResponse(
         toolCalls: new ToolCalls(),
         usage: new Usage(3, 4),
     );
+    $step2 = new AgentStep(
+        inferenceResponse: $response2,
+        id: $stepId2,
+    );
 
-    $stepResult1 = new StepResult(
+    $stepExecution1 = new StepExecution(
         step: $step1,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 1,
+        id: $stepId1,
     );
-    $stepResult2 = new StepResult(
+    $stepExecution2 = new StepExecution(
         step: $step2,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 2,
+        id: $stepId2,
     );
 
     return $state
-        ->recordStepResult($stepResult1)
-        ->recordStepResult($stepResult2);
+        ->recordStepExecution($stepExecution1)
+        ->recordStepExecution($stepExecution2);
 }
 
 it('serializes messages with truncation', function () {
@@ -125,7 +137,6 @@ it('serializes steps and execution timing', function () {
 
     $data = $serializer->serialize($state);
 
-    expect($data['execution']['cumulative_seconds'])->toBe(12.5);
     expect(count($data['steps']))->toBe(1);
     expect($data['steps'][0]['step_number'])->toBe(1);
 });
@@ -137,7 +148,7 @@ it('deserializes minimal agent state', function () {
     $data = $serializer->serialize($state);
     $restored = $serializer->deserialize($data);
 
-    expect($restored->agentId)->toBe('agent-1');
-    expect($restored->parentAgentId)->toBe('agent-0');
+    expect($restored->agentId())->toBe('agent-1');
+    expect($restored->parentAgentId())->toBe('agent-0');
     expect(count($restored->messages()))->toBe(3);
 });

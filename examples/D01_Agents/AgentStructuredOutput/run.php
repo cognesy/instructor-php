@@ -26,15 +26,15 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
-use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;
-use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
-use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;
-use Cognesy\Addons\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
-use Cognesy\Addons\Agent\Core\Collections\Tools;
-use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Tools\BaseTool;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
+use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;
+use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
+use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;
+use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Json\Json;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -202,9 +202,7 @@ echo "=== Agent Structured Output Demo ===\n\n";
 echo "Input text:\n{$inputText}\n\n";
 echo "--- Execution ---\n\n";
 
-while ($agent->hasNextStep($state)) {
-    $state = $agent->nextStep($state);
-
+foreach ($agent->iterate($state) as $state) {
     $step = $state->currentStep();
     echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 

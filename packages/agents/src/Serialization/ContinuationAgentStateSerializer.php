@@ -17,8 +17,8 @@ final readonly class ContinuationAgentStateSerializer implements CanSerializeAge
     public function serialize(AgentState $state): array {
         return [
             'version' => 1,
-            'agent_id' => $state->agentId,
-            'parent_agent_id' => $state->parentAgentId,
+            'agent_id' => $state->agentId(),
+            'parent_agent_id' => $state->parentAgentId(),
             'status' => $state->status()->value,
             'metadata' => $state->metadata()->toArray(),
             'messageStore' => [

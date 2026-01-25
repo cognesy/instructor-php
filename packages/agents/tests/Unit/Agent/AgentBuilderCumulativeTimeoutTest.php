@@ -6,8 +6,10 @@ use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
 use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use DateTimeImmutable;
 
 function getAgentCriteria(object $agent): ContinuationCriteria {
+    /** @psalm-suppress InvalidScope */
     $getter = \Closure::bind(
         function (): ContinuationCriteria {
             return $this->continuationCriteria;
@@ -32,31 +34,11 @@ it('uses wall-clock execution time by default', function () {
         ->addContinuationCriteria(requestContinuationCriterion())
         ->build();
 
-    $state = AgentState::empty()->with(
-        executionStartedAt: new \DateTimeImmutable('-5 seconds'),
-    );
-
     $criteria = getAgentCriteria($agent);
+    $criteria->executionStarted(new DateTimeImmutable('-5 seconds'));
+
+    $state = AgentState::empty();
     $outcome = $criteria->evaluateAll($state);
 
     expect($outcome->shouldContinue())->toBeFalse();
-});
-
-it('uses cumulative timeout when configured', function () {
-    $agent = AgentBuilder::base()
-        ->withTimeout(1)
-        ->withCumulativeTimeout(1)
-        ->addContinuationCriteria(requestContinuationCriterion())
-        ->build();
-
-    $state = AgentState::empty()
-        ->with(executionStartedAt: new \DateTimeImmutable('-5 seconds'));
-    $state = $state->withStateInfo(
-        $state->stateInfo()->addExecutionTime(0.5)
-    );
-
-    $criteria = getAgentCriteria($agent);
-    $outcome = $criteria->evaluateAll($state);
-
-    expect($outcome->shouldContinue())->toBeTrue();
 });

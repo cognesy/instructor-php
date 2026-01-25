@@ -28,13 +28,13 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
-use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
+use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
+use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
+use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
 use Cognesy\Messages\Messages;
 
 // Configure working directory
@@ -70,9 +70,9 @@ $agent = AgentBuilder::base()
 // Task requiring multiple isolated reviews
 $task = <<<TASK
 Review these three files and provide a summary:
-1. packages/addons/src/Agent/AgentBuilder.php
-2. packages/addons/src/Agent/Core/Data/AgentState.php
-3. packages/addons/src/Agent/Agent.php
+1. packages/agents/src/AgentBuilder/AgentBuilder.php
+2. packages/agents/src/Agent/Data/AgentState.php
+3. packages/agents/src/Agent/Agent.php
 
 For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;
@@ -84,9 +84,7 @@ $state = AgentState::empty()->withMessages(
 // Execute with subagent spawning
 echo "Task: Review multiple files\n\n";
 
-while ($agent->hasNextStep($state)) {
-    $state = $agent->nextStep($state);
-
+foreach ($agent->iterate($state) as $state) {
     $step = $state->currentStep();
     echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 

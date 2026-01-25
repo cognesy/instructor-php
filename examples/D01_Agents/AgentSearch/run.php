@@ -28,11 +28,11 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Addons\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
+use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
+use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
 use Cognesy\Messages\Messages;
 
 // Configure working directory
@@ -68,9 +68,7 @@ $state = AgentState::empty()->withMessages(
 );
 
 // Execute agent loop
-while ($agent->hasNextStep($state)) {
-    $state = $agent->nextStep($state);
-
+foreach ($agent->iterate($state) as $state) {
     $step = $state->currentStep();
     echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 

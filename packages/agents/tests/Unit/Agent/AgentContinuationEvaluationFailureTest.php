@@ -57,7 +57,7 @@ describe('Agent continuation evaluation failures', function () {
 
         expect($failedState->status())->toBe(AgentStatus::Failed);
         expect($failedState->stepCount())->toBe(1);
-        expect($failedState->stepResults()->count())->toBe(1);
+        expect($failedState->stepExecutions()->count())->toBe(1);
         expect($failedState->currentStep()?->errorsAsString())->toContain('criteria boom');
         expect($outcome)->not->toBeNull();
         expect($outcome?->stopReason())->toBe(StopReason::ErrorForbade);

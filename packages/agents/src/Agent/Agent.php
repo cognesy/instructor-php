@@ -13,7 +13,8 @@ use Cognesy\Agents\Agent\Contracts\CanUseTools;
 use Cognesy\Agents\Agent\Contracts\ToolInterface;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepResult;
+use Cognesy\Agents\Agent\Data\CurrentExecution;
+use Cognesy\Agents\Agent\Data\StepExecution;
 use Cognesy\Agents\Agent\Enums\AgentStatus;
 use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
 use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
@@ -67,7 +68,9 @@ class Agent implements CanControlAgentLoop
 
         while (true) {
             try {
+                $state = $state->beginStepExecution();
                 if (!$this->hasNextStep($state)) {
+                    $state = $state->clearCurrentExecution();
                     break;
                 }
                 $state = $this->onBeforeStep($state);
@@ -90,13 +93,13 @@ class Agent implements CanControlAgentLoop
     // LIFECYCLE HOOKS ////////////////////////////////////
 
     protected function onBeforeExecution(AgentState $state): AgentState {
-        $state = $state->markExecutionStarted();
+        $executionStartedAt = new DateTimeImmutable();
+        $this->continuationCriteria->executionStarted($executionStartedAt);
         $this->eventEmitter->executionStarted($state, count($this->tools->names()));
         return $state;
     }
 
     protected function onBeforeStep(AgentState $state): AgentState {
-        $state = $state->withCurrentStepStartedAt(new DateTimeImmutable());
         $this->eventEmitter->stepStarted($state);
         return $state;
     }
@@ -107,20 +110,21 @@ class Agent implements CanControlAgentLoop
 
     private function onAfterToolUse(AgentState $state, AgentStep $rawStep) : AgentState
     {
-        $transitionState = $state
-            ->recordStep($rawStep)
-            ->withAccumulatedUsage($rawStep->usage());
+        $currentExecution = $this->resolveCurrentExecution($state);
+        $transitionState = $state->recordStep($rawStep);
 
         $outcome = $this->continuationCriteria->evaluateAll($transitionState);
         $this->eventEmitter->continuationEvaluated($transitionState, $outcome);
 
-        $stepResult = new StepResult(
+        $stepExecution = new StepExecution(
             step: $rawStep,
             outcome: $outcome,
-            startedAt: $state->currentStepStartedAt ?? new DateTimeImmutable(),
+            startedAt: $currentExecution->startedAt,
             completedAt: new DateTimeImmutable(),
+            stepNumber: $currentExecution->stepNumber,
+            id: $rawStep->id(),
         );
-        $nextState = $state->recordStepResult($stepResult);
+        $nextState = $transitionState->recordStepExecution($stepExecution);
         $this->eventEmitter->stateUpdated($nextState);
         return $nextState;
     }
@@ -131,9 +135,10 @@ class Agent implements CanControlAgentLoop
     }
 
     protected function onAfterExecution(AgentState $state): AgentState {
-        $status = $state->stopReason() === StopReason::ErrorForbade
-            ? AgentStatus::Failed
-            : AgentStatus::Completed;
+        $status = match ($state->stopReason()) {
+            StopReason::ErrorForbade => AgentStatus::Failed,
+            default => AgentStatus::Completed,
+        };
 
         $finalState = $state->withStatus($status);
         $this->eventEmitter->executionFinished($finalState);
@@ -141,7 +146,33 @@ class Agent implements CanControlAgentLoop
     }
 
     protected function onError(Throwable $error, AgentState $state): AgentState {
-        return $this->errorHandler->handleError($error, $state);
+        $handling = $this->errorHandler->handleError($error, $state);
+        $currentExecution = $this->resolveCurrentExecution($state);
+        $transitionState = $state
+            ->withStatus(AgentStatus::Failed)
+            ->recordStep($handling->failureStep);
+
+        $this->eventEmitter->continuationEvaluated($transitionState, $handling->outcome);
+
+        $stepExecution = new StepExecution(
+            step: $handling->failureStep,
+            outcome: $handling->outcome,
+            startedAt: $currentExecution->startedAt,
+            completedAt: new DateTimeImmutable(),
+            stepNumber: $currentExecution->stepNumber,
+            id: $handling->failureStep->id(),
+        );
+
+        $nextState = $transitionState
+            ->withStatus($handling->finalStatus)
+            ->recordStepExecution($stepExecution);
+
+        $this->eventEmitter->stateUpdated($nextState);
+        if ($handling->finalStatus === AgentStatus::Failed) {
+            $this->eventEmitter->executionFailed($nextState, $handling->exception);
+        }
+
+        return $nextState;
     }
 
     // INTERNAL ///////////////////////////////////////////
@@ -153,17 +184,23 @@ class Agent implements CanControlAgentLoop
         if ($state->stepCount() === 0) {
             return $this->continuationCriteria->canContinue($state);
         }
-        return $state->stepResults()->shouldContinue();
+        return $state->stepExecutions()->shouldContinue();
     }
 
     private function performStep(AgentState $state): AgentState {
         return match(true) {
-            ($this->processors === null) => $this->executeStep($state),
-            default => $this->processors->apply($state, fn($s) => $this->executeStep($s)),
+            ($this->processors === null) => $this->useTools($state),
+            default => $this->processors->apply($state, fn($s) => $this->useTools($s)),
         };
     }
 
-    private function executeStep(AgentState $state): AgentState {
+    private function useTools(AgentState $state): AgentState {
+        $currentExecution = $this->resolveCurrentExecution($state);
+        $state = $state->withCurrentExecution(new CurrentExecution(
+            stepNumber: $currentExecution->stepNumber,
+            startedAt: new DateTimeImmutable(),
+            id: $currentExecution->id,
+        ));
         $state = $this->onBeforeToolUse($state);
         $rawStep = $this->driver->useTools(
             state: $state,
@@ -175,6 +212,14 @@ class Agent implements CanControlAgentLoop
 
     private function hasUnprocessedSteps(AgentState $state, AgentState $finalState) : bool {
         return $state->stepCount() !== $finalState->stepCount();
+    }
+
+    private function resolveCurrentExecution(AgentState $state): CurrentExecution {
+        $currentExecution = $state->currentExecution();
+        if ($currentExecution !== null) {
+            return $currentExecution;
+        }
+        throw new \LogicException('Current execution is missing. This indicates a lifecycle bug.');
     }
 
     // EVENT DELEGATION ///////////////////////////////////

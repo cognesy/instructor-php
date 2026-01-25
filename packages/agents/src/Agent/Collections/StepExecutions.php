@@ -1,23 +1,25 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Agent\Data;
+namespace Cognesy\Agents\Agent\Collections;
 
-use Cognesy\Agents\Agent\Collections\AgentSteps;
 use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
+use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Agent\Data\StepExecution;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
 /**
  * Immutable collection of step results.
  *
- * Each StepResult bundles an AgentStep with its ContinuationOutcome,
+ * Each StepExecution bundles an AgentStep with its ContinuationOutcome,
  * representing the result of a single execution step.
  */
-final readonly class StepResults
+final readonly class StepExecutions
 {
-    /** @var list<StepResult> */
+    /** @var list<StepExecution> */
     private array $items;
 
     /**
-     * @param list<StepResult> $items
+     * @param list<StepExecution> $items
      */
     public function __construct(array $items = [])
     {
@@ -30,19 +32,19 @@ final readonly class StepResults
     }
 
     /**
-     * @param list<StepResult> $items
+     * @param list<StepExecution> $items
      */
     public static function fromArray(array $items): self
     {
         return new self($items);
     }
 
-    public function append(StepResult $result): self
+    public function append(StepExecution $result): self
     {
         return new self([...$this->items, $result]);
     }
 
-    public function last(): ?StepResult
+    public function last(): ?StepExecution
     {
         if ($this->items === []) {
             return null;
@@ -61,7 +63,7 @@ final readonly class StepResults
     }
 
     /**
-     * @return list<StepResult>
+     * @return list<StepExecution>
      */
     public function all(): array
     {
@@ -71,7 +73,7 @@ final readonly class StepResults
     /**
      * Get the step result at a specific index.
      */
-    public function at(int $index): ?StepResult
+    public function at(int $index): ?StepExecution
     {
         return $this->items[$index] ?? null;
     }
@@ -98,9 +100,21 @@ final readonly class StepResults
     public function totalDuration(): float
     {
         return array_sum(array_map(
-            static fn(StepResult $result): float => $result->duration(),
+            static fn(StepExecution $result): float => $result->duration(),
             $this->items,
         ));
+    }
+
+    /**
+     * Aggregate token usage across all recorded step executions.
+     */
+    public function totalUsage(): Usage
+    {
+        $usage = Usage::none();
+        foreach ($this->items as $execution) {
+            $usage = $usage->withAccumulated($execution->step->usage());
+        }
+        return $usage;
     }
 
     /**
@@ -109,7 +123,7 @@ final readonly class StepResults
     public function steps(): AgentSteps
     {
         $steps = array_map(
-            static fn(StepResult $result): AgentStep => $result->step,
+            static fn(StepExecution $result): AgentStep => $result->step,
             $this->items,
         );
         return new AgentSteps(...$steps);
@@ -129,7 +143,7 @@ final readonly class StepResults
     public function toArray(): array
     {
         return array_map(
-            static fn(StepResult $result): array => $result->toArray(),
+            static fn(StepExecution $result): array => $result->toArray(),
             $this->items,
         );
     }
@@ -142,7 +156,7 @@ final readonly class StepResults
     public static function deserialize(array $data): self
     {
         $items = array_map(
-            static fn(array $resultData): StepResult => StepResult::fromArray($resultData),
+            static fn(array $resultData): StepExecution => StepExecution::fromArray($resultData),
             $data,
         );
         return new self($items);

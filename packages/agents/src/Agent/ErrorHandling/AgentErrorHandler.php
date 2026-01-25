@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Agent\ErrorHandling;
 
-use Cognesy\Agents\Agent\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Agent\Contracts\CanHandleAgentErrors;
 use Cognesy\Agents\Agent\Continuation\AgentErrorContextResolver;
 use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
@@ -11,55 +10,41 @@ use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
 use Cognesy\Agents\Agent\Continuation\StopReason;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepResult;
 use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\Exceptions\AgentException;
-use Cognesy\Events\Contracts\CanHandleEvents;
 use Throwable;
 
 /**
  * Default error handler for agent execution.
  *
  * Uses ErrorPolicy to decide how to handle errors:
- * - Stop: Returns state with Failed status
- * - Retry: Returns state with error recorded but allows continuation
- * - Ignore: Returns state allowing continuation
+ * - Stop: Marks execution as failed
+ * - Retry: Allows continuation
+ * - Ignore: Allows continuation
  */
 final class AgentErrorHandler implements CanHandleAgentErrors
 {
     public function __construct(
         private readonly ErrorPolicy $policy,
         private readonly CanResolveErrorContext $contextResolver,
-        private readonly CanEmitAgentEvents $eventEmitter,
     ) {}
 
-    public static function default(?CanEmitAgentEvents $eventEmitter = null): self {
+    public static function default(): self {
         return new self(
             policy: ErrorPolicy::stopOnAnyError(),
             contextResolver: new AgentErrorContextResolver(),
-            eventEmitter: $eventEmitter ?? new AgentEventEmitter(),
         );
     }
 
-    public static function withPolicy(ErrorPolicy $policy, ?CanEmitAgentEvents $eventEmitter = null): self {
+    public static function withPolicy(ErrorPolicy $policy): self {
         return new self(
             policy: $policy,
             contextResolver: new AgentErrorContextResolver(),
-            eventEmitter: $eventEmitter ?? new AgentEventEmitter(),
-        );
-    }
-
-    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
-        return new self(
-            policy: $this->policy,
-            contextResolver: $this->contextResolver,
-            eventEmitter: $eventEmitter,
         );
     }
 
     #[\Override]
-    public function handleError(Throwable $error, AgentState $state): AgentState {
+    public function handleError(Throwable $error, AgentState $state): ErrorHandlingResult {
         // Wrap error in AgentException
         $agentException = $error instanceof AgentException
             ? $error
@@ -74,8 +59,7 @@ final class AgentErrorHandler implements CanHandleAgentErrors
         // Create transition state with failure recorded (for error context resolution)
         $transitionState = $state
             ->withStatus(AgentStatus::Failed)
-            ->recordStep($failureStep)
-            ->withAccumulatedUsage($failureStep->usage());
+            ->recordStep($failureStep);
 
         // Evaluate error policy
         $errorContext = $this->contextResolver->resolve($transitionState);
@@ -83,12 +67,6 @@ final class AgentErrorHandler implements CanHandleAgentErrors
 
         // Build continuation outcome based on policy decision
         $outcome = $this->buildOutcome($decision, $errorContext);
-        $stepResult = new StepResult(
-            step: $failureStep,
-            outcome: $outcome,
-            startedAt: $state->currentStepStartedAt ?? new \DateTimeImmutable(),
-            completedAt: new \DateTimeImmutable(),
-        );
 
         // Determine final status based on policy decision
         $finalStatus = match ($decision) {
@@ -97,19 +75,12 @@ final class AgentErrorHandler implements CanHandleAgentErrors
             ErrorHandlingDecision::Ignore => AgentStatus::InProgress,
         };
 
-        // Create final state
-        $finalState = $state
-            ->withStatus($finalStatus)
-            ->recordStepResult($stepResult)
-            ->withAccumulatedUsage($failureStep->usage());
-
-        // Emit events
-        $this->eventEmitter->stateUpdated($finalState);
-        if ($finalStatus === AgentStatus::Failed) {
-            $this->eventEmitter->executionFailed($finalState, $agentException);
-        }
-
-        return $finalState;
+        return new ErrorHandlingResult(
+            failureStep: $failureStep,
+            outcome: $outcome,
+            finalStatus: $finalStatus,
+            exception: $agentException,
+        );
     }
 
     private function buildOutcome(

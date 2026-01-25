@@ -49,4 +49,22 @@ class CachedContext
             && empty($this->toolChoice)
             && $this->responseFormat->isEmpty();
     }
+
+    public function toArray(): array {
+        return [
+            'messages' => $this->messages->toArray(),
+            'tools' => $this->tools,
+            'toolChoice' => $this->toolChoice,
+            'responseFormat' => $this->responseFormat->toArray(),
+        ];
+    }
+
+    public static function fromArray(array $data): self {
+        return new self(
+            messages: $data['messages'] ?? [],
+            tools: $data['tools'] ?? [],
+            toolChoice: $data['toolChoice'] ?? [],
+            responseFormat: is_array($data['responseFormat'] ?? null) ? $data['responseFormat'] : [],
+        );
+    }
 }

@@ -8,7 +8,6 @@ use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Agent\Contracts\CanUseTools;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Enums\AgentStepType;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -81,9 +80,9 @@ class ToolCallingDriver implements CanUseTools
      */
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentStep {
-        $response = $this->getToolCallResponse($state, $tools);
-        $toolCalls = $this->getToolsToCall($response);
-        $executions = $executor->useTools($toolCalls, $state);
+        $response = $this->getToolCallResponse($state, $tools); // InferenceResponse
+        $toolCalls = $this->getToolsToCall($response); // ToolCalls
+        $executions = $executor->useTools($toolCalls, $state); // ToolExecutions
         $messages = $this->formatter->makeExecutionMessages($executions);
         $context = $state->messagesForInference();
         return $this->buildStepFromResponse(
@@ -159,19 +158,15 @@ class ToolCallingDriver implements CanUseTools
     private function buildStepFromResponse(
         InferenceResponse $response,
         ToolExecutions   $executions,
-        Messages          $followUps,
-        Messages          $context,
+        Messages         $followUps,
+        Messages         $context,
     ) : AgentStep {
         $outputMessages = $this->appendResponseContent($followUps, $response);
-
         return new AgentStep(
             inputMessages: $context,
             outputMessages: $outputMessages,
-            usage: $response->usage(),
-            toolCalls: $response->toolCalls(),
             toolExecutions: $executions,
             inferenceResponse: $response,
-            stepType: $this->inferStepType($response, $executions)
         );
     }
 
@@ -211,14 +206,6 @@ class ToolCallingDriver implements CanUseTools
             return null;
         }
         return $json->toArray();
-    }
-
-    private function inferStepType(InferenceResponse $response, ToolExecutions $executions) : AgentStepType {
-        return match (true) {
-            $executions->hasErrors() => AgentStepType::Error,
-            $response->hasToolCalls() => AgentStepType::ToolExecution,
-            default => AgentStepType::FinalResponse,
-        };
     }
 
     private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedContext {

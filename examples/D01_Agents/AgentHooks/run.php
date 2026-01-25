@@ -22,11 +22,11 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Hooks\Data\HookOutcome;
-use Cognesy\Addons\Agent\Hooks\Data\ToolHookContext;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
+use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
 
 // Dangerous patterns to block
 $blockedPatterns = [
@@ -68,7 +68,7 @@ $state = AgentState::empty()->withUserMessage(
 );
 
 echo "=== Testing safe commands ===\n";
-$finalState = $agent->finalStep($state);
+$finalState = $agent->execute($state);
 
 $response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
 echo "\nAgent response:\n{$response}\n";
@@ -79,7 +79,7 @@ $state2 = AgentState::empty()->withUserMessage(
     'Delete all files with: rm -rf /'
 );
 
-$finalState2 = $agent->finalStep($state2);
+$finalState2 = $agent->execute($state2);
 
 // The dangerous command should have been blocked
 $hasErrors = $finalState2->currentStep()?->hasErrors() ?? false;

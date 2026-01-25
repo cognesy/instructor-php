@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Serialization;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use DateTimeImmutable;
 
 final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
 {
@@ -25,8 +26,8 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
         }
 
         return [
-            'agent_id' => $state->agentId,
-            'parent_agent_id' => $state->parentAgentId,
+            'agent_id' => $state->agentId(),
+            'parent_agent_id' => $state->parentAgentId(),
             'status' => $state->status()->value,
             'step_count' => $state->stepCount(),
             'usage' => $state->usage()->toArray(),
@@ -38,10 +39,17 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
         ];
     }
 
+    /**
+     * Slim deserialization is intentionally lossy.
+     * It restores core identity, status, timestamps, metadata, usage, and messages,
+     * but it does not rebuild step executions or continuation traces.
+     */
     #[\Override]
     public function deserialize(array $data): AgentState {
         $messages = $data['messages'] ?? [];
         $execution = $data['execution'] ?? [];
+        $createdAt = $execution['created_at'] ?? $execution['started_at'] ?? null;
+        $updatedAt = $execution['updated_at'] ?? null;
 
         return AgentState::fromArray([
             'agentId' => $data['agent_id'] ?? null,
@@ -50,9 +58,8 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
             'usage' => $data['usage'] ?? [],
             'metadata' => $data['metadata'] ?? [],
             'stateInfo' => [
-                'startedAt' => $execution['started_at'] ?? null,
-                'updatedAt' => $execution['updated_at'] ?? null,
-                'cumulativeExecutionSeconds' => $execution['cumulative_seconds'] ?? 0,
+                'createdAt' => $createdAt,
+                'updatedAt' => $updatedAt,
             ],
             'messageStore' => [
                 'sections' => [
@@ -136,11 +143,9 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
     }
 
     private function serializeExecution(AgentState $state): array {
-        $stateInfo = $state->stateInfo();
         return [
-            'started_at' => $stateInfo->startedAt()->format(DATE_ATOM),
-            'updated_at' => $stateInfo->updatedAt()->format(DATE_ATOM),
-            'cumulative_seconds' => $stateInfo->cumulativeExecutionSeconds(),
+            'created_at' => $state->createdAt()->format(DateTimeImmutable::ATOM),
+            'updated_at' => $state->updatedAt()->format(DateTimeImmutable::ATOM),
         ];
     }
 
@@ -167,14 +172,14 @@ final readonly class SlimAgentStateSerializer implements CanSerializeAgentState
             'type' => $step->stepType()->value,
             'has_tool_calls' => $step->hasToolCalls(),
             'finish_reason' => $step->finishReason()?->value,
-            'errors' => count($step->errors()),
+            'errors' => $step->errors()->count(),
             'usage' => ['total' => $step->usage()->total()],
             'tool_calls' => array_map(
                 fn(ToolCall $toolCall): array => [
                     'id' => $toolCall->id(),
                     'name' => $toolCall->name(),
                 ],
-                $step->toolCalls()->all(),
+                $step->requestedToolCalls()->all(),
             ),
         ];
     }

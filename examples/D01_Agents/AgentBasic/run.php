@@ -12,7 +12,7 @@ a message, processing it through the LLM, and returning a response.
 Key concepts:
 - `AgentBuilder`: Constructs configured agent instances
 - `AgentState`: Immutable state container for messages and metadata
-- `Agent::finalStep()`: Executes the agent loop until completion
+- `Agent::execute()`: Executes the agent loop until completion
 
 
 ## Example
@@ -21,9 +21,9 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\Agent\Core\Data\AgentState;
-use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Agent\Enums\AgentStatus;
 use Cognesy\Messages\Messages;
 
 // Build a basic agent
@@ -37,7 +37,7 @@ $state = AgentState::empty()->withMessages(
 );
 
 // Execute agent until completion
-$finalState = $agent->finalStep($state);
+$finalState = $agent->execute($state);
 
 // Extract response
 $response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';

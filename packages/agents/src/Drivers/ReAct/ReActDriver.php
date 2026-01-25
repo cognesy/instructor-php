@@ -9,7 +9,6 @@ use Cognesy\Agents\Agent\Contracts\CanUseTools;
 use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Enums\AgentStepType;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeToolCalls;
 use Cognesy\Agents\Drivers\ReAct\Data\DecisionWithDetails;
@@ -23,6 +22,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -100,14 +100,13 @@ final class ReActDriver implements CanUseTools
         // Execute tool calls and assemble follow-ups
         $executions = $executor->useTools($toolCalls, $state);
         $outputMessages = $this->makeFollowUps($decision, $executions);
+        $responseWithCalls = $this->withToolCalls($inferenceResponse, $toolCalls);
+
         return new AgentStep(
             inputMessages: $messages,
             outputMessages: $outputMessages,
-            usage: $usage,
-            toolCalls: $toolCalls,
             toolExecutions: $executions,
-            inferenceResponse: $inferenceResponse,
-            stepType: AgentStepType::ToolExecution,
+            inferenceResponse: $responseWithCalls,
         );
     }
 
@@ -183,11 +182,7 @@ final class ReActDriver implements CanUseTools
         return new AgentStep(
             inputMessages: $context,
             outputMessages: $messagesErr,
-            usage: null,
-            toolCalls: null,
             toolExecutions: $executions,
-            inferenceResponse: null,
-            stepType: AgentStepType::Error,
         );
     }
 
@@ -205,11 +200,7 @@ final class ReActDriver implements CanUseTools
         return new AgentStep(
             inputMessages: $context,
             outputMessages: $messagesErr,
-            usage: null,
-            toolCalls: null,
             toolExecutions: $executions,
-            inferenceResponse: null,
-            stepType: AgentStepType::Error,
         );
     }
 
@@ -228,14 +219,12 @@ final class ReActDriver implements CanUseTools
             $finalText = $inferenceResponse->content();
             $usage = $inferenceResponse->usage();
         }
+
+        $responseWithUsage = $this->withUsage($inferenceResponse, $usage);
         return new AgentStep(
             inputMessages: $messages,
             outputMessages: Messages::empty()->appendMessage(Message::asAssistant($finalText)),
-            usage: $usage,
-            toolCalls: null,
-            toolExecutions: null,
-            inferenceResponse: $inferenceResponse,
-            stepType: AgentStepType::FinalResponse,
+            inferenceResponse: $responseWithUsage,
         );
     }
 
@@ -270,6 +259,23 @@ final class ReActDriver implements CanUseTools
             $inference = $inference->withHttpClient($this->httpClient);
         }
         return $inference->create();
+    }
+
+    private function withToolCalls(InferenceResponse $response, ToolCalls $toolCalls): InferenceResponse {
+        if ($toolCalls->hasNone()) {
+            return $response;
+        }
+
+        return $response->with(toolCalls: $toolCalls);
+    }
+
+    private function withUsage(?InferenceResponse $response, ?Usage $usage): InferenceResponse {
+        $resolved = $response ?? new InferenceResponse();
+        if ($usage === null) {
+            return $resolved;
+        }
+
+        return $resolved->with(usage: $usage);
     }
 
     private function structuredCachedContext(AgentState $state): ?StructuredCachedContext {

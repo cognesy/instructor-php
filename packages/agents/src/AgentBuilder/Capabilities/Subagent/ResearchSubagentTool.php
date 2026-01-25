@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
-use Cognesy\Agents\Agent\Agent;
 use Cognesy\Agents\Agent\Collections\Tools;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Tools\BaseTool;
@@ -14,17 +13,16 @@ class ResearchSubagentTool extends BaseTool
 {
     private string $baseDir;
 
-    public function __construct(Agent $parentAgent, string $baseDir) {
+    public function __construct(string $baseDir) {
         parent::__construct(
             name: 'research_subagent',
             description: 'Spawn a subagent to research files and return a summary. Use for reading and analyzing file contents.',
         );
-        // Note: $parentAgent parameter kept for API compatibility but not used
         $this->baseDir = rtrim($baseDir, '/');
     }
 
-    public static function withParent(Agent $parentAgent, string $baseDir): self {
-        return new self($parentAgent, $baseDir);
+    public static function inDirectory(string $baseDir): self {
+        return new self($baseDir);
     }
 
     #[\Override]

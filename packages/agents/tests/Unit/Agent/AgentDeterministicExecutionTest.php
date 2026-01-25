@@ -52,7 +52,7 @@ describe('Deterministic agent execution', function () {
             ScenarioStep::final('Paris'),
         );
 
-        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepResults.
+        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepExecutions.
         // So step counting must include currentStep to reflect the step being evaluated.
         $agent = AgentBuilder::base()
             ->withTools([$tool])
@@ -93,7 +93,7 @@ describe('Deterministic agent execution', function () {
             }
         };
 
-        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepResults.
+        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepExecutions.
         // So step counting must include currentStep to reflect the step being evaluated.
         $criterion = ContinuationCriteria::when(
             static fn(AgentState $state): ContinuationDecision => match (true) {

@@ -7,7 +7,6 @@ use Cognesy\Agents\Agent\Agent;
 use Cognesy\Agents\Agent\Collections\Tools;
 use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
 use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\Criteria\CumulativeExecutionTimeLimit;
 use Cognesy\Agents\Agent\Continuation\Criteria\ErrorPolicyCriterion;
 use Cognesy\Agents\Agent\Continuation\Criteria\ExecutionTimeLimit;
 use Cognesy\Agents\Agent\Continuation\Criteria\FinishReasonCheck;
@@ -39,7 +38,6 @@ use Cognesy\Agents\Agent\Hooks\Hooks\SubagentStopHook;
 use Cognesy\Agents\Agent\Hooks\Matchers\ToolNameMatcher;
 use Cognesy\Agents\Agent\Hooks\Stack\HookStack;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AccumulateTokenUsage;
 use Cognesy\Agents\Agent\StateProcessing\Processors\AppendContextMetadata;
 use Cognesy\Agents\Agent\StateProcessing\Processors\AppendStepMessages;
 use Cognesy\Agents\Agent\StateProcessing\Processors\ApplyCachedContext;
@@ -92,7 +90,6 @@ class AgentBuilder
     private int $maxRetries = 3;
     /** @var list<InferenceFinishReason> */
     private array $finishReasons = [];
-    private ?int $cumulativeTimeout = null;
 
     /** @var array<callable(Agent): Agent> */
     private array $onBuildCallbacks = [];
@@ -200,11 +197,6 @@ class AgentBuilder
      */
     public function withTimeout(int $seconds): self {
         $this->maxExecutionTime = $seconds;
-        return $this;
-    }
-
-    public function withCumulativeTimeout(int $seconds): self {
-        $this->cumulativeTimeout = $seconds;
         return $this;
     }
 
@@ -596,7 +588,6 @@ class AgentBuilder
         // Build error handler
         $errorHandler = AgentErrorHandler::withPolicy(
             policy: $this->errorPolicy ?? ErrorPolicy::stopOnAnyError(),
-            eventEmitter: $eventEmitter,
         );
 
         // Build base agent
@@ -624,7 +615,6 @@ class AgentBuilder
         if ($this->cachedContext !== null && !$this->cachedContext->isEmpty()) {
             $baseProcessors[] = new ApplyCachedContext($this->cachedContext);
         }
-        $baseProcessors[] = new AccumulateTokenUsage();
         $baseProcessors[] = new AppendContextMetadata();
         $baseProcessors[] = new AppendStepMessages();
 
@@ -638,15 +628,14 @@ class AgentBuilder
         // Hard limits return ForbidContinuation when exceeded, AllowStop otherwise
         // Continue signals return AllowContinuation when they have work, AllowStop otherwise
         //
-        // Note: Criteria are evaluated BEFORE the step is added to stepResults,
-        // but currentStep is set to the step being evaluated. So step counting
-        // must account for the currentStep (add 1 if it exists).
+        // Note: Criteria are evaluated BEFORE the step is recorded to stepExecutions,
+        // but currentStep is already set. transientStepCount() accounts for this
+        // without double-counting already recorded steps.
         $baseCriteria = [
             // Hard limits (return ForbidContinuation when exceeded)
-            new StepsLimit($this->maxSteps, static fn($state) => $state->stepCount() + ($state->currentStep() !== null ? 1 : 0)),
+            new StepsLimit($this->maxSteps, static fn($state) => $state->transientStepCount()),
             new TokenUsageLimit($this->maxTokens, static fn($state) => $state->usage()->total()),
-            // Uses executionStartedAt (set at start of each execution) with fallback to session startedAt.
-            // This prevents timeouts in multi-turn conversations spanning days.
+            // Per-execution time limit (optional).
             $this->buildTimeLimitCriterion(),
             ErrorPolicyCriterion::withPolicy($this->errorPolicy ?? ErrorPolicy::stopOnAnyError()),
             new FinishReasonCheck($this->finishReasons, static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
@@ -666,17 +655,8 @@ class AgentBuilder
     }
 
     private function buildTimeLimitCriterion(): CanEvaluateContinuation {
-        if ($this->cumulativeTimeout !== null) {
-            return new CumulativeExecutionTimeLimit(
-                $this->cumulativeTimeout,
-                static fn(AgentState $state): float => $state->stateInfo()->cumulativeExecutionSeconds(),
-            );
-        }
-
         return new ExecutionTimeLimit(
             $this->maxExecutionTime,
-            static fn(AgentState $state): \DateTimeImmutable => $state->executionStartedAt() ?? $state->startedAt(),
-            null,
         );
     }
 

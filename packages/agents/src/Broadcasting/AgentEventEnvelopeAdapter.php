@@ -138,7 +138,7 @@ final class AgentEventEnvelopeAdapter
             'tool_call_id' => null,
             'success' => $event->success,
             'error' => $event->error,
-            'duration_ms' => $this->durationMs($event->startedAt, $event->endedAt),
+            'duration_ms' => $this->durationMs($event->startedAt, $event->completedAt),
             'result_summary' => null,
         ]);
     }
@@ -261,10 +261,10 @@ final class AgentEventEnvelopeAdapter
         return $result;
     }
 
-    private function durationMs(DateTimeImmutable $startedAt, DateTimeImmutable $endedAt): int
+    private function durationMs(DateTimeImmutable $startedAt, DateTimeImmutable $completedAt): int
     {
-        $diff = $endedAt->getTimestamp() - $startedAt->getTimestamp();
-        $microDiff = (int) ($endedAt->format('u')) - (int) ($startedAt->format('u'));
+        $diff = $completedAt->getTimestamp() - $startedAt->getTimestamp();
+        $microDiff = (int) ($completedAt->format('u')) - (int) ($startedAt->format('u'));
         return ($diff * 1000) + (int) ($microDiff / 1000);
     }
 }

@@ -3,7 +3,7 @@
 namespace Tests\Addons\Unit\Agent;
 
 use Cognesy\Agents\Agent\Collections\NameList;
-use Cognesy\Agents\Agent\Data\AgentDescriptor;
+use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;

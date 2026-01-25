@@ -2,13 +2,14 @@
 
 namespace Tests\Addons\Unit\Agent;
 
+use Cognesy\Agents\Agent\Collections\ErrorList;
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
 use Cognesy\Agents\Agent\Continuation\AgentErrorContextResolver;
 use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepResult;
+use Cognesy\Agents\Agent\Data\StepExecution;
+use Cognesy\Agents\Agent\Data\ToolExecution;
 use Cognesy\Agents\Agent\ErrorHandling\ErrorType;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Exceptions\ProviderRateLimitException;
@@ -19,19 +20,22 @@ it('classifies tool errors', function () {
         toolCall: new ToolCall('tool', [], 'call_1'),
         result: Result::failure(new \RuntimeException('tool failed')),
         startedAt: new \DateTimeImmutable(),
-        endedAt: new \DateTimeImmutable(),
+        completedAt: new \DateTimeImmutable(),
     );
+    $stepId = 'step-1';
     $step = new AgentStep(
         toolExecutions: new ToolExecutions($execution),
+        id: $stepId,
     );
-    $stepResult = new StepResult(
+    $stepExecution = new StepExecution(
         step: $step,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 1,
+        id: $stepId,
     );
-    $state = AgentState::empty()
-        ->recordStepResult($stepResult);
+    $state = AgentState::empty()->recordStepExecution($stepExecution);
 
     $resolver = new AgentErrorContextResolver();
     $context = $resolver->resolve($state);
@@ -47,19 +51,22 @@ it('classifies rate limit errors', function () {
         toolCall: new ToolCall('tool', [], 'call_1'),
         result: Result::failure(new ProviderRateLimitException('rate limit')),
         startedAt: new \DateTimeImmutable(),
-        endedAt: new \DateTimeImmutable(),
+        completedAt: new \DateTimeImmutable(),
     );
+    $stepId = 'step-1';
     $step = new AgentStep(
         toolExecutions: new ToolExecutions($execution),
+        id: $stepId,
     );
-    $stepResult = new StepResult(
+    $stepExecution = new StepExecution(
         step: $step,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 1,
+        id: $stepId,
     );
-    $state = AgentState::empty()
-        ->recordStepResult($stepResult);
+    $state = AgentState::empty()->recordStepExecution($stepExecution);
 
     $resolver = new AgentErrorContextResolver();
     $context = $resolver->resolve($state);
@@ -68,17 +75,20 @@ it('classifies rate limit errors', function () {
 });
 
 it('classifies non-tool errors as model errors', function () {
+    $stepId = 'step-1';
     $step = new AgentStep(
-        errors: [new \RuntimeException('model failed')],
+        errors: new ErrorList(new \RuntimeException('model failed')),
+        id: $stepId,
     );
-    $stepResult = new StepResult(
+    $stepExecution = new StepExecution(
         step: $step,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 1,
+        id: $stepId,
     );
-    $state = AgentState::empty()
-        ->recordStepResult($stepResult);
+    $state = AgentState::empty()->recordStepExecution($stepExecution);
 
     $resolver = new AgentErrorContextResolver();
     $context = $resolver->resolve($state);

@@ -30,8 +30,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function executionStarted(AgentState $state, int $availableTools): void
     {
         $this->events->dispatch(new AgentExecutionStarted(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             messageCount: $state->messages()->count(),
             availableTools: $availableTools,
         ));
@@ -41,8 +41,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function stepStarted(AgentState $state): void
     {
         $this->events->dispatch(new AgentStepStarted(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             stepNumber: $state->stepCount() + 1,
             messageCount: $state->messages()->count(),
             availableTools: 0, // Not tracked at step level
@@ -53,24 +53,31 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function stepCompleted(AgentState $state): void
     {
         $usage = $state->currentStep()?->usage() ?? new Usage(0, 0);
+        $lastStepExecution = $state->lastStepExecution();
+        $errors = $state->currentStep()?->errors();
+        $errorCount = $errors?->count() ?? 0;
+        $startedAt = match (true) {
+            $lastStepExecution !== null => $lastStepExecution->startedAt,
+            default => new DateTimeImmutable(),
+        };
 
         $this->events->dispatch(new AgentStepCompleted(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             stepNumber: $state->stepCount(),
             hasToolCalls: $state->currentStep()?->hasToolCalls() ?? false,
-            errorCount: count($state->currentStep()?->errors() ?? []),
+            errorCount: $errorCount,
             errorMessages: $state->currentStep()?->errorsAsString() ?? '',
             usage: $usage,
             finishReason: $state->currentStep()?->finishReason(),
-            startedAt: $state->currentStepStartedAt ?? new DateTimeImmutable(),
+            startedAt: $startedAt,
         ));
 
         // Report token usage
         if ($usage->total() > 0) {
             $this->events->dispatch(new TokenUsageReported(
-                agentId: $state->agentId,
-                parentAgentId: $state->parentAgentId,
+                agentId: $state->agentId(),
+                parentAgentId: $state->parentAgentId(),
                 operation: 'step',
                 usage: $usage,
                 context: [
@@ -85,8 +92,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function stateUpdated(AgentState $state): void
     {
         $this->events->dispatch(new AgentStateUpdated(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             status: $state->status(),
             stepCount: $state->stepCount(),
             stateSnapshot: $state->toArray(),
@@ -98,8 +105,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function continuationEvaluated(AgentState $state, ContinuationOutcome $outcome): void
     {
         $this->events->dispatch(new ContinuationEvaluated(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             stepNumber: $state->stepCount(),
             outcome: $outcome,
         ));
@@ -109,8 +116,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function executionFinished(AgentState $state): void
     {
         $this->events->dispatch(new AgentExecutionCompleted(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             status: $state->status(),
             totalSteps: $state->stepCount(),
             totalUsage: $state->usage(),
@@ -122,8 +129,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     public function executionFailed(AgentState $state, AgentException $exception): void
     {
         $this->events->dispatch(new AgentExecutionFailed(
-            agentId: $state->agentId,
-            parentAgentId: $state->parentAgentId,
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
             exception: $exception,
             status: $state->status(),
             stepsCompleted: $state->stepCount(),
@@ -150,7 +157,7 @@ final class AgentEventEmitter implements CanEmitAgentEvents
             success: $execution->result()->isSuccess(),
             error: $execution->errorAsString(),
             startedAt: $execution->startedAt(),
-            endedAt: $execution->endedAt(),
+            completedAt: $execution->completedAt(),
         ));
     }
 }

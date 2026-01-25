@@ -94,7 +94,7 @@ HttpClient
   └── withRequest() - Create pending request for execution
   └── pool() - Execute multiple requests concurrently
   └── withPool() - Create pending pool for deferred execution
-// @doctest id="d80a"
+// @doctest id="5ab7"
 ```
 
 ### Middleware Layer
@@ -105,7 +105,7 @@ The middleware system allows for processing requests and responses through a cha
 Request -> Middleware 1 -> Middleware 2 -> ... -> Driver -> External API
                                                    ↓
 Response <- Middleware 1 <- Middleware 2 <- ... <- Driver <- HTTP Response
-// @doctest id="b9be"
+// @doctest id="e1cb"
 ```
 
 Key components:
@@ -123,7 +123,7 @@ CanHandleHttpRequest (interface)
   ├── SymfonyDriver
   ├── LaravelDriver
   └── MockHttpDriver (for testing)
-// @doctest id="8a1e"
+// @doctest id="241a"
 ```
 
 ### Adapter Layer
@@ -136,7 +136,7 @@ HttpResponse (interface)
   ├── SymfonyHttpResponse
   ├── LaravelHttpResponse
   └── MockHttpResponse
-// @doctest id="5d5c"
+// @doctest id="39df"
 ```
 
 ## Supported HTTP Clients

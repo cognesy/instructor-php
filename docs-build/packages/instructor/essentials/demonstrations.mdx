@@ -45,7 +45,7 @@ $user = (new StructuredOutput)->with(
     mode: OutputMode::Json
 )->get();
 ?>
-// @doctest id="40e8"
+// @doctest id="4202"
 ```
 
 ## Modifying the example template
@@ -74,7 +74,7 @@ $user = (new StructuredOutput)->with(
     ],
     mode: OutputMode::Json
 )->get();
-// @doctest id="fad2"
+// @doctest id="f7f0"
 ```
 
 
@@ -94,7 +94,7 @@ $example = Example::fromText(
     input: 'Ian is 27 yo',
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="9deb"
+// @doctest id="95a4"
 ```
 
 ### Make example from chat
@@ -107,7 +107,7 @@ $example = Example::fromChat(
     input: [['role' => 'user', 'content' => 'Ian is 27 yo']],
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="c5a1"
+// @doctest id="9edd"
 ```
 
 ### Make example from data
@@ -121,5 +121,5 @@ $example = Example::fromData(
     input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthData' => '1994-01-01'],
     output: ['name' => 'Ian', 'age' => 27]
 );
-// @doctest id="d362"
+// @doctest id="90e4"
 ```

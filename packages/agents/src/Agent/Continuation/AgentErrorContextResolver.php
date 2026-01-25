@@ -71,18 +71,20 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
             return $execution->error();
         }
 
-        $errors = $step->errors();
-        return $errors[0] ?? null;
+        return $step->errors()->first();
     }
 
     private function countConsecutiveFailures(AgentState $state): int {
         $count = 0;
 
-        // Include current step if it has errors AND is not already in stepResults
-        // (during error handling, currentStep is set before stepResult is recorded)
+        // Include current step if it has errors AND is not already in stepExecutions
+        // (during error handling, currentStep is set before stepExecution is recorded)
         $currentStep = $state->currentStep();
-        $lastResultStep = $state->stepResults()->last()?->step;
-        $currentStepAlreadyCounted = ($currentStep !== null && $lastResultStep === $currentStep);
+        $lastResultStep = $state->stepExecutions()->last()?->step;
+        $currentStepAlreadyCounted = false;
+        if ($currentStep !== null && $lastResultStep !== null) {
+            $currentStepAlreadyCounted = $currentStep->id() === $lastResultStep->id();
+        }
 
         if ($currentStep !== null && $currentStep->hasErrors() && !$currentStepAlreadyCounted) {
             $count++;
@@ -104,10 +106,13 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
             fn(AgentStep $step) => $step->hasErrors(),
         ));
 
-        // Include current step if it has errors AND is not already in stepResults
+        // Include current step if it has errors AND is not already in stepExecutions
         $currentStep = $state->currentStep();
-        $lastResultStep = $state->stepResults()->last()?->step;
-        $currentStepAlreadyCounted = ($currentStep !== null && $lastResultStep === $currentStep);
+        $lastResultStep = $state->stepExecutions()->last()?->step;
+        $currentStepAlreadyCounted = false;
+        if ($currentStep !== null && $lastResultStep !== null) {
+            $currentStepAlreadyCounted = $currentStep->id() === $lastResultStep->id();
+        }
 
         if ($currentStep !== null && $currentStep->hasErrors() && !$currentStepAlreadyCounted) {
             $count++;

@@ -15,7 +15,7 @@ final readonly class ToolExecution
 {
     private string $id;
     private DateTimeImmutable $startedAt;
-    private DateTimeImmutable $endedAt;
+    private DateTimeImmutable $completedAt;
     private ToolCall $toolCall;
     private Result $result;
 
@@ -23,72 +23,73 @@ final readonly class ToolExecution
         ToolCall $toolCall,
         Result $result,
         DateTimeImmutable $startedAt,
-        DateTimeImmutable $endedAt,
+        DateTimeImmutable $completedAt,
         ?string $id = null,
     ) {
         $this->toolCall = $toolCall;
         $this->result = $result;
         $this->startedAt = $startedAt;
-        $this->endedAt = $endedAt;
+        $this->completedAt = $completedAt;
         $this->id = $id ?? Uuid::uuid4();
     }
 
     // CONSTRUCTORS ////////////////////////////////////////////
 
-    public static function fromArray(array $data) : ToolExecution {
+    public static function fromArray(array $data): ToolExecution {
         return new ToolExecution(
             toolCall: self::hydrateToolCall($data),
             result: self::makeResult($data),
             startedAt: self::parseDate($data['startedAt'] ?? null),
-            endedAt: self::parseDate($data['endedAt'] ?? null),
+            // Legacy support: endedAt is accepted but deprecated in favor of completedAt.
+            completedAt: self::parseDate($data['completedAt'] ?? $data['endedAt'] ?? null),
             id: $data['id'] ?? null,
         );
     }
 
     // ACCESSORS ///////////////////////////////////////////////
 
-    public function toolCall() : ToolCall {
+    public function toolCall(): ToolCall {
         return $this->toolCall;
     }
 
-    public function id() : string {
+    public function id(): string {
         return $this->id;
     }
 
-    public function startedAt() : DateTimeImmutable {
+    public function startedAt(): DateTimeImmutable {
         return $this->startedAt;
     }
 
-    public function endedAt() : DateTimeImmutable {
-        return $this->endedAt;
+    public function completedAt(): DateTimeImmutable {
+        return $this->completedAt;
     }
 
-    public function name() : string {
+    public function name(): string {
         return $this->toolCall->name();
     }
 
-    public function args() : array {
+    public function args(): array {
         return $this->toolCall->args();
     }
 
-    public function result() : Result {
+    public function result(): Result {
         return $this->result;
     }
 
-    public function value() : mixed {
+    public function value(): mixed {
         return match (true) {
             $this->result instanceof Success => $this->result->unwrap(),
             default => null,
         };
     }
 
-    public function error() : ?Throwable {
+    public function error(): ?Throwable {
         return $this->result instanceof Failure
             ? $this->result->exception()
             : null;
     }
 
-    public function errorMessage() : string {
+    public function errorMessage(): string {
         if (!$this->result->isFailure()) {
             return '';
         }
@@ -101,11 +102,11 @@ final readonly class ToolExecution
         return '';
     }
 
-    public function hasError() : bool {
+    public function hasError(): bool {
         return $this->result->isFailure();
     }
 
-    public function errorAsString() : ?string {
+    public function errorAsString(): ?string {
         if (!$this->result->isFailure()) {
             return null;
         }
@@ -115,10 +116,11 @@ final readonly class ToolExecution
 
     // TRANSFORMATIONS / CONVERSIONS ////////////////////////////
 
-    public function toArray() : array {
+    public function toArray(): array {
         $failure = $this->result instanceof Failure ? $this->result : null;
 
         return [
+            'id' => $this->id,
             'toolCall' => [
                 'id' => $this->toolCall->id(),
                 'name' => $this->toolCall->name(),
@@ -129,13 +131,13 @@ final readonly class ToolExecution
             'result' => $this->result->isSuccess() ? $this->value() : null,
             'error' => $failure?->errorMessage(),
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
-            'endedAt' => $this->endedAt->format(DateTimeImmutable::ATOM),
+            'completedAt' => $this->completedAt->format(DateTimeImmutable::ATOM),
         ];
     }
 
     // INTERNAL ////////////////////////////////////////////////
 
-    private static function makeResult(array $data) : Result {
+    private static function makeResult(array $data): Result {
         if (array_key_exists('error', $data) && $data['error'] !== null && $data['error'] !== '') {
             return self::makeFailure($data['error']);
         }
@@ -145,7 +147,7 @@ final readonly class ToolExecution
         return Result::success(null);
     }
 
-    private static function makeFailure(mixed $error) : Failure {
+    private static function makeFailure(mixed $error): Failure {
         if ($error instanceof Failure) {
             return $error;
         }
@@ -162,7 +164,7 @@ final readonly class ToolExecution
         };
     }
 
-    private static function hydrateToolCall(array $data) : ToolCall {
+    private static function hydrateToolCall(array $data): ToolCall {
         $toolCallPayload = $data['toolCall'] ?? [];
         if (!is_array($toolCallPayload)) {
             $toolCallPayload = [];
@@ -189,7 +191,7 @@ final readonly class ToolExecution
         return $id !== '' ? $toolCall->withId((string) $id) : $toolCall;
     }
 
-    private static function parseDate(mixed $value) : DateTimeImmutable {
+    private static function parseDate(mixed $value): DateTimeImmutable {
         return match (true) {
             $value instanceof DateTimeImmutable => $value,
             is_string($value) && $value !== '' => new DateTimeImmutable($value),

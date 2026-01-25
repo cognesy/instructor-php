@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Agent\Continuation;
 
 use Cognesy\Agents\Agent\Data\AgentState;
+use DateTimeImmutable;
 
 /**
  * Flat collection of continuation criteria with priority-based resolution.
@@ -52,6 +53,15 @@ class ContinuationCriteria implements CanEvaluateContinuation
 
     public function withCriteria(CanEvaluateContinuation ...$criteria): self {
         return new self(...[...$this->criteria, ...$criteria]);
+    }
+
+    public function executionStarted(DateTimeImmutable $startedAt): void {
+        foreach ($this->criteria as $criterion) {
+            if (!$criterion instanceof CanStartExecution) {
+                continue;
+            }
+            $criterion->executionStarted($startedAt);
+        }
     }
 
     /**

@@ -46,54 +46,56 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     #[\Override]
     public function useTool(ToolCall $toolCall, AgentState $state): ToolExecution {
-        // Process before-tool hooks
-        $beforeContext = ToolHookContext::beforeTool($toolCall, $state);
-        $beforeOutcome = $this->toolHookStack->process(
-            $beforeContext,
+        $toolCall = $this->processBeforeHooks($toolCall, $state);
+        $execution = $this->executeDirectly($toolCall, $state);
+        $execution = $this->processAfterHooks($toolCall, $execution, $state);
+
+        if ($this->throwOnToolFailure && $execution->result() instanceof Failure) {
+            $this->throwOnFailure($execution->result());
+        }
+
+        return $execution;
+    }
+
+    private function processBeforeHooks(ToolCall $toolCall, AgentState $state): ToolCall {
+        $context = ToolHookContext::beforeTool($toolCall, $state);
+        $outcome = $this->toolHookStack->process(
+            $context,
             static fn($ctx) => HookOutcome::proceed($ctx)
         );
 
-        if ($beforeOutcome->isBlocked()) {
+        if ($outcome->isBlocked() || $outcome->isStopped()) {
             throw new ToolCallBlockedException(
                 $toolCall->name(),
-                $beforeOutcome->reason() ?? 'Blocked by hook',
+                $outcome->reason() ?? 'Blocked by hook',
             );
         }
 
-        if ($beforeOutcome->isStopped()) {
-            throw new ToolCallBlockedException(
-                $toolCall->name(),
-                $beforeOutcome->reason() ?? 'Stopped by hook',
-            );
-        }
+        return $this->extractToolCall($outcome, $toolCall);
+    }
 
-        // Get potentially modified tool call from before hooks
-        $effectiveContext = $beforeOutcome->context();
-        $effectiveToolCall = ($effectiveContext instanceof ToolHookContext)
-            ? $effectiveContext->toolCall()
-            : $toolCall;
-
-        // Execute tool
-        $execution = $this->executeDirectly($effectiveToolCall, $state);
-
-        // Process after-tool hooks
-        $afterContext = ToolHookContext::afterTool($effectiveToolCall, $execution, $state);
-        $afterOutcome = $this->toolHookStack->process(
-            $afterContext,
+    private function processAfterHooks(ToolCall $toolCall, ToolExecution $execution, AgentState $state): ToolExecution {
+        $context = ToolHookContext::afterTool($toolCall, $execution, $state);
+        $outcome = $this->toolHookStack->process(
+            $context,
             static fn($ctx) => HookOutcome::proceed($ctx)
         );
 
-        // Get potentially modified execution from after hooks
-        $effectiveAfterContext = $afterOutcome->context();
-        $effectiveExecution = ($effectiveAfterContext instanceof ToolHookContext && $effectiveAfterContext->execution() !== null)
-            ? $effectiveAfterContext->execution()
-            : $execution;
+        return $this->extractExecution($outcome, $execution);
+    }
 
-        if ($effectiveExecution->result() instanceof Failure && $this->throwOnToolFailure) {
-            $this->throwOnFailure($effectiveExecution->result());
-        }
+    private function extractToolCall(HookOutcome $outcome, ToolCall $default): ToolCall {
+        $context = $outcome->context();
+        return ($context instanceof ToolHookContext)
+            ? $context->toolCall()
+            : $default;
+    }
 
-        return $effectiveExecution;
+    private function extractExecution(HookOutcome $outcome, ToolExecution $default): ToolExecution {
+        $context = $outcome->context();
+        return ($context instanceof ToolHookContext && $context->execution() !== null)
+            ? $context->execution()
+            : $default;
     }
 
     /**
@@ -110,7 +112,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             toolCall: $toolCall,
             result: $result,
             startedAt: $startedAt,
-            endedAt: new DateTimeImmutable(),
+            completedAt: new DateTimeImmutable(),
         );
         $this->eventEmitter->toolCallCompleted($execution);
 
@@ -119,11 +121,12 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     #[\Override]
     public function useTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions {
-        $executions = new ToolExecutions();
-        foreach ($toolCalls->all() as $toolCall) {
-            $executions = $executions->withAddedExecution($this->useTool($toolCall, $state));
-        }
-        return $executions;
+        return new ToolExecutions(
+            ...array_map(
+                fn(ToolCall $toolCall) => $this->useTool($toolCall, $state),
+                $toolCalls->all()
+            )
+        );
     }
 
     // ACCESSORS /////////////////////////////////////////////

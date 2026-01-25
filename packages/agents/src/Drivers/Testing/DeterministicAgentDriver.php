@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
+use Cognesy\Agents\Agent\Collections\ErrorList;
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
 use Cognesy\Agents\Agent\Collections\Tools;
 use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
@@ -11,6 +12,7 @@ use Cognesy\Agents\Agent\Data\AgentStep;
 use Cognesy\Agents\Agent\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 final class DeterministicAgentDriver implements CanUseTools
@@ -96,22 +98,40 @@ final class DeterministicAgentDriver implements CanUseTools
             ? $executor->useTools($step->toolCalls, $state)
             : new ToolExecutions();
 
+        $response = new InferenceResponse(
+            toolCalls: $step->toolCalls,
+            usage: $step->usage,
+        );
+        $errors = $this->errorsForType($step->stepType);
+
         return new AgentStep(
             inputMessages: $state->messagesForInference(),
             outputMessages: Messages::fromString($step->response, 'assistant'),
-            usage: $step->usage,
-            toolCalls: $step->toolCalls,
             toolExecutions: $executions,
-            stepType: $step->stepType,
+            inferenceResponse: $response,
+            errors: $errors,
         );
     }
 
     private function defaultStep(AgentState $state): AgentStep {
+        $response = new InferenceResponse(
+            toolCalls: ToolCalls::empty(),
+            usage: $this->defaultUsage,
+        );
+        $errors = $this->errorsForType($this->defaultStepType);
+
         return new AgentStep(
             inputMessages: $state->messagesForInference(),
             outputMessages: Messages::fromString($this->defaultResponse, 'assistant'),
-            usage: $this->defaultUsage,
-            stepType: $this->defaultStepType,
+            inferenceResponse: $response,
+            errors: $errors,
         );
+    }
+
+    private function errorsForType(AgentStepType $type): ErrorList {
+        return match ($type) {
+            AgentStepType::Error => new ErrorList(new \RuntimeException('Deterministic step marked as error')),
+            default => ErrorList::empty(),
+        };
     }
 }

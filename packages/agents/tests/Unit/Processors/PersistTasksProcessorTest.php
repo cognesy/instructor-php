@@ -10,6 +10,7 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoResult;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 
@@ -68,15 +69,16 @@ describe('PersistTasksProcessor', function () {
             toolCall: $toolCall,
             result: Result::success($todoResult),
             startedAt: $now,
-            endedAt: $now,
+            completedAt: $now,
         );
 
         $toolExecutions = new ToolExecutions($execution);
 
         // Create step with tool executions
+        $response = new InferenceResponse(toolCalls: new ToolCalls($toolCall));
         $step = new AgentStep(
-            toolCalls: new ToolCalls($toolCall),
             toolExecutions: $toolExecutions,
+            inferenceResponse: $response,
         );
 
         $state = AgentState::empty()->withCurrentStep($step);
@@ -107,13 +109,14 @@ describe('PersistTasksProcessor', function () {
             toolCall: $toolCall,
             result: Result::failure(new \Exception('Tool failed')),
             startedAt: $now,
-            endedAt: $now,
+            completedAt: $now,
         );
 
         $toolExecutions = new ToolExecutions($execution);
+        $response = new InferenceResponse(toolCalls: new ToolCalls($toolCall));
         $step = new AgentStep(
-            toolCalls: new ToolCalls($toolCall),
             toolExecutions: $toolExecutions,
+            inferenceResponse: $response,
         );
 
         $state = AgentState::empty()->withCurrentStep($step);
@@ -138,13 +141,14 @@ describe('PersistTasksProcessor', function () {
             toolCall: $toolCall,
             result: Result::success('file1.txt'),
             startedAt: $now,
-            endedAt: $now,
+            completedAt: $now,
         );
 
         $toolExecutions = new ToolExecutions($execution);
+        $response = new InferenceResponse(toolCalls: new ToolCalls($toolCall));
         $step = new AgentStep(
-            toolCalls: new ToolCalls($toolCall),
             toolExecutions: $toolExecutions,
+            inferenceResponse: $response,
         );
 
         $state = AgentState::empty()->withCurrentStep($step);

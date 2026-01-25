@@ -18,7 +18,7 @@ final class ToolCallStarted extends AgentEvent
         parent::__construct([
             'tool' => $this->tool,
             'args' => $this->args,
-            'at' => $this->startedAt->format(DATE_ATOM),
+            'at' => $this->startedAt->format(DateTimeImmutable::ATOM),
         ]);
     }
 

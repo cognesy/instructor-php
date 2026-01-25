@@ -14,7 +14,7 @@ describe('ToolExecution error message', function () {
             toolCall: $toolCall,
             result: Result::failure(new \RuntimeException('boom')),
             startedAt: new DateTimeImmutable('2024-01-01T00:00:00Z'),
-            endedAt: new DateTimeImmutable('2024-01-01T00:00:01Z'),
+            completedAt: new DateTimeImmutable('2024-01-01T00:00:01Z'),
         );
 
         expect($execution->errorMessage())->toBe('boom');
@@ -26,7 +26,7 @@ describe('ToolExecution error message', function () {
             toolCall: $toolCall,
             result: Result::success('ok'),
             startedAt: new DateTimeImmutable('2024-01-01T00:00:00Z'),
-            endedAt: new DateTimeImmutable('2024-01-01T00:00:01Z'),
+            completedAt: new DateTimeImmutable('2024-01-01T00:00:01Z'),
         );
 
         expect($execution->errorMessage())->toBe('');

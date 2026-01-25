@@ -79,7 +79,7 @@ class SpawnSubagentTool extends BaseTool
         // Create and run subagent
         $subagent = $this->createSubagent($spec);
         // Get parent's execution ID from injected agent state
-        $parentExecutionId = $this->agentState?->agentId ?? 'unknown';
+        $parentExecutionId = $this->agentState?->agentId() ?? 'unknown';
         $initialState = $this->createInitialState($prompt, $spec, $parentExecutionId);
         $finalState = $this->runSubagent($subagent, $initialState);
 
@@ -212,7 +212,7 @@ class SpawnSubagentTool extends BaseTool
                 toolCall: $toolCall,
                 result: Result::success($skill->render()),
                 startedAt: new DateTimeImmutable(),
-                endedAt: new DateTimeImmutable(),
+                completedAt: new DateTimeImmutable(),
             );
             $executions = $executions->withAddedExecution($execution);
         }

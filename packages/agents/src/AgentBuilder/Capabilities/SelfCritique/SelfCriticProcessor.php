@@ -190,7 +190,7 @@ PROMPT;
         foreach ($state->steps() as $step) {
             // Include tool calls and their results
             if ($step->hasToolCalls()) {
-                foreach ($step->toolCalls()->all() as $toolCall) {
+                foreach ($step->requestedToolCalls()->all() as $toolCall) {
                     $evidence[] = "Tool: {$toolCall->name()}";
                     $args = $toolCall->args();
                     if (!empty($args)) {

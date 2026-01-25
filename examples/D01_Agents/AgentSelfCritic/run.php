@@ -28,10 +28,10 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Addons\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
-use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
+use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
+use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Messages\Messages;
 
 // Configure working directory
@@ -56,9 +56,7 @@ $state = AgentState::empty()->withMessages(
 // Execute agent loop with self-critique
 echo "Question: {$question}\n\n";
 
-while ($agent->hasNextStep($state)) {
-    $state = $agent->nextStep($state);
-
+foreach ($agent->iterate($state) as $state) {
     $step = $state->currentStep();
     echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
 

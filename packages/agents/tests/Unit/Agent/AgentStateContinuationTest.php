@@ -5,11 +5,12 @@ namespace Tests\Addons\Unit\Agent;
 use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepResult;
+use Cognesy\Agents\Agent\Data\StepExecution;
 use Cognesy\Agents\Agent\Enums\AgentStatus;
 use Cognesy\Agents\Agent\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 it('appends a user message to the default section', function () {
@@ -24,20 +25,23 @@ it('appends a user message to the default section', function () {
 });
 
 it('resets execution state for continuation', function () {
-    $step = new AgentStep();
-    $stepResult = new StepResult(
+    $stepId = 'step-1';
+    $step = new AgentStep(
+        inferenceResponse: new InferenceResponse(usage: new Usage(1, 2, 0, 0, 0)),
+        id: $stepId,
+    );
+    $stepExecution = new StepExecution(
         step: $step,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 1,
+        id: $stepId,
     );
     $state = AgentState::empty()
         ->withMessages(Messages::fromString('First'))
-        ->recordStepResult($stepResult)
-        ->withUsage(new Usage(1, 2, 3, 4, 5))
+        ->recordStepExecution($stepExecution)
         ->withCachedContext(new CachedContext(messages: [['role' => 'user', 'content' => 'cached']]))
-        ->markStepStarted()
-        ->markExecutionStarted()
         ->withStatus(AgentStatus::Completed);
 
     $continued = $state->forContinuation();
@@ -47,22 +51,23 @@ it('resets execution state for continuation', function () {
         ->and($continued->currentStep())->toBeNull()
         ->and($continued->usage()->total())->toBe(0)
         ->and($continued->cache()->isEmpty())->toBeTrue()
-        ->and($continued->currentStepStartedAt)->toBeNull()
-        ->and($continued->executionStartedAt)->toBeNull()
         ->and($continued->messages()->count())->toBe(1);
 });
 
 it('records a step result and sets currentStep', function () {
     $state = AgentState::empty();
-    $step = new AgentStep();
-    $stepResult = new StepResult(
+    $stepId = 'step-1';
+    $step = new AgentStep(id: $stepId);
+    $stepExecution = new StepExecution(
         step: $step,
         outcome: ContinuationOutcome::empty(),
         startedAt: new \DateTimeImmutable(),
         completedAt: new \DateTimeImmutable(),
+        stepNumber: 1,
+        id: $stepId,
     );
 
-    $next = $state->recordStepResult($stepResult);
+    $next = $state->recordStepExecution($stepExecution);
 
     expect($next->currentStep())->toBe($step)
         ->and($next->stepCount())->toBe(1);

@@ -15,14 +15,14 @@ final class ToolCallCompleted extends AgentEvent
         public readonly bool $success,
         public readonly ?string $error,
         public readonly DateTimeImmutable $startedAt,
-        public readonly DateTimeImmutable $endedAt,
+        public readonly DateTimeImmutable $completedAt,
     ) {
         parent::__construct([
             'tool' => $this->tool,
             'success' => $this->success,
             'error' => $this->error,
-            'started' => $this->startedAt->format(DATE_ATOM),
-            'ended' => $this->endedAt->format(DATE_ATOM),
+            'started' => $this->startedAt->format(DateTimeImmutable::ATOM),
+            'completed' => $this->completedAt->format(DateTimeImmutable::ATOM),
             'duration_ms' => $this->getDurationMs(),
         ]);
     }
@@ -42,8 +42,8 @@ final class ToolCallCompleted extends AgentEvent
     }
 
     private function getDurationMs(): int {
-        $diff = $this->endedAt->getTimestamp() - $this->startedAt->getTimestamp();
-        $microDiff = (int) ($this->endedAt->format('u')) - (int) ($this->startedAt->format('u'));
+        $diff = $this->completedAt->getTimestamp() - $this->startedAt->getTimestamp();
+        $microDiff = (int) ($this->completedAt->format('u')) - (int) ($this->startedAt->format('u'));
         return ($diff * 1000) + (int) ($microDiff / 1000);
     }
 }

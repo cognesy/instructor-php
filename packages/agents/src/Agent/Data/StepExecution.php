@@ -11,6 +11,7 @@ use DateTimeImmutable;
  *
  * This abstraction cleanly separates step data from continuation evaluation,
  * avoiding the need to modify step objects after creation.
+ * StepExecution identity follows AgentStep identity; the orchestrator does not overwrite step ids.
  *
  * Benefits:
  * - Step objects remain unmodified after creation
@@ -18,14 +19,20 @@ use DateTimeImmutable;
  * - Consistent pattern across all StepByStep orchestrators
  * - Natural for serialization: result is a complete unit
  */
-final readonly class StepResult
+final readonly class StepExecution
 {
+    public string $id;
+
     public function __construct(
         public AgentStep $step,
         public ContinuationOutcome $outcome,
         public DateTimeImmutable $startedAt,
         public DateTimeImmutable $completedAt,
-    ) {}
+        public int $stepNumber,
+        string $id = '',
+    ) {
+        $this->id = $id !== '' ? $id : $step->id();
+    }
 
     /**
      * Duration of this step in seconds.
@@ -55,6 +62,8 @@ final readonly class StepResult
      */
     public function toArray(): array {
         return [
+            'id' => $this->id,
+            'stepNumber' => $this->stepNumber,
             'step' => $this->step->toArray(),
             'outcome' => $this->outcome->toArray(),
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
@@ -67,11 +76,18 @@ final readonly class StepResult
      * Deserialize from array.
      */
     public static function fromArray(array $data): self {
+        $stepNumberValue = $data['stepNumber'] ?? $data['step_number'] ?? 1;
+        $stepNumber = is_int($stepNumberValue) ? $stepNumberValue : (int) $stepNumberValue;
+        $idValue = $data['id'] ?? '';
+        $id = is_string($idValue) ? $idValue : '';
+
         return new self(
             step: AgentStep::fromArray($data['step'] ?? []),
             outcome: ContinuationOutcome::fromArray($data['outcome'] ?? []),
             startedAt: new DateTimeImmutable($data['startedAt'] ?? 'now'),
             completedAt: new DateTimeImmutable($data['completedAt'] ?? 'now'),
+            stepNumber: $stepNumber,
+            id: $id,
         );
     }
 }

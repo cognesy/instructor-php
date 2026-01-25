@@ -25,7 +25,7 @@ use Cognesy\Agents\Agent\Hooks\Enums\HookType;
  *         $execution = $ctx->execution();
  *         $this->logger->info("Tool {$ctx->toolCall()->name()} completed", [
  *             'success' => $execution->result()->isSuccess(),
- *             'duration' => $execution->endedAt()->getTimestamp() - $execution->startedAt()->getTimestamp(),
+ *             'duration' => $execution->completedAt()->getTimestamp() - $execution->startedAt()->getTimestamp(),
  *         ]);
  *         return HookOutcome::proceed();
  *     },

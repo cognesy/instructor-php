@@ -2,140 +2,125 @@
 
 namespace Cognesy\Agents\Agent\Data;
 
+use Cognesy\Agents\Agent\Collections\ErrorList;
 use Cognesy\Agents\Agent\Collections\ToolExecutions;
 use Cognesy\Agents\Agent\Enums\AgentStepType;
-use Cognesy\Agents\Agent\Exceptions\ToolExecutionException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use DateTimeImmutable;
+use Cognesy\Utils\Uuid;
 use Throwable;
 
 /**
- * Immutable step data from agent execution.
- * Continuation outcome is stored separately in StepResult, not on the step itself.
+ * Immutable step snapshot from agent execution.
+ *
+ * Timing and continuation outcome are owned by StepExecution.
  */
 final readonly class AgentStep
 {
-    /** @var Throwable[] */
-    private array $errors;
-    private StepInfo $stepInfo;
-    private ?Messages $inputMessages;
-    private ?Messages $outputMessages;
-    private Usage $usage;
-    private ToolCalls $toolCalls;
-    private ToolExecutions $toolExecutions;
+    private string $id;
+    private Messages $inputMessages;
     private InferenceResponse $inferenceResponse;
-    private AgentStepType $stepType;
+    private ToolExecutions $toolExecutions;
+    private ErrorList $errors;
+    private Messages $outputMessages;
 
     public function __construct(
-        ?Messages          $inputMessages = null,
-        ?Messages          $outputMessages = null,
-        ?Usage             $usage = null,
-        ?ToolCalls         $toolCalls = null,
-        ?ToolExecutions   $toolExecutions = null,
+        ?Messages $inputMessages = null,
+        ?Messages $outputMessages = null,
         ?InferenceResponse $inferenceResponse = null,
-        ?AgentStepType     $stepType = null,
-        array              $errors = [],
-        ?StepInfo          $stepInfo = null,
+        ?ToolExecutions $toolExecutions = null,
+        ?ErrorList $errors = null,
+        ?string $id = null,
     ) {
-        $this->stepInfo = $stepInfo ?? StepInfo::new();
-
+        $providedId = $id ?? '';
+        $this->id = $providedId !== '' ? $providedId : Uuid::uuid4();
         $this->inputMessages = $inputMessages ?? Messages::empty();
         $this->outputMessages = $outputMessages ?? Messages::empty();
-        $this->usage = $usage ?? Usage::none();
-
-        $this->toolCalls = $toolCalls ?? new ToolCalls();
         $this->toolExecutions = $toolExecutions ?? new ToolExecutions();
         $this->inferenceResponse = $inferenceResponse ?? new InferenceResponse();
-        $this->stepType = $stepType ?? self::inferStepType(
-            $this->inferenceResponse,
-            $this->toolExecutions,
-        );
 
-        $normalizedErrors = $this->normalizeErrors($errors);
-        $this->errors = $normalizedErrors !== []
-            ? $normalizedErrors
-            : $this->toolExecutions->errors();
+        $providedErrors = $errors ?? ErrorList::empty();
+        $toolErrors = $this->toolExecutions->errors();
+        $this->errors = $toolErrors->withAppended(...$providedErrors->all());
     }
 
-    // ERRORS ///////////////////////////////////////////////
+    // ERRORS //////////////////////////////////////////////////////
 
     public function hasErrors(): bool {
-        return $this->errors !== [];
+        return $this->errors->hasAny();
     }
 
-    /** @return Throwable[] */
-    public function errors(): array {
+    public function errors(): ErrorList {
         return $this->errors;
     }
 
     public function errorsAsString(): string {
-        if ($this->errors === []) {
-            return '';
-        }
-
-        return implode("\n", array_map(
-            fn(Throwable $error): string => $error->getMessage(),
-            $this->errors,
-        ));
-    }
-
-    // STEP INFO ////////////////////////////////////////////
-
-    public function stepInfo(): StepInfo {
-        return $this->stepInfo;
+        return $this->errors->toMessagesString();
     }
 
     public function id(): string {
-        return $this->stepInfo->id();
+        return $this->id;
     }
 
-    public function createdAt(): DateTimeImmutable {
-        return $this->stepInfo->createdAt();
-    }
-
-    // MESSAGES /////////////////////////////////////////////
+    // MESSAGES ////////////////////////////////////////////////////
 
     public function inputMessages(): Messages {
-        return $this->inputMessages ?? Messages::empty();
+        return $this->inputMessages;
     }
 
     public function outputMessages(): Messages {
-        return $this->outputMessages ?? Messages::empty();
+        return $this->outputMessages;
     }
 
-    // USAGE ////////////////////////////////////////////////
+    // INFERENCE RESPONSE //////////////////////////////////////////
+
+    public function inferenceResponse(): InferenceResponse {
+        return $this->inferenceResponse;
+    }
 
     public function usage(): Usage {
-        return $this->usage;
-    }
-
-    // TOOL CALLS ///////////////////////////////////////////
-
-    public function toolCalls(): ToolCalls {
-        return $this->toolCalls;
-    }
-
-    public function hasToolCalls(): bool {
-        return $this->toolCalls()->count() > 0;
+        return $this->inferenceResponse->usage();
     }
 
     public function finishReason(): ?InferenceFinishReason {
         return $this->inferenceResponse->finishReason();
     }
 
-    public function inferenceResponse(): ?InferenceResponse {
-        return $this->inferenceResponse;
+    // TOOL CALLS //////////////////////////////////////////////////
+
+    /**
+     * Tool calls requested by the model in this step.
+     */
+    public function requestedToolCalls(): ToolCalls {
+        return $this->inferenceResponse->toolCalls();
+    }
+
+    /**
+     * Tool calls that were actually executed in this step.
+     */
+    public function executedToolCalls(): ToolCalls {
+        return $this->toolExecutions->toolCalls();
+    }
+
+    /**
+     * Legacy alias for requested tool calls.
+     */
+    public function toolCalls(): ToolCalls {
+        return $this->requestedToolCalls();
+    }
+
+    public function hasToolCalls(): bool {
+        return $this->requestedToolCalls()->hasAny();
     }
 
     public function stepType(): AgentStepType {
-        return $this->stepType;
+        return $this->deriveStepType();
     }
 
-    // TOOL EXECUTIONS //////////////////////////////////////
+    // TOOL EXECUTIONS /////////////////////////////////////////////
 
     public function toolExecutions(): ToolExecutions {
         return $this->toolExecutions;
@@ -146,113 +131,91 @@ final readonly class AgentStep
     }
 
     public static function failure(Messages $inputMessages, Throwable $error): self {
-        $normalized = $error instanceof Throwable
-            ? $error
-            : new ToolExecutionException('Unknown tool-use error');
-
         return new self(
             inputMessages: $inputMessages,
             outputMessages: Messages::empty(),
-            usage: Usage::none(),
-            toolCalls: new ToolCalls(),
-            toolExecutions: new ToolExecutions(),
-            inferenceResponse: null,
-            stepType: AgentStepType::Error,
-            errors: [$normalized],
+            errors: new ErrorList($error),
         );
     }
 
-    // SERIALIZATION ////////////////////////////////////////
+    // SERIALIZATION ///////////////////////////////////////////////
 
     public function toArray(): array {
         return [
-            'stepInfo' => $this->stepInfo->toArray(),
-            'inputMessages' => $this->inputMessages()->toArray(),
-            'outputMessages' => $this->outputMessages()->toArray(),
-            'toolCalls' => $this->toolCalls->toArray(),
+            'id' => $this->id,
+            'inputMessages' => $this->inputMessages->toArray(),
+            'outputMessages' => $this->outputMessages->toArray(),
             'toolExecutions' => $this->toolExecutions->toArray(),
             'errors' => array_map(
-                fn(Throwable $error): array => [
+                static fn(Throwable $error): array => [
                     'message' => $error->getMessage(),
                     'class' => get_class($error),
                 ],
-                $this->errors,
+                $this->errors->all(),
             ),
-            'usage' => $this->usage->toArray(),
             'inferenceResponse' => $this->inferenceResponse->toArray(),
-            'stepType' => $this->stepType->value,
         ];
     }
 
     public static function fromArray(array $data): self {
+        $inferenceResponse = self::hydrateInferenceResponse($data);
+
         return new self(
-            inputMessages: isset($data['inputMessages']) ? Messages::fromArray($data['inputMessages']) : Messages::empty(),
-            outputMessages: isset($data['outputMessages']) ? Messages::fromArray($data['outputMessages']) : Messages::empty(),
-            usage: isset($data['usage']) ? Usage::fromArray($data['usage']) : null,
-            toolCalls: isset($data['toolCalls']) ? ToolCalls::fromArray($data['toolCalls']) : null,
-            toolExecutions: isset($data['toolExecutions']) ? ToolExecutions::fromArray($data['toolExecutions']) : null,
-            inferenceResponse: isset($data['inferenceResponse']) ? InferenceResponse::fromArray($data['inferenceResponse']) : null,
-            stepType: isset($data['stepType']) ? AgentStepType::from($data['stepType']) : null,
-            errors: $data['errors'] ?? [],
-            stepInfo: StepInfo::fromArray($data['stepInfo'] ?? []),
+            inputMessages: isset($data['inputMessages'])
+                ? Messages::fromArray($data['inputMessages'])
+                : Messages::empty(),
+            outputMessages: isset($data['outputMessages'])
+                ? Messages::fromArray($data['outputMessages'])
+                : Messages::empty(),
+            inferenceResponse: $inferenceResponse,
+            toolExecutions: isset($data['toolExecutions'])
+                ? ToolExecutions::fromArray($data['toolExecutions'])
+                : null,
+            errors: ErrorList::fromArray($data['errors'] ?? []),
+            id: $data['id'] ?? null,
         );
     }
 
     public function toString(): string {
+        $toolCalls = $this->requestedToolCalls();
+
         return ($this->outputMessages()->toString() ?: '(no response)')
             . ' ['
-            . ($this->hasToolCalls() ? $this->toolCalls->toString() : '(-)')
+            . ($toolCalls->hasAny() ? $toolCalls->toString() : '(-)')
             . ']';
     }
 
-    // INTERNAL /////////////////////////////////////////////////////////
+    // INTERNAL ////////////////////////////////////////////////////
 
-    private static function inferStepType(
-        InferenceResponse $response,
-        ToolExecutions $executions
-    ): AgentStepType {
-        return match (true) {
-            $executions->hasErrors() => AgentStepType::Error,
-            $response->hasToolCalls() => AgentStepType::ToolExecution,
-            default => AgentStepType::FinalResponse,
-        };
-    }
-
-    /**
-     * @param array<Throwable|array{message?: string, class?: string}> $errors
-     * @return Throwable[]
-     */
-    private function normalizeErrors(array $errors): array {
-        $normalized = [];
-        foreach ($errors as $error) {
-            if ($error instanceof Throwable) {
-                $normalized[] = $error;
-                continue;
-            }
-
-            if (!is_array($error)) {
-                continue;
-            }
-
-            $message = isset($error['message']) && is_string($error['message'])
-                ? $error['message']
-                : 'Unknown tool-use error';
-            $class = isset($error['class']) && is_string($error['class'])
-                ? $error['class']
-                : ToolExecutionException::class;
-
-            if (is_a($class, Throwable::class, true)) {
-                try {
-                    $normalized[] = new $class($message);
-                    continue;
-                } catch (Throwable) {
-                    // fall through to default case
-                }
-            }
-
-            $normalized[] = new ToolExecutionException($message);
+    private function deriveStepType(): AgentStepType {
+        if ($this->errors->hasAny()) {
+            return AgentStepType::Error;
         }
 
-        return $normalized;
+        if ($this->toolExecutions->hasErrors()) {
+            return AgentStepType::Error;
+        }
+
+        if ($this->requestedToolCalls()->hasAny()) {
+            return AgentStepType::ToolExecution;
+        }
+
+        return AgentStepType::FinalResponse;
+    }
+
+    private static function hydrateInferenceResponse(array $data): InferenceResponse {
+        $response = isset($data['inferenceResponse'])
+            ? InferenceResponse::fromArray($data['inferenceResponse'])
+            : new InferenceResponse();
+
+        if (isset($data['toolCalls']) && $response->toolCalls()->hasNone()) {
+            $response = $response->with(toolCalls: ToolCalls::fromArray($data['toolCalls']));
+        }
+
+        if (isset($data['usage']) && $response->usage()->total() === 0) {
+            $response = $response->with(usage: Usage::fromArray($data['usage']));
+        }
+
+        return $response;
     }
 }
