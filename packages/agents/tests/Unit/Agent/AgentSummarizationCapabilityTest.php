@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStepType;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
 use Cognesy\Messages\Messages;
@@ -10,7 +10,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 
 describe('Agent with BashTool', function () {
 

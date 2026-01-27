@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentTemplate\Spec;
 
-use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SubagentDefinition;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;

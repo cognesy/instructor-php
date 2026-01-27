@@ -2,10 +2,10 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Messages\Messages;
 

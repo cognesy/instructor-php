@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Utils\Json\Json;
 
 /**

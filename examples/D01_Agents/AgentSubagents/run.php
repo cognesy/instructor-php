@@ -19,8 +19,7 @@ Key concepts:
 - `UseSubagents`: Capability that enables subagent spawning
 - `AgentRegistry`: Registry of available subagent specifications
 - `AgentSpec`: Defines subagent role, tools, and behavior
-- `spawn_subagent`: Tool to create and execute subagent
-- Context isolation: Subagents don't see each other's work
+- `AgentConsoleLogger`: Shows parent/child agent IDs for tracking orchestration
 
 ## Example
 
@@ -35,7 +34,16 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
 use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
+
+// Create console logger - shows agent IDs for parent/child tracking
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
 
 // Configure working directory
 $workDir = dirname(__DIR__, 3);
@@ -65,7 +73,8 @@ SpawnSubagentTool::clearSubagentStates();
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
     ->withCapability(new UseSubagents(provider: $registry))
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // Task requiring multiple isolated reviews
 $task = <<<TASK
@@ -81,35 +90,18 @@ $state = AgentState::empty()->withMessages(
     Messages::fromString($task)
 );
 
-// Execute with subagent spawning
-echo "Task: Review multiple files\n\n";
+echo "=== Agent Execution Log ===\n";
+echo "Task: Review multiple files using subagents\n\n";
 
-foreach ($agent->iterate($state) as $state) {
-    $step = $state->currentStep();
-    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
+// Execute agent until completion
+$finalState = $agent->execute($state);
 
-    // we can introspect agent step state here
-    if ($step->hasToolCalls()) {
-        foreach ($step->toolCalls()->all() as $toolCall) {
-            if ($toolCall->name() === 'spawn_subagent') {
-                $args = $toolCall->args();
-                echo "  → spawn_subagent(subagent={$args['subagent']}, prompt=...)\n";
-            } else {
-                echo "  → {$toolCall->name()}()\n";
-            }
-        }
-    }
-}
-
-// Extract summary
-$summary = $state->currentStep()?->outputMessages()->toString() ?? 'No summary';
-
-echo "\nSummary:\n";
-echo $summary . "\n\n";
-
-echo "Stats:\n";
-echo "  Steps: {$state->stepCount()}\n";
-echo "  Subagents spawned: " . count(SpawnSubagentTool::getSubagentStates()) . "\n";
-echo "  Status: {$state->status()->value}\n";
+echo "\n=== Result ===\n";
+$summary = $finalState->currentStep()?->outputMessages()->toString() ?? 'No summary';
+echo "Answer: {$summary}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Subagents spawned: " . count(SpawnSubagentTool::getSubagentStates()) . "\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
 ?>
 ```

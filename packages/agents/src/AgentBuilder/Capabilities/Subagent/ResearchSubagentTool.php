@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
 use Cognesy\Messages\Messages;

@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
@@ -56,6 +56,7 @@ class UseSubagents implements AgentCapability
                 maxDepth: $this->policy->maxDepth,
                 summaryMaxChars: $this->policy->summaryMaxChars,
                 policy: $this->policy,
+                eventEmitter: $agent->eventEmitter(),
             );
 
             return $agent->withTools($agent->tools()->merge(new Tools($subagentTool)));

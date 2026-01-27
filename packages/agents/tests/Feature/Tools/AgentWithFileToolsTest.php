@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\EditFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
@@ -11,8 +11,8 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
-use Tests\Addons\Support\TestHelpers;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('Agent with File Tools', function () {
 

@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\ContinuationEvaluation;
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Agents\Agent\Continuation\Criteria\StepsLimit;
-use Cognesy\Agents\Agent\Continuation\StopReason;
-use Cognesy\Agents\Agent\Events\AgentStepCompleted;
-use Cognesy\Agents\Agent\Events\AgentStepStarted;
-use Cognesy\Agents\Agent\Events\ContinuationEvaluated;
-use Cognesy\Agents\Agent\Events\ToolCallCompleted;
-use Cognesy\Agents\Agent\Events\ToolCallStarted;
 use Cognesy\Agents\Broadcasting\AgentEventEnvelopeAdapter;
 use Cognesy\Agents\Broadcasting\BroadcastConfig;
 use Cognesy\Agents\Broadcasting\CanBroadcastAgentEvents;
+use Cognesy\Agents\Core\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Events\AgentStepCompleted;
+use Cognesy\Agents\Core\Events\AgentStepStarted;
+use Cognesy\Agents\Core\Events\ContinuationEvaluated;
+use Cognesy\Agents\Core\Events\ToolCallCompleted;
+use Cognesy\Agents\Core\Events\ToolCallStarted;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use DateTimeImmutable;

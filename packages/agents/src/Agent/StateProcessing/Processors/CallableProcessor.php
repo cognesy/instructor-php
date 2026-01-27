@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Agent\StateProcessing\Processors;
 
 use Closure;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 
 final class CallableProcessor implements CanProcessAgentState

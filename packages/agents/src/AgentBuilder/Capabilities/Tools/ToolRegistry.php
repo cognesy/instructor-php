@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Tools;
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Contracts\ToolInterface;
-use Cognesy\Agents\Agent\Exceptions\InvalidToolException;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\ToolInterface;
+use Cognesy\Agents\Core\Exceptions\InvalidToolException;
 
 final class ToolRegistry implements ToolRegistryInterface
 {

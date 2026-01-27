@@ -19,8 +19,7 @@ Key concepts:
 - `SearchFilesTool`: Search for files by pattern or content
 - `ReadFileTool`: Read file contents
 - `UseSubagents`: Spawn specialized subagents for subtasks
-- AgentRegistry: Registry of available subagent specifications
-- Autonomous search: Agent determines strategy based on question
+- `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -33,7 +32,16 @@ use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
 use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
+
+// Create console logger for execution visibility
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,  // Show search patterns and file paths
+);
 
 // Configure working directory
 $workDir = dirname(__DIR__, 3);
@@ -58,7 +66,8 @@ $registry->register(new AgentSpec(
 // Build main orchestration agent
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // Ask a question that requires search
 $question = "Find all test files related to Agent capabilities and tell me what they test";
@@ -67,26 +76,16 @@ $state = AgentState::empty()->withMessages(
     Messages::fromString($question)
 );
 
-// Execute agent loop
-foreach ($agent->iterate($state) as $state) {
-    $step = $state->currentStep();
-    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
+echo "=== Agent Execution Log ===\n\n";
 
-    if ($step->hasToolCalls()) {
-        foreach ($step->toolCalls()->all() as $toolCall) {
-            echo "  → {$toolCall->name()}()\n";
-        }
-    }
-}
+// Execute agent until completion
+$finalState = $agent->execute($state);
 
-// Extract answer
-$answer = $state->currentStep()?->outputMessages()->toString() ?? 'No answer';
-
-echo "\nAnswer:\n";
-echo $answer . "\n\n";
-
-echo "Stats:\n";
-echo "  Steps: {$state->stepCount()}\n";
-echo "  Status: {$state->status()->value}\n";
+echo "\n=== Result ===\n";
+$answer = $finalState->currentStep()?->outputMessages()->toString() ?? 'No answer';
+echo "Answer: {$answer}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
 ?>
 ```

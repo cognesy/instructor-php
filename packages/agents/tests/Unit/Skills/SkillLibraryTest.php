@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Skills;
+namespace Cognesy\Agents\Tests\Unit\Skills;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\Skill;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
-use Tests\Addons\Support\TestHelpers;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 
 
 describe('SkillLibrary', function () {

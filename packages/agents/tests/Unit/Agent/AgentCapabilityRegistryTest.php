@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;

@@ -2,12 +2,14 @@
 
 namespace Cognesy\Agents\Drivers\ToolCalling;
 
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
+use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -21,6 +23,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Json\Json;
+use DateTimeImmutable;
 
 /**
  * ToolCallingDriver is responsible for managing the interaction between a
@@ -40,6 +43,7 @@ class ToolCallingDriver implements CanUseTools
     private ?InferenceRetryPolicy $retryPolicy;
     private bool $parallelToolCalls = false;
     private ToolExecutionFormatter $formatter;
+    private CanEmitAgentEvents $eventEmitter;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -50,6 +54,7 @@ class ToolCallingDriver implements CanUseTools
         array        $options = [],
         OutputMode   $mode = OutputMode::Tools,
         ?InferenceRetryPolicy $retryPolicy = null,
+        ?CanEmitAgentEvents $eventEmitter = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -60,11 +65,18 @@ class ToolCallingDriver implements CanUseTools
         $this->options = $options;
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
+        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
     }
 
     public function withLLMProvider(LLMProvider $llm): self {
         $clone = clone $this;
         $clone->llm = $llm;
+        return $clone;
+    }
+
+    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
+        $clone = clone $this;
+        $clone->eventEmitter = $eventEmitter;
         return $clone;
     }
 
@@ -96,8 +108,19 @@ class ToolCallingDriver implements CanUseTools
     // INTERNAL /////////////////////////////////////////////////
 
     private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
+        $messages = $state->messagesForInference();
         $cache = $this->resolveCachedContext($state, $tools);
-        return $this->buildPendingInference($state->messagesForInference(), $tools, $cache)->response();
+
+        // Emit inference request started event
+        $requestStartedAt = new DateTimeImmutable();
+        $this->eventEmitter->inferenceRequestStarted($state, $messages->count(), $this->model ?: null);
+
+        $response = $this->buildPendingInference($messages, $tools, $cache)->response();
+
+        // Emit inference response received event
+        $this->eventEmitter->inferenceResponseReceived($state, $response, $requestStartedAt);
+
+        return $response;
     }
 
     private function getToolsToCall(InferenceResponse $response): ToolCalls {

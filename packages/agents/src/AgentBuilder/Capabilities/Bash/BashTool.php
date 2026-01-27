@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Bash;
 
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Utils\Sandbox\Execution\SandboxedExecution;
 use Cognesy\Utils\Sandbox\Result\ExecutionResult;

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentTemplate\Definitions;
 
-use Cognesy\Agents\Agent\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Core\Exceptions\AgentNotFoundException;
 
 final class AgentDefinitionRegistry
 {

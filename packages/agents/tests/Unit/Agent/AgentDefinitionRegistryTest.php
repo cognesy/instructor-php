@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionExecution;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLlm;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionTools;
-use Cognesy\Agents\Agent\Exceptions\AgentNotFoundException;
-use Tests\Addons\Support\TestHelpers;
+use Cognesy\Agents\Core\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('AgentDefinitionRegistry', function () {
     beforeEach(function () {

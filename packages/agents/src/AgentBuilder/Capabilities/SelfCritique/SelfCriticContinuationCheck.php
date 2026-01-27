@@ -2,12 +2,12 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
-use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\ContinuationEvaluation;
-use Cognesy\Agents\Agent\Continuation\StopReason;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStepType;
+use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 
 /**
  * Signals continuation when self-critic requests a revision.

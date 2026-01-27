@@ -17,8 +17,7 @@ Key concepts:
 - `UseStructuredOutputs`: Capability for LLM-powered data extraction
 - `SchemaRegistry`: Pre-registered extraction schemas
 - `structured_output`: Tool to extract data into schema
-- Metadata storage: Pass extracted data between tool calls
-- Custom tools with state access: Read metadata in subsequent tools
+- `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -35,8 +34,8 @@ use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutpu
 use Cognesy\Agents\Agent\Collections\Tools;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
-use Cognesy\Utils\Json\Json;
 use Symfony\Component\Validator\Constraints as Assert;
 
 // =============================================================================
@@ -135,6 +134,14 @@ class CreateLeadTool extends BaseTool
 // 3. Build the agent with structured output and API capabilities
 // =============================================================================
 
+// Create console logger for execution visibility
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
+
 // Register extraction schemas
 $schemas = new SchemaRegistry([
     'lead' => new SchemaDefinition(
@@ -157,7 +164,8 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseMetadataTools())
     ->withTools(new Tools(new CreateLeadTool()))
     ->withMaxSteps(10)
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // =============================================================================
 // 4. Prepare input data (unstructured text with lead information)
@@ -195,67 +203,23 @@ $state = AgentState::empty()->withMessages(
 );
 
 // =============================================================================
-// 6. Execute agent and observe workflow
+// 6. Execute agent
 // =============================================================================
 
-echo "=== Agent Structured Output Demo ===\n\n";
+echo "=== Agent Execution Log ===\n";
 echo "Input text:\n{$inputText}\n\n";
-echo "--- Execution ---\n\n";
 
-foreach ($agent->iterate($state) as $state) {
-    $step = $state->currentStep();
-    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
-
-    if ($step->hasErrors()) {
-        $errors = $step->errorsAsString();
-        if ($errors !== '') {
-            $errors = str_replace("\n", "\n  !! ", $errors);
-            echo "  !! {$errors}\n";
-        }
-    }
-
-    if ($step->hasToolCalls()) {
-        foreach ($step->toolCalls()->all() as $toolCall) {
-            $args = $toolCall->args();
-            $argsSummary = match ($toolCall->name()) {
-                'structured_output' => "schema={$args['schema']}, store_as=" . ($args['store_as'] ?? 'none'),
-                'create_lead' => "metadata_key={$args['metadata_key']}",
-                default => json_encode($args),
-            };
-            echo "  → {$toolCall->name()}({$argsSummary})\n";
-        }
-    }
-
-    // Show tool execution results
-    foreach ($step->toolExecutions()->all() as $execution) {
-        if ($execution->hasError()) {
-            $errorMessage = $execution->errorMessage();
-            $label = 'Unknown tool execution error';
-            if ($errorMessage !== '') {
-                $label = $errorMessage;
-            }
-            echo "    ← Error: {$label}\n";
-            continue;
-        }
-        $result = $execution->value();
-        $resultStr = match (true) {
-            is_string($result) => $result,
-            is_object($result) && method_exists($result, '__toString') => (string) $result,
-            default => Json::encode($result),
-        };
-        $preview = strlen($resultStr) > 100 ? substr($resultStr, 0, 100) . '...' : $resultStr;
-        echo "    ← {$preview}\n";
-    }
-}
+// Execute agent until completion
+$finalState = $agent->execute($state);
 
 // =============================================================================
 // 7. Show final results
 // =============================================================================
 
-echo "\n--- Results ---\n\n";
+echo "\n=== Result ===\n";
 
 // Get the extracted lead from metadata
-$extractedLead = $state->metadata()->get('current_lead');
+$extractedLead = $finalState->metadata()->get('current_lead');
 
 if ($extractedLead !== null) {
     echo "Extracted Lead (from metadata):\n";
@@ -265,24 +229,14 @@ if ($extractedLead !== null) {
                 echo "  {$key}: {$value}\n";
             }
         }
-    } elseif (is_array($extractedLead)) {
-        foreach ($extractedLead as $key => $value) {
-            if ($value !== null && $value !== '') {
-                echo "  {$key}: {$value}\n";
-            }
-        }
     }
-} else {
-    echo "No lead data in metadata.\n";
+    echo "\n";
 }
 
-echo "\nAgent Response:\n";
-echo $state->currentStep()?->outputMessages()->toString() ?? 'No response';
-echo "\n\n";
-
-echo "Stats:\n";
-echo "  Steps: {$state->stepCount()}\n";
-echo "  Status: {$state->status()->value}\n";
-echo "  Tokens: {$state->usage()->total()}\n";
+$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
 ?>
 ```

@@ -14,7 +14,7 @@ Key concepts:
 - `ToolHookContext`: Provides access to tool call and agent state
 - `HookOutcome`: Control flow - proceed, block, or stop
 - `matcher`: Filter which tools the hook applies to (supports wildcards and regex)
-- `priority`: Control execution order (higher = runs first)
+- `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -27,6 +27,15 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
 use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+
+// Create console logger for execution visibility
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: false,  // We'll show args in our custom hook output
+);
 
 // Dangerous patterns to block
 $blockedPatterns = [
@@ -49,41 +58,47 @@ $agent = AgentBuilder::new()
             // Check for dangerous patterns
             foreach ($blockedPatterns as $pattern) {
                 if (str_contains($command, $pattern)) {
-                    echo "[BLOCKED] Dangerous command detected: {$command}\n";
+                    echo "         [HOOK] BLOCKED - Dangerous pattern detected: {$pattern}\n";
                     return HookOutcome::block("Dangerous command: {$pattern}");
                 }
             }
 
-            echo "[ALLOWED] Executing: {$command}\n";
+            echo "         [HOOK] ALLOWED - {$command}\n";
             return HookOutcome::proceed();
         },
         matcher: 'bash',     // Only apply to bash tool
         priority: 100,       // High priority = runs first
     )
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // Test with safe commands
 $state = AgentState::empty()->withUserMessage(
     'List the files in the current directory and show the date'
 );
 
-echo "=== Testing safe commands ===\n";
+echo "=== Test 1: Safe Commands ===\n\n";
 $finalState = $agent->execute($state);
 
+echo "\n=== Result ===\n";
 $response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
-echo "\nAgent response:\n{$response}\n";
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Status: {$finalState->status()->value}\n";
 
 // Test with dangerous command (simulated prompt)
-echo "\n=== Testing dangerous command detection ===\n";
+echo "\n=== Test 2: Dangerous Command Detection ===\n\n";
 $state2 = AgentState::empty()->withUserMessage(
     'Delete all files with: rm -rf /'
 );
 
 $finalState2 = $agent->execute($state2);
 
-// The dangerous command should have been blocked
+echo "\n=== Result ===\n";
 $hasErrors = $finalState2->currentStep()?->hasErrors() ?? false;
-echo "Command was " . ($hasErrors ? "blocked (safe!)" : "executed") . "\n";
+echo "Command was " . ($hasErrors ? "BLOCKED (security hook worked!)" : "executed") . "\n";
+echo "Steps: {$finalState2->stepCount()}\n";
+echo "Status: {$finalState2->status()->value}\n";
 ?>
 ```
 

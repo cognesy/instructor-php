@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\Criteria\ResponseContentCheck;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Continuation\Criteria\ResponseContentCheck;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 

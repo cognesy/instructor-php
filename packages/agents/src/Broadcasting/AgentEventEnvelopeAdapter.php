@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Broadcasting;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationEvaluation;
-use Cognesy\Agents\Agent\Continuation\StopReason;
-use Cognesy\Agents\Agent\Events\AgentStepCompleted;
-use Cognesy\Agents\Agent\Events\AgentStepStarted;
-use Cognesy\Agents\Agent\Events\ContinuationEvaluated;
-use Cognesy\Agents\Agent\Events\ToolCallCompleted;
-use Cognesy\Agents\Agent\Events\ToolCallStarted;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Events\AgentStepCompleted;
+use Cognesy\Agents\Core\Events\AgentStepStarted;
+use Cognesy\Agents\Core\Events\ContinuationEvaluated;
+use Cognesy\Agents\Core\Events\ToolCallCompleted;
+use Cognesy\Agents\Core\Events\ToolCallStarted;
 use Cognesy\Events\Event;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use DateTimeImmutable;

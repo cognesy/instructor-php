@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Support;
+namespace Cognesy\Agents\Tests\Support;
 
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;

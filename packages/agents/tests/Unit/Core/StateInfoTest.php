@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStatus;
 use DateTimeImmutable;
 
 it('touches updatedAt on state changes while keeping createdAt', function () {

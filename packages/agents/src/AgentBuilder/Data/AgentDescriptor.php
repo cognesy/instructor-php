@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Data;
 
-use Cognesy\Agents\Agent\Collections\NameList;
+use Cognesy\Agents\Core\Collections\NameList;
 use InvalidArgumentException;
 
 final readonly class AgentDescriptor

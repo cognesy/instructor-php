@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Tools\BaseTool;
 
 class LoadSkillTool extends BaseTool
 {

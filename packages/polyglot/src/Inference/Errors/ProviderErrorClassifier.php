@@ -15,7 +15,7 @@ final class ProviderErrorClassifier
 {
     public static function fromHttpResponse(HttpResponse $response): ProviderException {
         $status = $response->statusCode();
-        $payload = self::decodeJson($response->body());
+        $payload = self::decodeJson(self::safeBody($response));
         [$type, $message] = self::extractErrorDetails($payload);
 
         return self::classify(
@@ -73,6 +73,13 @@ final class ProviderErrorClassifier
     private static function decodeJson(string $body): ?array {
         $decoded = json_decode($body, true);
         return is_array($decoded) ? $decoded : null;
+    }
+
+    private static function safeBody(HttpResponse $response): string {
+        if ($response->isStreamed()) {
+            return '';
+        }
+        return $response->body();
     }
 
     /**

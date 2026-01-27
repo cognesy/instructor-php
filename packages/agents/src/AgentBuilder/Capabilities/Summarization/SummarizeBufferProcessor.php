@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Summarization;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Events\MessageBufferSummarized;

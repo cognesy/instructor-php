@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Tools;
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Contracts\ToolInterface;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\ToolInterface;
 
 interface ToolRegistryInterface
 {

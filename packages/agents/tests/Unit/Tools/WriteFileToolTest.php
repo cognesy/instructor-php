@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Tools;
+namespace Cognesy\Agents\Tests\Unit\Tools;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\File\WriteFileTool;
-use Tests\Addons\Support\TestHelpers;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 
 
 describe('WriteFileTool', function () {

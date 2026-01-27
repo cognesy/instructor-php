@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Data\ToolExecution;
+use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\ErrorHandling\ErrorContext;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorHandlingDecision;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorType;
+use Cognesy\Agents\Core\ErrorHandling\Data\ErrorContext;
+use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorHandlingDecision;
+use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorType;
 
 it('defines all error types', function () {
     $values = array_map(

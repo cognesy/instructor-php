@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Agent\Hooks\Adapters;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;

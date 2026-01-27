@@ -24,6 +24,8 @@ use Cognesy\Polyglot\Inference\Drivers\Minimaxi\MinimaxiDriver;
 use Cognesy\Polyglot\Inference\Drivers\Mistral\MistralDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleDriver;
+use Cognesy\Polyglot\Inference\Drivers\OpenAIResponses\OpenAIResponsesDriver;
+use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenRouter\OpenRouterDriver;
 use Cognesy\Polyglot\Inference\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
@@ -115,6 +117,8 @@ class InferenceDriverFactory
             'minimaxi' => fn($config, $httpClient, $events) => new MinimaxiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new MistralDriver($config, $httpClient, $events),
             'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
+            'openai-responses' => fn($config, $httpClient, $events) => new OpenAIResponsesDriver($config, $httpClient, $events),
+            'openresponses' => fn($config, $httpClient, $events) => new OpenResponsesDriver($config, $httpClient, $events),
             'openrouter' => fn($config, $httpClient, $events) => new OpenRouterDriver($config, $httpClient, $events),
             'perplexity' => fn($config, $httpClient, $events) => new PerplexityDriver($config, $httpClient, $events),
             'sambanova' => fn($config, $httpClient, $events) => new SambaNovaDriver($config, $httpClient, $events),

@@ -2,14 +2,14 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
-use Cognesy\Agents\Agent\Collections\ErrorList;
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Enums\AgentStepType;
+use Cognesy\Agents\Core\Collections\ErrorList;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

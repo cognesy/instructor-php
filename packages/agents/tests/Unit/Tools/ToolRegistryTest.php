@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Agent\Exceptions\InvalidToolException;
-use Cognesy\Agents\Agent\Tools\MockTool;
+use Cognesy\Agents\Core\Exceptions\InvalidToolException;
+use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolPolicy;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistry;
 

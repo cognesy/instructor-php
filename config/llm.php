@@ -239,6 +239,20 @@ return [
             'contextLength' => 1_000_000,
             'maxOutputLength' => 16384,
         ],
+        'openai-responses' => [
+            'driver' => 'openai-responses',
+            'apiUrl' => 'https://api.openai.com/v1',
+            'apiKey' => Env::get('OPENAI_API_KEY', ''),
+            'endpoint' => '/responses',
+            'metadata' => [
+                'organization' => '',
+                'project' => '',
+            ],
+            'model' => 'gpt-4.1-nano',
+            'maxTokens' => 1024,
+            'contextLength' => 1_000_000,
+            'maxOutputLength' => 16384,
+        ],
         'openrouter' => [
             'driver' => 'openrouter',
             'apiUrl' => 'https://openrouter.ai/api/v1',

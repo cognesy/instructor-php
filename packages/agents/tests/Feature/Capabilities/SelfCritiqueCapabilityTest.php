@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Feature\Capabilities;
+namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Agent\Continuation\StopReason;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\SelfCriticContinuationCheck;
 use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\SelfCriticResult;
 use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 
 describe('SelfCritique Capability', function () {
     it('forbids continuation deterministically when max iterations reached', function () {

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Agent\StateProcessing;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
  * Contract for processing AgentState.

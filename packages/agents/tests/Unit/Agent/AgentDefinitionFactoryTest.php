@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Collections\NameList;
+use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;

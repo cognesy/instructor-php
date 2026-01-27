@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\ErrorHandling\ErrorContext;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorHandlingDecision;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorType;
+use Cognesy\Agents\Core\ErrorHandling\Data\ErrorContext;
+use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorHandlingDecision;
+use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorType;
+use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
 
 it('stops on any error with the default policy', function (ErrorType $type) {
     $policy = ErrorPolicy::stopOnAnyError();

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Data;
+namespace Cognesy\Agents\Tests\Unit\Data;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\Task;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TaskList;

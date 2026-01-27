@@ -3,11 +3,13 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Data\ToolExecution;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
+use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
 use Cognesy\Agents\Drivers\ToolCalling\ToolExecutionFormatter;
@@ -30,6 +32,7 @@ class SpawnSubagentTool extends BaseTool
     private int $maxDepth;
     private int $summaryMaxChars;
     private SubagentPolicy $policy;
+    private CanEmitAgentEvents $eventEmitter;
 
     public function __construct(
         Agent $parentAgent,
@@ -40,6 +43,7 @@ class SpawnSubagentTool extends BaseTool
         int $maxDepth = 3,
         int $summaryMaxChars = 8000,
         ?SubagentPolicy $policy = null,
+        ?CanEmitAgentEvents $eventEmitter = null,
     ) {
         parent::__construct(
             name: 'spawn_subagent',
@@ -57,6 +61,7 @@ class SpawnSubagentTool extends BaseTool
         $this->currentDepth = $currentDepth;
         $this->maxDepth = $this->policy->maxDepth;
         $this->summaryMaxChars = $this->policy->summaryMaxChars;
+        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
     }
 
     #[\Override]
@@ -76,12 +81,34 @@ class SpawnSubagentTool extends BaseTool
             return "[Subagent Error] {$e->getMessage()}";
         }
 
-        // Create and run subagent
-        $subagent = $this->createSubagent($spec);
         // Get parent's execution ID from injected agent state
         $parentExecutionId = $this->agentState?->agentId() ?? 'unknown';
+
+        // Emit subagent spawning event
+        $spawnStartedAt = new DateTimeImmutable();
+        $this->eventEmitter->subagentSpawning(
+            parentAgentId: $parentExecutionId,
+            subagentName: $subagentName,
+            prompt: $prompt,
+            depth: $this->currentDepth,
+            maxDepth: $this->maxDepth,
+        );
+
+        // Create and run subagent
+        $subagent = $this->createSubagent($spec);
         $initialState = $this->createInitialState($prompt, $spec, $parentExecutionId);
         $finalState = $this->runSubagent($subagent, $initialState);
+
+        // Emit subagent completed event
+        $this->eventEmitter->subagentCompleted(
+            parentAgentId: $parentExecutionId,
+            subagentId: $finalState->agentId(),
+            subagentName: $subagentName,
+            status: $finalState->status(),
+            steps: $finalState->stepCount(),
+            usage: $finalState->usage(),
+            startedAt: $spawnStartedAt,
+        );
 
         // Store full state in metadata for external access (metrics, debugging)
         $this->storeSubagentState($finalState, $spec->name());
@@ -107,6 +134,7 @@ class SpawnSubagentTool extends BaseTool
                 maxDepth: $this->maxDepth,
                 summaryMaxChars: $this->summaryMaxChars,
                 policy: $this->policy,
+                eventEmitter: $this->eventEmitter,
             );
 
             $tools = $tools->withToolRemoved('spawn_subagent')
@@ -116,10 +144,18 @@ class SpawnSubagentTool extends BaseTool
         // Resolve LLM provider
         $llmProvider = $spec->resolveLlmProvider($this->parentLlmProvider);
 
-        // Create agent (stateless blueprint)
+        // Get the parent's driver with the new LLM provider, preserving event emitter
+        $parentDriver = $this->parentAgent->driver();
+        $subagentDriver = $parentDriver->withLLMProvider($llmProvider);
+        if (method_exists($subagentDriver, 'withEventEmitter')) {
+            $subagentDriver = $subagentDriver->withEventEmitter($this->eventEmitter);
+        }
+
+        // Create agent (stateless blueprint) - share event bus with parent
         return AgentBuilder::new()
             ->withTools($tools)
-            ->withDriver($this->parentAgent->driver()->withLLMProvider($llmProvider))
+            ->withDriver($subagentDriver)
+            ->withEvents($this->eventEmitter->eventHandler())
             ->build();
     }
 

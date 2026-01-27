@@ -3,8 +3,7 @@
 namespace Cognesy\Agents\AgentBuilder\Support;
 
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\ToolExecutor;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Events\Contracts\CanHandleEvents;

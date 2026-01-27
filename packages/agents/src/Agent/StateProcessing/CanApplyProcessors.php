@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Agent\StateProcessing;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
  * Interface for classes that can apply processing steps to AgentState.

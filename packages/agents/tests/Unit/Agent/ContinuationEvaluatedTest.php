@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Events\ContinuationEvaluated;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\ContinuationEvaluation;
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Continuation\Criteria\StepsLimit;
-use Cognesy\Agents\Agent\Continuation\StopReason;
+use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Events\ContinuationEvaluated;
 
 it('renders continuation evaluated event summary', function () {
     // Create evaluations that result in ForbidContinuation to trigger StepsLimitReached stop reason

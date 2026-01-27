@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\AgentTemplate\Registry;
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Exceptions\AgentNotFoundException;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SubagentProvider;
 use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
 use Cognesy\Agents\AgentTemplate\Spec\AgentSpecParser;

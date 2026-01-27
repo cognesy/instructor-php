@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Serialization;
 
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStatus;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
 

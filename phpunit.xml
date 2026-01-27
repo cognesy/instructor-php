@@ -12,6 +12,7 @@
         <testsuite name="Unit">
             <directory suffix="Test.php">./packages/addons/tests/Unit</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/agents/tests/Unit</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Unit</directory>
             <directory suffix="Test.php">./packages/config/tests/Unit</directory>
             <directory suffix="Test.php">./packages/doctor/tests/Unit</directory>
@@ -37,6 +38,7 @@
         <testsuite name="Feature">
             <directory suffix="Test.php">./packages/addons/tests/Feature</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/agents/tests/Feature</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Feature</directory>
             <directory suffix="Test.php">./packages/config/tests/Feature</directory>
             <directory suffix="Test.php">./packages/doctor/tests/Feature</directory>
@@ -62,6 +64,7 @@
         <testsuite name="Integration">
             <directory suffix="Test.php">./packages/addons/tests/Integration</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/agents/tests/Integration</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Integration</directory>
             <directory suffix="Test.php">./packages/config/tests/Integration</directory>
             <directory suffix="Test.php">./packages/doctor/tests/Integration</directory>
@@ -87,6 +90,7 @@
         <testsuite name="Regression">
             <directory suffix="Test.php">./packages/addons/tests/Regression</directory>
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Regression</directory>
+            <directory suffix="Test.php">./packages/agents/tests/Regression</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Regression</directory>
             <directory suffix="Test.php">./packages/config/tests/Regression</directory>
             <directory suffix="Test.php">./packages/doctor/tests/Regression</directory>

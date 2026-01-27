@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Serialization;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 
 interface CanSerializeAgentState
 {

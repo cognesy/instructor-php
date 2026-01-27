@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\Continuation\StopReason;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 
 it('defines all stop reasons', function () {
     $values = array_map(

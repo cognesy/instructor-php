@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Agent\Hooks\Adapters;
 
-use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
 use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
 use Cognesy\Agents\Agent\Hooks\Enums\HookType;
+use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
 
 /**
  * Adapter that wraps existing ContinuationCriteria to work with the new Hook system.

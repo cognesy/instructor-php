@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Drivers\ToolCalling;
 
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Data\ToolExecution;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\ToolCall;

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;

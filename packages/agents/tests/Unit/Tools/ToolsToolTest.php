@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Agent\Tools\MockTool;
+use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistry;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolsTool;
 

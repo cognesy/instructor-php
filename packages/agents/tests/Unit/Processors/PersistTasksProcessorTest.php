@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Processors;
+namespace Cognesy\Agents\Tests\Unit\Processors;
 
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Data\ToolExecution;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoResult;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoWriteTool;

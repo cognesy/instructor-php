@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Agent\Hooks\Data;
 
-use Cognesy\Agents\Agent\Data\ToolExecution;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Enums\HookType;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 

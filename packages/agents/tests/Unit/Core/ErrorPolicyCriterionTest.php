@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\ErrorHandling\CanResolveErrorContext;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorContext;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorHandlingDecision;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorType;
+use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
+use Cognesy\Agents\Core\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\ErrorHandling\Contracts\CanResolveErrorContext;
+use Cognesy\Agents\Core\ErrorHandling\Data\ErrorContext;
+use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorHandlingDecision;
+use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorType;
+use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
 
 final class StaticErrorContextResolver implements CanResolveErrorContext
 {

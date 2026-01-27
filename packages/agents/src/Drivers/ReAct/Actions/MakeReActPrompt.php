@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Drivers\ReAct\Actions;
 
-use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Utils\Json\Json;
 
 final class MakeReActPrompt

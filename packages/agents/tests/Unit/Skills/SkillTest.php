@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Skills;
+namespace Cognesy\Agents\Tests\Unit\Skills;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\Skill;
 

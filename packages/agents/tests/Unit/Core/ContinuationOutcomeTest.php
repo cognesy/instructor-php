@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Core;
+namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\ContinuationEvaluation;
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Continuation\Criteria\StepsLimit;
-use Cognesy\Agents\Agent\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Agents\Agent\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Agents\Agent\Continuation\StopReason;
+use Cognesy\Agents\Core\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Agents\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 
 it('exposes shouldContinue and forbidding criterion', function () {
     $evaluations = [

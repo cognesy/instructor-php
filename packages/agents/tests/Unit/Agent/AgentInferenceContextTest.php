@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Agent\ToolExecutor;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;

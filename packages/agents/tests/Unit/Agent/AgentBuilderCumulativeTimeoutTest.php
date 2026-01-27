@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Data\AgentState;
 use DateTimeImmutable;
 
 function getAgentCriteria(object $agent): ContinuationCriteria {

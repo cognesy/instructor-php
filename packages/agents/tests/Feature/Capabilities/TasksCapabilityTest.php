@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Feature\Capabilities;
+namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\UseTaskPlanning;

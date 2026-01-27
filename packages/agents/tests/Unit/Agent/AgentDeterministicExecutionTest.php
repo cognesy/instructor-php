@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
-use Cognesy\Agents\Agent\Events\AgentEventEmitter;
-use Cognesy\Agents\Agent\ToolExecutor;
-use Cognesy\Agents\Agent\Tools\MockTool;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Messages\Messages;
 
 describe('Deterministic agent execution', function () {

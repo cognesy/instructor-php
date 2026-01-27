@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Agent\StateProcessing\Processors;
 
-use Cognesy\Agents\Agent\Contracts\CanMakeNextStep;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Contracts\CanMakeNextStep;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 
 class GenerateNextStep implements CanProcessAgentState

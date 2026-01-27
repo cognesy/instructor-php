@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Drivers\ReAct\Utils;
 
-use Cognesy\Agents\Agent\Data\ToolExecution;
+use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Drivers\ReAct\Contracts\Decision;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;

@@ -4,7 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SubagentDefinition;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SubagentProvider;
-use Cognesy\Agents\Agent\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Core\Exceptions\AgentNotFoundException;
 
 final class EmptySubagentProvider implements SubagentProvider
 {

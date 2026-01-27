@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepExecution;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\Exceptions\AgentException;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Data\StepExecution;
+use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

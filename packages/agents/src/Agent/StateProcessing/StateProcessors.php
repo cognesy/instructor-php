@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Agent\StateProcessing;
 
 use Closure;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
  * Middleware chain for processing AgentState.

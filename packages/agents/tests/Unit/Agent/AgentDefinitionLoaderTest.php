@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLoader;
-use Tests\Addons\Support\TestHelpers;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('AgentDefinitionLoader', function () {
     beforeEach(function () {

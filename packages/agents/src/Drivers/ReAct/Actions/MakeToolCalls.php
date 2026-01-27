@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Drivers\ReAct\Actions;
 
-use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Drivers\ReAct\Contracts\Decision;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActValidator;
 use Cognesy\Dynamic\Structure;

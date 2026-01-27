@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\ContinuationDecision;
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\StepExecution;
-use Cognesy\Agents\Agent\Data\ToolExecution;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Data\StepExecution;
+use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 

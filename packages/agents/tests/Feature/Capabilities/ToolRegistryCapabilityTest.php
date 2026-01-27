@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Feature\Capabilities;
+namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Agent\Tools\MockTool;
+use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistry;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\UseToolRegistry;

@@ -18,9 +18,7 @@ This significantly improves accuracy by:
 Key concepts:
 - `UseSelfCritique`: Capability that adds self-evaluation after each response
 - `maxIterations`: Maximum number of critique-revision cycles (default: 2)
-- `verbose`: Enable/disable critique feedback output (default: true)
-- Revision loop: Agent revises answers based on critic feedback
-- State processor: Evaluates responses and requests revisions when needed
+- `AgentConsoleLogger`: Provides visibility into continuation decisions showing SelfCritic evaluations
 
 ## Example
 
@@ -32,7 +30,16 @@ use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
 use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
+
+// Create console logger - showContinuation reveals self-critique decisions
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,  // Shows SelfCritic criterion in evaluation
+    showToolArgs: true,
+);
 
 // Configure working directory
 $workDir = dirname(__DIR__, 3);
@@ -42,9 +49,9 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
     ->withCapability(new UseSelfCritique(
         maxIterations: 2,  // Allow up to 2 critique iterations
-        verbose: true  // Show critique feedback in output
     ))
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // Ask a question where the agent might give a superficial answer
 $question = "What testing framework does this project use? Be specific. Provide fragments of files as evidence.";
@@ -53,28 +60,17 @@ $state = AgentState::empty()->withMessages(
     Messages::fromString($question)
 );
 
-// Execute agent loop with self-critique
+echo "=== Agent Execution Log ===\n";
 echo "Question: {$question}\n\n";
 
-foreach ($agent->iterate($state) as $state) {
-    $step = $state->currentStep();
-    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
+// Execute agent until completion
+$finalState = $agent->execute($state);
 
-    if ($step->hasToolCalls()) {
-        foreach ($step->toolCalls()->all() as $toolCall) {
-            echo "  → {$toolCall->name()}({$toolCall->argsAsJson()})\n";
-        }
-    }
-}
-
-// Extract final answer
-$answer = $state->currentStep()?->outputMessages()->toString() ?? 'No answer';
-
-echo "\nFinal Answer:\n";
-echo $answer . "\n\n";
-
-echo "Stats:\n";
-echo "  Steps: {$state->stepCount()}\n";
-echo "  Status: {$state->status()->value}\n";
+echo "\n=== Result ===\n";
+$answer = $finalState->currentStep()?->outputMessages()->toString() ?? 'No answer';
+echo "Answer: {$answer}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
 ?>
 ```

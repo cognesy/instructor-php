@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Enums\AgentStepType;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;

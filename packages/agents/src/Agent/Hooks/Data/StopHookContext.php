@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Agent\Hooks\Data;
 
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\Agent\Hooks\Enums\HookType;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
  * Context for stop-related hook events (Stop, SubagentStop).

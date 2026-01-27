@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\ContinuationOutcome;
-use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Agent\Contracts\CanHandleAgentErrors;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorHandlingResult;
-use Cognesy\Agents\Agent\Events\AgentEventEmitter;
-use Cognesy\Agents\Agent\Exceptions\AgentException;
-use Cognesy\Agents\Agent\ToolExecutor;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
+use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanHandleAgentErrors;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\ErrorHandling\Data\ErrorHandlingResult;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;

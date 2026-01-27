@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Collections\NameList;
+use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Events\AgentExecutionCompleted;
-use Cognesy\Agents\Agent\Events\AgentExecutionStarted;
-use Cognesy\Agents\Agent\Events\AgentStateUpdated;
-use Cognesy\Agents\Agent\Events\AgentStepCompleted;
-use Cognesy\Agents\Agent\Events\AgentStepStarted;
-use Cognesy\Agents\Agent\Events\ContinuationEvaluated;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Events\AgentExecutionCompleted;
+use Cognesy\Agents\Core\Events\AgentExecutionStarted;
+use Cognesy\Agents\Core\Events\AgentStateUpdated;
+use Cognesy\Agents\Core\Events\AgentStepCompleted;
+use Cognesy\Agents\Core\Events\AgentStepStarted;
+use Cognesy\Agents\Core\Events\ContinuationEvaluated;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Support\AbstractAgent;

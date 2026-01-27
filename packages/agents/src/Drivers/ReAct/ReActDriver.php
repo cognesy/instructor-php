@@ -2,13 +2,15 @@
 
 namespace Cognesy\Agents\Drivers\ReAct;
 
-use Cognesy\Agents\Agent\Collections\ToolExecutions;
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\ToolExecution;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
+use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeToolCalls;
 use Cognesy\Agents\Drivers\ReAct\Data\DecisionWithDetails;
@@ -32,6 +34,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
+use DateTimeImmutable;
 
 final class ReActDriver implements CanUseTools
 {
@@ -44,6 +47,7 @@ final class ReActDriver implements CanUseTools
     private array $finalOptions;
     private int $maxRetries;
     private OutputMode $mode;
+    private CanEmitAgentEvents $eventEmitter;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -55,6 +59,7 @@ final class ReActDriver implements CanUseTools
         array $finalOptions = [],
         int $maxRetries = 2,
         OutputMode $mode = OutputMode::Json,
+        ?CanEmitAgentEvents $eventEmitter = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -65,6 +70,7 @@ final class ReActDriver implements CanUseTools
         $this->finalOptions = $finalOptions;
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
+        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
     }
 
     #[\Override]
@@ -72,25 +78,47 @@ final class ReActDriver implements CanUseTools
         $messages = $state->messagesForInference();
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
+
+        // Emit inference request started event
+        $requestStartedAt = new DateTimeImmutable();
+        $this->eventEmitter->inferenceRequestStarted($state, $messages->count(), $this->model ?: null);
+
         $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext));
+
         if ($extraction->isFailure()) {
-            return $this->buildExtractionFailureStep($extraction->error(), $messages);
+            $error = $extraction->error();
+            $this->eventEmitter->decisionExtractionFailed(
+                state: $state,
+                errorMessage: $error->getMessage(),
+                errorType: get_class($error),
+                attemptNumber: 1,
+                maxAttempts: $this->maxRetries,
+            );
+            return $this->buildExtractionFailureStep($error, $messages);
         }
 
         $bundle = $extraction->unwrap();
         $decision = $bundle->decision();
+        $inferenceResponse = $bundle->response();
+
+        // Emit inference response received event
+        $this->eventEmitter->inferenceResponseReceived($state, $inferenceResponse, $requestStartedAt);
 
         // Basic validation: decision type + tool exists
         $validator = new ReActValidator();
         $validation = $validator->validateBasicDecision($decision, $tools->names());
         if ($validation->isInvalid()) {
+            $this->eventEmitter->validationFailed(
+                state: $state,
+                validationType: 'decision',
+                errors: [$validation->getErrorMessage()],
+            );
             return $this->buildValidationFailureStep($validation, $messages);
         }
 
         // Extract tool calls independent of execution
         $toolCalls = (new MakeToolCalls($tools, $validator))($decision);
 
-        $inferenceResponse = $bundle->response();
         $usage = $inferenceResponse->usage();
 
         if (!$decision->isCall()) {
@@ -108,6 +136,20 @@ final class ReActDriver implements CanUseTools
             toolExecutions: $executions,
             inferenceResponse: $responseWithCalls,
         );
+    }
+
+    // MUTATORS ////////////////////////////////////////////////////////////////
+
+    public function withLLMProvider(LLMProvider $llm): self {
+        $clone = clone $this;
+        $clone->llm = $llm;
+        return $clone;
+    }
+
+    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
+        $clone = clone $this;
+        $clone->eventEmitter = $eventEmitter;
+        return $clone;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////

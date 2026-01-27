@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
-use Cognesy\Agents\Agent\Collections\Tools;
+use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 interface SubagentDefinition

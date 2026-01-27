@@ -23,8 +23,13 @@ enum InferenceFinishReason : string
         return match ($text) {
             'blocklist' => self::ContentFilter,
             'complete' => self::Stop,
+            'completed' => self::Stop, // OpenResponses
+            'content_filter' => self::ContentFilter,
+            'end_turn' => self::Stop, // Anthropic
             'error' => self::Error,
+            'failed' => self::Error, // OpenResponses
             'finish_reason_unspecified' => self::Other,
+            'incomplete' => self::Length, // OpenResponses
             'language' => self::ContentFilter,
             'length' => self::Length,
             'malformed_function_call' => self::Error,

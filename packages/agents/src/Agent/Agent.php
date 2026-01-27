@@ -2,26 +2,29 @@
 
 namespace Cognesy\Agents\Agent;
 
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
-use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\StopReason;
-use Cognesy\Agents\Agent\Contracts\CanControlAgentLoop;
-use Cognesy\Agents\Agent\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Agent\Contracts\CanHandleAgentErrors;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Contracts\ToolInterface;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
-use Cognesy\Agents\Agent\Data\CurrentExecution;
-use Cognesy\Agents\Agent\Data\StepExecution;
-use Cognesy\Agents\Agent\Enums\AgentStatus;
-use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
-use Cognesy\Agents\Agent\Events\AgentEventEmitter;
 use Cognesy\Agents\Agent\StateProcessing\CanApplyProcessors;
 use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
 use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;
+use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanHandleAgentErrors;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Contracts\ToolInterface;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Data\CurrentExecution;
+use Cognesy\Agents\Core\Data\StepExecution;
+use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
+use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Exceptions\AgentException;
+use Cognesy\Agents\Core\Lifecycle\CanObserveAgentLifecycle;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use DateTimeImmutable;
 use Throwable;
@@ -45,6 +48,7 @@ class Agent implements CanControlAgentLoop
         private readonly CanUseTools $driver,
         AgentEventEmitter $eventEmitter,
         ?CanHandleEvents $events = null,
+        private readonly ?CanObserveAgentLifecycle $observer = null,
     ) {
         $this->eventEmitter = $events !== null
             ? $eventEmitter->withEventHandler($events)
@@ -69,7 +73,7 @@ class Agent implements CanControlAgentLoop
         while (true) {
             try {
                 $state = $state->beginStepExecution();
-                if (!$this->hasNextStep($state)) {
+                if (!$this->shouldContinue($state)) {
                     $state = $state->clearCurrentExecution();
                     break;
                 }
@@ -96,11 +100,21 @@ class Agent implements CanControlAgentLoop
         $executionStartedAt = new DateTimeImmutable();
         $this->continuationCriteria->executionStarted($executionStartedAt);
         $this->eventEmitter->executionStarted($state, count($this->tools->names()));
+
+        if ($this->observer !== null) {
+            $state = $this->observer->executionStarting($state);
+        }
+
         return $state;
     }
 
     protected function onBeforeStep(AgentState $state): AgentState {
         $this->eventEmitter->stepStarted($state);
+
+        if ($this->observer !== null) {
+            $state = $this->observer->stepStarting($state);
+        }
+
         return $state;
     }
 
@@ -130,6 +144,10 @@ class Agent implements CanControlAgentLoop
     }
 
     protected function onAfterStep(AgentState $state): AgentState {
+        if ($this->observer !== null) {
+            $state = $this->observer->stepEnding($state);
+        }
+
         $this->eventEmitter->stepCompleted($state);
         return $state;
     }
@@ -141,6 +159,11 @@ class Agent implements CanControlAgentLoop
         };
 
         $finalState = $state->withStatus($status);
+
+        if ($this->observer !== null) {
+            $finalState = $this->observer->executionEnding($finalState);
+        }
+
         $this->eventEmitter->executionFinished($finalState);
         return $finalState;
     }
@@ -170,6 +193,14 @@ class Agent implements CanControlAgentLoop
         $this->eventEmitter->stateUpdated($nextState);
         if ($handling->finalStatus === AgentStatus::Failed) {
             $this->eventEmitter->executionFailed($nextState, $handling->exception);
+
+            // Notify observer of failure
+            if ($this->observer !== null) {
+                $agentException = $handling->exception instanceof AgentException
+                    ? $handling->exception
+                    : AgentException::fromThrowable($handling->exception);
+                $nextState = $this->observer->executionFailed($nextState, $agentException);
+            }
         }
 
         return $nextState;
@@ -177,14 +208,30 @@ class Agent implements CanControlAgentLoop
 
     // INTERNAL ///////////////////////////////////////////
 
-    protected function hasNextStep(AgentState $state): bool {
+    protected function shouldContinue(AgentState $state): bool {
+        // Check basic continuation conditions
         if ($state->status() === AgentStatus::Failed) {
             return false;
         }
-        if ($state->stepCount() === 0) {
-            return $this->continuationCriteria->canContinue($state);
+
+        $shouldContinue = $state->stepCount() === 0
+            ? $this->continuationCriteria->canContinue($state)
+            : $state->stepExecutions()->shouldContinue();
+
+        if ($shouldContinue) {
+            return true;
         }
-        return $state->stepExecutions()->shouldContinue();
+
+        // We're about to stop - let the observer intervene if registered
+        if ($this->observer !== null) {
+            $stopReason = $state->stopReason() ?? StopReason::Completed;
+            $decision = $this->observer->stopping($state, $stopReason);
+            if ($decision->isPrevented()) {
+                return true; // Observer prevented stopping, continue execution
+            }
+        }
+
+        return false;
     }
 
     private function performStep(AgentState $state): AgentState {
@@ -259,6 +306,10 @@ class Agent implements CanControlAgentLoop
         return $this->driver;
     }
 
+    public function eventEmitter(): AgentEventEmitter {
+        return $this->eventEmitter;
+    }
+
     // MUTATORS /////////////////////////////////////////////
 
     public function with(
@@ -270,6 +321,7 @@ class Agent implements CanControlAgentLoop
         ?CanUseTools $driver = null,
         ?AgentEventEmitter $eventEmitter = null,
         ?CanHandleEvents $events = null,
+        ?CanObserveAgentLifecycle $observer = null,
     ): self {
         $resolvedTools = $tools ?? $this->tools;
 
@@ -295,6 +347,7 @@ class Agent implements CanControlAgentLoop
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             driver: $driver ?? $this->driver,
             eventEmitter: $resolvedEmitter,
+            observer: $observer ?? $this->observer,
         );
     }
 
@@ -329,5 +382,13 @@ class Agent implements CanControlAgentLoop
 
     public function withErrorPolicy(ErrorPolicy $policy): self {
         return $this->with(errorHandler: AgentErrorHandler::withPolicy($policy));
+    }
+
+    public function withObserver(?CanObserveAgentLifecycle $observer): self {
+        return $this->with(observer: $observer);
+    }
+
+    public function observer(): ?CanObserveAgentLifecycle {
+        return $this->observer;
     }
 }

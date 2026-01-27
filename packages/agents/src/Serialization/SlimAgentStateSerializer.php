@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Serialization;
 
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Data\AgentStep;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use DateTimeImmutable;
 

@@ -132,8 +132,9 @@ abstract class BaseInferenceDriver implements CanHandleInference
         }
 
         if ($httpResponse->statusCode() >= 400) {
-            $this->dispatchInferenceResponseFailed($httpResponse);
-            throw ProviderErrorClassifier::fromHttpResponse($httpResponse);
+            $errorResponse = $this->bufferStreamedErrorResponse($httpResponse);
+            $this->dispatchInferenceResponseFailed($errorResponse);
+            throw ProviderErrorClassifier::fromHttpResponse($errorResponse);
         }
         return $httpResponse;
     }
@@ -149,7 +150,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
             'context' => 'HTTP response received with error status',
             'statusCode' => $httpResponse->statusCode(),
             'headers' => $httpResponse->headers(),
-            'body' => $httpResponse->body(),
+            'body' => $this->safeBody($httpResponse),
         ]));
     }
 
@@ -167,7 +168,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
             'exception' => $e->getMessage(),
             'statusCode' => $response->statusCode(),
             'headers' => $response->headers(),
-            'body' => $response->body(),
+            'body' => $this->safeBody($response),
         ]));
     }
 
@@ -177,7 +178,31 @@ abstract class BaseInferenceDriver implements CanHandleInference
             'exception' => $e->getMessage(),
             'statusCode' => $httpResponse->statusCode(),
             'headers' => $httpResponse->headers(),
-            'body' => $httpResponse->body(),
+            'body' => $this->safeBody($httpResponse),
         ]));
+    }
+
+    private function safeBody(HttpResponse $response): string {
+        if (!$response->isStreamed()) {
+            return $response->body();
+        }
+        return '[streamed response body unavailable]';
+    }
+
+    private function bufferStreamedErrorResponse(HttpResponse $response): HttpResponse {
+        if (!$response->isStreamed()) {
+            return $response;
+        }
+
+        $body = '';
+        foreach ($response->stream() as $chunk) {
+            $body .= $chunk;
+        }
+
+        return HttpResponse::sync(
+            statusCode: $response->statusCode(),
+            headers: $response->headers(),
+            body: $body,
+        );
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput;
 
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Json\Json;

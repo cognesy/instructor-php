@@ -4,20 +4,18 @@ namespace Cognesy\Agents\AgentBuilder;
 
 use Closure;
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\Collections\Tools;
-use Cognesy\Agents\Agent\Continuation\CanEvaluateContinuation;
-use Cognesy\Agents\Agent\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Agent\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Agents\Agent\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Agents\Agent\Continuation\Criteria\FinishReasonCheck;
-use Cognesy\Agents\Agent\Continuation\Criteria\StepsLimit;
-use Cognesy\Agents\Agent\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Agents\Agent\Continuation\ToolCallPresenceCheck;
-use Cognesy\Agents\Agent\Contracts\CanUseTools;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\ErrorHandling\AgentErrorHandler;
-use Cognesy\Agents\Agent\ErrorHandling\ErrorPolicy;
-use Cognesy\Agents\Agent\Events\AgentEventEmitter;
+use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
+use Cognesy\Agents\Agent\StateProcessing\Processors\AppendContextMetadata;
+use Cognesy\Agents\Agent\StateProcessing\Processors\AppendFinalResponse;
+use Cognesy\Agents\Agent\StateProcessing\Processors\AppendStepMessages;
+use Cognesy\Agents\Agent\StateProcessing\Processors\AppendToolTraceToBuffer;
+use Cognesy\Agents\Agent\StateProcessing\Processors\ApplyCachedContext;
+use Cognesy\Agents\Agent\StateProcessing\Processors\CallableProcessor;
+use Cognesy\Agents\Agent\StateProcessing\Processors\ClearExecutionBuffer;
+use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
+use Cognesy\Agents\Agent\Hooks\HookStackObserver;
+use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
 use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
@@ -37,17 +35,23 @@ use Cognesy\Agents\Agent\Hooks\Hooks\StopHook;
 use Cognesy\Agents\Agent\Hooks\Hooks\SubagentStopHook;
 use Cognesy\Agents\Agent\Hooks\Matchers\ToolNameMatcher;
 use Cognesy\Agents\Agent\Hooks\Stack\HookStack;
-use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendContextMetadata;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendStepMessages;
-use Cognesy\Agents\Agent\StateProcessing\Processors\ApplyCachedContext;
-use Cognesy\Agents\Agent\StateProcessing\Processors\CallableProcessor;
-use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
-use Cognesy\Agents\Agent\ToolExecutor;
-use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
+use Cognesy\Agents\Core\Continuation\Criteria\ErrorPolicyCriterion;
+use Cognesy\Agents\Core\Continuation\Criteria\ExecutionTimeLimit;
+use Cognesy\Agents\Core\Continuation\Criteria\FinishReasonCheck;
+use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Agents\Core\Continuation\Criteria\TokenUsageLimit;
+use Cognesy\Agents\Core\Continuation\Criteria\ToolCallPresenceCheck;
+use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
+use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
@@ -82,6 +86,7 @@ class AgentBuilder
     private ?string $llmPreset = null;
     private ?CachedContext $cachedContext = null;
     private ?ErrorPolicy $errorPolicy = null;
+    private bool $separateToolTrace = true;
 
     // Execution limits
     private int $maxSteps = 20;
@@ -155,6 +160,11 @@ class AgentBuilder
 
     public function addPreProcessor(CanProcessAgentState $processor): self {
         $this->preProcessors[] = $processor;
+        return $this;
+    }
+
+    public function withSeparatedToolTrace(bool $enabled = true): self {
+        $this->separateToolTrace = $enabled;
         return $this;
     }
 
@@ -571,18 +581,24 @@ class AgentBuilder
         // Build continuation criteria
         $continuationCriteria = $this->buildContinuationCriteria();
 
-        // Build driver
-        $driver = $this->buildDriver();
-
-        // Build event emitter (shared between components)
+        // Build event emitter FIRST (shared between all components)
         $eventEmitter = new AgentEventEmitter($this->events);
 
-        // Build tool executor with unified hook stack
+        // Build driver with shared event emitter
+        $driver = $this->buildDriver($eventEmitter);
+
+        // Build lifecycle observer from hook stack
+        $observer = new HookStackObserver(
+            hookStack: $this->hookStack,
+            eventEmitter: $eventEmitter,
+        );
+
+        // Build tool executor with lifecycle observer
         $toolExecutor = new ToolExecutor(
             tools: $this->tools,
             throwOnToolFailure: false,
             eventEmitter: $eventEmitter,
-            toolHookStack: $this->hookStack,
+            observer: $observer,
         );
 
         // Build error handler
@@ -599,6 +615,7 @@ class AgentBuilder
             continuationCriteria: $continuationCriteria,
             driver: $driver,
             eventEmitter: $eventEmitter,
+            observer: $observer,
         );
 
         foreach ($this->onBuildCallbacks as $callback) {
@@ -616,7 +633,13 @@ class AgentBuilder
             $baseProcessors[] = new ApplyCachedContext($this->cachedContext);
         }
         $baseProcessors[] = new AppendContextMetadata();
-        $baseProcessors[] = new AppendStepMessages();
+        if ($this->separateToolTrace) {
+            $baseProcessors[] = new ClearExecutionBuffer();
+            $baseProcessors[] = new AppendFinalResponse();
+            $baseProcessors[] = new AppendToolTraceToBuffer();
+        } else {
+            $baseProcessors[] = new AppendStepMessages();
+        }
 
         $allProcessors = array_merge($this->preProcessors, $baseProcessors, $this->processors);
 
@@ -660,8 +683,12 @@ class AgentBuilder
         );
     }
 
-    private function buildDriver(): CanUseTools {
+    private function buildDriver(CanEmitAgentEvents $eventEmitter): CanUseTools {
         if ($this->driver !== null) {
+            // If custom driver provided, try to inject event emitter
+            if (method_exists($this->driver, 'withEventEmitter')) {
+                return $this->driver->withEventEmitter($eventEmitter);
+            }
             return $this->driver;
         }
 
@@ -674,7 +701,11 @@ class AgentBuilder
             $retryPolicy = new InferenceRetryPolicy(maxAttempts: $this->maxRetries);
         }
 
-        return new ToolCallingDriver(llm: $llmProvider, retryPolicy: $retryPolicy);
+        return new ToolCallingDriver(
+            llm: $llmProvider,
+            retryPolicy: $retryPolicy,
+            eventEmitter: $eventEmitter,
+        );
     }
 
     private function hasSystemPrompt(Messages $messages, string $prompt): bool {

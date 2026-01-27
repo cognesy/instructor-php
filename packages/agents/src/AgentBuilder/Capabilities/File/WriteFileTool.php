@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\File;
 
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Utils\Sandbox\Sandbox;
 use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;

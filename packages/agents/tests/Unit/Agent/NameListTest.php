@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Unit\Agent;
+namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Collections\NameList;
+use Cognesy\Agents\Core\Collections\NameList;
 
 describe('NameList', function () {
     it('normalizes and deduplicates names', function () {

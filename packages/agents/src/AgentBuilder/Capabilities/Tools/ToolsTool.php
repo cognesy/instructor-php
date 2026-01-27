@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Tools;
 
-use Cognesy\Agents\Agent\Tools\BaseTool;
+use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistryInterface;
 
 final class ToolsTool extends BaseTool
