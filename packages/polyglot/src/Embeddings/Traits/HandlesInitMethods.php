@@ -56,8 +56,29 @@ trait HandlesInitMethods
         return $this;
     }
 
-    public function withDebugPreset(?string $debug) : self {
-        $this->httpDebugPreset = $debug;
+    /**
+     * Set HTTP debug preset explicitly (clearer than withDebugPreset()).
+     */
+    public function withHttpDebugPreset(?string $preset) : self {
+        $this->httpDebugPreset = $preset;
         return $this;
+    }
+
+    /**
+     * Convenience toggle for HTTP debugging.
+     */
+    public function withHttpDebug(bool $enabled = true) : self {
+        $preset = match ($enabled) {
+            true => 'on',
+            false => 'off',
+        };
+        return $this->withHttpDebugPreset($preset);
+    }
+
+    /**
+     * Backward-compatible alias for HTTP debug presets.
+     */
+    public function withDebugPreset(?string $debug) : self {
+        return $this->withHttpDebugPreset($debug);
     }
 }

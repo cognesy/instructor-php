@@ -2,24 +2,36 @@
 
 namespace Cognesy\Agents\Tests\Unit\Processors;
 
+use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Data\StepHookContext;
+use Cognesy\Agents\AgentHooks\Hooks\AppendFinalResponseHook;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendFinalResponse;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 
-describe('AppendFinalResponse', function () {
+describe('AppendFinalResponseHook', function () {
+
+    beforeEach(function () {
+        $this->processHook = function (AppendFinalResponseHook $hook, StepHookContext $context): HookOutcome {
+            $terminal = static fn($ctx) => HookOutcome::proceed($ctx);
+            return $hook->handle($context, $terminal);
+        };
+    });
+
     it('appends final assistant response when no tool calls are present', function () {
         $state = AgentState::empty()->withMessages(Messages::fromString('Hi'));
         $outputMessages = Messages::fromString('Hello!', 'assistant');
         $step = new AgentStep(outputMessages: $outputMessages);
         $state = $state->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendFinalResponse();
-        $result = $processor->process($state);
+        $hook = new AppendFinalResponseHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         expect($result->messages()->count())->toBe(2);
         expect($result->messages()->last()->toString())->toBe('Hello!');
     });
@@ -39,10 +51,12 @@ describe('AppendFinalResponse', function () {
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('Hi'))
             ->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendFinalResponse();
-        $result = $processor->process($state);
+        $hook = new AppendFinalResponseHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         expect($result->messages()->count())->toBe(1);
         expect($result->messages()->last()->toString())->toBe('Hi');
     });
@@ -51,20 +65,24 @@ describe('AppendFinalResponse', function () {
         $state = AgentState::empty()->withMessages(Messages::fromString('Hi'));
         $step = new AgentStep(outputMessages: Messages::empty());
         $state = $state->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendFinalResponse();
-        $result = $processor->process($state);
+        $hook = new AppendFinalResponseHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         expect($result->messages()->count())->toBe(1);
         expect($result->messages()->last()->toString())->toBe('Hi');
     });
 
     it('returns state unchanged when currentStep is null', function () {
         $state = AgentState::empty()->withMessages(Messages::fromString('Hi'));
+        $context = StepHookContext::afterStep($state, 0, new AgentStep());
 
-        $processor = new AppendFinalResponse();
-        $result = $processor->process($state);
+        $hook = new AppendFinalResponseHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         expect($result->messages()->count())->toBe(1);
     });
 
@@ -88,11 +106,13 @@ describe('AppendFinalResponse', function () {
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('Hi'))
             ->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendFinalResponse();
-        $result = $processor->process($state);
+        $hook = new AppendFinalResponseHook();
+        $outcome = ($this->processHook)($hook, $context);
 
         // Should NOT append any response since step has tool calls
+        $result = $outcome->context()->state();
         expect($result->messages()->count())->toBe(1);
         expect($result->messages()->last()->toString())->toBe('Hi');
     });
@@ -105,10 +125,12 @@ describe('AppendFinalResponse', function () {
         ]);
         $step = new AgentStep(outputMessages: $outputMessages);
         $state = $state->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendFinalResponse();
-        $result = $processor->process($state);
+        $hook = new AppendFinalResponseHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         expect($result->messages()->count())->toBe(2);
         expect($result->messages()->last()->toString())->toBe('Actual response');
     });

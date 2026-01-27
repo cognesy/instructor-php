@@ -31,55 +31,55 @@ final class CompositeObserver implements CanObserveAgentLifecycle
     }
 
     #[\Override]
-    public function executionStarting(AgentState $state): AgentState
+    public function beforeExecution(AgentState $state): AgentState
     {
         foreach ($this->observers as $observer) {
-            $state = $observer->executionStarting($state);
+            $state = $observer->beforeExecution($state);
         }
         return $state;
     }
 
     #[\Override]
-    public function executionEnding(AgentState $state): AgentState
+    public function afterExecution(AgentState $state): AgentState
     {
         foreach ($this->observers as $observer) {
-            $state = $observer->executionEnding($state);
+            $state = $observer->afterExecution($state);
         }
         return $state;
     }
 
     #[\Override]
-    public function executionFailed(AgentState $state, AgentException $exception): AgentState
+    public function onError(AgentState $state, AgentException $exception): AgentState
     {
         foreach ($this->observers as $observer) {
-            $state = $observer->executionFailed($state, $exception);
+            $state = $observer->onError($state, $exception);
         }
         return $state;
     }
 
     #[\Override]
-    public function stepStarting(AgentState $state): AgentState
+    public function beforeStep(AgentState $state): AgentState
     {
         foreach ($this->observers as $observer) {
-            $state = $observer->stepStarting($state);
+            $state = $observer->beforeStep($state);
         }
         return $state;
     }
 
     #[\Override]
-    public function stepEnding(AgentState $state): AgentState
+    public function afterStep(AgentState $state): AgentState
     {
         foreach ($this->observers as $observer) {
-            $state = $observer->stepEnding($state);
+            $state = $observer->afterStep($state);
         }
         return $state;
     }
 
     #[\Override]
-    public function toolUsing(ToolCall $toolCall, AgentState $state): ToolUseDecision
+    public function beforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision
     {
         foreach ($this->observers as $observer) {
-            $decision = $observer->toolUsing($toolCall, $state);
+            $decision = $observer->beforeToolUse($toolCall, $state);
             if ($decision->isBlocked()) {
                 return $decision;
             }
@@ -89,19 +89,19 @@ final class CompositeObserver implements CanObserveAgentLifecycle
     }
 
     #[\Override]
-    public function toolUsed(ToolExecution $execution, AgentState $state): ToolExecution
+    public function afterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
     {
         foreach ($this->observers as $observer) {
-            $execution = $observer->toolUsed($execution, $state);
+            $execution = $observer->afterToolUse($execution, $state);
         }
         return $execution;
     }
 
     #[\Override]
-    public function stopping(AgentState $state, StopReason $reason): StopDecision
+    public function beforeStopDecision(AgentState $state, StopReason $reason): StopDecision
     {
         foreach ($this->observers as $observer) {
-            $decision = $observer->stopping($state, $reason);
+            $decision = $observer->beforeStopDecision($state, $reason);
             if ($decision->isPrevented()) {
                 return $decision;
             }

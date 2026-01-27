@@ -3,64 +3,49 @@ title: Debugging Requests and Responses
 description: 'Debugging LLM interactions is essential for troubleshooting and optimizing your applications.'
 ---
 
-Polyglot debug mode provides a simple way to enable debugging for LLM interactions. Debugging is essential for troubleshooting and optimizing your applications. It allows you to inspect the requests sent to the LLM and the responses received, helping you identify issues and improve performance.
+Polyglot debug mode provides a simple way to enable HTTP-level debugging for
+LLM interactions. Debugging is essential for troubleshooting and optimizing your
+applications. It allows you to inspect the requests sent to the LLM and the
+responses received, helping you identify issues and improve performance.
 
 
 
 ## Enabling Debug Mode
 
-Polyglot provides a simple way to enable debug mode:
+Polyglot provides a simple way to enable HTTP debug mode:
 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-// Enable debug mode when creating the inference object
+// Enable HTTP debug middleware when creating the inference object
 $inference = (new Inference())
-    ->withDebugPreset('on');
+    ->withHttpDebugPreset('on'); // legacy alias: withDebugPreset('on')
 
 // Make a request - debug output will show the request and response details
-$response = $inference->with(
-    messages: 'What is the capital of France?'
-)->get();
+$response = $inference->with(messages: 'What is the capital of France?')->get();
 ```
 
 
 
 
-### HTTP Request Inspection with Middleware
+### HTTP Debug Events
 
-You can manually add debugging middleware to inspect raw HTTP requests and responses.
-
-In this example we're using built-in middleware, but you can also create your own custom middleware.
+When HTTP debug mode is enabled, the HTTP middleware stack dispatches debug
+events that you can listen to with `onEvent()` or `wiretap()`.
 
 ```php
 <?php
-use Cognesy\Http\Middleware\Debug\DebugMiddleware;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\Events\DebugRequestURLUsed;
+use Cognesy\Http\Events\DebugResponseBodyReceived;
 use Cognesy\Polyglot\Inference\Inference;
 
-// Create a custom debug middleware with specific options
-$debugMiddleware = new DebugMiddleware([
-    'requestUrl' => true,
-    'requestHeaders' => true,
-    'requestBody' => true,
-    'responseHeaders' => true,
-    'responseBody' => true,
-]);
+$inference = (new Inference())
+    ->withHttpDebugPreset('url-only')
+    ->onEvent(DebugRequestURLUsed::class, fn(DebugRequestURLUsed $e) => dump($e->toArray()))
+    ->onEvent(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
 
-// Create an HTTP client with the debug middleware
-$httpClient = new HttpClient();
-$httpClient->withMiddleware($debugMiddleware);
-
-// Use the HTTP client with Inference
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
-
-// Make a request
-$response = $inference->with(
-    messages: 'What is the capital of France?'
-)->get();
+$response = $inference->with(messages: 'What is the capital of France?')->get();
 ```
 
 

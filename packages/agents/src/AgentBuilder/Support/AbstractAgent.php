@@ -3,9 +3,10 @@
 namespace Cognesy\Agents\AgentBuilder\Support;
 
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
@@ -32,10 +33,8 @@ abstract class AbstractAgent implements AgentInterface
             return $this->agent;
         }
         $this->agent = $this->buildAgent();
-        $this->applyEventHandlerIfProvided();
+        $this->applyEventEmitterIfProvided();
         $this->applyStoredListeners();
-        // $this->agent is reassigned by applyEventHandlerIfProvided(), so we must return it
-        assert($this->agent !== null);
         return $this->agent;
     }
 
@@ -57,8 +56,6 @@ abstract class AbstractAgent implements AgentInterface
     #[\Override]
     public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): self {
         $this->events = EventBusResolver::using($events);
-        $this->applyEventHandlerIfProvided();
-        $this->applyStoredListeners();
         return $this;
     }
 
@@ -71,8 +68,6 @@ abstract class AbstractAgent implements AgentInterface
             $this->wiretaps[] = $listener;
             return $this;
         }
-        $this->ensureEventHandler();
-        $this->applyEventHandlerIfProvided();
         $this->agent->wiretap($listener);
         return $this;
     }
@@ -86,21 +81,16 @@ abstract class AbstractAgent implements AgentInterface
             $this->listeners[$class][] = $listener;
             return $this;
         }
-        $this->ensureEventHandler();
-        $this->applyEventHandlerIfProvided();
         $this->agent->onEvent($class, $listener);
         return $this;
     }
 
-    private function applyEventHandlerIfProvided(): void {
-        if ($this->agent === null) {
-            return;
-        }
-        if (!isset($this->events)) {
+    private function applyEventEmitterIfProvided(): void {
+        if ($this->agent === null || !isset($this->events)) {
             return;
         }
         $this->agent = $this->agent->with(
-            events: $this->events,
+            eventEmitter: new AgentEventEmitter($this->events),
         );
     }
 
@@ -116,12 +106,5 @@ abstract class AbstractAgent implements AgentInterface
                 $this->agent->onEvent($class, $listener);
             }
         }
-    }
-
-    private function ensureEventHandler(): void {
-        if (isset($this->events)) {
-            return;
-        }
-        $this->events = EventBusResolver::default();
     }
 }

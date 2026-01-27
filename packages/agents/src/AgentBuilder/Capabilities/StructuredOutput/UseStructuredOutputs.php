@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput;
 
+use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
@@ -48,8 +49,7 @@ class UseStructuredOutputs implements AgentCapability
             new StructuredOutputTool($this->schemas, $policy),
         ));
 
-        // Reuse metadata processor if not already added
-        // (handles store_as functionality)
-        $builder->addProcessor(new PersistStructuredOutputProcessor());
+        // Handles store_as functionality
+        $builder->addHook(HookType::AfterStep, new PersistStructuredOutputHook());
     }
 }

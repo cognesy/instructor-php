@@ -22,29 +22,29 @@ interface CanObserveAgentLifecycle
     /**
      * Called when agent execution is about to start.
      */
-    public function executionStarting(AgentState $state): AgentState;
+    public function beforeExecution(AgentState $state): AgentState;
 
     /**
      * Called when agent execution is ending normally.
      */
-    public function executionEnding(AgentState $state): AgentState;
+    public function afterExecution(AgentState $state): AgentState;
 
     /**
      * Called when agent execution has failed.
      */
-    public function executionFailed(AgentState $state, AgentException $exception): AgentState;
+    public function onError(AgentState $state, AgentException $exception): AgentState;
 
     // STEP LEVEL /////////////////////////////////////////////
 
     /**
      * Called before each step begins.
      */
-    public function stepStarting(AgentState $state): AgentState;
+    public function beforeStep(AgentState $state): AgentState;
 
     /**
      * Called after each step completes.
      */
-    public function stepEnding(AgentState $state): AgentState;
+    public function afterStep(AgentState $state): AgentState;
 
     // TOOL LEVEL /////////////////////////////////////////////
 
@@ -52,13 +52,13 @@ interface CanObserveAgentLifecycle
      * Called before a tool is executed.
      * Can modify the tool call or block execution.
      */
-    public function toolUsing(ToolCall $toolCall, AgentState $state): ToolUseDecision;
+    public function beforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision;
 
     /**
      * Called after a tool has executed.
      * Can modify the execution result.
      */
-    public function toolUsed(ToolExecution $execution, AgentState $state): ToolExecution;
+    public function afterToolUse(ToolExecution $execution, AgentState $state): ToolExecution;
 
     // CONTINUATION ///////////////////////////////////////////
 
@@ -66,5 +66,5 @@ interface CanObserveAgentLifecycle
      * Called when agent is about to stop.
      * Can prevent stopping to force continuation.
      */
-    public function stopping(AgentState $state, StopReason $reason): StopDecision;
+    public function beforeStopDecision(AgentState $state, StopReason $reason): StopDecision;
 }

@@ -52,7 +52,6 @@ describe('Agent failure usage accumulation', function () {
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: $errorHandler,
-            processors: null,
             continuationCriteria: new ContinuationCriteria(),
             driver: $driver,
             eventEmitter: new AgentEventEmitter(),

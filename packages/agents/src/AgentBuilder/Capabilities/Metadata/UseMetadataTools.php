@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
+use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
@@ -33,6 +34,6 @@ class UseMetadataTools implements AgentCapability
             new MetadataListTool(),
         ));
 
-        $builder->addProcessor(new PersistMetadataProcessor());
+        $builder->addHook(HookType::AfterStep, new PersistMetadataHook());
     }
 }

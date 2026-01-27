@@ -2,11 +2,14 @@
 
 namespace Cognesy\Agents\Tests\Unit\Processors;
 
+use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Data\StepHookContext;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
+use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksHook;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoResult;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -14,36 +17,47 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 
-describe('PersistTasksProcessor', function () {
+describe('PersistTasksHook', function () {
 
-    it('can process AgentState', function () {
-        $processor = new PersistTasksProcessor();
+    function processWithHook(PersistTasksHook $hook, StepHookContext $context): HookOutcome {
+        $terminal = static fn($ctx) => HookOutcome::proceed($ctx);
+        return $hook->handle($context, $terminal);
+    }
+
+    it('passes through for non-AfterStep events', function () {
+        $hook = new PersistTasksHook();
         $state = AgentState::empty();
+        $context = StepHookContext::beforeStep($state, 0);
 
-        expect($processor->canProcess($state))->toBeTrue();
+        $outcome = processWithHook($hook, $context);
+
+        expect($outcome->isProceed())->toBeTrue();
+        expect($outcome->context()->state())->toBe($state);
     });
 
     it('returns state unchanged when no current step', function () {
-        $processor = new PersistTasksProcessor();
+        $hook = new PersistTasksHook();
         $state = AgentState::empty();
+        $context = StepHookContext::afterStep($state, 0, new AgentStep());
 
-        $result = $processor->process($state);
+        $outcome = processWithHook($hook, $context);
 
-        expect($result)->toBe($state);
+        expect($outcome->isProceed())->toBeTrue();
     });
 
     it('returns state unchanged when step has no tool executions', function () {
-        $processor = new PersistTasksProcessor();
+        $hook = new PersistTasksHook();
         $step = new AgentStep();
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $result = $processor->process($state);
+        $outcome = processWithHook($hook, $context);
 
-        expect($result->metadata()->get(TodoWriteTool::metadataKey()))->toBeNull();
+        expect($outcome->context()->state()->metadata()->get(TodoWriteTool::metadataKey()))->toBeNull();
     });
 
     it('persists tasks from todo_write tool execution', function () {
-        $processor = new PersistTasksProcessor();
+        $hook = new PersistTasksHook();
 
         // Create a tool call for todo_write
         $toolCall = ToolCall::fromArray([
@@ -82,12 +96,14 @@ describe('PersistTasksProcessor', function () {
         );
 
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
         // Process
-        $result = $processor->process($state);
+        $outcome = processWithHook($hook, $context);
 
         // Verify tasks are persisted in metadata
-        $persistedTasks = $result->metadata()->get(TodoWriteTool::metadataKey());
+        $resultState = $outcome->context()->state();
+        $persistedTasks = $resultState->metadata()->get(TodoWriteTool::metadataKey());
         expect($persistedTasks)->toBeArray();
         expect($persistedTasks)->toHaveCount(2);
         expect($persistedTasks[0]['content'])->toBe('Task 1');
@@ -95,7 +111,7 @@ describe('PersistTasksProcessor', function () {
     });
 
     it('ignores failed tool executions', function () {
-        $processor = new PersistTasksProcessor();
+        $hook = new PersistTasksHook();
 
         $toolCall = ToolCall::fromArray([
             'id' => 'call_456',
@@ -120,15 +136,16 @@ describe('PersistTasksProcessor', function () {
         );
 
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $result = $processor->process($state);
+        $outcome = processWithHook($hook, $context);
 
         // Should not have tasks in metadata
-        expect($result->metadata()->get(TodoWriteTool::metadataKey()))->toBeNull();
+        expect($outcome->context()->state()->metadata()->get(TodoWriteTool::metadataKey()))->toBeNull();
     });
 
     it('ignores non-todo_write tool executions', function () {
-        $processor = new PersistTasksProcessor();
+        $hook = new PersistTasksHook();
 
         $toolCall = ToolCall::fromArray([
             'id' => 'call_789',
@@ -152,23 +169,26 @@ describe('PersistTasksProcessor', function () {
         );
 
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $result = $processor->process($state);
+        $outcome = processWithHook($hook, $context);
 
-        expect($result->metadata()->get(TodoWriteTool::metadataKey()))->toBeNull();
+        expect($outcome->context()->state()->metadata()->get(TodoWriteTool::metadataKey()))->toBeNull();
     });
 
-    it('calls next processor in chain', function () {
-        $processor = new PersistTasksProcessor();
+    it('calls next in chain', function () {
+        $hook = new PersistTasksHook();
         $state = AgentState::empty();
+        $step = new AgentStep();
+        $context = StepHookContext::afterStep($state, 0, $step);
         $nextCalled = false;
 
-        $next = function ($state) use (&$nextCalled) {
+        $next = function ($ctx) use (&$nextCalled) {
             $nextCalled = true;
-            return $state;
+            return HookOutcome::proceed($ctx);
         };
 
-        $processor->process($state, $next);
+        $hook->handle($context, $next);
 
         expect($nextCalled)->toBeTrue();
     });

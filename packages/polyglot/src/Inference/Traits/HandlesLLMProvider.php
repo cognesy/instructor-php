@@ -67,8 +67,29 @@ trait HandlesLLMProvider
         return $this;
     }
 
-    public function withDebugPreset(?string $preset) : static {
+    /**
+     * Set HTTP debug preset explicitly (clearer than withDebugPreset()).
+     */
+    public function withHttpDebugPreset(?string $preset) : static {
         $this->httpDebugPreset = $preset;
         return $this;
+    }
+
+    /**
+     * Convenience toggle for HTTP debugging.
+     */
+    public function withHttpDebug(bool $enabled = true) : static {
+        $preset = match ($enabled) {
+            true => 'on',
+            false => 'off',
+        };
+        return $this->withHttpDebugPreset($preset);
+    }
+
+    /**
+     * Backward-compatible alias for HTTP debug presets.
+     */
+    public function withDebugPreset(?string $preset) : static {
+        return $this->withHttpDebugPreset($preset);
     }
 }

@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Polyglot\Inference\Inference withConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Polyglot\Inference\Inference withLLMConfigOverrides(array $overrides)
  * @method static \Cognesy\Polyglot\Inference\Inference withDsn(string $dsn)
+ * @method static \Cognesy\Polyglot\Inference\Inference withHttpDebugPreset(?string $preset)
+ * @method static \Cognesy\Polyglot\Inference\Inference withHttpDebug(bool $enabled = true)
  * @method static \Cognesy\Polyglot\Inference\Inference withDebugPreset(?string $preset)
  * @method static \Cognesy\Polyglot\Inference\Inference wiretap(callable $callback)
  * @method static \Cognesy\Polyglot\Inference\Inference onEvent(string $eventClass, callable $callback)

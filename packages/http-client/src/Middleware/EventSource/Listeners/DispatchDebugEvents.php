@@ -24,7 +24,7 @@ class DispatchDebugEvents implements CanListenToHttpEvents
     #[\Override]
     public function onRequestReceived(HttpRequest $request): void {
         if ($this->config->httpRequestUrl) {
-            $this->events->dispatch(new DebugRequestUrlUsed(['url' => $request->url()]));
+            $this->events->dispatch(new DebugRequestURLUsed(['url' => $request->url()]));
         }
         if ($this->config->httpRequestHeaders) {
             $this->events->dispatch(new DebugRequestHeadersUsed(['headers' => $request->headers()]));

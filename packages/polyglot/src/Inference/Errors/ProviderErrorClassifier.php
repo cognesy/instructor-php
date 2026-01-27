@@ -27,15 +27,24 @@ final class ProviderErrorClassifier
     }
 
     public static function fromHttpException(HttpRequestException $error): ProviderException {
-        $status = $error->getStatusCode();
-        $message = $error->getMessage();
-        $type = null;
+        $response = $error->getResponse();
+        $status = $error->getStatusCode() ?? $response?->statusCode();
+        $payload = match (true) {
+            $response instanceof HttpResponse => self::decodeJson(self::safeBodyFromResponse($response)),
+            default => null,
+        };
+        [$type, $payloadMessage] = self::extractErrorDetails($payload);
+
+        $message = match (true) {
+            $payloadMessage !== '' && $payloadMessage !== 'Provider error' => $payloadMessage,
+            default => $error->getMessage(),
+        };
 
         return self::classify(
             status: $status,
             type: $type,
             message: $message,
-            payload: null
+            payload: $payload
         );
     }
 
@@ -72,10 +81,21 @@ final class ProviderErrorClassifier
 
     private static function decodeJson(string $body): ?array {
         $decoded = json_decode($body, true);
-        return is_array($decoded) ? $decoded : null;
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        return self::decodeJsonFromSse($body);
     }
 
     private static function safeBody(HttpResponse $response): string {
+        if ($response->isStreamed()) {
+            return '';
+        }
+        return $response->body();
+    }
+
+    private static function safeBodyFromResponse(HttpResponse $response): string {
         if ($response->isStreamed()) {
             return '';
         }
@@ -99,12 +119,60 @@ final class ProviderErrorClassifier
         if (is_array($error)) {
             $type = $error['type'] ?? $error['code'] ?? $payload['type'] ?? null;
             $message = $error['message'] ?? $error['detail'] ?? $payload['message'] ?? 'Provider error';
-            return [$type ? (string) $type : null, (string) $message];
+            $param = $error['param'] ?? null;
+            $code = $error['code'] ?? null;
+            $formatted = self::formatMessageWithDetails((string) $message, $param, $code);
+            return [$type ? (string) $type : null, $formatted];
         }
 
         $type = $payload['type'] ?? null;
         $message = $payload['message'] ?? 'Provider error';
 
-        return [$type ? (string) $type : null, (string) $message];
+        $param = $payload['param'] ?? null;
+        $code = $payload['code'] ?? null;
+        $formatted = self::formatMessageWithDetails((string) $message, $param, $code);
+
+        return [$type ? (string) $type : null, $formatted];
+    }
+
+    private static function decodeJsonFromSse(string $body): ?array {
+        if ($body === '') {
+            return null;
+        }
+
+        $lines = preg_split('/\R/', $body) ?: [];
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if (!str_starts_with($trimmed, 'data:')) {
+                continue;
+            }
+
+            $data = trim(substr($trimmed, 5));
+            if ($data === '' || $data === '[DONE]') {
+                continue;
+            }
+
+            $decoded = json_decode($data, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return null;
+    }
+
+    private static function formatMessageWithDetails(string $message, mixed $param, mixed $code): string {
+        $details = [];
+        if (is_string($param) && $param !== '') {
+            $details[] = "param={$param}";
+        }
+        if (is_string($code) && $code !== '') {
+            $details[] = "code={$code}";
+        }
+        if ($details === []) {
+            return $message;
+        }
+        $detailsText = implode(', ', $details);
+        return "{$message} ({$detailsText})";
     }
 }

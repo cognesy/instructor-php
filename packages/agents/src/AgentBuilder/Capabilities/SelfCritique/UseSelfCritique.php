@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
+use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 
@@ -15,8 +16,8 @@ class UseSelfCritique implements AgentCapability
 
     #[\Override]
     public function install(AgentBuilder $builder): void {
-        $builder->addProcessor(new SelfCriticProcessor(
-            maxIterations: $this->maxIterations,
+        $builder->addHook(HookType::AfterStep, new SelfCriticHook(
+            maxCriticIterations: $this->maxIterations,
             verbose: $this->verbose,
             llmPreset: $this->llmPreset,
         ));

@@ -2,30 +2,22 @@
 
 namespace Cognesy\Agents\Agent;
 
-use Cognesy\Agents\Agent\StateProcessing\CanApplyProcessors;
-use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
-use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
 use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;
+use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanHandleAgentErrors;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Contracts\ToolInterface;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Data\CurrentExecution;
 use Cognesy\Agents\Core\Data\StepExecution;
 use Cognesy\Agents\Core\Enums\AgentStatus;
-use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
-use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
-use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Agents\Core\Exceptions\AgentException;
 use Cognesy\Agents\Core\Lifecycle\CanObserveAgentLifecycle;
-use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
 use DateTimeImmutable;
 use Throwable;
 
@@ -37,23 +29,15 @@ use Throwable;
  */
 class Agent implements CanControlAgentLoop
 {
-    private readonly AgentEventEmitter $eventEmitter;
-
     public function __construct(
         private readonly Tools $tools,
         private readonly CanExecuteToolCalls $toolExecutor,
         private readonly CanHandleAgentErrors $errorHandler,
-        private readonly ?CanApplyProcessors $processors,
         private readonly ContinuationCriteria $continuationCriteria,
         private readonly CanUseTools $driver,
-        AgentEventEmitter $eventEmitter,
-        ?CanHandleEvents $events = null,
+        private readonly CanEmitAgentEvents $eventEmitter,
         private readonly ?CanObserveAgentLifecycle $observer = null,
-    ) {
-        $this->eventEmitter = $events !== null
-            ? $eventEmitter->withEventHandler($events)
-            : $eventEmitter;
-    }
+    ) {}
 
     // PUBLIC API //////////////////////////////////
 
@@ -102,7 +86,7 @@ class Agent implements CanControlAgentLoop
         $this->eventEmitter->executionStarted($state, count($this->tools->names()));
 
         if ($this->observer !== null) {
-            $state = $this->observer->executionStarting($state);
+            $state = $this->observer->beforeExecution($state);
         }
 
         return $state;
@@ -112,7 +96,7 @@ class Agent implements CanControlAgentLoop
         $this->eventEmitter->stepStarted($state);
 
         if ($this->observer !== null) {
-            $state = $this->observer->stepStarting($state);
+            $state = $this->observer->beforeStep($state);
         }
 
         return $state;
@@ -145,7 +129,7 @@ class Agent implements CanControlAgentLoop
 
     protected function onAfterStep(AgentState $state): AgentState {
         if ($this->observer !== null) {
-            $state = $this->observer->stepEnding($state);
+            $state = $this->observer->afterStep($state);
         }
 
         $this->eventEmitter->stepCompleted($state);
@@ -161,7 +145,7 @@ class Agent implements CanControlAgentLoop
         $finalState = $state->withStatus($status);
 
         if ($this->observer !== null) {
-            $finalState = $this->observer->executionEnding($finalState);
+            $finalState = $this->observer->afterExecution($finalState);
         }
 
         $this->eventEmitter->executionFinished($finalState);
@@ -199,7 +183,7 @@ class Agent implements CanControlAgentLoop
                 $agentException = $handling->exception instanceof AgentException
                     ? $handling->exception
                     : AgentException::fromThrowable($handling->exception);
-                $nextState = $this->observer->executionFailed($nextState, $agentException);
+                $nextState = $this->observer->onError($nextState, $agentException);
             }
         }
 
@@ -225,7 +209,7 @@ class Agent implements CanControlAgentLoop
         // We're about to stop - let the observer intervene if registered
         if ($this->observer !== null) {
             $stopReason = $state->stopReason() ?? StopReason::Completed;
-            $decision = $this->observer->stopping($state, $stopReason);
+            $decision = $this->observer->beforeStopDecision($state, $stopReason);
             if ($decision->isPrevented()) {
                 return true; // Observer prevented stopping, continue execution
             }
@@ -235,10 +219,7 @@ class Agent implements CanControlAgentLoop
     }
 
     private function performStep(AgentState $state): AgentState {
-        return match(true) {
-            ($this->processors === null) => $this->useTools($state),
-            default => $this->processors->apply($state, fn($s) => $this->useTools($s)),
-        };
+        return $this->useTools($state);
     }
 
     private function useTools(AgentState $state): AgentState {
@@ -306,8 +287,12 @@ class Agent implements CanControlAgentLoop
         return $this->driver;
     }
 
-    public function eventEmitter(): AgentEventEmitter {
+    public function eventEmitter(): CanEmitAgentEvents {
         return $this->eventEmitter;
+    }
+
+    public function observer(): ?CanObserveAgentLifecycle {
+        return $this->observer;
     }
 
     // MUTATORS /////////////////////////////////////////////
@@ -316,21 +301,12 @@ class Agent implements CanControlAgentLoop
         ?Tools $tools = null,
         ?CanExecuteToolCalls $toolExecutor = null,
         ?CanHandleAgentErrors $errorHandler = null,
-        ?CanApplyProcessors $processors = null,
         ?ContinuationCriteria $continuationCriteria = null,
         ?CanUseTools $driver = null,
-        ?AgentEventEmitter $eventEmitter = null,
-        ?CanHandleEvents $events = null,
+        ?CanEmitAgentEvents $eventEmitter = null,
         ?CanObserveAgentLifecycle $observer = null,
     ): self {
         $resolvedTools = $tools ?? $this->tools;
-
-        // Resolve emitter: prefer explicit, then create new if events changed
-        $resolvedEmitter = $eventEmitter ?? (
-            $events !== null
-                ? $this->eventEmitter->withEventHandler($events)
-                : $this->eventEmitter
-        );
 
         // If tools changed but no executor provided, create new executor
         $resolvedExecutor = $toolExecutor ?? (
@@ -343,52 +319,10 @@ class Agent implements CanControlAgentLoop
             tools: $resolvedTools,
             toolExecutor: $resolvedExecutor,
             errorHandler: $errorHandler ?? $this->errorHandler,
-            processors: $processors ?? $this->processors,
             continuationCriteria: $continuationCriteria ?? $this->continuationCriteria,
             driver: $driver ?? $this->driver,
-            eventEmitter: $resolvedEmitter,
+            eventEmitter: $eventEmitter ?? $this->eventEmitter,
             observer: $observer ?? $this->observer,
         );
-    }
-
-    public function withProcessors(CanProcessAgentState ...$processors): self {
-        return $this->with(processors: new StateProcessors(...$processors));
-    }
-
-    public function withDriver(CanUseTools $driver): self {
-        return $this->with(driver: $driver);
-    }
-
-    public function withContinuationCriteria(CanEvaluateContinuation ...$criteria): self {
-        return $this->with(continuationCriteria: new ContinuationCriteria(...$criteria));
-    }
-
-    public function withTools(array|ToolInterface|Tools $tools): self {
-        return $this->with(tools: match (true) {
-            is_array($tools) => new Tools(...$tools),
-            $tools instanceof ToolInterface => new Tools($tools),
-            $tools instanceof Tools => $tools,
-            default => new Tools(),
-        });
-    }
-
-    public function withToolExecutor(CanExecuteToolCalls $toolExecutor): self {
-        return $this->with(toolExecutor: $toolExecutor);
-    }
-
-    public function withErrorHandler(CanHandleAgentErrors $errorHandler): self {
-        return $this->with(errorHandler: $errorHandler);
-    }
-
-    public function withErrorPolicy(ErrorPolicy $policy): self {
-        return $this->with(errorHandler: AgentErrorHandler::withPolicy($policy));
-    }
-
-    public function withObserver(?CanObserveAgentLifecycle $observer): self {
-        return $this->with(observer: $observer);
-    }
-
-    public function observer(): ?CanObserveAgentLifecycle {
-        return $this->observer;
     }
 }

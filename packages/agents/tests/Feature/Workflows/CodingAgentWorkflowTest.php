@@ -8,7 +8,7 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\EditFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\WriteFileTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksProcessor;
+use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksHook;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -160,7 +160,7 @@ describe('Coding Agent Workflow', function () {
         $agent = AgentBuilder::base()
             ->withTools($tools)
             ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->addProcessor(new PersistTasksProcessor())
+            ->addHook(\Cognesy\Agents\AgentHooks\Enums\HookType::AfterStep, new PersistTasksHook())
             ->build();
 
         $state = AgentState::empty()->withMessages(

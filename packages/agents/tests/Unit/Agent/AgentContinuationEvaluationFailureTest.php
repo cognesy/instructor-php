@@ -37,7 +37,6 @@ describe('Agent continuation evaluation failures', function () {
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: AgentErrorHandler::default(),
-            processors: null,
             continuationCriteria: $continuationCriteria,
             driver: $driver,
             eventEmitter: new AgentEventEmitter(),

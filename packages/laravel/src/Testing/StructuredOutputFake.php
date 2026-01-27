@@ -160,6 +160,21 @@ class StructuredOutputFake
         return $this;
     }
 
+    public function withHttpDebugPreset(?string $preset): self
+    {
+        return $this;
+    }
+
+    public function withHttpDebug(bool $enabled = true): self
+    {
+        return $this;
+    }
+
+    public function withDebugPreset(string $preset): self
+    {
+        return $this;
+    }
+
     public function withValidators(...$validators): self
     {
         return $this;

@@ -4,37 +4,37 @@ namespace Cognesy\Agents\AgentBuilder;
 
 use Closure;
 use Cognesy\Agents\Agent\Agent;
-use Cognesy\Agents\Agent\StateProcessing\CanProcessAgentState;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendContextMetadata;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendFinalResponse;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendStepMessages;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendToolTraceToBuffer;
-use Cognesy\Agents\Agent\StateProcessing\Processors\ApplyCachedContext;
-use Cognesy\Agents\Agent\StateProcessing\Processors\CallableProcessor;
-use Cognesy\Agents\Agent\StateProcessing\Processors\ClearExecutionBuffer;
-use Cognesy\Agents\Agent\StateProcessing\StateProcessors;
-use Cognesy\Agents\Agent\Hooks\HookStackObserver;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\AgentHooks\Contracts\Hook;
+use Cognesy\Agents\AgentHooks\Contracts\HookContext;
+use Cognesy\Agents\AgentHooks\Contracts\HookMatcher;
+use Cognesy\Agents\AgentHooks\Data\ExecutionHookContext;
+use Cognesy\Agents\AgentHooks\Data\FailureHookContext;
+use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Data\StopHookContext;
+use Cognesy\Agents\AgentHooks\Data\ToolHookContext;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\AgentHooks\Data\StepHookContext;
+use Cognesy\Agents\AgentHooks\Hooks\AfterStepHook;
+use Cognesy\Agents\AgentHooks\Hooks\AfterToolHook;
+use Cognesy\Agents\AgentHooks\Hooks\AgentFailedHook;
+use Cognesy\Agents\AgentHooks\Hooks\AppendContextMetadataHook;
+use Cognesy\Agents\AgentHooks\Hooks\BeforeStepHook;
+use Cognesy\Agents\AgentHooks\Hooks\AppendFinalResponseHook;
+use Cognesy\Agents\AgentHooks\Hooks\AppendStepMessagesHook;
+use Cognesy\Agents\AgentHooks\Hooks\AppendToolTraceToBufferHook;
+use Cognesy\Agents\AgentHooks\Hooks\ApplyCachedContextHook;
+use Cognesy\Agents\AgentHooks\Hooks\BeforeToolHook;
+use Cognesy\Agents\AgentHooks\Hooks\CallableHook;
+use Cognesy\Agents\AgentHooks\Hooks\ClearExecutionBufferHook;
+use Cognesy\Agents\AgentHooks\Hooks\ExecutionEndHook;
+use Cognesy\Agents\AgentHooks\Hooks\ExecutionStartHook;
+use Cognesy\Agents\AgentHooks\Hooks\StopHook;
+use Cognesy\Agents\AgentHooks\Hooks\SubagentStopHook;
+use Cognesy\Agents\AgentHooks\HookStackObserver;
+use Cognesy\Agents\AgentHooks\Matchers\ToolNameMatcher;
+use Cognesy\Agents\AgentHooks\Stack\HookStack;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
-use Cognesy\Agents\Agent\Hooks\Contracts\Hook;
-use Cognesy\Agents\Agent\Hooks\Contracts\HookContext;
-use Cognesy\Agents\Agent\Hooks\Contracts\HookMatcher;
-use Cognesy\Agents\Agent\Hooks\Data\ExecutionHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\FailureHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
-use Cognesy\Agents\Agent\Hooks\Data\StopHookContext;
-use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
-use Cognesy\Agents\Agent\Hooks\Enums\HookType;
-use Cognesy\Agents\Agent\Hooks\Hooks\AfterToolHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\AgentFailedHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\BeforeToolHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\CallableHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\ExecutionEndHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\ExecutionStartHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\StopHook;
-use Cognesy\Agents\Agent\Hooks\Hooks\SubagentStopHook;
-use Cognesy\Agents\Agent\Hooks\Matchers\ToolNameMatcher;
-use Cognesy\Agents\Agent\Hooks\Stack\HookStack;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
 use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
@@ -75,8 +75,6 @@ use Cognesy\Polyglot\Inference\LLMProvider;
 class AgentBuilder
 {
     private Tools $tools;
-    private array $processors = [];
-    private array $preProcessors = [];
 
     /** @var CanEvaluateContinuation[] Flat list of continuation criteria */
     private array $criteria = [];
@@ -150,16 +148,6 @@ class AgentBuilder
         };
 
         $this->tools = $this->tools->merge($toolsCollection);
-        return $this;
-    }
-
-    public function addProcessor(CanProcessAgentState $processor): self {
-        $this->processors[] = $processor;
-        return $this;
-    }
-
-    public function addPreProcessor(CanProcessAgentState $processor): self {
-        $this->preProcessors[] = $processor;
         return $this;
     }
 
@@ -378,16 +366,24 @@ class AgentBuilder
     /**
      * Register a callback to run before each step.
      *
-     * The callback receives the AgentState and must return an AgentState.
+     * The callback receives StepHookContext and must return a HookOutcome:
+     * - HookOutcome::proceed() to continue unchanged
+     * - HookOutcome::proceed($ctx->withState($newState)) to modify state
+     * - HookOutcome::stop($reason) to halt execution
      *
-     * @param callable(AgentState): AgentState $callback
+     * @param callable(StepHookContext): HookOutcome $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
-     * $builder->onBeforeStep(fn(AgentState $state) => $state->withMetadata('step_started', microtime(true)));
+     * $builder->onBeforeStep(function (StepHookContext $ctx): HookOutcome {
+     *     $newState = $ctx->state()->withMetadata('step_started', microtime(true));
+     *     return HookOutcome::proceed($ctx->withState($newState));
+     * });
      */
-    public function onBeforeStep(callable $callback): self {
-        $this->preProcessors[] = new CallableProcessor(
-            Closure::fromCallable($callback),
+    public function onBeforeStep(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new BeforeStepHook(Closure::fromCallable($callback)),
+            $priority,
         );
         return $this;
     }
@@ -395,20 +391,27 @@ class AgentBuilder
     /**
      * Register a callback to run after each step.
      *
-     * The callback receives the AgentState and must return an AgentState.
+     * The callback receives StepHookContext and must return a HookOutcome:
+     * - HookOutcome::proceed() to continue unchanged
+     * - HookOutcome::proceed($ctx->withState($newState)) to modify state
+     * - HookOutcome::stop($reason) to halt execution
      *
-     * @param callable(AgentState): AgentState $callback
+     * @param callable(StepHookContext): HookOutcome $callback
+     * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
-     * $builder->onAfterStep(function (AgentState $state) {
-     *     $duration = microtime(true) - $state->metadata('step_started');
-     *     $this->metrics->recordStepDuration($duration);
-     *     return $state;
+     * $builder->onAfterStep(function (StepHookContext $ctx): HookOutcome {
+     *     $step = $ctx->step();
+     *     if ($step?->hasErrors()) {
+     *         $this->logger->warning("Step had errors");
+     *     }
+     *     return HookOutcome::proceed();
      * });
      */
-    public function onAfterStep(callable $callback): self {
-        $this->processors[] = new CallableProcessor(
-            Closure::fromCallable($callback),
+    public function onAfterStep(callable $callback, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with(
+            new AfterStepHook(Closure::fromCallable($callback)),
+            $priority,
         );
         return $this;
     }
@@ -575,8 +578,8 @@ class AgentBuilder
      * Build the Agent instance with configured features.
      */
     public function build(): Agent {
-        // Build processors
-        $processors = $this->buildProcessors();
+        // Register base hooks (core functionality)
+        $this->registerBaseHooks();
 
         // Build continuation criteria
         $continuationCriteria = $this->buildContinuationCriteria();
@@ -606,12 +609,11 @@ class AgentBuilder
             policy: $this->errorPolicy ?? ErrorPolicy::stopOnAnyError(),
         );
 
-        // Build base agent
+        // Build base agent (hooks handle everything via observer)
         $agent = new Agent(
             tools: $this->tools,
             toolExecutor: $toolExecutor,
             errorHandler: $errorHandler,
-            processors: $processors,
             continuationCriteria: $continuationCriteria,
             driver: $driver,
             eventEmitter: $eventEmitter,
@@ -627,23 +629,33 @@ class AgentBuilder
 
     // INTERNAL //////////////////////////////////////////////////
 
-    private function buildProcessors(): StateProcessors {
-        $baseProcessors = [];
+    /**
+     * Register base hooks for core agent functionality.
+     *
+     * These hooks replace the old base processors and handle:
+     * - Cached context application (before step)
+     * - Message history management (after step)
+     * - Tool trace separation (after step)
+     */
+    private function registerBaseHooks(): void {
+        // BeforeStep: Apply cached context (priority 100 = runs early)
         if ($this->cachedContext !== null && !$this->cachedContext->isEmpty()) {
-            $baseProcessors[] = new ApplyCachedContext($this->cachedContext);
+            $this->hookStack = $this->hookStack->with(
+                new ApplyCachedContextHook($this->cachedContext),
+                100,
+            );
         }
-        $baseProcessors[] = new AppendContextMetadata();
+
+        // AfterStep: Message history management (priority -100 = runs late)
+        $this->hookStack = $this->hookStack->with(new AppendContextMetadataHook(), -100);
+
         if ($this->separateToolTrace) {
-            $baseProcessors[] = new ClearExecutionBuffer();
-            $baseProcessors[] = new AppendFinalResponse();
-            $baseProcessors[] = new AppendToolTraceToBuffer();
+            $this->hookStack = $this->hookStack->with(new ClearExecutionBufferHook(), -110);
+            $this->hookStack = $this->hookStack->with(new AppendFinalResponseHook(), -120);
+            $this->hookStack = $this->hookStack->with(new AppendToolTraceToBufferHook(), -130);
         } else {
-            $baseProcessors[] = new AppendStepMessages();
+            $this->hookStack = $this->hookStack->with(new AppendStepMessagesHook(), -100);
         }
-
-        $allProcessors = array_merge($this->preProcessors, $baseProcessors, $this->processors);
-
-        return new StateProcessors(...$allProcessors);
     }
 
     private function buildContinuationCriteria(): ContinuationCriteria {
@@ -722,29 +734,25 @@ class AgentBuilder
     }
 
     private function responseFormatToArray(ResponseFormat $format): array {
-        return $format->isEmpty()
-            ? []
-            : [
+        return match(true) {
+            $format->isEmpty() => [],
+            default => [
                 'type' => $format->type(),
                 'schema' => $format->schema(),
                 'name' => $format->schemaName(),
                 'strict' => $format->strict(),
-            ];
+            ],
+        };
     }
 
     /**
      * Convert a string pattern or HookMatcher to a HookMatcher instance.
      */
     private function resolveMatcher(string|HookMatcher|null $matcher): ?HookMatcher {
-        if ($matcher === null) {
-            return null;
-        }
-
-        if ($matcher instanceof HookMatcher) {
-            return $matcher;
-        }
-
-        // String = tool name pattern
-        return new ToolNameMatcher($matcher);
+        return match(true) {
+            $matcher === null => null,
+            $matcher instanceof HookMatcher => $matcher,
+            default => new ToolNameMatcher($matcher),
+        };
     }
 }

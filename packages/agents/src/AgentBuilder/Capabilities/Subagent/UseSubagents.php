@@ -59,7 +59,7 @@ class UseSubagents implements AgentCapability
                 eventEmitter: $agent->eventEmitter(),
             );
 
-            return $agent->withTools($agent->tools()->merge(new Tools($subagentTool)));
+            return $agent->with(tools: $agent->tools()->merge(new Tools($subagentTool)));
         });
     }
 

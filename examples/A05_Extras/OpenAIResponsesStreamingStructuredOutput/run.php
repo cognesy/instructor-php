@@ -43,6 +43,7 @@ $onPartialUpdate = function (object $partial) use (&$partialsCount): void {
 
 $profile = (new StructuredOutput)
     ->using('openai-responses')
+    // ->withHttpDebugPreset('on') // enable HTTP stack debug output if needed
     ->withOutputMode(OutputMode::JsonSchema)
     ->withResponseClass(PersonProfile::class)
     ->withMessages($text)

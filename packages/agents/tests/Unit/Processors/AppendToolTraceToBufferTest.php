@@ -2,18 +2,28 @@
 
 namespace Cognesy\Agents\Tests\Unit\Processors;
 
+use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Data\StepHookContext;
+use Cognesy\Agents\AgentHooks\Hooks\AppendToolTraceToBufferHook;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Data\ToolExecution;
-use Cognesy\Agents\Agent\StateProcessing\Processors\AppendToolTraceToBuffer;
 use Cognesy\Agents\Drivers\ToolCalling\ToolExecutionFormatter;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 
-describe('AppendToolTraceToBuffer', function () {
+describe('AppendToolTraceToBufferHook', function () {
+
+    beforeEach(function () {
+        $this->processHook = function (AppendToolTraceToBufferHook $hook, StepHookContext $context): HookOutcome {
+            $terminal = static fn($ctx) => HookOutcome::proceed($ctx);
+            return $hook->handle($context, $terminal);
+        };
+    });
+
     it('appends tool trace messages to execution buffer', function () {
         $toolCall = ToolCall::fromArray([
             'id' => 'call_1',
@@ -34,10 +44,12 @@ describe('AppendToolTraceToBuffer', function () {
 
         $step = new AgentStep(outputMessages: $outputMessages);
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendToolTraceToBuffer();
-        $result = $processor->process($state);
+        $hook = new AppendToolTraceToBufferHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         $buffer = $result
             ->store()
             ->section(AgentState::EXECUTION_BUFFER_SECTION)
@@ -52,10 +64,12 @@ describe('AppendToolTraceToBuffer', function () {
     it('handles empty outputMessages gracefully', function () {
         $step = new AgentStep(outputMessages: Messages::empty());
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendToolTraceToBuffer();
-        $result = $processor->process($state);
+        $hook = new AppendToolTraceToBufferHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         $buffer = $result
             ->store()
             ->section(AgentState::EXECUTION_BUFFER_SECTION)
@@ -66,10 +80,12 @@ describe('AppendToolTraceToBuffer', function () {
 
     it('returns state unchanged when currentStep is null', function () {
         $state = AgentState::empty();
+        $context = StepHookContext::afterStep($state, 0, new AgentStep());
 
-        $processor = new AppendToolTraceToBuffer();
-        $result = $processor->process($state);
+        $hook = new AppendToolTraceToBufferHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         expect($result->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeTrue();
     });
 
@@ -80,10 +96,12 @@ describe('AppendToolTraceToBuffer', function () {
 
         $step = new AgentStep(outputMessages: $outputMessages);
         $state = AgentState::empty()->withCurrentStep($step);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        $processor = new AppendToolTraceToBuffer();
-        $result = $processor->process($state);
+        $hook = new AppendToolTraceToBufferHook();
+        $outcome = ($this->processHook)($hook, $context);
 
+        $result = $outcome->context()->state();
         $buffer = $result
             ->store()
             ->section(AgentState::EXECUTION_BUFFER_SECTION)
@@ -93,7 +111,7 @@ describe('AppendToolTraceToBuffer', function () {
     });
 
     it('accumulates tool traces across multiple steps', function () {
-        $processor = new AppendToolTraceToBuffer();
+        $hook = new AppendToolTraceToBufferHook();
         $formatter = new ToolExecutionFormatter();
         $now = new \DateTimeImmutable();
 
@@ -112,8 +130,10 @@ describe('AppendToolTraceToBuffer', function () {
         $toolMessages1 = $formatter->makeExecutionMessages(new ToolExecutions($execution1));
         $step1 = new AgentStep(outputMessages: $toolMessages1);
         $state = AgentState::empty()->withCurrentStep($step1);
+        $context1 = StepHookContext::afterStep($state, 0, $step1);
 
-        $state = $processor->process($state);
+        $outcome1 = ($this->processHook)($hook, $context1);
+        $state = $outcome1->context()->state();
 
         // Second step with another tool call
         $toolCall2 = ToolCall::fromArray([
@@ -130,10 +150,12 @@ describe('AppendToolTraceToBuffer', function () {
         $toolMessages2 = $formatter->makeExecutionMessages(new ToolExecutions($execution2));
         $step2 = new AgentStep(outputMessages: $toolMessages2);
         $state = $state->withCurrentStep($step2);
+        $context2 = StepHookContext::afterStep($state, 1, $step2);
 
-        $state = $processor->process($state);
+        $outcome2 = ($this->processHook)($hook, $context2);
+        $result = $outcome2->context()->state();
 
-        $buffer = $state
+        $buffer = $result
             ->store()
             ->section(AgentState::EXECUTION_BUFFER_SECTION)
             ->messages();

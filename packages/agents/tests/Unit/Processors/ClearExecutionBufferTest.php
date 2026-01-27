@@ -2,7 +2,9 @@
 
 namespace Cognesy\Agents\Tests\Unit\Processors;
 
-use Cognesy\Agents\Agent\StateProcessing\Processors\ClearExecutionBuffer;
+use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Data\StepHookContext;
+use Cognesy\Agents\AgentHooks\Hooks\ClearExecutionBufferHook;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
@@ -12,7 +14,15 @@ use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Data\StepExecution;
 use Cognesy\Messages\Messages;
 
-describe('ClearExecutionBuffer', function () {
+describe('ClearExecutionBufferHook', function () {
+
+    beforeEach(function () {
+        $this->processHook = function (ClearExecutionBufferHook $hook, StepHookContext $context): HookOutcome {
+            $terminal = static fn($ctx) => HookOutcome::proceed($ctx);
+            return $hook->handle($context, $terminal);
+        };
+    });
+
     it('keeps buffer when continuation should continue', function () {
         $state = AgentState::empty();
         $store = $state->store()
@@ -33,10 +43,14 @@ describe('ClearExecutionBuffer', function () {
             stepNumber: 1,
         );
 
-        $processor = new ClearExecutionBuffer();
-        $result = $processor->process($state, fn(AgentState $state): AgentState => $state->recordStepExecution($execution));
+        // Record step execution to set continuation outcome on state
+        $state = $state->recordStepExecution($execution);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        expect($result->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeFalse();
+        $hook = new ClearExecutionBufferHook();
+        $result = ($this->processHook)($hook, $context);
+
+        expect($result->context()->state()->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeFalse();
     });
 
     it('clears buffer when continuation stops', function () {
@@ -59,10 +73,14 @@ describe('ClearExecutionBuffer', function () {
             stepNumber: 1,
         );
 
-        $processor = new ClearExecutionBuffer();
-        $result = $processor->process($state, fn(AgentState $state): AgentState => $state->recordStepExecution($execution));
+        // Record step execution to set continuation outcome on state
+        $state = $state->recordStepExecution($execution);
+        $context = StepHookContext::afterStep($state, 0, $step);
 
-        expect($result->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeTrue();
+        $hook = new ClearExecutionBufferHook();
+        $result = ($this->processHook)($hook, $context);
+
+        expect($result->context()->state()->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeTrue();
     });
 
     it('returns state unchanged when continuationOutcome is null', function () {
@@ -71,11 +89,12 @@ describe('ClearExecutionBuffer', function () {
             ->section(AgentState::EXECUTION_BUFFER_SECTION)
             ->setMessages(Messages::fromString('trace', 'tool'));
         $state = $state->withMessageStore($store);
+        $context = StepHookContext::afterStep($state, 0, new AgentStep());
 
-        $processor = new ClearExecutionBuffer();
-        $result = $processor->process($state);
+        $hook = new ClearExecutionBufferHook();
+        $result = ($this->processHook)($hook, $context);
 
-        expect($result->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeFalse();
+        expect($result->context()->state()->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeFalse();
     });
 });
 

@@ -9,10 +9,6 @@ Instructor offers a simplified way to work with LLM providers' APIs supporting c
 so you can focus on your business logic while still being able to take advantage of lower
 latency and costs.
 
-> **Note:** With the Responses API you can also chain server-side context
-> using `previous_response_id`. Prompt caching and token counters still depend
-> on model eligibility and prompt size.
-
 
 ## Example
 
@@ -60,6 +56,7 @@ multiple requests.
 ```php
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
+$cacheKey = 'context_cache_structured_oai_responses_readme_v1';
 
 $cached = (new StructuredOutput)->using('openai-responses')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
@@ -75,11 +72,20 @@ Let's start by asking the user to describe the project for a specific audience: 
 
 ```php
 <?php
+/** @var array<string, mixed> $optionsBase */
+$optionsBase = [
+    'max_output_tokens' => 4096,
+    // Improve cache routing for identical prefixes between requests.
+    'prompt_cache_key' => $cacheKey,
+    'prompt_cache_retention' => 'in_memory',
+];
+
 // get StructuredOutputResponse object to get access to usage and other metadata
 $response1 = $cached->with(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
     responseModel: Project::class,
-    options: ['max_output_tokens' => 4096],
+    model: 'gpt-4.1',
+    options: $optionsBase,
     mode: OutputMode::JsonSchema,
 )->create();
 
@@ -98,7 +104,7 @@ if ($previousResponseId === '') {
 
 // get usage information from response() method which returns raw InferenceResponse object
 $usage1 = $response1->response()->usage();
-echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
+echo "Usage #1: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
 Now we can use the same context to ask the user to describe the project for a different
@@ -110,7 +116,7 @@ which results in faster processing and lower costs when prompt caching applies.
 ```php
 <?php
 // get StructuredOutputResponse object to get access to usage and other metadata
-$options2 = ['max_output_tokens' => 4096];
+$options2 = $optionsBase;
 if ($previousResponseId !== '') {
     $options2['previous_response_id'] = $previousResponseId;
 }
@@ -118,6 +124,7 @@ if ($previousResponseId !== '') {
 $response2 = $cached->with(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
     responseModel: Project::class,
+    model: 'gpt-4.1',
     options: $options2,
     mode: OutputMode::JsonSchema,
 )->create();
@@ -130,9 +137,7 @@ assert(Str::contains($project2->name, 'Instructor'));
 
 // get usage information from response() method which returns raw InferenceResponse object
 $usage2 = $response2->response()->usage();
-echo "Usage: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
-if ($usage2->cacheReadTokens === 0) {
-    echo "Note: cacheReadTokens is 0. Prompt caching applies only to eligible models and prompt sizes.\n";
-}
+echo "Usage #2: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
+assert($usage2->cacheReadTokens > 0, 'Expected prompt cache read tokens > 0');
 ?>
 ```
