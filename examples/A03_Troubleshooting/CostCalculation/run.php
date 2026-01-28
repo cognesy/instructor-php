@@ -40,7 +40,7 @@ function printCostBreakdown(Usage $usage, Pricing $pricing): void {
     echo "  Input:      \${$pricing->inputPerMToken}\n";
     echo "  Output:     \${$pricing->outputPerMToken}\n";
     echo "  Cache read: \${$pricing->cacheReadPerMToken}\n";
-    echo "\nTotal cost: \$" . number_format($usage->calculateCost(), 6) . "\n";
+    echo "\nTotal cost: \$" . number_format($usage->calculateCost($pricing), 6) . "\n";
 }
 
 // OPTION 1: Configure pricing in LLM config preset
@@ -76,10 +76,11 @@ $response = (new StructuredOutput)
         responseModel: User::class,
     )->response();
 
-// Define pricing for Claude 3.5 Sonnet ($/1M tokens)
+// Define pricing for default model gpt-4.1-nano
 $pricing = Pricing::fromArray([
-    'input' => 3.0,     // $3 per 1M input tokens
-    'output' => 15.0,   // $15 per 1M output tokens
+    'input' => 0.2,     // $0.2 per 1M input tokens
+    'output' => 0.8,   // $15 per 1M output tokens
+    'cacheRead' => 0.05, // $15 per 1M output tokens
 ]);
 
 echo "TEXT: $text\n\n";
