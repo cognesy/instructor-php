@@ -74,6 +74,12 @@ abstract class BaseInferenceDriver implements CanHandleInference
             throw $e;
         }
 
+        // Attach pricing from config if available
+        $pricing = $this->config->getPricing();
+        if ($pricing->hasAnyPricing()) {
+            $inferenceResponse = $inferenceResponse->withPricing($pricing);
+        }
+
         $this->events->dispatch(new InferenceResponseCreated(['response' => $inferenceResponse->toArray()]));
         return $inferenceResponse;
     }

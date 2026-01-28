@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
@@ -36,6 +37,7 @@ class PendingInference
     protected readonly EventDispatcherInterface $events;
 
     protected InferenceExecution $execution;
+    private ?Pricing $pricing;
 
     private ?DateTimeImmutable $startedAt = null;
     private ?DateTimeImmutable $attemptStartedAt = null;
@@ -47,10 +49,12 @@ class PendingInference
         InferenceExecution $execution,
         CanHandleInference $driver,
         EventDispatcherInterface $eventDispatcher,
+        ?Pricing $pricing = null,
     ) {
         $this->execution = $execution;
         $this->events = $eventDispatcher;
         $this->driver = $driver;
+        $this->pricing = $pricing;
     }
 
     /**
@@ -92,6 +96,7 @@ class PendingInference
             driver: $this->driver,
             eventDispatcher: $this->events,
             cachePolicy: $this->cachePolicy(),
+            pricing: $this->pricing,
         );
         $this->cachedStream = $stream;
         return $stream;

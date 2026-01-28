@@ -17,6 +17,7 @@ use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -120,10 +121,16 @@ class Inference
         $inferenceDriver = $this->makeInferenceDriver($httpClient);
         $request = $this->requestBuilder->create();
         $execution = InferenceExecution::fromRequest($request);
+
+        // Get pricing from config if available
+        $resolver = $this->llmResolver ?? $this->llmProvider;
+        $pricing = $resolver->resolveConfig()->getPricing();
+
         return new PendingInference(
             execution: $execution,
             driver: $inferenceDriver,
             eventDispatcher: $this->events,
+            pricing: $pricing->hasAnyPricing() ? $pricing : null,
         );
     }
 
