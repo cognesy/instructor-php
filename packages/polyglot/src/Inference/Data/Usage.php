@@ -4,6 +4,8 @@ namespace Cognesy\Polyglot\Inference\Data;
 
 class Usage
 {
+    private ?Pricing $pricing = null;
+
     public function __construct(
         public int $inputTokens = 0,
         public int $outputTokens = 0,
@@ -29,13 +31,15 @@ class Usage
     }
 
     public static function copy(Usage $usage) : self {
-        return new self(
+        $new = new self(
             inputTokens: $usage->inputTokens,
             outputTokens: $usage->outputTokens,
             cacheWriteTokens: $usage->cacheWriteTokens,
             cacheReadTokens: $usage->cacheReadTokens,
             reasoningTokens: $usage->reasoningTokens,
         );
+        $new->pricing = $usage->pricing;
+        return $new;
     }
 
     // ACCESSORS /////////////////////////////////////////////////////////
@@ -62,6 +66,10 @@ class Usage
             + $this->cacheReadTokens;
     }
 
+    public function pricing(): ?Pricing {
+        return $this->pricing;
+    }
+
     // MUTATORS ///////////////////////////////////////////////////////////
 
     /**
@@ -81,19 +89,25 @@ class Usage
             );
         }
 
-        // The overflow check is not needed since we limit tokens to reasonable amounts above
-
         return $a + $b;
     }
 
     public function withAccumulated(Usage $usage) : self {
-        return new self(
+        $new = new self(
             inputTokens: $this->safeAdd($this->inputTokens, $usage->inputTokens, 'inputTokens'),
             outputTokens: $this->safeAdd($this->outputTokens, $usage->outputTokens, 'outputTokens'),
             cacheWriteTokens: $this->safeAdd($this->cacheWriteTokens, $usage->cacheWriteTokens, 'cacheWriteTokens'),
             cacheReadTokens: $this->safeAdd($this->cacheReadTokens, $usage->cacheReadTokens, 'cacheReadTokens'),
             reasoningTokens: $this->safeAdd($this->reasoningTokens, $usage->reasoningTokens, 'reasoningTokens'),
         );
+        $new->pricing = $this->pricing ?? $usage->pricing;
+        return $new;
+    }
+
+    public function withPricing(Pricing $pricing): self {
+        $new = self::copy($this);
+        $new->pricing = $pricing;
+        return $new;
     }
 
     // TRANSFORMERS ////////////////////////////////////////////////////////
@@ -114,5 +128,34 @@ class Usage
 
     public function clone() : self {
         return self::copy($this);
+    }
+
+    // COST CALCULATION ////////////////////////////////////////////////////
+
+    /**
+     * Calculate total cost in USD.
+     * Uses stored pricing if no argument provided.
+     * Pricing is in $/1M tokens.
+     *
+     * @throws \RuntimeException If no pricing available
+     */
+    public function calculateCost(?Pricing $pricing = null): float {
+        $pricing = $pricing ?? $this->pricing;
+
+        if ($pricing === null) {
+            throw new \RuntimeException(
+                'Cannot calculate cost: no pricing information available. ' .
+                'Either pass Pricing to calculateCost() or configure pricing in LLMConfig.'
+            );
+        }
+
+        // Pricing is per 1M tokens, so divide by 1_000_000
+        $cost = ($this->inputTokens / 1_000_000) * $pricing->inputPerMToken
+            + ($this->outputTokens / 1_000_000) * $pricing->outputPerMToken
+            + ($this->cacheReadTokens / 1_000_000) * $pricing->cacheReadPerMToken
+            + ($this->cacheWriteTokens / 1_000_000) * $pricing->cacheWritePerMToken
+            + ($this->reasoningTokens / 1_000_000) * $pricing->reasoningPerMToken;
+
+        return round($cost, 6);
     }
 }
