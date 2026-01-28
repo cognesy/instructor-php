@@ -137,7 +137,7 @@ describe('Usage::calculateCost', function () {
         // total = 12.975
         $cost = $usage->calculateCost($pricing);
 
-        expect($cost)->toBe(12.975);
+        expect($cost)->toBeCloseTo(12.975, 6);
     });
 
     it('calculates cost including reasoning tokens', function () {
@@ -215,7 +215,7 @@ describe('Usage::calculateCost', function () {
         // total = 0.0825
         $cost = $usage->calculateCost($pricing);
 
-        expect($cost)->toBe(0.0825);
+        expect($cost)->toBeCloseTo(0.0825, 6);
     });
 
     it('preserves pricing through accumulation', function () {
