@@ -67,6 +67,36 @@ describe('Pricing', function () {
             'reasoning' => 3.0,
         ]);
     });
+
+    it('throws on non-numeric input value', function () {
+        expect(fn() => Pricing::fromArray(['input' => 'invalid']))
+            ->toThrow(InvalidArgumentException::class, "Pricing field 'input' must be numeric");
+    });
+
+    it('throws on non-numeric output value', function () {
+        expect(fn() => Pricing::fromArray(['input' => 1.0, 'output' => 'bad']))
+            ->toThrow(InvalidArgumentException::class, "Pricing field 'output' must be numeric");
+    });
+
+    it('throws on negative pricing value', function () {
+        expect(fn() => Pricing::fromArray(['input' => -5.0]))
+            ->toThrow(InvalidArgumentException::class, "Pricing field 'input' must be non-negative");
+    });
+
+    it('throws on negative cacheRead value', function () {
+        expect(fn() => Pricing::fromArray(['input' => 1.0, 'cacheRead' => -0.5]))
+            ->toThrow(InvalidArgumentException::class, "Pricing field 'cacheRead' must be non-negative");
+    });
+
+    it('accepts numeric strings', function () {
+        $pricing = Pricing::fromArray([
+            'input' => '3.0',
+            'output' => '15',
+        ]);
+
+        expect($pricing->inputPerMToken)->toBe(3.0)
+            ->and($pricing->outputPerMToken)->toBe(15.0);
+    });
 });
 
 describe('Usage::calculateCost', function () {

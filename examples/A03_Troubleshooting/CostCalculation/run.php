@@ -77,8 +77,8 @@ $response = (new StructuredOutput)
 // Define pricing for default model gpt-4.1-nano
 $pricing = Pricing::fromArray([
     'input' => 0.2,     // $0.2 per 1M input tokens
-    'output' => 0.8,   // $15 per 1M output tokens
-    'cacheRead' => 0.05, // $15 per 1M output tokens
+    'output' => 0.8,   // $0.8 per 1M output tokens
+    'cacheRead' => 0.05, // $0.05 per 1M output tokens
 ]);
 
 echo "TEXT: $text\n\n";

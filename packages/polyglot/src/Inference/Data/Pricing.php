@@ -2,6 +2,8 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
+use InvalidArgumentException;
+
 /**
  * Pricing configuration for LLM token costs.
  * All prices are in USD per 1,000,000 tokens (per 1M tokens).
@@ -39,21 +41,47 @@ final class Pricing
      * Create from array with prices in $/1M tokens.
      * Keys: input, output, cacheRead, cacheWrite, reasoning
      * If cacheRead, cacheWrite, or reasoning are not specified, they default to input price.
+     *
+     * @throws InvalidArgumentException If any pricing value is non-numeric or negative
      */
     public static function fromArray(array $data): self {
-        $input = (float) ($data['input'] ?? $data['inputPerMToken'] ?? 0.0);
+        $fields = [
+            'input' => ['input', 'inputPerMToken'],
+            'output' => ['output', 'outputPerMToken'],
+            'cacheRead' => ['cacheRead', 'cacheReadPerMToken'],
+            'cacheWrite' => ['cacheWrite', 'cacheWritePerMToken'],
+            'reasoning' => ['reasoning', 'reasoningPerMToken'],
+        ];
+
+        $validated = [];
+        foreach ($fields as $name => $keys) {
+            $value = $data[$keys[0]] ?? $data[$keys[1]] ?? null;
+            if ($value === null) {
+                $validated[$name] = null;
+                continue;
+            }
+            if (!is_numeric($value)) {
+                throw new InvalidArgumentException(
+                    "Pricing field '{$name}' must be numeric, got: " . gettype($value)
+                );
+            }
+            $floatValue = (float) $value;
+            if ($floatValue < 0) {
+                throw new InvalidArgumentException(
+                    "Pricing field '{$name}' must be non-negative, got: {$floatValue}"
+                );
+            }
+            $validated[$name] = $floatValue;
+        }
+
+        $input = $validated['input'] ?? 0.0;
+
         return new self(
             inputPerMToken: $input,
-            outputPerMToken: (float) ($data['output'] ?? $data['outputPerMToken'] ?? 0.0),
-            cacheReadPerMToken: isset($data['cacheRead']) || isset($data['cacheReadPerMToken'])
-                ? (float) ($data['cacheRead'] ?? $data['cacheReadPerMToken'])
-                : null,
-            cacheWritePerMToken: isset($data['cacheWrite']) || isset($data['cacheWritePerMToken'])
-                ? (float) ($data['cacheWrite'] ?? $data['cacheWritePerMToken'])
-                : null,
-            reasoningPerMToken: isset($data['reasoning']) || isset($data['reasoningPerMToken'])
-                ? (float) ($data['reasoning'] ?? $data['reasoningPerMToken'])
-                : null,
+            outputPerMToken: $validated['output'] ?? 0.0,
+            cacheReadPerMToken: $validated['cacheRead'],
+            cacheWritePerMToken: $validated['cacheWrite'],
+            reasoningPerMToken: $validated['reasoning'],
         );
     }
 
