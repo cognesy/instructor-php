@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference\Collections;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Collection\ArrayList;
+use InvalidArgumentException;
 
 class InferenceAttemptList
 {
@@ -68,7 +69,9 @@ class InferenceAttemptList
     }
 
     /**
-     * Updates the last attempt with the given one (by matching ID).
+     * Updates an attempt with the given one (by matching ID).
+     *
+     * @throws InvalidArgumentException If no attempt with the given ID exists
      */
     public function withUpdatedAttempt(InferenceAttempt $attempt): self {
         $items = $this->attempts->all();
@@ -80,9 +83,10 @@ class InferenceAttemptList
                 break;
             }
         }
-        if (!$updated && count($items) > 0) {
-            // Fallback: replace last if ID not found
-            $items[count($items) - 1] = $attempt;
+        if (!$updated) {
+            throw new InvalidArgumentException(
+                "Cannot update attempt: no attempt found with ID '{$attempt->id}'"
+            );
         }
         return new self(ArrayList::fromArray($items));
     }
