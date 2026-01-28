@@ -2,18 +2,19 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
-use Cognesy\Agents\AgentBuilder\Support\AbstractAgent;
+use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
 use Cognesy\Agents\AgentTemplate\Contracts\AgentBlueprint;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition as TemplateAgentDefinition;
 use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
 use Cognesy\Agents\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
 use Cognesy\Agents\AgentTemplate\Registry\AgentBlueprintRegistry;
 
-final class RegistryAgentDefinition extends AbstractAgent
+final class RegistryAgentDefinition extends BaseAgent
 {
     public function __construct(private readonly string $name)
     {
@@ -29,7 +30,7 @@ final class RegistryAgentDefinition extends AbstractAgent
         );
     }
 
-    protected function buildAgent(): \Cognesy\Agents\Agent\Agent
+    protected function buildAgentLoop(): AgentLoop
     {
         return AgentBuilder::base()->build();
     }
@@ -52,7 +53,7 @@ final class RegistryAgentDefinition extends AbstractAgent
 
 final class TestBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(AgentDefinition $definition): AgentInterface
+    public static function fromDefinition(TemplateAgentDefinition $definition): AgentInterface
     {
         return new RegistryAgentDefinition($definition->id);
     }

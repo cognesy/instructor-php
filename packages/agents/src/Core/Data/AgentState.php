@@ -18,46 +18,60 @@ use Cognesy\Utils\Metadata;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
+/**
+ * Agent state combining session data with optional execution state.
+ *
+ * Session data (always present, persists across executions):
+ * - Identity: agentId, parentAgentId
+ * - Session timing: createdAt, updatedAt
+ * - Accumulated data: store, metadata, cache
+ *
+ * Execution data (optional, null when between executions):
+ * - Execution identity: executionId
+ * - Execution status and timing
+ * - Step results and current step
+ *
+ * When execution is null, the agent is "between executions" and ready
+ * for a fresh start. When present, it contains the current execution's
+ * transient state (useful for mid-execution persistence/resume).
+ */
 final readonly class AgentState
 {
     public const DEFAULT_SECTION = 'messages';
+    public const BUFFER_SECTION = 'buffer';
+    public const SUMMARY_SECTION = 'summary';
     public const EXECUTION_BUFFER_SECTION = 'execution_buffer';
 
-    private AgentStatus $status;
-    private CachedContext $cache;
-    private StepExecutions $stepExecutions;
-    private ?CurrentExecution $currentExecution;
-    private ?AgentStep $currentStep;
-    private MessageStore $store;
-    private Metadata $metadata;
+    // Session data (always present)
     private string $agentId;
     private ?string $parentAgentId;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
+    private MessageStore $store;
+    private Metadata $metadata;
+    private CachedContext $cache;
+
+    // Execution data (optional - null when between executions)
+    private ?ExecutionState $execution;
 
     public function __construct(
-        ?AgentStatus $status = null,
-        ?CurrentExecution $currentExecution = null,
-        ?AgentStep $currentStep = null,
-        Metadata|array|null $variables = null,
-        ?MessageStore $store = null,
         ?string $agentId = null,
         ?string $parentAgentId = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
+        ?MessageStore $store = null,
+        Metadata|array|null $variables = null,
         ?CachedContext $cache = null,
-        ?StepExecutions $stepExecutions = null,
+        ?ExecutionState $execution = null,
     ) {
         $now = new DateTimeImmutable();
+
+        // Session data
         $this->agentId = $agentId ?? Uuid::uuid4();
         $this->parentAgentId = $parentAgentId;
         $this->createdAt = $createdAt ?? $now;
         $this->updatedAt = $updatedAt ?? $this->createdAt;
-
-        $this->status = $status ?? AgentStatus::InProgress;
-        $this->currentExecution = $currentExecution;
-        $this->currentStep = $currentStep ?? null;
-
+        $this->store = $store ?? new MessageStore();
         $this->metadata = match (true) {
             $variables === null => new Metadata(),
             $variables instanceof Metadata => $variables,
@@ -65,168 +79,214 @@ final readonly class AgentState
             default => new Metadata(),
         };
         $this->cache = $cache ?? new CachedContext();
-        $this->store = $store ?? new MessageStore();
-        $this->stepExecutions = $stepExecutions ?? StepExecutions::empty();
+
+        // Execution data (null = between executions)
+        $this->execution = $execution;
     }
 
     // CONSTRUCTORS ////////////////////////////////////////////
 
-    public static function empty(): self {
+    public static function empty(): self
+    {
         return new self();
+    }
+
+    /**
+     * Create a state ready for execution (with fresh ExecutionState).
+     */
+    public static function forExecution(): self
+    {
+        return (new self())->withStartedExecution();
     }
 
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?AgentStatus $status = null,
-        ?CurrentExecution $currentExecution = null,
-        ?AgentStep $currentStep = null,
-        ?Metadata $variables = null,
-        ?MessageStore $store = null,
         ?string $agentId = null,
         ?string $parentAgentId = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
+        ?MessageStore $store = null,
+        ?Metadata $variables = null,
         ?CachedContext $cache = null,
-        ?StepExecutions $stepExecutions = null,
+        ?ExecutionState $execution = null,
     ): self {
         return new self(
-            status: $status ?? $this->status,
-            currentExecution: $currentExecution ?? $this->currentExecution,
-            currentStep: $currentStep ?? $this->currentStep,
-            variables: $variables ?? $this->metadata,
-            store: $store ?? $this->store,
             agentId: $agentId ?? $this->agentId,
             parentAgentId: $parentAgentId ?? $this->parentAgentId,
             createdAt: $createdAt ?? $this->createdAt,
             updatedAt: $updatedAt ?? new DateTimeImmutable(),
+            store: $store ?? $this->store,
+            variables: $variables ?? $this->metadata,
             cache: $cache ?? $this->cache,
-            stepExecutions: $stepExecutions ?? $this->stepExecutions,
+            execution: $execution ?? $this->execution,
         );
     }
 
-    public function withStatus(AgentStatus $status): self {
-        return $this->with(status: $status);
+    public function withStatus(AgentStatus $status): self
+    {
+        if ($this->execution === null) {
+            return $this->with(execution: ExecutionState::start()->withStatus($status));
+        }
+        return $this->with(execution: $this->execution->withStatus($status));
+    }
+
+    // EXECUTION LIFECYCLE /////////////////////////////////////
+
+    /**
+     * Return copy with a fresh execution started.
+     */
+    public function withStartedExecution(): self
+    {
+        return $this->with(execution: ExecutionState::start());
+    }
+
+    /**
+     * Return copy with execution cleared (null).
+     * Use after processing execution results for multi-turn.
+     */
+    public function withEndedExecution(): self
+    {
+        return new self(
+            agentId: $this->agentId,
+            parentAgentId: $this->parentAgentId,
+            createdAt: $this->createdAt,
+            updatedAt: new DateTimeImmutable(),
+            store: $this->store,
+            variables: $this->metadata,
+            cache: $this->cache,
+            execution: null,
+        );
+    }
+
+    /**
+     * Check if there's an active execution in progress.
+     */
+    public function hasActiveExecution(): bool
+    {
+        return $this->execution !== null;
+    }
+
+    /**
+     * Get the current execution state (null when between executions).
+     */
+    public function execution(): ?ExecutionState
+    {
+        return $this->execution;
     }
 
     // MESSAGE STORE METHODS ////////////////////////////////////
 
-    public function messages(): Messages {
+    public function messages(): Messages
+    {
         return $this->store->section(self::DEFAULT_SECTION)->get()->messages();
     }
 
-    public function store(): MessageStore {
+    public function store(): MessageStore
+    {
         return $this->store;
     }
 
-    public function withMessageStore(MessageStore $store): self {
+    public function withMessageStore(MessageStore $store): self
+    {
         return $this->with(store: $store);
     }
 
-    public function withMessages(Messages $messages): self {
+    public function withMessages(Messages $messages): self
+    {
         return $this->with(store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages));
     }
 
     // METADATA METHODS /////////////////////////////////////////
 
-    public function metadata(): Metadata {
+    public function metadata(): Metadata
+    {
         return $this->metadata;
     }
 
-    public function withMetadata(string $name, mixed $value): self {
+    public function withMetadata(string $name, mixed $value): self
+    {
         return $this->with(variables: $this->metadata->withKeyValue($name, $value));
     }
 
-    public function agentId(): string {
+    public function agentId(): string
+    {
         return $this->agentId;
     }
 
-    public function parentAgentId(): ?string {
+    public function parentAgentId(): ?string
+    {
         return $this->parentAgentId;
     }
 
-    public function createdAt(): DateTimeImmutable {
+    public function createdAt(): DateTimeImmutable
+    {
         return $this->createdAt;
     }
 
-    public function updatedAt(): DateTimeImmutable {
+    public function updatedAt(): DateTimeImmutable
+    {
         return $this->updatedAt;
     }
 
-    // EXECUTION STATE METHODS ///////////////////////////////////
+    // EXECUTION STATE METHODS (delegated to ExecutionState) ////
 
-    public function currentExecution(): ?CurrentExecution {
-        return $this->currentExecution;
+    public function currentExecution(): ?CurrentExecution
+    {
+        return $this->execution?->currentExecution();
     }
 
-    public function withCurrentExecution(?CurrentExecution $execution): self {
+    public function withCurrentExecution(?CurrentExecution $execution): self
+    {
         if ($execution === null) {
             return $this->clearCurrentExecution();
         }
-        return $this->with(currentExecution: $execution);
-    }
-
-    public function beginStepExecution(): self {
-        if ($this->currentExecution !== null) {
-            return $this->with(currentExecution: $this->currentExecution);
+        if ($this->execution === null) {
+            return $this->with(execution: ExecutionState::start()->withCurrentExecution($execution));
         }
-        $execution = new CurrentExecution(stepNumber: $this->stepCount() + 1);
-        return new self(
-            status: $this->status,
-            currentExecution: $execution,
-            currentStep: null,
-            variables: $this->metadata,
-            store: $this->store,
-            agentId: $this->agentId,
-            parentAgentId: $this->parentAgentId,
-            createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
-            cache: $this->cache,
-            stepExecutions: $this->stepExecutions,
-        );
+        return $this->with(execution: $this->execution->withCurrentExecution($execution));
     }
 
-    public function clearCurrentExecution(): self {
-        return new self(
-            status: $this->status,
-            currentExecution: null,
-            currentStep: $this->currentStep,
-            variables: $this->metadata,
-            store: $this->store,
-            agentId: $this->agentId,
-            parentAgentId: $this->parentAgentId,
-            createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
-            cache: $this->cache,
-            stepExecutions: $this->stepExecutions,
-        );
+    public function beginStepExecution(): self
+    {
+        if ($this->execution === null) {
+            return $this->with(execution: ExecutionState::start()->beginStepExecution());
+        }
+        return $this->with(execution: $this->execution->beginStepExecution());
+    }
+
+    public function clearCurrentExecution(): self
+    {
+        if ($this->execution === null) {
+            return $this;
+        }
+        return $this->with(execution: $this->execution->clearCurrentExecution());
     }
 
     // USAGE METHODS ////////////////////////////////////////////
 
-    public function usage(): Usage {
-        $usage = $this->stepExecutions->totalUsage();
-        $currentStep = $this->currentStep;
-        if ($currentStep === null) {
-            return $usage;
-        }
-        if ($this->isCurrentStepRecorded($currentStep)) {
-            return $usage;
-        }
-        return $usage->withAccumulated($currentStep->usage());
+    public function usage(): Usage
+    {
+        return $this->execution?->usage() ?? Usage::none();
     }
 
     // STEP MUTATORS ////////////////////////////////////////////
 
-    public function recordStep(AgentStep $step): self {
+    public function recordStep(AgentStep $step): self
+    {
         return $this->withCurrentStep($step);
     }
 
-    public function withCurrentStep(AgentStep $step): self {
-        return $this->with(currentStep: $step);
+    public function withCurrentStep(AgentStep $step): self
+    {
+        if ($this->execution === null) {
+            return $this->with(execution: ExecutionState::start()->withCurrentStep($step));
+        }
+        return $this->with(execution: $this->execution->withCurrentStep($step));
     }
 
-    public function failWith(AgentException $error): self {
+    public function failWith(AgentException $error): self
+    {
         $failureStep = AgentStep::failure(
             inputMessages: $this->messages(),
             error: $error,
@@ -240,21 +300,20 @@ final readonly class AgentState
     /**
      * Add a user message to continue the conversation.
      */
-    public function withUserMessage(string|Message $message, bool $resetExecutionState = true): self {
+    public function withUserMessage(string|Message $message, bool $resetExecutionState = true): self
+    {
         $userMessage = Message::asUser($message);
         $store = $this->store->section(self::DEFAULT_SECTION)->appendMessages($userMessage);
+
         $state = new self(
-            status: AgentStatus::InProgress,
-            currentExecution: null,
-            currentStep: $this->currentStep,
-            variables: $this->metadata,
-            store: $store,
             agentId: $this->agentId,
             parentAgentId: $this->parentAgentId,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
+            store: $store,
+            variables: $this->metadata,
             cache: $this->cache,
-            stepExecutions: $this->stepExecutions,
+            execution: $resetExecutionState ? null : $this->execution,
         );
 
         return $resetExecutionState ? $state->forContinuation() : $state;
@@ -262,69 +321,63 @@ final readonly class AgentState
 
     /**
      * Reset execution state while preserving conversation history and metadata.
+     * This prepares the state for a fresh execution while keeping session data.
      */
-    public function forContinuation(): self {
+    public function forContinuation(): self
+    {
         $store = $this->store
             ->section(self::EXECUTION_BUFFER_SECTION)
             ->clear();
+
         return new self(
-            status: AgentStatus::InProgress,
-            currentExecution: null,
-            currentStep: null,
-            variables: $this->metadata,
-            store: $store,
             agentId: $this->agentId,
             parentAgentId: $this->parentAgentId,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
+            store: $store,
+            variables: $this->metadata,
             cache: new CachedContext(),
-            stepExecutions: StepExecutions::empty(),
+            execution: null, // Clear execution state for fresh start
         );
     }
 
     /**
      * Record a completed step execution (step + continuation outcome bundled).
      */
-    public function recordStepExecution(StepExecution $execution): self {
-        return new self(
-            status: $this->status,
-            currentExecution: null,
-            currentStep: $execution->step,
-            variables: $this->metadata,
-            store: $this->store,
-            agentId: $this->agentId,
-            parentAgentId: $this->parentAgentId,
-            createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
-            cache: $this->cache,
-            stepExecutions: $this->stepExecutions->append($execution),
-        );
+    public function recordStepExecution(StepExecution $stepExecution): self
+    {
+        if ($this->execution === null) {
+            return $this->with(execution: ExecutionState::start()->withStepExecution($stepExecution));
+        }
+        return $this->with(execution: $this->execution->withStepExecution($stepExecution));
     }
 
-    // ACCESSORS ////////////////////////////////////////////////
+    // ACCESSORS (delegated to ExecutionState) //////////////////
 
     /**
      * Get the current agent status.
      *
-     * Status is derived from the continuation outcome when available:
-     * - If explicitly failed, returns Failed
-     * - If continuation outcome says "don't continue", derives status from stop reason
-     * - Otherwise returns the stored status (typically InProgress)
-     *
-     * This allows manual loops (hasNextStep/nextStep) to get correct final
-     * status without requiring explicit finalization.
+     * - Returns Pending when no execution is active
+     * - Returns Failed if explicitly failed or stop reason is ErrorForbade
+     * - Returns Completed when continuation outcome says stop
+     * - Otherwise returns InProgress
      */
-    public function status(): AgentStatus {
-        if ($this->status === AgentStatus::Failed) {
+    public function status(): AgentStatus
+    {
+        if ($this->execution === null) {
+            return AgentStatus::Pending;
+        }
+
+        if ($this->execution->status === AgentStatus::Failed) {
             return AgentStatus::Failed;
         }
 
         $outcome = $this->continuationOutcome();
         if ($outcome === null) {
-            return $this->status;
+            return $this->execution->status;
         }
         if ($outcome->shouldContinue()) {
-            return $this->status;
+            return $this->execution->status;
         }
 
         return match ($outcome->stopReason()) {
@@ -333,60 +386,61 @@ final readonly class AgentState
         };
     }
 
-    public function currentStep(): ?AgentStep {
-        return $this->currentStep;
+    public function currentStep(): ?AgentStep
+    {
+        return $this->execution?->currentStep();
     }
 
     /**
      * Step count including transient current step (used during continuation evaluation).
      */
-    public function transientStepCount(): int {
-        $currentStep = $this->currentStep;
-        if ($currentStep === null) {
-            return $this->stepCount();
-        }
-        if ($this->isCurrentStepRecorded($currentStep)) {
-            return $this->stepCount();
-        }
-        return $this->stepCount() + 1;
+    public function transientStepCount(): int
+    {
+        return $this->execution?->transientStepCount() ?? 0;
     }
 
     /**
      * Get all completed steps (derived from step executions).
      */
-    public function steps(): AgentSteps {
-        return $this->stepExecutions->steps();
+    public function steps(): AgentSteps
+    {
+        return $this->stepExecutions()->steps();
     }
 
-    public function stepCount(): int {
-        return $this->stepExecutions->count();
+    public function stepCount(): int
+    {
+        return $this->execution?->stepCount() ?? 0;
     }
 
-    public function stepAt(int $index): ?AgentStep {
-        return $this->stepExecutions->stepAt($index);
+    public function stepAt(int $index): ?AgentStep
+    {
+        return $this->stepExecutions()->stepAt($index);
     }
 
     /** @return iterable<AgentStep> */
-    public function eachStep(): iterable {
-        return $this->stepExecutions->steps();
+    public function eachStep(): iterable
+    {
+        return $this->stepExecutions()->steps();
     }
 
-    public function cache(): CachedContext {
+    public function cache(): CachedContext
+    {
         return $this->cache;
     }
 
-    public function withCachedContext(CachedContext $cache): self {
+    public function withCachedContext(CachedContext $cache): self
+    {
         return $this->with(cache: $cache);
     }
 
-    public function messagesForInference(): Messages {
+    public function messagesForInference(): Messages
+    {
         return (new SelectedSections([
-            'summary',
-            'buffer',
+            self::SUMMARY_SECTION,
+            self::BUFFER_SECTION,
             self::DEFAULT_SECTION,
             self::EXECUTION_BUFFER_SECTION,
-        ]))
-            ->compile($this);
+        ]))->compile($this);
     }
 
     // STEP EXECUTION ACCESSORS /////////////////////////////////
@@ -394,35 +448,40 @@ final readonly class AgentState
     /**
      * Get all step executions.
      */
-    public function stepExecutions(): StepExecutions {
-        return $this->stepExecutions;
+    public function stepExecutions(): StepExecutions
+    {
+        return $this->execution?->stepExecutions ?? StepExecutions::empty();
     }
 
     /**
      * Get the last step execution.
      */
-    public function lastStepExecution(): ?StepExecution {
-        return $this->stepExecutions->last();
+    public function lastStepExecution(): ?StepExecution
+    {
+        return $this->stepExecutions()->last();
     }
 
     /**
      * Get the continuation outcome from the last step execution.
      */
-    public function continuationOutcome(): ?ContinuationOutcome {
-        return $this->lastStepExecution()?->outcome;
+    public function continuationOutcome(): ?ContinuationOutcome
+    {
+        return $this->execution?->continuationOutcome();
     }
 
     /**
      * Alias for continuationOutcome() for forward compatibility with SlimAgentStateSerializer.
      */
-    public function lastContinuationOutcome(): ?ContinuationOutcome {
+    public function lastContinuationOutcome(): ?ContinuationOutcome
+    {
         return $this->continuationOutcome();
     }
 
     /**
      * Get the stop reason from the last step execution's continuation outcome.
      */
-    public function stopReason(): ?StopReason {
+    public function stopReason(): ?StopReason
+    {
         return $this->continuationOutcome()?->stopReason();
     }
 
@@ -432,12 +491,15 @@ final readonly class AgentState
      * Get a summary of the agent state for debugging.
      * This is the primary way to understand what happened during execution.
      */
-    public function debug(): array {
+    public function debug(): array
+    {
         $currentStep = $this->currentStep();
         $outcome = $this->continuationOutcome();
 
         return [
-            'status' => $this->status->value,
+            'status' => $this->status()->value,
+            'hasExecution' => $this->execution !== null,
+            'executionId' => $this->execution?->executionId,
             'steps' => $this->stepCount(),
             'stopReason' => $outcome?->stopReason()?->value,
             'resolvedBy' => $outcome?->resolvedBy(),
@@ -451,110 +513,67 @@ final readonly class AgentState
 
     // SERIALIZATION ////////////////////////////////////////////
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'agentId' => $this->agentId,
             'parentAgentId' => $this->parentAgentId,
+            'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
+            'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'metadata' => $this->metadata->toArray(),
             'cachedContext' => $this->cache->toArray(),
-            'usage' => $this->usage()->toArray(),
             'messageStore' => $this->store->toArray(),
-            'stateInfo' => [
-                'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
-                'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
-            ],
-            'currentExecution' => $this->currentExecution?->toArray(),
-            'currentStep' => $this->currentStep?->toArray(),
-            'status' => $this->status->value,
-            'stepExecutions' => $this->stepExecutions->toArray(),
+            'execution' => $this->execution?->toArray(),
         ];
     }
 
-    public static function fromArray(array $data): self {
-        $stepExecutionsData = $data['stepExecutions'] ?? null;
-        $stepExecutions = match (true) {
-            is_array($stepExecutionsData) => StepExecutions::deserialize($stepExecutionsData),
-            default => StepExecutions::empty(),
-        };
-
-        $currentExecutionData = $data['currentExecution'] ?? null;
-        $currentExecution = match (true) {
-            is_array($currentExecutionData) => CurrentExecution::fromArray($currentExecutionData),
-            default => null,
-        };
-
-        $currentStepData = $data['currentStep'] ?? null;
-        $currentStep = match (true) {
-            is_array($currentStepData) => AgentStep::fromArray($currentStepData),
-            default => $stepExecutions->last()?->step,
-        };
-
-        $stateInfoData = $data['stateInfo'] ?? null;
-        $stateInfo = match (true) {
-            is_array($stateInfoData) => $stateInfoData,
-            default => [],
-        };
-        $createdAt = self::parseDate(
-            $stateInfo['createdAt'] ?? $data['createdAt'] ?? $stateInfo['startedAt'] ?? $data['startedAt'] ?? null,
-        );
-        $updatedAt = self::parseDate($stateInfo['updatedAt'] ?? $data['updatedAt'] ?? null, $createdAt);
-
-        $statusValue = $data['status'] ?? null;
-        $status = match (true) {
-            $statusValue instanceof AgentStatus => $statusValue,
-            is_string($statusValue) && $statusValue !== '' => AgentStatus::from($statusValue),
-            default => AgentStatus::InProgress,
-        };
-
-        $metadataValue = $data['metadata'] ?? null;
-        $metadata = match (true) {
-            is_array($metadataValue) => Metadata::fromArray($metadataValue),
-            default => new Metadata(),
-        };
-
-        $cachedContextValue = $data['cachedContext'] ?? null;
-        $cachedContext = match (true) {
-            is_array($cachedContextValue) => CachedContext::fromArray($cachedContextValue),
-            default => new CachedContext(),
-        };
-
-        $storeValue = $data['messageStore'] ?? null;
-        $store = match (true) {
-            is_array($storeValue) => MessageStore::fromArray($storeValue),
-            default => new MessageStore(),
-        };
-
+    public static function fromArray(array $data): self
+    {
         return new self(
-            status: $status,
-            currentExecution: $currentExecution,
-            currentStep: $currentStep,
-            variables: $metadata,
-            store: $store,
             agentId: $data['agentId'] ?? null,
             parentAgentId: $data['parentAgentId'] ?? null,
-            createdAt: $createdAt,
-            updatedAt: $updatedAt,
-            cache: $cachedContext,
-            stepExecutions: $stepExecutions,
+            createdAt: self::parseDateFrom($data, 'createdAt'),
+            updatedAt: self::parseDateFrom($data, 'updatedAt'),
+            store: self::parseMessageStore($data),
+            variables: self::parseMetadata($data),
+            cache: self::parseCachedContext($data),
+            execution: self::parseExecution($data),
         );
     }
 
-    // INTERNAL /////////////////////////////////////////////////
+    // PARSING HELPERS //////////////////////////////////////////
 
-    private function isCurrentStepRecorded(AgentStep $currentStep): bool {
-        $lastStep = $this->stepExecutions->last()?->step;
-        if ($lastStep === null) {
-            return false;
-        }
-        return $currentStep->id() === $lastStep->id();
+    private static function parseExecution(array $data): ?ExecutionState
+    {
+        $executionData = $data['execution'] ?? null;
+        return is_array($executionData) ? ExecutionState::fromArray($executionData) : null;
     }
 
-    private static function parseDate(mixed $value, ?DateTimeImmutable $default = null): DateTimeImmutable {
-        $resolvedDefault = $default ?? new DateTimeImmutable();
+    private static function parseMetadata(array $data): Metadata
+    {
+        $value = $data['metadata'] ?? null;
+        return is_array($value) ? Metadata::fromArray($value) : new Metadata();
+    }
+
+    private static function parseCachedContext(array $data): CachedContext
+    {
+        $value = $data['cachedContext'] ?? null;
+        return is_array($value) ? CachedContext::fromArray($value) : new CachedContext();
+    }
+
+    private static function parseMessageStore(array $data): MessageStore
+    {
+        $value = $data['messageStore'] ?? null;
+        return is_array($value) ? MessageStore::fromArray($value) : new MessageStore();
+    }
+
+    private static function parseDateFrom(array $data, string $key): DateTimeImmutable
+    {
+        $value = $data[$key] ?? null;
         return match (true) {
             $value instanceof DateTimeImmutable => $value,
             is_string($value) && $value !== '' => new DateTimeImmutable($value),
-            default => $resolvedDefault,
+            default => new DateTimeImmutable(),
         };
     }
 }

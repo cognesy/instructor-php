@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
@@ -40,15 +40,15 @@ class UseSubagents implements AgentCapability
 
     #[\Override]
     public function install(AgentBuilder $builder): void {
-        $builder->onBuild(function (Agent $agent) {
-            $driver = $agent->driver();
+        $builder->onBuild(function (AgentLoop $agentLoop) {
+            $driver = $agentLoop->driver();
             $llmProvider = LLMProvider::new();
             if ($driver instanceof ToolCallingDriver) {
                 $llmProvider = $driver->getLlmProvider();
             }
 
             $subagentTool = new SpawnSubagentTool(
-                parentAgent: $agent,
+                parentAgentLoop: $agentLoop,
                 provider: $this->resolveProvider(),
                 skillLibrary: $this->skillLibrary,
                 parentLlmProvider: $llmProvider,
@@ -56,10 +56,10 @@ class UseSubagents implements AgentCapability
                 maxDepth: $this->policy->maxDepth,
                 summaryMaxChars: $this->policy->summaryMaxChars,
                 policy: $this->policy,
-                eventEmitter: $agent->eventEmitter(),
+                eventEmitter: $agentLoop->eventEmitter(),
             );
 
-            return $agent->with(tools: $agent->tools()->merge(new Tools($subagentTool)));
+            return $agentLoop->with(tools: $agentLoop->tools()->merge(new Tools($subagentTool)));
         });
     }
 

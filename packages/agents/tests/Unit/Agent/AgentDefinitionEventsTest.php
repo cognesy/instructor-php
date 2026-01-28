@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -13,7 +14,7 @@ use Cognesy\Agents\Core\Events\AgentStepStarted;
 use Cognesy\Agents\Core\Events\ContinuationEvaluated;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
-use Cognesy\Agents\AgentBuilder\Support\AbstractAgent;
+use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
 use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Messages\Messages;
@@ -54,7 +55,7 @@ final class TestEventHandler implements CanHandleEvents
     }
 }
 
-final class EventAgentDefinition extends AbstractAgent
+final class EventAgentDefinition extends BaseAgent
 {
     public function descriptor(): AgentDescriptor
     {
@@ -66,7 +67,7 @@ final class EventAgentDefinition extends AbstractAgent
         );
     }
 
-    protected function buildAgent(): \Cognesy\Agents\Agent\Agent
+    protected function buildAgentLoop(): AgentLoop
     {
         return AgentBuilder::base()
             ->withDriver(new DeterministicAgentDriver())
@@ -84,7 +85,7 @@ final class EventAgentDefinition extends AbstractAgent
     }
 }
 
-describe('AbstractAgent events', function () {
+describe('AgentDefinition events', function () {
     it('emits core agent lifecycle events', function () {
         $definition = new EventAgentDefinition();
         $captured = [];

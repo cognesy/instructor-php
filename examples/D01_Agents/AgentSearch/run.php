@@ -27,12 +27,13 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
 use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 
 // Create console logger for execution visibility
@@ -65,6 +66,7 @@ $registry->register(new AgentSpec(
 
 // Build main orchestration agent
 $agent = AgentBuilder::base()
+    ->withCapability(new UseFileTools($workDir))
     ->withCapability(new UseSubagents(provider: $registry))
     ->build()
     ->wiretap($logger->wiretap());

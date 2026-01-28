@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Data\ToolExecution;
@@ -24,7 +24,7 @@ class SpawnSubagentTool extends BaseTool
 {
     private static array $subagentStates = [];
 
-    private Agent $parentAgent;
+    private AgentLoop $parentAgentLoop;
     private SubagentProvider $provider;
     private ?SkillLibrary $skillLibrary;
     private ?LLMProvider $parentLlmProvider;
@@ -35,7 +35,7 @@ class SpawnSubagentTool extends BaseTool
     private CanEmitAgentEvents $eventEmitter;
 
     public function __construct(
-        Agent $parentAgent,
+        AgentLoop $parentAgentLoop,
         SubagentProvider $provider,
         ?SkillLibrary $skillLibrary = null,
         ?LLMProvider $parentLlmProvider = null,
@@ -50,7 +50,7 @@ class SpawnSubagentTool extends BaseTool
             description: $this->buildDescription($provider),
         );
 
-        $this->parentAgent = $parentAgent;
+        $this->parentAgentLoop = $parentAgentLoop;
         $this->provider = $provider;
         $this->skillLibrary = $skillLibrary;
         $this->parentLlmProvider = $parentLlmProvider;
@@ -94,10 +94,10 @@ class SpawnSubagentTool extends BaseTool
             maxDepth: $this->maxDepth,
         );
 
-        // Create and run subagent
-        $subagent = $this->createSubagent($spec);
+        // Create and run subagent loop
+        $subagentLoop = $this->createSubagentLoop($spec);
         $initialState = $this->createInitialState($prompt, $spec, $parentExecutionId);
-        $finalState = $this->runSubagent($subagent, $initialState);
+        $finalState = $this->runSubagentLoop($subagentLoop, $initialState);
 
         // Emit subagent completed event
         $this->eventEmitter->subagentCompleted(
@@ -119,14 +119,14 @@ class SpawnSubagentTool extends BaseTool
 
     // SUBAGENT CREATION ////////////////////////////////////////////
 
-    private function createSubagent(SubagentDefinition $spec): Agent {
+    private function createSubagentLoop(SubagentDefinition $spec): AgentLoop {
         // Filter tools based on spec
-        $tools = $spec->filterTools($this->parentAgent->tools());
+        $tools = $spec->filterTools($this->parentAgentLoop->tools());
 
         // If spawn_subagent is in filtered tools, create nested version with incremented depth
         if ($tools->has('spawn_subagent')) {
             $nestedSpawnTool = new self(
-                parentAgent: $this->parentAgent,
+                parentAgentLoop: $this->parentAgentLoop,
                 provider: $this->provider,
                 skillLibrary: $this->skillLibrary,
                 parentLlmProvider: $this->parentLlmProvider,
@@ -145,13 +145,13 @@ class SpawnSubagentTool extends BaseTool
         $llmProvider = $spec->resolveLlmProvider($this->parentLlmProvider);
 
         // Get the parent's driver with the new LLM provider, preserving event emitter
-        $parentDriver = $this->parentAgent->driver();
+        $parentDriver = $this->parentAgentLoop->driver();
         $subagentDriver = $parentDriver->withLLMProvider($llmProvider);
         if (method_exists($subagentDriver, 'withEventEmitter')) {
             $subagentDriver = $subagentDriver->withEventEmitter($this->eventEmitter);
         }
 
-        // Create agent (stateless blueprint) - share event bus with parent
+        // Create agent loop (stateless blueprint) - share event bus with parent
         return AgentBuilder::new()
             ->withTools($tools)
             ->withDriver($subagentDriver)
@@ -172,8 +172,8 @@ class SpawnSubagentTool extends BaseTool
             ->with(parentAgentId: $parentAgentId);
     }
 
-    private function runSubagent(Agent $subagent, AgentState $state): AgentState {
-        return $subagent->execute($state);
+    private function runSubagentLoop(AgentLoop $subagentLoop, AgentState $state): AgentState {
+        return $subagentLoop->execute($state);
     }
 
     // STATE STORAGE & EXTRACTION ///////////////////////////////////

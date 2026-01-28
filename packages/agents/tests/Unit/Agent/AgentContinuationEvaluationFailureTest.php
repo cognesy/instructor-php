@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
@@ -17,7 +17,7 @@ use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
 use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Messages\Messages;
 
-describe('Agent continuation evaluation failures', function () {
+describe('AgentLoop continuation evaluation failures', function () {
     it('records a failure outcome when continuation evaluation throws', function () {
         $driver = new class implements CanUseTools {
             public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
@@ -33,7 +33,7 @@ describe('Agent continuation evaluation failures', function () {
         $continuationCriteria = new ContinuationCriteria($criterion);
 
         $tools = new Tools();
-        $agent = new Agent(
+        $agentLoop = new AgentLoop(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: AgentErrorHandler::default(),
@@ -46,7 +46,7 @@ describe('Agent continuation evaluation failures', function () {
 
         // Use iterate() to get the failed state
         $failedState = null;
-        foreach ($agent->iterate($state) as $stepState) {
+        foreach ($agentLoop->iterate($state) as $stepState) {
             $failedState = $stepState;
             break;
         }

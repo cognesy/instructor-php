@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
@@ -21,7 +21,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Throwable;
 
-describe('Agent failure usage accumulation', function () {
+describe('AgentLoop failure usage accumulation', function () {
     it('derives usage from recorded failure steps', function () {
         $driver = new class implements CanUseTools {
             public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
@@ -48,7 +48,7 @@ describe('Agent failure usage accumulation', function () {
         };
 
         $tools = new Tools();
-        $agent = new Agent(
+        $agentLoop = new AgentLoop(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: $errorHandler,
@@ -60,7 +60,7 @@ describe('Agent failure usage accumulation', function () {
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
 
         $failedState = null;
-        foreach ($agent->iterate($state) as $stepState) {
+        foreach ($agentLoop->iterate($state) as $stepState) {
             $failedState = $stepState;
             break;
         }

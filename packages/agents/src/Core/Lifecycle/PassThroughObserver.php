@@ -17,13 +17,13 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 class PassThroughObserver implements CanObserveAgentLifecycle
 {
     #[\Override]
-    public function beforeExecution(AgentState $state): AgentState
+    public function onBeforeExecution(AgentState $state): AgentState
     {
         return $state;
     }
 
     #[\Override]
-    public function afterExecution(AgentState $state): AgentState
+    public function onAfterExecution(AgentState $state): AgentState
     {
         return $state;
     }
@@ -35,31 +35,31 @@ class PassThroughObserver implements CanObserveAgentLifecycle
     }
 
     #[\Override]
-    public function beforeStep(AgentState $state): AgentState
+    public function onBeforeStep(AgentState $state): AgentState
     {
         return $state;
     }
 
     #[\Override]
-    public function afterStep(AgentState $state): AgentState
+    public function onAfterStep(AgentState $state): AgentState
     {
         return $state;
     }
 
     #[\Override]
-    public function beforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision
+    public function onBeforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision
     {
         return ToolUseDecision::proceed($toolCall);
     }
 
     #[\Override]
-    public function afterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
+    public function onAfterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
     {
         return $execution;
     }
 
     #[\Override]
-    public function beforeStopDecision(AgentState $state, StopReason $reason): StopDecision
+    public function onBeforeStopDecision(AgentState $state, StopReason $reason): StopDecision
     {
         return StopDecision::allow();
     }

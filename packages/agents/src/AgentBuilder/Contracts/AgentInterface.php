@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Contracts;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
@@ -10,16 +10,16 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
- * High-level interface for agent implementations.
+ * High-level interface for agent definitions.
  *
- * Extends AgentLoop to provide iterative execution capabilities,
+ * Extends CanControlAgentLoop to provide iterative execution capabilities,
  * plus additional methods for configuration and event handling.
  */
 interface AgentInterface extends CanControlAgentLoop
 {
     public function descriptor(): AgentDescriptor;
 
-    public function build(): Agent;
+    public function build(): AgentLoop;
 
     public function run(AgentState $state): AgentState;
 

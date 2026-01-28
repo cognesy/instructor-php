@@ -2,16 +2,17 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
-use Cognesy\Agents\AgentBuilder\Support\AbstractAgent;
+use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
 use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Messages\Messages;
 
-final class ConfiguredAgentDefinition extends AbstractAgent
+final class ConfiguredAgentDefinition extends BaseAgent
 {
     public function __construct(
         private readonly string $workspace,
@@ -29,7 +30,7 @@ final class ConfiguredAgentDefinition extends AbstractAgent
         );
     }
 
-    protected function buildAgent(): \Cognesy\Agents\Agent\Agent
+    protected function buildAgentLoop(): AgentLoop
     {
         return AgentBuilder::base()
             ->withMaxSteps($this->maxSteps)

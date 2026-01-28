@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\Core\Collections\Tools;
@@ -104,7 +104,7 @@ describe('Deterministic agent execution', function () {
         $continuationCriteria = new ContinuationCriteria($criterion);
 
         $tools = new Tools();
-        $agent = new Agent(
+        $agentLoop = new AgentLoop(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: AgentErrorHandler::default(),
@@ -117,7 +117,7 @@ describe('Deterministic agent execution', function () {
 
         // Use iterate() to step through and observe failure
         $states = [];
-        foreach ($agent->iterate($state) as $stepState) {
+        foreach ($agentLoop->iterate($state) as $stepState) {
             $states[] = $stepState;
         }
 

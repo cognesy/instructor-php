@@ -46,7 +46,10 @@ it('resets execution state for continuation', function () {
 
     $continued = $state->forContinuation();
 
-    expect($continued->status())->toBe(AgentStatus::InProgress)
+    // After forContinuation(), the state is "between executions" (no active execution)
+    // Status is Pending, ready for a fresh execution to start
+    expect($continued->status())->toBe(AgentStatus::Pending)
+        ->and($continued->hasActiveExecution())->toBeFalse()
         ->and($continued->stepCount())->toBe(0)
         ->and($continued->currentStep())->toBeNull()
         ->and($continued->usage()->total())->toBe(0)

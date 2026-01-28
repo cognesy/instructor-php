@@ -27,7 +27,6 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Agent\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
@@ -35,6 +34,7 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
 use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 
 // Create console logger - shows agent IDs for parent/child tracking
@@ -80,8 +80,8 @@ $agent = AgentBuilder::base()
 $task = <<<TASK
 Review these three files and provide a summary:
 1. packages/agents/src/AgentBuilder/AgentBuilder.php
-2. packages/agents/src/Agent/Data/AgentState.php
-3. packages/agents/src/Agent/Agent.php
+2. packages/agents/src/Core/Data/AgentState.php
+3. packages/agents/src/Core/AgentLoop.php
 
 For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;

@@ -38,7 +38,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     // EXECUTION LEVEL ////////////////////////////////////////
 
     #[\Override]
-    public function beforeExecution(AgentState $state): AgentState
+    public function onBeforeExecution(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
         $context = ExecutionHookContext::onStart($state);
@@ -54,7 +54,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     }
 
     #[\Override]
-    public function afterExecution(AgentState $state): AgentState
+    public function onAfterExecution(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
         $context = ExecutionHookContext::onEnd($state);
@@ -88,7 +88,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     // STEP LEVEL /////////////////////////////////////////////
 
     #[\Override]
-    public function beforeStep(AgentState $state): AgentState
+    public function onBeforeStep(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
         $stepIndex = $state->stepCount();
@@ -105,7 +105,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     }
 
     #[\Override]
-    public function afterStep(AgentState $state): AgentState
+    public function onAfterStep(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
         $stepIndex = $state->stepCount() - 1;
@@ -131,7 +131,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     // TOOL LEVEL /////////////////////////////////////////////
 
     #[\Override]
-    public function beforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision
+    public function onBeforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision
     {
         $hookStartedAt = new DateTimeImmutable();
         $context = ToolHookContext::beforeTool($toolCall, $state);
@@ -158,7 +158,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     }
 
     #[\Override]
-    public function afterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
+    public function onAfterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
     {
         $hookStartedAt = new DateTimeImmutable();
         $context = ToolHookContext::afterTool($execution->toolCall(), $execution, $state);
@@ -181,7 +181,7 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     // CONTINUATION ///////////////////////////////////////////
 
     #[\Override]
-    public function beforeStopDecision(AgentState $state, StopReason $reason): StopDecision
+    public function onBeforeStopDecision(AgentState $state, StopReason $reason): StopDecision
     {
         $hookStartedAt = new DateTimeImmutable();
 

@@ -24,10 +24,10 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Agent\Data\AgentState;
-use Cognesy\Agents\Agent\Hooks\Data\HookOutcome;
-use Cognesy\Agents\Agent\Hooks\Data\ToolHookContext;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Data\ToolHookContext;
+use Cognesy\Agents\Core\Data\AgentState;
 
 // Create console logger for execution visibility
 $logger = new AgentConsoleLogger(

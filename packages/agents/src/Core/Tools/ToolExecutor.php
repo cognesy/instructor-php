@@ -51,7 +51,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
     public function useTool(ToolCall $toolCall, AgentState $state): ToolExecution {
         // Before hook - can modify or block
         if ($this->observer !== null) {
-            $decision = $this->observer->beforeToolUse($toolCall, $state);
+            $decision = $this->observer->onBeforeToolUse($toolCall, $state);
             if ($decision->isBlocked()) {
                 $this->eventEmitter->toolCallBlocked($toolCall, $decision->reason());
                 throw new ToolCallBlockedException($toolCall->name(), $decision->reason());
@@ -63,7 +63,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
         // After hook - can modify result
         if ($this->observer !== null) {
-            $execution = $this->observer->afterToolUse($execution, $state);
+            $execution = $this->observer->onAfterToolUse($execution, $state);
         }
 
         if ($this->throwOnToolFailure && $execution->result() instanceof Failure) {

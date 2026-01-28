@@ -2,13 +2,14 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
-use Cognesy\Agents\AgentBuilder\Support\AbstractAgent;
+use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
 use Cognesy\Agents\AgentTemplate\Contracts\AgentBlueprint;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition as TemplateAgentDefinition;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionExecution;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionFactory;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLlm;
@@ -17,7 +18,7 @@ use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
 use Cognesy\Agents\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
 use Cognesy\Agents\AgentTemplate\Registry\AgentBlueprintRegistry;
 
-final class BlueprintAgentDefinition extends AbstractAgent
+final class BlueprintAgentDefinition extends BaseAgent
 {
     public function __construct(private readonly string $name)
     {
@@ -33,7 +34,7 @@ final class BlueprintAgentDefinition extends AbstractAgent
         );
     }
 
-    protected function buildAgent(): \Cognesy\Agents\Agent\Agent
+    protected function buildAgentLoop(): AgentLoop
     {
         return AgentBuilder::base()->build();
     }
@@ -56,7 +57,7 @@ final class BlueprintAgentDefinition extends AbstractAgent
 
 final class FactoryBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(AgentDefinition $definition): AgentInterface
+    public static function fromDefinition(TemplateAgentDefinition $definition): AgentInterface
     {
         return new BlueprintAgentDefinition('blueprint:' . $definition->id);
     }
@@ -64,7 +65,7 @@ final class FactoryBlueprint implements AgentBlueprint
 
 final class AlternateFactoryBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(AgentDefinition $definition): AgentInterface
+    public static function fromDefinition(TemplateAgentDefinition $definition): AgentInterface
     {
         return new BlueprintAgentDefinition('alt:' . $definition->id);
     }
@@ -77,7 +78,7 @@ describe('AgentDefinitionFactory', function () {
         ]);
 
         $factory = new AgentDefinitionFactory($registry);
-        $definition = new AgentDefinition(
+        $definition = new TemplateAgentDefinition(
             version: 1,
             id: 'agent-a',
             name: 'Agent A',
@@ -99,7 +100,7 @@ describe('AgentDefinitionFactory', function () {
     it('resolves blueprint_class directly', function () {
         $registry = new AgentBlueprintRegistry();
         $factory = new AgentDefinitionFactory($registry);
-        $definition = new AgentDefinition(
+        $definition = new TemplateAgentDefinition(
             version: 1,
             id: 'agent-b',
             name: 'Agent B',
@@ -121,7 +122,7 @@ describe('AgentDefinitionFactory', function () {
     it('fails when blueprint alias is missing', function () {
         $registry = new AgentBlueprintRegistry();
         $factory = new AgentDefinitionFactory($registry);
-        $definition = new AgentDefinition(
+        $definition = new TemplateAgentDefinition(
             version: 1,
             id: 'agent-c',
             name: 'Agent C',
@@ -142,7 +143,7 @@ describe('AgentDefinitionFactory', function () {
     it('fails for invalid blueprint_class', function () {
         $registry = new AgentBlueprintRegistry();
         $factory = new AgentDefinitionFactory($registry);
-        $definition = new AgentDefinition(
+        $definition = new TemplateAgentDefinition(
             version: 1,
             id: 'agent-d',
             name: 'Agent D',

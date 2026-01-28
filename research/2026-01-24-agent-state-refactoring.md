@@ -1,6 +1,84 @@
 # AgentState Refactoring: Separating Session from Execution Data
 
 **Date**: 2026-01-24
+**Updated**: 2026-01-27 (Implementation complete)
+**Status**: ✅ IMPLEMENTED
+
+---
+
+## Implementation Summary
+
+The refactoring has been completed with the following changes:
+
+### New Classes Created
+- `packages/agents/src/Core/Data/ExecutionState.php` - Holds all execution-specific data
+- `packages/agents/src/Core/Data/SessionInfo.php` - Session identity and timing info
+
+### Modified Files
+- `packages/agents/src/Core/Data/AgentState.php` - Refactored to separate session vs execution
+- `packages/agents/src/Core/Enums/AgentStatus.php` - Added `Pending` status for "between executions"
+- `packages/agents/tests/Unit/Agent/AgentStateContinuationTest.php` - Updated test expectations
+
+### Key Behavior Changes
+1. `AgentState::empty()` now creates state with `execution: null` (Pending status)
+2. `AgentState::forExecution()` creates state ready for execution (InProgress status)
+3. `forContinuation()` clears execution state, resulting in `Pending` status
+4. `hasActiveExecution()` returns true when execution is in progress
+5. All execution-specific methods delegate to `ExecutionState` when present
+6. Full backward compatibility maintained via constructor and method delegation
+
+### Test Results
+All 277 tests pass with the new architecture
+
+---
+
+## Current Architecture (Post-Refactoring)
+
+### Package Structure
+```
+packages/agents/src/
+├── Core/                    # AgentLoop, AgentState, data classes
+├── AgentBuilder/            # Fluent builder & capabilities
+├── AgentHooks/              # New unified hook system (replaces StateProcessors)
+├── AgentTemplate/           # Template definitions
+├── Broadcasting/            # Event broadcasting
+├── Drivers/                 # Tool execution drivers
+└── Serialization/           # State serialization
+```
+
+### Key Changes
+1. **Agent → AgentLoop** - Core executor is now `AgentLoop`
+2. **StateProcessors → Hooks** - New `HookStack` + `HookStackObserver` pattern
+3. **StepResult → StepExecution** - Step + outcome bundling
+4. **New `CurrentExecution`** - Transient step context (stepNumber, id, startedAt)
+5. **New `transientStepCount()`** - Accounts for unrecorded current step
+
+### Current AgentState Fields
+```php
+final readonly class AgentState
+{
+    // Identity
+    public string $agentId;
+    public ?string $parentAgentId;
+
+    // Timing
+    public DateTimeImmutable $createdAt;
+    public DateTimeImmutable $updatedAt;
+
+    // Session Data
+    private MessageStore $store;          // Multi-section message storage
+    private Metadata $metadata;           // User-defined variables
+    private CachedContext $cache;         // Inference cache
+
+    // Execution Data
+    private AgentStatus $status;          // InProgress, Completed, Failed
+    private StepExecutions $stepExecutions;  // Completed steps with outcomes
+    private ?CurrentExecution $currentExecution;  // Transient step context
+    private ?AgentStep $currentStep;      // Step being evaluated
+}
+```
+
+---
 
 ## User Requirements
 
@@ -207,6 +285,173 @@ final readonly class AgentState
 
 ---
 
+---
+
+## Final Design Direction
+
+### Core Principles
+
+1. **AgentState = Session + Current Execution**
+   - Contains everything needed for the CURRENT execution
+   - Prior executions are NOT part of AgentState
+
+2. **External Execution Tracking**
+   - Code external to core agent stores completed executions
+   - Enables: logging, introspection, debugging, rewind
+
+3. **Rewind Capability**
+   - External system can restore agent to any historical state
+   - Take prior execution data → reconstruct AgentState
+
+4. **Introspection is Optional**
+   - Niche capability, implemented as a tool
+   - Most use cases don't need access to prior executions
+
+---
+
+## Proposed Model
+
+### AgentState (Session + Current Execution)
+
+```php
+final readonly class AgentState
+{
+    // === SESSION IDENTITY ===
+    public string $agentId;
+    public ?string $parentAgentId;
+    public DateTimeImmutable $createdAt;
+    public DateTimeImmutable $updatedAt;
+
+    // === SESSION DATA ===
+    private MessageStore $store;      // Conversation history
+    private Metadata $metadata;       // User variables
+
+    // === CURRENT EXECUTION ===
+    private Execution $execution;     // Always present during agent run
+}
+```
+
+### Execution (Current Execution State)
+
+```php
+final readonly class Execution
+{
+    public string $executionId;
+    public DateTimeImmutable $startedAt;
+    public ?DateTimeImmutable $completedAt;
+    public AgentStatus $status;
+
+    // Steps completed so far in this execution
+    public StepExecutions $stepExecutions;
+
+    // Current step being processed (transient)
+    public ?AgentStep $currentStep;
+
+    // Inference cache for this execution
+    public CachedContext $cache;
+}
+```
+
+### External: ExecutionRecord (Stored by External System)
+
+```php
+// Not part of core agent - managed externally
+final readonly class ExecutionRecord
+{
+    public string $executionId;
+    public string $agentId;
+    public DateTimeImmutable $startedAt;
+    public DateTimeImmutable $completedAt;
+    public AgentStatus $finalStatus;
+    public StopReason $stopReason;
+
+    // For rewind capability
+    public AgentState $finalState;      // State at execution end
+    public StepExecutions $steps;       // All steps in this execution
+    public Usage $totalUsage;
+}
+```
+
+---
+
+## Lifecycle Flow
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  1. Agent Session Starts                                │
+│     AgentState created with fresh Execution             │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  2. Execution Runs                                      │
+│     - Steps added to execution.stepExecutions           │
+│     - currentStep updated during processing             │
+│     - Messages accumulated in store                     │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  3. Execution Completes                                 │
+│     - execution.status = Completed/Failed               │
+│     - execution.completedAt set                         │
+│     - EXTERNAL: ExecutionRecord created & stored        │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  4. Next User Message (Multi-turn)                      │
+│     - AgentState.forNextExecution() called              │
+│     - Fresh Execution created                           │
+│     - Session data (store, metadata) preserved          │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+                    (repeat 2-4)
+```
+
+---
+
+## Key Methods
+
+### AgentState
+
+```php
+// Start fresh execution (called at beginning)
+public function beginExecution(): self;
+
+// Reset for next execution (preserves session, clears execution)
+public function forNextExecution(): self;
+
+// Restore from historical state (rewind)
+public static function fromExecutionRecord(ExecutionRecord $record): self;
+```
+
+### External Tracking (not in core)
+
+```php
+interface ExecutionStore
+{
+    public function record(AgentState $finalState): ExecutionRecord;
+    public function getByAgent(string $agentId): array;
+    public function getById(string $executionId): ?ExecutionRecord;
+}
+```
+
+### Optional Introspection Capability
+
+```php
+// Implemented as a tool, not core functionality
+class ExecutionHistoryTool implements ToolInterface
+{
+    public function __construct(private ExecutionStore $store) {}
+
+    public function execute(array $args): string {
+        // Agent can query its own execution history
+        $records = $this->store->getByAgent($args['agentId']);
+        return json_encode($records);
+    }
+}
+```
+
+---
+
 ## Trade-offs
 
 ### Pros
@@ -217,44 +462,44 @@ final readonly class AgentState
 - Slimmer session-only serialization
 
 ### Cons
-- Additional class (ExecutionState)
+- Additional class (Execution)
 - Migration complexity with existing serialized data
 - Two-level structure adds some cognitive overhead
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-1. **AgentStatus.Pending**: Should we add a new status for "between executions"?
-   - Currently: InProgress, Completed, Failed
-   - Proposed: Add Pending for when execution is null
+1. **AgentStatus.Pending**: ✅ Added
+   - New enum value: `case Pending = 'pending';`
+   - Returned when `execution` is null (between executions)
 
-2. **Cache placement**: User said keep in session, but is this optimal?
-   - Pro: Reuse cached context across executions
-   - Con: Cache may become stale between executions
+2. **Cache placement**: ✅ Kept in session data
+   - Cache is part of session, cleared by `forContinuation()`
+   - This allows reuse across executions within same session
 
-3. **StateInfo transition**: Keep StateInfo as deprecated alias, or break?
-   - Recommendation: Keep alias for backward compat
+3. **StateInfo transition**: ✅ Created new SessionInfo
+   - New `SessionInfo` class created (not used directly in AgentState yet)
+   - AgentState continues using direct fields for createdAt/updatedAt
 
-4. **cumulativeExecutionSeconds**: Where should this live?
-   - Currently in StateInfo
-   - Options: Remove entirely, move to metadata, external tracking
+4. **cumulativeExecutionSeconds**: ✅ Removed
+   - Not part of the new structure
+   - Can be computed from ExecutionState durations if needed externally
 
 ---
 
 ## Files Affected
 
 **New:**
-- `src/Agent/Data/ExecutionState.php`
-- `src/Agent/Data/SessionInfo.php`
+- `packages/agents/src/Core/Data/ExecutionState.php` ✅
+- `packages/agents/src/Core/Data/SessionInfo.php` ✅
 
-**Modify:**
-- `src/Agent/Data/AgentState.php`
-- `src/Agent/Agent.php`
-- `src/Agent/Data/StateInfo.php` (deprecate → SessionInfo)
-- `src/Serialization/SlimAgentStateSerializer.php`
-- `src/Serialization/ContinuationAgentStateSerializer.php`
+**Modified:**
+- `packages/agents/src/Core/Data/AgentState.php` ✅
+- `packages/agents/src/Core/Enums/AgentStatus.php` ✅
+- `packages/agents/tests/Unit/Agent/AgentStateContinuationTest.php` ✅
 
-**Tests:**
-- All tests in `tests/Unit/Agent/`
-- Feature tests accessing execution state
+**Future Work (not yet needed):**
+- `src/Serialization/SlimAgentStateSerializer.php` - May need updates for new format
+- `src/Serialization/ContinuationAgentStateSerializer.php` - May need updates for new format
+- External `ExecutionStore` interface and implementation

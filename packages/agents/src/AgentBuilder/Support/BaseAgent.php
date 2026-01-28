@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Support;
 
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -12,11 +12,21 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-abstract class AbstractAgent implements AgentInterface
+/**
+ * Base class for agents that implement AgentInterface.
+ *
+ * This class provides a wrapper around AgentLoop, handling:
+ * - Lazy building of the agent loop
+ * - Event handler configuration
+ * - Listener registration (wiretap, onEvent)
+ *
+ * Extend this class to create concrete agent implementations.
+ */
+abstract class BaseAgent implements AgentInterface
 {
     use HandlesEvents;
 
-    private ?Agent $agent = null;
+    private ?AgentLoop $agentLoop = null;
     /** @var array<int, callable(object): void> */
     private array $wiretaps = [];
     /** @var array<string, array<int, callable(object): void>> */
@@ -25,17 +35,17 @@ abstract class AbstractAgent implements AgentInterface
     #[\Override]
     abstract public function descriptor(): AgentDescriptor;
 
-    abstract protected function buildAgent(): Agent;
+    abstract protected function buildAgentLoop(): AgentLoop;
 
     #[\Override]
-    public function build(): Agent {
-        if ($this->agent !== null) {
-            return $this->agent;
+    public function build(): AgentLoop {
+        if ($this->agentLoop !== null) {
+            return $this->agentLoop;
         }
-        $this->agent = $this->buildAgent();
+        $this->agentLoop = $this->buildAgentLoop();
         $this->applyEventEmitterIfProvided();
         $this->applyStoredListeners();
-        return $this->agent;
+        return $this->agentLoop;
     }
 
     #[\Override]
@@ -64,11 +74,11 @@ abstract class AbstractAgent implements AgentInterface
         if ($listener === null) {
             return $this;
         }
-        if ($this->agent === null) {
+        if ($this->agentLoop === null) {
             $this->wiretaps[] = $listener;
             return $this;
         }
-        $this->agent->wiretap($listener);
+        $this->agentLoop->wiretap($listener);
         return $this;
     }
 
@@ -77,33 +87,33 @@ abstract class AbstractAgent implements AgentInterface
         if ($listener === null) {
             return $this;
         }
-        if ($this->agent === null) {
+        if ($this->agentLoop === null) {
             $this->listeners[$class][] = $listener;
             return $this;
         }
-        $this->agent->onEvent($class, $listener);
+        $this->agentLoop->onEvent($class, $listener);
         return $this;
     }
 
     private function applyEventEmitterIfProvided(): void {
-        if ($this->agent === null || !isset($this->events)) {
+        if ($this->agentLoop === null || !isset($this->events)) {
             return;
         }
-        $this->agent = $this->agent->with(
+        $this->agentLoop = $this->agentLoop->with(
             eventEmitter: new AgentEventEmitter($this->events),
         );
     }
 
     private function applyStoredListeners(): void {
-        if ($this->agent === null) {
+        if ($this->agentLoop === null) {
             return;
         }
         foreach ($this->wiretaps as $listener) {
-            $this->agent->wiretap($listener);
+            $this->agentLoop->wiretap($listener);
         }
         foreach ($this->listeners as $class => $listeners) {
             foreach ($listeners as $listener) {
-                $this->agent->onEvent($class, $listener);
+                $this->agentLoop->onEvent($class, $listener);
             }
         }
     }

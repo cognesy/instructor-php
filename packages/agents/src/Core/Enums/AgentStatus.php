@@ -4,7 +4,8 @@ namespace Cognesy\Agents\Core\Enums;
 
 enum AgentStatus : string
 {
-    case InProgress = 'in_progress';
-    case Completed = 'completed';
-    case Failed = 'failed';
+    case Pending = 'pending';         // Between executions, ready for fresh start
+    case InProgress = 'in_progress';  // Execution in progress
+    case Completed = 'completed';     // Execution completed successfully
+    case Failed = 'failed';           // Execution failed
 }

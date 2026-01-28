@@ -3,7 +3,6 @@
 namespace Cognesy\Agents\Serialization;
 
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\AgentStatus;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
 
@@ -33,13 +32,13 @@ final readonly class ContinuationAgentStateSerializer implements CanSerializeAge
         $storeData = $data['messageStore'] ?? $data['message_store'] ?? [];
         $storeData = $this->normalizeStoreData($storeData, $data);
 
+        // Restore session data and start fresh execution for continuation
         return AgentState::fromArray([
             'agentId' => $data['agent_id'] ?? null,
             'parentAgentId' => $data['parent_agent_id'] ?? null,
-            'status' => AgentStatus::InProgress->value,
             'metadata' => $data['metadata'] ?? [],
             'messageStore' => $storeData,
-        ]);
+        ])->withStartedExecution();
     }
 
     /**

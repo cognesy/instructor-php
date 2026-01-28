@@ -23,7 +23,7 @@ Key concepts:
 require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Agent\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 

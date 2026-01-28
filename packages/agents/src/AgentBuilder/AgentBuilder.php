@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\AgentBuilder;
 
 use Closure;
-use Cognesy\Agents\Agent\Agent;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
 use Cognesy\Agents\AgentHooks\Contracts\HookContext;
@@ -94,7 +94,7 @@ class AgentBuilder
     /** @var list<InferenceFinishReason> */
     private array $finishReasons = [];
 
-    /** @var array<callable(Agent): Agent> */
+    /** @var array<callable(AgentLoop): AgentLoop> */
     private array $onBuildCallbacks = [];
 
     /** @var HookStack Unified hook stack for lifecycle and tool hooks */
@@ -128,10 +128,10 @@ class AgentBuilder
     }
 
     /**
-     * Register a callback to be executed after the agent is built.
-     * The callback receives the built Agent and must return an Agent (potentially modified).
+     * Register a callback to be executed after the agent loop is built.
+     * The callback receives the built AgentLoop and must return an AgentLoop (potentially modified).
      *
-     * @param callable(Agent): Agent $callback
+     * @param callable(AgentLoop): AgentLoop $callback
      */
     public function onBuild(callable $callback): self {
         $this->onBuildCallbacks[] = $callback;
@@ -575,9 +575,9 @@ class AgentBuilder
     // BUILD /////////////////////////////////////////////////////
 
     /**
-     * Build the Agent instance with configured features.
+     * Build the AgentLoop instance with configured features.
      */
-    public function build(): Agent {
+    public function build(): AgentLoop {
         // Register base hooks (core functionality)
         $this->registerBaseHooks();
 
@@ -609,8 +609,8 @@ class AgentBuilder
             policy: $this->errorPolicy ?? ErrorPolicy::stopOnAnyError(),
         );
 
-        // Build base agent (hooks handle everything via observer)
-        $agent = new Agent(
+        // Build agent loop (hooks handle everything via observer)
+        $agent = new AgentLoop(
             tools: $this->tools,
             toolExecutor: $toolExecutor,
             errorHandler: $errorHandler,
