@@ -8,6 +8,7 @@ use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
@@ -38,6 +39,7 @@ class InferenceStream
 
     private ?DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
+    private ?Pricing $pricing = null;
 
     public function __construct(
         InferenceExecution $execution,
@@ -45,6 +47,7 @@ class InferenceStream
         EventDispatcherInterface $eventDispatcher,
         ?DateTimeImmutable $startedAt = null,
         ?ResponseCachePolicy $cachePolicy = null,
+        ?Pricing $pricing = null,
     ) {
         $this->execution = $execution;
         $this->driver = $driver;
@@ -53,6 +56,7 @@ class InferenceStream
         $this->stream = $driver->makeStreamResponsesFor($execution->request());
         $this->cachePolicy = $cachePolicy ?? ResponseCachePolicy::None;
         $this->cachedResponses = PartialInferenceResponseList::empty();
+        $this->pricing = $pricing;
     }
 
     /**
@@ -228,6 +232,12 @@ class InferenceStream
         }
         $this->execution = $this->execution->withFinalizedPartialResponse();
         $response = $this->execution->response();
+
+        // Attach pricing if available
+        if ($response !== null && $this->pricing !== null && $this->pricing->hasAnyPricing()) {
+            $response = $response->withPricing($this->pricing);
+            $this->execution = $this->execution->withUpdatedResponse($response);
+        }
 
         $this->events->dispatch(new InferenceResponseCreated($response));
 

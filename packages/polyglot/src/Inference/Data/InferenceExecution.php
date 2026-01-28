@@ -271,6 +271,21 @@ class InferenceExecution
             isFinalized: true,
         );
     }
+
+    /**
+     * Updates the response in the current attempt (e.g., to attach pricing).
+     */
+    public function withUpdatedResponse(InferenceResponse $response): self {
+        if ($this->currentAttempt === null) {
+            return $this;
+        }
+        $updatedAttempt = $this->currentAttempt->withResponse($response);
+        return $this->with(
+            attempts: $this->attempts->withUpdatedAttempt($updatedAttempt),
+            currentAttempt: $updatedAttempt,
+        );
+    }
+
     private function withFinalizedAttempt(InferenceAttempt $attempt): self {
         return $this->with(
             attempts: $this->attempts->withNewAttempt($attempt),

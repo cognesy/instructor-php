@@ -67,6 +67,26 @@ class InferenceAttemptList
         return new self($this->attempts->withAppended($attempt));
     }
 
+    /**
+     * Updates the last attempt with the given one (by matching ID).
+     */
+    public function withUpdatedAttempt(InferenceAttempt $attempt): self {
+        $items = $this->attempts->all();
+        $updated = false;
+        foreach ($items as $index => $existing) {
+            if ($existing->id === $attempt->id) {
+                $items[$index] = $attempt;
+                $updated = true;
+                break;
+            }
+        }
+        if (!$updated && count($items) > 0) {
+            // Fallback: replace last if ID not found
+            $items[count($items) - 1] = $attempt;
+        }
+        return new self(ArrayList::fromArray($items));
+    }
+
     // SERIALIZATION /////////////////////////////////////////
 
     public function toArray(): array {
