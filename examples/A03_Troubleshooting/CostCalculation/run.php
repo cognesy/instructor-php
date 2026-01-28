@@ -13,8 +13,6 @@ This example demonstrates how to:
 1. Configure pricing in LLM config ($/1M tokens)
 2. Calculate cost after a request using `Usage::calculateCost()`
 
-## Example
-
 ```php
 <?php
 require 'examples/boot.php';
@@ -40,7 +38,7 @@ function printCostBreakdown(Usage $usage, Pricing $pricing): void {
     echo "  Input:      \${$pricing->inputPerMToken}\n";
     echo "  Output:     \${$pricing->outputPerMToken}\n";
     echo "  Cache read: \${$pricing->cacheReadPerMToken}\n";
-    echo "\nTotal cost: \$" . number_format($usage->calculateCost(), 6) . "\n";
+    echo "\nTotal cost: \$" . number_format($usage->calculateCost($pricing), 6) . "\n";
 }
 
 // OPTION 1: Configure pricing in LLM config preset
