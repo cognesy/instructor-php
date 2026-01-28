@@ -13,8 +13,6 @@ This example demonstrates how to:
 1. Configure pricing in LLM config ($/1M tokens)
 2. Calculate cost after a request using `Usage::calculateCost()`
 
-## Example
-
 ```php
 <?php
 require 'examples/boot.php';
