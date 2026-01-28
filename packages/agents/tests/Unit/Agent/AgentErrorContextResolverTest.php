@@ -35,7 +35,7 @@ it('classifies tool errors', function () {
         stepNumber: 1,
         id: $stepId,
     );
-    $state = AgentState::empty()->recordStepExecution($stepExecution);
+    $state = AgentState::empty()->withStepExecutionRecorded($stepExecution);
 
     $resolver = new AgentErrorContextResolver();
     $context = $resolver->resolve($state);
@@ -66,7 +66,7 @@ it('classifies rate limit errors', function () {
         stepNumber: 1,
         id: $stepId,
     );
-    $state = AgentState::empty()->recordStepExecution($stepExecution);
+    $state = AgentState::empty()->withStepExecutionRecorded($stepExecution);
 
     $resolver = new AgentErrorContextResolver();
     $context = $resolver->resolve($state);
@@ -88,7 +88,7 @@ it('classifies non-tool errors as model errors', function () {
         stepNumber: 1,
         id: $stepId,
     );
-    $state = AgentState::empty()->recordStepExecution($stepExecution);
+    $state = AgentState::empty()->withStepExecutionRecorded($stepExecution);
 
     $resolver = new AgentErrorContextResolver();
     $context = $resolver->resolve($state);

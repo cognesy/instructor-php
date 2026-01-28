@@ -96,6 +96,7 @@ $pipeline = Pipeline::builder()->through($processor)->create();
 ## State Management
 
 ### `ProcessingState` - Immutable State
+
 ```php
 // Creation
 ProcessingState::empty()
@@ -105,7 +106,7 @@ ProcessingState::with($data, [$tag1, $tag2])
 $state->withResult(Result::success($newValue))
 $state->addTags(new TimingTag(), new MetricTag())
 $state->replaceTags(new ErrorTag($error))
-$state->failWith('Error message')
+$state->withFailure('Error message')
 ```
 
 ## Tag System

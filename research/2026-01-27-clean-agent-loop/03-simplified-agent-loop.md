@@ -64,7 +64,7 @@ class AgentLoop implements CanControlAgentLoop
                 $state = $this->beginStep($state);
 
                 if ($this->shouldStop($state)) {
-                    $state = $state->clearCurrentExecution();
+                    $state = $state->withClearedCurrentExecution();
                     break;
                 }
 

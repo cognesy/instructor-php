@@ -62,10 +62,11 @@ class AgentLoop implements CanControlAgentLoop
 
         while (true) {
             try {
-                $state = $state->beginStepExecution();
+                $state = $state->withNewStepExecution();
                 if (!$this->shouldContinue($state)) {
-                    $state = $state->clearCurrentExecution();
-                    break;
+                    $state = $state->withClearedCurrentExecution();
+                    yield $this->onAfterExecution($state);
+                    return;
                 }
                 $state = $this->onBeforeStep($state);
                 $state = $this->performStep($state);
@@ -75,12 +76,14 @@ class AgentLoop implements CanControlAgentLoop
             } catch (Throwable $error) {
                 $state = $this->onError($error, $state);
             }
-            yield $state;
-        }
 
-        $finalState = $this->onAfterExecution($state);
-        if ($this->hasUnprocessedSteps($state, $finalState)) {
-            yield $finalState;
+            if ($this->shouldContinue($state)) {
+                yield $state;
+                continue;
+            }
+
+            yield $this->onAfterExecution($state);
+            return;
         }
     }
 
@@ -204,10 +207,6 @@ class AgentLoop implements CanControlAgentLoop
             executor: $this->toolExecutor
         );
         return $this->onAfterToolUse($state, $rawStep);
-    }
-
-    private function hasUnprocessedSteps(AgentState $state, AgentState $finalState) : bool {
-        return $state->stepCount() !== $finalState->stepCount();
     }
 
     private function resolveCurrentExecution(AgentState $state): CurrentExecution {

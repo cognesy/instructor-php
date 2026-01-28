@@ -42,7 +42,7 @@ private function correlateStepWithExecution(AgentStep $step, CurrentExecution $e
 
 ```php
 // onBeforeStep (line 101)
-$state = $state->beginStepExecution();  // Creates CurrentExecution with startedAt = now
+$state = $state->withNewStepExecution();  // Creates CurrentExecution with startedAt = now
 
 // Much later in onAfterToolUse (line 124)
 completedAt: new DateTimeImmutable(),  // Creates completedAt = now

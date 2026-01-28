@@ -40,7 +40,7 @@ it('resets execution state for continuation', function () {
     );
     $state = AgentState::empty()
         ->withMessages(Messages::fromString('First'))
-        ->recordStepExecution($stepExecution)
+        ->withStepExecutionRecorded($stepExecution)
         ->withCachedContext(new CachedContext(messages: [['role' => 'user', 'content' => 'cached']]))
         ->withStatus(AgentStatus::Completed);
 
@@ -70,7 +70,7 @@ it('records a step result and sets currentStep', function () {
         id: $stepId,
     );
 
-    $next = $state->recordStepExecution($stepExecution);
+    $next = $state->withStepExecutionRecorded($stepExecution);
 
     expect($next->currentStep())->toBe($step)
         ->and($next->stepCount())->toBe(1);
@@ -80,7 +80,7 @@ it('fails with an error and records a failure step', function () {
     $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
     $error = AgentException::fromThrowable(new \RuntimeException('boom'));
 
-    $failed = $state->failWith($error);
+    $failed = $state->withFailure($error);
     $currentStep = $failed->currentStep();
 
     expect($failed->status())->toBe(AgentStatus::Failed)

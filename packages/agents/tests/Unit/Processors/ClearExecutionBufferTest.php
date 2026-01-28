@@ -44,7 +44,7 @@ describe('ClearExecutionBufferHook', function () {
         );
 
         // Record step execution to set continuation outcome on state
-        $state = $state->recordStepExecution($execution);
+        $state = $state->withStepExecutionRecorded($execution);
         $context = StepHookContext::afterStep($state, 0, $step);
 
         $hook = new ClearExecutionBufferHook();
@@ -74,7 +74,7 @@ describe('ClearExecutionBufferHook', function () {
         );
 
         // Record step execution to set continuation outcome on state
-        $state = $state->recordStepExecution($execution);
+        $state = $state->withStepExecutionRecorded($execution);
         $context = StepHookContext::afterStep($state, 0, $step);
 
         $hook = new ClearExecutionBufferHook();

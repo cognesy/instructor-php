@@ -75,8 +75,8 @@ function makeSerializedState(): AgentState {
     );
 
     return $state
-        ->recordStepExecution($stepExecution1)
-        ->recordStepExecution($stepExecution2);
+        ->withStepExecutionRecorded($stepExecution1)
+        ->withStepExecutionRecorded($stepExecution2);
 }
 
 it('serializes messages with truncation', function () {

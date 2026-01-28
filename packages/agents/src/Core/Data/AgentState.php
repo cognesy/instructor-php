@@ -126,19 +126,17 @@ final readonly class AgentState
     public function withStatus(AgentStatus $status): self
     {
         if ($this->execution === null) {
-            return $this->with(execution: ExecutionState::start()->withStatus($status));
+            return $this->with(execution: ExecutionState::withExecutionStarted()->withStatus($status));
         }
         return $this->with(execution: $this->execution->withStatus($status));
     }
-
-    // EXECUTION LIFECYCLE /////////////////////////////////////
 
     /**
      * Return copy with a fresh execution started.
      */
     public function withStartedExecution(): self
     {
-        return $this->with(execution: ExecutionState::start());
+        return $this->with(execution: ExecutionState::withExecutionStarted());
     }
 
     /**
@@ -159,34 +157,6 @@ final readonly class AgentState
         );
     }
 
-    /**
-     * Check if there's an active execution in progress.
-     */
-    public function hasActiveExecution(): bool
-    {
-        return $this->execution !== null;
-    }
-
-    /**
-     * Get the current execution state (null when between executions).
-     */
-    public function execution(): ?ExecutionState
-    {
-        return $this->execution;
-    }
-
-    // MESSAGE STORE METHODS ////////////////////////////////////
-
-    public function messages(): Messages
-    {
-        return $this->store->section(self::DEFAULT_SECTION)->get()->messages();
-    }
-
-    public function store(): MessageStore
-    {
-        return $this->store;
-    }
-
     public function withMessageStore(MessageStore $store): self
     {
         return $this->with(store: $store);
@@ -197,82 +167,39 @@ final readonly class AgentState
         return $this->with(store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages));
     }
 
-    // METADATA METHODS /////////////////////////////////////////
-
-    public function metadata(): Metadata
-    {
-        return $this->metadata;
-    }
-
     public function withMetadata(string $name, mixed $value): self
     {
         return $this->with(variables: $this->metadata->withKeyValue($name, $value));
     }
 
-    public function agentId(): string
-    {
-        return $this->agentId;
-    }
-
-    public function parentAgentId(): ?string
-    {
-        return $this->parentAgentId;
-    }
-
-    public function createdAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function updatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    // EXECUTION STATE METHODS (delegated to ExecutionState) ////
-
-    public function currentExecution(): ?CurrentExecution
-    {
-        return $this->execution?->currentExecution();
-    }
-
     public function withCurrentExecution(?CurrentExecution $execution): self
     {
         if ($execution === null) {
-            return $this->clearCurrentExecution();
+            return $this->withClearedCurrentExecution();
         }
         if ($this->execution === null) {
-            return $this->with(execution: ExecutionState::start()->withCurrentExecution($execution));
+            return $this->with(execution: ExecutionState::withExecutionStarted()->withCurrentExecution($execution));
         }
         return $this->with(execution: $this->execution->withCurrentExecution($execution));
     }
 
-    public function beginStepExecution(): self
+    public function withNewStepExecution(): self
     {
         if ($this->execution === null) {
-            return $this->with(execution: ExecutionState::start()->beginStepExecution());
+            return $this->with(execution: ExecutionState::withExecutionStarted()->withNewStepExecution());
         }
-        return $this->with(execution: $this->execution->beginStepExecution());
+        return $this->with(execution: $this->execution->withNewStepExecution());
     }
 
-    public function clearCurrentExecution(): self
+    public function withClearedCurrentExecution(): self
     {
         if ($this->execution === null) {
             return $this;
         }
-        return $this->with(execution: $this->execution->clearCurrentExecution());
+        return $this->with(execution: $this->execution->withCurrentExecutionCleared());
     }
 
-    // USAGE METHODS ////////////////////////////////////////////
-
-    public function usage(): Usage
-    {
-        return $this->execution?->usage() ?? Usage::none();
-    }
-
-    // STEP MUTATORS ////////////////////////////////////////////
-
-    public function recordStep(AgentStep $step): self
+    public function withNewStepRecorded(AgentStep $step): self
     {
         return $this->withCurrentStep($step);
     }
@@ -280,12 +207,12 @@ final readonly class AgentState
     public function withCurrentStep(AgentStep $step): self
     {
         if ($this->execution === null) {
-            return $this->with(execution: ExecutionState::start()->withCurrentStep($step));
+            return $this->with(execution: ExecutionState::withExecutionStarted()->withCurrentStep($step));
         }
         return $this->with(execution: $this->execution->withCurrentStep($step));
     }
 
-    public function failWith(AgentException $error): self
+    public function withFailure(AgentException $error): self
     {
         $failureStep = AgentStep::failure(
             inputMessages: $this->messages(),
@@ -294,7 +221,7 @@ final readonly class AgentState
 
         return $this
             ->withStatus(AgentStatus::Failed)
-            ->recordStep($failureStep);
+            ->withNewStepRecorded($failureStep);
     }
 
     /**
@@ -344,15 +271,81 @@ final readonly class AgentState
     /**
      * Record a completed step execution (step + continuation outcome bundled).
      */
-    public function recordStepExecution(StepExecution $stepExecution): self
+    public function withStepExecutionRecorded(StepExecution $stepExecution): self
     {
         if ($this->execution === null) {
-            return $this->with(execution: ExecutionState::start()->withStepExecution($stepExecution));
+            return $this->with(execution: ExecutionState::withExecutionStarted()->withStepExecution($stepExecution));
         }
         return $this->with(execution: $this->execution->withStepExecution($stepExecution));
     }
 
-    // ACCESSORS (delegated to ExecutionState) //////////////////
+    public function withCachedContext(CachedContext $cache): self
+    {
+        return $this->with(cache: $cache);
+    }
+
+    // ACCESSORS ////////////////////////////////////
+
+    /**
+     * Check if there's an active execution in progress.
+     */
+    public function hasActiveExecution(): bool
+    {
+        return $this->execution !== null;
+    }
+
+    /**
+     * Get the current execution state (null when between executions).
+     */
+    public function execution(): ?ExecutionState
+    {
+        return $this->execution;
+    }
+
+    public function messages(): Messages
+    {
+        return $this->store->section(self::DEFAULT_SECTION)->get()->messages();
+    }
+
+    public function store(): MessageStore
+    {
+        return $this->store;
+    }
+
+    public function metadata(): Metadata
+    {
+        return $this->metadata;
+    }
+
+    public function agentId(): string
+    {
+        return $this->agentId;
+    }
+
+    public function parentAgentId(): ?string
+    {
+        return $this->parentAgentId;
+    }
+
+    public function createdAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function updatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function currentExecution(): ?CurrentExecution
+    {
+        return $this->execution?->currentExecution();
+    }
+
+    public function usage(): Usage
+    {
+        return $this->execution?->usage() ?? Usage::none();
+    }
 
     /**
      * Get the current agent status.
@@ -428,11 +421,6 @@ final readonly class AgentState
         return $this->cache;
     }
 
-    public function withCachedContext(CachedContext $cache): self
-    {
-        return $this->with(cache: $cache);
-    }
-
     public function messagesForInference(): Messages
     {
         return (new SelectedSections([
@@ -442,8 +430,6 @@ final readonly class AgentState
             self::EXECUTION_BUFFER_SECTION,
         ]))->compile($this);
     }
-
-    // STEP EXECUTION ACCESSORS /////////////////////////////////
 
     /**
      * Get all step executions.

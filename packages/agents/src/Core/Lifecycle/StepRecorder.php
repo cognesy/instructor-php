@@ -22,7 +22,7 @@ final readonly class StepRecorder
 
     public function record(CurrentExecution $execution, AgentState $state, AgentStep $step): AgentState
     {
-        $transitionState = $state->recordStep($step);
+        $transitionState = $state->withNewStepRecorded($step);
 
         $outcome = $this->continuationCriteria->evaluateAll($transitionState);
         $this->eventEmitter->continuationEvaluated($transitionState, $outcome);
@@ -36,7 +36,7 @@ final readonly class StepRecorder
             id: $step->id(),
         );
 
-        $nextState = $transitionState->recordStepExecution($stepExecution);
+        $nextState = $transitionState->withStepExecutionRecorded($stepExecution);
         $this->eventEmitter->stateUpdated($nextState);
 
         return $nextState;

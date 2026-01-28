@@ -28,7 +28,7 @@ final readonly class ErrorRecorder
 
         $transitionState = $state
             ->withStatus(AgentStatus::Failed)
-            ->recordStep($handling->failureStep);
+            ->withNewStepRecorded($handling->failureStep);
 
         $this->eventEmitter->continuationEvaluated($transitionState, $handling->outcome);
 
@@ -43,7 +43,7 @@ final readonly class ErrorRecorder
 
         $nextState = $transitionState
             ->withStatus($handling->finalStatus)
-            ->recordStepExecution($stepExecution);
+            ->withStepExecutionRecorded($stepExecution);
 
         $this->eventEmitter->stateUpdated($nextState);
 

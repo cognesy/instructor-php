@@ -36,7 +36,7 @@ function makeErrorState(): AgentState {
         id: $stepId,
     );
 
-    return AgentState::empty()->recordStepExecution($stepExecution);
+    return AgentState::empty()->withStepExecutionRecorded($stepExecution);
 }
 
 function alwaysRequestContinuation(): ContinuationCriteria {

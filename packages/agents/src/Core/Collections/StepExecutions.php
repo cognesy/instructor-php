@@ -31,14 +31,6 @@ final readonly class StepExecutions
         return new self([]);
     }
 
-    /**
-     * @param list<StepExecution> $items
-     */
-    public static function fromArray(array $items): self
-    {
-        return new self($items);
-    }
-
     public function append(StepExecution $result): self
     {
         return new self([...$this->items, $result]);
@@ -153,7 +145,7 @@ final readonly class StepExecutions
      *
      * @param array<int, array<string, mixed>> $data
      */
-    public static function deserialize(array $data): self
+    public static function fromArray(array $data): self
     {
         $items = array_map(
             static fn(array $resultData): StepExecution => StepExecution::fromArray($resultData),

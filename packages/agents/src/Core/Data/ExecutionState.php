@@ -39,7 +39,7 @@ final readonly class ExecutionState
     /**
      * Create a fresh execution state for a new execution run.
      */
-    public static function start(): self
+    public static function withExecutionStarted(): self
     {
         return new self(
             executionId: Uuid::uuid4(),
@@ -185,7 +185,7 @@ final readonly class ExecutionState
         );
     }
 
-    public function beginStepExecution(): self
+    public function withNewStepExecution(): self
     {
         if ($this->currentExecution !== null) {
             return $this;
@@ -202,7 +202,7 @@ final readonly class ExecutionState
         );
     }
 
-    public function clearCurrentExecution(): self
+    public function withCurrentExecutionCleared(): self
     {
         return new self(
             executionId: $this->executionId,
@@ -215,7 +215,7 @@ final readonly class ExecutionState
         );
     }
 
-    public function markCompleted(): self
+    public function withCompletedNow(): self
     {
         return new self(
             executionId: $this->executionId,
@@ -273,7 +273,7 @@ final readonly class ExecutionState
 
         $stepExecutionsData = $data['stepExecutions'] ?? null;
         $stepExecutions = is_array($stepExecutionsData)
-            ? StepExecutions::deserialize($stepExecutionsData)
+            ? StepExecutions::fromArray($stepExecutionsData)
             : StepExecutions::empty();
 
         $currentExecutionData = $data['currentExecution'] ?? null;
