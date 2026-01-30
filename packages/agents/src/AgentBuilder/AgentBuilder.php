@@ -2,59 +2,33 @@
 
 namespace Cognesy\Agents\AgentBuilder;
 
-use Closure;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Contracts\HookMatcher;
-use Cognesy\Agents\AgentHooks\Data\ExecutionHookContext;
-use Cognesy\Agents\AgentHooks\Data\FailureHookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StopHookContext;
-use Cognesy\Agents\AgentHooks\Data\ToolHookContext;
-use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
-use Cognesy\Agents\AgentHooks\Hooks\AfterStepHook;
-use Cognesy\Agents\AgentHooks\Hooks\AfterToolHook;
-use Cognesy\Agents\AgentHooks\Hooks\AgentFailedHook;
 use Cognesy\Agents\AgentHooks\Hooks\AppendContextMetadataHook;
-use Cognesy\Agents\AgentHooks\Hooks\BeforeStepHook;
 use Cognesy\Agents\AgentHooks\Hooks\AppendFinalResponseHook;
 use Cognesy\Agents\AgentHooks\Hooks\AppendStepMessagesHook;
 use Cognesy\Agents\AgentHooks\Hooks\AppendToolTraceToBufferHook;
 use Cognesy\Agents\AgentHooks\Hooks\ApplyCachedContextHook;
-use Cognesy\Agents\AgentHooks\Hooks\BeforeToolHook;
-use Cognesy\Agents\AgentHooks\Hooks\CallableHook;
 use Cognesy\Agents\AgentHooks\Hooks\ClearExecutionBufferHook;
-use Cognesy\Agents\AgentHooks\Hooks\ExecutionEndHook;
-use Cognesy\Agents\AgentHooks\Hooks\ExecutionStartHook;
-use Cognesy\Agents\AgentHooks\Hooks\StopHook;
-use Cognesy\Agents\AgentHooks\Hooks\SubagentStopHook;
+use Cognesy\Agents\AgentHooks\Hooks\ErrorPolicyHook;
+use Cognesy\Agents\AgentHooks\Hooks\FinishReasonHook;
+use Cognesy\Agents\AgentHooks\Hooks\ToolCallPresenceHook;
 use Cognesy\Agents\AgentHooks\HookStackObserver;
-use Cognesy\Agents\AgentHooks\Matchers\ToolNameMatcher;
 use Cognesy\Agents\AgentHooks\Stack\HookStack;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Core\Continuation\Contracts\CanEvaluateContinuation;
-use Cognesy\Agents\Core\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Agents\Core\Continuation\Criteria\ExecutionTimeLimit;
-use Cognesy\Agents\Core\Continuation\Criteria\FinishReasonCheck;
-use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
-use Cognesy\Agents\Core\Continuation\Criteria\TokenUsageLimit;
-use Cognesy\Agents\Core\Continuation\Criteria\ToolCallPresenceCheck;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
 use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
 use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Lifecycle\CanObserveInference;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -76,13 +50,10 @@ class AgentBuilder
 {
     private Tools $tools;
 
-    /** @var CanEvaluateContinuation[] Flat list of continuation criteria */
-    private array $criteria = [];
-
     private ?CanUseTools $driver = null;
     private ?CanHandleEvents $events = null;
     private ?string $llmPreset = null;
-    private ?CachedContext $cachedContext = null;
+    private ?CachedInferenceContext $cachedContext = null;
     private ?ErrorPolicy $errorPolicy = null;
     private bool $separateToolTrace = true;
 
@@ -156,22 +127,6 @@ class AgentBuilder
         return $this;
     }
 
-    /**
-     * Add continuation criterion to the flat criteria list.
-     *
-     * Resolution uses priority logic (order-independent):
-     *   - ForbidContinuation from any criterion → STOP (hard limits win)
-     *   - AllowContinuation from any criterion → CONTINUE (someone has work)
-     *   - AllowStop from all criteria → STOP (nothing to do)
-     *
-     * Hard limits (StepsLimit, TokenUsageLimit) return ForbidContinuation when exceeded.
-     * Continue signals (ToolCallPresence, SelfCritic) return AllowContinuation when they have work.
-     */
-    public function addContinuationCriteria(CanEvaluateContinuation $criteria): self {
-        $this->criteria[] = $criteria;
-        return $this;
-    }
-
     // EXECUTION LIMITS //////////////////////////////////////////
 
     /**
@@ -229,7 +184,7 @@ class AgentBuilder
         return $this;
     }
 
-    public function withCachedContext(CachedContext $cachedContext): self {
+    public function withCachedContext(CachedInferenceContext $cachedContext): self {
         $this->cachedContext = $cachedContext;
         return $this;
     }
@@ -240,7 +195,7 @@ class AgentBuilder
             return $this;
         }
 
-        $cache = $this->cachedContext ?? new CachedContext();
+        $cache = $this->cachedContext ?? new CachedInferenceContext();
         $messages = $cache->messages();
         if ($this->hasSystemPrompt($messages, $prompt)) {
             return $this;
@@ -250,7 +205,7 @@ class AgentBuilder
             ['role' => 'system', 'content' => $prompt],
         ])->appendMessages($messages);
 
-        $this->cachedContext = new CachedContext(
+        $this->cachedContext = new CachedInferenceContext(
             messages: $prepended->toArray(),
             tools: $cache->tools(),
             toolChoice: $cache->toolChoice(),
@@ -261,8 +216,8 @@ class AgentBuilder
     }
 
     public function withResponseFormat(array $responseFormat): self {
-        $cache = $this->cachedContext ?? new CachedContext();
-        $this->cachedContext = new CachedContext(
+        $cache = $this->cachedContext ?? new CachedInferenceContext();
+        $this->cachedContext = new CachedInferenceContext(
             messages: $cache->messages()->toArray(),
             tools: $cache->tools(),
             toolChoice: $cache->toolChoice(),
@@ -281,287 +236,30 @@ class AgentBuilder
         return $this;
     }
 
-    // TOOL HOOKS ////////////////////////////////////////////////
+    // HOOK REGISTRATION /////////////////////////////////////////
 
     /**
-     * Register a callback to run before tool execution.
+     * Add a hook to the agent.
      *
-     * The callback receives ToolHookContext and can:
-     * - Return HookOutcome::proceed() to allow the tool call
-     * - Return HookOutcome::proceed($ctx->withToolCall($modified)) to modify the tool call
-     * - Return HookOutcome::block($reason) to prevent the tool call
-     * - Return HookOutcome::stop($reason) to halt agent execution
-     *
-     * @param callable(ToolHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     * @param string|HookMatcher|null $matcher Tool name pattern or custom matcher
-     *
-     * @example
-     * // Block dangerous bash commands
-     * $builder->onBeforeToolUse(
-     *     callback: function (ToolHookContext $ctx): HookOutcome {
-     *         $command = $ctx->toolCall()->args()['command'] ?? '';
-     *         if (str_contains($command, 'rm -rf')) {
-     *             return HookOutcome::block('Dangerous command blocked');
-     *         }
-     *         return HookOutcome::proceed();
-     *     },
-     *     matcher: 'bash',
-     *     priority: 100,
-     * );
-     */
-    public function onBeforeToolUse(
-        callable $callback,
-        int $priority = 0,
-        string|HookMatcher|null $matcher = null,
-    ): self {
-        $matcherObj = $this->resolveMatcher($matcher);
-        $hook = new BeforeToolHook(
-            Closure::fromCallable($callback),
-            $matcherObj,
-        );
-        $this->hookStack = $this->hookStack->with($hook, $priority);
-        return $this;
-    }
-
-    /**
-     * Register a callback to run after tool execution.
-     *
-     * The callback must return a HookOutcome:
-     * - HookOutcome::proceed() to continue unchanged
-     * - HookOutcome::proceed($ctx->withExecution($modified)) to modify the execution result
-     * - HookOutcome::stop($reason) to halt agent execution
-     *
-     * @param callable(ToolHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     * @param string|HookMatcher|null $matcher Tool name pattern or custom matcher
-     *
-     * @example
-     * // Log all tool executions
-     * $builder->onAfterToolUse(
-     *     callback: function (ToolHookContext $ctx): HookOutcome {
-     *         $execution = $ctx->execution();
-     *         $this->logger->info("Tool {$ctx->toolCall()->name()} completed");
-     *         return HookOutcome::proceed();
-     *     },
-     *     priority: -100,
-     * );
-     */
-    public function onAfterToolUse(
-        callable $callback,
-        int $priority = 0,
-        string|HookMatcher|null $matcher = null,
-    ): self {
-        $matcherObj = $this->resolveMatcher($matcher);
-        $hook = new AfterToolHook(
-            Closure::fromCallable($callback),
-            $matcherObj,
-        );
-        $this->hookStack = $this->hookStack->with($hook, $priority);
-        return $this;
-    }
-
-    // STEP HOOKS ////////////////////////////////////////////////
-
-    /**
-     * Register a callback to run before each step.
-     *
-     * The callback receives StepHookContext and must return a HookOutcome:
-     * - HookOutcome::proceed() to continue unchanged
-     * - HookOutcome::proceed($ctx->withState($newState)) to modify state
-     * - HookOutcome::stop($reason) to halt execution
-     *
-     * @param callable(StepHookContext): HookOutcome $callback
+     * @param Hook $hook The hook to add
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
-     * $builder->onBeforeStep(function (StepHookContext $ctx): HookOutcome {
-     *     $newState = $ctx->state()->withMetadata('step_started', microtime(true));
-     *     return HookOutcome::proceed($ctx->withState($newState));
-     * });
-     */
-    public function onBeforeStep(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new BeforeStepHook(Closure::fromCallable($callback)),
-            $priority,
-        );
-        return $this;
-    }
-
-    /**
-     * Register a callback to run after each step.
-     *
-     * The callback receives StepHookContext and must return a HookOutcome:
-     * - HookOutcome::proceed() to continue unchanged
-     * - HookOutcome::proceed($ctx->withState($newState)) to modify state
-     * - HookOutcome::stop($reason) to halt execution
-     *
-     * @param callable(StepHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
+     * // Add a custom hook
+     * $builder->addHook(new MyCustomHook(), priority: 100);
      *
      * @example
-     * $builder->onAfterStep(function (StepHookContext $ctx): HookOutcome {
-     *     $step = $ctx->step();
-     *     if ($step?->hasErrors()) {
-     *         $this->logger->warning("Step had errors");
-     *     }
-     *     return HookOutcome::proceed();
-     * });
-     */
-    public function onAfterStep(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new AfterStepHook(Closure::fromCallable($callback)),
-            $priority,
-        );
-        return $this;
-    }
-
-    // UNIFIED HOOK REGISTRATION //////////////////////////////////
-
-    /**
-     * Register a hook for a specific lifecycle event.
-     *
-     * This is the unified hook registration method that works with the
-     * new Hook system. For convenience, use the event-specific methods
-     * like onExecutionStart(), onStop(), etc.
-     *
-     * @param HookType $event The lifecycle event to hook into
-     * @param (callable(HookContext, callable(HookContext): HookOutcome): HookOutcome)|Hook $hook The hook callback or Hook instance
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     * @param string|HookMatcher|null $matcher Optional matcher for conditional execution
-     *
-     * @example
+     * // Add a callable hook for specific events
      * $builder->addHook(
-     *     event: HookEvent::ExecutionStart,
-     *     hook: fn(ExecutionHookContext $ctx) => HookOutcome::proceed(),
-     *     priority: 100,
+     *     new CallableHook(
+     *         events: [HookType::BeforeStep],
+     *         callback: fn(AgentState $state, HookType $event) => $state->withMetadata('started', true),
+     *     ),
+     *     priority: 50,
      * );
      */
-    public function addHook(
-        HookType                $event,
-        callable|Hook           $hook,
-        int                     $priority = 0,
-        string|HookMatcher|null $matcher = null,
-    ): self {
-        $hookInstance = $hook instanceof Hook
-            ? $hook
-            : new CallableHook(
-                Closure::fromCallable($hook),
-                $this->resolveMatcher($matcher),
-            );
-
-        $this->hookStack = $this->hookStack->with($hookInstance, $priority);
-        return $this;
-    }
-
-    /**
-     * Register a callback to run when agent execution starts.
-     *
-     * Fired once when agent.run() begins, before any steps are executed.
-     *
-     * @param callable(ExecutionHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     *
-     * @example
-     * $builder->onExecutionStart(function (ExecutionHookContext $ctx): HookOutcome {
-     *     $this->metrics->startTracking($ctx->state()->agentId);
-     *     return HookOutcome::proceed();
-     * });
-     */
-    public function onExecutionStart(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new ExecutionStartHook(Closure::fromCallable($callback)),
-            $priority,
-        );
-        return $this;
-    }
-
-    /**
-     * Register a callback to run when agent execution ends.
-     *
-     * Fired once when agent.run() completes (success or failure).
-     *
-     * @param callable(ExecutionHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     *
-     * @example
-     * $builder->onExecutionEnd(function (ExecutionHookContext $ctx): HookOutcome {
-     *     $this->metrics->stopTracking($ctx->state()->agentId);
-     *     return HookOutcome::proceed();
-     * });
-     */
-    public function onExecutionEnd(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new ExecutionEndHook(Closure::fromCallable($callback)),
-            $priority,
-        );
-        return $this;
-    }
-
-    /**
-     * Register a callback to run when agent is about to stop.
-     *
-     * Can block the stop to force continuation.
-     *
-     * @param callable(StopHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     *
-     * @example
-     * $builder->onStop(function (StopHookContext $ctx): HookOutcome {
-     *     if ($this->hasUnfinishedWork($ctx->state())) {
-     *         return HookOutcome::block('Work remaining');
-     *     }
-     *     return HookOutcome::proceed();
-     * });
-     */
-    public function onStop(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new StopHook(Closure::fromCallable($callback)),
-            $priority,
-        );
-        return $this;
-    }
-
-    /**
-     * Register a callback to run when a subagent is about to stop.
-     *
-     * @param callable(StopHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     *
-     * @example
-     * $builder->onSubagentStop(function (StopHookContext $ctx): HookOutcome {
-     *     $this->logger->info("Subagent completed: {$ctx->state()->agentId}");
-     *     return HookOutcome::proceed();
-     * });
-     */
-    public function onSubagentStop(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new SubagentStopHook(Closure::fromCallable($callback)),
-            $priority,
-        );
-        return $this;
-    }
-
-    /**
-     * Register a callback to run when agent fails.
-     *
-     * Fired when the agent encounters an unrecoverable error.
-     *
-     * @param callable(FailureHookContext): HookOutcome $callback
-     * @param int $priority Higher priority = runs earlier. Default is 0.
-     *
-     * @example
-     * $builder->onAgentFailed(function (FailureHookContext $ctx): HookOutcome {
-     *     $this->logger->error("Agent failed: {$ctx->errorMessage()}");
-     *     $this->alerting->sendAlert($ctx->exception());
-     *     return HookOutcome::proceed();
-     * });
-     */
-    public function onAgentFailed(callable $callback, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with(
-            new AgentFailedHook(Closure::fromCallable($callback)),
-            $priority,
-        );
+    public function addHook(Hook $hook, int $priority = 0): self {
+        $this->hookStack = $this->hookStack->with($hook, $priority);
         return $this;
     }
 
@@ -581,9 +279,6 @@ class AgentBuilder
         // Register base hooks (core functionality)
         $this->registerBaseHooks();
 
-        // Build continuation criteria
-        $continuationCriteria = $this->buildContinuationCriteria();
-
         // Build event emitter FIRST (shared between all components)
         $eventEmitter = new AgentEventEmitter($this->events);
 
@@ -595,6 +290,10 @@ class AgentBuilder
             hookStack: $this->hookStack,
             eventEmitter: $eventEmitter,
         );
+
+        if ($observer instanceof CanObserveInference && method_exists($driver, 'withInferenceObserver')) {
+            $driver = $driver->withInferenceObserver($observer);
+        }
 
         // Build tool executor with lifecycle observer
         $toolExecutor = new ToolExecutor(
@@ -614,7 +313,6 @@ class AgentBuilder
             tools: $this->tools,
             toolExecutor: $toolExecutor,
             errorHandler: $errorHandler,
-            continuationCriteria: $continuationCriteria,
             driver: $driver,
             eventEmitter: $eventEmitter,
             observer: $observer,
@@ -632,13 +330,37 @@ class AgentBuilder
     /**
      * Register base hooks for core agent functionality.
      *
-     * These hooks replace the old base processors and handle:
+     * These hooks handle:
+     * - Guard limits (steps, tokens, time) via BeforeStep evaluations
      * - Cached context application (before step)
      * - Message history management (after step)
      * - Tool trace separation (after step)
      */
     private function registerBaseHooks(): void {
-        // BeforeStep: Apply cached context (priority 100 = runs early)
+        // BeforeStep: Guard hooks for execution limits (priority 200 = runs first)
+        $this->hookStack = $this->hookStack->with(
+            new \Cognesy\Agents\AgentHooks\Guards\StepsLimitHook(
+                maxSteps: $this->maxSteps,
+                stepCounter: static fn($state) => $state->transientStepCount(),
+            ),
+            200,
+        );
+
+        $this->hookStack = $this->hookStack->with(
+            new \Cognesy\Agents\AgentHooks\Guards\TokenUsageLimitHook(
+                maxTotalTokens: $this->maxTokens,
+            ),
+            200,
+        );
+
+        $this->hookStack = $this->hookStack->with(
+            new \Cognesy\Agents\AgentHooks\Guards\ExecutionTimeLimitHook(
+                maxSeconds: $this->maxExecutionTime,
+            ),
+            200,
+        );
+
+        // BeforeStep: Apply cached context (priority 100 = runs after guards)
         if ($this->cachedContext !== null && !$this->cachedContext->isEmpty()) {
             $this->hookStack = $this->hookStack->with(
                 new ApplyCachedContextHook($this->cachedContext),
@@ -656,43 +378,28 @@ class AgentBuilder
         } else {
             $this->hookStack = $this->hookStack->with(new AppendStepMessagesHook(), -100);
         }
-    }
 
-    private function buildContinuationCriteria(): ContinuationCriteria {
-        // Base criteria - all in flat list with priority-based resolution
-        // Hard limits return ForbidContinuation when exceeded, AllowStop otherwise
-        // Continue signals return AllowContinuation when they have work, AllowStop otherwise
-        //
-        // Note: Criteria are evaluated BEFORE the step is recorded to stepExecutions,
-        // but currentStep is already set. transientStepCount() accounts for this
-        // without double-counting already recorded steps.
-        $baseCriteria = [
-            // Hard limits (return ForbidContinuation when exceeded)
-            new StepsLimit($this->maxSteps, static fn($state) => $state->transientStepCount()),
-            new TokenUsageLimit($this->maxTokens, static fn($state) => $state->usage()->total()),
-            // Per-execution time limit (optional).
-            $this->buildTimeLimitCriterion(),
-            ErrorPolicyCriterion::withPolicy($this->errorPolicy ?? ErrorPolicy::stopOnAnyError()),
-            new FinishReasonCheck($this->finishReasons, static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()),
-            // Continue signal - returns RequestContinuation when:
-            // - Bootstrap: no step executed yet (currentStep is null) - allows first step
-            // - Work to do: current step contains tool calls
-            new ToolCallPresenceCheck(
+        $this->hookStack = $this->hookStack->with(
+            new ErrorPolicyHook($this->errorPolicy ?? ErrorPolicy::stopOnAnyError()),
+            -200,
+        );
+
+        $this->hookStack = $this->hookStack->with(
+            new FinishReasonHook(
+                $this->finishReasons,
+                static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()
+            ),
+            -200,
+        );
+
+        $this->hookStack = $this->hookStack->with(
+            new ToolCallPresenceHook(
                 static fn($state) => $state->currentStep() === null
                     || $state->currentStep()->hasToolCalls()
             ),
-        ];
-
-        // Merge with user-added criteria
-        $allCriteria = [...$baseCriteria, ...$this->criteria];
-
-        return ContinuationCriteria::from(...$allCriteria);
-    }
-
-    private function buildTimeLimitCriterion(): CanEvaluateContinuation {
-        return new ExecutionTimeLimit(
-            $this->maxExecutionTime,
+            -200,
         );
+
     }
 
     private function buildDriver(CanEmitAgentEvents $eventEmitter): CanUseTools {
@@ -742,17 +449,6 @@ class AgentBuilder
                 'name' => $format->schemaName(),
                 'strict' => $format->strict(),
             ],
-        };
-    }
-
-    /**
-     * Convert a string pattern or HookMatcher to a HookMatcher instance.
-     */
-    private function resolveMatcher(string|HookMatcher|null $matcher): ?HookMatcher {
-        return match(true) {
-            $matcher === null => null,
-            $matcher instanceof HookMatcher => $matcher,
-            default => new ToolNameMatcher($matcher),
         };
     }
 }

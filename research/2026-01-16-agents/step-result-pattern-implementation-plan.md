@@ -75,7 +75,7 @@ Current `performStep()` creates multiple copies of immutable objects:
 
 ```php
 $rawStep = $this->makeNextStep($state);                    // Step created
-$transitionState = $state->withNewStepRecorded($rawStep);           // State copy 1
+$transitionState = $state->withCurrentStep($rawStep);           // State copy 1
 $outcome = $this->continuationCriteria->evaluateAll($transitionState);
 $completeStep = $rawStep->withContinuationOutcome($outcome); // Step copy 2
 $nextState = $this->applyStep($state, $completeStep);       // State copy 2

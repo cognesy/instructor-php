@@ -2,34 +2,40 @@
 
 namespace Cognesy\Agents\AgentHooks;
 
-use Cognesy\Agents\AgentHooks\Data\ExecutionHookContext;
-use Cognesy\Agents\AgentHooks\Data\FailureHookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
-use Cognesy\Agents\AgentHooks\Data\StopHookContext;
-use Cognesy\Agents\AgentHooks\Data\ToolHookContext;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\AgentHooks\Stack\HookStack;
-use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
-use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
-use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\HookContext;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Exceptions\AgentException;
+use Cognesy\Agents\Core\Lifecycle\CanObserveInference;
 use Cognesy\Agents\Core\Lifecycle\CanObserveAgentLifecycle;
-use Cognesy\Agents\Core\Lifecycle\StopDecision;
 use Cognesy\Agents\Core\Lifecycle\ToolUseDecision;
+use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use DateTimeImmutable;
 
 /**
  * Adapter that wraps HookStack as a CanObserveAgentLifecycle implementation.
  *
- * Bridges the existing hook system to the new unified lifecycle observer interface.
+ * Bridges the hook system to the lifecycle observer interface.
+ *
+ * All hooks use the evaluation-based flow control model:
+ * - Hooks receive AgentState directly
+ * - Hooks write evaluations to state for flow control
+ * - Observer extracts decisions from evaluations after hook processing
+ *
+ * State tracking: The observer tracks the latest state after each hook call.
+ * Use state() accessor to retrieve state changes after tool hooks (which return
+ * domain objects instead of AgentState).
  */
-final class HookStackObserver implements CanObserveAgentLifecycle
+final class HookStackObserver implements CanObserveAgentLifecycle, CanObserveInference
 {
+    private ?AgentState $lastState = null;
+
     public function __construct(
         private readonly HookStack $hookStack,
         private readonly ?CanEmitAgentEvents $eventEmitter = null,
@@ -41,48 +47,49 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     public function onBeforeExecution(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
-        $context = ExecutionHookContext::onStart($state);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
+        // Notify guard hooks (e.g., ExecutionTimeLimitGuard) that execution started
+        $this->hookStack->executionStarted($hookStartedAt);
 
-        $this->emitLifecycleHookEvent('executionStarting', $outcome, $hookStartedAt);
+        // Set event context for hooks
+        $state = $this->prepareStateForEvent($state);
 
-        return $this->extractState($outcome, $state);
+        $result = $this->hookStack->process($state, HookType::ExecutionStart);
+
+        $this->emitHookEvent('executionStarting', '', $result, $hookStartedAt);
+
+        $this->lastState = $result;
+        return $this->lastState;
     }
 
     #[\Override]
     public function onAfterExecution(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
-        $context = ExecutionHookContext::onEnd($state);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
+        $state = $this->prepareStateForEvent($state);
 
-        $this->emitLifecycleHookEvent('executionEnding', $outcome, $hookStartedAt);
+        $result = $this->hookStack->process($state, HookType::ExecutionEnd);
 
-        return $this->extractState($outcome, $state);
+        $this->emitHookEvent('executionEnding', '', $result, $hookStartedAt);
+
+        $this->lastState = $result;
+        return $this->lastState;
     }
 
     #[\Override]
     public function onError(AgentState $state, AgentException $exception): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
-        $context = FailureHookContext::onFailure($state, $exception);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
+        $state = $this->prepareStateForEvent($state);
 
-        $this->emitLifecycleHookEvent('executionFailed', $outcome, $hookStartedAt);
+        $result = $this->hookStack->process($state, HookType::OnError);
 
-        return $this->extractState($outcome, $state);
+        $this->emitHookEvent('executionFailed', '', $result, $hookStartedAt);
+
+        $this->lastState = $result;
+        return $this->lastState;
     }
 
     // STEP LEVEL /////////////////////////////////////////////
@@ -91,41 +98,66 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     public function onBeforeStep(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
-        $stepIndex = $state->stepCount();
-        $context = StepHookContext::beforeStep($state, $stepIndex);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
+        $state = $this->prepareStateForEvent($state);
 
-        $this->emitLifecycleHookEvent('stepStarting', $outcome, $hookStartedAt);
+        $result = $this->hookStack->process($state, HookType::BeforeStep);
 
-        return $this->extractState($outcome, $state);
+        $this->emitHookEvent('stepStarting', '', $result, $hookStartedAt);
+
+        $this->lastState = $result;
+        return $this->lastState;
     }
 
     #[\Override]
     public function onAfterStep(AgentState $state): AgentState
     {
         $hookStartedAt = new DateTimeImmutable();
-        $stepIndex = $state->stepCount() - 1;
-        $lastStep = $state->steps()->lastStep();
 
-        // If there's no step (shouldn't happen, but be defensive), just return unchanged
-        if ($lastStep === null) {
-            return $state;
-        }
+        $result = $this->hookStack->process($state, HookType::AfterStep);
 
-        $context = StepHookContext::afterStep($state, $stepIndex, $lastStep);
+        $this->emitHookEvent('stepEnding', '', $result, $hookStartedAt);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
+        $this->lastState = $result;
+        return $this->lastState;
+    }
 
-        $this->emitLifecycleHookEvent('stepEnding', $outcome, $hookStartedAt);
+    // INFERENCE LEVEL ////////////////////////////////////////
 
-        return $this->extractState($outcome, $state);
+    #[\Override]
+    public function onBeforeInference(AgentState $state, Messages $messages): AgentState
+    {
+        $hookStartedAt = new DateTimeImmutable();
+
+        $state = $this->prepareStateForEvent($state);
+
+        $context = $state->hookContext() ?? HookContext::empty();
+        $state = $state->withHookContext($context->withInferenceMessages($messages));
+
+        $result = $this->hookStack->process($state, HookType::BeforeInference);
+
+        $this->emitHookEvent('beforeInference', '', $result, $hookStartedAt);
+
+        $this->lastState = $result;
+        return $this->lastState;
+    }
+
+    #[\Override]
+    public function onAfterInference(AgentState $state, InferenceResponse $response): AgentState
+    {
+        $hookStartedAt = new DateTimeImmutable();
+
+        $state = $this->prepareStateForEvent($state);
+
+        $context = $state->hookContext() ?? HookContext::empty();
+        $state = $state->withHookContext($context->withInferenceResponse($response));
+
+        $result = $this->hookStack->process($state, HookType::AfterInference);
+
+        $this->emitHookEvent('afterInference', '', $result, $hookStartedAt);
+
+        $this->lastState = $result;
+        return $this->lastState;
     }
 
     // TOOL LEVEL /////////////////////////////////////////////
@@ -134,26 +166,26 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     public function onBeforeToolUse(ToolCall $toolCall, AgentState $state): ToolUseDecision
     {
         $hookStartedAt = new DateTimeImmutable();
-        $context = ToolHookContext::beforeTool($toolCall, $state);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
+        // Set tool call context for PreToolUse hooks
+        $context = $state->hookContext() ?? HookContext::empty();
+        $state = $state->withHookContext($context->withToolCall($toolCall));
 
-        $this->emitToolHookEvent(
-            hookType: 'beforeToolUse',
-            tool: $toolCall->name(),
-            outcome: $outcome,
-            startedAt: $hookStartedAt,
-        );
+        $result = $this->hookStack->process($state, HookType::PreToolUse);
 
-        if ($outcome->isBlocked() || $outcome->isStopped()) {
-            $reason = $outcome->reason() ?? 'Blocked by hook';
+        $this->emitHookEvent('beforeToolUse', $toolCall->name(), $result, $hookStartedAt);
+
+        // Track state changes from tool hooks
+        $this->lastState = $result;
+
+        // Check evaluations for tool blocking
+        if ($this->hasBlockingEvaluation($result)) {
+            $reason = $this->getBlockingReason($result) ?? 'Blocked by hook';
             return ToolUseDecision::block($reason);
         }
 
-        $resultToolCall = $this->extractToolCall($outcome, $toolCall);
+        // Extract potentially modified tool call from context
+        $resultToolCall = $result->hookContext()?->toolCall ?? $toolCall;
         return ToolUseDecision::proceed($resultToolCall);
     }
 
@@ -161,55 +193,24 @@ final class HookStackObserver implements CanObserveAgentLifecycle
     public function onAfterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
     {
         $hookStartedAt = new DateTimeImmutable();
-        $context = ToolHookContext::afterTool($execution->toolCall(), $execution, $state);
 
-        $outcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
+        // Set tool execution context for PostToolUse hooks
+        $context = $state->hookContext() ?? HookContext::empty();
+        $state = $state->withHookContext(
+            $context
+                ->withToolCall($execution->toolCall())
+                ->withToolExecution($execution)
         );
 
-        $this->emitToolHookEvent(
-            hookType: 'afterToolUse',
-            tool: $execution->toolCall()->name(),
-            outcome: $outcome,
-            startedAt: $hookStartedAt,
-        );
+        $result = $this->hookStack->process($state, HookType::PostToolUse);
 
-        return $this->extractExecution($outcome, $execution);
-    }
+        $this->emitHookEvent('afterToolUse', $execution->toolCall()->name(), $result, $hookStartedAt);
 
-    // CONTINUATION ///////////////////////////////////////////
+        // Track state changes from tool hooks
+        $this->lastState = $result;
 
-    #[\Override]
-    public function onBeforeStopDecision(AgentState $state, StopReason $reason): StopDecision
-    {
-        $hookStartedAt = new DateTimeImmutable();
-
-        // Create a ContinuationOutcome representing the stop decision
-        $evaluation = ContinuationEvaluation::fromDecision(
-            criterionClass: self::class,
-            decision: ContinuationDecision::AllowStop,
-            stopReason: $reason,
-        );
-        $outcome = new ContinuationOutcome(
-            shouldContinue: false,
-            evaluations: [$evaluation],
-        );
-
-        $context = StopHookContext::onStop($state, $outcome);
-
-        $hookOutcome = $this->hookStack->process(
-            $context,
-            static fn($ctx) => HookOutcome::proceed($ctx)
-        );
-
-        $this->emitLifecycleHookEvent('stopping', $hookOutcome, $hookStartedAt);
-
-        if ($hookOutcome->isBlocked()) {
-            return StopDecision::prevent($hookOutcome->reason() ?? 'Blocked by hook');
-        }
-
-        return StopDecision::allow();
+        // Extract potentially modified tool execution from context
+        return $result->hookContext()?->toolExecution ?? $execution;
     }
 
     // ACCESSORS /////////////////////////////////////////////
@@ -219,63 +220,100 @@ final class HookStackObserver implements CanObserveAgentLifecycle
         return $this->hookStack;
     }
 
+    /**
+     * Get the last state processed by any hook.
+     *
+     * Use this after tool hooks (onBeforeToolUse, onAfterToolUse) to retrieve
+     * any state changes made by hooks, since those methods return domain objects
+     * instead of AgentState.
+     */
+    public function state(): ?AgentState
+    {
+        return $this->lastState;
+    }
+
     // INTERNAL /////////////////////////////////////////////
 
-    private function extractState(HookOutcome $outcome, AgentState $default): AgentState
+    /**
+     * Prepare state for hook processing by ensuring CurrentExecution exists.
+     */
+    private function prepareStateForEvent(AgentState $state): AgentState
     {
-        $context = $outcome->context();
-        return $context?->state() ?? $default;
+        if ($state->currentExecution() === null) {
+            $state = $state->withNewStepExecution();
+        }
+        if ($state->hookContext() === null) {
+            $state = $state->withHookContext(HookContext::empty());
+        }
+        return $state;
     }
 
-    private function extractToolCall(HookOutcome $outcome, ToolCall $default): ToolCall
+    /**
+     * Check if any evaluation forbids continuation (used for tool blocking).
+     */
+    private function hasBlockingEvaluation(AgentState $state): bool
     {
-        $context = $outcome->context();
-        return ($context instanceof ToolHookContext)
-            ? $context->toolCall()
-            : $default;
-    }
+        $evaluations = $state->evaluations();
 
-    private function extractExecution(HookOutcome $outcome, ToolExecution $default): ToolExecution
-    {
-        $context = $outcome->context();
-        return ($context instanceof ToolHookContext && $context->execution() !== null)
-            ? $context->execution()
-            : $default;
-    }
-
-    private function emitLifecycleHookEvent(
-        string $hookType,
-        HookOutcome $outcome,
-        DateTimeImmutable $startedAt,
-    ): void {
-        if ($this->eventEmitter === null) {
-            return;
+        foreach ($evaluations as $evaluation) {
+            if ($evaluation->decision === ContinuationDecision::ForbidContinuation) {
+                return true;
+            }
         }
 
-        $this->eventEmitter->hookExecuted(
-            hookType: $hookType,
-            tool: '',
-            outcome: $outcome->isBlocked() ? 'blocked' : ($outcome->isStopped() ? 'stopped' : 'proceed'),
-            reason: $outcome->reason(),
-            startedAt: $startedAt,
-        );
+        return false;
     }
 
-    private function emitToolHookEvent(
+    /**
+     * Get the reason from the first blocking evaluation.
+     */
+    private function getBlockingReason(AgentState $state): ?string
+    {
+        $evaluations = $state->evaluations();
+
+        foreach ($evaluations as $evaluation) {
+            if ($evaluation->decision === ContinuationDecision::ForbidContinuation) {
+                return $evaluation->reason;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine outcome string from state evaluations for event emission.
+     */
+    private function determineOutcome(AgentState $state): string
+    {
+        $evaluations = $state->evaluations();
+
+        foreach ($evaluations as $evaluation) {
+            if ($evaluation->decision === ContinuationDecision::ForbidContinuation) {
+                return 'blocked';
+            }
+        }
+
+        return 'proceed';
+    }
+
+    private function emitHookEvent(
         string $hookType,
         string $tool,
-        HookOutcome $outcome,
+        AgentState $result,
         DateTimeImmutable $startedAt,
     ): void {
         if ($this->eventEmitter === null) {
             return;
         }
+
+        $outcome = $this->determineOutcome($result);
+        $reason = $this->getBlockingReason($result);
 
         $this->eventEmitter->hookExecuted(
             hookType: $hookType,
             tool: $tool,
-            outcome: $outcome->isBlocked() ? 'blocked' : ($outcome->isStopped() ? 'stopped' : 'proceed'),
-            reason: $outcome->reason(),
+            outcome: $outcome,
+            reason: $reason,
             startedAt: $startedAt,
         );
     }

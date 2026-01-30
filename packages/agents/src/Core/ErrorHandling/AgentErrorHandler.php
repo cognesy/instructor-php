@@ -63,7 +63,7 @@ final class AgentErrorHandler implements CanHandleAgentErrors
         // Create transition state with failure recorded (for error context resolution)
         $transitionState = $state
             ->withStatus(AgentStatus::Failed)
-            ->withNewStepRecorded($failureStep);
+            ->withCurrentStep($failureStep);
 
         // Evaluate error policy
         $errorContext = $this->contextResolver->resolve($transitionState);

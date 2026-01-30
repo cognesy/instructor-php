@@ -4,57 +4,68 @@ namespace Cognesy\Agents\AgentHooks\Hooks;
 
 use Closure;
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Contracts\HookMatcher;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
- * Hook implementation that wraps a callable.
+ * Simple hook that wraps a callable function.
  *
- * Provides a convenient way to create hooks from closures or callables
- * without implementing the full Hook interface.
- *
- * The callable receives the context and $next, and must return a HookOutcome.
+ * The callable receives AgentState and HookType, and returns AgentState.
+ * Use this to create custom hooks without implementing the full interface.
  *
  * @example
- * // Simple logging hook
- * $hook = new CallableHook(function (HookContext $ctx, callable $next): HookOutcome {
- *     $this->logger->info("Processing: {$ctx->eventType()->value}");
- *     return $next($ctx);
- * });
- *
- * @example
- * // Hook with matcher
+ * // Log step events
  * $hook = new CallableHook(
- *     callback: fn(HookContext $ctx, callable $next): HookOutcome => $next($ctx),
- *     matcher: new ToolNameMatcher('bash'),
+ *     events: [HookType::BeforeStep, HookType::AfterStep],
+ *     callback: function (AgentState $state, HookType $event): AgentState {
+ *         $this->logger->info("Event: {$event->value}");
+ *         return $state;
+ *     },
+ * );
+ *
+ * @example
+ * // Guard hook that writes evaluations
+ * $hook = new CallableHook(
+ *     events: [HookType::BeforeStep],
+ *     callback: function (AgentState $state, HookType $event): AgentState {
+ *         if ($state->stepCount() >= 10) {
+ *             return $state->withEvaluation(
+ *                 ContinuationEvaluation::fromDecision(
+ *                     self::class,
+ *                     ContinuationDecision::ForbidContinuation,
+ *                     StopReason::StepsLimitReached,
+ *                 )
+ *             );
+ *         }
+ *         return $state;
+ *     },
  * );
  */
 final readonly class CallableHook implements Hook
 {
-    /** @var Closure(HookContext, callable(HookContext): HookOutcome): HookOutcome */
+    /** @var Closure(AgentState, HookType): AgentState */
     private Closure $callback;
 
     /**
-     * @param callable(HookContext, callable(HookContext): HookOutcome): HookOutcome $callback The hook callback
-     * @param HookMatcher|null $matcher Optional matcher for conditional execution
+     * @param list<HookType> $events Event types this hook handles
+     * @param callable(AgentState, HookType): AgentState $callback The processing function
      */
     public function __construct(
+        private array $events,
         callable $callback,
-        private ?HookMatcher $matcher = null,
     ) {
         $this->callback = Closure::fromCallable($callback);
     }
 
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        // Skip if matcher doesn't match
-        if ($this->matcher !== null && !$this->matcher->matches($context)) {
-            return $next($context);
-        }
+        return $this->events;
+    }
 
-        // Execute callback - must return HookOutcome
-        return ($this->callback)($context, $next);
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
+        return ($this->callback)($state, $event);
     }
 }

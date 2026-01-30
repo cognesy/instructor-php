@@ -22,7 +22,7 @@ interface CanEmitAgentEvents
     public function stepStarted(AgentState $state): void;
     public function stepCompleted(AgentState $state): void;
     public function stateUpdated(AgentState $state): void;
-    public function continuationEvaluated(AgentState $state, ContinuationOutcome $outcome): void;
+    public function continuationEvaluated(AgentState $state): void;
     public function executionFinished(AgentState $state): void;
     public function executionFailed(AgentState $state, AgentException $exception): void;
 

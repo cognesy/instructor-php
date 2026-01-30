@@ -91,9 +91,9 @@ Cached context is used for stable prompt parts that should persist across steps 
 
 ```php
 use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 
-$cache = new CachedContext(
+$cache = new CachedInferenceContext(
     messages: [
         ['role' => 'system', 'content' => 'You are a precise assistant.'],
     ],

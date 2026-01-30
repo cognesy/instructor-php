@@ -47,7 +47,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -78,7 +78,7 @@ class AgentBuilder
     private ?CanUseTools $driver = null;
     private ?CanHandleEvents $events = null;
     private ?string $llmPreset = null;
-    private ?CachedContext $cachedContext = null;
+    private ?CachedInferenceContext $cachedContext = null;
     private ?ErrorPolicy $errorPolicy = null;
 
     // Execution limits
@@ -234,7 +234,7 @@ class AgentBuilder
         return $this;
     }
 
-    public function withCachedContext(CachedContext $cachedContext): self {
+    public function withCachedContext(CachedInferenceContext $cachedContext): self {
         $this->cachedContext = $cachedContext;
         return $this;
     }
@@ -245,7 +245,7 @@ class AgentBuilder
             return $this;
         }
 
-        $cache = $this->cachedContext ?? new CachedContext();
+        $cache = $this->cachedContext ?? new CachedInferenceContext();
         $messages = $cache->messages();
         if ($this->hasSystemPrompt($messages, $prompt)) {
             return $this;
@@ -255,7 +255,7 @@ class AgentBuilder
             ['role' => 'system', 'content' => $prompt],
         ])->appendMessages($messages);
 
-        $this->cachedContext = new CachedContext(
+        $this->cachedContext = new CachedInferenceContext(
             messages: $prepended->toArray(),
             tools: $cache->tools(),
             toolChoice: $cache->toolChoice(),
@@ -266,8 +266,8 @@ class AgentBuilder
     }
 
     public function withResponseFormat(array $responseFormat): self {
-        $cache = $this->cachedContext ?? new CachedContext();
-        $this->cachedContext = new CachedContext(
+        $cache = $this->cachedContext ?? new CachedInferenceContext();
+        $this->cachedContext = new CachedInferenceContext(
             messages: $cache->messages()->toArray(),
             tools: $cache->tools(),
             toolChoice: $cache->toolChoice(),

@@ -67,6 +67,39 @@ describe('Agent Loop', function () {
         expect($finalState->stepAt(1)->stepType())->toBe(AgentStepType::FinalResponse);
     });
 
+    it('advances step numbers across loop iterations', function () {
+        $toolCall = ToolCall::fromArray([
+            'id' => 'call_1',
+            'name' => 'test_tool',
+            'arguments' => json_encode(['arg' => 'val']),
+        ]);
+
+        $driver = new FakeInferenceDriver([
+            new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
+            new InferenceResponse(content: 'Tool executed successfully.'),
+        ]);
+
+        $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
+
+        $llm = LLMProvider::new()->withDriver($driver);
+        $agent = AgentBuilder::base()
+            ->withTools(new Tools($testTool))
+            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->build();
+
+        $state = AgentState::empty()->withMessages(
+            Messages::fromString('Use the tool')
+        );
+
+        $finalState = $agent->execute($state);
+        $stepNumbers = array_map(
+            static fn(\Cognesy\Agents\Core\Data\StepExecution $execution): int => $execution->stepNumber,
+            $finalState->stepExecutions()->all(),
+        );
+
+        expect($stepNumbers)->toBe([1, 2]);
+    });
+
     it('does not append tool args content when tool calls are present', function () {
         $toolCall = ToolCall::fromArray([
             'id' => 'call_1',

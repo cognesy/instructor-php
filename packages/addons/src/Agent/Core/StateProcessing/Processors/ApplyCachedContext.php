@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Agent\Core\StateProcessing\Processors;
 
 use Cognesy\Addons\Agent\Core\Data\AgentState;
 use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 
 /**
  * @implements CanProcessAnyState<AgentState>
@@ -12,8 +12,8 @@ use Cognesy\Polyglot\Inference\Data\CachedContext;
 final readonly class ApplyCachedContext implements CanProcessAnyState
 {
     public function __construct(
-        private CachedContext $cachedContext,
-        private bool $onlyWhenEmpty = true,
+        private CachedInferenceContext $cachedContext,
+        private bool                   $onlyWhenEmpty = true,
     ) {}
 
     #[\Override]

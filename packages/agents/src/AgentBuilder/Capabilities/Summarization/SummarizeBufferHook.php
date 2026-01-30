@@ -3,12 +3,10 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Summarization;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Events\MessageBufferSummarized;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;
@@ -33,14 +31,14 @@ final readonly class SummarizeBufferHook implements Hook
     }
 
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
-        }
+        return [HookType::AfterStep];
+    }
 
-        $state = $context->state();
-
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
         // Check if buffer token limit is exceeded
         $buffer = $state->store()
             ->section($this->bufferSection)
@@ -50,7 +48,7 @@ final readonly class SummarizeBufferHook implements Hook
 
         $tokens = Tokenizer::tokenCount($buffer);
         if ($tokens <= $this->maxBufferTokens) {
-            return $next($context);
+            return $state;
         }
 
         $bufferMessages = $state->store()
@@ -80,8 +78,6 @@ final readonly class SummarizeBufferHook implements Hook
             ->section($this->bufferSection)->setMessages(Messages::empty())
             ->section($this->summarySection)->setMessages(Messages::fromString($summary));
 
-        $newState = $state->withMessageStore($newStore);
-
-        return $next($context->withState($newState));
+        return $state->withMessageStore($newStore);
     }
 }

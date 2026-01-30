@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Exceptions\AgentException;
@@ -11,7 +10,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 /**
  * Chains multiple lifecycle observers together.
  *
- * Observers are called in order. For blocking decisions (toolUsing, stopping),
+ * Observers are called in order. For blocking decisions (toolUsing),
  * the first blocking decision wins. For state transformations, each observer
  * receives the output of the previous one.
  */
@@ -97,15 +96,4 @@ final class CompositeObserver implements CanObserveAgentLifecycle
         return $execution;
     }
 
-    #[\Override]
-    public function onBeforeStopDecision(AgentState $state, StopReason $reason): StopDecision
-    {
-        foreach ($this->observers as $observer) {
-            $decision = $observer->onBeforeStopDecision($state, $reason);
-            if ($decision->isPrevented()) {
-                return $decision;
-            }
-        }
-        return StopDecision::allow();
-    }
 }

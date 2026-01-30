@@ -5,8 +5,8 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 use Cognesy\Agents\Broadcasting\AgentEventEnvelopeAdapter;
 use Cognesy\Agents\Broadcasting\BroadcastConfig;
 use Cognesy\Agents\Broadcasting\CanBroadcastAgentEvents;
-use Cognesy\Agents\Core\Continuation\Criteria\ErrorPolicyCriterion;
-use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Agents\AgentHooks\Guards\StepsLimitHook;
+use Cognesy\Agents\AgentHooks\Hooks\ErrorPolicyHook;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
@@ -103,7 +103,7 @@ it('emits continuation events when enabled', function () {
     );
 
     $evaluation = new ContinuationEvaluation(
-        criterionClass: StepsLimit::class,
+        criterionClass: StepsLimitHook::class,
         decision: ContinuationDecision::ForbidContinuation,
         reason: 'limit reached',
         stopReason: StopReason::StepsLimitReached,
@@ -120,7 +120,7 @@ it('emits continuation events when enabled', function () {
     $payload = $broadcaster->calls[0]['envelope']['payload'];
     expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.continuation');
     expect($payload['should_continue'])->toBeFalse();
-    expect($payload['evaluations'][0]['criterion'])->toBe('StepsLimit');
+    expect($payload['evaluations'][0]['criterion'])->toBe('StepsLimitHook');
 });
 
 it('returns wiretap callable that handles all events', function () {
@@ -204,7 +204,7 @@ it('auto-transitions status on lifecycle events', function () {
     // Complete with Completed stop reason -> status becomes 'completed'
     // Use AllowStop evaluation to signal no more work to do
     $evaluation = new ContinuationEvaluation(
-        criterionClass: StepsLimit::class,
+        criterionClass: StepsLimitHook::class,
         decision: ContinuationDecision::AllowStop,
         reason: 'No more work to do',
     );
@@ -242,7 +242,7 @@ it('maps StopReason to correct status', function () {
 
     // ErrorForbade -> 'failed'
     $evaluation = new ContinuationEvaluation(
-        criterionClass: ErrorPolicyCriterion::class,
+        criterionClass: ErrorPolicyHook::class,
         decision: ContinuationDecision::ForbidContinuation,
         reason: 'Error policy forbade continuation',
         stopReason: StopReason::ErrorForbade,

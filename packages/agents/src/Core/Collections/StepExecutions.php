@@ -36,6 +36,18 @@ final readonly class StepExecutions
         return new self([...$this->items, $result]);
     }
 
+    public function replaceLast(StepExecution $result): self
+    {
+        if ($this->items === []) {
+            return new self([$result]);
+        }
+
+        $items = $this->items;
+        $items[array_key_last($items)] = $result;
+
+        return new self($items);
+    }
+
     public function last(): ?StepExecution
     {
         if ($this->items === []) {

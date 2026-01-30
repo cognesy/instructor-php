@@ -3,42 +3,37 @@
 namespace Cognesy\Agents\AgentHooks\Hooks;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
- * Hook that appends the current step's output messages to the conversation.
- *
- * After each step completes, this hook takes the output messages from the step
- * and appends them to the agent state's message history.
+ * Hook that appends the current step's messages to the conversation history.
  */
 final readonly class AppendStepMessagesHook implements Hook
 {
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
-        }
+        return [HookType::AfterStep];
+    }
 
-        $state = $context->state();
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
         $currentStep = $state->currentStep();
-
         if ($currentStep === null) {
-            return $next($context);
+            return $state;
         }
 
         $outputMessages = $currentStep->outputMessages();
         if ($outputMessages->isEmpty()) {
-            return $next($context);
+            return $state;
         }
 
-        $newState = $state->withMessages(
-            $state->messages()->appendMessages($outputMessages)
-        );
+        $store = $state->store()
+            ->section(AgentState::DEFAULT_SECTION)
+            ->appendMessages($outputMessages);
 
-        return $next($context->withState($newState));
+        return $state->withMessageStore($store);
     }
 }

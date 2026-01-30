@@ -9,7 +9,7 @@ use Cognesy\Agents\Core\Data\StepExecution;
 use Cognesy\Agents\Core\Enums\AgentStatus;
 use Cognesy\Agents\Core\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
@@ -41,7 +41,7 @@ it('resets execution state for continuation', function () {
     $state = AgentState::empty()
         ->withMessages(Messages::fromString('First'))
         ->withStepExecutionRecorded($stepExecution)
-        ->withCachedContext(new CachedContext(messages: [['role' => 'user', 'content' => 'cached']]))
+        ->withCachedContext(new CachedInferenceContext(messages: [['role' => 'user', 'content' => 'cached']]))
         ->withStatus(AgentStatus::Completed);
 
     $continued = $state->forContinuation();

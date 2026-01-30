@@ -160,7 +160,7 @@ describe('Coding Agent Workflow', function () {
         $agent = AgentBuilder::base()
             ->withTools($tools)
             ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->addHook(\Cognesy\Agents\AgentHooks\Enums\HookType::AfterStep, new PersistTasksHook())
+            ->addHook(new PersistTasksHook())
             ->build();
 
         $state = AgentState::empty()->withMessages(

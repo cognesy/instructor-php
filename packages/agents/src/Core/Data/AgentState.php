@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Core\Data;
 
 use Cognesy\Agents\Core\Collections\AgentSteps;
 use Cognesy\Agents\Core\Collections\StepExecutions;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Enums\AgentStatus;
@@ -12,7 +13,7 @@ use Cognesy\Agents\Core\MessageCompilation\Compilers\SelectedSections;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use Cognesy\Utils\Uuid;
@@ -49,20 +50,20 @@ final readonly class AgentState
     private DateTimeImmutable $updatedAt;
     private MessageStore $store;
     private Metadata $metadata;
-    private CachedContext $cache;
+    private CachedInferenceContext $cache;
 
     // Execution data (optional - null when between executions)
     private ?ExecutionState $execution;
 
     public function __construct(
-        ?string $agentId = null,
-        ?string $parentAgentId = null,
-        ?DateTimeImmutable $createdAt = null,
-        ?DateTimeImmutable $updatedAt = null,
-        ?MessageStore $store = null,
-        Metadata|array|null $variables = null,
-        ?CachedContext $cache = null,
-        ?ExecutionState $execution = null,
+        ?string                 $agentId = null,
+        ?string                 $parentAgentId = null,
+        ?DateTimeImmutable      $createdAt = null,
+        ?DateTimeImmutable      $updatedAt = null,
+        ?MessageStore           $store = null,
+        Metadata|array|null     $variables = null,
+        ?CachedInferenceContext $cache = null,
+        ?ExecutionState         $execution = null,
     ) {
         $now = new DateTimeImmutable();
 
@@ -78,7 +79,7 @@ final readonly class AgentState
             is_array($variables) => new Metadata($variables),
             default => new Metadata(),
         };
-        $this->cache = $cache ?? new CachedContext();
+        $this->cache = $cache ?? new CachedInferenceContext();
 
         // Execution data (null = between executions)
         $this->execution = $execution;
@@ -102,14 +103,14 @@ final readonly class AgentState
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?string $agentId = null,
-        ?string $parentAgentId = null,
-        ?DateTimeImmutable $createdAt = null,
-        ?DateTimeImmutable $updatedAt = null,
-        ?MessageStore $store = null,
-        ?Metadata $variables = null,
-        ?CachedContext $cache = null,
-        ?ExecutionState $execution = null,
+        ?string                 $agentId = null,
+        ?string                 $parentAgentId = null,
+        ?DateTimeImmutable      $createdAt = null,
+        ?DateTimeImmutable      $updatedAt = null,
+        ?MessageStore           $store = null,
+        ?Metadata               $variables = null,
+        ?CachedInferenceContext $cache = null,
+        ?ExecutionState         $execution = null,
     ): self {
         return new self(
             agentId: $agentId ?? $this->agentId,
@@ -137,24 +138,6 @@ final readonly class AgentState
     public function withStartedExecution(): self
     {
         return $this->with(execution: ExecutionState::withExecutionStarted());
-    }
-
-    /**
-     * Return copy with execution cleared (null).
-     * Use after processing execution results for multi-turn.
-     */
-    public function withEndedExecution(): self
-    {
-        return new self(
-            agentId: $this->agentId,
-            parentAgentId: $this->parentAgentId,
-            createdAt: $this->createdAt,
-            updatedAt: new DateTimeImmutable(),
-            store: $this->store,
-            variables: $this->metadata,
-            cache: $this->cache,
-            execution: null,
-        );
     }
 
     public function withMessageStore(MessageStore $store): self
@@ -199,11 +182,6 @@ final readonly class AgentState
         return $this->with(execution: $this->execution->withCurrentExecutionCleared());
     }
 
-    public function withNewStepRecorded(AgentStep $step): self
-    {
-        return $this->withCurrentStep($step);
-    }
-
     public function withCurrentStep(AgentStep $step): self
     {
         if ($this->execution === null) {
@@ -221,7 +199,7 @@ final readonly class AgentState
 
         return $this
             ->withStatus(AgentStatus::Failed)
-            ->withNewStepRecorded($failureStep);
+            ->withCurrentStep($failureStep);
     }
 
     /**
@@ -263,7 +241,7 @@ final readonly class AgentState
             updatedAt: new DateTimeImmutable(),
             store: $store,
             variables: $this->metadata,
-            cache: new CachedContext(),
+            cache: new CachedInferenceContext(),
             execution: null, // Clear execution state for fresh start
         );
     }
@@ -279,9 +257,98 @@ final readonly class AgentState
         return $this->with(execution: $this->execution->withStepExecution($stepExecution));
     }
 
-    public function withCachedContext(CachedContext $cache): self
+    public function withStepExecutionReplaced(StepExecution $stepExecution): self
+    {
+        if ($this->execution === null) {
+            return $this->with(execution: ExecutionState::withExecutionStarted()->withReplacedStepExecution($stepExecution));
+        }
+        return $this->with(execution: $this->execution->withReplacedStepExecution($stepExecution));
+    }
+
+    public function withCachedContext(CachedInferenceContext $cache): self
     {
         return $this->with(cache: $cache);
+    }
+
+    /**
+     * Add an evaluation to the current execution (for hook-based flow control).
+     * No-op if no active execution.
+     */
+    public function withEvaluation(ContinuationEvaluation $evaluation): self
+    {
+        $execution = $this->execution;
+        if ($execution === null) {
+            return $this;
+        }
+
+        return $this->with(execution: $execution->withEvaluation($evaluation));
+    }
+
+    /**
+     * Set a precomputed continuation outcome on the current execution.
+     * No-op if no active execution.
+     */
+    public function withContinuationOutcome(?ContinuationOutcome $outcome): self
+    {
+        $execution = $this->execution;
+        if ($execution === null) {
+            return $this;
+        }
+
+        return $this->with(execution: $execution->withPendingOutcome($outcome));
+    }
+
+    /**
+     * @return list<ContinuationEvaluation>
+     */
+    public function evaluations(): array
+    {
+        return $this->execution?->pendingEvaluations() ?? [];
+    }
+
+    public function hasEvaluations(): bool
+    {
+        return $this->execution?->hasPendingEvaluations() ?? false;
+    }
+
+    public function pendingOutcome(): ?ContinuationOutcome
+    {
+        return $this->execution?->pendingOutcome();
+    }
+
+    public function withEvaluationsCleared(): self
+    {
+        $execution = $this->execution;
+        if ($execution === null) {
+            return $this;
+        }
+
+        return $this->with(execution: $execution->withEvaluationsCleared());
+    }
+
+    public function hookContext(): ?HookContext
+    {
+        return $this->execution?->hookContext();
+    }
+
+    public function withHookContext(HookContext $context): self
+    {
+        $execution = $this->execution;
+        if ($execution === null) {
+            return $this;
+        }
+
+        return $this->with(execution: $execution->withHookContext($context));
+    }
+
+    public function withHookContextCleared(): self
+    {
+        $execution = $this->execution;
+        if ($execution === null) {
+            return $this;
+        }
+
+        return $this->with(execution: $execution->withHookContextCleared());
     }
 
     // ACCESSORS ////////////////////////////////////
@@ -416,7 +483,7 @@ final readonly class AgentState
         return $this->stepExecutions()->steps();
     }
 
-    public function cache(): CachedContext
+    public function cache(): CachedInferenceContext
     {
         return $this->cache;
     }
@@ -448,7 +515,11 @@ final readonly class AgentState
     }
 
     /**
-     * Get the continuation outcome from the last step execution.
+     * Get the continuation outcome.
+     *
+     * Priority:
+     * 1. execution->pendingOutcome (precomputed for current step)
+     * 2. execution->continuationOutcome() (from last recorded step)
      */
     public function continuationOutcome(): ?ContinuationOutcome
     {
@@ -541,10 +612,10 @@ final readonly class AgentState
         return is_array($value) ? Metadata::fromArray($value) : new Metadata();
     }
 
-    private static function parseCachedContext(array $data): CachedContext
+    private static function parseCachedContext(array $data): CachedInferenceContext
     {
         $value = $data['cachedContext'] ?? null;
-        return is_array($value) ? CachedContext::fromArray($value) : new CachedContext();
+        return is_array($value) ? CachedInferenceContext::fromArray($value) : new CachedInferenceContext();
     }
 
     private static function parseMessageStore(array $data): MessageStore

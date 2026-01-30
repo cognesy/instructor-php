@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Continuation\Criteria\StepsLimit;
+use Cognesy\Agents\AgentHooks\Guards\StepsLimitHook;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
@@ -13,7 +13,7 @@ it('renders continuation evaluated event summary', function () {
     // Create evaluations that result in ForbidContinuation to trigger StepsLimitReached stop reason
     $evaluations = [
         new ContinuationEvaluation(
-            criterionClass: StepsLimit::class,
+            criterionClass: StepsLimitHook::class,
             decision: ContinuationDecision::ForbidContinuation,
             reason: 'Steps limit reached',
             stopReason: StopReason::StepsLimitReached,

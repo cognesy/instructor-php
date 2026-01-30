@@ -109,13 +109,13 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     }
 
     #[\Override]
-    public function continuationEvaluated(AgentState $state, ContinuationOutcome $outcome): void
+    public function continuationEvaluated(AgentState $state): void
     {
         $this->events->dispatch(new ContinuationEvaluated(
             agentId: $state->agentId(),
             parentAgentId: $state->parentAgentId(),
             stepNumber: $state->stepCount(),
-            outcome: $outcome,
+            outcome: $state->continuationOutcome() ?? ContinuationOutcome::empty(),
         ));
     }
 

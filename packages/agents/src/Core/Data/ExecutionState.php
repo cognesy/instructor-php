@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Core\Data;
 
 use Cognesy\Agents\Core\Collections\StepExecutions;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Enums\AgentStatus;
@@ -34,6 +35,10 @@ final readonly class ExecutionState
         public StepExecutions $stepExecutions,
         public ?CurrentExecution $currentExecution,
         public ?AgentStep $currentStep,
+        /** @var list<ContinuationEvaluation> */
+        public array $pendingEvaluations = [],
+        public ?ContinuationOutcome $pendingOutcome = null,
+        public ?HookContext $hookContext = null,
     ) {}
 
     /**
@@ -49,6 +54,9 @@ final readonly class ExecutionState
             stepExecutions: StepExecutions::empty(),
             currentExecution: null,
             currentStep: null,
+            pendingEvaluations: [],
+            pendingOutcome: null,
+            hookContext: HookContext::empty(),
         );
     }
 
@@ -66,6 +74,29 @@ final readonly class ExecutionState
     public function currentExecution(): ?CurrentExecution
     {
         return $this->currentExecution;
+    }
+
+    /**
+     * @return list<ContinuationEvaluation>
+     */
+    public function pendingEvaluations(): array
+    {
+        return $this->pendingEvaluations;
+    }
+
+    public function hasPendingEvaluations(): bool
+    {
+        return $this->pendingEvaluations !== [];
+    }
+
+    public function pendingOutcome(): ?ContinuationOutcome
+    {
+        return $this->pendingOutcome;
+    }
+
+    public function hookContext(): ?HookContext
+    {
+        return $this->hookContext;
     }
 
     /**
@@ -96,6 +127,9 @@ final readonly class ExecutionState
      */
     public function continuationOutcome(): ?ContinuationOutcome
     {
+        if ($this->pendingOutcome !== null) {
+            return $this->pendingOutcome;
+        }
         return $this->stepExecutions->lastOutcome();
     }
 
@@ -143,6 +177,9 @@ final readonly class ExecutionState
             stepExecutions: $this->stepExecutions,
             currentExecution: $this->currentExecution,
             currentStep: $this->currentStep,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $this->hookContext,
         );
     }
 
@@ -156,7 +193,76 @@ final readonly class ExecutionState
             stepExecutions: $this->stepExecutions,
             currentExecution: $execution,
             currentStep: $this->currentStep,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $this->hookContext,
         );
+    }
+
+    public function withEvaluation(ContinuationEvaluation $evaluation): self
+    {
+        return $this->withEvaluations([...$this->pendingEvaluations, $evaluation]);
+    }
+
+    /**
+     * @param list<ContinuationEvaluation> $evaluations
+     */
+    public function withEvaluations(array $evaluations): self
+    {
+        return new self(
+            executionId: $this->executionId,
+            status: $this->status,
+            startedAt: $this->startedAt,
+            completedAt: $this->completedAt,
+            stepExecutions: $this->stepExecutions,
+            currentExecution: $this->currentExecution,
+            currentStep: $this->currentStep,
+            pendingEvaluations: $evaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $this->hookContext,
+        );
+    }
+
+    public function withEvaluationsCleared(): self
+    {
+        return $this->withEvaluations([]);
+    }
+
+    public function withPendingOutcome(?ContinuationOutcome $outcome): self
+    {
+        return new self(
+            executionId: $this->executionId,
+            status: $this->status,
+            startedAt: $this->startedAt,
+            completedAt: $this->completedAt,
+            stepExecutions: $this->stepExecutions,
+            currentExecution: $this->currentExecution,
+            currentStep: $this->currentStep,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $outcome,
+            hookContext: $this->hookContext,
+        );
+    }
+
+    public function withHookContext(?HookContext $context): self
+    {
+        return new self(
+            executionId: $this->executionId,
+            status: $this->status,
+            startedAt: $this->startedAt,
+            completedAt: $this->completedAt,
+            stepExecutions: $this->stepExecutions,
+            currentExecution: $this->currentExecution,
+            currentStep: $this->currentStep,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $context,
+        );
+    }
+
+    public function withHookContextCleared(): self
+    {
+        return $this->withHookContext(null);
     }
 
     public function withCurrentStep(?AgentStep $step): self
@@ -169,6 +275,9 @@ final readonly class ExecutionState
             stepExecutions: $this->stepExecutions,
             currentExecution: $this->currentExecution,
             currentStep: $step,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $this->hookContext,
         );
     }
 
@@ -180,8 +289,27 @@ final readonly class ExecutionState
             startedAt: $this->startedAt,
             completedAt: $this->completedAt,
             stepExecutions: $this->stepExecutions->append($execution),
-            currentExecution: null, // Clear transient execution after recording
+            currentExecution: $this->currentExecution,
             currentStep: $execution->step,
+            pendingEvaluations: [],
+            pendingOutcome: null,
+            hookContext: null,
+        );
+    }
+
+    public function withReplacedStepExecution(StepExecution $execution): self
+    {
+        return new self(
+            executionId: $this->executionId,
+            status: $this->status,
+            startedAt: $this->startedAt,
+            completedAt: $this->completedAt,
+            stepExecutions: $this->stepExecutions->replaceLast($execution),
+            currentExecution: $this->currentExecution,
+            currentStep: $execution->step,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $this->hookContext,
         );
     }
 
@@ -198,7 +326,10 @@ final readonly class ExecutionState
             completedAt: $this->completedAt,
             stepExecutions: $this->stepExecutions,
             currentExecution: $execution,
-            currentStep: null,
+            currentStep: $this->currentStep, // Preserve previous step until new one completes
+            pendingEvaluations: [],
+            pendingOutcome: null,
+            hookContext: HookContext::empty(),
         );
     }
 
@@ -212,19 +343,9 @@ final readonly class ExecutionState
             stepExecutions: $this->stepExecutions,
             currentExecution: null,
             currentStep: $this->currentStep,
-        );
-    }
-
-    public function withCompletedNow(): self
-    {
-        return new self(
-            executionId: $this->executionId,
-            status: $this->status,
-            startedAt: $this->startedAt,
-            completedAt: new DateTimeImmutable(),
-            stepExecutions: $this->stepExecutions,
-            currentExecution: $this->currentExecution,
-            currentStep: $this->currentStep,
+            pendingEvaluations: $this->pendingEvaluations,
+            pendingOutcome: $this->pendingOutcome,
+            hookContext: $this->hookContext,
         );
     }
 

@@ -3,10 +3,8 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
@@ -20,17 +18,18 @@ final readonly class AppendSkillMetadataHook implements Hook
     public function __construct(private SkillLibrary $library) {}
 
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::BeforeStep) {
-            return $next($context);
-        }
+        return [HookType::BeforeStep];
+    }
 
-        $state = $context->state();
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
         $skills = $this->library->listSkills();
 
         if ($skills === [] || $this->hasInjectedSkills($state->messages())) {
-            return $next($context);
+            return $state;
         }
 
         $content = implode("\n", [
@@ -44,9 +43,7 @@ final readonly class AppendSkillMetadataHook implements Hook
             Message::asSystem($content),
         ]);
 
-        $newState = $state->withMessages($messages);
-
-        return $next($context->withState($newState));
+        return $state->withMessages($messages);
     }
 
     private function hasInjectedSkills(Messages $messages): bool

@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Core\Tools;
 
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanReportObserverState;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\ToolInterface;
@@ -11,9 +12,9 @@ use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Agents\Core\Exceptions\InvalidToolArgumentsException;
-use Cognesy\Agents\Core\Exceptions\ToolCallBlockedException;
 use Cognesy\Agents\Core\Exceptions\ToolExecutionException;
 use Cognesy\Agents\Core\Lifecycle\CanObserveAgentLifecycle;
+use Cognesy\Agents\AgentHooks\HookStackObserver;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
@@ -26,7 +27,7 @@ use DateTimeImmutable;
  * Executes tool calls and notifies the observer before/after each execution.
  * The observer can modify tool calls, block execution, or modify results.
  */
-final readonly class ToolExecutor implements CanExecuteToolCalls
+final readonly class ToolExecutor implements CanExecuteToolCalls, CanReportObserverState
 {
     private Tools $tools;
     private bool $throwOnToolFailure;
@@ -54,7 +55,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             $decision = $this->observer->onBeforeToolUse($toolCall, $state);
             if ($decision->isBlocked()) {
                 $this->eventEmitter->toolCallBlocked($toolCall, $decision->reason());
-                throw new ToolCallBlockedException($toolCall->name(), $decision->reason());
+                return $this->blockedExecution($toolCall, $decision->reason());
             }
             $toolCall = $decision->toolCall();
         }
@@ -75,12 +76,24 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     #[\Override]
     public function useTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions {
-        return new ToolExecutions(
-            ...array_map(
-                fn(ToolCall $toolCall) => $this->useTool($toolCall, $state),
-                $toolCalls->all()
-            )
-        );
+        $executions = [];
+        $currentState = $state;
+
+        foreach ($toolCalls->all() as $toolCall) {
+            $execution = $this->useTool($toolCall, $currentState);
+            $executions[] = $execution;
+
+            if ($this->isBlockedExecution($execution)) {
+                break;
+            }
+
+            // Propagate state changes from hook to next tool call
+            if ($this->observer instanceof HookStackObserver) {
+                $currentState = $this->observer->state() ?? $currentState;
+            }
+        }
+
+        return new ToolExecutions(...$executions);
     }
 
     // ACCESSORS /////////////////////////////////////////////
@@ -95,6 +108,23 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     public function observer(): ?CanObserveAgentLifecycle {
         return $this->observer;
+    }
+
+    /**
+     * Get state changes from the observer after tool calls.
+     *
+     * Tool hooks (onBeforeToolUse, onAfterToolUse) return domain objects
+     * instead of AgentState, so state changes are tracked internally.
+     * Use this method after useTool()/useTools() to retrieve any state
+     * modifications made by hooks.
+     *
+     * Returns null if observer doesn't support state tracking.
+     */
+    public function observerState(): ?AgentState {
+        if ($this->observer instanceof HookStackObserver) {
+            return $this->observer->state();
+        }
+        return null;
     }
 
     // MUTATORS //////////////////////////////////////////////
@@ -146,6 +176,31 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         $this->eventEmitter->toolCallCompleted($execution);
 
         return $execution;
+    }
+
+    private function blockedExecution(ToolCall $toolCall, ?string $reason): ToolExecution
+    {
+        $blockedError = new ToolCallBlockedError(
+            toolName: $toolCall->name(),
+            reason: $reason ?? 'Blocked by hook',
+        );
+        $timestamp = new DateTimeImmutable();
+
+        return new ToolExecution(
+            toolCall: $toolCall,
+            result: Result::failure($blockedError),
+            startedAt: $timestamp,
+            completedAt: $timestamp,
+        );
+    }
+
+    private function isBlockedExecution(ToolExecution $execution): bool
+    {
+        $result = $execution->result();
+        if (!$result instanceof Failure) {
+            return false;
+        }
+        return $result->error() instanceof ToolCallBlockedError;
     }
 
     private function execute(ToolCall $toolCall, AgentState $state): Result {

@@ -3,66 +3,46 @@
 namespace Cognesy\Agents\AgentHooks\Hooks;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 
 /**
- * Hook that appends tool call/response messages to the execution buffer.
+ * Hook that appends tool execution trace to the execution buffer after each step.
  *
- * This hook separates tool traces from the main conversation by storing them
- * in a dedicated buffer section. This allows for cleaner conversation history
- * while preserving the full tool execution trace.
+ * Tool execution messages go to the execution buffer (not main conversation) so
+ * they can be summarized or managed separately.
  */
 final readonly class AppendToolTraceToBufferHook implements Hook
 {
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
-        }
+        return [HookType::AfterStep];
+    }
 
-        $state = $context->state();
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
         $currentStep = $state->currentStep();
-
         if ($currentStep === null) {
-            return $next($context);
+            return $state;
         }
 
-        $toolTrace = $this->extractToolTrace($currentStep->outputMessages());
-        if ($toolTrace->isEmpty()) {
-            return $next($context);
+        // Only process tool execution steps
+        if ($currentStep->stepType() !== AgentStepType::ToolExecution) {
+            return $state;
+        }
+
+        $outputMessages = $currentStep->outputMessages();
+        if ($outputMessages->isEmpty()) {
+            return $state;
         }
 
         $store = $state->store()
             ->section(AgentState::EXECUTION_BUFFER_SECTION)
-            ->appendMessages($toolTrace);
+            ->appendMessages($outputMessages);
 
-        $newState = $state->withMessageStore($store);
-        return $next($context->withState($newState));
-    }
-
-    private function extractToolTrace(Messages $messages): Messages
-    {
-        return $messages->filter(fn(Message $message): bool => $this->isToolTrace($message));
-    }
-
-    private function isToolTrace(Message $message): bool
-    {
-        if ($message->isTool()) {
-            return true;
-        }
-        return $this->isToolCallMessage($message);
-    }
-
-    private function isToolCallMessage(Message $message): bool
-    {
-        return $message->isAssistant()
-            && $message->metadata()->hasKey('tool_calls');
+        return $state->withMessageStore($store);
     }
 }

@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\SelfCriticContinuationCheck;
+use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\SelfCriticHook;
 use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\SelfCriticResult;
 use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
 use Cognesy\Agents\Core\Continuation\Enums\StopReason;
@@ -22,10 +22,10 @@ describe('SelfCritique Capability', function () {
 
         $state = AgentState::empty()
             ->withMetadata(
-                SelfCriticContinuationCheck::METADATA_KEY,
+                SelfCriticHook::METADATA_KEY,
                 new SelfCriticResult(false, 'Needs revision'),
             )
-            ->withMetadata(SelfCriticContinuationCheck::ITERATION_KEY, 0);
+            ->withMetadata(SelfCriticHook::ITERATION_KEY, 0);
 
         // Get first step from iterate()
         $next = null;

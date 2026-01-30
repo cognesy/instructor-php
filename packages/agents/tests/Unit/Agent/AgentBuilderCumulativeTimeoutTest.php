@@ -3,42 +3,26 @@
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\AgentHooks\HookStackObserver;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Data\AgentState;
 use DateTimeImmutable;
-
-function getAgentCriteria(object $agent): ContinuationCriteria {
-    /** @psalm-suppress InvalidScope */
-    $getter = \Closure::bind(
-        function (): ContinuationCriteria {
-            return $this->continuationCriteria;
-        },
-        $agent,
-        $agent,
-    );
-    return $getter();
-}
-
-function requestContinuationCriterion(): ContinuationCriteria {
-    return ContinuationCriteria::from(
-        ContinuationCriteria::when(
-            static fn(AgentState $state): ContinuationDecision => ContinuationDecision::RequestContinuation
-        ),
-    );
-}
 
 it('uses wall-clock execution time by default', function () {
     $agent = AgentBuilder::base()
         ->withTimeout(1)
-        ->addContinuationCriteria(requestContinuationCriterion())
         ->build();
 
-    $criteria = getAgentCriteria($agent);
-    $criteria->executionStarted(new DateTimeImmutable('-5 seconds'));
+    $observer = $agent->observer();
+    expect($observer)->toBeInstanceOf(HookStackObserver::class);
+    /** @var HookStackObserver $observer */
+    $observer->hookStack()->executionStarted(new DateTimeImmutable('-5 seconds'));
 
-    $state = AgentState::empty();
-    $outcome = $criteria->evaluateAll($state);
+    $state = AgentState::empty()->withNewStepExecution();
+    $processed = $observer->hookStack()->process($state, HookType::BeforeStep);
+    $evaluations = $processed->evaluations();
+    $outcome = ContinuationOutcome::fromEvaluations($evaluations);
 
     expect($outcome->shouldContinue())->toBeFalse();
 });

@@ -14,7 +14,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -107,9 +107,9 @@ class ToolCallingDriver implements CanUseTools
 
     /** Builds a PendingInference configured for tool-calling. */
     private function buildPendingInference(
-        Messages $messages,
-        Tools $tools,
-        ?CachedContext $cache = null,
+        Messages                $messages,
+        Tools                   $tools,
+        ?CachedInferenceContext $cache = null,
     ) : PendingInference {
         $toolChoice = is_array($this->toolChoice)
             ? ($this->toolChoice['type'] ?? 'auto')
@@ -221,14 +221,14 @@ class ToolCallingDriver implements CanUseTools
         };
     }
 
-    private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedContext {
+    private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedInferenceContext {
         $cache = $state->cache();
         $cachedTools = $cache->tools();
         if ($cachedTools === [] && !$tools->isEmpty()) {
             $cachedTools = $tools->toToolSchema();
         }
 
-        $resolved = new CachedContext(
+        $resolved = new CachedInferenceContext(
             messages: $cache->messages()->toArray(),
             tools: $cachedTools,
             toolChoice: $cache->toolChoice(),
@@ -238,7 +238,7 @@ class ToolCallingDriver implements CanUseTools
         return $resolved->isEmpty() ? null : $resolved;
     }
 
-    private function resolveToolChoice(string $toolChoice, ?CachedContext $cache): string {
+    private function resolveToolChoice(string $toolChoice, ?CachedInferenceContext $cache): string {
         if ($cache === null) {
             return $toolChoice;
         }

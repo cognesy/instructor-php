@@ -6,11 +6,13 @@ use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanReportObserverState;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Lifecycle\CanObserveInference;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeToolCalls;
 use Cognesy\Agents\Drivers\ReAct\Data\DecisionWithDetails;
@@ -25,7 +27,7 @@ use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -36,7 +38,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools
+final class ReActDriver implements CanUseTools, CanReportObserverState
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -48,6 +50,8 @@ final class ReActDriver implements CanUseTools
     private int $maxRetries;
     private OutputMode $mode;
     private CanEmitAgentEvents $eventEmitter;
+    private ?CanObserveInference $inferenceObserver = null;
+    private ?AgentState $observerState = null;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -75,7 +79,11 @@ final class ReActDriver implements CanUseTools
 
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
+        $this->observerState = null;
         $messages = $state->messagesForInference();
+        $state = $this->applyBeforeInferenceHooks($state, $messages);
+        $this->storeObserverState($state);
+        $messages = $this->resolveInferenceMessages($state, $messages);
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
 
@@ -100,6 +108,10 @@ final class ReActDriver implements CanUseTools
         $bundle = $extraction->unwrap();
         $decision = $bundle->decision();
         $inferenceResponse = $bundle->response();
+
+        $state = $this->applyAfterInferenceHooks($state, $inferenceResponse);
+        $this->storeObserverState($state);
+        $inferenceResponse = $this->resolveInferenceResponse($state, $inferenceResponse);
 
         // Emit inference response received event
         $this->eventEmitter->inferenceResponseReceived($state, $inferenceResponse, $requestStartedAt);
@@ -152,7 +164,60 @@ final class ReActDriver implements CanUseTools
         return $clone;
     }
 
+    public function withInferenceObserver(CanObserveInference $observer): self {
+        $clone = clone $this;
+        $clone->inferenceObserver = $observer;
+        return $clone;
+    }
+
+    #[\Override]
+    public function observerState(): ?AgentState {
+        return $this->observerState;
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function applyBeforeInferenceHooks(AgentState $state, Messages $messages): AgentState {
+        if ($this->inferenceObserver === null) {
+            return $state;
+        }
+
+        return $this->inferenceObserver->onBeforeInference($state, $messages);
+    }
+
+    private function applyAfterInferenceHooks(AgentState $state, InferenceResponse $response): AgentState {
+        if ($this->inferenceObserver === null) {
+            return $state;
+        }
+
+        return $this->inferenceObserver->onAfterInference($state, $response);
+    }
+
+    private function resolveInferenceMessages(AgentState $state, Messages $fallback): Messages {
+        $context = $state->hookContext();
+        if ($context === null) {
+            return $fallback;
+        }
+
+        return $context->inferenceMessages ?? $fallback;
+    }
+
+    private function resolveInferenceResponse(AgentState $state, InferenceResponse $fallback): InferenceResponse {
+        $context = $state->hookContext();
+        if ($context === null) {
+            return $fallback;
+        }
+
+        return $context->inferenceResponse ?? $fallback;
+    }
+
+    private function storeObserverState(AgentState $state): void {
+        if ($this->inferenceObserver === null) {
+            return;
+        }
+
+        $this->observerState = $state;
+    }
 
     private function buildSystemPrompt(Tools $tools): string {
         return (new MakeReActPrompt($tools))();
@@ -248,11 +313,11 @@ final class ReActDriver implements CanUseTools
 
     /** Builds a step for a final_answer decision (optionally finalizes via Inference). */
     private function buildFinalAnswerStep(
-        ReActDecision $decision,
-        ?Usage $usage,
-        ?InferenceResponse $inferenceResponse,
-        Messages $messages,
-        CachedContext $cachedContext,
+        ReActDecision          $decision,
+        ?Usage                 $usage,
+        ?InferenceResponse     $inferenceResponse,
+        Messages               $messages,
+        CachedInferenceContext $cachedContext,
     ): AgentStep {
         $finalText = $decision->answer();
         if ($this->finalViaInference) {
@@ -281,7 +346,7 @@ final class ReActDriver implements CanUseTools
     }
 
     /** Generates a plain-text final answer via Inference and returns PendingInference. */
-    private function finalizeAnswerViaInference(Messages $messages, CachedContext $cachedContext): PendingInference {
+    private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cachedContext): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),

@@ -3,29 +3,35 @@
 namespace Cognesy\Agents\AgentHooks\Stack;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\AgentHooks\Guards\Contracts\CanStartExecution;
+use Cognesy\Agents\Core\Data\AgentState;
+use DateTimeImmutable;
 
 /**
  * Priority-based stack for processing hooks.
  *
  * The HookStack manages a collection of hooks and executes them in priority order.
- * Higher priority hooks run first (wrap outer), giving them the ability to:
- * - Intercept and short-circuit before lower priority hooks run
- * - Wrap lower priority hooks with before/after behavior
+ * Higher priority hooks run first, allowing them to short-circuit or modify state
+ * before lower priority hooks run.
+ *
+ * Hooks are executed sequentially (not middleware-style):
+ * - Each hook receives the current AgentState
+ * - Each hook returns a (potentially modified) AgentState
+ * - State flows from one hook to the next
  *
  * Priority guidelines:
- * - 100+: Security/validation hooks (run first, can block)
+ * - 100+: Security/validation hooks (run first, can forbid continuation)
  * - 0: Normal hooks (default priority)
  * - -100: Logging/monitoring hooks (run last, observe final state)
  *
  * @example
  * $stack = new HookStack();
  * $stack = $stack
- *     ->with(new SecurityHook(), priority: 100)  // Runs first
- *     ->with(new LoggingHook(), priority: -100); // Runs last
+ *     ->with(new StepsLimitHook(maxSteps: 10), priority: 100)  // Runs first
+ *     ->with(new LoggingHook(), priority: -100);              // Runs last
  *
- * $outcome = $stack->process($context, fn($ctx) => HookOutcome::proceed($ctx));
+ * $state = $stack->process($state, HookType::BeforeStep);
  */
 final class HookStack
 {
@@ -39,7 +45,7 @@ final class HookStack
      * Create a new stack with the given hook added.
      *
      * @param Hook $hook The hook to add
-     * @param int $priority Higher priority = runs earlier (wraps outer). Default is 0.
+     * @param int $priority Higher priority = runs earlier. Default is 0.
      * @return self A new stack instance with the hook added
      */
     public function with(Hook $hook, int $priority = 0): self
@@ -75,16 +81,54 @@ final class HookStack
     }
 
     /**
-     * Process a context through all hooks in the stack.
+     * Process state through all applicable hooks for the given event.
      *
-     * @param HookContext $context The context to process
-     * @param callable(HookContext): HookOutcome $terminal The final handler (terminal)
-     * @return HookOutcome The result of hook processing
+     * Hooks are executed in priority order (highest first). Each hook
+     * that handles this event type receives the state from the previous
+     * hook and returns a potentially modified state.
+     *
+     * Flow control is via evaluations: hooks write evaluations to state,
+     * and the AgentLoop aggregates them into ContinuationOutcome.
+     *
+     * @param AgentState $state The state to process
+     * @param HookType $event The event type being processed
+     * @return AgentState The state after all hooks have processed
      */
-    public function process(HookContext $context, callable $terminal): HookOutcome
+    public function process(AgentState $state, HookType $event): AgentState
     {
-        $chain = $this->buildChain($terminal);
-        return $chain($context);
+        $sorted = $this->getSortedHooks();
+
+        foreach ($sorted as $entry) {
+            /** @var Hook $hook */
+            $hook = $entry['hook'];
+
+            // Skip hooks that don't handle this event type
+            if (!in_array($event, $hook->appliesTo(), true)) {
+                continue;
+            }
+
+            // Process and update state
+            $state = $hook->process($state, $event);
+        }
+
+        return $state;
+    }
+
+    /**
+     * Notify all hooks that implement CanStartExecution that execution has started.
+     *
+     * This is used to signal time-based guards and other stateful hooks.
+     *
+     * @param DateTimeImmutable $startedAt When execution began
+     */
+    public function executionStarted(DateTimeImmutable $startedAt): void
+    {
+        foreach ($this->hooks as $entry) {
+            $hook = $entry['hook'];
+            if ($hook instanceof CanStartExecution) {
+                $hook->executionStarted($startedAt);
+            }
+        }
     }
 
     /**
@@ -101,30 +145,6 @@ final class HookStack
     public function count(): int
     {
         return count($this->hooks);
-    }
-
-    /**
-     * Build the hook chain with priority ordering.
-     *
-     * @param callable(HookContext): HookOutcome $terminal
-     * @return callable(HookContext): HookOutcome
-     */
-    private function buildChain(callable $terminal): callable
-    {
-        $next = $terminal;
-
-        // Sort by priority descending, then by registration order ascending for stable sort
-        $sorted = $this->getSortedHooks();
-
-        // Build chain in reverse order so higher priority wraps outer
-        foreach (array_reverse($sorted) as $entry) {
-            $currentNext = $next;
-            $hook = $entry['hook'];
-            $next = static fn(HookContext $context): HookOutcome
-                => $hook->handle($context, $currentNext);
-        }
-
-        return $next;
     }
 
     /**

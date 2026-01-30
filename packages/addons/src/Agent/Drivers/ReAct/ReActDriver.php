@@ -24,7 +24,7 @@ use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -215,11 +215,11 @@ final class ReActDriver implements CanUseTools
 
     /** Builds a step for a final_answer decision (optionally finalizes via Inference). */
     private function buildFinalAnswerStep(
-        ReActDecision $decision,
-        ?Usage $usage,
-        ?InferenceResponse $inferenceResponse,
-        Messages $messages,
-        CachedContext $cachedContext,
+        ReActDecision          $decision,
+        ?Usage                 $usage,
+        ?InferenceResponse     $inferenceResponse,
+        Messages               $messages,
+        CachedInferenceContext $cachedContext,
     ): AgentStep {
         $finalText = $decision->answer();
         if ($this->finalViaInference) {
@@ -250,7 +250,7 @@ final class ReActDriver implements CanUseTools
     }
 
     /** Generates a plain-text final answer via Inference and returns PendingInference. */
-    private function finalizeAnswerViaInference(Messages $messages, CachedContext $cachedContext): PendingInference {
+    private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cachedContext): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),

@@ -2,19 +2,17 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\AgentHooks\Hooks\CallableHook;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
 use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Enums\AgentStatus;
-use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
-use Cognesy\Agents\Core\Events\AgentEventEmitter;
 use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
@@ -52,19 +50,25 @@ describe('Deterministic agent execution', function () {
             ScenarioStep::final('Paris'),
         );
 
-        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepExecutions.
-        // So step counting must include currentStep to reflect the step being evaluated.
+        // Evaluate after each step to request exactly two steps.
+        $continuationHook = new CallableHook(
+            events: [HookType::AfterStep],
+            callback: static function (AgentState $state, HookType $event): AgentState {
+                $decision = match (true) {
+                    $state->transientStepCount() < 2 => ContinuationDecision::RequestContinuation,
+                    default => ContinuationDecision::AllowStop,
+                };
+
+                return $state->withEvaluation(
+                    ContinuationEvaluation::fromDecision(CallableHook::class, $decision)
+                );
+            },
+        );
+
         $agent = AgentBuilder::base()
             ->withTools([$tool])
             ->withDriver($driver)
-            ->addContinuationCriteria(
-                ContinuationCriteria::when(
-                    static fn(AgentState $state): ContinuationDecision => match (true) {
-                        ($state->stepCount() + ($state->currentStep() !== null ? 1 : 0)) < 2 => ContinuationDecision::RequestContinuation,
-                        default => ContinuationDecision::AllowStop,
-                    }
-                )
-            )
+            ->addHook($continuationHook, -200)
             ->build();
 
         $state = AgentState::empty()
@@ -93,25 +97,22 @@ describe('Deterministic agent execution', function () {
             }
         };
 
-        // Note: Criteria are evaluated AFTER step completes but BEFORE it's recorded to stepExecutions.
-        // So step counting must include currentStep to reflect the step being evaluated.
-        $criterion = ContinuationCriteria::when(
-            static fn(AgentState $state): ContinuationDecision => match (true) {
-                ($state->stepCount() + ($state->currentStep() !== null ? 1 : 0)) < 2 => ContinuationDecision::RequestContinuation,
-                default => ContinuationDecision::AllowStop,
-            }
-        );
-        $continuationCriteria = new ContinuationCriteria($criterion);
+        $agentLoop = AgentBuilder::base()
+            ->withDriver($driver)
+            ->addHook(new CallableHook(
+                events: [HookType::AfterStep],
+                callback: static function (AgentState $state, HookType $event): AgentState {
+                    $decision = match (true) {
+                        $state->transientStepCount() < 2 => ContinuationDecision::RequestContinuation,
+                        default => ContinuationDecision::AllowStop,
+                    };
 
-        $tools = new Tools();
-        $agentLoop = new AgentLoop(
-            tools: $tools,
-            toolExecutor: new ToolExecutor($tools),
-            errorHandler: AgentErrorHandler::default(),
-            continuationCriteria: $continuationCriteria,
-            driver: $driver,
-            eventEmitter: new AgentEventEmitter(),
-        );
+                    return $state->withEvaluation(
+                        ContinuationEvaluation::fromDecision(CallableHook::class, $decision)
+                    );
+                },
+            ), -200)
+            ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
 

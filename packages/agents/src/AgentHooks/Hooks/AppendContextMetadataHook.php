@@ -3,43 +3,36 @@
 namespace Cognesy\Agents\AgentHooks\Hooks;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Core\Data\AgentState;
 
 /**
- * Hook that appends metadata as a JSON message after a step.
+ * Hook that appends execution metadata to the agent state after each step.
  *
- * Converts the agent state's metadata to a JSON-formatted message
- * and appends it to the conversation history.
+ * Records step timing and usage information for observability.
  */
 final readonly class AppendContextMetadataHook implements Hook
 {
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
+        return [HookType::AfterStep];
+    }
+
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
+        $currentStep = $state->currentStep();
+        if ($currentStep === null) {
+            return $state;
         }
 
-        $state = $context->state();
-        $metadata = array_filter($state->metadata()->toArray());
+        // Record step completion metadata
+        $usage = $currentStep->usage();
+        $stepType = $currentStep->stepType();
 
-        if ($metadata === []) {
-            return $next($context);
-        }
-
-        $metadataString = "```json\n"
-            . json_encode($metadata, JSON_PRETTY_PRINT)
-            . "\n```";
-
-        $newMessages = $state
-            ->messages()
-            ->appendMessages(Messages::fromString($metadataString));
-
-        $newState = $state->withMessages($newMessages);
-        return $next($context->withState($newState));
+        return $state
+            ->withMetadata('last_step_type', $stepType->value)
+            ->withMetadata('last_step_tokens', $usage->total());
     }
 }

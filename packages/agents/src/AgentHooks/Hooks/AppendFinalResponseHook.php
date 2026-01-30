@@ -3,66 +3,43 @@
 namespace Cognesy\Agents\AgentHooks\Hooks;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 
 /**
- * Hook that appends the final assistant response (non-tool-call) to the conversation.
- *
- * When a step completes without tool calls (i.e., the agent is providing a final response),
- * this hook extracts and appends the assistant's response message.
+ * Hook that appends final response messages (non-tool-call responses) to conversation history.
  */
 final readonly class AppendFinalResponseHook implements Hook
 {
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
-        }
-
-        $state = $context->state();
-        $currentStep = $state->currentStep();
-
-        if ($currentStep === null) {
-            return $next($context);
-        }
-
-        if ($currentStep->hasToolCalls()) {
-            return $next($context);
-        }
-
-        $finalResponse = $this->extractFinalResponse($currentStep->outputMessages());
-        if ($finalResponse === null) {
-            return $next($context);
-        }
-
-        $newState = $state->withMessages(
-            $state->messages()->appendMessage($finalResponse)
-        );
-
-        return $next($context->withState($newState));
+        return [HookType::AfterStep];
     }
 
-    private function extractFinalResponse(Messages $messages): ?Message
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
     {
-        foreach ($messages->reversed()->each() as $message) {
-            if (!$message->isAssistant()) {
-                continue;
-            }
-            if ($message->metadata()->hasKey('tool_calls')) {
-                continue;
-            }
-            if ($message->content()->isEmpty()) {
-                continue;
-            }
-            return $message;
+        $currentStep = $state->currentStep();
+        if ($currentStep === null) {
+            return $state;
         }
 
-        return null;
+        // Only append if this is a final response (no pending tool calls)
+        if ($currentStep->stepType() !== AgentStepType::FinalResponse) {
+            return $state;
+        }
+
+        $outputMessages = $currentStep->outputMessages();
+        if ($outputMessages->isEmpty()) {
+            return $state;
+        }
+
+        $store = $state->store()
+            ->section(AgentState::DEFAULT_SECTION)
+            ->appendMessages($outputMessages);
+
+        return $state->withMessageStore($store);
     }
 }

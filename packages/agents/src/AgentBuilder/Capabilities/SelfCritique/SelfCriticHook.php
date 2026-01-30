@@ -3,10 +3,10 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
+use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Instructor\StructuredOutput;
@@ -17,6 +17,9 @@ use Cognesy\Messages\Messages;
  */
 final class SelfCriticHook implements Hook
 {
+    public const METADATA_KEY = 'self_critic_result';
+    public const ITERATION_KEY = 'self_critic_iteration';
+
     private const CRITIC_PROMPT = <<<'PROMPT'
 You are a critical evaluator checking for factual errors and evidence contradictions.
 
@@ -85,14 +88,14 @@ PROMPT;
     }
 
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
-        }
+        return [HookType::AfterStep];
+    }
 
-        $state = $context->state();
-
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
         // Capture original task from first message (before any processing)
         if ($this->originalTask === null && $state->messages()->count() > 0) {
             $firstMessage = $state->messages()->first();
@@ -101,7 +104,7 @@ PROMPT;
 
         $currentStep = $state->currentStep();
         if ($currentStep === null) {
-            return $next($context);
+            return $state;
         }
 
         $stepType = $currentStep->stepType();
@@ -111,26 +114,44 @@ PROMPT;
 
         // Only critique final responses (not tool execution steps)
         if ($stepType !== AgentStepType::FinalResponse) {
-            return $next($context);
+            return $state;
         }
 
         // Check current iteration from metadata
-        $iteration = $state->metadata()->get(SelfCriticContinuationCheck::ITERATION_KEY, 0);
-
-        // Don't exceed max iterations
-        if ($iteration >= $this->maxCriticIterations) {
-            if ($this->verbose) {
-                fwrite(STDERR, "  [SelfCritic] Max iterations ({$iteration}) reached, accepting response\n");
-            }
-            return $next($context);
-        }
+        $iteration = $state->metadata()->get(self::ITERATION_KEY, 0);
 
         $response = $currentStep->outputMessages()->toString();
         if (empty($response)) {
             if ($this->verbose) {
                 fwrite(STDERR, "  [SelfCritic] Response is empty, skipping\n");
             }
-            return $next($context);
+            return $this->applyContinuationEvaluation(
+                state: $state,
+                result: null,
+                iteration: $iteration,
+                stepType: $stepType,
+            );
+        }
+
+        // Don't exceed max iterations
+        if ($iteration >= $this->maxCriticIterations) {
+            if ($this->verbose) {
+                fwrite(STDERR, "  [SelfCritic] Max iterations ({$iteration}) reached, accepting response\n");
+            }
+
+            $result = new SelfCriticResult(
+                approved: false,
+                summary: 'Max iterations reached',
+            );
+
+            return $this->applyContinuationEvaluation(
+                state: $state
+                    ->withMetadata(self::METADATA_KEY, $result)
+                    ->withMetadata(self::ITERATION_KEY, $iteration),
+                result: $result,
+                iteration: $iteration,
+                stepType: $stepType,
+            );
         }
 
         // Run critic evaluation using Instructor for structured output
@@ -150,13 +171,20 @@ PROMPT;
         }
 
         // Store result in metadata for continuation check
-        $newState = $state
-            ->withMetadata(SelfCriticContinuationCheck::METADATA_KEY, $result)
-            ->withMetadata(SelfCriticContinuationCheck::ITERATION_KEY, $this->currentIteration);
+        $state = $state
+            ->withMetadata(self::METADATA_KEY, $result)
+            ->withMetadata(self::ITERATION_KEY, $this->currentIteration);
 
         // If approved, return the state as-is
+        $state = $this->applyContinuationEvaluation(
+            state: $state,
+            result: $result,
+            iteration: $this->currentIteration,
+            stepType: $stepType,
+        );
+
         if ($result->approved) {
-            return $next($context->withState($newState));
+            return $state;
         }
 
         if ($this->verbose) {
@@ -179,13 +207,57 @@ PROMPT;
         ]);
 
         // Add the current response + feedback to messages so agent can improve
-        $newState = $newState->withMessages(
-            $newState->messages()->appendMessages(
+        return $state->withMessages(
+            $state->messages()->appendMessages(
                 $currentStep->outputMessages()
             )->appendMessages($feedbackMessage)
         );
+    }
 
-        return $next($context->withState($newState));
+    private function applyContinuationEvaluation(
+        AgentState $state,
+        ?SelfCriticResult $result,
+        int $iteration,
+        AgentStepType $stepType,
+    ): AgentState {
+        if ($stepType !== AgentStepType::FinalResponse) {
+            return $state;
+        }
+
+        if ($result === null) {
+            return $state->withEvaluation(new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::AllowStop,
+                reason: 'No critic result available',
+                context: ['iteration' => $iteration],
+            ));
+        }
+
+        if ($result->approved) {
+            return $state->withEvaluation(new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::AllowStop,
+                reason: 'Self-critic approved the response',
+                context: ['iteration' => $iteration, 'approved' => true],
+            ));
+        }
+
+        if ($iteration >= $this->maxCriticIterations) {
+            return $state->withEvaluation(new ContinuationEvaluation(
+                criterionClass: self::class,
+                decision: ContinuationDecision::ForbidContinuation,
+                reason: sprintf('Max self-critic iterations reached: %d/%d', $iteration, $this->maxCriticIterations),
+                context: ['iteration' => $iteration, 'maxIterations' => $this->maxCriticIterations],
+                stopReason: StopReason::RetryLimitReached,
+            ));
+        }
+
+        return $state->withEvaluation(new ContinuationEvaluation(
+            criterionClass: self::class,
+            decision: ContinuationDecision::RequestContinuation,
+            reason: sprintf('Self-critic requests revision (iteration %d/%d)', $iteration, $this->maxCriticIterations),
+            context: ['iteration' => $iteration, 'maxIterations' => $this->maxCriticIterations, 'approved' => false],
+        ));
     }
 
     /**

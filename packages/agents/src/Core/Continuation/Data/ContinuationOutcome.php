@@ -2,22 +2,21 @@
 
 namespace Cognesy\Agents\Core\Continuation\Data;
 
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
 use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
 use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Continuation\EvaluationProcessor;
 use Throwable;
 
 /**
- * Immutable outcome of continuation criteria evaluation.
+ * Immutable outcome of continuation evaluation.
  *
  * Core data:
  *   - shouldContinue: boolean result
- *   - evaluations: list of individual criterion evaluations
+ *   - evaluations: list of individual evaluations
  *
  * Derived data (computed from evaluations):
- *   - decision(): aggregate ContinuationDecision (for backward compat)
- *   - resolvedBy(): the criterion that made the decision
+ *   - decision(): aggregate ContinuationDecision
+ *   - resolvedBy(): the evaluation source that made the decision
  *   - stopReason(): reason for stopping (if applicable)
  */
 final readonly class ContinuationOutcome
@@ -43,8 +42,8 @@ final readonly class ContinuationOutcome
     }
 
     /**
-     * Create an empty outcome (no criteria).
-     * With no stopping criteria defined, continue by default.
+     * Create an empty outcome (no evaluations).
+     * With no stopping evaluations defined, continue by default.
      */
     public static function empty(): self {
         return new self(
@@ -63,7 +62,7 @@ final readonly class ContinuationOutcome
         }
 
         $evaluation = new ContinuationEvaluation(
-            criterionClass: ContinuationCriteria::class,
+            criterionClass: self::class,
             decision: ContinuationDecision::ForbidContinuation,
             reason: sprintf('Continuation evaluation failed: %s', $message),
             context: [
@@ -81,6 +80,17 @@ final readonly class ContinuationOutcome
 
     public function shouldContinue(): bool {
         return $this->shouldContinue;
+    }
+
+    /**
+     * Check if continuation is forbidden by a guard.
+     *
+     * This is more specific than !shouldContinue() - it indicates
+     * that a ForbidContinuation evaluation was present, not just
+     * that no RequestContinuation was found.
+     */
+    public function isForbidden(): bool {
+        return $this->decision() === ContinuationDecision::ForbidContinuation;
     }
 
     /**

@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Exceptions\AgentException;
@@ -61,10 +60,4 @@ interface CanObserveAgentLifecycle
     public function onAfterToolUse(ToolExecution $execution, AgentState $state): ToolExecution;
 
     // CONTINUATION ///////////////////////////////////////////
-
-    /**
-     * Called when agent is about to stop.
-     * Can prevent stopping to force continuation.
-     */
-    public function onBeforeStopDecision(AgentState $state, StopReason $reason): StopDecision;
 }

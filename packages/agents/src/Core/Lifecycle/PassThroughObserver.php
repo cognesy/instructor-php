@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Exceptions\AgentException;
@@ -56,11 +55,5 @@ class PassThroughObserver implements CanObserveAgentLifecycle
     public function onAfterToolUse(ToolExecution $execution, AgentState $state): ToolExecution
     {
         return $execution;
-    }
-
-    #[\Override]
-    public function onBeforeStopDecision(AgentState $state, StopReason $reason): StopDecision
-    {
-        return StopDecision::allow();
     }
 }

@@ -6,16 +6,18 @@ use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Core\Contracts\CanReportObserverState;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Core\Lifecycle\CanObserveInference;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -31,7 +33,7 @@ use DateTimeImmutable;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools
+class ToolCallingDriver implements CanUseTools, CanReportObserverState
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -44,6 +46,8 @@ class ToolCallingDriver implements CanUseTools
     private bool $parallelToolCalls = false;
     private ToolExecutionFormatter $formatter;
     private CanEmitAgentEvents $eventEmitter;
+    private ?CanObserveInference $inferenceObserver = null;
+    private ?AgentState $observerState = null;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -80,6 +84,17 @@ class ToolCallingDriver implements CanUseTools
         return $clone;
     }
 
+    public function withInferenceObserver(CanObserveInference $observer): self {
+        $clone = clone $this;
+        $clone->inferenceObserver = $observer;
+        return $clone;
+    }
+
+    #[\Override]
+    public function observerState(): ?AgentState {
+        return $this->observerState;
+    }
+
     public function getLlmProvider(): LLMProvider {
         return $this->llm;
     }
@@ -92,7 +107,9 @@ class ToolCallingDriver implements CanUseTools
      */
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentStep {
+        $this->observerState = null;
         $response = $this->getToolCallResponse($state, $tools); // InferenceResponse
+        $state = $this->observerState ?? $state;
         $toolCalls = $this->getToolsToCall($response); // ToolCalls
         $executions = $executor->useTools($toolCalls, $state); // ToolExecutions
         $messages = $this->formatter->makeExecutionMessages($executions);
@@ -111,6 +128,9 @@ class ToolCallingDriver implements CanUseTools
         $messages = $state->messagesForInference();
         $cache = $this->resolveCachedContext($state, $tools);
 
+        $state = $this->applyBeforeInferenceHooks($state, $messages);
+        $messages = $this->resolveInferenceMessages($state, $messages);
+
         // Emit inference request started event
         $requestStartedAt = new DateTimeImmutable();
         $this->eventEmitter->inferenceRequestStarted($state, $messages->count(), $this->model ?: null);
@@ -119,6 +139,11 @@ class ToolCallingDriver implements CanUseTools
 
         // Emit inference response received event
         $this->eventEmitter->inferenceResponseReceived($state, $response, $requestStartedAt);
+
+        $state = $this->applyAfterInferenceHooks($state, $response);
+        $response = $this->resolveInferenceResponse($state, $response);
+
+        $this->observerState = $this->inferenceObserver !== null ? $state : null;
 
         return $response;
     }
@@ -129,9 +154,9 @@ class ToolCallingDriver implements CanUseTools
 
     /** Builds a PendingInference configured for tool-calling. */
     private function buildPendingInference(
-        Messages $messages,
-        Tools $tools,
-        ?CachedContext $cache = null,
+        Messages                $messages,
+        Tools                   $tools,
+        ?CachedInferenceContext $cache = null,
     ) : PendingInference {
         $toolChoice = is_array($this->toolChoice)
             ? ($this->toolChoice['type'] ?? 'auto')
@@ -204,6 +229,40 @@ class ToolCallingDriver implements CanUseTools
         return $messages->appendMessage(Message::asAssistant($content));
     }
 
+    private function applyBeforeInferenceHooks(AgentState $state, Messages $messages): AgentState {
+        if ($this->inferenceObserver === null) {
+            return $state;
+        }
+
+        return $this->inferenceObserver->onBeforeInference($state, $messages);
+    }
+
+    private function applyAfterInferenceHooks(AgentState $state, InferenceResponse $response): AgentState {
+        if ($this->inferenceObserver === null) {
+            return $state;
+        }
+
+        return $this->inferenceObserver->onAfterInference($state, $response);
+    }
+
+    private function resolveInferenceMessages(AgentState $state, Messages $fallback): Messages {
+        $context = $state->hookContext();
+        if ($context === null) {
+            return $fallback;
+        }
+
+        return $context->inferenceMessages ?? $fallback;
+    }
+
+    private function resolveInferenceResponse(AgentState $state, InferenceResponse $fallback): InferenceResponse {
+        $context = $state->hookContext();
+        if ($context === null) {
+            return $fallback;
+        }
+
+        return $context->inferenceResponse ?? $fallback;
+    }
+
     private function isToolArgsLeak(string $content, ToolCalls $toolCalls) : bool {
         if ($toolCalls->hasNone()) {
             return false;
@@ -231,14 +290,14 @@ class ToolCallingDriver implements CanUseTools
         return $json->toArray();
     }
 
-    private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedContext {
+    private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedInferenceContext {
         $cache = $state->cache();
         $cachedTools = $cache->tools();
         if ($cachedTools === [] && !$tools->isEmpty()) {
             $cachedTools = $tools->toToolSchema();
         }
 
-        $resolved = new CachedContext(
+        $resolved = new CachedInferenceContext(
             messages: $cache->messages()->toArray(),
             tools: $cachedTools,
             toolChoice: $cache->toolChoice(),
@@ -248,7 +307,7 @@ class ToolCallingDriver implements CanUseTools
         return $resolved->isEmpty() ? null : $resolved;
     }
 
-    private function resolveToolChoice(string $toolChoice, ?CachedContext $cache): string {
+    private function resolveToolChoice(string $toolChoice, ?CachedInferenceContext $cache): string {
         if ($cache === null) {
             return $toolChoice;
         }

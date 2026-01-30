@@ -26,7 +26,7 @@ use Cognesy\Addons\StepByStep\State\Traits\HandlesUsage;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use Cognesy\Utils\Uuid;
@@ -42,7 +42,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     use HandlesUsage;
 
     private AgentStatus $status;
-    private CachedContext $cache;
+    private CachedInferenceContext $cache;
     /** @var StepResult[] */
     private array $stepResults;
 
@@ -54,18 +54,18 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     public function __construct(
         ?AgentStatus           $status = null,
         ?AgentSteps            $steps = null,
-        ?AgentStep             $currentStep = null,
+        ?AgentStep              $currentStep = null,
 
-        Metadata|array|null    $variables = null,
-        ?Usage                 $usage = null,
-        ?MessageStore          $store = null,
-        ?StateInfo             $stateInfo = null,
-        ?string                $agentId = null,
-        ?string                $parentAgentId = null,
-        ?DateTimeImmutable     $currentStepStartedAt = null,
-        ?DateTimeImmutable     $executionStartedAt = null,
-        ?CachedContext         $cache = null,
-        ?array                 $stepResults = null,
+        Metadata|array|null     $variables = null,
+        ?Usage                  $usage = null,
+        ?MessageStore           $store = null,
+        ?StateInfo              $stateInfo = null,
+        ?string                 $agentId = null,
+        ?string                 $parentAgentId = null,
+        ?DateTimeImmutable      $currentStepStartedAt = null,
+        ?DateTimeImmutable      $executionStartedAt = null,
+        ?CachedInferenceContext $cache = null,
+        ?array                  $stepResults = null,
     ) {
         $this->agentId = $agentId ?? Uuid::uuid4();
         $this->parentAgentId = $parentAgentId;
@@ -83,7 +83,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             is_array($variables) => new Metadata($variables),
             default => new Metadata(),
         };
-        $this->cache = $cache ?? new CachedContext();
+        $this->cache = $cache ?? new CachedInferenceContext();
         $this->usage = $usage ?? new Usage();
         $this->store = $store ?? new MessageStore();
         $this->stepResults = $stepResults ?? [];
@@ -100,18 +100,18 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     public function with(
         ?AgentStatus           $status = null,
         ?AgentSteps            $steps = null,
-        ?AgentStep             $currentStep = null,
+        ?AgentStep              $currentStep = null,
 
-        ?Metadata              $variables = null,
-        ?Usage                 $usage = null,
-        ?MessageStore          $store = null,
-        ?StateInfo             $stateInfo = null,
-        ?string                $agentId = null,
-        ?string                $parentAgentId = null,
-        ?DateTimeImmutable     $currentStepStartedAt = null,
-        ?DateTimeImmutable     $executionStartedAt = null,
-        ?CachedContext         $cache = null,
-        ?array                 $stepResults = null,
+        ?Metadata               $variables = null,
+        ?Usage                  $usage = null,
+        ?MessageStore           $store = null,
+        ?StateInfo              $stateInfo = null,
+        ?string                 $agentId = null,
+        ?string                 $parentAgentId = null,
+        ?DateTimeImmutable      $currentStepStartedAt = null,
+        ?DateTimeImmutable      $executionStartedAt = null,
+        ?CachedInferenceContext $cache = null,
+        ?array                  $stepResults = null,
     ): self {
         return new self(
             status: $status ?? $this->status,
@@ -225,7 +225,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             parentAgentId: $this->parentAgentId,
             currentStepStartedAt: null,
             executionStartedAt: null,
-            cache: new CachedContext(),
+            cache: new CachedInferenceContext(),
             stepResults: [],
         );
     }
@@ -260,11 +260,11 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         return $this->status;
     }
 
-    public function cache() : CachedContext {
+    public function cache() : CachedInferenceContext {
         return $this->cache;
     }
 
-    public function withCachedContext(CachedContext $cache) : self {
+    public function withCachedContext(CachedInferenceContext $cache) : self {
         return $this->with(cache: $cache);
     }
 
@@ -412,7 +412,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
 
     // INTERNAL ////////////////////////////////////////////////
 
-    private function cacheToArray(CachedContext $cache) : array {
+    private function cacheToArray(CachedInferenceContext $cache) : array {
         $responseFormat = $cache->responseFormat();
         $responseFormatData = $responseFormat->isEmpty()
             ? []
@@ -431,7 +431,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         ];
     }
 
-    private static function cacheFromArray(array $data) : CachedContext {
+    private static function cacheFromArray(array $data) : CachedInferenceContext {
         $cacheData = match (true) {
             isset($data['cachedContext']) && is_array($data['cachedContext']) => $data['cachedContext'],
             isset($data['cache']) && is_array($data['cache']) => $data['cache'],
@@ -439,7 +439,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
         };
 
         if ($cacheData === []) {
-            return new CachedContext();
+            return new CachedInferenceContext();
         }
 
         $messages = $cacheData['messages'] ?? [];
@@ -452,7 +452,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             default => null,
         };
 
-        return new CachedContext(
+        return new CachedInferenceContext(
             messages: $messages,
             tools: $tools,
             toolChoice: $toolChoice,

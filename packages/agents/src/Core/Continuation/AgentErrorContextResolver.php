@@ -18,6 +18,8 @@ final readonly class AgentErrorContextResolver implements CanResolveErrorContext
     #[\Override]
     public function resolve(object $state): ErrorContext {
         /** @var AgentState $state */
+
+        // Fallback to step-based error detection
         $currentStep = $state->currentStep();
         if ($currentStep === null || !$currentStep->hasErrors()) {
             return ErrorContext::none();

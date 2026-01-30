@@ -5,8 +5,10 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
-use Cognesy\Agents\Core\Continuation\Enums\ContinuationDecision;
+use Cognesy\Agents\AgentHooks\HookStackObserver;
+use Cognesy\Agents\AgentHooks\Contracts\Hook;
+use Cognesy\Agents\AgentHooks\Enums\HookType;
+use Cognesy\Agents\AgentHooks\Stack\HookStack;
 use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
@@ -25,21 +27,28 @@ describe('AgentLoop continuation evaluation failures', function () {
             }
         };
 
-        $criterion = ContinuationCriteria::when(
-            static function (AgentState $state): ContinuationDecision {
-                throw new \RuntimeException('criteria boom');
+        $hook = new class implements Hook {
+            public function appliesTo(): array {
+                return [HookType::AfterStep];
             }
-        );
-        $continuationCriteria = new ContinuationCriteria($criterion);
+
+            public function process(AgentState $state, HookType $event): AgentState {
+                throw new \RuntimeException('hook boom');
+            }
+        };
+
+        $hookStack = (new HookStack())
+            ->with($hook, -200);
+        $observer = new HookStackObserver($hookStack);
 
         $tools = new Tools();
         $agentLoop = new AgentLoop(
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: AgentErrorHandler::default(),
-            continuationCriteria: $continuationCriteria,
             driver: $driver,
             eventEmitter: new AgentEventEmitter(),
+            observer: $observer,
         );
 
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
@@ -57,7 +66,7 @@ describe('AgentLoop continuation evaluation failures', function () {
         expect($failedState->status())->toBe(AgentStatus::Failed);
         expect($failedState->stepCount())->toBe(1);
         expect($failedState->stepExecutions()->count())->toBe(1);
-        expect($failedState->currentStep()?->errorsAsString())->toContain('criteria boom');
+        expect($failedState->currentStep()?->errorsAsString())->toContain('hook boom');
         expect($outcome)->not->toBeNull();
         expect($outcome?->stopReason())->toBe(StopReason::ErrorForbade);
         expect($outcome?->shouldContinue())->toBeFalse();

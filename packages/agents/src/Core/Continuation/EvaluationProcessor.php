@@ -9,8 +9,7 @@ use Cognesy\Agents\Core\Continuation\Enums\StopReason;
 /**
  * Static methods to process continuation evaluations.
  *
- * Encapsulates the priority-based resolution logic used by ContinuationCriteria
- * and ContinuationOutcome.
+ * Encapsulates the priority-based resolution logic used by ContinuationOutcome.
  */
 final class EvaluationProcessor
 {

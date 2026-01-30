@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
+use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
@@ -11,28 +11,35 @@ use Cognesy\Agents\Core\Data\StepExecution;
 use DateTimeImmutable;
 
 /**
- * Records completed steps and evaluates continuation criteria.
+ * Records completed steps and emits continuation evaluation.
  */
 final readonly class StepRecorder
 {
     public function __construct(
-        private ContinuationCriteria $continuationCriteria,
         private CanEmitAgentEvents $eventEmitter,
     ) {}
 
-    public function record(CurrentExecution $execution, AgentState $state, AgentStep $step): AgentState
-    {
-        $transitionState = $state->withNewStepRecorded($step);
+    /**
+     * Records a completed step and emits continuationEvaluated.
+     */
+    public function record(
+        CurrentExecution $execution,
+        AgentState $state,
+        AgentStep $step,
+        ContinuationOutcome $outcome,
+    ): AgentState {
+        $transitionState = $state
+            ->withCurrentStep($step)
+            ->withContinuationOutcome($outcome);
 
-        $outcome = $this->continuationCriteria->evaluateAll($transitionState);
-        $this->eventEmitter->continuationEvaluated($transitionState, $outcome);
+        $this->eventEmitter->continuationEvaluated($transitionState);
 
         $stepExecution = new StepExecution(
             step: $step,
             outcome: $outcome,
-            startedAt: $execution->startedAt,
+            startedAt: $execution->startedAt(),
             completedAt: new DateTimeImmutable(),
-            stepNumber: $execution->stepNumber,
+            stepNumber: $execution->stepNumber(),
             id: $step->id(),
         );
 
@@ -42,4 +49,3 @@ final readonly class StepRecorder
         return $nextState;
     }
 }
-

@@ -7,6 +7,9 @@ use DateTimeImmutable;
 
 /**
  * Transient execution context for the currently running step.
+ *
+ * This is intentionally minimal: it only captures identity and timing
+ * needed to record a completed StepExecution.
  */
 final readonly class CurrentExecution
 {
@@ -20,15 +23,37 @@ final readonly class CurrentExecution
         $this->id = $id !== '' ? $id : Uuid::uuid4();
     }
 
-    public function toArray(): array {
+    // ACCESSORS ///////////////////////////////////////////////
+
+    public function id(): string
+    {
+        return $this->id;
+    }
+
+    public function stepNumber(): int
+    {
+        return $this->stepNumber;
+    }
+
+    public function startedAt(): DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    // SERIALIZATION ///////////////////////////////////////////
+
+    public function toArray(): array
+    {
         return [
             'id' => $this->id,
             'stepNumber' => $this->stepNumber,
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
+            // Transient fields are NOT serialized
         ];
     }
 
-    public static function fromArray(array $data): self {
+    public static function fromArray(array $data): self
+    {
         $stepNumberValue = $data['stepNumber'] ?? null;
         $stepNumber = is_int($stepNumberValue) ? $stepNumberValue : (int) $stepNumberValue;
 

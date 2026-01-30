@@ -6,11 +6,17 @@ namespace Cognesy\Agents\AgentHooks\Enums;
  * Enumeration of all hook lifecycle events in the agent system.
  *
  * Hook events represent specific points in the agent execution lifecycle
- * where custom behavior can be injected. Events are organized by category:
+ * where custom behavior can be injected. Hooks influence control flow by
+ * writing continuation evaluations into AgentState; decisions are resolved
+ * after each step from aggregated evaluations.
  *
  * Tool Lifecycle:
  * - PreToolUse: Before a tool is executed (can modify args or block)
  * - PostToolUse: After a tool completes (can modify result)
+ *
+ * Inference Lifecycle:
+ * - BeforeInference: Before LLM inference (can modify messages)
+ * - AfterInference: After LLM inference (can modify response)
  *
  * Step Lifecycle:
  * - BeforeStep: Before each agent step begins
@@ -20,18 +26,18 @@ namespace Cognesy\Agents\AgentHooks\Enums;
  * - ExecutionStart: When agent execution begins
  * - ExecutionEnd: When agent execution completes
  *
- * Continuation:
- * - Stop: When agent is about to stop (can force continuation)
- * - SubagentStop: When a subagent is about to stop
- *
  * Error Handling:
- * - AgentFailed: When agent encounters an unrecoverable error
+ * - OnError: When an error occurs during execution (can recover or transform)
  */
 enum HookType: string
 {
     // Tool lifecycle
     case PreToolUse = 'pre_tool_use';
     case PostToolUse = 'post_tool_use';
+
+    // Inference lifecycle
+    case BeforeInference = 'before_inference';
+    case AfterInference = 'after_inference';
 
     // Step lifecycle
     case BeforeStep = 'before_step';
@@ -41,12 +47,8 @@ enum HookType: string
     case ExecutionStart = 'execution_start';
     case ExecutionEnd = 'execution_end';
 
-    // Continuation
-    case Stop = 'stop';
-    case SubagentStop = 'subagent_stop';
-
     // Error handling
-    case AgentFailed = 'agent_failed';
+    case OnError = 'on_error';
 
     /**
      * Check if this is a tool-related event.
@@ -55,6 +57,17 @@ enum HookType: string
     {
         return match ($this) {
             self::PreToolUse, self::PostToolUse => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Check if this is an inference-related event.
+     */
+    public function isInferenceEvent(): bool
+    {
+        return match ($this) {
+            self::BeforeInference, self::AfterInference => true,
             default => false,
         };
     }
@@ -82,34 +95,12 @@ enum HookType: string
     }
 
     /**
-     * Check if this is a continuation-related event.
+     * Check if this is an error-related event.
      */
-    public function isContinuationEvent(): bool
+    public function isErrorEvent(): bool
     {
         return match ($this) {
-            self::Stop, self::SubagentStop => true,
-            default => false,
-        };
-    }
-
-    /**
-     * Check if this event supports blocking (returning HookOutcome::block()).
-     */
-    public function supportsBlocking(): bool
-    {
-        return match ($this) {
-            self::PreToolUse, self::Stop, self::SubagentStop => true,
-            default => false,
-        };
-    }
-
-    /**
-     * Check if this event supports stopping execution (returning HookOutcome::stop()).
-     */
-    public function supportsStopping(): bool
-    {
-        return match ($this) {
-            self::PreToolUse, self::PostToolUse, self::BeforeStep, self::AfterStep, self::Stop, self::SubagentStop => true,
+            self::OnError => true,
             default => false,
         };
     }

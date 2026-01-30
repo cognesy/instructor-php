@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Tests\Unit\Drivers\OpenResponses;
 
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesBodyFormat;
@@ -284,7 +284,7 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_cached_context_system_messages_become_instructions(): void
     {
-        $cachedContext = new CachedContext(messages: [
+        $cachedContext = new CachedInferenceContext(messages: [
             ['role' => 'system', 'content' => 'Cached system instruction'],
             ['role' => 'user', 'content' => 'Cached user'],
         ]);
@@ -304,7 +304,7 @@ class OpenResponsesBodyFormatTest extends TestCase
 
     public function test_cached_context_tool_flow_maps_to_function_call_items(): void
     {
-        $cachedContext = new CachedContext(messages: [
+        $cachedContext = new CachedInferenceContext(messages: [
             [
                 'role' => 'assistant',
                 'content' => '',

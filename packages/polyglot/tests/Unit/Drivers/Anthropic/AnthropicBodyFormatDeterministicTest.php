@@ -2,7 +2,7 @@
 
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicMessageFormat;
@@ -19,7 +19,7 @@ it('Anthropic: system + user mapping and cache_control on cached system', functi
 
     $body = new AnthropicBodyFormat($config, new OpenAIMessageFormat());
 
-    $cached = new CachedContext(
+    $cached = new CachedInferenceContext(
         messages: [ ['role' => 'system', 'content' => 'Cached system.'] ],
     );
 
@@ -87,7 +87,7 @@ it('Anthropic: cache_control applied to last cached message', function () {
 
     $body = new AnthropicBodyFormat($config, new AnthropicMessageFormat());
 
-    $cached = new CachedContext(
+    $cached = new CachedInferenceContext(
         messages: [
             ['role' => 'user', 'content' => 'Cached one.'],
             ['role' => 'assistant', 'content' => 'Cached two.'],

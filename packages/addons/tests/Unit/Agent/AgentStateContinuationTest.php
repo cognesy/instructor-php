@@ -7,7 +7,7 @@ use Cognesy\Addons\Agent\Core\Data\AgentStep;
 use Cognesy\Addons\Agent\Core\Enums\AgentStatus;
 use Cognesy\Addons\Agent\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
 it('appends a user message to the default section', function () {
@@ -26,7 +26,7 @@ it('resets execution state for continuation', function () {
         ->withMessages(Messages::fromString('First'))
         ->withAddedStep(new AgentStep())
         ->withUsage(new Usage(1, 2, 3, 4, 5))
-        ->withCachedContext(new CachedContext(messages: [['role' => 'user', 'content' => 'cached']]))
+        ->withCachedContext(new CachedInferenceContext(messages: [['role' => 'user', 'content' => 'cached']]))
         ->markStepStarted()
         ->markExecutionStarted()
         ->withStatus(AgentStatus::Completed);

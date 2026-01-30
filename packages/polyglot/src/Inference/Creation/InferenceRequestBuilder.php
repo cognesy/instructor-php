@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Creation;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -26,21 +26,21 @@ class InferenceRequestBuilder
     private ?bool $streaming;
     private ?int $maxTokens;
 
-    protected CachedContext $cachedContext;
+    protected CachedInferenceContext $cachedContext;
 
     public function __construct(
-        ?Messages $messages = null,
-        ?string $model = null,
-        ?array $tools = null,
-        null|string|array $toolChoice = null,
-        ?ResponseFormat $responseFormat = null,
-        ?array $options = null,
-        ?OutputMode $mode = null,
-        ?CachedContext $cachedContext = null,
-        ?bool $streaming = null,
-        ?int $maxTokens = null,
-        ?ResponseCachePolicy $responseCachePolicy = null,
-        ?InferenceRetryPolicy $retryPolicy = null,
+        ?Messages               $messages = null,
+        ?string                 $model = null,
+        ?array                  $tools = null,
+        null|string|array       $toolChoice = null,
+        ?ResponseFormat         $responseFormat = null,
+        ?array                  $options = null,
+        ?OutputMode             $mode = null,
+        ?CachedInferenceContext $cachedContext = null,
+        ?bool                   $streaming = null,
+        ?int                    $maxTokens = null,
+        ?ResponseCachePolicy    $responseCachePolicy = null,
+        ?InferenceRetryPolicy   $retryPolicy = null,
     ) {
         $this->messages = $messages;
         $this->model = $model;
@@ -51,7 +51,7 @@ class InferenceRequestBuilder
         $this->mode = $mode;
         $this->streaming = $streaming;
         $this->maxTokens = $maxTokens;
-        $this->cachedContext = $cachedContext ?? new CachedContext();
+        $this->cachedContext = $cachedContext ?? new CachedInferenceContext();
         $this->responseCachePolicy = $responseCachePolicy;
         $this->retryPolicy = $retryPolicy;
     }
@@ -157,7 +157,7 @@ class InferenceRequestBuilder
         string|array $toolChoice = [],
         array        $responseFormat = [],
     ): self {
-        $this->cachedContext = new CachedContext(
+        $this->cachedContext = new CachedInferenceContext(
             $messages, $tools, $toolChoice, $responseFormat
         );
         return $this;

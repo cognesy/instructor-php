@@ -3,12 +3,10 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Summarization;
 
 use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Contracts\HookContext;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\StepHookContext;
 use Cognesy\Agents\AgentHooks\Enums\HookType;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Events\MessagesMovedToBuffer;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Utils\SplitMessages;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Utils\Tokenizer;
@@ -29,18 +27,18 @@ final readonly class MoveMessagesToBufferHook implements Hook
     }
 
     #[\Override]
-    public function handle(HookContext $context, callable $next): HookOutcome
+    public function appliesTo(): array
     {
-        if (!$context instanceof StepHookContext || $context->eventType() !== HookType::AfterStep) {
-            return $next($context);
-        }
+        return [HookType::AfterStep];
+    }
 
-        $state = $context->state();
-
+    #[\Override]
+    public function process(AgentState $state, HookType $event): AgentState
+    {
         // Check if token limit is exceeded
         $tokens = Tokenizer::tokenCount($state->messages()->toString());
         if ($tokens <= $this->maxTokens) {
-            return $next($context);
+            return $state;
         }
 
         [$keep, $overflow] = (new SplitMessages)->split(
@@ -59,8 +57,6 @@ final readonly class MoveMessagesToBufferHook implements Hook
             ->section('messages')
             ->setMessages($keep);
 
-        $newState = $state->withMessageStore($newMessageStore);
-
-        return $next($context->withState($newState));
+        return $state->withMessageStore($newMessageStore);
     }
 }

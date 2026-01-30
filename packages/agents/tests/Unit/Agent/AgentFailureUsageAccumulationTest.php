@@ -5,7 +5,6 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Continuation\ContinuationCriteria;
 use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanHandleAgentErrors;
@@ -52,7 +51,6 @@ describe('AgentLoop failure usage accumulation', function () {
             tools: $tools,
             toolExecutor: new ToolExecutor($tools),
             errorHandler: $errorHandler,
-            continuationCriteria: new ContinuationCriteria(),
             driver: $driver,
             eventEmitter: new AgentEventEmitter(),
         );

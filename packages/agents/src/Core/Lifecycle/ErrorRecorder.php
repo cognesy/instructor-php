@@ -22,22 +22,30 @@ final readonly class ErrorRecorder
         private CanEmitAgentEvents $eventEmitter,
     ) {}
 
-    public function record(Throwable $error, AgentState $state, CurrentExecution $execution): ErrorRecordingResult
-    {
+    /**
+     * Records an error step and determines whether execution should continue.
+     *
+     */
+    public function record(
+        Throwable $error,
+        AgentState $state,
+        CurrentExecution $execution,
+    ): ErrorRecordingResult {
         $handling = $this->errorHandler->handleError($error, $state);
 
         $transitionState = $state
             ->withStatus(AgentStatus::Failed)
-            ->withNewStepRecorded($handling->failureStep);
+            ->withCurrentStep($handling->failureStep)
+            ->withContinuationOutcome($handling->outcome);
 
-        $this->eventEmitter->continuationEvaluated($transitionState, $handling->outcome);
+        $this->eventEmitter->continuationEvaluated($transitionState);
 
         $stepExecution = new StepExecution(
             step: $handling->failureStep,
             outcome: $handling->outcome,
-            startedAt: $execution->startedAt,
+            startedAt: $execution->startedAt(),
             completedAt: new DateTimeImmutable(),
-            stepNumber: $execution->stepNumber,
+            stepNumber: $execution->stepNumber(),
             id: $handling->failureStep->id(),
         );
 
@@ -64,4 +72,3 @@ final readonly class ErrorRecorder
         );
     }
 }
-

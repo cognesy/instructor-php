@@ -1,10 +1,10 @@
 <?php
 
-use Cognesy\Polyglot\Inference\Data\CachedContext;
+use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 it('applies cached response format when request response format is empty', function () {
-    $cachedContext = new CachedContext(responseFormat: [
+    $cachedContext = new CachedInferenceContext(responseFormat: [
         'type' => 'json_schema',
         'json_schema' => [
             'name' => 'schema',
@@ -20,7 +20,7 @@ it('applies cached response format when request response format is empty', funct
 });
 
 it('keeps request response format when it is not empty', function () {
-    $cachedContext = new CachedContext(responseFormat: [
+    $cachedContext = new CachedInferenceContext(responseFormat: [
         'type' => 'json_object',
     ]);
 

@@ -30,31 +30,31 @@ class InferenceRequest
     protected array $options; // options may contain additional inference parameters like temperature, max tokens, etc.
     protected ?OutputMode $mode;
 
-    protected ?CachedContext $cachedContext;
+    protected ?CachedInferenceContext $cachedContext;
     protected ResponseCachePolicy $responseCachePolicy;
     protected ?InferenceRetryPolicy $retryPolicy;
 
     public function __construct(
         Messages|string|array|null $messages = null,
-        ?string $model = null,
-        ?array $tools = null,
-        null|string|array $toolChoice = null,
-        ResponseFormat|array|null $responseFormat = null,
-        ?array $options = null,
-        ?OutputMode $mode = null,
-        ?CachedContext $cachedContext = null,
-        ?ResponseCachePolicy $responseCachePolicy = null,
-        ?InferenceRetryPolicy $retryPolicy = null,
+        ?string                    $model = null,
+        ?array                     $tools = null,
+        null|string|array          $toolChoice = null,
+        ResponseFormat|array|null  $responseFormat = null,
+        ?array                     $options = null,
+        ?OutputMode                $mode = null,
+        ?CachedInferenceContext    $cachedContext = null,
+        ?ResponseCachePolicy       $responseCachePolicy = null,
+        ?InferenceRetryPolicy      $retryPolicy = null,
         //
-        ?string $id = null, // for deserialization
-        ?DateTimeImmutable $createdAt = null, // for deserialization
-        ?DateTimeImmutable $updatedAt = null, // for deserialization
+        ?string                    $id = null, // for deserialization
+        ?DateTimeImmutable         $createdAt = null, // for deserialization
+        ?DateTimeImmutable         $updatedAt = null, // for deserialization
     ) {
         $this->id = $id ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
-        $this->cachedContext = $cachedContext ?? new CachedContext();
+        $this->cachedContext = $cachedContext ?? new CachedInferenceContext();
 
         $this->model = $model ?? '';
         $this->options = $options ?? [];
@@ -142,9 +142,9 @@ class InferenceRequest
     /**
      * Retrieves the cached context if available.
      *
-     * @return CachedContext|null The cached context instance or null if not set.
+     * @return CachedInferenceContext|null The cached context instance or null if not set.
      */
-    public function cachedContext() : ?CachedContext {
+    public function cachedContext() : ?CachedInferenceContext {
         return $this->cachedContext;
     }
 
@@ -219,15 +219,15 @@ class InferenceRequest
 
     public function with(
         Messages|string|array|null $messages = null,
-        ?string $model = null,
-        ?array $tools = null,
-        string|array|null $toolChoice = null,
-        ResponseFormat|array|null $responseFormat = null,
-        ?array $options = null,
-        ?OutputMode $mode = null,
-        ?CachedContext $cachedContext = null,
-        ?ResponseCachePolicy $responseCachePolicy = null,
-        ?InferenceRetryPolicy $retryPolicy = null,
+        ?string                    $model = null,
+        ?array                     $tools = null,
+        string|array|null          $toolChoice = null,
+        ResponseFormat|array|null  $responseFormat = null,
+        ?array                     $options = null,
+        ?OutputMode                $mode = null,
+        ?CachedInferenceContext    $cachedContext = null,
+        ?ResponseCachePolicy       $responseCachePolicy = null,
+        ?InferenceRetryPolicy      $retryPolicy = null,
     ) : self {
         $normalizedMessages = match(true) {
             $messages instanceof Messages => $messages,
@@ -286,7 +286,7 @@ class InferenceRequest
         return $this->with(mode: $mode);
     }
 
-    public function withCachedContext(?CachedContext $cachedContext) : self {
+    public function withCachedContext(?CachedInferenceContext $cachedContext) : self {
         return $this->with(cachedContext: $cachedContext);
     }
 
@@ -318,7 +318,7 @@ class InferenceRequest
                 : $this->responseFormat,
             options: $this->options,
             mode: $this->mode,
-            cachedContext: new CachedContext(),
+            cachedContext: new CachedInferenceContext(),
             responseCachePolicy: $this->responseCachePolicy,
             retryPolicy: $this->retryPolicy,
             id: $this->id,

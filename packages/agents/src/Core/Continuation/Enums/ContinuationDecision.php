@@ -3,9 +3,9 @@
 namespace Cognesy\Agents\Core\Continuation\Enums;
 
 /**
- * Represents a criterion's decision about whether to continue execution.
+ * Represents an evaluation decision about whether to continue execution.
  *
- * Two categories of criteria:
+ * Two categories of evaluations:
  *   - Guards (limits, error checks): ForbidContinuation / AllowContinuation
  *   - Work drivers (tool calls, self-critic): RequestContinuation / AllowStop
  *
