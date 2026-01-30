@@ -195,6 +195,10 @@ final readonly class InferenceResponse
         return $this->with(content: $content);
     }
 
+    public function withPricing(Pricing $pricing): self {
+        return $this->with(usage: $this->usage->withPricing($pricing));
+    }
+
     public function withReasoningContentFallbackFromContent(): self {
         if ($this->reasoningContent !== '') {
             return $this;

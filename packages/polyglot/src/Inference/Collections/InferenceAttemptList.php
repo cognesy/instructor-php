@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\Inference\Collections;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Collection\ArrayList;
+use InvalidArgumentException;
 
 class InferenceAttemptList
 {
@@ -65,6 +66,29 @@ class InferenceAttemptList
 
     public function withNewAttempt(InferenceAttempt $attempt): self {
         return new self($this->attempts->withAppended($attempt));
+    }
+
+    /**
+     * Updates an attempt with the given one (by matching ID).
+     *
+     * @throws InvalidArgumentException If no attempt with the given ID exists
+     */
+    public function withUpdatedAttempt(InferenceAttempt $attempt): self {
+        $items = $this->attempts->all();
+        $updated = false;
+        foreach ($items as $index => $existing) {
+            if ($existing->id === $attempt->id) {
+                $items[$index] = $attempt;
+                $updated = true;
+                break;
+            }
+        }
+        if (!$updated) {
+            throw new InvalidArgumentException(
+                "Cannot update attempt: no attempt found with ID '{$attempt->id}'"
+            );
+        }
+        return new self(ArrayList::fromArray($items));
     }
 
     // SERIALIZATION /////////////////////////////////////////

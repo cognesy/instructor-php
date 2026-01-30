@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Config;
 
 use Cognesy\Config\Exceptions\ConfigurationException;
+use Cognesy\Polyglot\Inference\Data\Pricing;
 use InvalidArgumentException;
 use Throwable;
 
@@ -26,6 +27,7 @@ final class LLMConfig
         public int    $maxOutputLength = 4096,
         public string $driver = 'openai-compatible',
         public array  $options = [],
+        public array  $pricing = [],
     ) {
         $this->assertNoRetryPolicyInOptions($this->options);
     }
@@ -62,7 +64,12 @@ final class LLMConfig
             'maxOutputLength' => $this->maxOutputLength,
             'driver' => $this->driver,
             'options' => $this->options,
+            'pricing' => $this->pricing,
         ];
+    }
+
+    public function getPricing(): Pricing {
+        return Pricing::fromArray($this->pricing);
     }
 
     private function assertNoRetryPolicyInOptions(array $options) : void {
