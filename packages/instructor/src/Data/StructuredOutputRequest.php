@@ -106,6 +106,10 @@ class StructuredOutputRequest
         return $this->outputFormat;
     }
 
+    public function hasRequestedSchema() : bool {
+        return !empty($this->requestedSchema);
+    }
+
     // MUTATORS /////////////////////////////////////////////////
 
     public function with(
@@ -119,6 +123,7 @@ class StructuredOutputRequest
         ?CachedContext $cachedContext = null,
         ?OutputFormat  $outputFormat = null,
     ) : static {
+        $mergedOptions = $options !== null ? array_merge($this->options, $options) : $this->options;
         return new static(
             messages: $messages ?? $this->messages,
             requestedSchema: $requestedSchema ?? $this->requestedSchema,
@@ -126,7 +131,7 @@ class StructuredOutputRequest
             prompt: $prompt ?? $this->prompt,
             examples: $examples ?? $this->examples,
             model: $model ?? $this->model,
-            options: $options ?? $this->options,
+            options: $mergedOptions,
             cachedContext: $cachedContext ?? $this->cachedContext,
             outputFormat: $outputFormat ?? $this->outputFormat,
             id: $this->id,
@@ -160,11 +165,11 @@ class StructuredOutputRequest
     }
 
     public function withOptions(array $options) : static {
-        return $this->with(options: array_merge($this->options, $options));
+        return $this->with(options: $options);
     }
 
     public function withStreamed(bool $streamed = true) : static {
-        return $this->withOptions(array_merge($this->options, ['stream' => $streamed]));
+        return $this->withOptions(['stream' => $streamed]);
     }
 
     public function withCachedContext(CachedContext $cachedContext) : static {

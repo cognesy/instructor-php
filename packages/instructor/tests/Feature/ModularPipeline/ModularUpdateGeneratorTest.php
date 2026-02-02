@@ -5,6 +5,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
@@ -19,8 +20,6 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 
 class TestGeneratorModel {
     public string $test = '';
@@ -30,10 +29,9 @@ function makeModularUpdateGeneratorTestInfrastructure(FakeInferenceDriver $drive
     $events = new EventDispatcher();
     $config = new StructuredOutputConfig();
 
-    $schemaFactory = new SchemaFactory(useObjectReferences: $config->useObjectReferences());
+    $schemaRenderer = new StructuredOutputSchemaRenderer($config);
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder($schemaFactory),
-        $schemaFactory,
+        $schemaRenderer,
         $config,
         $events
     );

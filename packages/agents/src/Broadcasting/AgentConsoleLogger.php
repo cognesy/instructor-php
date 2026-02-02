@@ -2,23 +2,22 @@
 
 namespace Cognesy\Agents\Broadcasting;
 
-use Cognesy\Agents\Core\Continuation\Data\ContinuationEvaluation;
-use Cognesy\Agents\Core\Events\AgentExecutionCompleted;
-use Cognesy\Agents\Core\Events\AgentExecutionFailed;
-use Cognesy\Agents\Core\Events\AgentExecutionStarted;
-use Cognesy\Agents\Core\Events\AgentStepCompleted;
-use Cognesy\Agents\Core\Events\AgentStepStarted;
-use Cognesy\Agents\Core\Events\ContinuationEvaluated;
-use Cognesy\Agents\Core\Events\DecisionExtractionFailed;
-use Cognesy\Agents\Core\Events\HookExecuted;
-use Cognesy\Agents\Core\Events\InferenceRequestStarted;
-use Cognesy\Agents\Core\Events\InferenceResponseReceived;
-use Cognesy\Agents\Core\Events\SubagentCompleted;
-use Cognesy\Agents\Core\Events\SubagentSpawning;
-use Cognesy\Agents\Core\Events\ToolCallBlocked;
-use Cognesy\Agents\Core\Events\ToolCallCompleted;
-use Cognesy\Agents\Core\Events\ToolCallStarted;
-use Cognesy\Agents\Core\Events\ValidationFailed;
+use Cognesy\Agents\Events\AgentExecutionCompleted;
+use Cognesy\Agents\Events\AgentExecutionFailed;
+use Cognesy\Agents\Events\AgentExecutionStarted;
+use Cognesy\Agents\Events\AgentStepCompleted;
+use Cognesy\Agents\Events\AgentStepStarted;
+use Cognesy\Agents\Events\ContinuationEvaluated;
+use Cognesy\Agents\Events\DecisionExtractionFailed;
+use Cognesy\Agents\Events\HookExecuted;
+use Cognesy\Agents\Events\InferenceRequestStarted;
+use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Agents\Events\SubagentCompleted;
+use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Agents\Events\ToolCallBlocked;
+use Cognesy\Agents\Events\ToolCallCompleted;
+use Cognesy\Agents\Events\ToolCallStarted;
+use Cognesy\Agents\Events\ValidationFailed;
 use Cognesy\Events\Event;
 use DateTimeImmutable;
 
@@ -236,30 +235,31 @@ final class AgentConsoleLogger
             return;
         }
 
-        $outcome = $event->outcome;
-        $decision = $outcome->shouldContinue ? 'CONTINUE' : 'STOP';
-        $color = $outcome->shouldContinue ? 'magenta' : 'cyan';
+        $stopSignal = $event->stopSignal();
+        $shouldContinue = $event->shouldContinue();
+        $decision = $shouldContinue ? 'CONTINUE' : 'STOP';
+        $color = $shouldContinue ? 'magenta' : 'cyan';
+        $stopReason = $event->stopReason();
 
         $details = [
             sprintf('decision=%s', $decision),
-            sprintf('reason=%s', $outcome->stopReason()->value),
-            sprintf('resolved_by=%s', $outcome->resolvedBy()),
+            sprintf('reason=%s', $stopReason?->value ?? 'none'),
         ];
+
+        $resolvedBy = $event->resolvedBy();
+        if ($resolvedBy !== '') {
+            $details[] = sprintf('resolved_by=%s', $resolvedBy);
+        }
 
         $this->logWithAgent('EVAL', $color, sprintf(
             'Continuation evaluated [%s]',
             implode(', ', $details),
         ), $event->agentId, $event->parentAgentId);
 
-        // Show individual evaluations for debugging
-        foreach ($outcome->evaluations as $eval) {
-            /** @var ContinuationEvaluation $eval */
-            $criterionName = basename(str_replace('\\', '/', $eval->criterionClass));
+        if ($stopSignal !== null && $stopSignal->message !== '') {
             $this->logWithAgent('    ', 'dark', sprintf(
-                '%s: %s - %s',
-                $criterionName,
-                $eval->decision->value,
-                $eval->reason,
+                '%s',
+                $stopSignal->message,
             ), $event->agentId, $event->parentAgentId);
         }
     }

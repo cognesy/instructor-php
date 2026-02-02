@@ -2,9 +2,8 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput;
 
-use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Hooks\HookContext;
+use Cognesy\Agents\Hooks\HookInterface;
 
 /**
  * Hook that persists successful structured output extractions to agent state.
@@ -12,26 +11,21 @@ use Cognesy\Agents\Core\Data\AgentState;
  * When a structured_output tool call includes a 'store_as' parameter,
  * this hook stores the extracted data in agent metadata under that key.
  */
-final readonly class PersistStructuredOutputHook implements Hook
+final readonly class PersistStructuredOutputHook implements HookInterface
 {
     #[\Override]
-    public function appliesTo(): array
+    public function handle(HookContext $context): HookContext
     {
-        return [HookType::AfterStep];
-    }
-
-    #[\Override]
-    public function process(AgentState $state, HookType $event): AgentState
-    {
+        $state = $context->state();
         $currentStep = $state->currentStep();
 
         if ($currentStep === null) {
-            return $state;
+            return $context;
         }
 
         $toolExecutions = $currentStep->toolExecutions();
         if (!$toolExecutions->hasExecutions()) {
-            return $state;
+            return $context;
         }
 
         $metadata = $state->metadata();
@@ -71,9 +65,10 @@ final readonly class PersistStructuredOutputHook implements Hook
         }
 
         if ($changed) {
-            return $state->with(variables: $metadata);
+            $nextState = $state->with(context: $state->context()->withMetadata($metadata));
+            return $context->withState($nextState);
         }
 
-        return $state;
+        return $context;
     }
 }

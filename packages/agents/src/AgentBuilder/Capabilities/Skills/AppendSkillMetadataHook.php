@@ -2,34 +2,28 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Hooks\HookContext;
+use Cognesy\Agents\Hooks\HookInterface;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
 /**
  * Hook that prepends skill metadata to messages on first step.
  */
-final readonly class AppendSkillMetadataHook implements Hook
+final readonly class AppendSkillMetadataHook implements HookInterface
 {
     private const MARKER = '<skills-metadata>';
 
     public function __construct(private SkillLibrary $library) {}
 
     #[\Override]
-    public function appliesTo(): array
+    public function handle(HookContext $context): HookContext
     {
-        return [HookType::BeforeStep];
-    }
-
-    #[\Override]
-    public function process(AgentState $state, HookType $event): AgentState
-    {
+        $state = $context->state();
         $skills = $this->library->listSkills();
 
         if ($skills === [] || $this->hasInjectedSkills($state->messages())) {
-            return $state;
+            return $context;
         }
 
         $content = implode("\n", [
@@ -43,7 +37,7 @@ final readonly class AppendSkillMetadataHook implements Hook
             Message::asSystem($content),
         ]);
 
-        return $state->withMessages($messages);
+        return $context->withState($state->withMessages($messages));
     }
 
     private function hasInjectedSkills(Messages $messages): bool

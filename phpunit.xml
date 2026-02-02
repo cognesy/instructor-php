@@ -117,6 +117,7 @@
         <include>
             <directory suffix=".php">./packages/addons/src</directory>
             <directory suffix=".php">./packages/agent-ctrl/src</directory>
+            <directory suffix=".php">./packages/agents/src</directory>
             <directory suffix=".php">./packages/auxiliary/src</directory>
             <directory suffix=".php">./packages/config/src</directory>
             <directory suffix=".php">./packages/doctor/src</directory>

@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Core\ErrorHandling\Data\ErrorContext;
-use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorHandlingDecision;
-use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorType;
+use tmp\ErrorHandling\Data\ErrorContext;
+use tmp\ErrorHandling\Enums\ErrorHandlingDecision;
+use tmp\ErrorHandling\Enums\ErrorType;
 
 it('defines all error types', function () {
     $values = array_map(
@@ -14,9 +14,9 @@ it('defines all error types', function () {
 
     expect(count($values))->toBe(6);
     expect($values)->toBe([
-        'tool',
         'model',
         'validation',
+        'tool',
         'rate_limit',
         'timeout',
         'unknown',

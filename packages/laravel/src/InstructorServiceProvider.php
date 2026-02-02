@@ -174,7 +174,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerStructuredOutput(): void
     {
-        $this->app->singleton(StructuredOutput::class, function (Application $app) {
+        $this->app->bind(StructuredOutput::class, function (Application $app) {
             $instructor = new StructuredOutput(
                 events: $app->make(CanHandleEvents::class),
                 configProvider: $app->make(CanProvideConfig::class),

@@ -3,6 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Extraction\Buffers\JsonBuffer;
@@ -12,8 +13,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAnd
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Utils\Result\Result;
 
@@ -23,8 +22,11 @@ class TestDeserializeModel {
 
 function makeDeserializeTestResponseModel(): ResponseModel {
     $cfg = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory(useObjectReferences: $cfg->useObjectReferences());
-    $factory = new ResponseModelFactory(new ToolCallBuilder($schemaFactory), $schemaFactory, $cfg, new EventDispatcher());
+    $factory = new ResponseModelFactory(
+        new StructuredOutputSchemaRenderer($cfg),
+        $cfg,
+        new EventDispatcher()
+    );
     return $factory->fromAny(TestDeserializeModel::class);
 }
 

@@ -8,9 +8,6 @@ use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 
 class StructuredOutputExecutionBuilder
 {
@@ -40,17 +37,9 @@ class StructuredOutputExecutionBuilder
         CanHandleEvents $events,
         ?OutputFormat $outputFormat = null,
     ): ResponseModel {
-        $schemaFactory = new SchemaFactory(
-            useObjectReferences: $config->useObjectReferences(),
-            schemaConverter: new JsonSchemaToSchema(
-                defaultToolName: $config->toolName(),
-                defaultToolDescription: $config->toolDescription(),
-            )
-        );
-        $toolCallBuilder = new ToolCallBuilder($schemaFactory);
+        $schemaRenderer = new StructuredOutputSchemaRenderer($config);
         $responseModelFactory = new ResponseModelFactory(
-            toolCallBuilder: $toolCallBuilder,
-            schemaFactory: $schemaFactory,
+            schemaRenderer: $schemaRenderer,
             config: $config,
             events: $events,
         );

@@ -4,7 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Tools;
 
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\ToolInterface;
-use Cognesy\Agents\Core\Exceptions\InvalidToolException;
+use Cognesy\Agents\Exceptions\InvalidToolException;
 
 final class ToolRegistry implements ToolRegistryInterface
 {
@@ -21,11 +21,10 @@ final class ToolRegistry implements ToolRegistryInterface
     private array $fullSpecs = [];
 
     #[\Override]
-    public function register(ToolInterface $tool): void
-    {
+    public function register(ToolInterface $tool): void {
         $this->instances[$tool->name()] = $tool;
         $this->metadata[$tool->name()] ??= $tool->metadata();
-        $this->fullSpecs[$tool->name()] ??= $tool->fullSpec();
+        $this->fullSpecs[$tool->name()] ??= $tool->instructions();
     }
 
     #[\Override]
@@ -36,11 +35,9 @@ final class ToolRegistry implements ToolRegistryInterface
         ?array $fullSpec = null,
     ): void {
         $this->factories[$name] = $factory;
-
         if ($metadata !== null) {
             $this->metadata[$name] = $metadata;
         }
-
         if ($fullSpec !== null) {
             $this->fullSpecs[$name] = $fullSpec;
         }
@@ -63,7 +60,7 @@ final class ToolRegistry implements ToolRegistryInterface
             $tool = ($this->factories[$name])();
             $this->instances[$name] = $tool;
             $this->metadata[$name] ??= $tool->metadata();
-            $this->fullSpecs[$name] ??= $tool->fullSpec();
+            $this->fullSpecs[$name] ??= $tool->instructions();
             return $tool;
         }
 
@@ -194,7 +191,7 @@ final class ToolRegistry implements ToolRegistryInterface
     {
         if (! isset($this->fullSpecs[$name])) {
             $tool = $this->resolve($name);
-            $this->fullSpecs[$name] = $tool->fullSpec();
+            $this->fullSpecs[$name] = $tool->instructions();
         }
 
         return $this->fullSpecs[$name];

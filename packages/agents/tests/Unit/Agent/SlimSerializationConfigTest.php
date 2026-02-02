@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Serialization\SlimSerializationConfig;
+use tmp\Serialization\SlimSerializationConfig;
 
 it('creates minimal serialization config', function () {
     $config = SlimSerializationConfig::minimal();

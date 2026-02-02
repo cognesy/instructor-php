@@ -5,6 +5,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Hooks\HookTriggers;
 
 /**
  * Adds metadata read/write/list tools to the agent.
@@ -33,6 +34,6 @@ class UseMetadataTools implements AgentCapability
             new MetadataListTool(),
         ));
 
-        $builder->addHook(new PersistMetadataHook());
+        $builder->addHook(new PersistMetadataHook(), HookTriggers::afterStep());
     }
 }

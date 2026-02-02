@@ -97,7 +97,7 @@ abstract class BaseTool implements ToolInterface, CanAccessAgentState
      * Override in subclasses to provide examples, errors, notes, etc.
      */
     #[\Override]
-    public function fullSpec(): array {
+    public function instructions(): array {
         return [
             'name' => $this->name(),
             'description' => $this->description(),

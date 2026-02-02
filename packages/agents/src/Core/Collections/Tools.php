@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Core\Collections;
 
 use Cognesy\Agents\Core\Contracts\ToolInterface;
-use Cognesy\Agents\Core\Exceptions\InvalidToolException;
+use Cognesy\Agents\Exceptions\InvalidToolException;
 
 final readonly class Tools
 {

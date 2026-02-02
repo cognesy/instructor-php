@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Tests\Unit\Core;
 
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Messages\Messages;
 use DateTimeImmutable;
 
 it('touches updatedAt on state changes while keeping createdAt', function () {
@@ -11,7 +11,7 @@ it('touches updatedAt on state changes while keeping createdAt', function () {
     $updatedAt = new DateTimeImmutable('2026-01-01T01:00:00+00:00');
     $state = new AgentState(createdAt: $createdAt, updatedAt: $updatedAt);
 
-    $next = $state->withStatus(AgentStatus::InProgress);
+    $next = $state->withMessages(Messages::fromString('ping'));
 
     expect($next->createdAt()->format(DateTimeImmutable::ATOM))->toBe('2026-01-01T00:00:00+00:00')
         ->and($next->updatedAt()->getTimestamp())->toBeGreaterThan($state->updatedAt()->getTimestamp());

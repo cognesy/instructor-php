@@ -1,24 +1,44 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\EditFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\WriteFileTool;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\NullEventEmitter;
+use Cognesy\Agents\Tests\Support\TestAgentLoop;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
-use Cognesy\Agents\Tests\Support\TestHelpers;
+use tmp\ErrorHandling\AgentErrorHandler;
 
 describe('Agent with File Tools', function () {
 
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_file_test_' . uniqid();
         mkdir($this->tempDir, 0755, true);
+        $this->makeAgent = function (Tools $tools, FakeInferenceDriver $driver, int $maxIterations): TestAgentLoop {
+            $eventEmitter = new NullEventEmitter();
+            $llm = LLMProvider::new()->withDriver($driver);
+            $toolDriver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
+            $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter);
+
+            return new TestAgentLoop(
+                tools: $tools,
+                toolExecutor: $toolExecutor,
+                errorHandler: AgentErrorHandler::default(),
+                driver: $toolDriver,
+                eventEmitter: $eventEmitter,
+                observer: null,
+                maxIterations: $maxIterations,
+            );
+        };
     });
 
     afterEach(function () {
@@ -50,11 +70,7 @@ describe('Agent with File Tools', function () {
             ReadFileTool::inDirectory($this->tempDir),
         );
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Read the test file')
@@ -66,7 +82,7 @@ describe('Agent with File Tools', function () {
         // Assert
         expect($finalState->stepCount())->toBe(2);
         // Verify the read was performed (by checking that tool was called)
-        $firstStep = $finalState->stepAt(0);
+        $firstStep = $finalState->steps()->stepAt(0);
         expect($firstStep->hasToolCalls())->toBeTrue();
         expect($firstStep->toolCalls()->first()->name())->toBe('read_file');
     });
@@ -95,11 +111,7 @@ describe('Agent with File Tools', function () {
             WriteFileTool::inDirectory($this->tempDir),
         );
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create a new file')
@@ -142,11 +154,7 @@ describe('Agent with File Tools', function () {
             EditFileTool::inDirectory($this->tempDir),
         );
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Change World to Universe')
@@ -200,11 +208,7 @@ describe('Agent with File Tools', function () {
             EditFileTool::inDirectory($this->tempDir),
         );
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 4);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Create, read, and modify a file')

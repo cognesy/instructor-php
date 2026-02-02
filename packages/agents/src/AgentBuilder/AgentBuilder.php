@@ -2,29 +2,30 @@
 
 namespace Cognesy\Agents\AgentBuilder;
 
-use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
-use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Hooks\AppendContextMetadataHook;
-use Cognesy\Agents\AgentHooks\Hooks\AppendFinalResponseHook;
-use Cognesy\Agents\AgentHooks\Hooks\AppendStepMessagesHook;
-use Cognesy\Agents\AgentHooks\Hooks\AppendToolTraceToBufferHook;
-use Cognesy\Agents\AgentHooks\Hooks\ApplyCachedContextHook;
-use Cognesy\Agents\AgentHooks\Hooks\ClearExecutionBufferHook;
-use Cognesy\Agents\AgentHooks\Hooks\ErrorPolicyHook;
-use Cognesy\Agents\AgentHooks\Hooks\FinishReasonHook;
-use Cognesy\Agents\AgentHooks\Hooks\ToolCallPresenceHook;
-use Cognesy\Agents\AgentHooks\HookStackObserver;
-use Cognesy\Agents\AgentHooks\Stack\HookStack;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\ErrorHandling\AgentErrorHandler;
-use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
-use Cognesy\Agents\Core\Events\AgentEventEmitter;
-use Cognesy\Agents\Core\Lifecycle\CanObserveInference;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Hooks\Defaults\AppendContextMetadataHook;
+use Cognesy\Agents\Hooks\Defaults\AppendFinalResponseHook;
+use Cognesy\Agents\Hooks\Defaults\AppendStepMessagesHook;
+use Cognesy\Agents\Hooks\Defaults\AppendToolTraceToBufferHook;
+use Cognesy\Agents\Hooks\Defaults\ApplyCachedContextHook;
+use Cognesy\Agents\Hooks\Defaults\ClearExecutionBufferHook;
+use Cognesy\Agents\Hooks\Defaults\ErrorPolicyHook;
+use Cognesy\Agents\Hooks\Defaults\FinishReasonHook;
+use Cognesy\Agents\Hooks\Guards\ExecutionTimeLimitHook;
+use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
+use Cognesy\Agents\Hooks\Guards\TokenUsageLimitHook;
+use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\HookStack;
+use Cognesy\Agents\Hooks\HookTrigger;
+use Cognesy\Agents\Hooks\HookTriggers;
+use Cognesy\Agents\Hooks\RegisteredHooks;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
@@ -32,6 +33,8 @@ use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use tmp\ErrorHandling\AgentErrorHandler;
+use tmp\ErrorHandling\ErrorPolicy;
 
 /**
  * Fluent builder for creating Agent instances with composable features.
@@ -73,7 +76,7 @@ class AgentBuilder
 
     private function __construct() {
         $this->tools = new Tools();
-        $this->hookStack = new HookStack();
+        $this->hookStack = new HookStack(new RegisteredHooks());
     }
 
     /**
@@ -241,25 +244,24 @@ class AgentBuilder
     /**
      * Add a hook to the agent.
      *
-     * @param Hook $hook The hook to add
+     * @param HookInterface $hook The hook to add
+     * @param HookTriggers $triggers Triggers that execute the hook
      * @param int $priority Higher priority = runs earlier. Default is 0.
      *
      * @example
      * // Add a custom hook
-     * $builder->addHook(new MyCustomHook(), priority: 100);
+     * $builder->addHook(new MyCustomHook(), HookTriggers::afterStep(), priority: 100);
      *
      * @example
      * // Add a callable hook for specific events
      * $builder->addHook(
-     *     new CallableHook(
-     *         events: [HookType::BeforeStep],
-     *         callback: fn(AgentState $state, HookType $event) => $state->withMetadata('started', true),
-     *     ),
+     *     new MyCustomHook(),
+     *     HookTriggers::beforeStep(),
      *     priority: 50,
      * );
      */
-    public function addHook(Hook $hook, int $priority = 0): self {
-        $this->hookStack = $this->hookStack->with($hook, $priority);
+    public function addHook(HookInterface $hook, HookTriggers $triggers, int $priority = 0, ?string $name = null): self {
+        $this->hookStack = $this->hookStack->with($hook, $triggers, $priority, $name);
         return $this;
     }
 
@@ -285,22 +287,14 @@ class AgentBuilder
         // Build driver with shared event emitter
         $driver = $this->buildDriver($eventEmitter);
 
-        // Build lifecycle observer from hook stack
-        $observer = new HookStackObserver(
-            hookStack: $this->hookStack,
-            eventEmitter: $eventEmitter,
-        );
+        $interceptor = $this->hookStack;
 
-        if ($observer instanceof CanObserveInference && method_exists($driver, 'withInferenceObserver')) {
-            $driver = $driver->withInferenceObserver($observer);
-        }
-
-        // Build tool executor with lifecycle observer
+        // Build tool executor with lifecycle interceptor
         $toolExecutor = new ToolExecutor(
             tools: $this->tools,
-            throwOnToolFailure: false,
             eventEmitter: $eventEmitter,
-            observer: $observer,
+            interceptor: $interceptor,
+            throwOnToolFailure: false,
         );
 
         // Build error handler
@@ -308,14 +302,14 @@ class AgentBuilder
             policy: $this->errorPolicy ?? ErrorPolicy::stopOnAnyError(),
         );
 
-        // Build agent loop (hooks handle everything via observer)
+        // Build agent loop (hooks handle everything via interceptor)
         $agent = new AgentLoop(
             tools: $this->tools,
             toolExecutor: $toolExecutor,
             errorHandler: $errorHandler,
             driver: $driver,
             eventEmitter: $eventEmitter,
-            observer: $observer,
+            interceptor: $interceptor,
         );
 
         foreach ($this->onBuildCallbacks as $callback) {
@@ -331,7 +325,7 @@ class AgentBuilder
      * Register base hooks for core agent functionality.
      *
      * These hooks handle:
-     * - Guard limits (steps, tokens, time) via BeforeStep evaluations
+     * - Guard limits (steps, tokens, time) via BeforeStep stop signals
      * - Cached context application (before step)
      * - Message history management (after step)
      * - Tool trace separation (after step)
@@ -339,24 +333,27 @@ class AgentBuilder
     private function registerBaseHooks(): void {
         // BeforeStep: Guard hooks for execution limits (priority 200 = runs first)
         $this->hookStack = $this->hookStack->with(
-            new \Cognesy\Agents\AgentHooks\Guards\StepsLimitHook(
+            new StepsLimitHook(
                 maxSteps: $this->maxSteps,
-                stepCounter: static fn($state) => $state->transientStepCount(),
+                stepCounter: static fn($state) => $state->stepCount(),
             ),
+            HookTriggers::beforeStep(),
             200,
         );
 
         $this->hookStack = $this->hookStack->with(
-            new \Cognesy\Agents\AgentHooks\Guards\TokenUsageLimitHook(
+            new TokenUsageLimitHook(
                 maxTotalTokens: $this->maxTokens,
             ),
+            HookTriggers::beforeStep(),
             200,
         );
 
         $this->hookStack = $this->hookStack->with(
-            new \Cognesy\Agents\AgentHooks\Guards\ExecutionTimeLimitHook(
+            new ExecutionTimeLimitHook(
                 maxSeconds: $this->maxExecutionTime,
             ),
+            HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep),
             200,
         );
 
@@ -364,23 +361,25 @@ class AgentBuilder
         if ($this->cachedContext !== null && !$this->cachedContext->isEmpty()) {
             $this->hookStack = $this->hookStack->with(
                 new ApplyCachedContextHook($this->cachedContext),
+                HookTriggers::beforeStep(),
                 100,
             );
         }
 
         // AfterStep: Message history management (priority -100 = runs late)
-        $this->hookStack = $this->hookStack->with(new AppendContextMetadataHook(), -100);
+        $this->hookStack = $this->hookStack->with(new AppendContextMetadataHook(), HookTriggers::afterStep(), -100);
 
         if ($this->separateToolTrace) {
-            $this->hookStack = $this->hookStack->with(new ClearExecutionBufferHook(), -110);
-            $this->hookStack = $this->hookStack->with(new AppendFinalResponseHook(), -120);
-            $this->hookStack = $this->hookStack->with(new AppendToolTraceToBufferHook(), -130);
+            $this->hookStack = $this->hookStack->with(new ClearExecutionBufferHook(), HookTriggers::afterStep(), -110);
+            $this->hookStack = $this->hookStack->with(new AppendFinalResponseHook(), HookTriggers::afterStep(), -120);
+            $this->hookStack = $this->hookStack->with(new AppendToolTraceToBufferHook(), HookTriggers::afterStep(), -130);
         } else {
-            $this->hookStack = $this->hookStack->with(new AppendStepMessagesHook(), -100);
+            $this->hookStack = $this->hookStack->with(new AppendStepMessagesHook(), HookTriggers::afterStep(), -100);
         }
 
         $this->hookStack = $this->hookStack->with(
             new ErrorPolicyHook($this->errorPolicy ?? ErrorPolicy::stopOnAnyError()),
+            HookTriggers::afterStep(),
             -200,
         );
 
@@ -389,14 +388,7 @@ class AgentBuilder
                 $this->finishReasons,
                 static fn($state): ?InferenceFinishReason => $state->currentStep()?->finishReason()
             ),
-            -200,
-        );
-
-        $this->hookStack = $this->hookStack->with(
-            new ToolCallPresenceHook(
-                static fn($state) => $state->currentStep() === null
-                    || $state->currentStep()->hasToolCalls()
-            ),
+            HookTriggers::afterStep(),
             -200,
         );
 

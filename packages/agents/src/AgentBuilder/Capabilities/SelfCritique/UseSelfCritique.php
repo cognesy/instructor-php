@@ -4,6 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Hooks\HookTriggers;
 
 class UseSelfCritique implements AgentCapability
 {
@@ -19,6 +20,6 @@ class UseSelfCritique implements AgentCapability
             maxCriticIterations: $this->maxIterations,
             verbose: $this->verbose,
             llmPreset: $this->llmPreset,
-        ));
+        ), HookTriggers::afterStep());
     }
 }

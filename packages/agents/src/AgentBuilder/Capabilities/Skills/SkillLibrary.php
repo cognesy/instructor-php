@@ -2,17 +2,15 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 
 final class SkillLibrary
 {
-    private const SKILL_EXTENSION = '.md';
     private const SKILL_FILENAME = 'SKILL.md';
 
     private string $skillsPath;
 
-    /** @var array<string, array{name: string, description: string, path: string, dir: string, isSkillFile: bool}> */
+    /** @var array<string, array{name: string, description: string, path: string, dir: string}> */
     private array $metadata = [];
 
     /** @var array<string, Skill> */
@@ -105,11 +103,6 @@ final class SkillLibrary
             $name = $meta['name'];
             if (!isset($this->metadata[$name])) {
                 $this->metadata[$name] = $meta;
-                continue;
-            }
-
-            if ($this->shouldOverrideMetadata($this->metadata[$name], $meta)) {
-                $this->metadata[$name] = $meta;
             }
         }
     }
@@ -123,25 +116,10 @@ final class SkillLibrary
             $files = array_merge($files, $skillFiles);
         }
 
-        $legacyFiles = glob($this->skillsPath . '/*' . self::SKILL_EXTENSION);
-        if ($legacyFiles !== false) {
-            $files = array_merge($files, $legacyFiles);
-        }
-
         return $files;
     }
 
-    /** @param array{name: string, description: string, path: string, dir: string, isSkillFile: bool} $existing
-     *  @param array{name: string, description: string, path: string, dir: string, isSkillFile: bool} $incoming
-     */
-    private function shouldOverrideMetadata(array $existing, array $incoming): bool {
-        if ($incoming['isSkillFile'] && !$existing['isSkillFile']) {
-            return true;
-        }
-        return false;
-    }
-
-    /** @return array{name: string, description: string, path: string, dir: string, isSkillFile: bool}|null */
+    /** @return array{name: string, description: string, path: string, dir: string}|null */
     private function extractMetadata(string $path): ?array {
         $content = @file_get_contents($path);
         if ($content === false) {
@@ -149,20 +127,16 @@ final class SkillLibrary
         }
 
         $frontmatter = $this->parseFrontmatter($content) ?? [];
-        $isSkillFile = basename($path) === self::SKILL_FILENAME;
-        $defaultName = $isSkillFile
-            ? basename(dirname($path))
-            : pathinfo($path, PATHINFO_FILENAME);
+        $defaultName = basename(dirname($path));
         $name = (string) ($frontmatter['name'] ?? $defaultName);
         $description = (string) ($frontmatter['description'] ?? '');
-        $dir = $isSkillFile ? dirname($path) : ($this->skillsPath . '/' . $name);
+        $dir = dirname($path);
 
         return [
             'name' => $name,
             'description' => $description,
             'path' => $path,
             'dir' => $dir,
-            'isSkillFile' => $isSkillFile,
         ];
     }
 
@@ -174,14 +148,11 @@ final class SkillLibrary
 
         $frontmatter = $this->parseFrontmatter($content);
         $body = $this->extractBody($content);
-        $isSkillFile = basename($path) === self::SKILL_FILENAME;
-        $defaultName = $isSkillFile
-            ? basename(dirname($path))
-            : pathinfo($path, PATHINFO_FILENAME);
+        $defaultName = basename(dirname($path));
         $name = (string) ($frontmatter['name'] ?? $defaultName);
         $description = (string) ($frontmatter['description'] ?? '');
-        $dir = $isSkillFile ? dirname($path) : ($this->skillsPath . '/' . $name);
-        $resources = $this->findResources($dir, $name, !$isSkillFile);
+        $dir = dirname($path);
+        $resources = $this->findResources($dir);
 
         return new Skill(
             name: $name,
@@ -227,7 +198,7 @@ final class SkillLibrary
     }
 
     /** @return list<string> */
-    private function findResources(string $skillDir, string $skillName, bool $includeLegacy = false): array {
+    private function findResources(string $skillDir): array {
         $resources = [];
         $resourceFolders = ['scripts', 'references', 'assets'];
 
@@ -235,14 +206,6 @@ final class SkillLibrary
             $resources = array_merge(
                 $resources,
                 $this->listResourceFiles($skillDir . '/' . $folder, $folder . '/')
-            );
-        }
-
-        if ($includeLegacy) {
-            $legacyDir = $this->skillsPath . '/resources/' . $skillName;
-            $resources = array_merge(
-                $resources,
-                $this->listResourceFiles($legacyDir, 'resources/')
             );
         }
 

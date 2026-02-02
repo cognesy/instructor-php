@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Context\AgentContext;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
-use Cognesy\Agents\Drivers\Testing\DeterministicAgentDriver;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
@@ -15,13 +12,9 @@ it('compiles summary buffer and messages for inference in order', function () {
         new Section('buffer', Messages::fromString('BUFFER', 'user')),
         new Section('messages', Messages::fromString('RECENT', 'user')),
     );
-    $state = new AgentState(store: $store);
+    $state = new AgentState(context: new AgentContext(store: $store));
 
-    $driver = new DeterministicAgentDriver([
-        ScenarioStep::final('ok'),
-    ]);
+    $messages = $state->context()->messagesForInference();
 
-    $step = $driver->useTools($state, new Tools(), new ToolExecutor(new Tools()));
-
-    expect(trim($step->inputMessages()->toString()))->toBe("SUMMARY\nBUFFER\nRECENT");
+    expect(trim($messages->toString()))->toBe("SUMMARY\nBUFFER\nRECENT");
 });

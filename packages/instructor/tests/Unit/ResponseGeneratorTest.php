@@ -4,6 +4,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Extraction\ResponseExtractor;
@@ -11,8 +12,6 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Utils\Result\Result;
 
 // Lightweight fakes for pipeline dependencies
@@ -32,8 +31,11 @@ class FakeTransformer extends ResponseTransformer {
 describe('ResponseGenerator', function () {
     function makeResponseModelForStd(): ResponseModel {
         $cfg = new StructuredOutputConfig();
-        $schemaFactory = new SchemaFactory(useObjectReferences: $cfg->useObjectReferences());
-        $factory = new ResponseModelFactory(new ToolCallBuilder($schemaFactory), $schemaFactory, $cfg, new EventDispatcher());
+        $factory = new ResponseModelFactory(
+            new StructuredOutputSchemaRenderer($cfg),
+            $cfg,
+            new EventDispatcher()
+        );
         return $factory->fromAny(stdClass::class);
     }
 

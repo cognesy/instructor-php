@@ -2,11 +2,9 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Contracts\CanHandleToolSelection;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
@@ -16,6 +14,8 @@ class ResponseModel implements CanProvideJsonSchema
     private string $class;
     private Schema $schema;
     private array $jsonSchema;
+    private array $toolCallSchema;
+    private array $responseFormat;
     private string $toolName;
     private string $toolDescription;
     private string $schemaName;
@@ -30,6 +30,8 @@ class ResponseModel implements CanProvideJsonSchema
         mixed  $instance,
         Schema $schema,
         array  $jsonSchema,
+        array  $toolCallSchema = [],
+        array  $responseFormat = [],
         string $schemaName,
         string $schemaDescription,
         string $toolName,
@@ -42,6 +44,8 @@ class ResponseModel implements CanProvideJsonSchema
         $this->instance = $instance;
         $this->schema = $schema;
         $this->jsonSchema = $jsonSchema;
+        $this->toolCallSchema = $toolCallSchema;
+        $this->responseFormat = $responseFormat;
         $this->schemaName = $schemaName;
         $this->schemaDescription = $schemaDescription;
         $this->toolName = $toolName;
@@ -117,7 +121,15 @@ class ResponseModel implements CanProvideJsonSchema
     // MUTATORS ////////////////////////////////////////////////////////
 
     public function withOutputMode(OutputMode $mode) : static {
-        return $this->with(mode: $mode);
+        return $this->with(
+            mode: $mode,
+            responseFormat: StructuredOutputSchemaRenderer::responseFormatFor(
+                mode: $mode,
+                jsonSchema: $this->jsonSchema,
+                schemaName: $this->schemaName(),
+                toolDescription: $this->toolDescription(),
+            ),
+        );
     }
 
     public function withInstance(mixed $instance) : static {
@@ -159,30 +171,15 @@ class ResponseModel implements CanProvideJsonSchema
         return $this->toJsonSchema();
     }
 
-    public function toolCallSchema() : ?array {
+    public function toolCallSchema() : array {
         return match($this->config->outputMode()) {
-            OutputMode::Tools => $this->makeToolCallSchema(),
+            OutputMode::Tools => $this->toolCallSchema,
             default => [],
         };
     }
 
     public function responseFormat() : array {
-        return match($this->config->outputMode()) {
-            OutputMode::Json => [
-                'type' => 'json_object',
-                'schema' => $this->jsonSchema(),
-            ],
-            OutputMode::JsonSchema => [
-                'type' => 'json_schema',
-                'description' => $this->toolDescription(),
-                'json_schema' => [
-                    'name' => $this->schemaName(),
-                    'schema' => $this->jsonSchema(),
-                    'strict' => true,
-                ],
-            ],
-            default => []
-        };
+        return $this->responseFormat;
     }
 
     public function toolChoice() : string|array {
@@ -218,12 +215,16 @@ class ResponseModel implements CanProvideJsonSchema
         ?string $toolName = null,
         ?string $toolDescription = null,
         ?OutputFormat $outputFormat = null,
+        ?array $toolCallSchema = null,
+        ?array $responseFormat = null,
     ) : static {
         $new = new static(
             class: $this->class,
             instance: $instance ?? $this->instance,
             schema: $this->schema,
             jsonSchema: $this->jsonSchema,
+            toolCallSchema: $toolCallSchema ?? $this->toolCallSchema,
+            responseFormat: $responseFormat ?? $this->responseFormat,
             schemaName: $this->schemaName,
             schemaDescription: $this->schemaDescription,
             toolName: $toolName ?? $this->toolName,
@@ -238,17 +239,5 @@ class ResponseModel implements CanProvideJsonSchema
         return $new;
     }
 
-    private function makeToolCallSchema() : array {
-        $schemaFactory = new SchemaFactory(useObjectReferences: $this->useObjectReferences);
-        $toolCallBuilder = new ToolCallBuilder($schemaFactory);
-
-        return match(true) {
-            $this->instance() instanceof CanHandleToolSelection => $this->instance()->toToolCallsJson(),
-            default => $toolCallBuilder->renderToolCall(
-                $this->toJsonSchema(),
-                $this->toolName,
-                $this->toolDescription
-            ),
-        };
-    }
+    // tool-call rendering is centralized in StructuredOutputSchemaRenderer
 }

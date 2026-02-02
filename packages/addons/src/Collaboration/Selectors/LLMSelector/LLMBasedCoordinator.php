@@ -38,9 +38,7 @@ final readonly class LLMBasedCoordinator implements CanChooseNextCollaborator
         $messages = $state->messages();
         $prompt = "{$this->instruction}\nAvailable participants:\n{$availableParticipants}";
 
-        $structuredOutput = $this->structuredOutput ?? new StructuredOutput();
-
-        $result = Result::try(fn() => $structuredOutput
+        $result = Result::try(fn() => ($this->structuredOutput ?? new StructuredOutput())
             ->withMessages($messages->toArray())
             ->withPrompt($prompt)
             ->withResponseModel(CollaboratorChoice::class)

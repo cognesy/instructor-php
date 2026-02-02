@@ -12,8 +12,8 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
 use Cognesy\Instructor\Creation\StructuredOutputPipelineFactory;
-use Cognesy\Instructor\Creation\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\Data\OutputFormat;
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
@@ -45,7 +45,7 @@ class StructuredOutput
     // From traits - builder instances
     private ?LLMProvider $llmProvider = null;
     protected StructuredOutputExecutionBuilder $executionBuilder;
-    private StructuredOutputRequestBuilder $requestBuilder;
+    private StructuredOutputRequest $request;
     private StructuredOutputConfigBuilder $configBuilder;
 
     // From traits - callback handlers
@@ -75,7 +75,7 @@ class StructuredOutput
     ) {
         $this->events = EventBusResolver::using($events);
         $this->configBuilder = new StructuredOutputConfigBuilder(configProvider: $configProvider);
-        $this->requestBuilder = new StructuredOutputRequestBuilder();
+        $this->request = new StructuredOutputRequest();
         $this->executionBuilder = new StructuredOutputExecutionBuilder($this->events);
         $this->llmProvider = LLMProvider::new(
             events: $this->events,
@@ -164,23 +164,23 @@ class StructuredOutput
     // REQUEST BUILDER METHODS (from HandlesRequestBuilder) ///////////////////
 
     public function withMessages(string|array|Message|Messages $messages): static {
-        $this->requestBuilder->withMessages($messages);
+        $this->request = $this->request->withMessages($messages);
         return $this;
     }
 
     public function withInput(mixed $input): static {
         $messages = Messages::fromInput($input);
-        $this->requestBuilder->withMessages($messages);
+        $this->request = $this->request->withMessages($messages);
         return $this;
     }
 
     public function withResponseModel(string|array|object $responseModel): static {
-        $this->requestBuilder->withResponseModel($responseModel);
+        $this->request = $this->request->withRequestedSchema($responseModel);
         return $this;
     }
 
     public function withResponseJsonSchema(array|CanProvideJsonSchema $jsonSchema): static {
-        $this->requestBuilder->withResponseModel($jsonSchema);
+        $this->request = $this->request->withRequestedSchema($jsonSchema);
         return $this;
     }
 
@@ -189,7 +189,7 @@ class StructuredOutput
      * @return StructuredOutput<TResponse>
      */
     public function withResponseClass(string $class): StructuredOutput {
-        $this->requestBuilder->withResponseModel($class);
+        $this->request = $this->request->withRequestedSchema($class);
         return $this;
     }
 
@@ -198,42 +198,42 @@ class StructuredOutput
      * @return StructuredOutput<TResponse>
      */
     public function withResponseObject(object $responseObject): StructuredOutput {
-        $this->requestBuilder->withResponseModel($responseObject);
+        $this->request = $this->request->withRequestedSchema($responseObject);
         return $this;
     }
 
     public function withSystem(string $system): static {
-        $this->requestBuilder->withSystem($system);
+        $this->request = $this->request->withSystem($system);
         return $this;
     }
 
     public function withPrompt(string $prompt): static {
-        $this->requestBuilder->withPrompt($prompt);
+        $this->request = $this->request->withPrompt($prompt);
         return $this;
     }
 
     public function withExamples(array $examples): static {
-        $this->requestBuilder->withExamples($examples);
+        $this->request = $this->request->withExamples($examples);
         return $this;
     }
 
     public function withModel(string $model): static {
-        $this->requestBuilder->withModel($model);
+        $this->request = $this->request->withModel($model);
         return $this;
     }
 
     public function withOptions(array $options): static {
-        $this->requestBuilder->withOptions($options);
+        $this->request = $this->request->withOptions($options);
         return $this;
     }
 
     public function withOption(string $key, mixed $value): static {
-        $this->requestBuilder->withOption($key, $value);
+        $this->request = $this->request->withOptions([$key => $value]);
         return $this;
     }
 
     public function withStreaming(bool $stream = true): static {
-        $this->withOption('stream', $stream);
+        $this->request = $this->request->withStreamed($stream);
         return $this;
     }
 
@@ -243,7 +243,9 @@ class StructuredOutput
         string $prompt = '',
         array $examples = [],
     ): static {
-        $this->requestBuilder->withCachedContext($messages, $system, $prompt, $examples);
+        $this->request = $this->request->withCachedContext(
+            new CachedContext($messages, $system, $prompt, $examples)
+        );
         return $this;
     }
 
@@ -253,7 +255,7 @@ class StructuredOutput
      * Return extracted data as raw associative array (skip object deserialization).
      */
     public function intoArray(): static {
-        $this->requestBuilder->withOutputFormat(OutputFormat::array());
+        $this->request = $this->request->withOutputFormat(OutputFormat::array());
         return $this;
     }
 
@@ -263,7 +265,7 @@ class StructuredOutput
      * @param class-string $class Target class for deserialization
      */
     public function intoInstanceOf(string $class): static {
-        $this->requestBuilder->withOutputFormat(OutputFormat::instanceOf($class));
+        $this->request = $this->request->withOutputFormat(OutputFormat::instanceOf($class));
         return $this;
     }
 
@@ -273,7 +275,7 @@ class StructuredOutput
      * @param CanDeserializeSelf $object Object implementing CanDeserializeSelf
      */
     public function intoObject(CanDeserializeSelf $object): static {
-        $this->requestBuilder->withOutputFormat(OutputFormat::selfDeserializing($object));
+        $this->request = $this->request->withOutputFormat(OutputFormat::selfDeserializing($object));
         return $this;
     }
 
@@ -400,7 +402,7 @@ class StructuredOutput
      * for generating the request.
      */
     public function withRequest(StructuredOutputRequest $request): static {
-        $this->requestBuilder->withRequest($request);
+        $this->request = $request;
         return $this;
     }
 
@@ -437,7 +439,7 @@ class StructuredOutput
         ?OutputMode $mode = null,
         ?ResponseCachePolicy $responseCachePolicy = null,
     ): static {
-        $this->requestBuilder->with(
+        $this->request = $this->request->with(
             messages: $messages,
             requestedSchema: $responseModel,
             system: $system,
@@ -462,12 +464,16 @@ class StructuredOutput
      *
      * This method initializes the request factory, request handler, and response generator,
      * and returns a StructuredOutputResponse object that can be used to handle the request.
+     * StructuredOutput instances are single-use; call create() once per instance.
      *
      * @return PendingStructuredOutput<TResponse> A response object providing access to various results retrieval methods.
      */
     public function create(): PendingStructuredOutput {
+        if (!$this->request->hasRequestedSchema()) {
+            throw new \Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
+        }
         $config = $this->configBuilder->create();
-        $request = $this->requestBuilder->create();
+        $request = $this->request;
         $execution = $this->executionBuilder->createWith(
             request: $request,
             config: $config,
@@ -490,11 +496,12 @@ class StructuredOutput
 
         $executorFactory = $pipelineFactory->createIteratorFactory();
 
-        return new PendingStructuredOutput(
+        $pending = new PendingStructuredOutput(
             execution: $execution,
             executorFactory: $executorFactory,
             events: $this->events,
         );
+        return $pending;
     }
 
     // OVERRIDES ///////////////////////////////////////////////////////////////
@@ -596,4 +603,5 @@ class StructuredOutput
     public function getArray(): array {
         return $this->create()->getArray();
     }
+
 }

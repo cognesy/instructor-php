@@ -7,16 +7,13 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\SchemaRendering;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Factories\JsonSchemaToSchema;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Visitors\SchemaToJsonSchema;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Cognesy\Utils\Str;
 use InvalidArgumentException;
@@ -24,26 +21,17 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseModelFactory
 {
-    protected ToolCallBuilder $toolCallBuilder;
-    protected SchemaFactory $schemaFactory;
+    protected StructuredOutputSchemaRenderer $schemaRenderer;
     protected StructuredOutputConfig $config;
     protected EventDispatcherInterface $events;
 
-    protected JsonSchemaToSchema $schemaConverter;
-
     public function __construct(
-        ToolCallBuilder $toolCallBuilder,
-        SchemaFactory $schemaFactory,
+        StructuredOutputSchemaRenderer $schemaRenderer,
         StructuredOutputConfig $config,
         EventDispatcherInterface $events,
     ) {
-        $this->toolCallBuilder = $toolCallBuilder;
-        $this->schemaFactory = $schemaFactory;
+        $this->schemaRenderer = $schemaRenderer;
         $this->config = $config;
-        $this->schemaConverter = new JsonSchemaToSchema(
-            defaultToolName: $config->toolName(),
-            defaultToolDescription: $config->toolDescription(),
-        );
         $this->events = $events;
     }
 
@@ -82,18 +70,29 @@ class ResponseModelFactory
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromClassString']));
         $class = $requestedModel;
         $instance = $this->makeInstance($class);
-        $schema = $this->schemaFactory->schema($class);
-        $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $schema = $this->schemaRenderer->schemaFactory()->schema($class);
+        $rendering = $this->renderSchema($schema);
+        $jsonSchema = $rendering->jsonSchema();
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema, $rendering),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     private function fromJsonSchema(array $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
         $class = $requestedModel['x-php-class'] ?? '\Cognesy\Dynamic\Structure';
-        $schema = $this->schemaConverter->fromJsonSchema($requestedModel);
+        $schema = $this->schemaRenderer->schemaFromJsonSchema($requestedModel);
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $schema = $schema
@@ -110,19 +109,40 @@ class ResponseModelFactory
         };
         $jsonSchema = $requestedModel;
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     private function fromInstance(object $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromInstance']));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
-        $schema = $this->schemaFactory->schema($class);
-        $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $schema = $this->schemaRenderer->schemaFactory()->schema($class);
+        $rendering = $this->renderSchema($schema);
+        $jsonSchema = $rendering->jsonSchema();
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema, $rendering),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     private function fromJsonSchemaProvider(object|string $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
@@ -135,11 +155,21 @@ class ResponseModelFactory
             $instance = $this->makeInstance($class);
         }
         $jsonSchema = $instance->toJsonSchema();
-        $schema = $this->schemaConverter->fromJsonSchema($jsonSchema);
+        $schema = $this->schemaRenderer->schemaFromJsonSchema($jsonSchema);
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     private function fromSchemaProvider(object|string $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
@@ -152,11 +182,22 @@ class ResponseModelFactory
             $instance = $this->makeInstance($class);
         }
         $schema = $instance->toSchema();
-        $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $rendering = $this->renderSchema($schema);
+        $jsonSchema = $rendering->jsonSchema();
         $schemaName = $this->schemaName($schema);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema, $rendering),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     private function fromSchema(Schema $requestedModel, ?OutputFormat $outputFormat) : ResponseModel {
@@ -164,11 +205,22 @@ class ResponseModelFactory
         $schema = $requestedModel;
         $class = $schema->typeDetails->class ?? throw new InvalidArgumentException('Schema must have a class to create ResponseModel');
         $instance = $this->makeInstance($class);
-        $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $rendering = $this->renderSchema($schema);
+        $jsonSchema = $rendering->jsonSchema();
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema, $rendering),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     /**
@@ -189,7 +241,17 @@ class ResponseModelFactory
         $schemaName = $this->schemaName($schema);
         $schemaDescription = $this->schemaDescription($requestedModel);
         $resolvedOutputFormat = $this->resolveOutputFormat($outputFormat, $schema);
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema, $schemaName, $schemaDescription, $resolvedOutputFormat);
+        return $this->makeResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallSchema: $this->toolCallSchemaForInstance($instance, $jsonSchema),
+            responseFormat: $this->renderResponseFormat($jsonSchema, $schemaName),
+            schemaName: $schemaName,
+            schemaDescription: $schemaDescription,
+            outputFormat: $resolvedOutputFormat,
+        );
     }
 
     private function schemaName(string|array|object $requestedSchema) : string {
@@ -236,6 +298,8 @@ class ResponseModelFactory
         object $instance,
         Schema $schema,
         array $jsonSchema,
+        array $toolCallSchema,
+        array $responseFormat,
         string $schemaName,
         string $schemaDescription,
         ?OutputFormat $outputFormat,
@@ -245,6 +309,8 @@ class ResponseModelFactory
             instance: $instance,
             schema: $schema,
             jsonSchema: $jsonSchema,
+            toolCallSchema: $toolCallSchema,
+            responseFormat: $responseFormat,
             schemaName: $schemaName,
             schemaDescription: $schemaDescription,
             toolName: $this->config->toolName(),
@@ -253,6 +319,30 @@ class ResponseModelFactory
             config: $this->config,
             outputFormat: $outputFormat,
         );
+    }
+
+    private function renderSchema(Schema $schema) : SchemaRendering {
+        return $this->schemaRenderer->renderFromSchema($schema);
+    }
+
+    private function renderResponseFormat(array $jsonSchema, string $schemaName) : array {
+        return $this->schemaRenderer->renderResponseFormat(
+            jsonSchema: $jsonSchema,
+            schemaName: $schemaName,
+            toolDescription: $this->config->toolDescription(),
+        );
+    }
+
+    private function toolCallSchemaForInstance(
+        object $instance,
+        array $jsonSchema,
+        ?SchemaRendering $rendering = null,
+    ) : array {
+        return match(true) {
+            $instance instanceof CanHandleToolSelection => $instance->toToolCallsJson(),
+            $rendering !== null => $rendering->toolCallSchema(),
+            default => $this->schemaRenderer->renderToolCallSchema($jsonSchema),
+        };
     }
 
     private function resolveOutputFormat(?OutputFormat $outputFormat, Schema $schema) : ?OutputFormat {

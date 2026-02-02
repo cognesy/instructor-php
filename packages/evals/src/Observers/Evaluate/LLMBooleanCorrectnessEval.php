@@ -78,7 +78,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : BooleanCorrectnessAnalysis {
-        return $this->structuredOutput
+        return ($this->structuredOutput ?? new StructuredOutput())
             ->withInput([
                 'expected_result' => $this->expected,
                 'actual_result' => $this->actual

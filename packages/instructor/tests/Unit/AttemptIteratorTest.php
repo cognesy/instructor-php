@@ -7,6 +7,7 @@ use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -22,8 +23,6 @@ use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 
 class AttemptTestModel {
     public string $name;
@@ -32,8 +31,11 @@ class AttemptTestModel {
 
 function makeAttemptTestResponseModel(): ResponseModel {
     $cfg = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory(useObjectReferences: $cfg->useObjectReferences());
-    $factory = new ResponseModelFactory(new ToolCallBuilder($schemaFactory), $schemaFactory, $cfg, new EventDispatcher());
+    $factory = new ResponseModelFactory(
+        new StructuredOutputSchemaRenderer($cfg),
+        $cfg,
+        new EventDispatcher()
+    );
     return $factory->fromAny(AttemptTestModel::class);
 }
 

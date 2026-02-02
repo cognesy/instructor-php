@@ -2,9 +2,8 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
-use Cognesy\Agents\AgentHooks\Contracts\Hook;
-use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Hooks\HookContext;
+use Cognesy\Agents\Hooks\HookInterface;
 
 /**
  * Hook that persists MetadataWriteResult to agent state.
@@ -12,26 +11,21 @@ use Cognesy\Agents\Core\Data\AgentState;
  * Runs after each step, inspects tool executions for successful
  * store_metadata calls, and updates the agent's metadata accordingly.
  */
-final readonly class PersistMetadataHook implements Hook
+final readonly class PersistMetadataHook implements HookInterface
 {
     #[\Override]
-    public function appliesTo(): array
+    public function handle(HookContext $context): HookContext
     {
-        return [HookType::AfterStep];
-    }
-
-    #[\Override]
-    public function process(AgentState $state, HookType $event): AgentState
-    {
+        $state = $context->state();
         $currentStep = $state->currentStep();
 
         if ($currentStep === null) {
-            return $state;
+            return $context;
         }
 
         $toolExecutions = $currentStep->toolExecutions();
         if (!$toolExecutions->hasExecutions()) {
-            return $state;
+            return $context;
         }
 
         $metadata = $state->metadata();
@@ -70,9 +64,10 @@ final readonly class PersistMetadataHook implements Hook
         }
 
         if ($changed) {
-            return $state->with(variables: $metadata);
+            $nextState = $state->with(context: $state->context()->withMetadata($metadata));
+            return $context->withState($nextState);
         }
 
-        return $state;
+        return $context;
     }
 }

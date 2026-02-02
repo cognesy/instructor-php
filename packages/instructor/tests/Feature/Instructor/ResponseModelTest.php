@@ -5,10 +5,9 @@ use Cognesy\Dynamic\Structure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 
 dataset('user_response_model', [[[
     'x-php-class' => 'Cognesy\Instructor\Tests\Examples\ResponseModel\User',
@@ -29,10 +28,10 @@ dataset('user_response_model', [[[
 
 it('can handle string class name', function() {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(User::class);
@@ -54,10 +53,10 @@ it('can handle string class name', function() {
 
 it('can handle array schema', function($user) {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
     $responseModel = $responseModelFactory->fromAny($user);
@@ -79,10 +78,10 @@ it('can handle array schema', function($user) {
 
 it('can handle schema provider - via instance', function() {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new UserWithProvider());
@@ -105,10 +104,10 @@ it('can handle schema provider - via instance', function() {
 
 it('can handle schema provider - via class name', function() {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(UserWithProvider::class);
@@ -131,14 +130,15 @@ it('can handle schema provider - via class name', function() {
 
 it('can handle ObjectSchema instance', function() {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
-    $schemaFactory = new SchemaFactory();
-    $schema = $schemaFactory->schema(User::class);
+    $schema = (new StructuredOutputSchemaRenderer($config))
+        ->schemaFactory()
+        ->schema(User::class);
     $responseModel = $responseModelFactory->fromAny($schema);
     expect($responseModel->instanceClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(User::class);
@@ -158,10 +158,10 @@ it('can handle ObjectSchema instance', function() {
 
 it('can handle raw object', function() {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new User());
@@ -183,10 +183,10 @@ it('can handle raw object', function() {
 
 it('hydrates dynamic structure from json schema', function() {
     $events = new EventDispatcher('test');
+    $config = new StructuredOutputConfig();
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(new SchemaFactory()),
-        new SchemaFactory(),
-        new StructuredOutputConfig(),
+        new StructuredOutputSchemaRenderer($config),
+        $config,
         $events,
     );
     $city = Structure::define('city', [

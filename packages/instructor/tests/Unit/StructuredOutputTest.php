@@ -107,3 +107,4 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
     expect($user->name)->toBe('Jason');
     expect($user->age)->toBe(25);
 });
+

@@ -81,7 +81,7 @@ final readonly class MockTool implements ToolInterface
     }
 
     #[\Override]
-    public function fullSpec(): array {
+    public function instructions(): array {
         return array_merge([
             'name' => $this->name,
             'description' => $this->description,

@@ -41,7 +41,6 @@
     "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
-    "cognesy/instructor-addons": "Provides extra optional capabilities like Chat, ToolUse, etc."
   },
   "config": {
     "allow-plugins": {

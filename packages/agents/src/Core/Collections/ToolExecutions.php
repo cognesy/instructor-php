@@ -23,8 +23,11 @@ final readonly class ToolExecutions
         );
     }
 
-    // ACCESSORS ///////////////////////////////////////////////
+    public static function none() : self {
+        return new self();
+    }
 
+    // ACCESSORS ///////////////////////////////////////////////
     public function withAddedExecution(ToolExecution $toolExecution): self {
         $newExecutions = $this->toolExecutions;
         $newExecutions[] = $toolExecution;
@@ -68,7 +71,7 @@ final readonly class ToolExecutions
             if ($error === null) {
                 continue;
             }
-            $errors = $errors->withAppended($error);
+            $errors = $errors->withAppendedExceptions($error);
         }
         return $errors;
     }

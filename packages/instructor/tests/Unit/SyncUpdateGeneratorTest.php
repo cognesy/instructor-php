@@ -5,6 +5,7 @@ use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\InferenceProvider;
 use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -13,8 +14,6 @@ use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 
 class SyncModel {
     public string $name;
@@ -23,8 +22,11 @@ class SyncModel {
 
 function makeSyncResponseModel(): ResponseModel {
     $cfg = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory(useObjectReferences: $cfg->useObjectReferences());
-    $factory = new ResponseModelFactory(new ToolCallBuilder($schemaFactory), $schemaFactory, $cfg, new EventDispatcher());
+    $factory = new ResponseModelFactory(
+        new StructuredOutputSchemaRenderer($cfg),
+        $cfg,
+        new EventDispatcher()
+    );
     return $factory->fromAny(SyncModel::class);
 }
 

@@ -1,22 +1,42 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Enums\AgentStepType;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\NullEventEmitter;
+use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use tmp\ErrorHandling\AgentErrorHandler;
 
 describe('Agent with BashTool', function () {
 
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_bash_test_' . uniqid();
         mkdir($this->tempDir, 0755, true);
+        $this->makeAgent = function (Tools $tools, FakeInferenceDriver $driver, int $maxIterations): TestAgentLoop {
+            $eventEmitter = new NullEventEmitter();
+            $llm = LLMProvider::new()->withDriver($driver);
+            $toolDriver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
+            $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter);
+
+            return new TestAgentLoop(
+                tools: $tools,
+                toolExecutor: $toolExecutor,
+                errorHandler: AgentErrorHandler::default(),
+                driver: $toolDriver,
+                eventEmitter: $eventEmitter,
+                observer: null,
+                maxIterations: $maxIterations,
+            );
+        };
     });
 
     afterEach(function () {
@@ -49,11 +69,7 @@ describe('Agent with BashTool', function () {
         $bashTool = new BashTool(baseDir: $this->tempDir);
         $tools = new Tools($bashTool);
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Run echo "Hello from bash"')
@@ -87,11 +103,7 @@ describe('Agent with BashTool', function () {
         $bashTool = new BashTool(baseDir: $this->tempDir);
         $tools = new Tools($bashTool);
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('What is the current directory?')
@@ -104,8 +116,9 @@ describe('Agent with BashTool', function () {
 
             // First step should have tool call
             if ($stepCount === 1) {
-                expect($currentState->currentStep()->hasToolCalls())->toBeTrue();
-                expect($currentState->currentStep()->stepType())->toBe(AgentStepType::ToolExecution);
+                $lastStep = $currentState->steps()->lastStep();
+                expect($lastStep?->hasToolCalls())->toBeTrue();
+                expect($lastStep?->stepType())->toBe(AgentStepType::ToolExecution);
             }
         }
 
@@ -133,11 +146,7 @@ describe('Agent with BashTool', function () {
         $bashTool = new BashTool(baseDir: $this->tempDir);
         $tools = new Tools($bashTool);
 
-        $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = ($this->makeAgent)($tools, $driver, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('List files')
@@ -146,7 +155,7 @@ describe('Agent with BashTool', function () {
         // Act: Use iterate()
         $steps = [];
         foreach ($agent->iterate($state) as $currentState) {
-            $steps[] = $currentState->currentStep();
+            $steps[] = $currentState->steps()->lastStep();
         }
 
         // Assert

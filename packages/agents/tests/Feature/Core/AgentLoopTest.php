@@ -6,13 +6,34 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Agents\Core\Tools\MockTool;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\NullEventEmitter;
+use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use tmp\ErrorHandling\AgentErrorHandler;
+
+function makeTestLoop(LLMProvider $llm, Tools $tools, int $maxIterations): TestAgentLoop
+{
+    $eventEmitter = new NullEventEmitter();
+    $driver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
+    $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter);
+
+    return new TestAgentLoop(
+        tools: $tools,
+        toolExecutor: $toolExecutor,
+        errorHandler: AgentErrorHandler::default(),
+        driver: $driver,
+        eventEmitter: $eventEmitter,
+        observer: null,
+        maxIterations: $maxIterations,
+    );
+}
 
 describe('Agent Loop', function () {
     it('completes a simple interaction', function () {
@@ -21,9 +42,7 @@ describe('Agent Loop', function () {
         ]);
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $agent = makeTestLoop($llm, new Tools(), 1);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Hi')
@@ -31,9 +50,11 @@ describe('Agent Loop', function () {
 
         $finalState = $agent->execute($state);
 
+        $lastStep = $finalState->steps()->lastStep();
+
         expect($finalState->stepCount())->toBe(1);
-        expect($finalState->currentStep()->stepType())->toBe(AgentStepType::FinalResponse);
-        expect(trim($finalState->currentStep()->outputMessages()->toString()))->toBe('Hello! How can I help you?');
+        expect($lastStep?->stepType())->toBe(AgentStepType::FinalResponse);
+        expect(trim((string) $lastStep?->outputMessages()->toString()))->toBe('Hello! How can I help you?');
     });
 
     it('completes a multi-step tool-using interaction', function () {
@@ -51,10 +72,8 @@ describe('Agent Loop', function () {
         $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools(new Tools($testTool))
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $tools = new Tools($testTool);
+        $agent = makeTestLoop($llm, $tools, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Use the tool')
@@ -62,9 +81,11 @@ describe('Agent Loop', function () {
 
         $finalState = $agent->execute($state);
 
+        $steps = $finalState->steps()->all();
+
         expect($finalState->stepCount())->toBe(2);
-        expect($finalState->stepAt(0)->stepType())->toBe(AgentStepType::ToolExecution);
-        expect($finalState->stepAt(1)->stepType())->toBe(AgentStepType::FinalResponse);
+        expect($steps[0]->stepType())->toBe(AgentStepType::ToolExecution);
+        expect($steps[1]->stepType())->toBe(AgentStepType::FinalResponse);
     });
 
     it('advances step numbers across loop iterations', function () {
@@ -82,22 +103,19 @@ describe('Agent Loop', function () {
         $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools(new Tools($testTool))
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $tools = new Tools($testTool);
+        $agent = makeTestLoop($llm, $tools, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Use the tool')
         );
 
         $finalState = $agent->execute($state);
-        $stepNumbers = array_map(
-            static fn(\Cognesy\Agents\Core\Data\StepExecution $execution): int => $execution->stepNumber,
-            $finalState->stepExecutions()->all(),
-        );
+        $steps = $finalState->steps()->all();
 
-        expect($stepNumbers)->toBe([1, 2]);
+        expect($steps)->toHaveCount(2);
+        expect($steps[0]->stepType())->toBe(AgentStepType::ToolExecution);
+        expect($steps[1]->stepType())->toBe(AgentStepType::FinalResponse);
     });
 
     it('does not append tool args content when tool calls are present', function () {
@@ -115,17 +133,15 @@ describe('Agent Loop', function () {
         $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools(new Tools($testTool))
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $tools = new Tools($testTool);
+        $agent = makeTestLoop($llm, $tools, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Use the tool')
         );
 
         $finalState = $agent->execute($state);
-        $step = $finalState->stepAt(0);
+        $step = $finalState->steps()->stepAt(0);
         $messages = $step->outputMessages()->toArray();
         $contents = array_map(
             static fn(array $message): string => (string) ($message['content'] ?? ''),
@@ -151,17 +167,15 @@ describe('Agent Loop', function () {
         $testTool = MockTool::returning('test_tool', 'A test tool', 'Executed');
 
         $llm = LLMProvider::new()->withDriver($driver);
-        $agent = AgentBuilder::base()
-            ->withTools(new Tools($testTool))
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->build();
+        $tools = new Tools($testTool);
+        $agent = makeTestLoop($llm, $tools, 2);
 
         $state = AgentState::empty()->withMessages(
             Messages::fromString('Use the tool')
         );
 
         $finalState = $agent->execute($state);
-        $step = $finalState->stepAt(0);
+        $step = $finalState->steps()->stepAt(0);
         $messages = $step->outputMessages()->toArray();
 
         expect(count($messages))->toBe(3);

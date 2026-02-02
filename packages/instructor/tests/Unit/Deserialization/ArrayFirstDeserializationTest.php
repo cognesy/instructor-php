@@ -6,11 +6,10 @@ namespace Cognesy\Instructor\Tests\Unit\Deserialization;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -41,13 +40,15 @@ class TestUserDTO
 function createTestResponseModel(string $class, ?OutputFormat $outputFormat = null): \Cognesy\Instructor\Data\ResponseModel
 {
     $config = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory(useObjectReferences: false);
-    $toolCallBuilder = new ToolCallBuilder($schemaFactory);
     $events = new class implements EventDispatcherInterface {
         public function dispatch(object $event): object { return $event; }
     };
 
-    $factory = new ResponseModelFactory($toolCallBuilder, $schemaFactory, $config, $events);
+    $factory = new ResponseModelFactory(
+        new StructuredOutputSchemaRenderer($config),
+        $config,
+        $events
+    );
     return $factory->fromAny($class, $outputFormat);
 }
 

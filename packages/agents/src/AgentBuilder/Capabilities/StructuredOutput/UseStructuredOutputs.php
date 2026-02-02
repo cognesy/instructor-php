@@ -5,6 +5,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Hooks\HookTriggers;
 
 /**
  * Adds structured output extraction capability to the agent.
@@ -49,6 +50,6 @@ class UseStructuredOutputs implements AgentCapability
         ));
 
         // Handles store_as functionality
-        $builder->addHook(new PersistStructuredOutputHook());
+        $builder->addHook(new PersistStructuredOutputHook(), HookTriggers::afterStep());
     }
 }

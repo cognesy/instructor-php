@@ -2,92 +2,113 @@
 
 namespace Cognesy\Agents\Core\Data;
 
-use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
-use Cognesy\Agents\Core\Continuation\Enums\StopReason;
+use Cognesy\Agents\Core\Stop\ExecutionContinuation;
+use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Core\Stop\StopSignals;
+use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
 
 /**
- * Immutable wrapper bundling a step with its continuation outcome and timing.
+ * Immutable wrapper bundling a step with its stop signal and timing.
  *
- * This abstraction cleanly separates step data from continuation evaluation,
+ * This abstraction cleanly separates step data from stop resolution,
  * avoiding the need to modify step objects after creation.
  * StepExecution identity follows AgentStep identity; the orchestrator does not overwrite step ids.
  *
  * Benefits:
  * - Step objects remain unmodified after creation
- * - Clear ownership: result bundles step + outcome + timing explicitly
+ * - Clear ownership: result bundles step + stop signal + timing explicitly
  * - Consistent pattern across all StepByStep orchestrators
  * - Natural for serialization: result is a complete unit
  */
 final readonly class StepExecution
 {
-    public string $id;
+    private string $id;
+    private AgentStep $step;
+    private ExecutionContinuation $continuation;
+    private DateTimeImmutable $startedAt;
+    private DateTimeImmutable $completedAt;
 
     public function __construct(
-        public AgentStep $step,
-        public ContinuationOutcome $outcome,
-        public DateTimeImmutable $startedAt,
-        public DateTimeImmutable $completedAt,
-        public int $stepNumber,
-        string $id = '',
+        AgentStep             $step,
+        ExecutionContinuation $continuation,
+        DateTimeImmutable     $startedAt,
+        DateTimeImmutable     $completedAt,
+        string                $id = '',
     ) {
         $this->id = $id !== '' ? $id : $step->id();
+        $this->step = $step;
+        $this->continuation = $continuation;
+        $this->startedAt = $startedAt;
+        $this->completedAt = $completedAt;
     }
 
-    /**
-     * Duration of this step in seconds.
-     */
+    public static function create(
+        AgentStep             $step,
+        ExecutionContinuation $continuation,
+        DateTimeImmutable     $startedAt,
+    ): self {
+        return new self(
+            step: $step,
+            continuation: $continuation,
+            startedAt: $startedAt,
+            completedAt: new DateTimeImmutable(),
+        );
+    }
+
+    // ACCESSORS ///////////////////////////////////////////////
+
+    public function id(): string {
+        return $this->id;
+    }
+
+    public function step(): AgentStep {
+        return $this->step;
+    }
+
+    public function continuation(): ExecutionContinuation {
+        return $this->continuation;
+    }
+
+    public function startedAt(): DateTimeImmutable {
+        return $this->startedAt;
+    }
+
+    public function completedAt(): DateTimeImmutable {
+        return $this->completedAt;
+    }
+
     public function duration(): float {
         $start = (float) $this->startedAt->format('U.u');
         $end = (float) $this->completedAt->format('U.u');
         return $end - $start;
     }
 
-    /**
-     * Whether the orchestrator should continue after this step.
-     */
-    public function shouldContinue(): bool {
-        return $this->outcome->shouldContinue();
+    public function usage() : Usage {
+        return $this->step->usage();
     }
 
-    /**
-     * Get the reason for stopping (if applicable).
-     */
-    public function stopReason(): StopReason {
-        return $this->outcome->stopReason();
-    }
+    // SERIALIZATION ///////////////////////////////////////
 
-    /**
-     * Serialize to array.
-     */
     public function toArray(): array {
         return [
             'id' => $this->id,
-            'stepNumber' => $this->stepNumber,
             'step' => $this->step->toArray(),
-            'outcome' => $this->outcome->toArray(),
+            'continuation' => $this->continuation->toArray(),
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
             'completedAt' => $this->completedAt->format(DateTimeImmutable::ATOM),
             'duration' => $this->duration(),
         ];
     }
 
-    /**
-     * Deserialize from array.
-     */
     public static function fromArray(array $data): self {
-        $stepNumberValue = $data['stepNumber'] ?? $data['step_number'] ?? 1;
-        $stepNumber = is_int($stepNumberValue) ? $stepNumberValue : (int) $stepNumberValue;
-        $idValue = $data['id'] ?? '';
-        $id = is_string($idValue) ? $idValue : '';
-
         return new self(
             step: AgentStep::fromArray($data['step'] ?? []),
-            outcome: ContinuationOutcome::fromArray($data['outcome'] ?? []),
+            continuation: ExecutionContinuation::fromArray($data['continuation'] ?? []),
             startedAt: new DateTimeImmutable($data['startedAt'] ?? 'now'),
             completedAt: new DateTimeImmutable($data['completedAt'] ?? 'now'),
-            stepNumber: $stepNumber,
-            id: $id,
+            id: $data['id'] ?? '',
         );
     }
 }

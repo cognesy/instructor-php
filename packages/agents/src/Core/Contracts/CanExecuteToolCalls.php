@@ -10,6 +10,5 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 
 interface CanExecuteToolCalls
 {
-    public function useTool(ToolCall $toolCall, AgentState $state): ToolExecution;
-    public function useTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
+    public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }

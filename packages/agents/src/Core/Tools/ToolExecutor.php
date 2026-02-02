@@ -4,22 +4,21 @@ namespace Cognesy\Agents\Core\Tools;
 
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanReportObserverState;
-use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\ToolInterface;
-use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Events\AgentEventEmitter;
-use Cognesy\Agents\Core\Exceptions\InvalidToolArgumentsException;
-use Cognesy\Agents\Core\Exceptions\ToolExecutionException;
-use Cognesy\Agents\Core\Lifecycle\CanObserveAgentLifecycle;
-use Cognesy\Agents\AgentHooks\HookStackObserver;
+use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Exceptions\InvalidToolArgumentsException;
+use Cognesy\Agents\Exceptions\ToolExecutionException;
+use Cognesy\Agents\Hooks\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Hooks\HookContext;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
+use Throwable;
 
 /**
  * Tool executor with optional lifecycle observer support.
@@ -27,203 +26,115 @@ use DateTimeImmutable;
  * Executes tool calls and notifies the observer before/after each execution.
  * The observer can modify tool calls, block execution, or modify results.
  */
-final readonly class ToolExecutor implements CanExecuteToolCalls, CanReportObserverState
+final readonly class ToolExecutor implements CanExecuteToolCalls
 {
     private Tools $tools;
-    private bool $throwOnToolFailure;
     private CanEmitAgentEvents $eventEmitter;
-    private ?CanObserveAgentLifecycle $observer;
+    private CanInterceptAgentLifecycle $interceptor;
+    private bool $throwOnToolFailure;
+    private bool $stopOnToolBlock;
 
     public function __construct(
         Tools $tools,
+        CanEmitAgentEvents $eventEmitter,
+        CanInterceptAgentLifecycle $interceptor,
         bool $throwOnToolFailure = false,
-        ?CanEmitAgentEvents $eventEmitter = null,
-        ?CanObserveAgentLifecycle $observer = null,
+        bool $stopOnToolBlock = false,
     ) {
         $this->tools = $tools;
+        $this->eventEmitter = $eventEmitter;
+        $this->interceptor = $interceptor;
         $this->throwOnToolFailure = $throwOnToolFailure;
-        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
-        $this->observer = $observer;
+        $this->stopOnToolBlock = $stopOnToolBlock;
     }
 
     // MAIN API /////////////////////////////////////////////
 
-    #[\Override]
-    public function useTool(ToolCall $toolCall, AgentState $state): ToolExecution {
-        // Before hook - can modify or block
-        if ($this->observer !== null) {
-            $decision = $this->observer->onBeforeToolUse($toolCall, $state);
-            if ($decision->isBlocked()) {
-                $this->eventEmitter->toolCallBlocked($toolCall, $decision->reason());
-                return $this->blockedExecution($toolCall, $decision->reason());
-            }
-            $toolCall = $decision->toolCall();
-        }
-
-        $execution = $this->executeDirectly($toolCall, $state);
-
-        // After hook - can modify result
-        if ($this->observer !== null) {
-            $execution = $this->observer->onAfterToolUse($execution, $state);
-        }
-
-        if ($this->throwOnToolFailure && $execution->result() instanceof Failure) {
-            $this->throwOnFailure($execution->result());
-        }
-
-        return $execution;
-    }
-
-    #[\Override]
-    public function useTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions {
-        $executions = [];
-        $currentState = $state;
-
-        foreach ($toolCalls->all() as $toolCall) {
-            $execution = $this->useTool($toolCall, $currentState);
-            $executions[] = $execution;
-
-            if ($this->isBlockedExecution($execution)) {
-                break;
+    public function executeTools(
+        ToolCalls $toolCalls,
+        AgentState $state,
+    ) : ToolExecutions {
+        $executions = new ToolExecutions();
+        foreach ($toolCalls->each() as $toolCall) {
+            // Before tool use hook
+            $hookContext = $this->interceptor->intercept(HookContext::beforeToolUse($state, $toolCall));
+            $toolCall = $hookContext->toolCall() ?? $toolCall;
+            $state = $hookContext->state();
+            if ($hookContext->isToolExecutionBlocked()) {
+                $execution = $hookContext->toolExecution() ?? ToolExecution::blocked(
+                    toolCall: $toolCall,
+                    message: 'Tool execution blocked by beforeToolUse hook.',
+                );
+                $executions = $executions->withAddedExecution($execution);
+                if ($this->stopOnToolBlock) {
+                    break;
+                }
+                continue;
             }
 
-            // Propagate state changes from hook to next tool call
-            if ($this->observer instanceof HookStackObserver) {
-                $currentState = $this->observer->state() ?? $currentState;
-            }
+            // Emit tool call started event
+            $this->eventEmitter->toolCallStarted($toolCall, new DateTimeImmutable());
+
+            // Execute the tool call
+            $execution = $this->executeToolCall($toolCall, $state); // ToolExecution
+
+            // Emit tool call completed event
+            $this->eventEmitter->toolCallCompleted($execution);
+
+            // After tool use hook
+            $hookContext = $this->interceptor->intercept(HookContext::afterToolUse($state, $execution));
+            $execution = $hookContext->toolExecution() ?? $execution;
+            $state = $hookContext->state();
+
+            // Add execution to the collection
+            $executions = $executions->withAddedExecution($execution);
+
+            $this->handleFailure($execution, $toolCall);
         }
-
-        return new ToolExecutions(...$executions);
-    }
-
-    // ACCESSORS /////////////////////////////////////////////
-
-    public function tools(): Tools {
-        return $this->tools;
-    }
-
-    public function eventEmitter(): CanEmitAgentEvents {
-        return $this->eventEmitter;
-    }
-
-    public function observer(): ?CanObserveAgentLifecycle {
-        return $this->observer;
-    }
-
-    /**
-     * Get state changes from the observer after tool calls.
-     *
-     * Tool hooks (onBeforeToolUse, onAfterToolUse) return domain objects
-     * instead of AgentState, so state changes are tracked internally.
-     * Use this method after useTool()/useTools() to retrieve any state
-     * modifications made by hooks.
-     *
-     * Returns null if observer doesn't support state tracking.
-     */
-    public function observerState(): ?AgentState {
-        if ($this->observer instanceof HookStackObserver) {
-            return $this->observer->state();
-        }
-        return null;
-    }
-
-    // MUTATORS //////////////////////////////////////////////
-
-    public function withTools(Tools $tools): self {
-        return $this->with(tools: $tools);
-    }
-
-    public function withThrowOnToolFailure(bool $throw): self {
-        return $this->with(throwOnToolFailure: $throw);
-    }
-
-    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
-        return $this->with(eventEmitter: $eventEmitter);
-    }
-
-    public function withObserver(?CanObserveAgentLifecycle $observer): self {
-        return $this->with(observer: $observer);
-    }
-
-    public function with(
-        ?Tools $tools = null,
-        ?bool $throwOnToolFailure = null,
-        ?CanEmitAgentEvents $eventEmitter = null,
-        ?CanObserveAgentLifecycle $observer = null,
-    ) : self {
-        return new self(
-            tools: $tools ?? $this->tools,
-            throwOnToolFailure: $throwOnToolFailure ?? $this->throwOnToolFailure,
-            eventEmitter: $eventEmitter ?? $this->eventEmitter,
-            observer: $observer ?? $this->observer,
-        );
+        return $executions;
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function executeDirectly(ToolCall $toolCall, AgentState $state): ToolExecution {
+    private function executeToolCall(ToolCall $toolCall, AgentState $state): ToolExecution {
         $startedAt = new DateTimeImmutable();
-        $this->eventEmitter->toolCallStarted($toolCall, $startedAt);
-
-        $result = $this->execute($toolCall, $state);
-
-        $execution = new ToolExecution(
+        try {
+            $result = $this->doExecute($toolCall, $state);
+        } catch (Throwable $e) {
+            $result = Result::failure(
+                new ToolExecutionException(
+                    message: "Exception during execution of tool '{$toolCall->name()}': " . $e->getMessage(),
+                    toolCall: $toolCall,
+                    previous: $e,
+                ),
+            );
+        }
+        return new ToolExecution(
             toolCall: $toolCall,
             result: $result,
             startedAt: $startedAt,
             completedAt: new DateTimeImmutable(),
         );
-        $this->eventEmitter->toolCallCompleted($execution);
-
-        return $execution;
     }
 
-    private function blockedExecution(ToolCall $toolCall, ?string $reason): ToolExecution
-    {
-        $blockedError = new ToolCallBlockedError(
-            toolName: $toolCall->name(),
-            reason: $reason ?? 'Blocked by hook',
-        );
-        $timestamp = new DateTimeImmutable();
-
-        return new ToolExecution(
-            toolCall: $toolCall,
-            result: Result::failure($blockedError),
-            startedAt: $timestamp,
-            completedAt: $timestamp,
-        );
-    }
-
-    private function isBlockedExecution(ToolExecution $execution): bool
-    {
-        $result = $execution->result();
-        if (!$result instanceof Failure) {
-            return false;
-        }
-        return $result->error() instanceof ToolCallBlockedError;
-    }
-
-    private function execute(ToolCall $toolCall, AgentState $state): Result {
-        $tool = $this->prepareTool($toolCall->name(), $state);
+    private function doExecute(ToolCall $toolCall, AgentState $state): Result {
+        $tool = $this->prepareTool($toolCall, $state);
         $args = $toolCall->args();
-
         $validation = $this->validateArgs($tool, $args);
-        if ($validation->isFailure()) {
-            return $validation;
-        }
-
-        return $tool->use(...$args);
+        return match (true) {
+            $validation->isFailure() => $validation,
+            default => $tool->use(...$args),
+        };
     }
 
-    private function prepareTool(string $name, AgentState $state): ToolInterface {
-        $tool = $this->tools->get($name);
-
-        // Inject agent state if tool needs it
-        if ($tool instanceof CanAccessAgentState) {
-            $tool = $tool->withAgentState($state);
-        }
-
-        return $tool;
+    private function prepareTool(ToolCall $toolCall, AgentState $state): ToolInterface {
+        $toolName = $toolCall->name();
+        $tool = $this->tools->get($toolName);
+        return match(true) {
+            // Inject agent state if tool may need it
+            $tool instanceof CanAccessAgentState => $tool->withAgentState($state),
+            default => $tool,
+        };
     }
 
     private function validateArgs(ToolInterface $tool, array $args): Result {
@@ -242,7 +153,6 @@ final readonly class ToolExecutor implements CanExecuteToolCalls, CanReportObser
         if ($missing === []) {
             return Result::success(null);
         }
-
         return Result::failure(
             new InvalidToolArgumentsException(
                 message: 'Missing required parameters: ' . implode(', ', $missing),
@@ -252,15 +162,21 @@ final readonly class ToolExecutor implements CanExecuteToolCalls, CanReportObser
 
     // ERROR HANDLING ////////////////////////////////////////////
 
-    private function throwOnFailure(Failure $result): void {
-        $exception = $result->exception();
-        if ($exception instanceof ToolExecutionException) {
-            throw $exception;
+    private function handleFailure(ToolExecution $execution, ToolCall $toolCall) : void {
+        $failure = $execution->result();
+        if (!$failure instanceof Failure) {
+            return;
         }
-
-        throw new ToolExecutionException(
-            message: $result->errorMessage(),
-            previous: $exception,
-        );
+        if ($this->throwOnToolFailure) {
+            return;
+        }
+        throw match(true) {
+            $failure->exception() instanceof ToolExecutionException => $failure->exception(),
+            default => new ToolExecutionException(
+                message: 'Error during tool execution: ' . $failure->exception()->getMessage(),
+                toolCall: $toolCall,
+                previous: $failure->exception(),
+            ),
+        };
     }
 }

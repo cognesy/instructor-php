@@ -2,11 +2,11 @@
 
 namespace Cognesy\Agents\AgentBuilder\Support;
 
-use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
+use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Events\AgentEventEmitter;
+use Cognesy\Agents\Events\AgentEventEmitter;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;

@@ -5,15 +5,12 @@
 if (!function_exists('makeAnyResponseModel')) {
     function makeAnyResponseModel(mixed $any): \Cognesy\Instructor\Data\ResponseModel {
         $config = new \Cognesy\Instructor\Config\StructuredOutputConfig();
-        $schemaFactory = new \Cognesy\Schema\Factories\SchemaFactory(useObjectReferences: $config->useObjectReferences());
         $events = new \Cognesy\Events\Dispatchers\EventDispatcher();
         $factory = new \Cognesy\Instructor\Creation\ResponseModelFactory(
-            new \Cognesy\Schema\Factories\ToolCallBuilder($schemaFactory),
-            $schemaFactory,
+            new \Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer($config),
             $config,
             $events,
         );
         return $factory->fromAny($any);
     }
 }
-

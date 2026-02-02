@@ -4,6 +4,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Creation\ResponseModelFactory;
+use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
@@ -11,8 +12,6 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Utils\Result\Result;
 
 class TestFactoryModel {
@@ -21,8 +20,11 @@ class TestFactoryModel {
 
 function makeFactoryTestResponseModel(): ResponseModel {
     $cfg = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory(useObjectReferences: $cfg->useObjectReferences());
-    $factory = new ResponseModelFactory(new ToolCallBuilder($schemaFactory), $schemaFactory, $cfg, new EventDispatcher());
+    $factory = new ResponseModelFactory(
+        new StructuredOutputSchemaRenderer($cfg),
+        $cfg,
+        new EventDispatcher()
+    );
     return $factory->fromAny(TestFactoryModel::class);
 }
 
@@ -344,4 +346,3 @@ test('factory uses provided event handler', function() {
 
     expect($customEvents->events)->not()->toBeEmpty();
 });
-

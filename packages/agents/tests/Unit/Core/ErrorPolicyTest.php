@@ -2,10 +2,10 @@
 
 namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Core\ErrorHandling\Data\ErrorContext;
-use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorHandlingDecision;
-use Cognesy\Agents\Core\ErrorHandling\Enums\ErrorType;
-use Cognesy\Agents\Core\ErrorHandling\ErrorPolicy;
+use tmp\ErrorHandling\Data\ErrorContext;
+use tmp\ErrorHandling\Enums\ErrorHandlingDecision;
+use tmp\ErrorHandling\Enums\ErrorType;
+use tmp\ErrorHandling\ErrorPolicy;
 
 it('stops on any error with the default policy', function (ErrorType $type) {
     $policy = ErrorPolicy::stopOnAnyError();

@@ -8,5 +8,5 @@ use Cognesy\Agents\Core\Data\AgentStep;
 
 interface CanUseTools
 {
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep;
+    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState;
 }

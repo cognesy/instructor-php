@@ -4,21 +4,23 @@ namespace Cognesy\Agents\Drivers\ReAct;
 
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanReportObserverState;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Events\AgentEventEmitter;
-use Cognesy\Agents\Core\Lifecycle\CanObserveInference;
+use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeToolCalls;
 use Cognesy\Agents\Drivers\ReAct\Data\DecisionWithDetails;
 use Cognesy\Agents\Drivers\ReAct\Data\ReActDecision;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActFormatter;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActValidator;
+use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Exceptions\AgentException;
+use Cognesy\Agents\Hooks\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Hooks\HookContext;
+use Cognesy\Agents\Hooks\PassThroughInterceptor;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\PendingStructuredOutput;
@@ -38,7 +40,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools, CanReportObserverState
+final class ReActDriver implements CanUseTools
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -50,8 +52,6 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
     private int $maxRetries;
     private OutputMode $mode;
     private CanEmitAgentEvents $eventEmitter;
-    private ?CanObserveInference $inferenceObserver = null;
-    private ?AgentState $observerState = null;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -78,12 +78,8 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
     }
 
     #[\Override]
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
-        $this->observerState = null;
-        $messages = $state->messagesForInference();
-        $state = $this->applyBeforeInferenceHooks($state, $messages);
-        $this->storeObserverState($state);
-        $messages = $this->resolveInferenceMessages($state, $messages);
+    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
+        $messages = $state->context()->messagesForInference();
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
 
@@ -102,15 +98,14 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
                 attemptNumber: 1,
                 maxAttempts: $this->maxRetries,
             );
-            return $this->buildExtractionFailureStep($error, $messages);
+            $step = $this->buildExtractionFailureStep($error, $messages);
+            return $state->withCurrentStep($step)->withFailure($error);
         }
 
         $bundle = $extraction->unwrap();
         $decision = $bundle->decision();
         $inferenceResponse = $bundle->response();
 
-        $state = $this->applyAfterInferenceHooks($state, $inferenceResponse);
-        $this->storeObserverState($state);
         $inferenceResponse = $this->resolveInferenceResponse($state, $inferenceResponse);
 
         // Emit inference response received event
@@ -125,7 +120,8 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
                 validationType: 'decision',
                 errors: [$validation->getErrorMessage()],
             );
-            return $this->buildValidationFailureStep($validation, $messages);
+            $step = $this->buildValidationFailureStep($validation, $messages);
+            return $state->withCurrentStep($step)->withFailure(new AgentException($validation->getErrorMessage()));
         }
 
         // Extract tool calls independent of execution
@@ -134,20 +130,24 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
         $usage = $inferenceResponse->usage();
 
         if (!$decision->isCall()) {
-            return $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->cache());
+            $step = $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->context()->cache());
+            return $state->withCurrentStep($step);
         }
 
         // Execute tool calls and assemble follow-ups
-        $executions = $executor->useTools($toolCalls, $state);
+        $executions = $executor->executeTools($toolCalls, $state);
+
         $outputMessages = $this->makeFollowUps($decision, $executions);
         $responseWithCalls = $this->withToolCalls($inferenceResponse, $toolCalls);
 
-        return new AgentStep(
+        $step = new AgentStep(
             inputMessages: $messages,
             outputMessages: $outputMessages,
-            toolExecutions: $executions,
             inferenceResponse: $responseWithCalls,
+            toolExecutions: $executions,
         );
+
+        return $state->withCurrentStep($step);
     }
 
     // MUTATORS ////////////////////////////////////////////////////////////////
@@ -164,59 +164,10 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
         return $clone;
     }
 
-    public function withInferenceObserver(CanObserveInference $observer): self {
-        $clone = clone $this;
-        $clone->inferenceObserver = $observer;
-        return $clone;
-    }
-
-    #[\Override]
-    public function observerState(): ?AgentState {
-        return $this->observerState;
-    }
-
     // INTERNAL ////////////////////////////////////////////////////////////////
 
-    private function applyBeforeInferenceHooks(AgentState $state, Messages $messages): AgentState {
-        if ($this->inferenceObserver === null) {
-            return $state;
-        }
-
-        return $this->inferenceObserver->onBeforeInference($state, $messages);
-    }
-
-    private function applyAfterInferenceHooks(AgentState $state, InferenceResponse $response): AgentState {
-        if ($this->inferenceObserver === null) {
-            return $state;
-        }
-
-        return $this->inferenceObserver->onAfterInference($state, $response);
-    }
-
-    private function resolveInferenceMessages(AgentState $state, Messages $fallback): Messages {
-        $context = $state->hookContext();
-        if ($context === null) {
-            return $fallback;
-        }
-
-        return $context->inferenceMessages ?? $fallback;
-    }
-
     private function resolveInferenceResponse(AgentState $state, InferenceResponse $fallback): InferenceResponse {
-        $context = $state->hookContext();
-        if ($context === null) {
-            return $fallback;
-        }
-
-        return $context->inferenceResponse ?? $fallback;
-    }
-
-    private function storeObserverState(AgentState $state): void {
-        if ($this->inferenceObserver === null) {
-            return;
-        }
-
-        $this->observerState = $state;
+        return $state->execution()?->currentStep()?->inferenceResponse() ?? $fallback;
     }
 
     private function buildSystemPrompt(Tools $tools): string {
@@ -266,11 +217,9 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
                 examples: $cachedContext->examples(),
             );
         }
-
         if ($this->httpClient !== null) {
             $structured = $structured->withHttpClient($this->httpClient);
         }
-
         return $structured->create();
     }
 
@@ -326,7 +275,6 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
             $finalText = $inferenceResponse->content();
             $usage = $inferenceResponse->usage();
         }
-
         $responseWithUsage = $this->withUsage($inferenceResponse, $usage);
         return new AgentStep(
             inputMessages: $messages,
@@ -372,7 +320,6 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
         if ($toolCalls->hasNone()) {
             return $response;
         }
-
         return $response->with(toolCalls: $toolCalls);
     }
 
@@ -381,16 +328,14 @@ final class ReActDriver implements CanUseTools, CanReportObserverState
         if ($usage === null) {
             return $resolved;
         }
-
         return $resolved->with(usage: $usage);
     }
 
     private function structuredCachedContext(AgentState $state): ?StructuredCachedContext {
-        $cache = $state->cache();
+        $cache = $state->context()->cache();
         if ($cache->isEmpty()) {
             return null;
         }
-
         return new StructuredCachedContext(
             messages: $cache->messages()->toArray(),
         );

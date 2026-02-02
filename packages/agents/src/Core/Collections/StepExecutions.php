@@ -2,17 +2,11 @@
 
 namespace Cognesy\Agents\Core\Collections;
 
-use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Data\StepExecution;
+use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
-/**
- * Immutable collection of step results.
- *
- * Each StepExecution bundles an AgentStep with its ContinuationOutcome,
- * representing the result of a single execution step.
- */
 final readonly class StepExecutions
 {
     /** @var list<StepExecution> */
@@ -21,144 +15,82 @@ final readonly class StepExecutions
     /**
      * @param list<StepExecution> $items
      */
-    public function __construct(array $items = [])
-    {
+    public function __construct(array $items = []) {
         $this->items = $items;
     }
 
-    public static function empty(): self
-    {
+    public static function empty(): self {
         return new self([]);
     }
 
-    public function append(StepExecution $result): self
-    {
+    // MUTATORS /////////////////////////////////////////////////////////
+
+    public function withStepExecution(StepExecution $result): self {
         return new self([...$this->items, $result]);
     }
 
-    public function replaceLast(StepExecution $result): self
-    {
-        if ($this->items === []) {
-            return new self([$result]);
-        }
+    // ACCESSORS /////////////////////////////////////////////////////////
 
-        $items = $this->items;
-        $items[array_key_last($items)] = $result;
-
-        return new self($items);
-    }
-
-    public function last(): ?StepExecution
-    {
-        if ($this->items === []) {
-            return null;
-        }
-        return $this->items[array_key_last($this->items)];
-    }
-
-    public function count(): int
-    {
+    public function count(): int {
         return count($this->items);
     }
 
-    public function isEmpty(): bool
-    {
+    public function isEmpty(): bool {
         return $this->items === [];
     }
 
     /**
      * @return list<StepExecution>
      */
-    public function all(): array
-    {
+    public function all(): array {
         return $this->items;
     }
 
-    /**
-     * Get the step result at a specific index.
-     */
-    public function at(int $index): ?StepExecution
-    {
-        return $this->items[$index] ?? null;
+    public function last() : ?StepExecution {
+        return $this->items[count($this->items) - 1] ?? null;
     }
 
-    /**
-     * Get the continuation outcome from the last step result.
-     */
-    public function lastOutcome(): ?ContinuationOutcome
-    {
-        return $this->last()?->outcome;
-    }
-
-    /**
-     * Check if execution should continue based on the last step result.
-     */
-    public function shouldContinue(): bool
-    {
-        return $this->last()?->shouldContinue() ?? false;
-    }
-
-    /**
-     * Total duration of all steps in seconds (cumulative execution time).
-     */
-    public function totalDuration(): float
-    {
+    public function totalDuration(): float {
         return array_sum(array_map(
-            static fn(StepExecution $result): float => $result->duration(),
+            static fn(StepExecution $stepExecution): float => $stepExecution->duration(),
             $this->items,
         ));
     }
 
-    /**
-     * Aggregate token usage across all recorded step executions.
-     */
-    public function totalUsage(): Usage
-    {
+    public function totalUsage(): Usage {
         $usage = Usage::none();
-        foreach ($this->items as $execution) {
-            $usage = $usage->withAccumulated($execution->step->usage());
+        foreach ($this->items as $stepExecution) {
+            $usage = $usage->withAccumulated($stepExecution->usage());
         }
         return $usage;
     }
 
-    /**
-     * Extract all steps from the step results.
-     */
-    public function steps(): AgentSteps
-    {
+    public function steps(): AgentSteps {
         $steps = array_map(
-            static fn(StepExecution $result): AgentStep => $result->step,
+            static fn(StepExecution $stepExecution): AgentStep => $stepExecution->step(),
             $this->items,
         );
         return new AgentSteps(...$steps);
     }
 
-    /**
-     * Get a step at a specific index.
-     */
-    public function stepAt(int $index): ?AgentStep
-    {
-        return $this->items[$index]?->step ?? null;
+    public function errors(): ErrorList {
+        $errors = ErrorList::empty();
+        foreach ($this->items as $stepExecution) {
+            $errors = $errors->withMergedErrorList($stepExecution->step()->errors());
+        }
+        return $errors;
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function toArray(): array
-    {
+    // SERIALIZATION /////////////////////////////////////////////////////
+
+    public function toArray(): array {
         return array_map(
             static fn(StepExecution $result): array => $result->toArray(),
             $this->items,
         );
     }
 
-    /**
-     * Deserialize from array.
-     *
-     * @param array<int, array<string, mixed>> $data
-     */
-    public static function fromArray(array $data): self
-    {
+    public static function fromArray(array $data): self {
         $items = array_map(
             static fn(array $resultData): StepExecution => StepExecution::fromArray($resultData),
             $data,

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Data;
 
+use Cognesy\Agents\Core\Context\AgentContext;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -10,11 +11,11 @@ describe('AgentState execution buffer', function () {
     it('includes execution buffer in messagesForInference', function () {
         $state = AgentState::empty();
         $store = $state->store()
-            ->section(AgentState::EXECUTION_BUFFER_SECTION)
+            ->section(AgentContext::EXECUTION_BUFFER_SECTION)
             ->setMessages(Messages::fromString('trace', 'tool'));
         $state = $state->withMessageStore($store);
 
-        $messages = $state->messagesForInference();
+        $messages = $state->context()->messagesForInference();
 
         expect($messages->filter(fn(Message $message): bool => $message->isTool())->count())->toBe(1);
     });
@@ -22,12 +23,12 @@ describe('AgentState execution buffer', function () {
     it('clears execution buffer during continuation reset', function () {
         $state = AgentState::empty();
         $store = $state->store()
-            ->section(AgentState::EXECUTION_BUFFER_SECTION)
+            ->section(AgentContext::EXECUTION_BUFFER_SECTION)
             ->setMessages(Messages::fromString('trace', 'tool'));
         $state = $state->withMessageStore($store);
 
-        $continued = $state->forContinuation();
+        $continued = $state->forNextExecution();
 
-        expect($continued->store()->section(AgentState::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeTrue();
+        expect($continued->store()->section(AgentContext::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeTrue();
     });
 });

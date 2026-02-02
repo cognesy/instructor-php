@@ -6,6 +6,7 @@ use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Utils\SummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Hooks\HookTriggers;
 
 class UseSummarization implements AgentCapability
 {
@@ -29,6 +30,7 @@ class UseSummarization implements AgentCapability
                 maxTokens: $policy->maxMessageTokens,
                 bufferSection: $policy->bufferSection,
             ),
+            HookTriggers::afterStep(),
             priority: -200,
         );
 
@@ -41,6 +43,7 @@ class UseSummarization implements AgentCapability
                 summarySection: $policy->summarySection,
                 summarizer: $summarizer,
             ),
+            HookTriggers::afterStep(),
             priority: -210,
         );
     }

@@ -2,17 +2,15 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Data\StepExecution;
-use Cognesy\Agents\Serialization\SlimAgentStateSerializer;
-use Cognesy\Agents\Serialization\SlimSerializationConfig;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use tmp\Serialization\SlimAgentStateSerializer;
+use tmp\Serialization\SlimSerializationConfig;
 
 function makeSerializedState(): AgentState {
     $messages = Messages::fromArray([
@@ -57,26 +55,11 @@ function makeSerializedState(): AgentState {
         id: $stepId2,
     );
 
-    $stepExecution1 = new StepExecution(
-        step: $step1,
-        outcome: ContinuationOutcome::empty(),
-        startedAt: new \DateTimeImmutable(),
-        completedAt: new \DateTimeImmutable(),
-        stepNumber: 1,
-        id: $stepId1,
-    );
-    $stepExecution2 = new StepExecution(
-        step: $step2,
-        outcome: ContinuationOutcome::empty(),
-        startedAt: new \DateTimeImmutable(),
-        completedAt: new \DateTimeImmutable(),
-        stepNumber: 2,
-        id: $stepId2,
-    );
-
     return $state
-        ->withStepExecutionRecorded($stepExecution1)
-        ->withStepExecutionRecorded($stepExecution2);
+        ->withCurrentStep($step1)
+        ->withExecutionCompleted()
+        ->withCurrentStep($step2)
+        ->withExecutionCompleted();
 }
 
 it('serializes messages with truncation', function () {
@@ -150,5 +133,5 @@ it('deserializes minimal agent state', function () {
 
     expect($restored->agentId())->toBe('agent-1');
     expect($restored->parentAgentId())->toBe('agent-0');
-    expect(count($restored->messages()))->toBe(3);
+    expect($restored->messages()->count())->toBe(3);
 });

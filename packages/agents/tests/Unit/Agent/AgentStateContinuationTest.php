@@ -2,12 +2,10 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Continuation\Data\ContinuationOutcome;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Data\StepExecution;
 use Cognesy\Agents\Core\Enums\AgentStatus;
-use Cognesy\Agents\Core\Exceptions\AgentException;
+use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -30,30 +28,22 @@ it('resets execution state for continuation', function () {
         inferenceResponse: new InferenceResponse(usage: new Usage(1, 2, 0, 0, 0)),
         id: $stepId,
     );
-    $stepExecution = new StepExecution(
-        step: $step,
-        outcome: ContinuationOutcome::empty(),
-        startedAt: new \DateTimeImmutable(),
-        completedAt: new \DateTimeImmutable(),
-        stepNumber: 1,
-        id: $stepId,
-    );
     $state = AgentState::empty()
         ->withMessages(Messages::fromString('First'))
-        ->withStepExecutionRecorded($stepExecution)
+        ->withCurrentStep($step)
+        ->withExecutionCompleted()
         ->withCachedContext(new CachedInferenceContext(messages: [['role' => 'user', 'content' => 'cached']]))
-        ->withStatus(AgentStatus::Completed);
+        ;
 
-    $continued = $state->forContinuation();
+    $continued = $state->forNextExecution();
 
     // After forContinuation(), the state is "between executions" (no active execution)
-    // Status is Pending, ready for a fresh execution to start
-    expect($continued->status())->toBe(AgentStatus::Pending)
-        ->and($continued->hasActiveExecution())->toBeFalse()
+    expect($continued->status())->toBeNull()
+        ->and($continued->hasCurrentExecution())->toBeFalse()
         ->and($continued->stepCount())->toBe(0)
         ->and($continued->currentStep())->toBeNull()
         ->and($continued->usage()->total())->toBe(0)
-        ->and($continued->cache()->isEmpty())->toBeTrue()
+        ->and($continued->context()->cache()->isEmpty())->toBeFalse()
         ->and($continued->messages()->count())->toBe(1);
 });
 
@@ -61,29 +51,21 @@ it('records a step result and sets currentStep', function () {
     $state = AgentState::empty();
     $stepId = 'step-1';
     $step = new AgentStep(id: $stepId);
-    $stepExecution = new StepExecution(
-        step: $step,
-        outcome: ContinuationOutcome::empty(),
-        startedAt: new \DateTimeImmutable(),
-        completedAt: new \DateTimeImmutable(),
-        stepNumber: 1,
-        id: $stepId,
-    );
+    $next = $state->withCurrentStep($step)->withExecutionCompleted();
 
-    $next = $state->withStepExecutionRecorded($stepExecution);
-
-    expect($next->currentStep())->toBe($step)
-        ->and($next->stepCount())->toBe(1);
+    expect($next->currentStep())->toBeNull()
+        ->and($next->stepCount())->toBe(1)
+        ->and($next->steps()->lastStep())->toBe($step);
 });
 
 it('fails with an error and records a failure step', function () {
     $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
-    $error = AgentException::fromThrowable(new \RuntimeException('boom'));
+    $error = AgentException::fromError(new \RuntimeException('boom'));
 
     $failed = $state->withFailure($error);
-    $currentStep = $failed->currentStep();
+    $lastStep = $failed->steps()->lastStep();
 
     expect($failed->status())->toBe(AgentStatus::Failed)
-        ->and($currentStep)->not->toBeNull()
-        ->and($currentStep?->hasErrors())->toBeTrue();
+        ->and($lastStep)->not->toBeNull()
+        ->and($lastStep?->hasErrors())->toBeTrue();
 });

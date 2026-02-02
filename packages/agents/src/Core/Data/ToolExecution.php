@@ -2,13 +2,15 @@
 
 namespace Cognesy\Agents\Core\Data;
 
-use Cognesy\Agents\Core\Exceptions\ToolExecutionException;
+use Cognesy\Agents\Exceptions\ToolCallBlockedException;
+use Cognesy\Agents\Exceptions\ToolExecutionException;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Throwable;
 
 final readonly class ToolExecution
@@ -35,19 +37,20 @@ final readonly class ToolExecution
 
     // CONSTRUCTORS ////////////////////////////////////////////
 
-    public static function fromArray(array $data): ToolExecution {
+    public static function blocked(ToolCall $toolCall, string $message) : ToolExecution {
+        $now = new DateTimeImmutable();
         return new ToolExecution(
-            toolCall: self::hydrateToolCall($data),
-            result: self::makeResult($data),
-            startedAt: self::parseDate($data['startedAt'] ?? null),
-            // Legacy support: endedAt is accepted but deprecated in favor of completedAt.
-            completedAt: self::parseDate($data['completedAt'] ?? $data['endedAt'] ?? null),
-            id: $data['id'] ?? null,
+            toolCall: $toolCall,
+            result: Failure::from(new ToolExecutionException(
+                message: $message,
+                toolCall: $toolCall,
+            )),
+            startedAt: $now,
+            completedAt: $now,
         );
     }
 
     // ACCESSORS ///////////////////////////////////////////////
-
     public function toolCall(): ToolCall {
         return $this->toolCall;
     }
@@ -84,22 +87,17 @@ final readonly class ToolExecution
     }
 
     public function error(): ?Throwable {
-        return $this->result instanceof Failure
-            ? $this->result->exception()
-            : null;
+        return match (true) {
+            $this->result instanceof Failure => $this->result->exception(),
+            default => null,
+        };
     }
 
     public function errorMessage(): string {
-        if (!$this->result->isFailure()) {
-            return '';
-        }
-
-        $failure = $this->result;
-        if ($failure instanceof Failure) {
-            return $failure->errorMessage();
-        }
-
-        return '';
+        return match (true) {
+            $this->result instanceof Failure => $this->result->errorMessage(),
+            default => '',
+        };
     }
 
     public function hasError(): bool {
@@ -107,88 +105,70 @@ final readonly class ToolExecution
     }
 
     public function errorAsString(): ?string {
-        if (!$this->result->isFailure()) {
-            return null;
-        }
-        $message = $this->errorMessage();
-        return $message !== '' ? $message : null;
+        return match (true) {
+            $this->result instanceof Failure => $this->result->errorMessage(),
+            default => null,
+        };
     }
 
-    // TRANSFORMATIONS / CONVERSIONS ////////////////////////////
+    public function wasBlocked(): bool {
+        return $this->error() instanceof ToolCallBlockedException;
+    }
+
+    // SERIALIZATION /////////////////////////////////////////
 
     public function toArray(): array {
-        $failure = $this->result instanceof Failure ? $this->result : null;
+        $failure = $this->result->isFailure() ? $this->result : null;
 
         return [
             'id' => $this->id,
-            'toolCall' => [
+            'tool_call' => [
                 'id' => $this->toolCall->id(),
                 'name' => $this->toolCall->name(),
                 'arguments' => $this->toolCall->args(),
             ],
-            'tool' => $this->toolCall->name(),
-            'args' => $this->toolCall->args(),
-            'result' => $this->result->isSuccess() ? $this->value() : null,
+            'result' => $this->result->isSuccess() ? json_encode($this->value()) : null,
             'error' => $failure?->errorMessage(),
-            'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
-            'completedAt' => $this->completedAt->format(DateTimeImmutable::ATOM),
+            'startedAt' => $this->startedAt->format(DateTimeInterface::ATOM),
+            'completedAt' => $this->completedAt->format(DateTimeInterface::ATOM),
         ];
+    }
+
+    public static function fromArray(array $data): ToolExecution {
+        return new ToolExecution(
+            toolCall: ToolCall::fromArray($data['tool_call'] ?? []),
+            result: self::makeResult($data),
+            startedAt: self::parseDate($data['startedAt'] ?? null),
+            completedAt: self::parseDate($data['completedAt'] ?? $data['endedAt'] ?? null),
+            id: $data['id'] ?? null,
+        );
     }
 
     // INTERNAL ////////////////////////////////////////////////
 
     private static function makeResult(array $data): Result {
-        if (array_key_exists('error', $data) && $data['error'] !== null && $data['error'] !== '') {
-            return self::makeFailure($data['error']);
-        }
-        if (array_key_exists('result', $data)) {
-            return Result::from($data['result']);
-        }
-        return Result::success(null);
-    }
-
-    private static function makeFailure(mixed $error): Failure {
-        if ($error instanceof Failure) {
-            return $error;
-        }
-
-        return match (true) {
-            $error instanceof Throwable => Result::failure($error),
-            is_array($error) && isset($error['message']) && is_string($error['message'])
-                => Result::failure(new ToolExecutionException($error['message'])),
-            is_array($error) && isset($error['error']) && is_string($error['error'])
-                => Result::failure(new ToolExecutionException($error['error'])),
-            is_string($error) && $error !== ''
-                => Result::failure(new ToolExecutionException($error)),
-            default => Result::failure(new ToolExecutionException('Unknown error')),
+        return match(true) {
+            self::hasNonEmptyErrorKey($data) => self::makeFailure(
+                error: $data['error'],
+                toolCall: ToolCall::fromArray($data['tool_call'] ?? [])
+            ),
+            array_key_exists('result', $data) => Result::from($data['result']),
+            default => Result::success(null),
         };
     }
 
-    private static function hydrateToolCall(array $data): ToolCall {
-        $toolCallPayload = $data['toolCall'] ?? [];
-        if (!is_array($toolCallPayload)) {
-            $toolCallPayload = [];
-        }
+    private static function hasNonEmptyErrorKey(array $data) : bool {
+        return array_key_exists('error', $data)
+            && $data['error'] !== null
+            && $data['error'] !== '';
+    }
 
-        if ($toolCallPayload === []) {
-            $toolCallPayload = [
-                'id' => $data['toolCallId'] ?? $data['tool_call_id'] ?? '',
-                'name' => $data['tool'] ?? '',
-                'arguments' => $data['arguments'] ?? $data['args'] ?? [],
-            ];
-        }
-
-        if (isset($toolCallPayload['args']) && !isset($toolCallPayload['arguments'])) {
-            $toolCallPayload['arguments'] = $toolCallPayload['args'];
-        }
-
-        $toolCall = ToolCall::fromArray($toolCallPayload);
-        if ($toolCall === null) {
-            throw new ToolExecutionException('Tool execution payload is missing tool call information.');
-        }
-
-        $id = $toolCallPayload['id'] ?? '';
-        return $id !== '' ? $toolCall->withId((string) $id) : $toolCall;
+    private static function makeFailure(mixed $error, ToolCall $toolCall): Failure {
+        return match (true) {
+            $error instanceof Failure => $error,
+            $error instanceof Throwable => Result::failure($error),
+            default => Result::failure(new ToolExecutionException('Unknown error', $toolCall)),
+        };
     }
 
     private static function parseDate(mixed $value): DateTimeImmutable {

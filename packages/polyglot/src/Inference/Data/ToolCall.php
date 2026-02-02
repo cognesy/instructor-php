@@ -23,25 +23,8 @@ final readonly class ToolCall
         $this->arguments = $args;
     }
 
-    // CONSTRUCTORS /////////////////////////////////////////////////
-
-    public static function fromArray(array $toolCall) : ?ToolCall {
-        if (empty($toolCall['name'])) {
-            return null;
-        }
-
-        $args = match(true) {
-            is_array($toolCall['arguments'] ?? false) => $toolCall['arguments'],
-            is_string($toolCall['arguments'] ?? false) => Json::fromString($toolCall['arguments'])->toArray(),
-            is_null($toolCall['arguments'] ?? null) => [],
-            default => throw new \InvalidArgumentException('ToolCall args must be a string or an array')
-        };
-
-        return new ToolCall(
-            name: $toolCall['name'] ?? '',
-            args: $args,
-            id: $toolCall['id'] ?? ''
-        );
+    public static function none() : self {
+        return new self(name: '(no-tool)', args: [], id: '');
     }
 
     // MUTATORS ////////////////////////////////////////////////////
@@ -75,10 +58,6 @@ final readonly class ToolCall
 
     // ACCESSORS ///////////////////////////////////////////////////
 
-    public function hasArgs() : bool {
-        return !empty($this->arguments);
-    }
-
     public function id() : string {
         return $this->id;
     }
@@ -103,13 +82,16 @@ final readonly class ToolCall
         return $this->arguments[$key] ?? $default;
     }
 
-    // TRANSFORMERS ////////////////////////////////////////////////
+    public function hasArgs() : bool {
+        return !empty($this->arguments);
+    }
+
+    // SERIALIZATION ////////////////////////////////////////////////
 
     public function toArray() : array {
         return [
             'name' => $this->name,
             'arguments' => $this->arguments,
-            //
             'id' => $this->id,
         ];
     }
@@ -129,12 +111,23 @@ final readonly class ToolCall
         if (empty($this->arguments)) {
             return $this->name . "()";
         }
-        
         $argStrings = [];
         foreach ($this->arguments as $key => $value) {
             $argStrings[] = $key . '=' . (is_string($value) ? $value : json_encode($value));
         }
-        
         return $this->name . "(" . implode(', ', $argStrings) . ")";
+    }
+
+    public static function fromArray(array $toolCall) : self {
+        return new ToolCall(
+            name: $toolCall['name'] ?? '(unnamed-tool)',
+            args: match(true) {
+                is_array($toolCall['arguments'] ?? false) => $toolCall['arguments'],
+                is_string($toolCall['arguments'] ?? false) => Json::fromString($toolCall['arguments'])->toArray(),
+                is_null($toolCall['arguments'] ?? null) => [],
+                default => throw new \InvalidArgumentException('ToolCall args must be a string or an array')
+            },
+            id: $toolCall['id'] ?? ''
+        );
     }
 }

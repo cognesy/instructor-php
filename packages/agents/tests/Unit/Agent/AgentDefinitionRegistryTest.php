@@ -7,7 +7,7 @@ use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionExecution;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLlm;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionTools;
-use Cognesy\Agents\Core\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Exceptions\AgentNotFoundException;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('AgentDefinitionRegistry', function () {

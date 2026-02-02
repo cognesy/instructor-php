@@ -72,7 +72,7 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : GradedCorrectnessAnalysis {
-        return $this->structuredOutput
+        return ($this->structuredOutput ?? new StructuredOutput())
             ->withInput([
                 'expected_result' => $this->expected,
                 'actual_result' => $this->actual,

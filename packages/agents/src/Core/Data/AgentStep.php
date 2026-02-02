@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Immutable step snapshot from agent execution.
  *
- * Timing and continuation outcome are owned by StepExecution.
+ * Timing and stop signal are owned by StepExecution.
  */
 final readonly class AgentStep
 {
@@ -44,10 +44,35 @@ final readonly class AgentStep
 
         $providedErrors = $errors ?? ErrorList::empty();
         $toolErrors = $this->toolExecutions->errors();
-        $this->errors = $toolErrors->withAppended(...$providedErrors->all());
+        $this->errors = $toolErrors->withAppendedExceptions(...$providedErrors->all());
     }
 
-    // ERRORS //////////////////////////////////////////////////////
+    public static function empty() : self {
+        return new self();
+    }
+
+    public static function failure(
+        Throwable $error,
+        ?Messages $inputMessages = null,
+    ): self {
+        return new self(
+            inputMessages: $inputMessages ?? Messages::empty(),
+            outputMessages: Messages::empty(),
+            errors: new ErrorList($error),
+        );
+    }
+
+    public function withError(Throwable $error) : self {
+        $newErrors = $this->errors->withAppendedExceptions($error);
+        return new self(
+            inputMessages: $this->inputMessages,
+            outputMessages: $this->outputMessages,
+            inferenceResponse: $this->inferenceResponse,
+            toolExecutions: $this->toolExecutions,
+            errors: $newErrors,
+            id: $this->id,
+        );
+    }
 
     public function hasErrors(): bool {
         return $this->errors->hasAny();
@@ -130,14 +155,6 @@ final readonly class AgentStep
         return new ToolExecutions(...$this->toolExecutions->havingErrors());
     }
 
-    public static function failure(Messages $inputMessages, Throwable $error): self {
-        return new self(
-            inputMessages: $inputMessages,
-            outputMessages: Messages::empty(),
-            errors: new ErrorList($error),
-        );
-    }
-
     // SERIALIZATION ///////////////////////////////////////////////
 
     public function toArray(): array {
@@ -159,7 +176,6 @@ final readonly class AgentStep
 
     public static function fromArray(array $data): self {
         $inferenceResponse = self::hydrateInferenceResponse($data);
-
         return new self(
             inputMessages: isset($data['inputMessages'])
                 ? Messages::fromArray($data['inputMessages'])
@@ -178,7 +194,6 @@ final readonly class AgentStep
 
     public function toString(): string {
         $toolCalls = $this->requestedToolCalls();
-
         return ($this->outputMessages()->toString() ?: '(no response)')
             . ' ['
             . ($toolCalls->hasAny() ? $toolCalls->toString() : '(-)')

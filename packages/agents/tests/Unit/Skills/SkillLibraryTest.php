@@ -113,8 +113,10 @@ describe('SkillLibrary', function () {
         expect($rendered)->toBe('(no skills available)');
     });
 
-    it('parses skill without frontmatter using filename as name', function () {
-        file_put_contents($this->tempDir . '/simple-skill.md', '# Simple Content');
+    it('parses skill without frontmatter using directory name', function () {
+        $skillDir = $this->tempDir . '/simple-skill';
+        mkdir($skillDir, 0755, true);
+        file_put_contents($skillDir . '/SKILL.md', '# Simple Content');
 
         $library = new SkillLibrary($this->tempDir);
         $skill = $library->getSkill('simple-skill');
@@ -149,6 +151,8 @@ SKILL);
     // Helper to create skill files
     beforeEach(function () {
         $this->createSkillFile = function (string $name, string $description, string $body = 'Content') {
+            $skillDir = $this->tempDir . '/' . $name;
+            mkdir($skillDir, 0755, true);
             $content = <<<SKILL
 ---
 name: {$name}
@@ -156,7 +160,7 @@ description: {$description}
 ---
 {$body}
 SKILL;
-            file_put_contents($this->tempDir . '/' . $name . '.md', $content);
+            file_put_contents($skillDir . '/SKILL.md', $content);
         };
     });
 });

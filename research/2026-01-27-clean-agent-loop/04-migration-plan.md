@@ -206,7 +206,7 @@ public function onBeforeToolUse(AgentState $state): AgentState
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;
 
 final class CompositeObserver implements CanObserveAgentLifecycle
 {

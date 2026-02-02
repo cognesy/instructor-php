@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Tests\Unit\Tools;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\LoadSkillTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('LoadSkillTool', function () {
 
@@ -12,6 +13,8 @@ describe('LoadSkillTool', function () {
         mkdir($this->tempDir, 0755, true);
 
         $this->createSkillFile = function (string $name, string $description, string $body = 'Content') {
+            $skillDir = $this->tempDir . '/' . $name;
+            mkdir($skillDir, 0755, true);
             $content = <<<SKILL
 ---
 name: {$name}
@@ -19,15 +22,12 @@ description: {$description}
 ---
 {$body}
 SKILL;
-            file_put_contents($this->tempDir . '/' . $name . '.md', $content);
+            file_put_contents($skillDir . '/SKILL.md', $content);
         };
     });
 
     afterEach(function () {
-        if (is_dir($this->tempDir)) {
-            array_map('unlink', glob($this->tempDir . '/*') ?: []);
-            rmdir($this->tempDir);
-        }
+        TestHelpers::recursiveDelete($this->tempDir);
     });
 
     it('has correct name and description', function () {
