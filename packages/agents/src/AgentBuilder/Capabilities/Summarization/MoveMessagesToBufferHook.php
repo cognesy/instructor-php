@@ -4,8 +4,8 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Summarization;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Events\MessagesMovedToBuffer;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Utils\SplitMessages;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Utils\Tokenizer;

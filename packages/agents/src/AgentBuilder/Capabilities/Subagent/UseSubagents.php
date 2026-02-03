@@ -2,12 +2,13 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class UseSubagents implements AgentCapability
@@ -15,7 +16,7 @@ class UseSubagents implements AgentCapability
     private SubagentPolicy $policy;
 
     public function __construct(
-        private ?SubagentProvider $provider = null,
+        private ?AgentDefinitionProvider $provider = null,
         ?SubagentPolicy $policy = null,
         private ?SkillLibrary $skillLibrary = null,
     ) {
@@ -24,7 +25,7 @@ class UseSubagents implements AgentCapability
 
     public static function withDepth(
         int $maxDepth,
-        ?SubagentProvider $provider = null,
+        ?AgentDefinitionProvider $provider = null,
         ?int $summaryMaxChars = null,
         ?SkillLibrary $skillLibrary = null,
     ): self {
@@ -40,15 +41,15 @@ class UseSubagents implements AgentCapability
 
     #[\Override]
     public function install(AgentBuilder $builder): void {
-        $builder->onBuild(function (AgentLoop $agentLoop) {
-            $driver = $agentLoop->driver();
+        $builder->addToolFactory(function (Tools $tools, CanUseTools $driver, CanEmitAgentEvents $emitter) {
             $llmProvider = LLMProvider::new();
             if ($driver instanceof ToolCallingDriver) {
                 $llmProvider = $driver->getLlmProvider();
             }
 
-            $subagentTool = new SpawnSubagentTool(
-                parentAgentLoop: $agentLoop,
+            return new SpawnSubagentTool(
+                parentTools: $tools,
+                parentDriver: $driver,
                 provider: $this->resolveProvider(),
                 skillLibrary: $this->skillLibrary,
                 parentLlmProvider: $llmProvider,
@@ -56,14 +57,12 @@ class UseSubagents implements AgentCapability
                 maxDepth: $this->policy->maxDepth,
                 summaryMaxChars: $this->policy->summaryMaxChars,
                 policy: $this->policy,
-                eventEmitter: $agentLoop->eventEmitter(),
+                eventEmitter: $emitter,
             );
-
-            return $agentLoop->with(tools: $agentLoop->tools()->merge(new Tools($subagentTool)));
         });
     }
 
-    private function resolveProvider(): SubagentProvider {
+    private function resolveProvider(): AgentDefinitionProvider {
         return $this->provider ?? new EmptySubagentProvider();
     }
 }

@@ -4,10 +4,7 @@ namespace Cognesy\Agents\AgentTemplate\Definitions;
 
 use Cognesy\Agents\AgentTemplate\Contracts\AgentBlueprint;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
-use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintCreationException;
-use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintMissingException;
-use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
-use Cognesy\Agents\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
+use Cognesy\Agents\AgentTemplate\Exceptions\AgentTemplateException;
 use Cognesy\Agents\AgentTemplate\Registry\AgentBlueprintRegistry;
 use Throwable;
 
@@ -24,12 +21,13 @@ final class AgentDefinitionFactory
 
         try {
             return $class::fromDefinition($definition);
-        } catch (AgentBlueprintCreationException $e) {
+        } catch (AgentTemplateException $e) {
             throw $e;
         } catch (Throwable $e) {
-            throw new AgentBlueprintCreationException(
-                "Failed to create agent from blueprint '{$class}' for definition '{$definition->id}'.",
-                previous: $e,
+            throw AgentTemplateException::blueprintCreationFailed(
+                $class,
+                $definition->id(),
+                $e,
             );
         }
     }
@@ -41,13 +39,12 @@ final class AgentDefinitionFactory
     {
         if ($definition->blueprintClass !== null) {
             if (!class_exists($definition->blueprintClass)) {
-                throw new AgentBlueprintNotFoundException(
-                    "Blueprint class '{$definition->blueprintClass}' does not exist."
-                );
+                throw AgentTemplateException::blueprintNotFound($definition->blueprintClass);
             }
             if (!is_subclass_of($definition->blueprintClass, AgentBlueprint::class)) {
-                throw new InvalidAgentBlueprintException(
-                    "Blueprint class '{$definition->blueprintClass}' must implement AgentBlueprint."
+                throw AgentTemplateException::invalidBlueprint(
+                    $definition->blueprintClass,
+                    'must implement AgentBlueprint',
                 );
             }
 
@@ -62,8 +59,6 @@ final class AgentDefinitionFactory
             return $this->blueprints->get($this->defaultBlueprint);
         }
 
-        throw new AgentBlueprintMissingException(
-            "Agent definition '{$definition->id}' must specify 'blueprint' or 'blueprint_class'."
-        );
+        throw AgentTemplateException::blueprintMissing($definition->id());
     }
 }

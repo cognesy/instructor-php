@@ -3,10 +3,7 @@
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionExecution;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLlm;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionTools;
 use Cognesy\Agents\Exceptions\AgentNotFoundException;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
@@ -15,20 +12,18 @@ describe('AgentDefinitionRegistry', function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_definition_registry_' . uniqid();
         mkdir($this->tempDir, 0755, true);
 
-        $this->writeDefinition = function (
+        $this->writeYamlDefinition = function (
             string $dir,
             string $filename,
-            string $id,
-            string $name
+            string $name,
         ): string {
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
             $yaml = <<<YAML
-version: 1
-id: {$id}
 name: {$name}
 description: {$name} description
 system_prompt: {$name} prompt
-llm:
-  preset: anthropic
 YAML;
 
             $path = $dir . '/' . $filename;
@@ -41,25 +36,19 @@ YAML;
         TestHelpers::recursiveDelete($this->tempDir);
     });
 
-    it('registers and retrieves definitions', function () {
+    it('registers and retrieves definitions by name', function () {
         $registry = new AgentDefinitionRegistry();
         $definition = new AgentDefinition(
-            version: 1,
-            id: 'agent-a',
-            name: 'Agent A',
+            name: 'agent-a',
             description: 'Agent A description',
             systemPrompt: 'Agent A prompt',
-            blueprint: null,
-            blueprintClass: null,
-            llm: new AgentDefinitionLlm('anthropic'),
-            execution: new AgentDefinitionExecution(),
-            tools: new AgentDefinitionTools(),
         );
 
         $registry->register($definition);
 
         expect($registry->get('agent-a'))->toBe($definition);
         expect($registry->names())->toBe(['agent-a']);
+        expect($registry->count())->toBe(1);
     });
 
     it('throws when definition is missing', function () {
@@ -70,32 +59,54 @@ YAML;
         expect($get)->toThrow(AgentNotFoundException::class);
     });
 
-    it('loads from paths with override precedence', function () {
-        $lowDir = $this->tempDir . '/low';
-        $highDir = $this->tempDir . '/high';
-        mkdir($lowDir, 0755, true);
-        mkdir($highDir, 0755, true);
+    it('implements AgentDefinitionProvider', function () {
+        $registry = new AgentDefinitionRegistry();
+        $a = new AgentDefinition(name: 'alpha', description: 'Alpha', systemPrompt: 'Alpha prompt');
+        $b = new AgentDefinition(name: 'beta', description: 'Beta', systemPrompt: 'Beta prompt');
 
-        ($this->writeDefinition)($lowDir, 'agent.yaml', 'agent-a', 'Low Priority');
-        ($this->writeDefinition)($highDir, 'agent.yaml', 'agent-a', 'High Priority');
+        $registry->registerMany($a, $b);
+
+        expect($registry->count())->toBe(2);
+        expect($registry->names())->toBe(['alpha', 'beta']);
+        expect($registry->all())->toHaveCount(2);
+        expect($registry->get('alpha')->description)->toBe('Alpha');
+    });
+
+    it('loads yaml definitions from directory', function () {
+        ($this->writeYamlDefinition)($this->tempDir, 'agent.yaml', 'yaml-agent');
 
         $registry = new AgentDefinitionRegistry();
-        $result = $registry->loadFromPaths([$lowDir, $highDir]);
+        $registry->loadFromDirectory($this->tempDir);
 
-        expect($result->definitions['agent-a']->name)->toBe('High Priority');
-        expect($registry->get('agent-a')->name)->toBe('High Priority');
+        expect($registry->count())->toBe(1);
+        expect($registry->has('yaml-agent'))->toBeTrue();
+    });
+
+    it('loads from file with override on duplicate name', function () {
+        $lowDir = $this->tempDir . '/low';
+        $highDir = $this->tempDir . '/high';
+
+        ($this->writeYamlDefinition)($lowDir, 'agent.yaml', 'shared-agent');
+        ($this->writeYamlDefinition)($highDir, 'agent.yaml', 'shared-agent');
+
+        $registry = new AgentDefinitionRegistry();
+        $registry->loadFromDirectory($lowDir);
+        $registry->loadFromDirectory($highDir);
+
+        expect($registry->count())->toBe(1);
+        expect($registry->has('shared-agent'))->toBeTrue();
     });
 
     it('records errors without discarding valid definitions', function () {
-        ($this->writeDefinition)($this->tempDir, 'valid.yaml', 'valid', 'Valid');
+        ($this->writeYamlDefinition)($this->tempDir, 'valid.yaml', 'valid-agent');
         $invalidPath = $this->tempDir . '/invalid.yaml';
-        file_put_contents($invalidPath, "version: 1\nid: invalid\n");
+        file_put_contents($invalidPath, "not_a_valid: yaml\nmissing: required_fields\n");
 
         $registry = new AgentDefinitionRegistry();
-        $result = $registry->loadFromDirectory($this->tempDir);
+        $registry->loadFromDirectory($this->tempDir);
 
-        expect($result->definitions)->toHaveCount(1);
-        expect($result->errors)->toHaveCount(1);
+        expect($registry->count())->toBe(1);
+        expect($registry->has('valid-agent'))->toBeTrue();
         expect($registry->errors())->toHaveCount(1);
         expect(array_key_exists($invalidPath, $registry->errors()))->toBeTrue();
     });
@@ -105,18 +116,16 @@ YAML;
         $projectAgents = $projectPath . '/.claude/agents';
         $packagePath = $this->tempDir . '/package';
         $userPath = $this->tempDir . '/user';
-        mkdir($projectAgents, 0755, true);
-        mkdir($packagePath, 0755, true);
-        mkdir($userPath, 0755, true);
 
-        ($this->writeDefinition)($userPath, 'agent.yaml', 'agent-a', 'User');
-        ($this->writeDefinition)($packagePath, 'agent.yaml', 'agent-a', 'Package');
-        ($this->writeDefinition)($projectAgents, 'agent.yaml', 'agent-a', 'Project');
+        ($this->writeYamlDefinition)($userPath, 'agent.yaml', 'shared-agent');
+        ($this->writeYamlDefinition)($packagePath, 'agent.yaml', 'shared-agent');
+        ($this->writeYamlDefinition)($projectAgents, 'agent.yaml', 'shared-agent');
 
         $registry = new AgentDefinitionRegistry();
-        $result = $registry->autoDiscover($projectPath, $packagePath, $userPath);
+        $registry->autoDiscover($projectPath, $packagePath, $userPath);
 
-        expect($result->definitions['agent-a']->name)->toBe('Project');
-        expect($registry->get('agent-a')->name)->toBe('Project');
+        // Project path is loaded last, so it wins
+        expect($registry->count())->toBe(1);
+        expect($registry->has('shared-agent'))->toBeTrue();
     });
 });

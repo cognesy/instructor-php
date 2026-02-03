@@ -2,17 +2,16 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
+use Cognesy\Agents\AgentBuilder\Contracts\CanSerializeAgentConfig;
 use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Messages\Messages;
 
-final class ConfiguredAgentDefinition extends BaseAgent
+final class ConfiguredAgentDefinition extends BaseAgent implements CanSerializeAgentConfig
 {
     public function __construct(
         private readonly string $workspace,
@@ -30,12 +29,11 @@ final class ConfiguredAgentDefinition extends BaseAgent
         );
     }
 
-    protected function buildAgentLoop(): AgentLoop
+    protected function configureLoop(AgentBuilder $builder): AgentBuilder
     {
-        return AgentBuilder::base()
+        return $builder
             ->withMaxSteps($this->maxSteps)
-            ->withDriver(new FakeAgentDriver())
-            ->build();
+            ->withDriver(new FakeAgentDriver());
     }
 
     public function serializeConfig(): array
@@ -46,7 +44,7 @@ final class ConfiguredAgentDefinition extends BaseAgent
         ];
     }
 
-    public static function fromConfig(array $config): AgentInterface
+    public static function fromConfig(array $config): static
     {
         $workspace = $config['workspace'] ?? '/tmp';
         $maxSteps = $config['max_steps'] ?? 1;
@@ -76,8 +74,8 @@ describe('Agent contract serialization', function () {
         $state = AgentState::empty()
             ->withMessages(Messages::fromString('ping'));
 
-        $final = $agent->run($state);
+        $final = $agent->execute($state);
 
         expect($final->stepCount())->toBe(1);
     });
-})->skip('hooks not integrated yet');
+});

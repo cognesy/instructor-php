@@ -3,16 +3,13 @@
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
-use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionStarted;
-use Cognesy\Agents\Events\AgentStateUpdated;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ContinuationEvaluated;
@@ -67,21 +64,9 @@ final class EventAgentDefinition extends BaseAgent
         );
     }
 
-    protected function buildAgentLoop(): AgentLoop
+    protected function configureLoop(AgentBuilder $builder): AgentBuilder
     {
-        return AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver())
-            ->build();
-    }
-
-    public function serializeConfig(): array
-    {
-        return ['ok' => true];
-    }
-
-    public static function fromConfig(array $config): AgentInterface
-    {
-        return new self();
+        return $builder->withDriver(new FakeAgentDriver());
     }
 }
 
@@ -100,11 +85,10 @@ describe('AgentDefinition events', function () {
             });
 
         $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
-        $definition->run($state);
+        $definition->execute($state);
 
         expect($completed)->toBe(1);
         expect($captured)->toContain(AgentStepStarted::class);
-        expect($captured)->toContain(AgentStateUpdated::class);
         expect($captured)->toContain(AgentStepCompleted::class);
         expect($captured)->toContain(ContinuationEvaluated::class);
         expect($captured)->toContain(AgentExecutionStarted::class);
@@ -119,7 +103,7 @@ describe('AgentDefinition events', function () {
         $definition->wiretap(fn(object $event) => null);
 
         $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
-        $definition->run($state);
+        $definition->execute($state);
 
         $classes = array_map(
             static fn(object $event): string => $event::class,
@@ -129,4 +113,4 @@ describe('AgentDefinition events', function () {
         expect($classes)->toContain(ContinuationEvaluated::class);
         expect($classes)->toContain(AgentStepStarted::class);
     });
-})->skip('hooks not integrated yet');
+});

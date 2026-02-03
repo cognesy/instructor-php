@@ -24,9 +24,9 @@ describe('Bash Capability', function () {
             break;
         }
 
-        $executions = $next->currentStep()?->toolExecutions()->all() ?? [];
+        $executions = $next->lastStepToolExecutions()->all();
         expect($executions)->toHaveCount(1);
         expect($executions[0]->name())->toBe('bash');
         expect($executions[0]->value())->toBe('Error: Command blocked by safety policy');
     });
-})->skip('hooks not integrated yet');
+});

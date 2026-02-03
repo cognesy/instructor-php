@@ -25,9 +25,10 @@ final class AgentStepCompleted extends AgentEvent
         public readonly Usage $usage,
         public readonly ?InferenceFinishReason $finishReason,
         DateTimeImmutable $startedAt,
+        ?float $durationMs = null,
     ) {
         $this->completedAt = new DateTimeImmutable();
-        $this->durationMs = $this->calculateDurationMs($startedAt);
+        $this->durationMs = $durationMs ?? $this->calculateDurationMs($startedAt);
 
         parent::__construct([
             'agentId' => $this->agentId,
@@ -64,4 +65,3 @@ final class AgentStepCompleted extends AgentEvent
         );
     }
 }
-

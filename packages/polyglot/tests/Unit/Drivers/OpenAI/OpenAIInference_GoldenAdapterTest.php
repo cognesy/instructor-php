@@ -37,7 +37,7 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         model: 'gpt-4o-mini',
         tools: $tools,
         toolChoice: 'auto',
-        responseFormat: ResponseFormat::fromData(['type' => 'json_object']),
+        responseFormat: ResponseFormat::fromArray(['type' => 'json_object']),
         options: ['stream' => true],
     );
 

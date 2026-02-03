@@ -16,11 +16,9 @@ use Cognesy\Agents\Drivers\ReAct\Data\ReActDecision;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActFormatter;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActValidator;
 use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Agents\Exceptions\AgentException;
-use Cognesy\Agents\Hooks\CanInterceptAgentLifecycle;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\PassThroughInterceptor;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\PendingStructuredOutput;
@@ -40,7 +38,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools
+final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -130,7 +128,7 @@ final class ReActDriver implements CanUseTools
         $usage = $inferenceResponse->usage();
 
         if (!$decision->isCall()) {
-            $step = $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->context()->cache());
+            $step = $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->context()->toInferenceContext());
             return $state->withCurrentStep($step);
         }
 
@@ -158,7 +156,7 @@ final class ReActDriver implements CanUseTools
         return $clone;
     }
 
-    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
+    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): static {
         $clone = clone $this;
         $clone->eventEmitter = $eventEmitter;
         return $clone;
@@ -294,7 +292,7 @@ final class ReActDriver implements CanUseTools
     }
 
     /** Generates a plain-text final answer via Inference and returns PendingInference. */
-    private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cachedContext): PendingInference {
+    private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cache): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),
@@ -305,9 +303,9 @@ final class ReActDriver implements CanUseTools
             ->withModel($this->finalModel ?: $this->model)
             ->withOptions($this->finalOptions ?: $this->options)
             ->withOutputMode(OutputMode::Text);
-        if (!$cachedContext->isEmpty()) {
+        if (!$cache->isEmpty()) {
             $inference = $inference->withCachedContext(
-                messages: $cachedContext->messages()->toArray(),
+                messages: $cache->messages()->toArray(),
             );
         }
         if ($this->httpClient !== null) {
@@ -332,12 +330,12 @@ final class ReActDriver implements CanUseTools
     }
 
     private function structuredCachedContext(AgentState $state): ?StructuredCachedContext {
-        $cache = $state->context()->cache();
-        if ($cache->isEmpty()) {
+        $systemPrompt = $state->context()->systemPrompt();
+        if ($systemPrompt === '') {
             return null;
         }
         return new StructuredCachedContext(
-            messages: $cache->messages()->toArray(),
+            messages: [['role' => 'system', 'content' => $systemPrompt]],
         );
     }
 }

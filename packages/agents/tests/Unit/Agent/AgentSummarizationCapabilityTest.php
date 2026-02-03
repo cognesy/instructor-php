@@ -44,4 +44,4 @@ it('moves overflow messages into the buffer when summarization is enabled', func
     expect(trim($next->messages()->toString()))->toBe('ok');
     expect(trim($next->store()->section('buffer')->messages()->toString()))
         ->toBe("one\ntwo");
-})->skip('hooks not integrated yet');
+});

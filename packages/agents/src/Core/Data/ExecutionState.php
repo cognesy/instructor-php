@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Core\Data;
 
 use Cognesy\Agents\Core\Collections\ErrorList;
 use Cognesy\Agents\Core\Collections\StepExecutions;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Stop\ExecutionContinuation;
 use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -19,7 +19,7 @@ final readonly class ExecutionState
 {
     public function __construct(
         private string                $executionId,
-        private AgentStatus           $status,
+        private ExecutionStatus       $status,
         private ?DateTimeImmutable    $startedAt,
         private ?DateTimeImmutable    $completedAt,
         private ?StepExecutions       $stepExecutions,
@@ -34,7 +34,7 @@ final readonly class ExecutionState
     public static function fresh(): self {
         return new self(
             executionId: Uuid::uuid4(),
-            status: AgentStatus::InProgress,
+            status: ExecutionStatus::InProgress,
             startedAt: new DateTimeImmutable(),
             completedAt: null,
             stepExecutions: StepExecutions::empty(),
@@ -44,7 +44,7 @@ final readonly class ExecutionState
         );
     }
 
-    public function withCurrentStepCompleted(?AgentStatus $status = null) : self {
+    public function withCurrentStepCompleted(?ExecutionStatus $status = null) : self {
         $stepExecutions = match(true) {
             ($this->currentStep === null) => $this->stepExecutions,
             default => $this->stepExecutions->withStepExecution(
@@ -57,25 +57,29 @@ final readonly class ExecutionState
         };
         return new self(
             executionId: $this->executionId,
-            status: $status ?? AgentStatus::InProgress,
+            status: $status ?? ExecutionStatus::InProgress,
             startedAt: $this->startedAt,
-            completedAt: ($status !== AgentStatus::InProgress) ? new DateTimeImmutable() : null,
+            completedAt: ($status !== ExecutionStatus::InProgress) ? new DateTimeImmutable() : null,
             stepExecutions: $stepExecutions,
-            continuation: ExecutionContinuation::fresh(),
+            continuation: $this->continuation->withContinuationRequested(false),
             currentStepStartedAt: null,
             currentStep: null,
         );
     }
 
     public function withCurrentStepFailed() : self {
-        return $this->withCurrentStepCompleted(AgentStatus::Failed);
+        return $this->withCurrentStepCompleted(ExecutionStatus::Failed);
     }
 
     public function withContinuationRequested() : self {
         return $this->with(continuation: $this->continuation->withContinuationRequested(true));
     }
 
-    public function completed(?AgentStatus $status = null): self {
+    public function withContinuationRequestCleared() : self {
+        return $this->with(continuation: $this->continuation->withContinuationRequested(false));
+    }
+
+    public function completed(?ExecutionStatus $status = null): self {
         $stepExecutions = match(true) {
             ($this->currentStep === null) => $this->stepExecutions,
             default => $this->stepExecutions->withStepExecution(
@@ -88,11 +92,11 @@ final readonly class ExecutionState
         };
         return new self(
             executionId: $this->executionId,
-            status: $status ?? AgentStatus::Completed,
+            status: $status ?? ExecutionStatus::Completed,
             startedAt: $this->startedAt,
             completedAt: new DateTimeImmutable(),
             stepExecutions: $stepExecutions,
-            continuation: ExecutionContinuation::fresh(),
+            continuation: $this->continuation->withContinuationRequested(false),
             currentStepStartedAt: null,
             currentStep: null,
         );
@@ -111,7 +115,7 @@ final readonly class ExecutionState
         };
         return new self(
             executionId: $this->executionId,
-            status: AgentStatus::Failed,
+            status: ExecutionStatus::Failed,
             startedAt: $this->startedAt,
             completedAt: new DateTimeImmutable(),
             stepExecutions: $stepExecutions,
@@ -127,12 +131,12 @@ final readonly class ExecutionState
         return $this->executionId;
     }
 
-    public function status() : AgentStatus {
+    public function status() : ExecutionStatus {
         return $this->status;
     }
 
     public function isFailed() : bool {
-        return $this->status === AgentStatus::Failed;
+        return $this->status === ExecutionStatus::Failed;
     }
 
     public function stepExecutions() : ?StepExecutions {
@@ -183,6 +187,12 @@ final readonly class ExecutionState
         return $endTime->getTimestamp() - $startTime->getTimestamp();
     }
 
+    public function currentStepDuration() : float {
+        $endTime = new DateTimeImmutable();
+        $startTime = $this->currentStepStartedAt ?? $endTime;
+        return $endTime->getTimestamp() - $startTime->getTimestamp();
+    }
+
     public function hasErrors() : bool {
         return match(true) {
             $this->currentStep?->errors()->hasAny() => true,
@@ -205,14 +215,14 @@ final readonly class ExecutionState
     // IMMUTABLE MUTATORS ///////////////////////////////////
 
     public function with(
-        ?string            $executionId = null,
-        ?AgentStatus       $status = null,
-        ?DateTimeImmutable $startedAt = null,
-        ?DateTimeImmutable $completedAt = null,
-        ?StepExecutions    $stepExecutions = null,
+        ?string                $executionId = null,
+        ?ExecutionStatus       $status = null,
+        ?DateTimeImmutable     $startedAt = null,
+        ?DateTimeImmutable     $completedAt = null,
+        ?StepExecutions        $stepExecutions = null,
         ?ExecutionContinuation $continuation = null,
-        ?DateTimeImmutable $currentStepStartedAt = null,
-        ?AgentStep         $currentStep = null,
+        ?DateTimeImmutable     $currentStepStartedAt = null,
+        ?AgentStep             $currentStep = null,
     ): self {
         return new self(
             executionId: $executionId ?? $this->executionId,
@@ -226,7 +236,7 @@ final readonly class ExecutionState
         );
     }
 
-    public function withStatus(AgentStatus $status): self {
+    public function withStatus(ExecutionStatus $status): self {
         return $this->with(status: $status);
     }
 
@@ -235,7 +245,10 @@ final readonly class ExecutionState
     }
 
     public function withCurrentStep(?AgentStep $step): self {
-        return $this->with(currentStep: $step);
+        return $this->with(
+            currentStepStartedAt: ($step !== null) ? new DateTimeImmutable() : $this->currentStepStartedAt,
+            currentStep: $step,
+        );
     }
 
     // SERIALIZATION ///////////////////////////////////////
@@ -256,7 +269,7 @@ final readonly class ExecutionState
     public static function fromArray(array $data): self {
         return new self(
             executionId: $data['executionId'] ?? Uuid::uuid4(),
-            status: array_key_exists('status', $data) ? AgentStatus::from($data['status']) : AgentStatus::Pending,
+            status: array_key_exists('status', $data) ? ExecutionStatus::from($data['status']) : ExecutionStatus::Pending,
             startedAt: self::makeDateTime('startedAt', $data, new DateTimeImmutable()),
             completedAt: self::makeDateTime('completedAt', $data, null),
             stepExecutions: StepExecutions::fromArray($data['stepExecutions'] ?? []),

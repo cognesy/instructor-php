@@ -54,7 +54,7 @@ $output = StructuredOutput::create()
         // ...
     )
     ->get();
-// @doctest id="478a"
+// @doctest id="9c68"
 ```
 
 **Important:** The `x-php-class` field is REQUIRED for InstructorPHP to know which
@@ -72,7 +72,7 @@ $user = StructuredOutput::create()
 // Result is User object (not array)
 $user->name;   // ✅ Works
 $user['name']; // ❌ Error - not an array
-// @doctest id="04d2"
+// @doctest id="7534"
 ```
 
 **Getting Raw Arrays (v1.3+) ✅**
@@ -90,7 +90,7 @@ $userArray['name'];  // ✅ Works
 $userArray->name;    // ❌ Error - not an object
 
 // $userArray = ['name' => 'John', 'age' => 30]
-// @doctest id="b108"
+// @doctest id="3e7f"
 ```
 
 You can also use different output classes or self-deserializing objects:
@@ -107,7 +107,7 @@ $scalar = StructuredOutput::create()
     ->with(responseModel: Rating::class, ...)
     ->intoObject(new Scalar('rating', 'integer'))
     ->get();
-// @doctest id="d2cf"
+// @doctest id="c62e"
 ```
 
 See: [Output Formats](../advanced/output_formats.md) for comprehensive guide.

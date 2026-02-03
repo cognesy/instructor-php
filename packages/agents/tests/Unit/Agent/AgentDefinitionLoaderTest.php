@@ -2,74 +2,104 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLoader;
 use Cognesy\Agents\Tests\Support\TestHelpers;
+use InvalidArgumentException;
+use RuntimeException;
 
 describe('AgentDefinitionLoader', function () {
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_definition_loader_' . uniqid();
         mkdir($this->tempDir, 0755, true);
-
-        $this->writeDefinition = function (
-            string $dir,
-            string $filename,
-            string $id,
-            string $name
-        ): string {
-            $yaml = <<<YAML
-version: 1
-id: {$id}
-name: {$name}
-description: {$name} description
-system_prompt: {$name} prompt
-llm:
-  preset: anthropic
-YAML;
-
-            $path = $dir . '/' . $filename;
-            file_put_contents($path, $yaml);
-            return $path;
-        };
     });
 
     afterEach(function () {
         TestHelpers::recursiveDelete($this->tempDir);
     });
 
-    it('loads a single YAML file into definitions map', function () {
-        $file = ($this->writeDefinition)($this->tempDir, 'agent.yaml', 'agent-a', 'Agent A');
+    it('loads a YAML file', function () {
+        $yaml = <<<'YAML'
+name: agent-a
+description: Agent A description
+system_prompt: Agent A prompt
+YAML;
+        $path = $this->tempDir . '/agent.yaml';
+        file_put_contents($path, $yaml);
 
-        $result = (new AgentDefinitionLoader())->loadFromFile($file);
+        $definition = (new AgentDefinitionLoader())->loadFile($path);
 
-        expect($result->errors)->toBe([]);
-        expect($result->definitions)->toHaveCount(1);
-        expect($result->definitions['agent-a']->name)->toBe('Agent A');
+        expect($definition)->toBeInstanceOf(AgentDefinition::class);
+        expect($definition->name)->toBe('agent-a');
+        expect($definition->description)->toBe('Agent A description');
     });
 
-    it('applies override precedence for paths', function () {
-        $lowDir = $this->tempDir . '/low';
-        $highDir = $this->tempDir . '/high';
-        mkdir($lowDir, 0755, true);
-        mkdir($highDir, 0755, true);
+    it('loads a YML file', function () {
+        $yaml = <<<'YAML'
+name: agent-b
+description: Agent B description
+system_prompt: Agent B prompt
+YAML;
+        $path = $this->tempDir . '/agent.yml';
+        file_put_contents($path, $yaml);
 
-        ($this->writeDefinition)($lowDir, 'agent.yaml', 'agent-a', 'Low Priority');
-        ($this->writeDefinition)($highDir, 'agent.yaml', 'agent-a', 'High Priority');
+        $definition = (new AgentDefinitionLoader())->loadFile($path);
 
-        $result = (new AgentDefinitionLoader())->loadFromPaths([$lowDir, $highDir]);
-
-        expect($result->definitions['agent-a']->name)->toBe('High Priority');
+        expect($definition->name)->toBe('agent-b');
     });
 
-    it('skips invalid YAML files and reports errors', function () {
-        ($this->writeDefinition)($this->tempDir, 'valid.yaml', 'valid', 'Valid');
+    it('loads a markdown file with YAML frontmatter', function () {
+        $md = "---\nname: md-agent\ndescription: Markdown agent\n---\nYou are a markdown agent.\n";
+        $path = $this->tempDir . '/agent.md';
+        file_put_contents($path, $md);
 
-        $invalidPath = $this->tempDir . '/invalid.yaml';
-        file_put_contents($invalidPath, "version: 1\nid: invalid\n");
+        $definition = (new AgentDefinitionLoader())->loadFile($path);
 
-        $result = (new AgentDefinitionLoader())->loadFromDirectory($this->tempDir);
+        expect($definition->name)->toBe('md-agent');
+        expect($definition->systemPrompt)->toBe('You are a markdown agent.');
+    });
 
-        expect($result->definitions)->toHaveCount(1);
-        expect($result->errors)->toHaveCount(1);
-        expect(array_key_exists($invalidPath, $result->errors))->toBeTrue();
+    it('throws for unsupported file extension', function () {
+        $path = $this->tempDir . '/agent.txt';
+        file_put_contents($path, 'not a valid agent');
+
+        $load = fn() => (new AgentDefinitionLoader())->loadFile($path);
+
+        expect($load)->toThrow(InvalidArgumentException::class);
+    });
+
+    it('throws for missing file', function () {
+        $load = fn() => (new AgentDefinitionLoader())->loadFile($this->tempDir . '/nonexistent.yaml');
+
+        expect($load)->toThrow(RuntimeException::class);
+    });
+
+    it('throws for invalid YAML content', function () {
+        $path = $this->tempDir . '/bad.yaml';
+        file_put_contents($path, "missing: required_fields\n");
+
+        $load = fn() => (new AgentDefinitionLoader())->loadFile($path);
+
+        expect($load)->toThrow(InvalidArgumentException::class);
+    });
+
+    it('throws for markdown without frontmatter', function () {
+        $path = $this->tempDir . '/bad.md';
+        file_put_contents($path, 'no frontmatter here');
+
+        $load = fn() => (new AgentDefinitionLoader())->loadFile($path);
+
+        expect($load)->toThrow(InvalidArgumentException::class);
+    });
+
+    it('handles Windows line endings in markdown', function () {
+        $content = "---\r\nname: win-agent\r\ndescription: Win agent\r\n---\r\nWindows prompt.\r\n";
+        $path = $this->tempDir . '/win.md';
+        file_put_contents($path, $content);
+
+        $definition = (new AgentDefinitionLoader())->loadFile($path);
+
+        expect($definition->name)->toBe('win-agent');
+        expect($definition->systemPrompt)->toBe('Windows prompt.');
     });
 });

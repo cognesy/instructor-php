@@ -4,7 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
-use Cognesy\Agents\Hooks\HookTriggers;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
 
 class UseSelfCritique implements AgentCapability
 {

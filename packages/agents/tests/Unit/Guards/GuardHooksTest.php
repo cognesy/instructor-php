@@ -2,163 +2,149 @@
 
 namespace Cognesy\Agents\Tests\Unit\Guards;
 
-use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Agents\AgentHooks\Guards\ExecutionTimeLimitHook;
-use Cognesy\Agents\AgentHooks\Guards\StepsLimitHook;
-use Cognesy\Agents\AgentHooks\Guards\TokenUsageLimitHook;
-use Cognesy\Agents\AgentHooks\Stack\HookStack;
-use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
-use DateTimeImmutable;
-
-/**
- * Helper to create an AgentState with an active execution and current execution context.
- */
-function createTestState(): AgentState
-{
-    return (new AgentState())->withNewStepExecution();
-}
+use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
+use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hooks\Enums\HookTrigger;
+use Cognesy\Agents\Hooks\Guards\ExecutionTimeLimitHook;
+use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
+use Cognesy\Agents\Hooks\Guards\TokenUsageLimitHook;
+use Cognesy\Agents\Hooks\Interceptors\HookStack;
 
 // StepsLimitHook tests
-test('StepsLimitHook emits no stop signal when under limit', function () {
+
+it('StepsLimitHook emits no stop signal when under limit', function () {
     $hook = new StepsLimitHook(
         maxSteps: 10,
         stepCounter: fn(AgentState $state) => $state->stepCount(),
     );
 
-    $state = createTestState();
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
 
-    $result = $hook->process($state, HookType::BeforeStep);
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
-
-test('StepsLimitHook emits stop signal when limit reached', function () {
+it('StepsLimitHook emits stop signal when limit reached', function () {
     $hook = new StepsLimitHook(
         maxSteps: 5,
-        stepCounter: fn(AgentState $state) => 5, // At limit
+        stepCounter: fn() => 5,
     );
 
-    $state = createTestState();
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
 
-    $result = $hook->process($state, HookType::BeforeStep);
+    $signals = $result->state()->executionContinuation()->stopSignals();
+    expect($signals->hasAny())->toBeTrue();
+    expect($signals->first()->reason)->toBe(StopReason::StepsLimitReached);
+});
 
-    expect($result->pendingStopSignal()?->reason)->toBe(StopReason::StepsLimitReached);
-})->skip('hooks not integrated yet');
-
-test('StepsLimitHook appliesTo only BeforeStep', function () {
+it('StepsLimitHook emits stop signal when over limit', function () {
     $hook = new StepsLimitHook(
-        maxSteps: 10,
-        stepCounter: fn(AgentState $state) => 0,
+        maxSteps: 3,
+        stepCounter: fn() => 7,
     );
 
-    expect($hook->appliesTo())->toBe([HookType::BeforeStep]);
-})->skip('hooks not integrated yet');
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
+
+    $signals = $result->state()->executionContinuation()->stopSignals();
+    expect($signals->hasAny())->toBeTrue();
+    expect($signals->first()->reason)->toBe(StopReason::StepsLimitReached);
+});
+
+it('StepsLimitHook includes context in stop signal', function () {
+    $hook = new StepsLimitHook(
+        maxSteps: 3,
+        stepCounter: fn() => 5,
+    );
+
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
+
+    $signal = $result->state()->executionContinuation()->stopSignals()->first();
+    expect($signal->context)->toMatchArray([
+        'currentSteps' => 5,
+        'maxSteps' => 3,
+    ]);
+});
 
 // TokenUsageLimitHook tests
-test('TokenUsageLimitHook emits no stop signal when under limit', function () {
-    $hook = new TokenUsageLimitHook(
-        maxTotalTokens: 10000,
-    );
 
-    $state = createTestState();
+it('TokenUsageLimitHook emits no stop signal when under limit', function () {
+    $hook = new TokenUsageLimitHook(maxTotalTokens: 10000);
 
-    $result = $hook->process($state, HookType::BeforeStep);
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
 
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
 // ExecutionTimeLimitHook tests
-test('ExecutionTimeLimitHook emits no stop signal when under limit', function () {
+
+it('ExecutionTimeLimitHook emits no stop signal when under limit', function () {
     $hook = new ExecutionTimeLimitHook(maxSeconds: 60);
-    $hook->executionStarted(new DateTimeImmutable('-30 seconds'));
 
-    $state = createTestState();
+    // First call captures the start time via BeforeExecution
+    $hook->handle(HookContext::beforeExecution(state: AgentState::empty()));
 
-    $result = $hook->process($state, HookType::BeforeStep);
+    // Second call checks elapsed time — well under 60s
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
 
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-test('ExecutionTimeLimitHook emits stop signal when time limit exceeded', function () {
+it('ExecutionTimeLimitHook emits no stop signal when execution not started', function () {
     $hook = new ExecutionTimeLimitHook(maxSeconds: 60);
-    $hook->executionStarted(new DateTimeImmutable('-120 seconds')); // 2 minutes ago
 
-    $state = createTestState();
+    // BeforeStep without prior BeforeExecution — no start time captured
+    $result = $hook->handle(HookContext::beforeStep(state: AgentState::empty()));
 
-    $result = $hook->process($state, HookType::BeforeStep);
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-    expect($result->pendingStopSignal()?->reason)->toBe(StopReason::TimeLimitReached);
-})->skip('hooks not integrated yet');
-
-test('ExecutionTimeLimitHook emits no stop signal when execution not started', function () {
+it('ExecutionTimeLimitHook passes through non-matching trigger types', function () {
     $hook = new ExecutionTimeLimitHook(maxSeconds: 60);
-    // Don't call executionStarted()
 
-    $state = createTestState();
+    // AfterStep is not handled by this hook
+    $result = $hook->handle(HookContext::afterStep(state: AgentState::empty()));
 
-    $result = $hook->process($state, HookType::BeforeStep);
-
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
 // HookStack integration tests
-test('HookStack notifies guards of execution start', function () {
+
+it('HookStack runs time limit hook via BeforeExecution then BeforeStep', function () {
     $hook = new ExecutionTimeLimitHook(maxSeconds: 60);
+    $triggers = HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep);
 
-    $stack = new HookStack();
-    $stack = $stack->with($hook, priority: 100);
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with($hook, $triggers, priority: 100);
 
-    // Notify execution started (30 seconds ago)
-    $executionStart = new DateTimeImmutable('-30 seconds');
-    $stack->executionStarted($executionStart);
+    $state = AgentState::empty();
 
-    $state = createTestState();
+    // Capture start time, then check — under limit
+    $stack->intercept(HookContext::beforeExecution(state: $state));
+    $result = $stack->intercept(HookContext::beforeStep(state: $state));
 
-    $result = $stack->process($state, HookType::BeforeStep);
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-    // 30 seconds elapsed, under 60 second limit
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
+it('multiple guards emit no stop signals when under limits', function () {
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with(new StepsLimitHook(maxSteps: 10, stepCounter: fn() => 5), HookTriggers::beforeStep(), priority: 100)
+        ->with(new TokenUsageLimitHook(maxTotalTokens: 10000), HookTriggers::beforeStep(), priority: 100);
 
-test('Multiple guards emit no stop signals when under limits', function () {
-    $stepsHook = new StepsLimitHook(
-        maxSteps: 10,
-        stepCounter: fn(AgentState $state) => 5,
-    );
+    $result = $stack->intercept(HookContext::beforeStep(state: AgentState::empty()));
 
-    $tokenHook = new TokenUsageLimitHook(
-        maxTotalTokens: 10000,
-    );
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-    $stack = new HookStack();
-    $stack = $stack->with($stepsHook, priority: 100);
-    $stack = $stack->with($tokenHook, priority: 100);
+it('guard stop signal propagates through the stack', function () {
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with(new StepsLimitHook(maxSteps: 3, stepCounter: fn() => 5), HookTriggers::beforeStep(), priority: 100)
+        ->with(new TokenUsageLimitHook(maxTotalTokens: 10000), HookTriggers::beforeStep(), priority: 50);
 
-    $state = createTestState();
+    $result = $stack->intercept(HookContext::beforeStep(state: AgentState::empty()));
 
-    $result = $stack->process($state, HookType::BeforeStep);
-
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
-
-test('Guard stop signal still allows other guards to run', function () {
-    $stepsHook = new StepsLimitHook(
-        maxSteps: 3,
-        stepCounter: fn(AgentState $state) => 5, // Over limit!
-    );
-
-    $tokenHook = new TokenUsageLimitHook(
-        maxTotalTokens: 10000,
-    );
-
-    $stack = new HookStack();
-    $stack = $stack->with($stepsHook, priority: 100);
-    $stack = $stack->with($tokenHook, priority: 100);
-
-    $state = createTestState();
-
-    $result = $stack->process($state, HookType::BeforeStep);
-
-    expect($result->pendingStopSignal()?->reason)->toBe(StopReason::StepsLimitReached);
-})->skip('hooks not integrated yet');
+    $signals = $result->state()->executionContinuation()->stopSignals();
+    expect($signals->hasAny())->toBeTrue();
+    expect($signals->first()->reason)->toBe(StopReason::StepsLimitReached);
+});

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 

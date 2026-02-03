@@ -29,4 +29,4 @@ describe('Metadata Capability', function () {
 
         expect($next->metadata()->get('current_lead'))->toBe(['name' => 'Ada']);
     });
-})->skip('hooks not integrated yet');
+});

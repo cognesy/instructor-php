@@ -2,41 +2,29 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionParser;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use InvalidArgumentException;
 
-describe('AgentDefinitionParser', function () {
+describe('AgentDefinition::fromArray', function () {
     it('parses a full agent definition', function () {
-        $yaml = <<<'YAML'
-version: 1
-id: partner-assistant
-name: Partner Assistant
-description: Partner management helper
-blueprint: basic
-system_prompt: |
-  You are a Partner Management Assistant.
-llm:
-  preset: anthropic
-  model: claude-haiku-4-5-20251001
-  temperature: 0.5
-  max_output_tokens: 2048
-execution:
-  max_steps: 8
-  max_tokens: 50000
-  timeout_sec: 300
-  error_policy: stop_on_any_error
-  error_policy_max_retries: 2
-tools:
-  allow: [tools, actions, invoke_action]
-  deny: [bash]
-capabilities:
-  - tool_discovery
-  - work_context
-metadata:
-  cost_tier: low
-YAML;
+        $data = [
+            'version' => 1,
+            'id' => 'partner-assistant',
+            'name' => 'Partner Assistant',
+            'description' => 'Partner management helper',
+            'blueprint' => 'basic',
+            'system_prompt' => "You are a Partner Management Assistant.",
+            'model' => 'anthropic',
+            'tools' => ['tools', 'actions', 'invoke_action'],
+            'tools_deny' => ['bash'],
+            'max_steps' => 8,
+            'max_tokens' => 50000,
+            'timeout_sec' => 300,
+            'capabilities' => ['tool_discovery', 'work_context'],
+            'metadata' => ['cost_tier' => 'low'],
+        ];
 
-        $definition = (new AgentDefinitionParser())->parseYamlString($yaml);
+        $definition = AgentDefinition::fromArray($data);
 
         expect($definition->version)->toBe(1);
         expect($definition->id)->toBe('partner-assistant');
@@ -45,89 +33,145 @@ YAML;
         expect($definition->systemPrompt)->toContain('Partner Management Assistant');
         expect($definition->blueprint)->toBe('basic');
         expect($definition->blueprintClass)->toBeNull();
-        expect($definition->llm->preset)->toBe('anthropic');
-        expect($definition->llm->model)->toBe('claude-haiku-4-5-20251001');
-        expect($definition->llm->temperature)->toBe(0.5);
-        expect($definition->llm->maxOutputTokens)->toBe(2048);
-        expect($definition->execution->maxSteps)->toBe(8);
-        expect($definition->execution->maxTokens)->toBe(50000);
-        expect($definition->execution->timeoutSec)->toBe(300);
-        expect($definition->execution->errorPolicy)->toBe('stop_on_any_error');
-        expect($definition->execution->errorPolicyMaxRetries)->toBe(2);
-        expect($definition->tools->allow)->toBe(['tools', 'actions', 'invoke_action']);
-        expect($definition->tools->deny)->toBe(['bash']);
-        expect($definition->capabilities)->toBe(['tool_discovery', 'work_context']);
+        expect($definition->model)->toBe('anthropic');
+        expect($definition->maxSteps)->toBe(8);
+        expect($definition->maxTokens)->toBe(50000);
+        expect($definition->timeoutSec)->toBe(300);
+        expect($definition->tools->all())->toBe(['tools', 'actions', 'invoke_action']);
+        expect($definition->toolsDeny->all())->toBe(['bash']);
+        expect($definition->capabilities->all())->toBe(['tool_discovery', 'work_context']);
         expect($definition->metadata)->toBe(['cost_tier' => 'low']);
     });
 
     it('parses a minimal agent definition', function () {
-        $yaml = <<<'YAML'
-version: 1
-id: minimal-agent
-name: Minimal Agent
-description: Minimal
-system_prompt: Run minimal mode.
-llm:
-  preset: openai
-YAML;
+        $data = [
+            'name' => 'Minimal Agent',
+            'description' => 'Minimal',
+            'system_prompt' => 'Run minimal mode.',
+        ];
 
-        $definition = (new AgentDefinitionParser())->parseYamlString($yaml);
+        $definition = AgentDefinition::fromArray($data);
 
         expect($definition->blueprint)->toBeNull();
         expect($definition->blueprintClass)->toBeNull();
-        expect($definition->execution->maxSteps)->toBeNull();
-        expect($definition->tools->allow)->toBeNull();
-        expect($definition->capabilities)->toBe([]);
+        expect($definition->maxSteps)->toBeNull();
+        expect($definition->tools)->toBeNull();
+        expect($definition->capabilities->isEmpty())->toBeTrue();
         expect($definition->metadata)->toBe([]);
     });
 
     it('rejects missing required fields', function () {
-        $yaml = <<<'YAML'
-version: 1
-name: Missing ID
-description: Missing ID
-system_prompt: Something
-llm:
-  preset: anthropic
-YAML;
+        $data = [
+            'name' => 'Missing Description',
+            'system_prompt' => 'Something',
+        ];
 
-        $parse = fn() => (new AgentDefinitionParser())->parseYamlString($yaml);
-
-        expect($parse)->toThrow(InvalidArgumentException::class);
-    });
-
-    it('rejects unknown root keys', function () {
-        $yaml = <<<'YAML'
-version: 1
-id: extra
-name: Extra
-description: Extra
-system_prompt: Extra
-llm:
-  preset: anthropic
-extra: nope
-YAML;
-
-        $parse = fn() => (new AgentDefinitionParser())->parseYamlString($yaml);
+        $parse = fn() => AgentDefinition::fromArray($data);
 
         expect($parse)->toThrow(InvalidArgumentException::class);
     });
 
     it('rejects conflicting blueprint fields', function () {
-        $yaml = <<<'YAML'
-version: 1
-id: conflict
-name: Conflict
-description: Conflict
-system_prompt: Conflict
-blueprint: basic
-blueprint_class: Acme\Agent\BasicAgent
-llm:
-  preset: anthropic
-YAML;
+        $data = [
+            'name' => 'Conflict',
+            'description' => 'Conflict',
+            'system_prompt' => 'Conflict',
+            'blueprint' => 'basic',
+            'blueprint_class' => 'Acme\Agent\BasicAgent',
+        ];
 
-        $parse = fn() => (new AgentDefinitionParser())->parseYamlString($yaml);
+        $parse = fn() => AgentDefinition::fromArray($data);
 
         expect($parse)->toThrow(InvalidArgumentException::class);
+    });
+
+    it('supports nested execution fields', function () {
+        $data = [
+            'name' => 'nested-exec',
+            'description' => 'Agent with nested execution',
+            'system_prompt' => 'You are an agent.',
+            'execution' => [
+                'max_steps' => 10,
+                'max_tokens' => 5000,
+                'timeout_sec' => 60,
+            ],
+        ];
+
+        $definition = AgentDefinition::fromArray($data);
+
+        expect($definition->maxSteps)->toBe(10);
+        expect($definition->maxTokens)->toBe(5000);
+        expect($definition->timeoutSec)->toBe(60);
+    });
+
+    it('supports nested tools allow/deny format', function () {
+        $data = [
+            'name' => 'nested-tools',
+            'description' => 'Agent with nested tools',
+            'system_prompt' => 'You are an agent.',
+            'tools' => [
+                'allow' => ['read_file', 'write_file'],
+                'deny' => ['bash'],
+            ],
+        ];
+
+        $definition = AgentDefinition::fromArray($data);
+
+        expect($definition->tools->all())->toBe(['read_file', 'write_file']);
+        expect($definition->toolsDeny->all())->toBe(['bash']);
+    });
+
+    it('defaults id() to name when id is null', function () {
+        $definition = new AgentDefinition(
+            name: 'my-agent',
+            description: 'Test',
+            systemPrompt: 'Test prompt',
+        );
+
+        expect($definition->id())->toBe('my-agent');
+    });
+
+    it('returns explicit id when set', function () {
+        $definition = new AgentDefinition(
+            name: 'my-agent',
+            description: 'Test',
+            systemPrompt: 'Test prompt',
+            id: 'custom-id',
+        );
+
+        expect($definition->id())->toBe('custom-id');
+    });
+
+    it('inheritsAllTools returns true when tools is null', function () {
+        $definition = new AgentDefinition(
+            name: 'my-agent',
+            description: 'Test',
+            systemPrompt: 'Test prompt',
+        );
+
+        expect($definition->inheritsAllTools())->toBeTrue();
+    });
+
+    it('hasSkills returns false when skills is null', function () {
+        $definition = new AgentDefinition(
+            name: 'my-agent',
+            description: 'Test',
+            systemPrompt: 'Test prompt',
+        );
+
+        expect($definition->hasSkills())->toBeFalse();
+    });
+
+    it('supports comma-separated tool strings', function () {
+        $data = [
+            'name' => 'comma-tools',
+            'description' => 'Agent with comma tools',
+            'system_prompt' => 'You are an agent.',
+            'tools' => 'read_file, write_file, bash',
+        ];
+
+        $definition = AgentDefinition::fromArray($data);
+
+        expect($definition->tools->all())->toBe(['read_file', 'write_file', 'bash']);
     });
 });

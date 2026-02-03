@@ -2,106 +2,108 @@
 
 namespace Cognesy\Agents\Tests\Unit\Guards;
 
-use Cognesy\Agents\AgentHooks\Enums\HookType;
-use Cognesy\Agents\AgentHooks\Guards\StepsLimitHook;
-use Cognesy\Agents\AgentHooks\Stack\HookStack;
-use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
+use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hooks\Defaults\CallableHook;
+use Cognesy\Agents\Hooks\Enums\HookTrigger;
+use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
+use Cognesy\Agents\Hooks\Interceptors\HookStack;
 
-function createTestStateForEvalHook(): AgentState
-{
-    return (new AgentState())->withNewStepExecution();
-}
+it('HookStack processes hooks for matching triggers', function () {
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with(
+            new StepsLimitHook(maxSteps: 10, stepCounter: fn() => 5),
+            HookTriggers::beforeStep(),
+            priority: 100,
+        );
 
-// StepsLimitHook tests
-test('StepsLimitHook emits no stop signal when under limit', function () {
-    $hook = new StepsLimitHook(
-        maxSteps: 10,
-        stepCounter: fn(AgentState $state) => $state->stepCount(),
-    );
+    $result = $stack->intercept(HookContext::beforeStep(state: AgentState::empty()));
 
-    $state = createTestStateForEvalHook();
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-    $result = $hook->process($state, HookType::BeforeStep);
+it('HookStack skips hooks for non-matching triggers', function () {
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with(
+            new StepsLimitHook(maxSteps: 5, stepCounter: fn() => 10),
+            HookTriggers::beforeStep(),
+            priority: 100,
+        );
 
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
+    // AfterStep won't trigger a BeforeStep-registered hook
+    $result = $stack->intercept(HookContext::afterStep(state: AgentState::empty()));
 
-test('StepsLimitHook emits stop signal when limit reached', function () {
-    $hook = new StepsLimitHook(
-        maxSteps: 5,
-        stepCounter: fn(AgentState $state) => 5, // At limit
-    );
+    expect($result->state()->executionContinuation()->stopSignals()->hasAny())->toBeFalse();
+});
 
-    $state = createTestStateForEvalHook();
+it('HookStack resolves stop signal from multiple hooks', function () {
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with(
+            new StepsLimitHook(maxSteps: 10, stepCounter: fn() => 5),
+            HookTriggers::beforeStep(),
+            priority: 100,
+        )
+        ->with(
+            new StepsLimitHook(maxSteps: 3, stepCounter: fn() => 5),
+            HookTriggers::beforeStep(),
+            priority: 50,
+        );
 
-    $result = $hook->process($state, HookType::BeforeStep);
+    $result = $stack->intercept(HookContext::beforeStep(state: AgentState::empty()));
 
-    expect($result->pendingStopSignal()?->reason)->toBe(StopReason::StepsLimitReached);
-})->skip('hooks not integrated yet');
+    $signals = $result->state()->executionContinuation()->stopSignals();
+    expect($signals->hasAny())->toBeTrue();
+    expect($signals->first()->reason)->toBe(StopReason::StepsLimitReached);
+});
 
-test('StepsLimitHook appliesTo returns BeforeStep only', function () {
-    $hook = new StepsLimitHook(
-        maxSteps: 10,
-        stepCounter: fn(AgentState $state) => 0,
-    );
+it('CallableHook wraps a closure as a hook', function () {
+    $called = false;
 
-    expect($hook->appliesTo())->toBe([HookType::BeforeStep]);
-})->skip('hooks not integrated yet');
+    $hook = new CallableHook(function (HookContext $context) use (&$called) {
+        $called = true;
+        return $context;
+    });
 
-// HookStack integration tests
-test('HookStack processes hooks for matching events', function () {
-    $hook = new StepsLimitHook(
-        maxSteps: 10,
-        stepCounter: fn(AgentState $state) => 5,
-    );
+    $context = HookContext::beforeStep(state: AgentState::empty());
+    $result = $hook->handle($context);
 
-    $stack = new HookStack();
-    $stack = $stack->with($hook, priority: 100);
+    expect($called)->toBeTrue();
+    expect($result)->toBe($context);
+});
 
-    $state = createTestStateForEvalHook();
+it('HookStack with callable hook modifies state via withMetadata', function () {
+    $stack = (new HookStack(new RegisteredHooks()))
+        ->with(
+            new CallableHook(fn(HookContext $ctx) => $ctx->withState(
+                $ctx->state()->withMetadata('touched', true),
+            )),
+            HookTriggers::afterStep(),
+            priority: 10,
+        );
 
-    $result = $stack->process($state, HookType::BeforeStep);
+    $result = $stack->intercept(HookContext::afterStep(state: AgentState::empty()));
 
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
+    expect($result->state()->metadata()->get('touched'))->toBeTrue();
+});
 
-test('HookStack skips hooks for non-matching events', function () {
-    $hook = new StepsLimitHook(
-        maxSteps: 5,
-        stepCounter: fn(AgentState $state) => 10, // Over limit
-    );
+it('HookTriggers::all matches every trigger type', function () {
+    $triggers = HookTriggers::all();
 
-    $stack = new HookStack();
-    $stack = $stack->with($hook, priority: 100);
+    expect($triggers->triggersOn(HookTrigger::BeforeExecution))->toBeTrue();
+    expect($triggers->triggersOn(HookTrigger::BeforeStep))->toBeTrue();
+    expect($triggers->triggersOn(HookTrigger::AfterStep))->toBeTrue();
+    expect($triggers->triggersOn(HookTrigger::AfterExecution))->toBeTrue();
+    expect($triggers->triggersOn(HookTrigger::BeforeToolUse))->toBeTrue();
+    expect($triggers->triggersOn(HookTrigger::AfterToolUse))->toBeTrue();
+    expect($triggers->triggersOn(HookTrigger::OnError))->toBeTrue();
+});
 
-    $state = createTestStateForEvalHook();
+it('HookTriggers::none matches no trigger type', function () {
+    $triggers = HookTriggers::none();
 
-    // Use AfterStep event - hook only applies to BeforeStep
-    $result = $stack->process($state, HookType::AfterStep);
-
-    expect($result->pendingStopSignal())->toBeNull();
-})->skip('hooks not integrated yet');
-
-test('HookStack resolves stop signal from multiple hooks', function () {
-    $hook1 = new StepsLimitHook(
-        maxSteps: 10,
-        stepCounter: fn(AgentState $state) => 5,
-    );
-
-    $hook2 = new StepsLimitHook(
-        maxSteps: 3,
-        stepCounter: fn(AgentState $state) => 5, // Over limit
-    );
-
-    $stack = new HookStack();
-    $stack = $stack
-        ->with($hook1, priority: 100)
-        ->with($hook2, priority: 50);
-
-    $state = createTestStateForEvalHook();
-
-    $result = $stack->process($state, HookType::BeforeStep);
-
-    expect($result->pendingStopSignal()?->reason)->toBe(StopReason::StepsLimitReached);
-})->skip('hooks not integrated yet');
+    expect($triggers->triggersOn(HookTrigger::BeforeStep))->toBeFalse();
+    expect($triggers->triggersOn(HookTrigger::AfterStep))->toBeFalse();
+});

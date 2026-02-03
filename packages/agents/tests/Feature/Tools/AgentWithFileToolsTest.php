@@ -7,6 +7,7 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tests\Support\NullEventEmitter;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
@@ -16,7 +17,6 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use tmp\ErrorHandling\AgentErrorHandler;
 
 describe('Agent with File Tools', function () {
 
@@ -25,17 +25,17 @@ describe('Agent with File Tools', function () {
         mkdir($this->tempDir, 0755, true);
         $this->makeAgent = function (Tools $tools, FakeInferenceDriver $driver, int $maxIterations): TestAgentLoop {
             $eventEmitter = new NullEventEmitter();
+            $interceptor = new PassThroughInterceptor();
             $llm = LLMProvider::new()->withDriver($driver);
             $toolDriver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
-            $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter);
+            $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter, interceptor: $interceptor);
 
             return new TestAgentLoop(
                 tools: $tools,
                 toolExecutor: $toolExecutor,
-                errorHandler: AgentErrorHandler::default(),
                 driver: $toolDriver,
                 eventEmitter: $eventEmitter,
-                observer: null,
+                interceptor: $interceptor,
                 maxIterations: $maxIterations,
             );
         };

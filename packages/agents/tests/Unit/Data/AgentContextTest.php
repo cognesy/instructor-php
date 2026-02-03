@@ -6,7 +6,6 @@ use Cognesy\Agents\Core\Context\AgentContext;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
-use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Utils\Metadata;
 
 it('compiles inference messages in section order', function () {
@@ -29,11 +28,12 @@ it('serializes and restores context data', function () {
     $context = new AgentContext(
         store: $store,
         metadata: new Metadata(['locale' => 'en']),
-        cache: new CachedInferenceContext(),
+        systemPrompt: 'You are a helpful assistant.',
     );
 
     $restored = AgentContext::fromArray($context->toArray());
 
     expect($restored->metadata()->toArray())->toBe(['locale' => 'en'])
-        ->and($restored->store()->sections()->names())->toBe(['messages']);
+        ->and($restored->store()->sections()->names())->toBe(['messages'])
+        ->and($restored->systemPrompt())->toBe('You are a helpful assistant.');
 });

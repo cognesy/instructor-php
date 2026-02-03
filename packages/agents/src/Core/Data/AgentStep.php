@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Uuid;
+use DateTimeImmutable;
 use Throwable;
 
 /**
@@ -90,6 +91,10 @@ final readonly class AgentStep
         return $this->id;
     }
 
+    public function stepType(): AgentStepType {
+        return $this->deriveStepType();
+    }
+
     // MESSAGES ////////////////////////////////////////////////////
 
     public function inputMessages(): Messages {
@@ -139,10 +144,6 @@ final readonly class AgentStep
 
     public function hasToolCalls(): bool {
         return $this->requestedToolCalls()->hasAny();
-    }
-
-    public function stepType(): AgentStepType {
-        return $this->deriveStepType();
     }
 
     // TOOL EXECUTIONS /////////////////////////////////////////////

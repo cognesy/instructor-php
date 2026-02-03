@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -23,6 +23,7 @@ interface CanEmitAgentEvents
     public function stepCompleted(AgentState $state): void;
     public function stateUpdated(AgentState $state): void;
     public function continuationEvaluated(AgentState $state): void;
+    public function executionStopped(AgentState $state): void;
     public function executionFinished(AgentState $state): void;
     public function executionFailed(AgentState $state, Throwable $exception): void;
 
@@ -37,7 +38,7 @@ interface CanEmitAgentEvents
 
     // Subagent events
     public function subagentSpawning(string $parentAgentId, string $subagentName, string $prompt, int $depth, int $maxDepth): void;
-    public function subagentCompleted(string $parentAgentId, string $subagentId, string $subagentName, AgentStatus $status, int $steps, ?Usage $usage, DateTimeImmutable $startedAt): void;
+    public function subagentCompleted(string $parentAgentId, string $subagentId, string $subagentName, ExecutionStatus $status, int $steps, ?Usage $usage, DateTimeImmutable $startedAt): void;
 
     // Hook events
     public function hookExecuted(string $hookType, string $tool, string $outcome, ?string $reason, DateTimeImmutable $startedAt): void;

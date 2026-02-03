@@ -34,6 +34,7 @@ final class AgentSpecParser
      * @throws InvalidArgumentException if format is invalid
      */
     public function parseMarkdown(string $content): AgentSpec {
+        $content = str_replace("\r\n", "\n", $content);
         // Extract YAML frontmatter
         if (!preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
             throw new InvalidArgumentException(

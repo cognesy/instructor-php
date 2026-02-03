@@ -2,12 +2,12 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
-use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Enums\AgentStepType;
+use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 

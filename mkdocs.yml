@@ -121,26 +121,9 @@ extra_css:
   - stylesheets/nav.css
 nav:
   -
-    Main:
-      -
-        Overview: index.md
-      -
-        'Getting Started': getting-started.md
-      -
-        Features: features.md
-      -
-        Packages: packages.md
-      -
-        'Use Cases': use-cases.md
-      -
-        'Why Instructor': why-instructor.md
-      -
-        'Release Notes':
-          - { Overview: release-notes/versions.md }
+    Main: {  }
   -
     Packages:
-      -
-        Overview: packages/index.md
       -
         Instructor:
           - { Introduction: packages/instructor/introduction.md }
@@ -196,10 +179,6 @@ nav:
           - { 'Agent Hooks': packages/addons/agent_hooks.md }
   -
     Cookbook:
-      -
-        Introduction: cookbook/introduction.md
-      -
-        Contributing: cookbook/contributing.md
       -
         'Test Group':
           - { 'Test Example': cookbook/basics/TestGroup/.md }

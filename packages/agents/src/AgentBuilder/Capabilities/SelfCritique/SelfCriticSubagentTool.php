@@ -4,7 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Messages\Messages;
@@ -75,7 +75,7 @@ PROMPT;
         // Run critic subagent
         $finalState = $subagent->execute($subState);
 
-        if ($finalState->status() === AgentStatus::Failed) {
+        if ($finalState->status() === ExecutionStatus::Failed) {
             $error = $finalState->currentStep()?->errorsAsString() ?? 'Unknown error';
             return "Critic evaluation failed: {$error}";
         }

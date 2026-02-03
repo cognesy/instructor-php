@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentHooks\Guards\StepsLimitHook;
-use Cognesy\Agents\AgentHooks\Hooks\ErrorPolicyHook;
 use Cognesy\Agents\Broadcasting\AgentEventBroadcaster;
 use Cognesy\Agents\Broadcasting\BroadcastConfig;
 use Cognesy\Agents\Broadcasting\CanBroadcastAgentEvents;
+use Cognesy\Agents\Core\Stop\ExecutionContinuation;
 use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ContinuationEvaluated;
@@ -61,7 +61,7 @@ it('emits agent step events', function () {
 
     expect($broadcaster->calls[2]['envelope']['type'])->toBe('agent.step.completed');
     expect($broadcaster->calls[2]['envelope']['payload']['errors'])->toBe(0);
-})->skip('hooks not integrated yet');
+});
 
 it('emits tool call events', function () {
     $broadcaster = new FakeBroadcaster();
@@ -89,7 +89,7 @@ it('emits tool call events', function () {
 
     expect($broadcaster->calls[1]['envelope']['type'])->toBe('agent.tool.completed');
     expect($broadcaster->calls[1]['envelope']['payload']['duration_ms'])->toBe(2000);
-})->skip('hooks not integrated yet');
+});
 
 it('emits continuation events when enabled', function () {
     $broadcaster = new FakeBroadcaster();
@@ -110,13 +110,13 @@ it('emits continuation events when enabled', function () {
         agentId: 'agent-1',
         parentAgentId: null,
         stepNumber: 1,
-        stopSignal: $stopSignal,
+        continuation: ExecutionContinuation::fresh()->withNewStopSignal($stopSignal),
     ));
 
     $payload = $broadcaster->calls[0]['envelope']['payload'];
     expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.continuation');
     expect($payload['should_continue'])->toBeFalse();
-})->skip('hooks not integrated yet');
+});
 
 it('returns wiretap callable that handles all events', function () {
     $broadcaster = new FakeBroadcaster();
@@ -145,7 +145,7 @@ it('returns wiretap callable that handles all events', function () {
     expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.status');
     expect($broadcaster->calls[1]['envelope']['type'])->toBe('agent.step.started');
     expect($broadcaster->calls[2]['envelope']['type'])->toBe('agent.tool.started');
-})->skip('hooks not integrated yet');
+});
 
 it('handles StreamEventReceived for real-time chat', function () {
     $broadcaster = new FakeBroadcaster();
@@ -165,7 +165,7 @@ it('handles StreamEventReceived for real-time chat', function () {
 
     expect($broadcaster->calls[2]['envelope']['payload']['content'])->toBe('!');
     expect($broadcaster->calls[2]['envelope']['payload']['chunk_index'])->toBe(2);
-})->skip('hooks not integrated yet');
+});
 
 it('filters empty stream content', function () {
     $broadcaster = new FakeBroadcaster();
@@ -177,7 +177,7 @@ it('filters empty stream content', function () {
 
     expect(count($broadcaster->calls))->toBe(1);
     expect($broadcaster->calls[0]['envelope']['payload']['content'])->toBe('Hello');
-})->skip('hooks not integrated yet');
+});
 
 it('auto-transitions status on lifecycle events', function () {
     $broadcaster = new FakeBroadcaster();
@@ -207,7 +207,7 @@ it('auto-transitions status on lifecycle events', function () {
         agentId: 'agent-1',
         parentAgentId: null,
         stepNumber: 1,
-        stopSignal: $stopSignal,
+        continuation: ExecutionContinuation::fresh()->withNewStopSignal($stopSignal),
     ));
 
     // Find the status event
@@ -218,7 +218,7 @@ it('auto-transitions status on lifecycle events', function () {
 
     expect($lastStatus['envelope']['payload']['status'])->toBe('completed');
     expect($lastStatus['envelope']['payload']['previous_status'])->toBe('processing');
-})->skip('hooks not integrated yet');
+});
 
 it('maps StopReason to correct status', function () {
     $broadcaster = new FakeBroadcaster();
@@ -237,14 +237,14 @@ it('maps StopReason to correct status', function () {
     $stopSignal = new StopSignal(
         reason: StopReason::ErrorForbade,
         message: 'Error policy forbade continuation',
-        source: ErrorPolicyHook::class,
+        source: 'ErrorPolicyHook',
     );
 
     $eventBroadcaster->onContinuationEvaluated(new ContinuationEvaluated(
         agentId: 'agent-1',
         parentAgentId: null,
         stepNumber: 1,
-        stopSignal: $stopSignal,
+        continuation: ExecutionContinuation::fresh()->withNewStopSignal($stopSignal),
     ));
 
     $statusEvents = array_filter($broadcaster->calls, fn($call) =>
@@ -253,7 +253,7 @@ it('maps StopReason to correct status', function () {
     $lastStatus = array_pop($statusEvents);
 
     expect($lastStatus['envelope']['payload']['status'])->toBe('failed');
-})->skip('hooks not integrated yet');
+});
 
 it('does not duplicate status when already in same state', function () {
     $broadcaster = new FakeBroadcaster();
@@ -281,7 +281,7 @@ it('does not duplicate status when already in same state', function () {
     );
 
     expect(count($statusEvents))->toBe(1);
-})->skip('hooks not integrated yet');
+});
 
 it('supports config presets', function () {
     // Minimal config - no streaming
@@ -301,7 +301,7 @@ it('supports config presets', function () {
     expect($debugConfig->includeContinuationTrace)->toBeTrue();
     expect($debugConfig->includeToolArgs)->toBeTrue();
     expect($debugConfig->maxArgLength)->toBe(500);
-})->skip('hooks not integrated yet');
+});
 
 it('respects minimal config - no streaming', function () {
     $broadcaster = new FakeBroadcaster();
@@ -315,7 +315,7 @@ it('respects minimal config - no streaming', function () {
     $eventBroadcaster->onStreamChunk(new StreamEventReceived('Hello'));
 
     expect(count($broadcaster->calls))->toBe(0);
-})->skip('hooks not integrated yet');
+});
 
 it('includes full tool args in debug mode', function () {
     $broadcaster = new FakeBroadcaster();
@@ -337,7 +337,7 @@ it('includes full tool args in debug mode', function () {
         'query' => 'test query',
         'limit' => 10,
     ]);
-})->skip('hooks not integrated yet');
+});
 
 it('can be reset for new executions', function () {
     $broadcaster = new FakeBroadcaster();
@@ -353,4 +353,4 @@ it('can be reset for new executions', function () {
     // Second execution
     $eventBroadcaster->onStreamChunk(new StreamEventReceived('World'));
     expect($broadcaster->calls[1]['envelope']['payload']['chunk_index'])->toBe(0);
-})->skip('hooks not integrated yet');
+});

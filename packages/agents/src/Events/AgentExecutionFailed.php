@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
@@ -17,13 +17,13 @@ final class AgentExecutionFailed extends AgentEvent
     public readonly DateTimeImmutable $failedAt;
 
     public function __construct(
-        public readonly string $agentId,
-        public readonly ?string $parentAgentId,
-        public readonly Throwable $exception,
-        public readonly AgentStatus $status,
-        public readonly int $stepsCompleted,
-        public readonly Usage $totalUsage,
-        public readonly ?string $errors,
+        public readonly string          $agentId,
+        public readonly ?string         $parentAgentId,
+        public readonly Throwable       $exception,
+        public readonly ExecutionStatus $status,
+        public readonly int             $stepsCompleted,
+        public readonly Usage           $totalUsage,
+        public readonly ?string         $errors,
     ) {
         $this->failedAt = new DateTimeImmutable();
 

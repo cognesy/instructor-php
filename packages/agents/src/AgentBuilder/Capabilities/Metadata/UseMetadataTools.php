@@ -2,10 +2,10 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
-use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
-use Cognesy\Agents\Hooks\HookTriggers;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
 
 /**
  * Adds metadata read/write/list tools to the agent.

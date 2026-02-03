@@ -80,7 +80,7 @@ class InferenceRequestBuilder
         $this->model = $model ?? $this->model;
         $this->tools = $tools ?? $this->tools;
         $this->toolChoice = $toolChoice ?? $this->toolChoice;
-        $this->responseFormat = $responseFormat ? ResponseFormat::fromData($responseFormat) : $this->responseFormat;
+        $this->responseFormat = $responseFormat ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat;
         $this->options = $options ?? $this->options;
         $this->mode = $mode ?? $this->mode;
         return $this;
@@ -107,7 +107,7 @@ class InferenceRequestBuilder
     }
 
     public function withResponseFormat(array $responseFormat): static {
-        $this->responseFormat = ResponseFormat::fromData($responseFormat);
+        $this->responseFormat = ResponseFormat::fromArray($responseFormat);
         return $this;
     }
 

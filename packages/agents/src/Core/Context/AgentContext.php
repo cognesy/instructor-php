@@ -2,27 +2,32 @@
 
 namespace Cognesy\Agents\Core\Context;
 
+use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
+use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Utils\Metadata;
 
 final readonly class AgentContext
 {
-    public const DEFAULT_SECTION = 'messages';
-    public const BUFFER_SECTION = 'buffer';
-    public const SUMMARY_SECTION = 'summary';
-    public const EXECUTION_BUFFER_SECTION = 'execution_buffer';
+    public const string DEFAULT_SECTION = 'messages';
+    public const string BUFFER_SECTION = 'buffer';
+    public const string SUMMARY_SECTION = 'summary';
+    public const string EXECUTION_BUFFER_SECTION = 'execution_buffer';
 
     private MessageStore $store;
     private Metadata $metadata;
-    private CachedInferenceContext $cache;
+    private string $systemPrompt;
+    private ResponseFormat $responseFormat;
 
     public function __construct(
         ?MessageStore $store = null,
         Metadata|array|null $metadata = null,
-        ?CachedInferenceContext $cache = null,
+        string $systemPrompt = '',
+        ResponseFormat|array|null $responseFormat = null,
     ) {
         $this->store = $store ?? new MessageStore();
         $this->metadata = match (true) {
@@ -31,38 +36,43 @@ final readonly class AgentContext
             is_array($metadata) => new Metadata($metadata),
             default => new Metadata(),
         };
-        $this->cache = $cache ?? new CachedInferenceContext();
+        $this->systemPrompt = $systemPrompt;
+        $this->responseFormat = match (true) {
+            $responseFormat instanceof ResponseFormat => $responseFormat,
+            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
+            default => new ResponseFormat(),
+        };
     }
 
-    public function store(): MessageStore
-    {
+    // ACCESSORS ///////////////////////////////////////////////
+
+    public function store(): MessageStore {
         return $this->store;
     }
 
-    public function metadata(): Metadata
-    {
+    public function metadata(): Metadata {
         return $this->metadata;
     }
 
-    public function cache(): CachedInferenceContext
-    {
-        return $this->cache;
+    public function systemPrompt(): string {
+        return $this->systemPrompt;
     }
 
-    public function messages(): Messages
-    {
+    public function responseFormat(): ResponseFormat {
+        return $this->responseFormat;
+    }
+
+    public function messages(): Messages {
         return $this->store->section(self::DEFAULT_SECTION)->get()->messages();
     }
 
-    public function messagesForInference(): Messages
-    {
+    public function messagesForInference(): Messages {
         $sectionNames = [
             self::SUMMARY_SECTION,
             self::BUFFER_SECTION,
             self::DEFAULT_SECTION,
             self::EXECUTION_BUFFER_SECTION,
         ];
-
         $resolved = [];
         foreach ($sectionNames as $sectionName) {
             $section = $this->store->sections()->get($sectionName);
@@ -71,12 +81,35 @@ final readonly class AgentContext
             }
             $resolved[] = $section;
         }
-
         if ($resolved === []) {
             return Messages::empty();
         }
-
         return (new Sections(...$resolved))->toMessages();
+    }
+
+    public function toInferenceContext(array $toolSchemas = []): CachedInferenceContext {
+        $messages = match(true) {
+            empty($this->systemPrompt) => [],
+            default => [['role' => 'system', 'content' => $this->systemPrompt]],
+        };
+        $responseFormat = match(true) {
+            $this->responseFormat->isEmpty() => [],
+            default => $this->responseFormat,
+        };
+        return new CachedInferenceContext(
+            messages: $messages,
+            tools: $toolSchemas,
+            responseFormat: $responseFormat,
+        );
+    }
+
+    public function withStepOutputRouted(?AgentStep $step): self {
+        return match (true) {
+            ($step === null) => $this,
+            $step->outputMessages()->isEmpty() => $this,
+            ($step->stepType() === AgentStepType::FinalResponse) => $this->withFinalResponseAppended($step->outputMessages()),
+            default => $this->withOutputBuffered($step->outputMessages()),
+        };
     }
 
     // MUTATORS /////////////////////////////////////////////////
@@ -84,79 +117,81 @@ final readonly class AgentContext
     public function with(
         ?MessageStore $store = null,
         ?Metadata $metadata = null,
-        ?CachedInferenceContext $cache = null,
+        ?string $systemPrompt = null,
+        ?ResponseFormat $responseFormat = null,
     ): self {
         return new self(
             store: $store ?? $this->store,
             metadata: $metadata ?? $this->metadata,
-            cache: $cache ?? $this->cache,
+            systemPrompt: $systemPrompt ?? $this->systemPrompt,
+            responseFormat: $responseFormat ?? $this->responseFormat,
         );
     }
 
-    public function withMessageStore(MessageStore $store): self
-    {
+    public function withMessageStore(MessageStore $store): self {
         return $this->with(store: $store);
     }
 
-    public function withMessages(Messages $messages): self
-    {
+    public function withMessages(Messages $messages): self {
         return $this->with(
             store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
         );
     }
 
-    public function withMetadataKey(string $name, mixed $value): self
-    {
+    public function withMetadataKey(string $name, mixed $value): self {
         return $this->with(metadata: $this->metadata->withKeyValue($name, $value));
     }
 
-    public function withMetadata(Metadata $metadata): self
-    {
+    public function withMetadata(Metadata $metadata): self {
         return $this->with(metadata: $metadata);
     }
 
-    public function withCache(CachedInferenceContext $cache): self
-    {
-        return $this->with(cache: $cache);
+    public function withSystemPrompt(string $systemPrompt): self {
+        return $this->with(systemPrompt: $systemPrompt);
+    }
+
+    public function withResponseFormat(ResponseFormat|array $responseFormat): self {
+        $format = match (true) {
+            $responseFormat instanceof ResponseFormat => $responseFormat,
+            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
+        };
+        return $this->with(responseFormat: $format);
     }
 
     // SERIALIZATION ////////////////////////////////////////////
 
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return [
             'metadata' => $this->metadata->toArray(),
-            'cachedContext' => $this->cache->toArray(),
+            'systemPrompt' => $this->systemPrompt,
+            'responseFormat' => $this->responseFormat->toArray(),
             'messageStore' => $this->store->toArray(),
         ];
     }
 
-    public static function fromArray(array $data): self
-    {
+    public static function fromArray(array $data): self {
         return new self(
-            store: self::parseMessageStore($data),
-            metadata: self::parseMetadata($data),
-            cache: self::parseCachedContext($data),
+            store: MessageStore::fromArray($data['messageStore'] ?? []),
+            metadata: Metadata::fromArray($data['metadata'] ?? []),
+            systemPrompt: $data['systemPrompt'] ?? '',
+            responseFormat: ResponseFormat::fromArray($data['responseFormat'] ?? []),
         );
     }
 
-    // PARSING HELPERS //////////////////////////////////////////
+    // INTERNAL ////////////////////////////////////////////////
 
-    private static function parseMetadata(array $data): Metadata
-    {
-        $value = $data['metadata'] ?? null;
-        return is_array($value) ? Metadata::fromArray($value) : new Metadata();
+    private function withOutputBuffered(Messages $output): self {
+        $store = $this->store()
+            ->section(self::EXECUTION_BUFFER_SECTION)
+            ->appendMessages($output);
+        return $this->withMessageStore($store);
     }
 
-    private static function parseCachedContext(array $data): CachedInferenceContext
-    {
-        $value = $data['cachedContext'] ?? null;
-        return is_array($value) ? CachedInferenceContext::fromArray($value) : new CachedInferenceContext();
-    }
-
-    private static function parseMessageStore(array $data): MessageStore
-    {
-        $value = $data['messageStore'] ?? null;
-        return is_array($value) ? MessageStore::fromArray($value) : new MessageStore();
+    private function withFinalResponseAppended(Messages $output): self {
+        $store = $this->store()
+            ->section(self::DEFAULT_SECTION)
+            ->appendMessages($output);
+        $store = $store->section(self::EXECUTION_BUFFER_SECTION)->clear();
+        return $this->withMessageStore($store);
     }
 }

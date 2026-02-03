@@ -28,11 +28,11 @@ describe('ToolRegistry Capability', function () {
             $next = $state;
             break;
         }
-        $executions = $next->currentStep()?->toolExecutions()->all() ?? [];
+        $executions = $next->lastStepToolExecutions()->all();
 
         expect($executions)->toHaveCount(1);
         $result = $executions[0]->value();
         expect($result['success'] ?? null)->toBeTrue();
         expect(array_column($result['tools'] ?? [], 'name'))->toContain('demo_tool');
     });
-})->skip('hooks not integrated yet');
+});

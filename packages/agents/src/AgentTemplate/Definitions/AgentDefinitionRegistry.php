@@ -2,9 +2,12 @@
 
 namespace Cognesy\Agents\AgentTemplate\Definitions;
 
+use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\AgentDefinitionProvider;
 use Cognesy\Agents\Exceptions\AgentNotFoundException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
-final class AgentDefinitionRegistry
+final class AgentDefinitionRegistry implements AgentDefinitionProvider
 {
     /** @var array<string, AgentDefinition> */
     private array $definitions = [];
@@ -17,9 +20,11 @@ final class AgentDefinitionRegistry
         $this->loader = $loader ?? new AgentDefinitionLoader();
     }
 
+    // REGISTRATION /////////////////////////////////////////////////
+
     public function register(AgentDefinition $definition): void
     {
-        $this->definitions[$definition->id] = $definition;
+        $this->definitions[$definition->name] = $definition;
     }
 
     public function registerMany(AgentDefinition ...$definitions): void
@@ -29,63 +34,75 @@ final class AgentDefinitionRegistry
         }
     }
 
-    public function get(string $id): AgentDefinition
+    // AGENT DEFINITION PROVIDER ////////////////////////////////////
+
+    #[\Override]
+    public function get(string $name): AgentDefinition
     {
-        if (!$this->has($id)) {
-            throw new AgentNotFoundException("Agent definition '{$id}' not found.");
+        if (!$this->has($name)) {
+            $available = implode(', ', $this->names());
+            throw new AgentNotFoundException(
+                "Agent '{$name}' not found. Available: {$available}"
+            );
         }
 
-        return $this->definitions[$id];
+        return $this->definitions[$name];
     }
 
-    public function has(string $id): bool
+    public function has(string $name): bool
     {
-        return isset($this->definitions[$id]);
+        return isset($this->definitions[$name]);
     }
 
-    /**
-     * @return array<string, AgentDefinition>
-     */
+    /** @return array<string, AgentDefinition> */
+    #[\Override]
     public function all(): array
     {
         return $this->definitions;
     }
 
-    /**
-     * @return array<int, string>
-     */
+    /** @return array<int, string> */
+    #[\Override]
     public function names(): array
     {
-        return array_keys($this->definitions);
+        return array_values(array_keys($this->definitions));
     }
 
-    public function loadFromFile(string $path): AgentDefinitionLoadResult
+    #[\Override]
+    public function count(): int
     {
-        return $this->applyResult($this->loader->loadFromFile($path));
+        return count($this->definitions);
     }
 
-    public function loadFromDirectory(string $path, bool $recursive = false): AgentDefinitionLoadResult
+    // FILE LOADING /////////////////////////////////////////////////
+
+    public function loadFromFile(string $path): void
     {
-        return $this->applyResult($this->loader->loadFromDirectory($path, $recursive));
+        try {
+            $definition = $this->loader->loadFile($path);
+            $this->register($definition);
+        } catch (\Throwable $e) {
+            $this->errors[$path] = $e->getMessage();
+        }
     }
 
-    /**
-     * @param array<int, string> $paths
-     */
-    public function loadFromPaths(array $paths, bool $recursive = false): AgentDefinitionLoadResult
+    public function loadFromDirectory(string $path, bool $recursive = false): void
     {
-        return $this->applyResult($this->loader->loadFromPaths($paths, $recursive));
+        if (!is_dir($path)) {
+            return;
+        }
+
+        foreach ($this->listAgentFiles($path, $recursive) as $file) {
+            $this->loadFromFile($file);
+        }
     }
 
     public function autoDiscover(
         ?string $projectPath = null,
         ?string $packagePath = null,
         ?string $userPath = null,
-    ): AgentDefinitionLoadResult {
+    ): void {
         $projectPath = $projectPath ?? (getcwd() ?: '/tmp');
-
-        $definitions = [];
-        $errors = [];
 
         $paths = [
             $userPath,
@@ -97,31 +114,48 @@ final class AgentDefinitionRegistry
             if ($path === null || !is_dir($path)) {
                 continue;
             }
-
-            $result = $this->loadFromDirectory($path, false);
-            $definitions = array_merge($definitions, $result->definitions);
-            $errors = array_merge($errors, $result->errors);
+            $this->loadFromDirectory($path, false);
         }
-
-        return new AgentDefinitionLoadResult($definitions, $errors);
     }
 
-    /**
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     public function errors(): array
     {
         return $this->errors;
     }
 
-    private function applyResult(AgentDefinitionLoadResult $result): AgentDefinitionLoadResult
+    // PRIVATE //////////////////////////////////////////////////////
+
+    /** @return list<string> */
+    private function listAgentFiles(string $path, bool $recursive): array
     {
-        foreach ($result->definitions as $id => $definition) {
-            $this->definitions[$id] = $definition;
+        $files = [];
+        $extensions = ['md', 'yaml', 'yml'];
+
+        if ($recursive) {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            /** @var \SplFileInfo $file */
+            foreach ($iterator as $file) {
+                if (!$file->isFile()) {
+                    continue;
+                }
+                $ext = strtolower($file->getExtension());
+                if (in_array($ext, $extensions, true)) {
+                    $files[] = $file->getPathname();
+                }
+            }
+        } else {
+            $matches = glob($path . '/*.{md,yml,yaml}', GLOB_BRACE);
+            if ($matches !== false) {
+                $files = $matches;
+            }
         }
 
-        $this->errors = array_merge($this->errors, $result->errors);
+        sort($files);
 
-        return $result;
+        return $files;
     }
 }

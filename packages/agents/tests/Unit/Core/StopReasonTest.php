@@ -10,7 +10,7 @@ it('defines all stop reasons', function () {
         StopReason::cases(),
     );
 
-    expect(count($values))->toBe(9);
+    expect(count($values))->toBe(10);
     expect($values)->toBe([
         'completed',
         'steps_limit',
@@ -21,5 +21,6 @@ it('defines all stop reasons', function () {
         'stop_requested',
         'finish_reason',
         'user_requested',
+        'unknown',
     ]);
 });

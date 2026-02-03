@@ -10,7 +10,7 @@
             <directory suffix="Test.php">./tests</directory>
         </testsuite>
         <testsuite name="Unit">
-            <directory suffix="Test.php">./packages/addons/tests/Unit</directory>
+
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Unit</directory>
             <directory suffix="Test.php">./packages/agents/tests/Unit</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Unit</directory>
@@ -36,7 +36,7 @@
             <directory suffix="Test.php">./packages/utils/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
-            <directory suffix="Test.php">./packages/addons/tests/Feature</directory>
+
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Feature</directory>
             <directory suffix="Test.php">./packages/agents/tests/Feature</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Feature</directory>
@@ -62,7 +62,7 @@
             <directory suffix="Test.php">./packages/utils/tests/Feature</directory>
         </testsuite>
         <testsuite name="Integration">
-            <directory suffix="Test.php">./packages/addons/tests/Integration</directory>
+
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Integration</directory>
             <directory suffix="Test.php">./packages/agents/tests/Integration</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Integration</directory>
@@ -88,7 +88,7 @@
             <directory suffix="Test.php">./packages/utils/tests/Integration</directory>
         </testsuite>
         <testsuite name="Regression">
-            <directory suffix="Test.php">./packages/addons/tests/Regression</directory>
+
             <directory suffix="Test.php">./packages/agent-ctrl/tests/Regression</directory>
             <directory suffix="Test.php">./packages/agents/tests/Regression</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Regression</directory>
@@ -115,7 +115,7 @@
     </testsuites>
     <source>
         <include>
-            <directory suffix=".php">./packages/addons/src</directory>
+
             <directory suffix=".php">./packages/agent-ctrl/src</directory>
             <directory suffix=".php">./packages/agents/src</directory>
             <directory suffix=".php">./packages/auxiliary/src</directory>

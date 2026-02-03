@@ -3,8 +3,7 @@
 namespace Cognesy\Agents\AgentTemplate\Registry;
 
 use Cognesy\Agents\AgentTemplate\Contracts\AgentBlueprint;
-use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
-use Cognesy\Agents\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
+use Cognesy\Agents\AgentTemplate\Exceptions\AgentTemplateException;
 
 final class AgentBlueprintRegistry
 {
@@ -21,15 +20,13 @@ final class AgentBlueprintRegistry
     }
 
     /**
-     * Register a blueprint alias.
-     *
-     * @param string $alias
      * @param class-string<AgentBlueprint> $class
      */
     public function register(string $alias, string $class): self {
         if (!is_subclass_of($class, AgentBlueprint::class)) {
-            throw new InvalidAgentBlueprintException(
-                "Blueprint '{$alias}' must implement AgentBlueprint."
+            throw AgentTemplateException::invalidBlueprint(
+                $alias,
+                'must implement AgentBlueprint',
             );
         }
 
@@ -38,15 +35,13 @@ final class AgentBlueprintRegistry
     }
 
     /**
-     * Resolve a blueprint class by alias.
-     *
      * @return class-string<AgentBlueprint>
      */
     public function get(string $alias): string {
         if (!$this->has($alias)) {
-            $available = implode(', ', array_keys($this->blueprints));
-            throw new AgentBlueprintNotFoundException(
-                "Blueprint '{$alias}' not found. Available: {$available}"
+            throw AgentTemplateException::blueprintNotFound(
+                $alias,
+                array_keys($this->blueprints),
             );
         }
 
@@ -57,9 +52,7 @@ final class AgentBlueprintRegistry
         return isset($this->blueprints[$alias]);
     }
 
-    /**
-     * @return array<int, string>
-     */
+    /** @return array<int, string> */
     public function names(): array {
         return array_keys($this->blueprints);
     }

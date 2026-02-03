@@ -22,7 +22,7 @@ class CachedInferenceContext
         $this->toolChoice = $toolChoice;
         $this->responseFormat = match(true) {
             $responseFormat instanceof ResponseFormat => $responseFormat,
-            is_array($responseFormat) => ResponseFormat::fromData($responseFormat),
+            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
             default => new ResponseFormat(),
         };
     }
@@ -41,6 +41,33 @@ class CachedInferenceContext
 
     public function responseFormat() : ResponseFormat {
         return $this->responseFormat;
+    }
+
+    public function withMessages(Messages|string|array $messages): self {
+        return new self(
+            messages: $messages instanceof Messages ? $messages->toArray() : $messages,
+            tools: $this->tools,
+            toolChoice: $this->toolChoice,
+            responseFormat: $this->responseFormat,
+        );
+    }
+
+    public function withTools(array $tools): self {
+        return new self(
+            messages: $this->messages->toArray(),
+            tools: $tools,
+            toolChoice: $this->toolChoice,
+            responseFormat: $this->responseFormat,
+        );
+    }
+
+    public function withResponseFormat(array|ResponseFormat $responseFormat): self {
+        return new self(
+            messages: $this->messages->toArray(),
+            tools: $this->tools,
+            toolChoice: $this->toolChoice,
+            responseFormat: $responseFormat,
+        );
     }
 
     public function isEmpty() : bool {

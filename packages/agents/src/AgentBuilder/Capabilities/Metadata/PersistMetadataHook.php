@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 
 /**
  * Hook that persists MetadataWriteResult to agent state.

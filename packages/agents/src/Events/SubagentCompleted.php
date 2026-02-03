@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTimeImmutable;
 
@@ -15,12 +15,12 @@ final class SubagentCompleted extends AgentEvent
     public readonly DateTimeImmutable $completedAt;
 
     public function __construct(
-        public readonly string $parentAgentId,
-        public readonly string $subagentId,
-        public readonly string $subagentName,
-        public readonly AgentStatus $status,
-        public readonly int $steps,
-        public readonly ?Usage $usage,
+        public readonly string            $parentAgentId,
+        public readonly string            $subagentId,
+        public readonly string            $subagentName,
+        public readonly ExecutionStatus   $status,
+        public readonly int               $steps,
+        public readonly ?Usage            $usage,
         public readonly DateTimeImmutable $startedAt,
     ) {
         $this->completedAt = new DateTimeImmutable();

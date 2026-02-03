@@ -79,7 +79,7 @@ final readonly class ScenarioStep
         );
 
         return new AgentStep(
-            inputMessages: $state->messagesForInference(),
+            inputMessages: $state->context()->messagesForInference(),
             outputMessages: Messages::fromString($this->response, 'assistant'),
             inferenceResponse: $response,
             errors: $errors,

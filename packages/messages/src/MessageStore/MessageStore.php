@@ -45,15 +45,6 @@ final readonly class MessageStore
         return new MessageStore($sections);
     }
 
-    public static function fromArray(array $data) : MessageStore {
-        $sections = isset($data['sections']) ? Sections::fromArray($data['sections']) : new Sections();
-        $parameters = isset($data['parameters']) ? Metadata::fromArray($data['parameters']) : new Metadata();
-        return new MessageStore(
-            sections: $sections,
-            parameters: $parameters,
-        );
-    }
-
     // MUTATORS ///////////////////////////////////////////////
 
     public function withSection(string $name): MessageStore {
@@ -128,6 +119,27 @@ final readonly class MessageStore
     }
 
     /**
+     * @return list<array<array-key, mixed>>
+     */
+    public function toFlatArray() : array {
+        return $this->toMessages()->toArray();
+    }
+
+    public function toString() : string {
+        return $this->toMessages()->toString();
+    }
+
+    public function section(string $name) : SectionOperator {
+        return new SectionOperator($this, $name);
+    }
+
+    public function parameters(): ParameterOperator {
+        return new ParameterOperator($this);
+    }
+
+    // SERIALIZATION ////////////////////////////////////////
+
+    /**
      * @return array{
      *     sections: list<array{name: string, messages: list<array<array-key, mixed>>}>,
      *     parameters: array<string, mixed>
@@ -146,22 +158,12 @@ final readonly class MessageStore
         ];
     }
 
-    /**
-     * @return list<array<array-key, mixed>>
-     */
-    public function toFlatArray() : array {
-        return $this->toMessages()->toArray();
-    }
-
-    public function toString() : string {
-        return $this->toMessages()->toString();
-    }
-
-    public function section(string $name) : SectionOperator {
-        return new SectionOperator($this, $name);
-    }
-
-    public function parameters(): ParameterOperator {
-        return new ParameterOperator($this);
+    public static function fromArray(array $data) : self {
+        $sections = isset($data['sections']) ? Sections::fromArray($data['sections']) : new Sections();
+        $parameters = isset($data['parameters']) ? Metadata::fromArray($data['parameters']) : new Metadata();
+        return new MessageStore(
+            sections: $sections,
+            parameters: $parameters,
+        );
     }
 }

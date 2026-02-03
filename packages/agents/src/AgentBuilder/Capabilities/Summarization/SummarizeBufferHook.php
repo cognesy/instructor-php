@@ -4,8 +4,8 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Summarization;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Events\MessageBufferSummarized;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Messages;

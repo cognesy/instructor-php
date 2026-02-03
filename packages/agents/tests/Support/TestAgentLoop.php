@@ -8,8 +8,7 @@ use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
-use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;
-use tmp\ErrorHandling\Contracts\CanHandleAgentErrors;
+use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
 
 final class TestAgentLoop extends AgentLoop
 {
@@ -18,19 +17,17 @@ final class TestAgentLoop extends AgentLoop
     public function __construct(
         Tools $tools,
         CanExecuteToolCalls $toolExecutor,
-        CanHandleAgentErrors $errorHandler,
         CanUseTools $driver,
         CanEmitAgentEvents $eventEmitter,
-        ?CanObserveAgentLifecycle $observer = null,
+        ?CanInterceptAgentLifecycle $interceptor = null,
         int $maxIterations = 1,
     ) {
         parent::__construct(
             tools: $tools,
             toolExecutor: $toolExecutor,
-            errorHandler: $errorHandler,
             driver: $driver,
             eventEmitter: $eventEmitter,
-            observer: $observer,
+            interceptor: $interceptor,
         );
         $this->maxIterations = $maxIterations;
     }

@@ -2,16 +2,13 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Contracts\AgentInterface;
 use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
 use Cognesy\Agents\AgentTemplate\Contracts\AgentBlueprint;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition as TemplateAgentDefinition;
-use Cognesy\Agents\AgentTemplate\Exceptions\AgentBlueprintNotFoundException;
-use Cognesy\Agents\AgentTemplate\Exceptions\InvalidAgentBlueprintException;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\AgentTemplate\Exceptions\AgentTemplateException;
 use Cognesy\Agents\AgentTemplate\Registry\AgentBlueprintRegistry;
 
 final class RegistryAgentDefinition extends BaseAgent
@@ -30,32 +27,17 @@ final class RegistryAgentDefinition extends BaseAgent
         );
     }
 
-    protected function buildAgentLoop(): AgentLoop
+    protected function configureLoop(AgentBuilder $builder): AgentBuilder
     {
-        return AgentBuilder::base()->build();
-    }
-
-    public function serializeConfig(): array
-    {
-        return ['name' => $this->name];
-    }
-
-    public static function fromConfig(array $config): AgentInterface
-    {
-        $name = $config['name'] ?? 'registry-agent';
-        if (!is_string($name) || $name === '') {
-            throw new \InvalidArgumentException('Invalid agent config.');
-        }
-
-        return new self($name);
+        return $builder;
     }
 }
 
 final class TestBlueprint implements AgentBlueprint
 {
-    public static function fromDefinition(TemplateAgentDefinition $definition): AgentInterface
+    public static function fromDefinition(AgentDefinition $definition): \Cognesy\Agents\AgentBuilder\Contracts\AgentInterface
     {
-        return new RegistryAgentDefinition($definition->id);
+        return new RegistryAgentDefinition($definition->id());
     }
 }
 
@@ -74,7 +56,7 @@ describe('AgentBlueprintRegistry', function () {
 
         $register = fn() => $registry->register('bad', \stdClass::class);
 
-        expect($register)->toThrow(InvalidAgentBlueprintException::class);
+        expect($register)->toThrow(AgentTemplateException::class);
     });
 
     it('fails when blueprint alias is missing', function () {
@@ -82,6 +64,6 @@ describe('AgentBlueprintRegistry', function () {
 
         $get = fn() => $registry->get('missing');
 
-        expect($get)->toThrow(AgentBlueprintNotFoundException::class);
+        expect($get)->toThrow(AgentTemplateException::class);
     });
 });

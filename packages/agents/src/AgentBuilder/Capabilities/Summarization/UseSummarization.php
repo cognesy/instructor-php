@@ -6,7 +6,7 @@ use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Utils\SummarizeMessages;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
-use Cognesy\Agents\Hooks\HookTriggers;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
 
 class UseSummarization implements AgentCapability
 {
@@ -20,8 +20,8 @@ class UseSummarization implements AgentCapability
         $policy = $this->policy ?? new SummarizationPolicy();
         $summarizer = $this->summarizer ?? new SummarizeMessages();
 
-        // These hooks must run AFTER AppendStepMessagesHook (priority -100)
-        // which appends the step output to state.messages().
+        // These hooks must run AFTER message hooks (priority -100..-130)
+        // which append step output to state messages / execution buffer.
         // Lower priority = runs later in the AfterStep phase.
 
         // MoveMessagesToBuffer should run first (after messages are appended)

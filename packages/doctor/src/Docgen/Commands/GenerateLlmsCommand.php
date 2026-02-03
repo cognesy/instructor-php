@@ -10,7 +10,6 @@ use Cognesy\Doctor\Docgen\PackageDiscovery;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\Utils\Cli\Color;
-use Cognesy\Utils\Files;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,6 +25,7 @@ class GenerateLlmsCommand extends Command
     private ?DocsConfig $config = null;
     private ?PackageDiscovery $packageDiscovery = null;
     private ?NavigationBuilder $navBuilder = null;
+    private ?OutputInterface $output = null;
 
     public function __construct(
         private ExampleRepository $examples,
@@ -67,13 +67,14 @@ class GenerateLlmsCommand extends Command
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->output = $output;
         $timeStart = microtime(true);
 
         // Load configuration
         $this->config = DocsConfig::fromFile();
 
         if (!$this->config->llmsEnabled) {
-            Cli::outln('LLM documentation generation is disabled in config', [Color::YELLOW]);
+            $this->writeln('LLM documentation generation is disabled in config', [Color::YELLOW]);
             return Command::SUCCESS;
         }
 
@@ -85,13 +86,13 @@ class GenerateLlmsCommand extends Command
         $indexOnly = (bool) $input->getOption('index-only');
         $fullOnly = (bool) $input->getOption('full-only');
 
-        Cli::outln('Generating LLM documentation...', [Color::BOLD, Color::CYAN]);
-        Cli::out('');
+        $this->writeln('Generating LLM documentation...', [Color::BOLD, Color::CYAN]);
+        $this->write('');
 
         // Build navigation from MkDocs structure
-        Cli::out('  Scanning navigation structure... ', [Color::DARK_GRAY]);
+        $this->write('  Scanning navigation structure... ', [Color::DARK_GRAY]);
         $navigation = $this->buildNavigation();
-        Cli::outln('done', [Color::GREEN]);
+        $this->writeln('done', [Color::GREEN]);
 
         // Create generator
         $generator = new LlmsDocsGenerator(
@@ -103,21 +104,21 @@ class GenerateLlmsCommand extends Command
 
         // Generate llms.txt
         if (!$fullOnly) {
-            Cli::out('  Generating ' . $this->config->llmsIndexFile . '... ', [Color::DARK_GRAY]);
+            $this->write('  Generating ' . $this->config->llmsIndexFile . '... ', [Color::DARK_GRAY]);
             $indexPath = $this->mkdocsTargetDir . '/' . $this->config->llmsIndexFile;
             $indexResult = $generator->generateIndex($navigation, $indexPath);
 
             if ($indexResult->isSuccess()) {
-                Cli::outln($indexResult->message, [Color::GREEN]);
+                $this->writeln($indexResult->message, [Color::GREEN]);
             } else {
-                Cli::outln('failed: ' . implode(', ', $indexResult->errors), [Color::RED]);
+                $this->writeln('failed: ' . implode(', ', $indexResult->errors), [Color::RED]);
                 $hasErrors = true;
             }
         }
 
         // Generate llms-full.txt
         if (!$indexOnly) {
-            Cli::out('  Generating ' . $this->config->llmsFullFile . '... ', [Color::DARK_GRAY]);
+            $this->write('  Generating ' . $this->config->llmsFullFile . '... ', [Color::DARK_GRAY]);
             $fullPath = $this->mkdocsTargetDir . '/' . $this->config->llmsFullFile;
             $fullResult = $generator->generateFull(
                 $navigation,
@@ -127,9 +128,9 @@ class GenerateLlmsCommand extends Command
             );
 
             if ($fullResult->isSuccess()) {
-                Cli::outln($fullResult->message, [Color::GREEN]);
+                $this->writeln($fullResult->message, [Color::GREEN]);
             } else {
-                Cli::outln('failed: ' . implode(', ', $fullResult->errors), [Color::RED]);
+                $this->writeln('failed: ' . implode(', ', $fullResult->errors), [Color::RED]);
                 $hasErrors = true;
             }
         }
@@ -139,16 +140,16 @@ class GenerateLlmsCommand extends Command
             $deployTarget = is_string($customTarget) ? $customTarget : $this->config->llmsDeployTarget;
 
             if (empty($deployTarget)) {
-                Cli::outln('');
-                Cli::outln('  No deployment target configured. Use --target or set llms.deploy.target in config.', [Color::YELLOW]);
+                $this->writeln('');
+                $this->writeln('  No deployment target configured. Use --target or set llms.deploy.target in config.', [Color::YELLOW]);
             } else {
                 $this->deployToWebsite($deployTarget, $indexOnly, $fullOnly);
             }
         }
 
-        Cli::out('');
+        $this->write('');
         $totalTime = microtime(true) - $timeStart;
-        Cli::outln(sprintf('Done in %.2fs', $totalTime), [Color::BOLD, Color::YELLOW]);
+        $this->writeln(sprintf('Done in %.2fs', $totalTime), [Color::BOLD, Color::YELLOW]);
 
         return $hasErrors ? Command::FAILURE : Command::SUCCESS;
     }
@@ -209,14 +210,14 @@ class GenerateLlmsCommand extends Command
 
     private function deployToWebsite(string $targetPath, bool $indexOnly, bool $fullOnly): void
     {
-        Cli::out('');
-        Cli::outln('  Deploying to website...', [Color::CYAN]);
+        $this->write('');
+        $this->writeln('  Deploying to website...', [Color::CYAN]);
 
         $targetPath = BasePath::get($targetPath);
 
         if (!is_dir($targetPath)) {
-            Cli::outln("    Target directory does not exist: {$targetPath}", [Color::RED]);
-            Cli::outln("    Create it first or check your config.", [Color::YELLOW]);
+            $this->writeln("    Target directory does not exist: {$targetPath}", [Color::RED]);
+            $this->writeln("    Create it first or check your config.", [Color::YELLOW]);
             return;
         }
 
@@ -229,7 +230,7 @@ class GenerateLlmsCommand extends Command
 
             if (file_exists($source)) {
                 copy($source, $dest);
-                Cli::outln("    → {$dest}", [Color::GREEN]);
+                $this->writeln("    → {$dest}", [Color::GREEN]);
                 $filesDeployed++;
             }
         }
@@ -241,7 +242,7 @@ class GenerateLlmsCommand extends Command
 
             if (file_exists($source)) {
                 copy($source, $dest);
-                Cli::outln("    → {$dest}", [Color::GREEN]);
+                $this->writeln("    → {$dest}", [Color::GREEN]);
                 $filesDeployed++;
             }
         }
@@ -256,10 +257,10 @@ class GenerateLlmsCommand extends Command
             // Copy docs (excluding llms.txt files)
             $this->copyDocsFolder($this->mkdocsTargetDir, $docsTarget);
 
-            Cli::outln("    → {$docsTarget}/ ({$mdFiles} files)", [Color::GREEN]);
+            $this->writeln("    → {$docsTarget}/ ({$mdFiles} files)", [Color::GREEN]);
         }
 
-        Cli::outln("  Deployed {$filesDeployed} files to website root", [Color::CYAN]);
+        $this->writeln("  Deployed {$filesDeployed} files to website root", [Color::CYAN]);
     }
 
     private function countMarkdownFiles(string $dir): int
@@ -276,6 +277,16 @@ class GenerateLlmsCommand extends Command
         }
 
         return $count;
+    }
+
+    private function write(string $message, string|array|null $color = null): void
+    {
+        $this->output->write(Cli::str($message, $color));
+    }
+
+    private function writeln(string $message, string|array|null $color = null): void
+    {
+        $this->output->writeln(Cli::str($message, $color));
     }
 
     private function copyDocsFolder(string $source, string $target): void

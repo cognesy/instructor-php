@@ -44,4 +44,4 @@ describe('Skills Capability', function () {
         expect($messageText)->toContain('<skills-metadata>');
         expect($messageText)->toContain('[demo]: Demo skill');
     });
-})->skip('hooks not integrated yet');
+});

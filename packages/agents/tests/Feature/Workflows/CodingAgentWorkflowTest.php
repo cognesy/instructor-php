@@ -1,8 +1,5 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\EditFileTool;
@@ -10,14 +7,17 @@ use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\WriteFileTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksHook;
 use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Enums\AgentStepType;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\TestHelpers;
 use Cognesy\Messages\Messages;
-use Cognesy\Agents\Hooks\HookTriggers;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
-use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('Coding Agent Workflow', function () {
 
@@ -209,7 +209,7 @@ describe('Coding Agent Workflow', function () {
         // Act - collect step types as we iterate
         $stepTypes = [];
         foreach ($agent->iterate($state) as $currentState) {
-            $stepTypes[] = $currentState->currentStep()->stepType();
+            $stepTypes[] = $currentState->lastStep()->stepType();
         }
 
         // Assert step sequence
@@ -311,7 +311,7 @@ describe('Coding Agent Workflow', function () {
         $finalState = $agent->execute($state);
 
         // Assert - verify we can access tool execution from step
-        $firstStep = $finalState->stepAt(0);
+        $firstStep = $finalState->steps()->stepAt(0);
         expect($firstStep->hasToolCalls())->toBeTrue();
         expect($firstStep->toolExecutions()->hasExecutions())->toBeTrue();
 
@@ -322,4 +322,4 @@ describe('Coding Agent Workflow', function () {
         expect($execution->toolCall()->name())->toBe('read_file');
         expect($execution->result()->isSuccess())->toBeTrue();
     });
-})->skip('hooks not integrated yet');
+});

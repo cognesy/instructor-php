@@ -8,6 +8,7 @@ use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tests\Support\NullEventEmitter;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
@@ -16,21 +17,20 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use tmp\ErrorHandling\AgentErrorHandler;
 
 function makeTestLoop(LLMProvider $llm, Tools $tools, int $maxIterations): TestAgentLoop
 {
     $eventEmitter = new NullEventEmitter();
+    $interceptor = new PassThroughInterceptor();
     $driver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
-    $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter);
+    $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter, interceptor: $interceptor);
 
     return new TestAgentLoop(
         tools: $tools,
         toolExecutor: $toolExecutor,
-        errorHandler: AgentErrorHandler::default(),
         driver: $driver,
         eventEmitter: $eventEmitter,
-        observer: null,
+        interceptor: $interceptor,
         maxIterations: $maxIterations,
     );
 }

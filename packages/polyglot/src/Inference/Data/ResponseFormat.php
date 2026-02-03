@@ -33,15 +33,6 @@ class ResponseFormat
 
     // CONSTRUCTORS ///////////////////////////////////////////////////
 
-    public static function fromData(array $data): self {
-        return new self(
-            type: $data['type'] ?? null,
-            schema: $data['schema'] ?? $data['json_schema']['schema'] ?? null,
-            name: $data['name'] ?? $data['json_schema']['name'] ?? null,
-            strict: $data['strict'] ?? $data['json_schema']['strict'] ?? null,
-        );
-    }
-
     public static function empty(): self {
         return new self();
     }
@@ -150,6 +141,15 @@ class ResponseFormat
             'name' => $this->name,
             'strict' => $this->strict,
         ]);
+    }
+
+    public static function fromArray(array $data): self {
+        return new self(
+            type: $data['type'] ?? null,
+            schema: $data['schema'] ?? $data['json_schema']['schema'] ?? null,
+            name: $data['name'] ?? $data['json_schema']['name'] ?? null,
+            strict: $data['strict'] ?? $data['json_schema']['strict'] ?? null,
+        );
     }
 
     // INTERNAL //////////////////////////////////////////////////////

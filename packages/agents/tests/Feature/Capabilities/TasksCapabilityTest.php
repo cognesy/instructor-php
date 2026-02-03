@@ -36,4 +36,4 @@ describe('Tasks Capability', function () {
         expect($tasks)->toBeArray();
         expect($tasks[0]['content'] ?? null)->toBe('Plan work');
     });
-})->skip('hooks not integrated yet');
+});

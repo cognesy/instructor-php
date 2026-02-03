@@ -14,11 +14,10 @@ use Cognesy\Agents\Events\AgentEventEmitter;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
-use Cognesy\Agents\Hooks\CanInterceptAgentLifecycle;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\PassThroughInterceptor;
+use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Throwable;
-use tmp\ErrorHandling\Contracts\CanHandleAgentErrors;
 
 /**
  * Orchestrates the iterative use of tools based on a given state and stop signals.
@@ -35,7 +34,6 @@ class AgentLoop implements CanControlAgentLoop
     public function __construct(
         private readonly Tools $tools,
         private readonly CanExecuteToolCalls $toolExecutor,
-        private readonly CanHandleAgentErrors $errorHandler,
         private readonly CanUseTools $driver,
         ?CanEmitAgentEvents $eventEmitter,
         ?CanInterceptAgentLifecycle $interceptor,
@@ -59,28 +57,33 @@ class AgentLoop implements CanControlAgentLoop
     public function iterate(AgentState $state): iterable {
         $state = $this->onBeforeExecution($state);
         while (true) {
+            $stepStarted = false;
             try {
-                try {
-                    $state = $this->onBeforeStep($state);
-                    $state = $this->useTools($state);
-                } catch (Throwable $error) {
-                    $state = $this->onError($error, $state);
-                    $state = $state->withFailure($error);
-                }
-                $state = $state->withCurrentStepCompleted();
-                $state = $this->onAfterStep($state);
+                $state = $this->onBeforeStep($state);
+                $stepStarted = true;
+                $state = $this->handleToolUse($state);
             } catch (AgentStopException $stop) {
-                $state = $this->handleStopException($stop, $state);
-                $state = $state->withCurrentStepCompleted();
-            } catch (ToolExecutionBlockedException $block) {
-                $state = $state->withFailure(AgentException::fromError($block));
+                $state = $this->handleStopException($state, $stop);
+            } catch (Throwable $error) {
+                $state = $this->onError($state, $error);
+            } finally {
+                if ($stepStarted) {
+                    $state = $this->onAfterStep($state);
+                }
             }
             if ($this->shouldStop($state)) {
+                $state = $this->onStop($state);
+                $state = $state->withCurrentStepCompleted();
                 break;
             }
+            $state = $state->withCurrentStepCompleted();
             yield $state;
         }
-        $finalState = $this->onAfterExecution($state);
+        $finalState = match(true) {
+            $state->hasCurrentStep() => $state->withCurrentStepCompleted(),
+            default => $state,
+        };
+        $finalState = $this->onAfterExecution($finalState);
         if ($finalState->updatedAt() !== $state->updatedAt()) {
             yield $finalState;
         }
@@ -106,14 +109,20 @@ class AgentLoop implements CanControlAgentLoop
         return $state;
     }
 
-    protected function onAfterExecution(AgentState $state): AgentState {
-        $state = $state->withExecutionCompleted();
-        $state = $this->interceptor->intercept(HookContext::afterExecution($state))->state();
-        $this->eventEmitter->executionFinished($state);
+    private function onStop(AgentState $state) : AgentState {
+        $state = $this->interceptor->intercept(HookContext::onStop($state))->state();
+        $this->eventEmitter->executionStopped($state);
         return $state;
     }
 
-    protected function onError(Throwable $error, AgentState $state): AgentState {
+    protected function onAfterExecution(AgentState $state): AgentState {
+        $state = $this->interceptor->intercept(HookContext::afterExecution($state))->state();
+        $this->eventEmitter->executionFinished($state);
+        $state = $state->withExecutionCompleted();
+        return $state;
+    }
+
+    protected function onError(AgentState $state, Throwable $error): AgentState {
         $state = $state->withFailure(AgentException::fromError($error));
         $state = $this->interceptor->intercept(HookContext::onError($state, $state->errors()))->state();
         $this->eventEmitter->executionFailed($state, $error);
@@ -122,7 +131,21 @@ class AgentLoop implements CanControlAgentLoop
 
     // INTERNAL ///////////////////////////////////////////
 
-    private function handleStopException(AgentStopException $stop, AgentState $state): AgentState {
+    private function handleToolUse(AgentState $state) : AgentState {
+        try {
+            $state = $this->useTools($state);
+        } catch (ToolExecutionBlockedException $block) {
+            $state = $this->handleToolBlockException($state, $block);
+        }
+        return $state;
+    }
+
+    private function handleToolBlockException(AgentState $state, ToolExecutionBlockedException $stop) : AgentState {
+        $this->eventEmitter->toolCallBlocked($stop->toolCall, $stop->getMessage(), $stop->hookName);
+        return $this->onError($state, $stop);
+    }
+
+    private function handleStopException(AgentState $state, AgentStopException $stop): AgentState {
         $signal = StopSignal::fromStopException($stop);
         $this->eventEmitter->stopSignalReceived($signal);
         return $state->withStopSignal($signal);
@@ -168,10 +191,6 @@ class AgentLoop implements CanControlAgentLoop
         return $this->toolExecutor;
     }
 
-    public function errorHandler(): CanHandleAgentErrors {
-        return $this->errorHandler;
-    }
-
     public function driver(): CanUseTools {
         return $this->driver;
     }
@@ -189,7 +208,6 @@ class AgentLoop implements CanControlAgentLoop
     public function with(
         ?Tools $tools = null,
         ?CanExecuteToolCalls $toolExecutor = null,
-        ?CanHandleAgentErrors $errorHandler = null,
         ?CanUseTools $driver = null,
         ?CanEmitAgentEvents $eventEmitter = null,
         ?CanInterceptAgentLifecycle $interceptor = null,
@@ -204,7 +222,6 @@ class AgentLoop implements CanControlAgentLoop
         return new self(
             tools: $resolvedTools,
             toolExecutor: $resolvedExecutor,
-            errorHandler: $errorHandler ?? $this->errorHandler,
             driver: $driver ?? $this->driver,
             eventEmitter: $eventEmitter ?? $this->eventEmitter,
             interceptor: $interceptor ?? $this->interceptor,

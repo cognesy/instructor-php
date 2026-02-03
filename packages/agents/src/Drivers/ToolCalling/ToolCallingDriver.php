@@ -8,12 +8,10 @@ use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
-use Cognesy\Agents\Hooks\CanInterceptAgentLifecycle;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\PassThroughInterceptor;
+use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -21,7 +19,6 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -36,7 +33,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools
+class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -92,7 +89,7 @@ class ToolCallingDriver implements CanUseTools
         return $this->llm;
     }
 
-    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): self {
+    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): static {
         return new self(
             llm: $this->llm,
             httpClient: $this->httpClient,
@@ -137,7 +134,8 @@ class ToolCallingDriver implements CanUseTools
 
     private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
         $messages = $state->context()->messagesForInference();
-        $cache = $this->resolveCachedContext($state, $tools);
+        $cache = $state->context()->toInferenceContext($tools->toToolSchema());
+        $cache = $cache->isEmpty() ? null : $cache;
         // Emit inference request started event
         $requestStartedAt = new DateTimeImmutable();
         $this->eventEmitter->inferenceRequestStarted($state, $messages->count(), $this->model ?: null);
@@ -158,12 +156,10 @@ class ToolCallingDriver implements CanUseTools
             : $this->toolChoice;
         assert(is_string($toolChoice));
 
-        $cache = $cache?->isEmpty() === true ? null : $cache;
-        $cachedTools = $cache?->tools() ?? [];
-        $hasCachedTools = $cachedTools !== [];
         $hasTools = !$tools->isEmpty();
+        $hasCachedTools = ($cache?->tools() ?? []) !== [];
         $toolSchemas = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : [];
-        $resolvedToolChoice = $this->resolveToolChoice($toolChoice, $cache);
+
         // Only include parallel_tool_calls when tools are specified (API requirement)
         $options = $this->options;
         if ($hasTools) {
@@ -174,7 +170,7 @@ class ToolCallingDriver implements CanUseTools
             ->withMessages($messages->toArray())
             ->withModel($this->model)
             ->withTools($toolSchemas)
-            ->withToolChoice($hasTools ? $resolvedToolChoice : '')
+            ->withToolChoice($hasTools ? $toolChoice : '')
             ->withResponseFormat($this->responseFormat)
             ->withOptions($options)
             ->withOutputMode($this->mode);
@@ -184,9 +180,9 @@ class ToolCallingDriver implements CanUseTools
         if ($cache !== null) {
             $inference = $inference->withCachedContext(
                 messages: $cache->messages()->toArray(),
-                tools: $cachedTools,
+                tools: $cache->tools(),
                 toolChoice: $cache->toolChoice(),
-                responseFormat: $this->responseFormatToArray($cache->responseFormat()),
+                responseFormat: $cache->responseFormat()->toArray(),
             );
         }
         if ($this->httpClient !== null) {
@@ -246,43 +242,5 @@ class ToolCallingDriver implements CanUseTools
         return $json->toArray();
     }
 
-    private function resolveCachedContext(AgentState $state, Tools $tools): ?CachedInferenceContext {
-        $cache = $state->context()->cache();
-        $cachedTools = $cache->tools();
-        if ($cachedTools === [] && !$tools->isEmpty()) {
-            $cachedTools = $tools->toToolSchema();
-        }
-        $resolved = new CachedInferenceContext(
-            messages: $cache->messages()->toArray(),
-            tools: $cachedTools,
-            toolChoice: $cache->toolChoice(),
-            responseFormat: $this->responseFormatToArray($cache->responseFormat()),
-        );
-        return $resolved->isEmpty() ? null : $resolved;
-    }
 
-    private function resolveToolChoice(string $toolChoice, ?CachedInferenceContext $cache): string {
-        // when cached choice is empty, use the provided tool choice
-        if ($cache === null) {
-            return $toolChoice;
-        }
-        $cachedChoice = $cache->toolChoice();
-        if ($cachedChoice === [] || $cachedChoice === '') {
-            return $toolChoice;
-        }
-        // otherwise, return '' to use the cached choice
-        return $toolChoice === 'auto' ? '' : $toolChoice;
-    }
-
-    private function responseFormatToArray(ResponseFormat $format): array {
-        return match ($format->isEmpty()) {
-            true => [],
-            false => [
-                'type' => $format->type(),
-                'schema' => $format->schema(),
-                'name' => $format->schemaName(),
-                'strict' => $format->strict(),
-            ],
-        };
-    }
 }

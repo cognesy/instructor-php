@@ -5,8 +5,8 @@ namespace Cognesy\Agents\Hooks\Defaults;
 use Closure;
 use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 final readonly class FinishReasonHook implements HookInterface

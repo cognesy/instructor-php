@@ -34,6 +34,6 @@ describe('SelfCritique Capability', function () {
             break;
         }
 
-        expect($next->stopReason())->toBe(StopReason::RetryLimitReached);
+        expect($next->lastStopReason())->toBe(StopReason::RetryLimitReached);
     });
-})->skip('hooks not integrated yet');
+});

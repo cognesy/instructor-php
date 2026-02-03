@@ -3,18 +3,14 @@
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Hooks\CallableHook;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookTriggers;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hooks\Defaults\CallableHook;
 use Cognesy\Messages\Messages;
 
 describe('Deterministic agent execution', function () {
@@ -29,7 +25,7 @@ describe('Deterministic agent execution', function () {
         $final = $agent->execute($state);
 
         expect($final->stepCount())->toBe(1);
-        expect($final->currentStep()?->hasToolCalls())->toBeFalse();
+        expect($final->currentStepOrLast()?->hasToolCalls())->toBeFalse();
         expect($final->messages()->toString())->toContain('Paris');
     });
 
@@ -74,39 +70,19 @@ describe('Deterministic agent execution', function () {
         expect($final->stepCount())->toBe(2);
         expect($toolCalls)->toBe(['France']);
 
-        $executions = $final->stepAt(0)?->toolExecutions()->all() ?? [];
+        $executions = $final->steps()->stepAt(0)?->toolExecutions()->all() ?? [];
         expect($executions)->toHaveCount(1);
         expect($executions[0]->value())->toBe('Paris');
     });
 
     it('stops after a driver failure when failure is recorded', function () {
-        $driver = new class implements CanUseTools {
-            private int $calls = 0;
-
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentStep {
-                $this->calls++;
-                if ($this->calls === 1) {
-                    return new AgentStep();
-                }
-                throw new \RuntimeException('driver boom');
-            }
-        };
+        $driver = new FakeAgentDriver([
+            ScenarioStep::toolCall('check', ['q' => 'test'], executeTools: false),
+            ScenarioStep::error('boom'),
+        ]);
 
         $agentLoop = AgentBuilder::base()
             ->withDriver($driver)
-            ->addHook(
-                new CallableHook(
-                    static function (HookContext $context): HookContext {
-                        $state = $context->state();
-                        if ($state->stepCount() < 1) {
-                            return $context->withState($state->withExecutionContinued());
-                        }
-                        return $context;
-                    }
-                ),
-                HookTriggers::afterStep(),
-                -200
-            )
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
@@ -117,8 +93,8 @@ describe('Deterministic agent execution', function () {
             $states[] = $stepState;
         }
 
-        // First step succeeds, second step fails
+        // First step has tool calls → continues, second step has errors → stops as failed
         expect($states)->toHaveCount(2);
-        expect($states[1]->status())->toBe(AgentStatus::Failed);
+        expect($states[1]->status())->toBe(ExecutionStatus::Failed);
     });
-})->skip('hooks not integrated yet');
+});

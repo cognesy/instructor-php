@@ -4,14 +4,18 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\Drivers\ToolCalling\ToolExecutionFormatter;
 use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -24,8 +28,9 @@ class SpawnSubagentTool extends BaseTool
 {
     private static array $subagentStates = [];
 
-    private AgentLoop $parentAgentLoop;
-    private SubagentProvider $provider;
+    private Tools $parentTools;
+    private CanUseTools $parentDriver;
+    private AgentDefinitionProvider $provider;
     private ?SkillLibrary $skillLibrary;
     private ?LLMProvider $parentLlmProvider;
     private int $currentDepth;
@@ -35,8 +40,9 @@ class SpawnSubagentTool extends BaseTool
     private CanEmitAgentEvents $eventEmitter;
 
     public function __construct(
-        AgentLoop $parentAgentLoop,
-        SubagentProvider $provider,
+        Tools $parentTools,
+        CanUseTools $parentDriver,
+        AgentDefinitionProvider $provider,
         ?SkillLibrary $skillLibrary = null,
         ?LLMProvider $parentLlmProvider = null,
         int $currentDepth = 0,
@@ -50,7 +56,8 @@ class SpawnSubagentTool extends BaseTool
             description: $this->buildDescription($provider),
         );
 
-        $this->parentAgentLoop = $parentAgentLoop;
+        $this->parentTools = $parentTools;
+        $this->parentDriver = $parentDriver;
         $this->provider = $provider;
         $this->skillLibrary = $skillLibrary;
         $this->parentLlmProvider = $parentLlmProvider;
@@ -111,22 +118,23 @@ class SpawnSubagentTool extends BaseTool
         );
 
         // Store full state in metadata for external access (metrics, debugging)
-        $this->storeSubagentState($finalState, $spec->name());
+        $this->storeSubagentState($finalState, $spec->name);
 
         // Return ONLY the response text to LLM (context isolation!)
-        return $this->extractResponse($finalState, $spec->name());
+        return $this->extractResponse($finalState, $spec->name);
     }
 
     // SUBAGENT CREATION ////////////////////////////////////////////
 
-    private function createSubagentLoop(SubagentDefinition $spec): AgentLoop {
+    private function createSubagentLoop(AgentDefinition $spec): AgentLoop {
         // Filter tools based on spec
-        $tools = $spec->filterTools($this->parentAgentLoop->tools());
+        $tools = $spec->filterTools($this->parentTools);
 
         // If spawn_subagent is in filtered tools, create nested version with incremented depth
         if ($tools->has('spawn_subagent')) {
             $nestedSpawnTool = new self(
-                parentAgentLoop: $this->parentAgentLoop,
+                parentTools: $this->parentTools,
+                parentDriver: $this->parentDriver,
                 provider: $this->provider,
                 skillLibrary: $this->skillLibrary,
                 parentLlmProvider: $this->parentLlmProvider,
@@ -145,9 +153,8 @@ class SpawnSubagentTool extends BaseTool
         $llmProvider = $spec->resolveLlmProvider($this->parentLlmProvider);
 
         // Get the parent's driver with the new LLM provider, preserving event emitter
-        $parentDriver = $this->parentAgentLoop->driver();
-        $subagentDriver = $parentDriver->withLLMProvider($llmProvider);
-        if (method_exists($subagentDriver, 'withEventEmitter')) {
+        $subagentDriver = $this->parentDriver->withLLMProvider($llmProvider);
+        if ($subagentDriver instanceof CanAcceptAgentEventEmitter) {
             $subagentDriver = $subagentDriver->withEventEmitter($this->eventEmitter);
         }
 
@@ -159,9 +166,9 @@ class SpawnSubagentTool extends BaseTool
             ->build();
     }
 
-    private function createInitialState(string $prompt, SubagentDefinition $spec, string $parentAgentId): AgentState {
+    private function createInitialState(string $prompt, AgentDefinition $spec, string $parentAgentId): AgentState {
         $messages = Messages::fromArray([
-            ['role' => 'system', 'content' => $spec->systemPrompt()],
+            ['role' => 'system', 'content' => $spec->systemPrompt],
         ]);
 
         $messages = $this->appendSkillMessages($messages, $spec);
@@ -195,12 +202,12 @@ class SpawnSubagentTool extends BaseTool
     }
 
     private function extractResponse(AgentState $state, string $name): string {
-        if ($state->status() === AgentStatus::Failed) {
-            $errorMsg = $state->currentStep()?->errorsAsString() ?? 'Unknown error';
+        if ($state->status() === ExecutionStatus::Failed) {
+            $errorMsg = $state->currentStepOrLast()?->errorsAsString() ?? 'Unknown error';
             return "[Subagent: {$name}] Failed: {$errorMsg}";
         }
 
-        $finalStep = $state->currentStep();
+        $finalStep = $state->currentStepOrLast();
         $response = $finalStep?->outputMessages()->toString() ?? '';
 
         if ($response === '') {
@@ -225,18 +232,18 @@ class SpawnSubagentTool extends BaseTool
         return rtrim($snippet) . "\n...";
     }
 
-    private function appendSkillMessages(Messages $messages, SubagentDefinition $spec): Messages {
+    private function appendSkillMessages(Messages $messages, AgentDefinition $spec): Messages {
         if (!$spec->hasSkills() || $this->skillLibrary === null) {
             return $messages;
         }
 
-        $skillNames = $spec->skills();
-        if ($skillNames === null) {
+        $skillNames = $spec->skills;
+        if ($skillNames === null || $skillNames->isEmpty()) {
             return $messages;
         }
 
         $executions = new ToolExecutions();
-        foreach ($skillNames as $skillName) {
+        foreach ($skillNames->all() as $skillName) {
             $skill = $this->skillLibrary->getSkill($skillName);
             if ($skill === null) {
                 continue;
@@ -271,10 +278,10 @@ class SpawnSubagentTool extends BaseTool
         foreach ($this->provider->all() as $spec) {
             $toolsDescription = 'all parent tools';
             if (!$spec->inheritsAllTools()) {
-                $toolsDescription = implode(', ', $spec->tools() ?? []);
+                $toolsDescription = implode(', ', $spec->tools?->all() ?? []);
             }
 
-            $descriptions[] = "- {$spec->name()}: {$spec->description()} (tools: {$toolsDescription})";
+            $descriptions[] = "- {$spec->name}: {$spec->description} (tools: {$toolsDescription})";
         }
 
         $descriptionText = $this->description;
@@ -308,7 +315,7 @@ class SpawnSubagentTool extends BaseTool
 
     // HELPERS //////////////////////////////////////////////////////
 
-    private function buildDescription(SubagentProvider $provider): string {
+    private function buildDescription(AgentDefinitionProvider $provider): string {
         $count = $provider->count();
 
         if ($count === 0) {

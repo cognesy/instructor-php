@@ -32,7 +32,7 @@ describe('StructuredOutput Capability', function () {
             $next = $state;
             break;
         }
-        $executions = $next->currentStep()?->toolExecutions()->all() ?? [];
+        $executions = $next->lastStepToolExecutions()->all();
 
         expect($executions)->toHaveCount(1);
         $result = $executions[0]->value();
@@ -40,4 +40,4 @@ describe('StructuredOutput Capability', function () {
         expect($result->success)->toBeFalse();
         expect($result->error)->toBe('Input cannot be empty');
     });
-})->skip('hooks not integrated yet');
+});

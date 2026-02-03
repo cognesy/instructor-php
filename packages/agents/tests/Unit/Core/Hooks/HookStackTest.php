@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
-use Cognesy\Agents\Hooks\HookStack;
-use Cognesy\Agents\Hooks\HookTrigger;
-use Cognesy\Agents\Hooks\HookTriggers;
-use Cognesy\Agents\Hooks\RegisteredHooks;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hooks\Enums\HookTrigger;
+use Cognesy\Agents\Hooks\Interceptors\HookStack;
 
 it('accumulates hooks when chaining withHook()', function () {
     $stack = new HookStack(new RegisteredHooks());
@@ -90,4 +90,31 @@ it('orders hooks by descending priority', function () {
     ));
 
     expect($calls)->toBe(['high', 'low']);
+});
+
+it('invokes onStop hooks when stop context is intercepted', function () {
+    $stack = new HookStack(new RegisteredHooks());
+
+    $calls = [];
+
+    $hook = new class($calls) implements HookInterface {
+        private array $callsRef;
+
+        public function __construct(array &$callsRef) {
+            $this->callsRef = &$callsRef;
+        }
+
+        public function handle(HookContext $context): HookContext {
+            $this->callsRef[] = $context->triggerType()->value;
+            return $context;
+        }
+    };
+
+    $stack = $stack->with($hook, HookTriggers::onStop());
+
+    $stack->intercept(HookContext::onStop(
+        state: AgentState::empty(),
+    ));
+
+    expect($calls)->toBe(['on_stop']);
 });

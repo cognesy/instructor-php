@@ -3,23 +3,17 @@
 namespace Cognesy\Agents\Drivers\Testing;
 
 use Cognesy\Agents\Core\Collections\ErrorList;
-use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Enums\AgentStepType;
-use Cognesy\Agents\Events\AgentEventEmitter;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
-use Cognesy\Agents\Hooks\CanInterceptAgentLifecycle;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\PassThroughInterceptor;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use DateTimeImmutable;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 final class FakeAgentDriver implements CanUseTools
 {
@@ -29,9 +23,12 @@ final class FakeAgentDriver implements CanUseTools
     private string $defaultResponse;
     private Usage $defaultUsage;
     private AgentStepType $defaultStepType;
+    /** @var list<ScenarioStep>|null */
+    private ?array $childSteps;
 
     /**
      * @param list<ScenarioStep> $steps
+     * @param list<ScenarioStep>|null $childSteps Steps for spawned subagent drivers
      */
     public function __construct(
         array $steps = [],
@@ -39,12 +36,14 @@ final class FakeAgentDriver implements CanUseTools
         ?Usage $defaultUsage = null,
         ?AgentStepType $defaultStepType = null,
         int $startIndex = 0,
+        ?array $childSteps = null,
     ) {
         $this->steps = $steps;
         $this->index = $startIndex;
         $this->defaultResponse = $defaultResponse;
         $this->defaultUsage = $defaultUsage ?? new Usage(0, 0);
         $this->defaultStepType = $defaultStepType ?? AgentStepType::FinalResponse;
+        $this->childSteps = $childSteps;
     }
 
     public static function fromSteps(ScenarioStep ...$steps): self {
@@ -67,6 +66,32 @@ final class FakeAgentDriver implements CanUseTools
         return new self(
             steps: array_values($steps),
             defaultResponse: $this->defaultResponse,
+            defaultUsage: $this->defaultUsage,
+            defaultStepType: $this->defaultStepType,
+            startIndex: 0,
+            childSteps: $this->childSteps,
+        );
+    }
+
+    /**
+     * @param list<ScenarioStep> $steps Scenario steps for spawned subagent drivers
+     */
+    public function withChildSteps(array $steps): self {
+        return new self(
+            steps: $this->steps,
+            defaultResponse: $this->defaultResponse,
+            defaultUsage: $this->defaultUsage,
+            defaultStepType: $this->defaultStepType,
+            startIndex: $this->index,
+            childSteps: $steps,
+        );
+    }
+
+    public function withLLMProvider(LLMProvider $provider): self {
+        $childSteps = $this->childSteps ?? [ScenarioStep::final('ok')];
+        return new self(
+            steps: $childSteps,
+            defaultResponse: $childSteps[array_key_last($childSteps)]->response ?? 'ok',
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,
             startIndex: 0,

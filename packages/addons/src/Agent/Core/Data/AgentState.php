@@ -98,10 +98,9 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?AgentStatus           $status = null,
-        ?AgentSteps            $steps = null,
+        ?AgentStatus            $status = null,
+        ?AgentSteps             $steps = null,
         ?AgentStep              $currentStep = null,
-
         ?Metadata               $variables = null,
         ?Usage                  $usage = null,
         ?MessageStore           $store = null,
@@ -118,7 +117,6 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             steps: $steps ?? $this->steps,
             currentStep: $currentStep ?? $this->currentStep,
             variables: $variables ?? $this->metadata,
-            cache: $cache ?? $this->cache,
             usage: $usage ?? $this->usage,
             store: $store ?? $this->store,
             stateInfo: $stateInfo ?? $this->stateInfo->touch(),
@@ -126,6 +124,7 @@ final readonly class AgentState implements HasSteps, HasMessageStore, HasMetadat
             parentAgentId: $parentAgentId ?? $this->parentAgentId,
             currentStepStartedAt: $currentStepStartedAt ?? $this->currentStepStartedAt,
             executionStartedAt: $executionStartedAt ?? $this->executionStartedAt,
+            cache: $cache ?? $this->cache,
             stepResults: $stepResults ?? $this->stepResults,
         );
     }

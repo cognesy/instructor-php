@@ -28,9 +28,9 @@ describe('File Capability', function () {
             break;
         }
 
-        $executions = $next->currentStep()?->toolExecutions()->all() ?? [];
+        $executions = $next->lastStepToolExecutions()->all();
         expect($executions)->toHaveCount(1);
         expect($executions[0]->name())->toBe('edit_file');
         expect($executions[0]->value())->toBe('Error: old_string cannot be empty');
     });
-})->skip('hooks not integrated yet');
+});

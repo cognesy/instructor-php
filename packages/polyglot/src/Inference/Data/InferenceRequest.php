@@ -66,7 +66,7 @@ class InferenceRequest
         $this->toolChoice = $toolChoice ?? [];
         $this->responseFormat = match(true) {
             $responseFormat instanceof ResponseFormat => $responseFormat,
-            is_array($responseFormat) => ResponseFormat::fromData($responseFormat),
+            is_array($responseFormat) => ResponseFormat::fromArray($responseFormat),
             default => new ResponseFormat(),
         };
 
@@ -240,7 +240,7 @@ class InferenceRequest
             model: $model ?? $this->model,
             tools: $tools ?? $this->tools,
             toolChoice: $toolChoice ?? $this->toolChoice,
-            responseFormat: $responseFormat instanceof ResponseFormat ? $responseFormat : ($responseFormat !== null ? ResponseFormat::fromData($responseFormat) : $this->responseFormat),
+            responseFormat: $responseFormat instanceof ResponseFormat ? $responseFormat : ($responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat),
             options: $options ?? $this->options,
             mode: $mode ?? $this->mode,
             cachedContext: $cachedContext ?? $this->cachedContext,

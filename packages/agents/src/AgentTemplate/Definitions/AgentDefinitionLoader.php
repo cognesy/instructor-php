@@ -2,116 +2,76 @@
 
 namespace Cognesy\Agents\AgentTemplate\Definitions;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use InvalidArgumentException;
+use RuntimeException;
+use Symfony\Component\Yaml\Yaml;
 
 final class AgentDefinitionLoader
 {
-    private AgentDefinitionParser $parser;
-
-    public function __construct(?AgentDefinitionParser $parser = null)
+    public function loadFile(string $path): AgentDefinition
     {
-        $this->parser = $parser ?? new AgentDefinitionParser();
-    }
-
-    public function loadFromFile(string $path): AgentDefinitionLoadResult
-    {
-        return $this->loadFile($path);
-    }
-
-    public function loadFromDirectory(string $path, bool $recursive = false): AgentDefinitionLoadResult
-    {
-        if (!is_dir($path)) {
-            return new AgentDefinitionLoadResult();
+        $content = @file_get_contents($path);
+        if ($content === false) {
+            throw new RuntimeException("Failed to read agent definition file: {$path}");
         }
 
-        $definitions = [];
-        $errors = [];
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
-        foreach ($this->listYamlFiles($path, $recursive) as $file) {
-            $result = $this->loadFile($file);
+        $data = match ($extension) {
+            'yaml', 'yml' => $this->parseYaml($content),
+            'md' => $this->parseMarkdown($content),
+            default => throw new InvalidArgumentException(
+                "Unsupported file extension '.{$extension}' for agent definition: {$path}"
+            ),
+        };
 
-            foreach ($result->definitions as $id => $definition) {
-                $definitions[$id] = $definition;
-            }
-
-            $errors = array_merge($errors, $result->errors);
-        }
-
-        return new AgentDefinitionLoadResult($definitions, $errors);
+        return AgentDefinition::fromArray($data);
     }
 
-    /**
-     * @param array<int, string> $paths
-     */
-    public function loadFromPaths(array $paths, bool $recursive = false): AgentDefinitionLoadResult
-    {
-        $definitions = [];
-        $errors = [];
-
-        foreach ($paths as $path) {
-            $result = is_dir($path)
-                ? $this->loadFromDirectory($path, $recursive)
-                : $this->loadFromFile($path);
-
-            foreach ($result->definitions as $id => $definition) {
-                $definitions[$id] = $definition;
-            }
-
-            $errors = array_merge($errors, $result->errors);
-        }
-
-        return new AgentDefinitionLoadResult($definitions, $errors);
-    }
-
-    private function loadFile(string $path): AgentDefinitionLoadResult
+    /** @return array<string, mixed> */
+    private function parseYaml(string $content): array
     {
         try {
-            $definition = $this->parser->parseYamlFile($path);
+            $parsed = Yaml::parse(
+                trim($content),
+                Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE
+            );
         } catch (\Throwable $e) {
-            return new AgentDefinitionLoadResult(
-                definitions: [],
-                errors: [$path => $e->getMessage()],
+            throw new InvalidArgumentException(
+                "Invalid YAML: {$e->getMessage()}",
+                previous: $e
             );
         }
 
-        return new AgentDefinitionLoadResult(
-            definitions: [$definition->id => $definition],
-            errors: [],
-        );
+        if (!is_array($parsed)) {
+            throw new InvalidArgumentException("Invalid YAML: agent definition must be a map");
+        }
+
+        return $parsed;
     }
 
-    /**
-     * @return array<int, string>
-     */
-    private function listYamlFiles(string $path, bool $recursive): array
+    /** @return array<string, mixed> */
+    private function parseMarkdown(string $content): array
     {
-        $files = [];
+        $content = str_replace("\r\n", "\n", $content);
 
-        if ($recursive) {
-            $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($path)
+        if (!preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
+            throw new InvalidArgumentException(
+                "Invalid markdown format: missing YAML frontmatter (expected ---\\n...\\n---)"
             );
-
-            /** @var \SplFileInfo $file */
-            foreach ($iterator as $file) {
-                if (!$file->isFile()) {
-                    continue;
-                }
-                $extension = strtolower($file->getExtension());
-                if ($extension === 'yml' || $extension === 'yaml') {
-                    $files[] = $file->getPathname();
-                }
-            }
-        } else {
-            $matches = glob($path . '/*.{yml,yaml}', GLOB_BRACE);
-            if ($matches !== false) {
-                $files = $matches;
-            }
         }
 
-        sort($files);
+        $data = $this->parseYaml($matches[1]);
+        $systemPrompt = trim($matches[2]);
 
-        return $files;
+        if ($systemPrompt === '') {
+            throw new InvalidArgumentException(
+                "Invalid markdown format: system prompt (content after frontmatter) cannot be empty"
+            );
+        }
+
+        $data['system_prompt'] = $systemPrompt;
+
+        return $data;
     }
 }

@@ -4,7 +4,8 @@ namespace Cognesy\Agents\Events;
 
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
-use Cognesy\Agents\Core\Enums\AgentStatus;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
+use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -54,13 +55,9 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     #[\Override]
     public function stepCompleted(AgentState $state): void {
         $usage = $state->currentStep()?->usage() ?? new Usage(0, 0);
-        $lastStepExecution = $state->lastStepExecution();
         $errors = $state->currentStep()?->errors();
         $errorCount = $errors?->count() ?? 0;
-        $startedAt = match (true) {
-            $lastStepExecution !== null => $lastStepExecution->startedAt(),
-            default => new DateTimeImmutable(),
-        };
+        $durationMs = ($state->currentStepDuration() ?? 0.0) * 1000;
 
         $this->events->dispatch(new AgentStepCompleted(
             agentId: $state->agentId(),
@@ -71,7 +68,8 @@ final class AgentEventEmitter implements CanEmitAgentEvents
             errorMessages: $state->currentStep()?->errorsAsString() ?? '',
             usage: $usage,
             finishReason: $state->currentStep()?->finishReason(),
-            startedAt: $startedAt,
+            startedAt: new DateTimeImmutable(),
+            durationMs: $durationMs,
         ));
 
         // Report token usage
@@ -108,6 +106,19 @@ final class AgentEventEmitter implements CanEmitAgentEvents
             parentAgentId: $state->parentAgentId(),
             stepNumber: $state->stepCount(),
             continuation: $state->executionContinuation(),
+        ));
+    }
+
+    #[\Override]
+    public function executionStopped(AgentState $state): void {
+        $signal = $state->executionContinuation()?->stopSignals()->first();
+        $this->events->dispatch(new AgentExecutionStopped(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stopReason: $signal?->reason ?? StopReason::Unknown,
+            stopMessage: $signal?->message ?? '',
+            source: $signal?->source,
+            totalSteps: $state->stepCount(),
         ));
     }
 
@@ -211,7 +222,7 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     }
 
     #[\Override]
-    public function subagentCompleted(string $parentAgentId, string $subagentId, string $subagentName, AgentStatus $status, int $steps, ?Usage $usage, DateTimeImmutable $startedAt): void
+    public function subagentCompleted(string $parentAgentId, string $subagentId, string $subagentName, ExecutionStatus $status, int $steps, ?Usage $usage, DateTimeImmutable $startedAt): void
     {
         $this->events->dispatch(new SubagentCompleted(
             parentAgentId: $parentAgentId,

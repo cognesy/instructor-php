@@ -2,8 +2,10 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
+use Cognesy\Agents\Core\Stop\ExecutionContinuation;
 use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Core\Stop\StopSignals;
 use Cognesy\Agents\Events\ContinuationEvaluated;
 
 it('renders continuation evaluated event summary', function () {
@@ -12,11 +14,14 @@ it('renders continuation evaluated event summary', function () {
         message: 'Steps limit reached',
         source: 'Guard',
     );
+    $continuation = new ExecutionContinuation(
+        stopSignals: new StopSignals($signal),
+    );
     $event = new ContinuationEvaluated(
         agentId: 'agent-12345678',
         parentAgentId: null,
         stepNumber: 2,
-        stopSignal: $signal,
+        continuation: $continuation,
     );
 
     expect((string) $event)->toContain('STOP');
@@ -29,12 +34,15 @@ it('uses stop signal metadata when provided', function () {
         message: 'Token limit reached',
         source: 'CustomSource',
     );
+    $continuation = new ExecutionContinuation(
+        stopSignals: new StopSignals($signal),
+    );
 
     $event = new ContinuationEvaluated(
         agentId: 'agent-12345678',
         parentAgentId: null,
         stepNumber: 1,
-        stopSignal: $signal,
+        continuation: $continuation,
     );
 
     expect($event->stopReason())->toBe(StopReason::TokenLimitReached)

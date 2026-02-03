@@ -18,7 +18,7 @@ After extracting step recording to `CoreLifecycleObserver`:
 
 namespace Cognesy\Agents\Core;
 
-use Cognesy\Agents\Core\Collections\Tools;use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;use Cognesy\Agents\Core\Contracts\CanUseTools;use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Core\Data\CurrentExecution;use Cognesy\Agents\Core\Enums\AgentStatus;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;use DateTimeImmutable;use Throwable;
+use Cognesy\Agents\Core\Collections\Tools;use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;use Cognesy\Agents\Core\Contracts\CanUseTools;use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Core\Data\CurrentExecution;use Cognesy\Agents\Core\Enums\ExecutionStatus;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;use DateTimeImmutable;use Throwable;
 
 /**
  * Minimal orchestration loop for agent execution.
@@ -91,7 +91,7 @@ class AgentLoop implements CanControlAgentLoop
 
     private function shouldStop(AgentState $state): bool
     {
-        if ($state->status() === AgentStatus::Failed) {
+        if ($state->status() === ExecutionStatus::Failed) {
             return true;
         }
 
