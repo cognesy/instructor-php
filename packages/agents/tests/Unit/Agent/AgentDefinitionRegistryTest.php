@@ -22,8 +22,9 @@ describe('AgentDefinitionRegistry', function () {
             }
             $yaml = <<<YAML
 name: {$name}
+label: {$name} label
 description: {$name} description
-system_prompt: {$name} prompt
+systemPrompt: {$name} prompt
 YAML;
 
             $path = $dir . '/' . $filename;
@@ -97,7 +98,7 @@ YAML;
         expect($registry->has('shared-agent'))->toBeTrue();
     });
 
-    it('records errors without discarding valid definitions', function () {
+    it('loads definitions even when fields are missing', function () {
         ($this->writeYamlDefinition)($this->tempDir, 'valid.yaml', 'valid-agent');
         $invalidPath = $this->tempDir . '/invalid.yaml';
         file_put_contents($invalidPath, "not_a_valid: yaml\nmissing: required_fields\n");
@@ -105,10 +106,10 @@ YAML;
         $registry = new AgentDefinitionRegistry();
         $registry->loadFromDirectory($this->tempDir);
 
-        expect($registry->count())->toBe(1);
+        expect($registry->count())->toBe(2);
         expect($registry->has('valid-agent'))->toBeTrue();
-        expect($registry->errors())->toHaveCount(1);
-        expect(array_key_exists($invalidPath, $registry->errors()))->toBeTrue();
+        expect($registry->has(''))->toBeTrue();
+        expect($registry->errors())->toBeEmpty();
     });
 
     it('auto-discovers definitions with correct precedence', function () {

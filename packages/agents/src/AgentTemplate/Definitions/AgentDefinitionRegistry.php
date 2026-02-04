@@ -7,6 +7,7 @@ use Cognesy\Agents\Exceptions\AgentNotFoundException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
+/** Stores agent definitions (data) keyed by name. Loads from .md/.yaml/.yml files. */
 final class AgentDefinitionRegistry implements AgentDefinitionProvider
 {
     /** @var array<string, AgentDefinition> */
@@ -22,13 +23,11 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
 
     // REGISTRATION /////////////////////////////////////////////////
 
-    public function register(AgentDefinition $definition): void
-    {
+    public function register(AgentDefinition $definition): void {
         $this->definitions[$definition->name] = $definition;
     }
 
-    public function registerMany(AgentDefinition ...$definitions): void
-    {
+    public function registerMany(AgentDefinition ...$definitions): void {
         foreach ($definitions as $definition) {
             $this->register($definition);
         }
@@ -37,8 +36,7 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
     // AGENT DEFINITION PROVIDER ////////////////////////////////////
 
     #[\Override]
-    public function get(string $name): AgentDefinition
-    {
+    public function get(string $name): AgentDefinition {
         if (!$this->has($name)) {
             $available = implode(', ', $this->names());
             throw new AgentNotFoundException(
@@ -49,35 +47,30 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
         return $this->definitions[$name];
     }
 
-    public function has(string $name): bool
-    {
+    public function has(string $name): bool {
         return isset($this->definitions[$name]);
     }
 
     /** @return array<string, AgentDefinition> */
     #[\Override]
-    public function all(): array
-    {
+    public function all(): array {
         return $this->definitions;
     }
 
     /** @return array<int, string> */
     #[\Override]
-    public function names(): array
-    {
+    public function names(): array {
         return array_values(array_keys($this->definitions));
     }
 
     #[\Override]
-    public function count(): int
-    {
+    public function count(): int {
         return count($this->definitions);
     }
 
     // FILE LOADING /////////////////////////////////////////////////
 
-    public function loadFromFile(string $path): void
-    {
+    public function loadFromFile(string $path): void {
         try {
             $definition = $this->loader->loadFile($path);
             $this->register($definition);
@@ -86,8 +79,7 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
         }
     }
 
-    public function loadFromDirectory(string $path, bool $recursive = false): void
-    {
+    public function loadFromDirectory(string $path, bool $recursive = false): void {
         if (!is_dir($path)) {
             return;
         }
@@ -119,16 +111,14 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
     }
 
     /** @return array<string, string> */
-    public function errors(): array
-    {
+    public function errors(): array {
         return $this->errors;
     }
 
     // PRIVATE //////////////////////////////////////////////////////
 
     /** @return list<string> */
-    private function listAgentFiles(string $path, bool $recursive): array
-    {
+    private function listAgentFiles(string $path, bool $recursive): array {
         $files = [];
         $extensions = ['md', 'yaml', 'yml'];
 

@@ -246,7 +246,7 @@ $spec = new SubagentSpec(
 
 // Inherit from parent
 $spec = new SubagentSpec(
-    model: 'inherit',  // Use same as parent agent
+    llmConfig: '',  // Use same as parent agent
 );
 
 // Use default

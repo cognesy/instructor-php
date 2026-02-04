@@ -18,15 +18,15 @@ final class AgentTemplateException extends RuntimeException
         return new self("Blueprint '{$name}' is invalid: {$reason}");
     }
 
-    public static function blueprintMissing(string $definitionId): self
+    public static function blueprintMissing(string $definitionName): self
     {
-        return new self("Agent definition '{$definitionId}' must specify 'blueprint' or 'blueprint_class'.");
+        return new self("Agent definition '{$definitionName}' must specify 'blueprint' or 'blueprint_class'.");
     }
 
-    public static function blueprintCreationFailed(string $class, string $id, ?Throwable $previous = null): self
+    public static function blueprintCreationFailed(string $class, string $definitionName, ?Throwable $previous = null): self
     {
         return new self(
-            "Failed to create agent from blueprint '{$class}' for definition '{$id}'.",
+            "Failed to create agent from blueprint '{$class}' for definition '{$definitionName}'.",
             previous: $previous,
         );
     }

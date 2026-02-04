@@ -5,6 +5,7 @@ namespace Cognesy\Agents\AgentTemplate\Registry;
 use Cognesy\Agents\AgentTemplate\Contracts\AgentBlueprint;
 use Cognesy\Agents\AgentTemplate\Exceptions\AgentTemplateException;
 
+/** Maps blueprint aliases to PHP classes that can construct agents from definitions. */
 final class AgentBlueprintRegistry
 {
     /** @var array<string, class-string<AgentBlueprint>> */

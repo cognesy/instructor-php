@@ -9,7 +9,7 @@ function writeAgentSpec(string $dir, string $filename, string $name): string {
     if (!is_dir($dir)) {
         mkdir($dir, 0755, true);
     }
-    $content = "---\nname: {$name}\ndescription: {$name} description\n---\nYou are {$name}.\n";
+    $content = "---\nname: {$name}\nlabel: {$name} label\ndescription: {$name} description\n---\nYou are {$name}.\n";
     $path = $dir . '/' . $filename;
     file_put_contents($path, $content);
     return $path;
@@ -94,7 +94,7 @@ describe('AgentDefinitionRegistry::loadFromDirectory', function () {
     // YAML FILES ///////////////////////////////////////////////////
 
     it('loads yaml agent definitions', function () {
-        $yaml = "name: yaml-agent\ndescription: YAML agent\nsystem_prompt: You are a YAML agent.\n";
+        $yaml = "name: yaml-agent\nlabel: YAML Agent\ndescription: YAML agent\nsystemPrompt: You are a YAML agent.\n";
         $path = $this->tempDir . '/agent.yaml';
         file_put_contents($path, $yaml);
 
@@ -106,7 +106,7 @@ describe('AgentDefinitionRegistry::loadFromDirectory', function () {
     });
 
     it('loads yml agent definitions', function () {
-        $yaml = "name: yml-agent\ndescription: YML agent\nsystem_prompt: You are a YML agent.\n";
+        $yaml = "name: yml-agent\nlabel: YML Agent\ndescription: YML agent\nsystemPrompt: You are a YML agent.\n";
         $path = $this->tempDir . '/agent.yml';
         file_put_contents($path, $yaml);
 

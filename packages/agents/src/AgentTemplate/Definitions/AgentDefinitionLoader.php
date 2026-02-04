@@ -8,8 +8,7 @@ use Symfony\Component\Yaml\Yaml;
 
 final class AgentDefinitionLoader
 {
-    public function loadFile(string $path): AgentDefinition
-    {
+    public function loadFile(string $path): AgentDefinition {
         $content = @file_get_contents($path);
         if ($content === false) {
             throw new RuntimeException("Failed to read agent definition file: {$path}");
@@ -29,8 +28,7 @@ final class AgentDefinitionLoader
     }
 
     /** @return array<string, mixed> */
-    private function parseYaml(string $content): array
-    {
+    private function parseYaml(string $content): array {
         try {
             $parsed = Yaml::parse(
                 trim($content),
@@ -51,8 +49,7 @@ final class AgentDefinitionLoader
     }
 
     /** @return array<string, mixed> */
-    private function parseMarkdown(string $content): array
-    {
+    private function parseMarkdown(string $content): array {
         $content = str_replace("\r\n", "\n", $content);
 
         if (!preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
@@ -70,7 +67,7 @@ final class AgentDefinitionLoader
             );
         }
 
-        $data['system_prompt'] = $systemPrompt;
+        $data['systemPrompt'] = $systemPrompt;
 
         return $data;
     }

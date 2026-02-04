@@ -69,7 +69,7 @@ describe('Subagent Capability', function () {
             name: 'reviewer',
             description: 'Reviews code',
             systemPrompt: 'You are a reviewer',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 
@@ -104,7 +104,7 @@ describe('Subagent Capability', function () {
             name: 'reviewer',
             description: 'Reviews code',
             systemPrompt: 'You are a reviewer agent with special instructions',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 
@@ -152,7 +152,7 @@ describe('Subagent Capability', function () {
             name: 'analyzer',
             description: 'Analyzes data',
             systemPrompt: 'You analyze data',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 
@@ -185,7 +185,7 @@ describe('Subagent Capability', function () {
             name: 'silent',
             description: 'A quiet agent',
             systemPrompt: 'Say nothing',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 
@@ -218,7 +218,7 @@ describe('Subagent Capability', function () {
             name: 'verbose',
             description: 'A verbose agent',
             systemPrompt: 'Be verbose',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 
@@ -262,7 +262,7 @@ describe('Subagent Capability', function () {
             name: 'worker',
             description: 'A worker agent',
             systemPrompt: 'You work',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 
@@ -298,7 +298,7 @@ describe('Subagent Capability', function () {
             name: 'emitter',
             description: 'An agent that emits events',
             systemPrompt: 'You emit events',
-            model: 'inherit',
+            llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
 

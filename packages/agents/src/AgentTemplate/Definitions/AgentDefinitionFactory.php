@@ -15,8 +15,7 @@ final class AgentDefinitionFactory
         private readonly ?string $defaultBlueprint = null,
     ) {}
 
-    public function create(AgentDefinition $definition): AgentInterface
-    {
+    public function create(AgentDefinition $definition): AgentInterface {
         $class = $this->resolveBlueprintClass($definition);
 
         try {
@@ -26,7 +25,7 @@ final class AgentDefinitionFactory
         } catch (Throwable $e) {
             throw AgentTemplateException::blueprintCreationFailed(
                 $class,
-                $definition->id(),
+                $definition->name,
                 $e,
             );
         }
@@ -35,8 +34,7 @@ final class AgentDefinitionFactory
     /**
      * @return class-string<AgentBlueprint>
      */
-    private function resolveBlueprintClass(AgentDefinition $definition): string
-    {
+    private function resolveBlueprintClass(AgentDefinition $definition): string {
         if ($definition->blueprintClass !== null) {
             if (!class_exists($definition->blueprintClass)) {
                 throw AgentTemplateException::blueprintNotFound($definition->blueprintClass);
@@ -59,6 +57,6 @@ final class AgentDefinitionFactory
             return $this->blueprints->get($this->defaultBlueprint);
         }
 
-        throw AgentTemplateException::blueprintMissing($definition->id());
+        throw AgentTemplateException::blueprintMissing($definition->name);
     }
 }

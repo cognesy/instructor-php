@@ -37,7 +37,7 @@ final class TestBlueprint implements AgentBlueprint
 {
     public static function fromDefinition(AgentDefinition $definition): \Cognesy\Agents\AgentBuilder\Contracts\AgentInterface
     {
-        return new RegistryAgentDefinition($definition->id());
+        return new RegistryAgentDefinition($definition->name);
     }
 }
 

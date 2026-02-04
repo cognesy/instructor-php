@@ -5,7 +5,6 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLoader;
 use Cognesy\Agents\Tests\Support\TestHelpers;
-use InvalidArgumentException;
 use RuntimeException;
 
 describe('AgentDefinitionLoader', function () {
@@ -22,7 +21,8 @@ describe('AgentDefinitionLoader', function () {
         $yaml = <<<'YAML'
 name: agent-a
 description: Agent A description
-system_prompt: Agent A prompt
+systemPrompt: Agent A prompt
+label: Agent A
 YAML;
         $path = $this->tempDir . '/agent.yaml';
         file_put_contents($path, $yaml);
@@ -38,7 +38,7 @@ YAML;
         $yaml = <<<'YAML'
 name: agent-b
 description: Agent B description
-system_prompt: Agent B prompt
+systemPrompt: Agent B prompt
 YAML;
         $path = $this->tempDir . '/agent.yml';
         file_put_contents($path, $yaml);
@@ -49,13 +49,14 @@ YAML;
     });
 
     it('loads a markdown file with YAML frontmatter', function () {
-        $md = "---\nname: md-agent\ndescription: Markdown agent\n---\nYou are a markdown agent.\n";
+        $md = "---\nname: md-agent\nlabel: Markdown Agent\ndescription: Markdown agent\n---\nYou are a markdown agent.\n";
         $path = $this->tempDir . '/agent.md';
         file_put_contents($path, $md);
 
         $definition = (new AgentDefinitionLoader())->loadFile($path);
 
         expect($definition->name)->toBe('md-agent');
+        expect($definition->label())->toBe('Markdown Agent');
         expect($definition->systemPrompt)->toBe('You are a markdown agent.');
     });
 
@@ -65,7 +66,7 @@ YAML;
 
         $load = fn() => (new AgentDefinitionLoader())->loadFile($path);
 
-        expect($load)->toThrow(InvalidArgumentException::class);
+        expect($load)->toThrow(\InvalidArgumentException::class);
     });
 
     it('throws for missing file', function () {
@@ -74,13 +75,15 @@ YAML;
         expect($load)->toThrow(RuntimeException::class);
     });
 
-    it('throws for invalid YAML content', function () {
+    it('accepts YAML with missing fields', function () {
         $path = $this->tempDir . '/bad.yaml';
         file_put_contents($path, "missing: required_fields\n");
 
-        $load = fn() => (new AgentDefinitionLoader())->loadFile($path);
+        $definition = (new AgentDefinitionLoader())->loadFile($path);
 
-        expect($load)->toThrow(InvalidArgumentException::class);
+        expect($definition->name)->toBe('');
+        expect($definition->description)->toBe('');
+        expect($definition->systemPrompt)->toBe('');
     });
 
     it('throws for markdown without frontmatter', function () {
@@ -89,17 +92,18 @@ YAML;
 
         $load = fn() => (new AgentDefinitionLoader())->loadFile($path);
 
-        expect($load)->toThrow(InvalidArgumentException::class);
+        expect($load)->toThrow(\InvalidArgumentException::class);
     });
 
     it('handles Windows line endings in markdown', function () {
-        $content = "---\r\nname: win-agent\r\ndescription: Win agent\r\n---\r\nWindows prompt.\r\n";
+        $content = "---\r\nname: win-agent\r\nlabel: Windows Agent\r\ndescription: Win agent\r\n---\r\nWindows prompt.\r\n";
         $path = $this->tempDir . '/win.md';
         file_put_contents($path, $content);
 
         $definition = (new AgentDefinitionLoader())->loadFile($path);
 
         expect($definition->name)->toBe('win-agent');
+        expect($definition->label())->toBe('Windows Agent');
         expect($definition->systemPrompt)->toBe('Windows prompt.');
     });
 });

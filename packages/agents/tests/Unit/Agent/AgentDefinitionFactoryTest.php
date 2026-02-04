@@ -39,7 +39,7 @@ final class FactoryBlueprint implements AgentBlueprint
 {
     public static function fromDefinition(AgentDefinition $definition): AgentInterface
     {
-        return new BlueprintAgentDefinition('blueprint:' . $definition->id());
+        return new BlueprintAgentDefinition('blueprint:' . $definition->name);
     }
 }
 
@@ -47,7 +47,7 @@ final class AlternateFactoryBlueprint implements AgentBlueprint
 {
     public static function fromDefinition(AgentDefinition $definition): AgentInterface
     {
-        return new BlueprintAgentDefinition('alt:' . $definition->id());
+        return new BlueprintAgentDefinition('alt:' . $definition->name);
     }
 }
 
@@ -59,11 +59,10 @@ describe('AgentDefinitionFactory', function () {
 
         $factory = new AgentDefinitionFactory($registry);
         $definition = new AgentDefinition(
-            name: 'Agent A',
+            name: 'agent-a',
             description: 'Agent A description',
             systemPrompt: 'Agent A prompt',
             blueprint: 'basic',
-            id: 'agent-a',
         );
 
         $result = $factory->create($definition);
@@ -76,11 +75,10 @@ describe('AgentDefinitionFactory', function () {
         $registry = new AgentBlueprintRegistry();
         $factory = new AgentDefinitionFactory($registry);
         $definition = new AgentDefinition(
-            name: 'Agent B',
+            name: 'agent-b',
             description: 'Agent B description',
             systemPrompt: 'Agent B prompt',
             blueprintClass: AlternateFactoryBlueprint::class,
-            id: 'agent-b',
         );
 
         $result = $factory->create($definition);
@@ -93,11 +91,10 @@ describe('AgentDefinitionFactory', function () {
         $registry = new AgentBlueprintRegistry();
         $factory = new AgentDefinitionFactory($registry);
         $definition = new AgentDefinition(
-            name: 'Agent C',
+            name: 'agent-c',
             description: 'Agent C description',
             systemPrompt: 'Agent C prompt',
             blueprint: 'missing',
-            id: 'agent-c',
         );
 
         $create = fn() => $factory->create($definition);
@@ -109,11 +106,10 @@ describe('AgentDefinitionFactory', function () {
         $registry = new AgentBlueprintRegistry();
         $factory = new AgentDefinitionFactory($registry);
         $definition = new AgentDefinition(
-            name: 'Agent D',
+            name: 'agent-d',
             description: 'Agent D description',
             systemPrompt: 'Agent D prompt',
             blueprintClass: \stdClass::class,
-            id: 'agent-d',
         );
 
         $create = fn() => $factory->create($definition);

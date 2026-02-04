@@ -8,14 +8,13 @@ use InvalidArgumentException;
 describe('AgentDefinitionParser', function () {
     it('parses a full agent definition', function () {
         $yaml = <<<'YAML'
-version: 1
 id: partner-assistant
 name: Partner Assistant
 description: Partner management helper
 blueprint: basic
 system_prompt: |
   You are a Partner Management Assistant.
-llm:
+llmConfig:
   preset: anthropic
   model: claude-haiku-4-5-20251001
   temperature: 0.5
@@ -62,7 +61,6 @@ YAML;
 
     it('parses a minimal agent definition', function () {
         $yaml = <<<'YAML'
-version: 1
 id: minimal-agent
 name: Minimal Agent
 description: Minimal
@@ -83,7 +81,6 @@ YAML;
 
     it('rejects missing required fields', function () {
         $yaml = <<<'YAML'
-version: 1
 name: Missing ID
 description: Missing ID
 system_prompt: Something
@@ -98,7 +95,6 @@ YAML;
 
     it('rejects unknown root keys', function () {
         $yaml = <<<'YAML'
-version: 1
 id: extra
 name: Extra
 description: Extra
@@ -115,7 +111,6 @@ YAML;
 
     it('rejects conflicting blueprint fields', function () {
         $yaml = <<<'YAML'
-version: 1
 id: conflict
 name: Conflict
 description: Conflict

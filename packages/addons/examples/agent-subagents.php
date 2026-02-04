@@ -53,7 +53,7 @@ Provide findings in order of severity:
 4. **Low**: Suggestions, optimizations
 PROMPT,
     tools: ['read_file', 'search_files', 'list_dir'],
-    model: 'inherit',  // Use same model as parent
+    llmConfig: '',  // Use same model as parent
 ));
 
 // Register test generator subagent
