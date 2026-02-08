@@ -290,7 +290,7 @@ describe('Subagent Capability', function () {
         // Access via reflection to verify tool filtering
         $reflection = new \ReflectionClass($tool);
         $method = $reflection->getMethod('filterTools');
-        $method->setAccessible(true);
+
 
         $filteredTools = $method->invoke($tool, $spec, new Tools($tool1, $tool2));
 
@@ -321,7 +321,7 @@ describe('Subagent Capability', function () {
 
         $reflection = new \ReflectionClass($tool);
         $method = $reflection->getMethod('filterTools');
-        $method->setAccessible(true);
+
 
         $filteredTools = $method->invoke($tool, $spec, new Tools($tool1, $tool2));
 
@@ -355,7 +355,7 @@ describe('Subagent Capability', function () {
 
         $reflection = new \ReflectionClass($tool);
         $method = $reflection->getMethod('filterTools');
-        $method->setAccessible(true);
+
 
         $filteredTools = $method->invoke($tool, $spec, new Tools($tool1, $tool2, $tool3));
 
@@ -393,7 +393,7 @@ describe('Subagent Capability', function () {
 
         $reflection = new \ReflectionClass($tool);
         $method = $reflection->getMethod('computeEffectiveBudget');
-        $method->setAccessible(true);
+
 
         $effectiveBudget = $method->invoke($tool, $spec);
 
@@ -428,7 +428,7 @@ describe('Subagent Capability', function () {
 
         $reflection = new \ReflectionClass($tool);
         $method = $reflection->getMethod('computeEffectiveBudget');
-        $method->setAccessible(true);
+
 
         $effectiveBudget = $method->invoke($tool, $spec);
 
@@ -476,7 +476,7 @@ describe('Subagent Capability', function () {
 
         $reflection = new \ReflectionClass($level1Tool);
         $method = $reflection->getMethod('computeEffectiveBudget');
-        $method->setAccessible(true);
+
 
         $level1Budget = $method->invoke($level1Tool, $level1Spec);
 
