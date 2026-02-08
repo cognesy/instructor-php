@@ -138,9 +138,9 @@ dev-debug.log
 *.sw?
 # OS specific
 
-# Task files
+# Task Master files
+.taskmaster/tasks/
 tasks.json
-tasks/
 
 # Hub execution tracking
 .hub/
