@@ -4,7 +4,8 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Utils\Json\Json;
-use Cognesy\Utils\Json\EmptyObject;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 /**
  * Tool for listing all keys in agent metadata.
@@ -71,17 +72,10 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => new EmptyObject(),
-                    'required' => [],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+        )->toArray();
     }
 }

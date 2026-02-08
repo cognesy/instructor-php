@@ -11,6 +11,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Support\ContentInput;
 use Cognesy\Utils\TextRepresentation;
+use DateTimeImmutable;
 use InvalidArgumentException;
 
 final class MessageInput
@@ -65,6 +66,10 @@ final class MessageInput
             content: $content,
             name: $message['name'] ?? '',
             metadata: $message['_metadata'] ?? $message['metadata'] ?? [],
+            parentId: $message['parentId'] ?? null,
+            // Identity fields for deserialization
+            id: $message['id'] ?? null,
+            createdAt: isset($message['createdAt']) ? new DateTimeImmutable($message['createdAt']) : null,
         );
     }
 

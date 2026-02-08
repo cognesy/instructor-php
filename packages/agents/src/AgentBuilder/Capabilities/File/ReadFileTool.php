@@ -3,10 +3,11 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\File;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Utils\Result\Result;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Sandbox;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 class ReadFileTool extends BaseTool
 {
@@ -17,7 +18,7 @@ class ReadFileTool extends BaseTool
 
     public function __construct(
         ?ExecutionPolicy $policy = null,
-        ?string $baseDir = null,
+        string $baseDir = '',
     ) {
         parent::__construct(
             name: 'read_file',
@@ -33,7 +34,6 @@ Returns numbered lines. For large files, use offset/limit to read specific secti
 DESC,
         );
 
-        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
         $policy = $policy ?? ExecutionPolicy::in($baseDir)
             ->withTimeout(30)
             ->withReadablePaths($baseDir)
@@ -55,9 +55,9 @@ DESC,
         // Handle array-wrapped args: [{"path": "..."}] -> {"path": "..."}
         $args = $this->unwrapArgs($args);
 
-        $path = $args['path'] ?? $args[0] ?? '';
-        $offset = $args['offset'] ?? $args[1] ?? 0;
-        $limit = $args['limit'] ?? $args[2] ?? self::DEFAULT_LINE_LIMIT;
+        $path = $this->arg($args, 'path', 0, '');
+        $offset = $this->arg($args, 'offset', 1, 0);
+        $limit = $this->arg($args, 'limit', 2, self::DEFAULT_LINE_LIMIT);
 
         if (!$this->isValidPath($path)) {
             return "Error: Invalid file path";
@@ -161,30 +161,16 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'path' => [
-                            'type' => 'string',
-                            'description' => 'File path (relative to project root or absolute). Example: "composer.json" or "src/Config.php"',
-                        ],
-                        'offset' => [
-                            'type' => 'integer',
-                            'description' => 'Line number to start reading from (0-indexed)',
-                        ],
-                        'limit' => [
-                            'type' => 'integer',
-                            'description' => 'Maximum number of lines to read (default: 2000)',
-                        ],
-                    ],
-                    'required' => ['path'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('path', 'File path (relative to project root or absolute). Example: "composer.json" or "src/Config.php"'),
+                    JsonSchema::integer('offset', 'Line number to start reading from (0-indexed)'),
+                    JsonSchema::integer('limit', 'Maximum number of lines to read (default: 2000)'),
+                ])
+                ->withRequiredProperties(['path'])
+        )->toArray();
     }
 }

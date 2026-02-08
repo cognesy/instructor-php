@@ -4,6 +4,7 @@ namespace Cognesy\Utils\JsonSchema;
 
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Exception;
+use RuntimeException;
 
 /**
  * JSON Schema definition API - helps to specify JSON Schema
@@ -84,7 +85,7 @@ class JsonSchema implements CanProvideJsonSchema
             // validate enum values are strings
             foreach ($this->enumValues as $value) {
                 if (!is_string($value)) {
-                    throw new Exception('Invalid JSON type: invalid in: ' . $this->name . ' - enum values must be strings');
+                    throw new RuntimeException('Invalid JSON type: invalid in: ' . $this->name . ' - enum values must be strings');
                 }
             }
         }
@@ -98,7 +99,7 @@ class JsonSchema implements CanProvideJsonSchema
         array $data,
         ?string $name = null,
         ?bool $required = null
-    ) : JsonSchema {
+    ) : self {
         if (empty($data)) {
             return new self(
                 type: JsonSchemaType::any(),
@@ -113,13 +114,13 @@ class JsonSchema implements CanProvideJsonSchema
         if (isset($data['properties'])) {
             foreach ($data['properties'] as $propertyName => $propertyData) {
                 $isRequired = in_array($propertyName, $data['required'] ?? [], true);
-                $properties[$propertyName] = JsonSchema::fromArray($propertyData, $propertyName, $isRequired);
+                $properties[$propertyName] = self::fromArray($propertyData, $propertyName, $isRequired);
             }
             $properties = array_filter($properties);
         }
 
         $itemSchema = match(true) {
-            isset($data['items']) => JsonSchema::fromArray($data['items']),
+            isset($data['items']) => self::fromArray($data['items']),
             default => null,
         };
 
@@ -188,8 +189,8 @@ class JsonSchema implements CanProvideJsonSchema
             }
 
             $keyedProperties[$index] = match(true) {
-                $property instanceof JsonSchema => $property->withName($index),
-                is_array($property) => JsonSchema::fromArray($property)->withName($index),
+                $property instanceof self => $property->withName($index),
+                is_array($property) => self::fromArray($property)->withName($index),
                 default => throw new Exception('Invalid property: ' . print_r($property, true)),
             };
         }

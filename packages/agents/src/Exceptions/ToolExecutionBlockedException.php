@@ -8,8 +8,8 @@ class ToolExecutionBlockedException extends AgentException
 {
     public function __construct(
         public ToolCall $toolCall,
-        public string $hookName = '',
         string $message,
+        public string $hookName = '',
     ) {
         $info = "Tool call to '{$toolCall->name()}' (" . $toolCall->argsAsJson() . ") was blocked: " . $message;
         parent::__construct(message: $info);

@@ -3,10 +3,11 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\File;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Utils\Result\Result;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Sandbox;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 class EditFileTool extends BaseTool
 {
@@ -14,7 +15,7 @@ class EditFileTool extends BaseTool
 
     public function __construct(
         ?ExecutionPolicy $policy = null,
-        ?string $baseDir = null,
+        string $baseDir = '',
     ) {
         parent::__construct(
             name: 'edit_file',
@@ -31,7 +32,6 @@ IMPORTANT: Include enough context in old_string to make it unique. If multiple m
 DESC,
         );
 
-        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
         $policy = $policy ?? ExecutionPolicy::in($baseDir)
             ->withTimeout(30)
             ->withReadablePaths($baseDir)
@@ -51,10 +51,10 @@ DESC,
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $path = (string) ($args['path'] ?? $args[0] ?? '');
-        $old_string = (string) ($args['old_string'] ?? $args[1] ?? '');
-        $new_string = (string) ($args['new_string'] ?? $args[2] ?? '');
-        $replace_all = (bool) ($args['replace_all'] ?? $args[3] ?? false);
+        $path = (string) $this->arg($args, 'path', 0, '');
+        $old_string = (string) $this->arg($args, 'old_string', 1, '');
+        $new_string = (string) $this->arg($args, 'new_string', 2, '');
+        $replace_all = (bool) $this->arg($args, 'replace_all', 3, false);
 
         if (!$this->isValidPath($path)) {
             return "Error: Invalid file path";
@@ -116,34 +116,17 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'path' => [
-                            'type' => 'string',
-                            'description' => 'The path to the file to edit',
-                        ],
-                        'old_string' => [
-                            'type' => 'string',
-                            'description' => 'Exact string to find (include whitespace). Must be unique unless using replace_all',
-                        ],
-                        'new_string' => [
-                            'type' => 'string',
-                            'description' => 'Replacement string. Can be empty to delete old_string',
-                        ],
-                        'replace_all' => [
-                            'type' => 'boolean',
-                            'description' => 'If true, replace all occurrences. If false (default), old_string must be unique.',
-                        ],
-                    ],
-                    'required' => ['path', 'old_string', 'new_string'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('path', 'The path to the file to edit'),
+                    JsonSchema::string('old_string', 'Exact string to find (include whitespace). Must be unique unless using replace_all'),
+                    JsonSchema::string('new_string', 'Replacement string. Can be empty to delete old_string'),
+                    JsonSchema::boolean('replace_all', 'If true, replace all occurrences. If false (default), old_string must be unique.'),
+                ])
+                ->withRequiredProperties(['path', 'old_string', 'new_string'])
+        )->toArray();
     }
 }

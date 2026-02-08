@@ -9,7 +9,11 @@ use Symfony\Component\Yaml\Yaml;
 final class AgentDefinitionLoader
 {
     public function loadFile(string $path): AgentDefinition {
-        $content = @file_get_contents($path);
+        if (!is_file($path) || !is_readable($path)) {
+            throw new RuntimeException("Failed to read agent definition file: {$path}");
+        }
+
+        $content = file_get_contents($path);
         if ($content === false) {
             throw new RuntimeException("Failed to read agent definition file: {$path}");
         }
@@ -50,24 +54,22 @@ final class AgentDefinitionLoader
 
     /** @return array<string, mixed> */
     private function parseMarkdown(string $content): array {
-        $content = str_replace("\r\n", "\n", $content);
+        $frontmatter = MarkdownFrontmatter::parse($content);
 
-        if (!preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)$/s', $content, $matches)) {
+        if ($frontmatter === null) {
             throw new InvalidArgumentException(
                 "Invalid markdown format: missing YAML frontmatter (expected ---\\n...\\n---)"
             );
         }
 
-        $data = $this->parseYaml($matches[1]);
-        $systemPrompt = trim($matches[2]);
-
-        if ($systemPrompt === '') {
+        if ($frontmatter->body === '') {
             throw new InvalidArgumentException(
                 "Invalid markdown format: system prompt (content after frontmatter) cannot be empty"
             );
         }
 
-        $data['systemPrompt'] = $systemPrompt;
+        $data = $frontmatter->data;
+        $data['systemPrompt'] = $frontmatter->body;
 
         return $data;
     }

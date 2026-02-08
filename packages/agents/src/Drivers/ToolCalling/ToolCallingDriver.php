@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Drivers\ToolCalling;
 
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -33,7 +34,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter
+class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -71,7 +72,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter
         $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
     }
 
-    public function withLLMProvider(LLMProvider $llm): self {
+    #[\Override]
+    public function withLLMProvider(LLMProvider $llm): static {
         return new self(
             llm: $llm,
             httpClient: $this->httpClient,
@@ -85,7 +87,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter
         );
     }
 
-    public function getLlmProvider(): LLMProvider {
+    #[\Override]
+    public function llmProvider(): LLMProvider {
         return $this->llm;
     }
 

@@ -6,12 +6,12 @@ use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-class UseSubagents implements AgentCapability
+final class UseSubagents implements AgentCapability
 {
     private SubagentPolicy $policy;
 
@@ -26,15 +26,11 @@ class UseSubagents implements AgentCapability
     public static function withDepth(
         int $maxDepth,
         ?AgentDefinitionProvider $provider = null,
-        ?int $summaryMaxChars = null,
         ?SkillLibrary $skillLibrary = null,
     ): self {
         return new self(
             provider: $provider,
-            policy: new SubagentPolicy(
-                maxDepth: $maxDepth,
-                summaryMaxChars: $summaryMaxChars ?? 8000,
-            ),
+            policy: new SubagentPolicy(maxDepth: $maxDepth),
             skillLibrary: $skillLibrary,
         );
     }
@@ -42,10 +38,10 @@ class UseSubagents implements AgentCapability
     #[\Override]
     public function install(AgentBuilder $builder): void {
         $builder->addToolFactory(function (Tools $tools, CanUseTools $driver, CanEmitAgentEvents $emitter) {
-            $llmProvider = LLMProvider::new();
-            if ($driver instanceof ToolCallingDriver) {
-                $llmProvider = $driver->getLlmProvider();
-            }
+            $llmProvider = match (true) {
+                $driver instanceof CanAcceptLLMProvider => $driver->llmProvider(),
+                default => LLMProvider::new(),
+            };
 
             return new SpawnSubagentTool(
                 parentTools: $tools,
@@ -54,8 +50,6 @@ class UseSubagents implements AgentCapability
                 skillLibrary: $this->skillLibrary,
                 parentLlmProvider: $llmProvider,
                 currentDepth: 0,
-                maxDepth: $this->policy->maxDepth,
-                summaryMaxChars: $this->policy->summaryMaxChars,
                 policy: $this->policy,
                 eventEmitter: $emitter,
             );

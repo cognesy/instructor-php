@@ -36,7 +36,7 @@ class JsonParser
                     continue;
                 }
 
-                $data = $this->tryParse($candidate);
+                $data = $this->tryParse($candidate, allowPartial: false);
                 if ($data !== null) {
                     // Re-encode in canonical JSON form
                     $result = json_encode($data);
@@ -73,7 +73,8 @@ class JsonParser
                     continue;
                 }
 
-                $data = $this->tryParse($candidate);
+                $normalizedCandidate = $this->normalizePartialCandidate($candidate);
+                $data = $this->tryParse($normalizedCandidate, allowPartial: true);
                 if ($data !== null) {
                     // Re-encode in canonical JSON form
                     $result = json_encode($data);
@@ -99,17 +100,20 @@ class JsonParser
      *
      * Returns an associative array on success, or null if all strategies fail.
      */
-    private function tryParse(string $maybeJson): mixed {
+    private function tryParse(string $maybeJson, bool $allowPartial): mixed {
+        $normalized = $this->stripJsonComments($maybeJson);
         $parsers = [
             fn($json) => json_decode($json, true, 512, JSON_THROW_ON_ERROR),
-            //fn($json) => ResilientJson::parse($json),
             fn($json) => (new ResilientJsonParser($json))->parse(),
-            fn($json) => (new PartialJsonParser)->parse($json),
         ];
+
+        if ($allowPartial) {
+            $parsers[] = fn($json) => (new PartialJsonParser)->parse($json);
+        }
 
         foreach ($parsers as $parser) {
             try {
-                $data = $parser($maybeJson);
+                $data = $parser($normalized);
             } catch (Exception $e) {
                 continue;
             }
@@ -251,8 +255,7 @@ class JsonParser
         }
 
         $candidates = [];
-        $currentCandidate = '';
-        $bracketCount = 0;
+        $stack = [];
         $inString = false;
         $escape = false;
         $len = strlen($text);
@@ -260,37 +263,87 @@ class JsonParser
         for ($i = 0; $i < $len; $i++) {
             $char = $text[$i];
 
-            if (!$inString) {
-                if ($char === '{') {
-                    if ($bracketCount === 0) {
-                        $currentCandidate = '';
-                    }
-                    $bracketCount++;
-                } elseif ($char === '}') {
-                    $bracketCount--;
-                }
-            }
-
-            // Toggle inString if we encounter an unescaped quote
             if ($char === '"' && !$escape) {
                 $inString = !$inString;
             }
 
-            // Determine if current char is a backslash for next iteration
             $escape = ($char === '\\' && !$escape);
 
-            if ($bracketCount > 0) {
-                $currentCandidate .= $char;
+            if ($inString) {
+                continue;
             }
 
-            // If bracketCount just went back to 0, we've closed a JSON-like block
-            if ($bracketCount === 0 && $currentCandidate !== '') {
-                $currentCandidate .= $char; // include the closing '}'
-                $candidates[] = $currentCandidate;
-                $currentCandidate = '';
+            if ($char === '{') {
+                $stack[] = $i;
+                continue;
+            }
+
+            if ($char === '}' && $stack !== []) {
+                $start = array_pop($stack);
+                if (!is_int($start)) {
+                    continue;
+                }
+                $candidates[] = substr($text, $start, $i - $start + 1);
             }
         }
 
         return $candidates;
+    }
+
+    private function stripJsonComments(string $text): string {
+        $result = '';
+        $length = strlen($text);
+        $inString = false;
+        $escape = false;
+        $inLineComment = false;
+        $inBlockComment = false;
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $text[$i];
+            $next = ($i + 1 < $length) ? $text[$i + 1] : '';
+
+            if ($inLineComment) {
+                if ($char === "\n" || $char === "\r") {
+                    $inLineComment = false;
+                    $result .= $char;
+                }
+                continue;
+            }
+
+            if ($inBlockComment) {
+                if ($char === '*' && $next === '/') {
+                    $inBlockComment = false;
+                    $i++;
+                }
+                continue;
+            }
+
+            if (!$inString && $char === '/' && $next === '/') {
+                $inLineComment = true;
+                $i++;
+                continue;
+            }
+
+            if (!$inString && $char === '/' && $next === '*') {
+                $inBlockComment = true;
+                $i++;
+                continue;
+            }
+
+            $result .= $char;
+
+            if ($char === '"' && !$escape) {
+                $inString = !$inString;
+            }
+            $escape = ($char === '\\' && !$escape);
+        }
+
+        return $result;
+    }
+
+    private function normalizePartialCandidate(string $candidate): string {
+        $normalized = preg_replace('/,\s*,+/', ',', $candidate) ?? $candidate;
+        $normalized = preg_replace('/,\s*([}\]])/', '$1', $normalized) ?? $normalized;
+        return $normalized;
     }
 }

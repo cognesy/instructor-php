@@ -1,0 +1,47 @@
+{
+  "name": "cognesy/instructor-sandbox",
+  "description": "Sandboxed command execution for PHP with multiple drivers (Host, Docker, Podman, Firejail, Bubblewrap)",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Sandbox\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Sandbox\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "require": {
+    "php": "^8.3",
+    "symfony/process": "^7.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon"
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

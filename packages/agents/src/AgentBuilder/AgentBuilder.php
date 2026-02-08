@@ -23,6 +23,7 @@ use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
 use Cognesy\Agents\Hooks\Guards\TokenUsageLimitHook;
 use Cognesy\Agents\Hooks\Interceptors\HookStack;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
@@ -42,12 +43,12 @@ use Cognesy\Polyglot\Inference\LLMProvider;
  *     ->withMaxTokens(32768)
  *     ->build();
  */
-class AgentBuilder
+final class AgentBuilder
 {
     private Tools $tools;
 
     private ?CanUseTools $driver = null;
-    private ?CanHandleEvents $events = null;
+    private CanHandleEvents $events;
     private ?string $llmPreset = null;
     private string $systemPrompt = '';
     private ?ResponseFormat $responseFormat = null;
@@ -68,26 +69,14 @@ class AgentBuilder
 
     private function __construct() {
         $this->tools = new Tools();
+        $this->events = new EventDispatcher('agent-builder');
         $this->hookStack = new HookStack(new RegisteredHooks());
     }
 
-    /**
-     * Create a new builder instance.
-     */
-    public static function new(): self {
-        return self::base();
-    }
-
-    /**
-     * Create a new builder instance with sane defaults.
-     */
     public static function base(): self {
         return new self();
     }
 
-    /**
-     * Apply a capability to the builder.
-     */
     public function withCapability(AgentCapability $capability): self {
         $capability->install($this);
         return $this;
@@ -103,9 +92,6 @@ class AgentBuilder
         return $this;
     }
 
-    /**
-     * Add custom tools.
-     */
     public function withTools(Tools|array $tools): self {
         $toolsCollection = match(true) {
             is_array($tools) => new Tools(...$tools),
@@ -118,42 +104,27 @@ class AgentBuilder
 
     // EXECUTION LIMITS //////////////////////////////////////////
 
-    /**
-     * Set maximum number of agent steps.
-     */
     public function withMaxSteps(int $maxSteps): self {
         $this->maxSteps = $maxSteps;
         return $this;
     }
 
-    /**
-     * Set maximum token usage.
-     */
     public function withMaxTokens(int $maxTokens): self {
         $this->maxTokens = $maxTokens;
         return $this;
     }
 
-    /**
-     * Set maximum execution time in seconds.
-     */
     public function withTimeout(int $seconds): self {
         $this->maxExecutionTime = $seconds;
         return $this;
     }
 
-    /**
-     * Set maximum retry attempts on errors.
-     */
     public function withMaxRetries(int $maxRetries): self {
         $this->maxRetries = $maxRetries;
         return $this;
     }
 
-    /**
-     * Set finish reasons that should stop the agent.
-     * @param list<InferenceFinishReason> $reasons
-     */
+    /** @param list<InferenceFinishReason> $reasons */
     public function withFinishReasons(array $reasons): self {
         $this->finishReasons = $reasons;
         return $this;
@@ -161,17 +132,11 @@ class AgentBuilder
 
     // LLM CONFIGURATION /////////////////////////////////////////
 
-    /**
-     * Set LLM preset (from config/llm.php).
-     */
     public function withLlmPreset(string $preset): self {
         $this->llmPreset = $preset;
         return $this;
     }
 
-    /**
-     * Set custom driver.
-     */
     public function withDriver(CanUseTools $driver): self {
         $this->driver = $driver;
         return $this;
@@ -179,9 +144,10 @@ class AgentBuilder
 
     public function withSystemPrompt(string $systemPrompt): self {
         $prompt = trim($systemPrompt);
-        if ($prompt !== '') {
-            $this->systemPrompt = $prompt;
-        }
+        $this->systemPrompt = match(true) {
+            $prompt !== '' => $prompt,
+            default => $this->systemPrompt,
+        };
         return $this;
     }
 
@@ -196,11 +162,20 @@ class AgentBuilder
     // EVENT HANDLING ////////////////////////////////////////////
 
     /**
-     * Set event handler.
+     * Set a parent event handler for event bubbling.
+     * Call this BEFORE adding capabilities to ensure capability listeners are preserved.
      */
     public function withEvents(CanHandleEvents $events): self {
-        $this->events = $events;
+        $this->events = new EventDispatcher('agent-builder', $events);
         return $this;
+    }
+
+    /**
+     * Access the event handler for registering listeners.
+     * Capabilities use this to observe agent events.
+     */
+    public function eventHandler(): CanHandleEvents {
+        return $this->events;
     }
 
     // HOOK REGISTRATION /////////////////////////////////////////
@@ -229,18 +204,12 @@ class AgentBuilder
         return $this;
     }
 
-    /**
-     * Get the current hook stack (for testing/debugging).
-     */
     public function hookStack(): HookStack {
         return $this->hookStack;
     }
 
     // BUILD /////////////////////////////////////////////////////
 
-    /**
-     * Build the AgentLoop instance with configured features.
-     */
     public function build(): AgentLoop {
         $eventEmitter = new AgentEventEmitter($this->events);
         $driver = $this->buildDriver($eventEmitter);
@@ -309,15 +278,17 @@ class AgentBuilder
     }
 
     private function addContextHooks(HookStack $stack): HookStack {
-        if ($this->systemPrompt === '' && ($this->responseFormat === null || $this->responseFormat->isEmpty())) {
-            return $stack;
-        }
+        $hasPrompt = $this->systemPrompt !== '';
+        $hasFormat = $this->responseFormat !== null && !$this->responseFormat->isEmpty();
 
-        return $stack->with(
-            new ApplyContextConfigHook($this->systemPrompt, $this->responseFormat),
-            HookTriggers::beforeStep(),
-            100,
-        );
+        return match(true) {
+            $hasPrompt, $hasFormat => $stack->with(
+                new ApplyContextConfigHook($this->systemPrompt, $this->responseFormat),
+                HookTriggers::beforeStep(),
+                100,
+            ),
+            default => $stack,
+        };
     }
 
     private function addMessageHooks(HookStack $stack): HookStack {
@@ -332,21 +303,23 @@ class AgentBuilder
     }
 
     private function buildDriver(CanEmitAgentEvents $eventEmitter): CanUseTools {
-        if ($this->driver !== null) {
-            if ($this->driver instanceof CanAcceptAgentEventEmitter) {
-                return $this->driver->withEventEmitter($eventEmitter);
-            }
-            return $this->driver;
-        }
+        return match(true) {
+            $this->driver instanceof CanAcceptAgentEventEmitter => $this->driver->withEventEmitter($eventEmitter),
+            $this->driver !== null => $this->driver,
+            default => $this->buildDefaultDriver($eventEmitter),
+        };
+    }
 
-        $llmProvider = $this->llmPreset !== null
-            ? LLMProvider::using($this->llmPreset)
-            : LLMProvider::new();
+    private function buildDefaultDriver(CanEmitAgentEvents $eventEmitter): ToolCallingDriver {
+        $llmProvider = match($this->llmPreset) {
+            null => LLMProvider::new(),
+            default => LLMProvider::using($this->llmPreset),
+        };
 
-        $retryPolicy = null;
-        if ($this->maxRetries > 1) {
-            $retryPolicy = new InferenceRetryPolicy(maxAttempts: $this->maxRetries);
-        }
+        $retryPolicy = match(true) {
+            $this->maxRetries > 1 => new InferenceRetryPolicy(maxAttempts: $this->maxRetries),
+            default => null,
+        };
 
         return new ToolCallingDriver(
             llm: $llmProvider,

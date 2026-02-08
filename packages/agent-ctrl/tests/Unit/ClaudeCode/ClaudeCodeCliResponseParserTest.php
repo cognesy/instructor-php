@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 it('parses json output into decoded objects', function () {
     $stdout = '[{"text":"hi","cost":1},{"text":"ok","cost":2}]';

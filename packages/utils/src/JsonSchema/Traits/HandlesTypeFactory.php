@@ -154,4 +154,25 @@ trait HandlesTypeFactory
             meta: $meta,
         );
     }
+
+    /**
+     * Create a schema that accepts any type (no type constraint).
+     * Useful for dynamic values like metadata storage.
+     */
+    public static function any(
+        string $name = '',
+        string $description = '',
+        string $title = '',
+        ?bool $nullable = null,
+        array $meta = [],
+    ) : self {
+        return new self(
+            type: JsonSchemaType::any(),
+            name: $name,
+            nullable: $nullable,
+            description: $description,
+            title: $title,
+            meta: $meta,
+        );
+    }
 }

@@ -31,7 +31,7 @@ you can use Blade syntax in your prompts if you prefer it.
 Example prompt template in Twig:
 ```
 Hello, world.
-// @doctest id="f616"
+// @doctest id="d46c"
 ```
 
 ### Prompt Template with Variables
@@ -40,7 +40,7 @@ You can define variables in your prompt templates and inject values when renderi
 
 ```twig
 Hello, {{ name }}!
-// @doctest id="9b74"
+// @doctest id="d050"
 ```
 
 ### Chat Messages
@@ -53,7 +53,7 @@ for LLM chat APIs.
     <message role="system">You are a helpful assistant.</message>
     <message role="user">What is the capital of {{ country }}?</message>
 </chat>
-// @doctest id="c2f9"
+// @doctest id="f9d3"
 ```
 
 ### Prompt Template Metadata
@@ -82,7 +82,7 @@ schema:
     <message role="system">You are a helpful assistant.</message>
     <message role="user">What is the capital of {{ country }}?</message>
 </chat>
-// @doctest id="5660"
+// @doctest id="ef11"
 ```
 
 
@@ -127,7 +127,7 @@ $prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="d466"
+// @doctest id="c928"
 ```
 Or, using the shorthand `make()` syntax:
 
@@ -137,7 +137,7 @@ $prompt = Template::make('demo-twig:hello')->with(['name' => 'World']);
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="da45"
+// @doctest id="fd6b"
 ```
 
 ### Rendering a Chat Template
@@ -154,7 +154,7 @@ print_r($messages->toArray());
 //     ['role' => 'user', 'content' => 'Hello, World!']
 // ]
 ?>
-// @doctest id="7bd9"
+// @doctest id="28f8"
 ```
 
 ### Custom Configuration and Template Content
@@ -180,7 +180,7 @@ $prompt->withConfig($config)
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="953e"
+// @doctest id="54fd"
 ```
 
 ### In Memory Templates
@@ -194,7 +194,7 @@ $prompt = Template::twig() // or Template::blade() for Blade syntax
     ->withValues(['name' => 'World'])
     ->toText();
 ?>
-// @doctest id="7b93"
+// @doctest id="ca0b"
 ```
 
 There's shorter syntax for creating in-memory prompts:
@@ -206,7 +206,7 @@ $prompt = Template::twig() // or Template::blade() for Blade syntax
     ->with(['name' => 'World'])
     ->toText();
 ?>
-// @doctest id="1b8f"
+// @doctest id="efb9"
 ```
 
 ### Handling Template Variables
@@ -223,7 +223,7 @@ $variables = $prompt->variables();
 
 print_r($variables); // Outputs: ['name']
 ?>
-// @doctest id="d3cd"
+// @doctest id="a01a"
 ```
 
 ### Loading Templates by Name and Using DSNs
@@ -240,7 +240,7 @@ echo $prompt->template();
 $prompt = Template::fromDsn('demo-blade:hello')->with(['name' => 'World']);
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
-// @doctest id="2f01"
+// @doctest id="0dc9"
 ```
 
 ### Converting to Messages with Markup
@@ -253,7 +253,7 @@ Here is an example XML that can be used to generate a sequence of chat messages:
     <message role="system">You are a helpful assistant.</message>
     <message role="user">Hello, {{ name }}</message>
 </chat>
-<!-- @doctest id="83c1"
+<!-- @doctest id="3018"
 ```
 
 And here is how you use `Prompt` class to convert XML template into a sequence of messages:
@@ -274,5 +274,5 @@ echo $messages->toArray();
 //     ['role' => 'user', 'content' => 'Hello, assistant']
 // ]
 ?>
-// @doctest id="8dfc"
+// @doctest id="adc3"
 ```

@@ -26,7 +26,7 @@ final readonly class SummarizeBufferHook implements HookInterface
         private CanSummarizeMessages $summarizer,
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = EventBusResolver::using($events);
     }
 
     #[\Override]
@@ -57,7 +57,7 @@ final readonly class SummarizeBufferHook implements HookInterface
         $summarizedInput = match (true) {
             $summaryMessages->isEmpty() => $bufferMessages,
             $bufferMessages->isEmpty() => $summaryMessages,
-            default => $bufferMessages->appendMessages($summaryMessages),
+            default => $summaryMessages->appendMessages($bufferMessages),
         };
 
         $summary = $this->summarizer->summarize($summarizedInput, $this->maxSummaryTokens);

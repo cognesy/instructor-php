@@ -2,14 +2,9 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput;
 
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-/**
- * Global configuration for structured output extraction.
- *
- * These are defaults that apply to all extractions unless overridden
- * by per-schema config or tool call parameters.
- */
 final readonly class StructuredOutputPolicy
 {
     public function __construct(
@@ -21,25 +16,36 @@ final readonly class StructuredOutputPolicy
         public bool $useMaybe = true,
     ) {}
 
-    public function withLlmPreset(string $preset): self {
+    public function with(
+        ?string $llmPreset = null,
+        ?string $model = null,
+        ?int $defaultMaxRetries = null,
+        ?OutputMode $outputMode = null,
+        ?string $systemPrompt = null,
+        ?bool $useMaybe = null,
+    ): self {
         return new self(
-            llmPreset: $preset,
-            model: $this->model,
-            defaultMaxRetries: $this->defaultMaxRetries,
-            outputMode: $this->outputMode,
-            systemPrompt: $this->systemPrompt,
-            useMaybe: $this->useMaybe,
+            llmPreset: $llmPreset ?? $this->llmPreset,
+            model: $model ?? $this->model,
+            defaultMaxRetries: $defaultMaxRetries ?? $this->defaultMaxRetries,
+            outputMode: $outputMode ?? $this->outputMode,
+            systemPrompt: $systemPrompt ?? $this->systemPrompt,
+            useMaybe: $useMaybe ?? $this->useMaybe,
         );
     }
 
+    public function withLlmPreset(string $preset): self {
+        return $this->with(llmPreset: $preset);
+    }
+
     public function withModel(string $model): self {
-        return new self(
-            llmPreset: $this->llmPreset,
-            model: $model,
-            defaultMaxRetries: $this->defaultMaxRetries,
-            outputMode: $this->outputMode,
-            systemPrompt: $this->systemPrompt,
-            useMaybe: $this->useMaybe,
-        );
+        return $this->with(model: $model);
+    }
+
+    public function applyTo(StructuredOutput $instructor): void {
+        if ($this->llmPreset !== null) { $instructor->using($this->llmPreset); }
+        if ($this->model !== null) { $instructor->withModel($this->model); }
+        if ($this->outputMode !== null) { $instructor->withOutputMode($this->outputMode); }
+        if ($this->systemPrompt !== null) { $instructor->withSystem($this->systemPrompt); }
     }
 }

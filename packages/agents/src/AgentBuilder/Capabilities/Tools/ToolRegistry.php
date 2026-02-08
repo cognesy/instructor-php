@@ -68,7 +68,7 @@ final class ToolRegistry implements ToolRegistryInterface
     }
 
     #[\Override]
-    public function listMetadata(?string $locale = null): array
+    public function listMetadata(): array
     {
         $list = [];
         foreach ($this->names() as $name) {
@@ -79,7 +79,7 @@ final class ToolRegistry implements ToolRegistryInterface
     }
 
     #[\Override]
-    public function listFullSpecs(?string $locale = null): array
+    public function listFullSpecs(): array
     {
         $list = [];
         foreach ($this->names() as $name) {
@@ -90,7 +90,7 @@ final class ToolRegistry implements ToolRegistryInterface
     }
 
     #[\Override]
-    public function search(string $query, ?string $locale = null): array
+    public function search(string $query): array
     {
         $needle = mb_strtolower(trim($query));
         if ($needle === '') {
@@ -154,21 +154,7 @@ final class ToolRegistry implements ToolRegistryInterface
     #[\Override]
     public function names(): array
     {
-        $names = array_merge(
-            array_keys($this->factories),
-            array_keys($this->instances),
-            array_keys($this->metadata),
-            array_keys($this->fullSpecs),
-        );
-
-        $unique = [];
-        foreach ($names as $name) {
-            if (!isset($unique[$name])) {
-                $unique[$name] = true;
-            }
-        }
-
-        return array_keys($unique);
+        return array_keys($this->factories + $this->instances);
     }
 
     /**

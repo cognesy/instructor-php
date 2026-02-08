@@ -8,7 +8,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Value\Argv;
 use Cognesy\AgentCtrl\Common\Value\CommandSpec;
-use Cognesy\Utils\Sandbox\Utils\ProcUtils;
+use Cognesy\Sandbox\Utils\ProcUtils;
 
 final class ClaudeCommandBuilder
 {

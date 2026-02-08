@@ -36,7 +36,7 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withProperties(?array $properties = null) : JsonSchema {
+    public function withProperties(?array $properties) : JsonSchema {
         $this->properties = JsonSchema::toKeyedProperties($properties);
         return $this;
     }

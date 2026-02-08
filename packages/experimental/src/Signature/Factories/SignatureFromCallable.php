@@ -28,7 +28,7 @@ class SignatureFromCallable
             default => throw new InvalidArgumentException('Unsupported callable type'),
         };
 
-        $description = $reflection->getDocComment();
+        $description = $reflection->getDocComment() ?: '';
 
         return new Signature(
             input: StructureFactory::fromCallable($callable, self::DEFAULT_INPUT_NAME)->schema(),

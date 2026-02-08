@@ -37,8 +37,29 @@ interface CanEmitAgentEvents
     public function inferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void;
 
     // Subagent events
-    public function subagentSpawning(string $parentAgentId, string $subagentName, string $prompt, int $depth, int $maxDepth): void;
-    public function subagentCompleted(string $parentAgentId, string $subagentId, string $subagentName, ExecutionStatus $status, int $steps, ?Usage $usage, DateTimeImmutable $startedAt): void;
+    public function subagentSpawning(
+        string $parentAgentId,
+        string $subagentName,
+        string $prompt,
+        int $depth,
+        int $maxDepth,
+        ?string $parentExecutionId = null,
+        ?int $parentStepNumber = null,
+        ?string $toolCallId = null,
+    ): void;
+
+    public function subagentCompleted(
+        string $parentAgentId,
+        string $subagentId,
+        string $subagentName,
+        ExecutionStatus $status,
+        int $steps,
+        ?Usage $usage,
+        DateTimeImmutable $startedAt,
+        ?string $parentExecutionId = null,
+        ?int $parentStepNumber = null,
+        ?string $toolCallId = null,
+    ): void;
 
     // Hook events
     public function hookExecuted(string $hookType, string $tool, string $outcome, ?string $reason, DateTimeImmutable $startedAt): void;

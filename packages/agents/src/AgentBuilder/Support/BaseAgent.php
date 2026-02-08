@@ -34,10 +34,10 @@ abstract class BaseAgent implements AgentInterface
         return $this->ensureLoop()->iterate($state);
     }
 
-    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): self {
-        $this->events = EventBusResolver::using($events);
-        $this->agentLoop = null;
-        return $this;
+    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
+        $agent = new static();
+        $agent->events = EventBusResolver::using($events);
+        return $agent;
     }
 
     /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Cognesy\Auxiliary\Beads\Infrastructure\Client\BdClient;
 use Cognesy\Auxiliary\Beads\Infrastructure\Execution\CommandExecutor;
 use Cognesy\Auxiliary\Beads\Infrastructure\Execution\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
-use Cognesy\Utils\Sandbox\Policy\SandboxPolicy;
+use Cognesy\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Policy\SandboxPolicy;
 
 // Helper function to create mock executor for BdClient tests
 function createMockExecutor(): CommandExecutor {

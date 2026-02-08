@@ -29,7 +29,7 @@ class FunctionInfo
         $class = $reflection->getClosureScopeClass()?->getName();
         $functionName = $reflection->getName();
         return new self(match(true) {
-            !empty($class) => new ReflectionMethod($class, $functionName),
+            !empty($class) && !str_starts_with($functionName, '{closure') => new ReflectionMethod($class, $functionName),
             !empty($functionName) => $reflection,
             default => throw new \InvalidArgumentException('Unsupported callable type: ' . gettype($closure)),
         });
@@ -89,9 +89,9 @@ class FunctionInfo
                 $this->function->getDeclaringClass()->getName(),
                 $this->function->getName()
             ),
-            default => Descriptions::forFunction(
-                $this->function->getName()
-            ),
+            default => str_starts_with($this->function->getName(), '{closure')
+                ? ''
+                : Descriptions::forFunction($this->function->getName()),
         };
     }
 
@@ -102,10 +102,9 @@ class FunctionInfo
                 $this->function->getName(),
                 $argument
             ),
-            default => Descriptions::forFunctionParameter(
-                $this->function->getName(),
-                $argument
-            ),
+            default => str_starts_with($this->function->getName(), '{closure')
+                ? ''
+                : Descriptions::forFunctionParameter($this->function->getName(), $argument),
         };
     }
 }

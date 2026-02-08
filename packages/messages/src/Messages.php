@@ -326,6 +326,19 @@ final readonly class Messages implements Countable, IteratorAggregate
         return $this->messages->last() ?? new Message();
     }
 
+    public function getById(string $id): ?Message {
+        foreach ($this->messages->all() as $message) {
+            if ($message->id === $id) {
+                return $message;
+            }
+        }
+        return null;
+    }
+
+    public function hasId(string $id): bool {
+        return $this->getById($id) !== null;
+    }
+
     /**
      * @return Generator<Message>
      */

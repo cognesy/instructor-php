@@ -10,7 +10,7 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ThreadStartedEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\TurnCompletedEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Value\UsageStats;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 /**
  * Parses Codex CLI output into structured response

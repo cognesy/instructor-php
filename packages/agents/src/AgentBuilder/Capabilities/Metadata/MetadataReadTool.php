@@ -4,6 +4,8 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 /**
  * Tool for reading data from agent metadata.
@@ -29,7 +31,7 @@ DESC,
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $key = $args['key'] ?? $args[0] ?? '';
+        $key = $this->arg($args, 'key', 0, '');
 
         if ($key === '') {
             return 'Error: Key cannot be empty';
@@ -62,22 +64,14 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'key' => [
-                            'type' => 'string',
-                            'description' => 'The key to read from metadata',
-                        ],
-                    ],
-                    'required' => ['key'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('key', 'The key to read from metadata'),
+                ])
+                ->withRequiredProperties(['key'])
+        )->toArray();
     }
 }

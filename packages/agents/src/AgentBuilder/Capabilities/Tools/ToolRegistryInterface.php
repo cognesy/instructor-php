@@ -25,28 +25,18 @@ interface ToolRegistryInterface
 
     public function resolve(string $name): ToolInterface;
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function listMetadata(?string $locale = null): array;
+    /** @return array<int, array<string, mixed>> */
+    public function listMetadata(): array;
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function listFullSpecs(?string $locale = null): array;
+    /** @return array<int, array<string, mixed>> */
+    public function listFullSpecs(): array;
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function search(string $query, ?string $locale = null): array;
+    /** @return array<int, array<string, mixed>> */
+    public function search(string $query): array;
 
-    /**
-     * @param array<int, string>|null $names
-     */
+    /** @param array<int, string>|null $names */
     public function buildTools(?array $names = null, ?ToolPolicy $policy = null): Tools;
 
-    /**
-     * @return array<int, string>
-     */
+    /** @return array<int, string> */
     public function names(): array;
 }

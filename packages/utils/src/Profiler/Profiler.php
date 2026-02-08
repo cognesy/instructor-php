@@ -26,8 +26,8 @@ class Profiler
         return self::get()->timeSinceLast();
     }
 
-    static public function summary() : void {
-        self::get()->getSummary();
+    static public function summary() : string {
+        return self::get()->getSummary();
     }
 
     public function timeSinceLast() : float {
@@ -46,20 +46,18 @@ class Profiler
         return $this->store($name, $time, $delta, $debugTrace, $context);
     }
 
-    public function getSummary() : void {
+    public function getSummary() : string {
         $checkpoints = $this->checkpoints;
         $total = $this->getTotalTime();
         $output = "Total time: $total usec\n";
         foreach ($checkpoints as $checkpoint) {
             $delta = $checkpoint->delta * 1_000_000;
-            // format $delta - remove fractional part
             $delta = number_format($delta, 2);
-            // add spaces to align deltas
             $delta = str_pad($delta, 10, ' ', STR_PAD_LEFT);
             $context = $this->renderContext($checkpoint->context);
             $output .= " $delta usec | {$checkpoint->name}{$context} | {$checkpoint->debug}\n";
         }
-        print $output;
+        return $output;
     }
 
     public function getFirst() : Checkpoint {

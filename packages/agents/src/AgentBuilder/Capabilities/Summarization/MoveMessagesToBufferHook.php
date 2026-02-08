@@ -22,7 +22,7 @@ final readonly class MoveMessagesToBufferHook implements HookInterface
         private string $bufferSection,
         ?CanHandleEvents $events = null,
     ) {
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = EventBusResolver::using($events);
     }
 
     #[\Override]

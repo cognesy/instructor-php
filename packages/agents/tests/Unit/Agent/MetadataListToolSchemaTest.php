@@ -3,14 +3,22 @@
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Metadata\MetadataListTool;
-use Cognesy\Utils\Json\EmptyObject;
 
 describe('MetadataListTool schema', function () {
-    it('uses an object for empty properties', function () {
+    it('generates valid schema for parameterless tool', function () {
         $tool = new MetadataListTool();
         $schema = $tool->toToolSchema();
-        $properties = $schema['function']['parameters']['properties'] ?? null;
 
-        expect($properties)->toBeInstanceOf(EmptyObject::class);
+        expect($schema)->toMatchArray([
+            'type' => 'function',
+            'function' => [
+                'name' => 'list_metadata',
+                'description' => $tool->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'additionalProperties' => false,
+                ],
+            ],
+        ]);
     });
 });

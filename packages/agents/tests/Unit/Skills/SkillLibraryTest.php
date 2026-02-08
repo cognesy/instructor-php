@@ -18,8 +18,8 @@ describe('SkillLibrary', function () {
         TestHelpers::recursiveDelete($this->tempDir);
     });
 
-    it('creates library with default path', function () {
-        $library = new SkillLibrary();
+    it('creates library with explicit path', function () {
+        $library = new SkillLibrary($this->tempDir);
 
         expect($library)->toBeInstanceOf(SkillLibrary::class);
     });

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Auxiliary\Beads\Infrastructure\Execution;
 
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 /**
  * Command Executor Interface

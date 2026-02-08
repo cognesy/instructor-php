@@ -18,11 +18,17 @@ final class SubagentSpawning extends AgentEvent
         public readonly string $prompt,
         public readonly int $depth,
         public readonly int $maxDepth,
+        public readonly ?string $parentExecutionId = null,
+        public readonly ?int $parentStepNumber = null,
+        public readonly ?string $toolCallId = null,
     ) {
         $this->startedAt = new DateTimeImmutable();
 
         parent::__construct([
             'parentAgentId' => $this->parentAgentId,
+            'parentExecutionId' => $this->parentExecutionId,
+            'parentStepNumber' => $this->parentStepNumber,
+            'toolCallId' => $this->toolCallId,
             'subagent' => $this->subagentName,
             'prompt' => mb_substr($this->prompt, 0, 100) . (mb_strlen($this->prompt) > 100 ? '...' : ''),
             'depth' => $this->depth,

@@ -4,7 +4,7 @@ namespace Cognesy\AgentCtrl\OpenCode\Application\Dto;
 
 use Cognesy\AgentCtrl\Common\Collection\DecodedObjectCollection;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 /**
  * Response from OpenCode CLI execution

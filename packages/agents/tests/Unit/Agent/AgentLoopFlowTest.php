@@ -62,7 +62,16 @@ final class CountingEventEmitter implements CanEmitAgentEvents
 
     public function inferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void {}
 
-    public function subagentSpawning(string $parentAgentId, string $subagentName, string $prompt, int $depth, int $maxDepth): void {}
+    public function subagentSpawning(
+        string $parentAgentId,
+        string $subagentName,
+        string $prompt,
+        int $depth,
+        int $maxDepth,
+        ?string $parentExecutionId = null,
+        ?int $parentStepNumber = null,
+        ?string $toolCallId = null,
+    ): void {}
 
     public function subagentCompleted(
         string $parentAgentId,
@@ -71,7 +80,10 @@ final class CountingEventEmitter implements CanEmitAgentEvents
         ExecutionStatus $status,
         int $steps,
         ?Usage $usage,
-        DateTimeImmutable $startedAt
+        DateTimeImmutable $startedAt,
+        ?string $parentExecutionId = null,
+        ?int $parentStepNumber = null,
+        ?string $toolCallId = null,
     ): void {}
 
     public function hookExecuted(string $hookType, string $tool, string $outcome, ?string $reason, DateTimeImmutable $startedAt): void {}
@@ -185,7 +197,7 @@ describe('AgentLoop flow', function () {
                     'arguments' => json_encode(['arg' => 'val']),
                 ]);
 
-                throw new ToolExecutionBlockedException($toolCall, 'TestHook', 'blocked');
+                throw new ToolExecutionBlockedException($toolCall, 'blocked', 'TestHook');
             }
         };
 
@@ -203,5 +215,38 @@ describe('AgentLoop flow', function () {
         expect($eventEmitter->toolCallBlockedCount)->toBe(1);
         expect($eventEmitter->executionFailedCount)->toBe(1);
         expect($eventEmitter->stepCompletedCount)->toBe(1);
+    });
+
+    it('uses new emitter in executor when with() receives both tools and eventEmitter', function () {
+        $tools = new Tools();
+        $oldEmitter = new CountingEventEmitter();
+        $newEmitter = new CountingEventEmitter();
+        $step = new AgentStep();
+        $interceptor = new InjectStepInterceptor($step);
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $originalLoop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $oldEmitter, $interceptor),
+            driver: $driver,
+            eventEmitter: $oldEmitter,
+            interceptor: $interceptor,
+        );
+
+        $newTools = new Tools();
+        $newLoop = $originalLoop->with(tools: $newTools, eventEmitter: $newEmitter);
+
+        $newLoop->execute(AgentState::empty());
+
+        expect($newEmitter->stepStartedCount)->toBe(1)
+            ->and($newEmitter->stepCompletedCount)->toBe(1)
+            ->and($oldEmitter->stepStartedCount)->toBe(0)
+            ->and($oldEmitter->stepCompletedCount)->toBe(0);
     });
 });

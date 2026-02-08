@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Drivers\ReAct;
 
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -38,7 +39,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter
+final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -148,9 +149,17 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter
         return $state->withCurrentStep($step);
     }
 
+    // ACCESSORS ///////////////////////////////////////////////////////////////
+
+    #[\Override]
+    public function llmProvider(): LLMProvider {
+        return $this->llm;
+    }
+
     // MUTATORS ////////////////////////////////////////////////////////////////
 
-    public function withLLMProvider(LLMProvider $llm): self {
+    #[\Override]
+    public function withLLMProvider(LLMProvider $llm): static {
         $clone = clone $this;
         $clone->llm = $llm;
         return $clone;

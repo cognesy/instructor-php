@@ -4,8 +4,8 @@ namespace Tests\Addons\Unit\Tools;
 
 use Cognesy\Addons\AgentBuilder\Capabilities\Bash\BashPolicy;
 use Cognesy\Addons\AgentBuilder\Capabilities\Bash\BashTool;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Testing\MockSandbox;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Testing\MockSandbox;
 
 describe('BashTool', function () {
 

@@ -10,7 +10,7 @@ use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\TextEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 /**
  * Parses OpenCode CLI output into structured response

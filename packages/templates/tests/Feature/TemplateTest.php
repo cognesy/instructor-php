@@ -11,13 +11,19 @@ use Cognesy\Template\Template;
 it('can use "using->get->with" syntax', function () {
     $prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
-    expect($prompt->toMessages()->toArray())->toBe([['role' => 'user', 'content' => 'Hello, World!']]);
+    $messages = $prompt->toMessages()->toArray();
+    expect($messages)->toHaveCount(1);
+    expect($messages[0]['role'])->toBe('user');
+    expect($messages[0]['content'])->toBe('Hello, World!');
 });
 
 it('can use short "make->with" syntax', function () {
     $prompt = Template::make('demo-twig:hello')->with(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
-    expect($prompt->toMessages()->toArray())->toBe([['role' => 'user', 'content' => 'Hello, World!']]);
+    $messages = $prompt->toMessages()->toArray();
+    expect($messages)->toHaveCount(1);
+    expect($messages[0]['role'])->toBe('user');
+    expect($messages[0]['content'])->toBe('Hello, World!');
 });
 
 it('can render the template using short syntax', function () {
@@ -27,7 +33,10 @@ it('can render the template using short syntax', function () {
 
 it('can render the template to messages using short syntax', function () {
     $messages = Template::messages('demo-twig:hello', ['name' => 'World']);
-    expect($messages->toArray())->toBe([['role' => 'user', 'content' => 'Hello, World!']]);
+    $array = $messages->toArray();
+    expect($array)->toHaveCount(1);
+    expect($array[0]['role'])->toBe('user');
+    expect($array[0]['content'])->toBe('Hello, World!');
 });
 
 // OTHER METHOD CHECKS

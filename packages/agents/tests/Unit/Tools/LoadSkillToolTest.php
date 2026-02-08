@@ -31,7 +31,8 @@ SKILL;
     });
 
     it('has correct name and description', function () {
-        $tool = new LoadSkillTool();
+        $library = new SkillLibrary($this->tempDir);
+        $tool = new LoadSkillTool($library);
 
         expect($tool->name())->toBe('load_skill');
         expect($tool->description())->toContain('Load a skill');
@@ -95,7 +96,8 @@ SKILL;
     });
 
     it('generates valid tool schema', function () {
-        $tool = new LoadSkillTool();
+        $library = new SkillLibrary($this->tempDir);
+        $tool = new LoadSkillTool($library);
         $schema = $tool->toToolSchema();
 
         expect($schema['type'])->toBe('function');

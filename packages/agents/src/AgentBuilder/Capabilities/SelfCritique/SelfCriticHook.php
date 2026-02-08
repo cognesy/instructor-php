@@ -11,15 +11,13 @@ use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 
-/**
- * Hook that evaluates agent responses for factual errors and evidence contradictions.
- */
 final class SelfCriticHook implements HookInterface
 {
-    public const METADATA_KEY = 'self_critic_result';
-    public const ITERATION_KEY = 'self_critic_iteration';
+    public const string METADATA_KEY = 'self_critic_result';
+    public const string ITERATION_KEY = 'self_critic_iteration';
+    private const string ORIGINAL_TASK_KEY = 'self_critic_original_task';
 
-    private const CRITIC_PROMPT = <<<'PROMPT'
+    private const string CRITIC_PROMPT = <<<'PROMPT'
 You are a critical evaluator checking for factual errors and evidence contradictions.
 
 ## Original Task
@@ -61,207 +59,136 @@ When rejecting, be specific:
 - In suggestions: Name specific tool calls or files to check
 PROMPT;
 
-    private int $currentIteration = 0;
-    private ?string $originalTask = null;
-    private ?SelfCriticResult $lastResult = null;
-
     public function __construct(
         private int $maxCriticIterations = 2,
-        private bool $verbose = true,
         private ?string $llmPreset = null,
+        private ?StructuredOutput $structuredOutput = null,
     ) {}
-
-    public function lastResult(): ?SelfCriticResult
-    {
-        return $this->lastResult;
-    }
-
-    public function wasApproved(): bool
-    {
-        return $this->lastResult?->approved ?? false;
-    }
-
-    public function iterationCount(): int
-    {
-        return $this->currentIteration;
-    }
 
     #[\Override]
     public function handle(HookContext $context): HookContext
     {
         $state = $context->state();
-        // Capture original task from first message (before any processing)
-        if ($this->originalTask === null && $state->messages()->count() > 0) {
-            $firstMessage = $state->messages()->first();
-            $this->originalTask = $firstMessage !== null ? $firstMessage->toString() : '';
-        }
-
         $currentStep = $state->currentStep();
-        if ($currentStep === null) {
+
+        if ($currentStep === null || $currentStep->stepType() !== AgentStepType::FinalResponse) {
             return $context;
         }
 
-        $stepType = $currentStep->stepType();
-        if ($this->verbose) {
-            fwrite(STDERR, "  [SelfCritic] Checking step type: {$stepType->value}\n");
-        }
-
-        // Only critique final responses (not tool execution steps)
-        if ($stepType !== AgentStepType::FinalResponse) {
-            return $context;
-        }
-
-        // Check current iteration from metadata
+        $state = $this->ensureOriginalTaskCaptured($state);
         $iteration = $state->metadata()->get(self::ITERATION_KEY, 0);
-
         $response = $currentStep->outputMessages()->toString();
-        if (empty($response)) {
-            if ($this->verbose) {
-                fwrite(STDERR, "  [SelfCritic] Response is empty, skipping\n");
-            }
-            $state = $this->applyContinuationEvaluation(
-                state: $state,
-                result: null,
-                iteration: $iteration,
-                stepType: $stepType,
+
+        if ($response === '') {
+            return $context->withState(
+                $this->applyContinuationEvaluation($state, null, $iteration)
             );
-            return $context->withState($state);
         }
 
-        // Don't exceed max iterations
         if ($iteration >= $this->maxCriticIterations) {
-            if ($this->verbose) {
-                fwrite(STDERR, "  [SelfCritic] Max iterations ({$iteration}) reached, accepting response\n");
-            }
-
-            $result = new SelfCriticResult(
-                approved: false,
-                summary: 'Max iterations reached',
+            $result = new SelfCriticResult(approved: false, summary: 'Max iterations reached');
+            $state = $state
+                ->withMetadata(self::METADATA_KEY, $result)
+                ->withMetadata(self::ITERATION_KEY, $iteration);
+            return $context->withState(
+                $this->applyContinuationEvaluation($state, $result, $iteration)
             );
-
-            $state = $this->applyContinuationEvaluation(
-                state: $state
-                    ->withMetadata(self::METADATA_KEY, $result)
-                    ->withMetadata(self::ITERATION_KEY, $iteration),
-                result: $result,
-                iteration: $iteration,
-                stepType: $stepType,
-            );
-            return $context->withState($state);
         }
 
-        // Run critic evaluation using Instructor for structured output
-        if ($this->verbose) {
-            $preview = substr($response, 0, 60);
-            fwrite(STDERR, "  [SelfCritic] Evaluating: \"{$preview}...\"\n");
-        }
+        return $this->evaluateAndApply($context, $state, $iteration, $response);
+    }
 
+    // PRIVATE //////////////////////////////////////////////////////
+
+    private function evaluateAndApply(
+        HookContext $context,
+        AgentState $state,
+        int $iteration,
+        string $response,
+    ): HookContext {
+        $originalTask = $state->metadata()->get(self::ORIGINAL_TASK_KEY, '');
         $evidence = $this->extractEvidence($state);
-        $result = $this->evaluateResponse($this->originalTask ?? '', $evidence, $response);
-        $this->lastResult = $result;
-        $this->currentIteration = $iteration + 1;
+        $result = $this->evaluateResponse($originalTask, $evidence, $response);
+        $newIteration = $iteration + 1;
 
-        if ($this->verbose) {
-            $status = $result->approved ? '✓ APPROVED' : '✗ NEEDS IMPROVEMENT';
-            fwrite(STDERR, "  [SelfCritic] {$status}: {$result->summary}\n");
-        }
-
-        // Store result in metadata for continuation check
         $state = $state
             ->withMetadata(self::METADATA_KEY, $result)
-            ->withMetadata(self::ITERATION_KEY, $this->currentIteration);
+            ->withMetadata(self::ITERATION_KEY, $newIteration);
 
-        // If approved, return the state as-is
-        $state = $this->applyContinuationEvaluation(
-            state: $state,
-            result: $result,
-            iteration: $this->currentIteration,
-            stepType: $stepType,
-        );
+        $state = $this->applyContinuationEvaluation($state, $result, $newIteration);
 
-        if ($result->approved) {
-            return $context->withState($state);
+        return match(true) {
+            $result->approved => $context->withState($state),
+            default => $context->withState($this->injectFeedback($state, $result, $newIteration)),
+        };
+    }
+
+    private function ensureOriginalTaskCaptured(AgentState $state): AgentState
+    {
+        if ($state->metadata()->get(self::ORIGINAL_TASK_KEY) !== null) {
+            return $state;
         }
+        $firstMessage = $state->messages()->first();
+        $task = $firstMessage?->toString() ?? '';
+        return $state->withMetadata(self::ORIGINAL_TASK_KEY, $task);
+    }
 
-        if ($this->verbose) {
-            fwrite(STDERR, "  [SelfCritic] Requesting revision (iteration {$this->currentIteration}/{$this->maxCriticIterations})\n");
-        }
-
-        // Not approved - inject feedback so the agent continues
+    private function injectFeedback(AgentState $state, SelfCriticResult $result, int $iteration): AgentState
+    {
         $feedback = $result->toFeedback();
-        $directive = !empty($result->suggestions)
-            ? "Execute these tool calls to gather correct information, then provide a revised answer."
-            : "Please investigate further and revise your response.";
+        $directive = match(true) {
+            $result->suggestions !== [] => 'Execute these tool calls to gather correct information, then provide a revised answer.',
+            default => 'Please investigate further and revise your response.',
+        };
 
-        $feedbackMessage = Messages::fromArray([
-            [
-                'role' => 'user',
-                'content' => "[CORRECTION REQUIRED - Iteration {$this->currentIteration}]\n\n" .
-                    "**Problem:** {$result->summary}\n\n{$feedback}\n\n" .
-                    "**Action:** {$directive}",
-            ],
-        ]);
+        $feedbackMessage = Messages::fromArray([[
+            'role' => 'user',
+            'content' => "[CORRECTION REQUIRED - Iteration {$iteration}]\n\n"
+                . "**Problem:** {$result->summary}\n\n{$feedback}\n\n"
+                . "**Action:** {$directive}",
+        ]]);
 
-        // Add the current response + feedback to messages so agent can improve
-        $state = $state->withMessages(
-            $state->messages()->appendMessages(
-                $currentStep->outputMessages()
-            )->appendMessages($feedbackMessage)
+        $currentStep = $state->currentStep();
+        return $state->withMessages(
+            $state->messages()
+                ->appendMessages($currentStep->outputMessages())
+                ->appendMessages($feedbackMessage)
         );
-        return $context->withState($state);
     }
 
     private function applyContinuationEvaluation(
         AgentState $state,
         ?SelfCriticResult $result,
         int $iteration,
-        AgentStepType $stepType,
     ): AgentState {
-        if ($stepType !== AgentStepType::FinalResponse) {
-            return $state;
-        }
-
-        if ($result === null) {
-            return $state;
-        }
-
-        if ($result->approved) {
-            return $state;
-        }
-
-        if ($iteration >= $this->maxCriticIterations) {
-            return $state->withStopSignal(new StopSignal(
+        return match(true) {
+            $result === null => $state,
+            $result->approved => $state,
+            $iteration >= $this->maxCriticIterations => $state->withStopSignal(new StopSignal(
                 reason: StopReason::RetryLimitReached,
                 message: sprintf('Max self-critic iterations reached: %d/%d', $iteration, $this->maxCriticIterations),
                 context: ['iteration' => $iteration, 'maxIterations' => $this->maxCriticIterations],
                 source: self::class,
-            ));
-        }
-
-        return $state->withExecutionContinued();
+            )),
+            default => $state->withExecutionContinued(),
+        };
     }
 
-    /**
-     * Extract evidence from agent's tool execution history.
-     */
     private function extractEvidence(AgentState $state): string
     {
         $evidence = [];
 
         foreach ($state->steps() as $step) {
-            // Include tool calls and their results
             if ($step->hasToolCalls()) {
                 foreach ($step->requestedToolCalls()->all() as $toolCall) {
                     $evidence[] = "Tool: {$toolCall->name()}";
                     $args = $toolCall->args();
-                    if (!empty($args)) {
-                        $argStr = json_encode($args, JSON_UNESCAPED_SLASHES);
-                        $evidence[] = "Args: {$argStr}";
+                    if ($args !== []) {
+                        $evidence[] = "Args: " . json_encode($args, JSON_UNESCAPED_SLASHES);
                     }
                 }
             }
 
-            // Include tool execution results
             if ($step->toolExecutions()->hasExecutions()) {
                 foreach ($step->toolExecutions()->all() as $execution) {
                     $value = $execution->value();
@@ -273,12 +200,9 @@ PROMPT;
             }
         }
 
-        return empty($evidence) ? '(No tool calls made)' : implode("\n\n", $evidence);
+        return $evidence === [] ? '(No tool calls made)' : implode("\n\n", $evidence);
     }
 
-    /**
-     * Truncate long content while preserving beginning and end.
-     */
     private function truncateContent(string $content, int $maxLength = 6000): string
     {
         if (strlen($content) <= $maxLength) {
@@ -288,9 +212,9 @@ PROMPT;
         $halfLength = (int)($maxLength / 2);
         $omitted = strlen($content) - $maxLength;
 
-        return substr($content, 0, $halfLength) .
-            "\n\n... [{$omitted} characters omitted] ...\n\n" .
-            substr($content, -$halfLength);
+        return substr($content, 0, $halfLength)
+            . "\n\n... [{$omitted} characters omitted] ...\n\n"
+            . substr($content, -$halfLength);
     }
 
     private function evaluateResponse(string $task, string $evidence, string $response): SelfCriticResult
@@ -298,7 +222,7 @@ PROMPT;
         $prompt = sprintf(self::CRITIC_PROMPT, $task, $evidence, $response);
 
         try {
-            $structured = (new StructuredOutput())
+            $structured = ($this->structuredOutput ?? new StructuredOutput())
                 ->withMessages($prompt)
                 ->withResponseClass(SelfCriticResult::class)
                 ->withMaxRetries(2);
@@ -309,11 +233,7 @@ PROMPT;
 
             /** @var SelfCriticResult */
             return $structured->get();
-        } catch (\Throwable $e) {
-            // On failure, approve to avoid blocking
-            if ($this->verbose) {
-                fwrite(STDERR, "  [SelfCritic] Evaluation failed: {$e->getMessage()}\n");
-            }
+        } catch (\Throwable) {
             return new SelfCriticResult(
                 approved: true,
                 summary: 'Critic evaluation failed, approving by default.',

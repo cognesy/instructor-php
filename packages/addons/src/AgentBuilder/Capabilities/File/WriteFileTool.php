@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\AgentBuilder\Capabilities\File;
 
 use Cognesy\Addons\Agent\Tools\BaseTool;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Sandbox;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
 
 class WriteFileTool extends BaseTool
 {

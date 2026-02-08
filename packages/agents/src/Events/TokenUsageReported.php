@@ -34,7 +34,7 @@ final class TokenUsageReported extends AgentEvent
     #[\Override]
     public function __toString(): string {
         $parentInfo = $this->parentAgentId ? " (parent={$this->parentAgentId})" : '';
-        $contextInfo = !empty($this->context) ? ' ' . json_encode($this->context) : '';
+        $contextInfo = $this->context !== [] ? ' ' . json_encode($this->context) : '';
 
         return sprintf(
             'Token usage [%s]: %s - %d tokens%s%s',

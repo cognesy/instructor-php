@@ -3,6 +3,7 @@
 namespace Cognesy\Agents\Drivers\ToolCalling;
 
 use Cognesy\Agents\Core\Collections\ToolExecutions;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -48,24 +49,30 @@ class ToolExecutionFormatter
 
     protected function toolExecutionSuccessMessage(ToolCall $toolCall, Success $result) : Message {
         $value = $result->unwrap();
+        $content = $this->formatResultContent($value);
         return new Message(
             role: 'tool',
-            content: match(true) {
-                is_string($value) => $value,
-                $value instanceof \Stringable => $value->__toString(),
-                is_array($value) => Json::encode($value),
-                is_object($value) => Json::encode($value),
-                $value === null => 'null',
-                is_bool($value) => $value ? 'true' : 'false',
-                is_int($value) || is_float($value) => (string) $value,
-                default => var_export($value, true),
-            },
+            content: $content,
             metadata: [
                 'tool_call_id' => $toolCall->id(),
                 'tool_name' => $toolCall->name(),
-                'result' => $value
+                'result' => $content,
             ]
         );
+    }
+
+    private function formatResultContent(mixed $value): string {
+        return match(true) {
+            is_string($value) => $value,
+            $value instanceof \Stringable => $value->__toString(),
+            is_array($value) => Json::encode($value),
+            $value instanceof AgentState => $value->finalResponse()->toString(),
+            is_object($value) => Json::encode($value),
+            $value === null => 'null',
+            is_bool($value) => $value ? 'true' : 'false',
+            is_int($value) || is_float($value) => (string) $value,
+            default => var_export($value, true),
+        };
     }
 
     protected function toolExecutionErrorMessage(ToolCall $toolCall, Failure $result) : Message {

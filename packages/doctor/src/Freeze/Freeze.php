@@ -2,9 +2,9 @@
 
 namespace Cognesy\Doctor\Freeze;
 
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
-use Cognesy\Utils\Sandbox\Sandbox;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Sandbox;
 
 class Freeze
 {

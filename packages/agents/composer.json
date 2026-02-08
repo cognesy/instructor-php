@@ -21,6 +21,7 @@
     "cognesy/instructor-http-client": "^1.22",
     "cognesy/instructor-messages": "^1.22",
     "cognesy/instructor-polyglot": "^1.22",
+    "cognesy/instructor-sandbox": "^1.22",
     "cognesy/instructor-schema": "^1.22",
     "cognesy/instructor-struct": "^1.22",
     "cognesy/instructor-utils": "^1.22"

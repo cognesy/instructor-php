@@ -106,6 +106,10 @@ abstract class BaseTool implements ToolInterface, CanAccessAgentState
         ];
     }
 
+    protected function arg(array $args, string $name, int $position, mixed $default = null): mixed {
+        return $args[$name] ?? $args[$position] ?? $default;
+    }
+
     // INTERNAL ////////////////////////////////////////////////
 
     protected function paramsJsonSchema(): array {
@@ -133,7 +137,7 @@ abstract class BaseTool implements ToolInterface, CanAccessAgentState
      * Extract summary from description (first sentence or first line)
      */
     protected function extractSummary(string $description): string {
-        if (empty($description)) {
+        if ($description === '') {
             return '';
         }
 

@@ -7,7 +7,7 @@ use Cognesy\AgentCtrl\Common\Value\CommandSpec;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\Utils\Sandbox\Utils\ProcUtils;
+use Cognesy\Sandbox\Utils\ProcUtils;
 
 /**
  * Builds command line arguments for Codex CLI exec command

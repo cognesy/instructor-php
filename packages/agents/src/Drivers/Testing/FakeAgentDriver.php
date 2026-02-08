@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Drivers\Testing;
 
 use Cognesy\Agents\Core\Collections\ErrorList;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -15,7 +16,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-final class FakeAgentDriver implements CanUseTools
+final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
 {
     /** @var list<ScenarioStep> */
     private array $steps;
@@ -87,7 +88,13 @@ final class FakeAgentDriver implements CanUseTools
         );
     }
 
-    public function withLLMProvider(LLMProvider $provider): self {
+    #[\Override]
+    public function llmProvider(): LLMProvider {
+        return LLMProvider::new();
+    }
+
+    #[\Override]
+    public function withLLMProvider(LLMProvider $llm): static {
         $childSteps = $this->childSteps ?? [ScenarioStep::final('ok')];
         return new self(
             steps: $childSteps,

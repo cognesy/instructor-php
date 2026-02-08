@@ -27,9 +27,10 @@ it('can process a simple task', function() {
     expect($addition->result())->toBe(3);
     expect($addition->get('result'))->toBe(3);
 
-    // calculate time taken
-    Profiler::summary();
-})->skip("To be reimplemented using new module system");
+    // verify profiler returns summary as string
+    $summary = Profiler::summary();
+    expect($summary)->toContain('Total time:');
+});
 
 it('can return example', function() {
     $add = new TestModule;
@@ -37,7 +38,7 @@ it('can return example', function() {
 
     expect($addition->asExample()->inputString())->toBe('{"numberA":1,"numberB":2}');
     expect($addition->asExample()->output())->toBe(['result' => 3]);
-})->skip("To be reimplemented using new module system");
+});
 
 it('can process a closure task', function() {
     $add = function(int $a, int $b) : int {
@@ -46,9 +47,8 @@ it('can process a closure task', function() {
     $addition = new CallClosure($add);
     $sum = $addition->for(a: 1, b: 2);
 
-    expect($sum->result())->toBe(3);
-    expect($sum->get('result'))->toBe(3);
-})->skip("To be reimplemented using new module system");
+    expect($sum)->toBe(3);
+});
 
 //it('can process predict task', function() {
 //    $mockHttp = MockHttp::get([

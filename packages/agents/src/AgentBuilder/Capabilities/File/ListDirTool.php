@@ -3,6 +3,8 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\File;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 class ListDirTool extends BaseTool
 {
@@ -10,7 +12,7 @@ class ListDirTool extends BaseTool
     private int $maxEntries;
 
     public function __construct(
-        ?string $baseDir = null,
+        string $baseDir,
         int $maxEntries = 50,
     ) {
         parent::__construct(
@@ -26,7 +28,7 @@ Examples:
 Use to explore project structure before searching for specific files.
 DESC,
         );
-        $this->baseDir = rtrim($baseDir ?? getcwd() ?: '/tmp', '/');
+        $this->baseDir = rtrim($baseDir, '/');
         $this->maxEntries = $maxEntries;
     }
 
@@ -36,7 +38,7 @@ DESC,
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $path = $args['path'] ?? $args[0] ?? '.';
+        $path = $this->arg($args, 'path', 0, '.');
 
         // Resolve path relative to baseDir
         if (!str_starts_with($path, '/')) {
@@ -58,7 +60,7 @@ DESC,
         $entries = array_filter($entries, fn($e) => $e !== '.' && $e !== '..');
         $entries = array_values($entries);
 
-        if (empty($entries)) {
+        if ($entries === []) {
             return "Directory '{$path}' is empty";
         }
 
@@ -94,22 +96,14 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'path' => [
-                            'type' => 'string',
-                            'description' => 'Directory path. Examples: "." (root), "src", "packages/addons"',
-                        ],
-                    ],
-                    'required' => ['path'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('path', 'Directory path. Examples: "." (root), "src", "packages/addons"'),
+                ])
+                ->withRequiredProperties(['path'])
+        )->toArray();
     }
 }

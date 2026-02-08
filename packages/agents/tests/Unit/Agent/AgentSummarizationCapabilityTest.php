@@ -25,7 +25,7 @@ it('moves overflow messages into the buffer when summarization is enabled', func
         maxSummaryTokens: 64,
     );
 
-    $agent = AgentBuilder::new()
+    $agent = AgentBuilder::base()
         ->withDriver(new FakeAgentDriver([ScenarioStep::final('ok')]))
         ->withCapability(new UseSummarization($policy, $summarizer))
         ->build();

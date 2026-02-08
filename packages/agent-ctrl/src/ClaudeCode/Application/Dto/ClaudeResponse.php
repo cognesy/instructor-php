@@ -3,7 +3,7 @@
 namespace Cognesy\AgentCtrl\ClaudeCode\Application\Dto;
 
 use Cognesy\AgentCtrl\Common\Collection\DecodedObjectCollection;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 final readonly class ClaudeResponse
 {

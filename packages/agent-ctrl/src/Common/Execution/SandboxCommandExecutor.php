@@ -12,10 +12,9 @@ use Cognesy\AgentCtrl\Event\SandboxInitialized;
 use Cognesy\AgentCtrl\Event\SandboxPolicyConfigured;
 use Cognesy\AgentCtrl\Event\SandboxReady;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
-use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
-use Cognesy\Utils\Sandbox\Sandbox;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Sandbox;
 use Throwable;
 
 /**
@@ -24,7 +23,7 @@ use Throwable;
  */
 final class SandboxCommandExecutor implements CommandExecutor
 {
-    private CanStreamCommand $sandbox;
+    private CanExecuteCommand $sandbox;
     private ExecutionPolicy $policy;
     private int $maxRetries;
     private SandboxDriver $driver;
@@ -148,10 +147,10 @@ final class SandboxCommandExecutor implements CommandExecutor
             $attempt++;
 
             try {
-                $result = $this->sandbox->executeStreaming(
+                $result = $this->sandbox->execute(
                     $command->argv()->toArray(),
-                    $onOutput,
-                    $command->stdin()
+                    $command->stdin(),
+                    $onOutput
                 );
 
                 $attemptDuration = (microtime(true) - $attemptStart) * 1000;

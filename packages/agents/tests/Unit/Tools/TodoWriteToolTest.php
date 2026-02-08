@@ -67,12 +67,14 @@ describe('TodoWriteTool', function () {
         ]))->toThrow(\InvalidArgumentException::class, "'content' is required");
     });
 
-    it('throws exception for missing status', function () {
+    it('defaults missing status to pending', function () {
         $tool = new TodoWriteTool();
 
-        expect(fn() => $tool([
+        $result = $tool([
             ['content' => 'Task', 'activeForm' => 'Doing task'],
-        ]))->toThrow(\InvalidArgumentException::class, "'status' is required");
+        ]);
+
+        expect($result->tasks[0]['status'])->toBe('pending');
     });
 
     it('throws exception for invalid status', function () {
@@ -80,15 +82,17 @@ describe('TodoWriteTool', function () {
 
         expect(fn() => $tool([
             ['content' => 'Task', 'status' => 'invalid', 'activeForm' => 'Doing task'],
-        ]))->toThrow(\InvalidArgumentException::class, "'status' must be one of");
+        ]))->toThrow(\ValueError::class);
     });
 
-    it('throws exception for missing activeForm', function () {
+    it('defaults missing activeForm to content', function () {
         $tool = new TodoWriteTool();
 
-        expect(fn() => $tool([
+        $result = $tool([
             ['content' => 'Task', 'status' => 'pending'],
-        ]))->toThrow(\InvalidArgumentException::class, "'activeForm' is required");
+        ]);
+
+        expect($result->tasks[0]['activeForm'])->toBe('Task');
     });
 
     it('throws exception for empty activeForm', function () {

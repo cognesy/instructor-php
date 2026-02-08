@@ -54,7 +54,9 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         ToolCalls $toolCalls,
         AgentState $state,
     ) : ToolExecutions {
-        $executions = new ToolExecutions();
+        /** @var ToolExecution[] $results */
+        $results = [];
+
         foreach ($toolCalls->each() as $toolCall) {
             // Before tool use hook
             $hookContext = $this->interceptor->intercept(HookContext::beforeToolUse($state, $toolCall));
@@ -65,7 +67,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
                     toolCall: $toolCall,
                     message: 'Tool execution blocked by beforeToolUse hook.',
                 );
-                $executions = $executions->withAddedExecution($execution);
+                $results[] = $execution;
                 if ($this->stopOnToolBlock) {
                     break;
                 }
@@ -76,7 +78,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             $this->eventEmitter->toolCallStarted($toolCall, new DateTimeImmutable());
 
             // Execute the tool call
-            $execution = $this->executeToolCall($toolCall, $state); // ToolExecution
+            $execution = $this->executeToolCall($toolCall, $state);
 
             // Emit tool call completed event
             $this->eventEmitter->toolCallCompleted($execution);
@@ -86,12 +88,12 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             $execution = $hookContext->toolExecution() ?? $execution;
             $state = $hookContext->state();
 
-            // Add execution to the collection
-            $executions = $executions->withAddedExecution($execution);
+            $results[] = $execution;
 
             $this->handleFailure($execution, $toolCall);
         }
-        return $executions;
+
+        return new ToolExecutions(...$results);
     }
 
     // INTERNAL /////////////////////////////////////////////
@@ -130,11 +132,16 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
     private function prepareTool(ToolCall $toolCall, AgentState $state): ToolInterface {
         $toolName = $toolCall->name();
         $tool = $this->tools->get($toolName);
-        return match(true) {
-            // Inject agent state if tool may need it
-            $tool instanceof CanAccessAgentState => $tool->withAgentState($state),
-            default => $tool,
-        };
+
+        if ($tool instanceof CanAccessAgentState) {
+            $tool = $tool->withAgentState($state);
+        }
+
+        if ($tool instanceof CanAccessToolCall) {
+            $tool = $tool->withToolCall($toolCall);
+        }
+
+        return $tool;
     }
 
     private function validateArgs(ToolInterface $tool, array $args): Result {
@@ -167,7 +174,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         if (!$failure instanceof Failure) {
             return;
         }
-        if ($this->throwOnToolFailure) {
+        if (!$this->throwOnToolFailure) {
             return;
         }
         throw match(true) {

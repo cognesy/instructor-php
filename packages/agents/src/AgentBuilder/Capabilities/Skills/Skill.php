@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-class Skill
+final readonly class Skill
 {
     /** @param list<string> $resources */
     public function __construct(
@@ -28,7 +28,7 @@ class Skill
         $parts[] = "<skill name=\"{$this->name}\">";
         $parts[] = $this->body;
 
-        if (!empty($this->resources)) {
+        if ($this->resources !== []) {
             $parts[] = "";
             $parts[] = "## Available Resources";
             foreach ($this->resources as $resource) {

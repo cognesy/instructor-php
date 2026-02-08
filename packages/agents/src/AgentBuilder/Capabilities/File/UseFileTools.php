@@ -6,15 +6,15 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 
-class UseFileTools implements AgentCapability
+final class UseFileTools implements AgentCapability
 {
     public function __construct(
-        private ?string $baseDir = null,
+        private string $baseDir,
     ) {}
 
     #[\Override]
     public function install(AgentBuilder $builder): void {
-        $baseDir = $this->baseDir ?? getcwd() ?: '/tmp';
+        $baseDir = $this->baseDir;
 
         $fileTools = new Tools(
             ReadFileTool::inDirectory($baseDir),

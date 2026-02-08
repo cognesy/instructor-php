@@ -27,6 +27,7 @@ class JsonSchemaType implements JsonSerializable, Stringable
                 fn($item) => $item['type'] ?? '',
                 $data['anyOf'],
             ),
+            default => [], // No type specified = any type
         };
 
         // deduplicate types

@@ -5,14 +5,13 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Bash;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
 
-class UseBash implements AgentCapability
+final class UseBash implements AgentCapability
 {
     public function __construct(
         private ?ExecutionPolicy $policy = null,
-        private ?string $baseDir = null,
-        private int $timeout = 120,
+        private string $baseDir = '',
         private ?BashPolicy $outputPolicy = null,
     ) {}
 
@@ -21,7 +20,6 @@ class UseBash implements AgentCapability
         $bashTool = new BashTool(
             policy: $this->policy,
             baseDir: $this->baseDir,
-            timeout: $this->timeout,
             outputPolicy: $this->outputPolicy
         );
         $builder->withTools(new Tools($bashTool));

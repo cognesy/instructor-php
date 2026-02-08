@@ -109,6 +109,12 @@
             "composer_name": "cognesy/instructor-polyglot"
         },
         {
+            "local": "packages/sandbox",
+            "repo": "cognesy/instructor-sandbox",
+            "github_name": "instructor-sandbox",
+            "composer_name": "cognesy/instructor-sandbox"
+        },
+        {
             "local": "packages/schema",
             "repo": "cognesy/instructor-schema",
             "github_name": "instructor-schema",

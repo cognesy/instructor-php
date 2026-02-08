@@ -3,13 +3,13 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Tools;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistryInterface;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 final class ToolsTool extends BaseTool
 {
     public function __construct(
         private readonly ToolRegistryInterface $registry,
-        private readonly ?string $locale = null,
     ) {
         parent::__construct(
             name: 'tools',
@@ -20,14 +20,7 @@ final class ToolsTool extends BaseTool
     #[\Override]
     public function __invoke(mixed ...$args): array
     {
-        $action = $args['action'] ?? null;
-        $command = $args['command'] ?? null;
-
-        if ($action === null && is_string($command)) {
-            [$action, $args] = $this->parseCommand($command, $args);
-        }
-
-        $action = $action ?? 'list';
+        $action = $this->arg($args, 'action', 0, 'list');
 
         return match ($action) {
             'list' => $this->handleList($args),
@@ -43,50 +36,23 @@ final class ToolsTool extends BaseTool
     #[\Override]
     public function toToolSchema(): array
     {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'action' => [
-                            'type' => 'string',
-                            'enum' => ['list', 'help', 'search'],
-                            'description' => 'Action to perform: list tools, get help on a tool, or search tools.',
-                        ],
-                        'tool' => [
-                            'type' => 'string',
-                            'description' => 'Tool name to get full spec for (when action=help).',
-                        ],
-                        'query' => [
-                            'type' => 'string',
-                            'description' => 'Search query (when action=search).',
-                        ],
-                        'limit' => [
-                            'type' => 'integer',
-                            'description' => 'Maximum number of results to return.',
-                            'minimum' => 1,
-                            'maximum' => 100,
-                        ],
-                        'command' => [
-                            'type' => 'string',
-                            'description' => 'CLI-like fallback: "--list", "--help <tool>", or "--search <text>".',
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::enum('action', ['list', 'help', 'search'], 'Action to perform: list tools, get help on a tool, or search tools.'),
+                    JsonSchema::string('tool', 'Tool name to get full spec for (when action=help).'),
+                    JsonSchema::string('query', 'Search query (when action=search).'),
+                    JsonSchema::integer('limit', 'Maximum number of results to return.', meta: ['minimum' => 1, 'maximum' => 100]),
+                ])
+        )->toArray();
     }
 
-    /**
-     * @param array<string, mixed> $args
-     */
     private function handleList(array $args): array
     {
         $limit = $this->resolveLimit($args);
-        $tools = $this->registry->listMetadata($this->locale);
+        $tools = $this->registry->listMetadata();
 
         return [
             'success' => true,
@@ -95,9 +61,6 @@ final class ToolsTool extends BaseTool
         ];
     }
 
-    /**
-     * @param array<string, mixed> $args
-     */
     private function handleHelp(array $args): array
     {
         $toolName = $args['tool'] ?? $args['name'] ?? null;
@@ -108,14 +71,14 @@ final class ToolsTool extends BaseTool
             ];
         }
 
-        if (! $this->registry->has($toolName)) {
+        if (!$this->registry->has($toolName)) {
             return [
                 'success' => false,
                 'error' => "Tool '{$toolName}' not found.",
             ];
         }
 
-        $specs = $this->registry->listFullSpecs($this->locale);
+        $specs = $this->registry->listFullSpecs();
         foreach ($specs as $spec) {
             if (($spec['name'] ?? null) === $toolName) {
                 return [
@@ -131,9 +94,6 @@ final class ToolsTool extends BaseTool
         ];
     }
 
-    /**
-     * @param array<string, mixed> $args
-     */
     private function handleSearch(array $args): array
     {
         $query = $args['query'] ?? null;
@@ -145,7 +105,7 @@ final class ToolsTool extends BaseTool
         }
 
         $limit = $this->resolveLimit($args);
-        $results = $this->registry->search($query, $this->locale);
+        $results = $this->registry->search($query);
 
         return [
             'success' => true,
@@ -155,37 +115,6 @@ final class ToolsTool extends BaseTool
         ];
     }
 
-    /**
-     * @param array<string, mixed> $args
-     * @return array{0: string|null, 1: array<string, mixed>}
-     */
-    private function parseCommand(string $command, array $args): array
-    {
-        $command = trim($command);
-        if ($command === '') {
-            return [null, $args];
-        }
-
-        if (str_contains($command, '--list')) {
-            return ['list', $args];
-        }
-
-        if (preg_match('/--help\\s+(\\S+)/', $command, $matches)) {
-            $args['tool'] = $matches[1];
-            return ['help', $args];
-        }
-
-        if (preg_match('/--search\\s+(.+)$/', $command, $matches)) {
-            $args['query'] = trim($matches[1], "\"' ");
-            return ['search', $args];
-        }
-
-        return [null, $args];
-    }
-
-    /**
-     * @param array<string, mixed> $args
-     */
     private function resolveLimit(array $args): ?int
     {
         $limit = $args['limit'] ?? null;

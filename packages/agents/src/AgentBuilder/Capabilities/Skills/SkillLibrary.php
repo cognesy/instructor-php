@@ -2,24 +2,22 @@
 
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
-use Symfony\Component\Yaml\Yaml;
+use Cognesy\Agents\AgentTemplate\Definitions\MarkdownFrontmatter;
 
 final class SkillLibrary
 {
     private const SKILL_FILENAME = 'SKILL.md';
 
-    private string $skillsPath;
-
     /** @var array<string, array{name: string, description: string, path: string, dir: string}> */
-    private array $metadata = [];
+    private array $metadata;
 
     /** @var array<string, Skill> */
     private array $loadedSkills = [];
 
-    private bool $scanned = false;
-
-    public function __construct(?string $skillsPath = null) {
-        $this->skillsPath = $skillsPath ?? (getcwd() ?: '/tmp') . '/skills';
+    public function __construct(
+        private readonly string $skillsPath,
+    ) {
+        $this->metadata = $this->scanDirectory();
     }
 
     public static function inDirectory(string $path): self {
@@ -28,8 +26,6 @@ final class SkillLibrary
 
     /** @return list<array{name: string, description: string}> */
     public function listSkills(): array {
-        $this->ensureScanned();
-
         $list = [];
         foreach ($this->metadata as $meta) {
             $list[] = [
@@ -42,13 +38,10 @@ final class SkillLibrary
     }
 
     public function hasSkill(string $name): bool {
-        $this->ensureScanned();
         return isset($this->metadata[$name]);
     }
 
     public function getSkill(string $name): ?Skill {
-        $this->ensureScanned();
-
         if (!isset($this->metadata[$name])) {
             return null;
         }
@@ -67,7 +60,7 @@ final class SkillLibrary
 
     public function renderSkillList(): string {
         $skills = $this->listSkills();
-        if (empty($skills)) {
+        if ($skills === []) {
             return "(no skills available)";
         }
 
@@ -79,44 +72,30 @@ final class SkillLibrary
         return implode("\n", $lines);
     }
 
-    private function ensureScanned(): void {
-        if ($this->scanned) {
-            return;
-        }
-
-        $this->scanDirectory();
-        $this->scanned = true;
-    }
-
-    private function scanDirectory(): void {
+    /** @return array<string, array{name: string, description: string, path: string, dir: string}> */
+    private function scanDirectory(): array {
         if (!is_dir($this->skillsPath)) {
-            return;
+            return [];
         }
 
-        $files = $this->findSkillFiles();
-        foreach ($files as $file) {
+        $metadata = [];
+        foreach ($this->findSkillFiles() as $file) {
             $meta = $this->extractMetadata($file);
             if ($meta === null) {
                 continue;
             }
 
-            $name = $meta['name'];
-            if (!isset($this->metadata[$name])) {
-                $this->metadata[$name] = $meta;
-            }
+            $metadata[$meta['name']] ??= $meta;
         }
+
+        return $metadata;
     }
 
     /** @return list<string> */
     private function findSkillFiles(): array {
-        $files = [];
-
         $skillFiles = glob($this->skillsPath . '/*/' . self::SKILL_FILENAME);
-        if ($skillFiles !== false) {
-            $files = array_merge($files, $skillFiles);
-        }
 
-        return $files;
+        return ($skillFiles !== false) ? $skillFiles : [];
     }
 
     /** @return array{name: string, description: string, path: string, dir: string}|null */
@@ -126,17 +105,14 @@ final class SkillLibrary
             return null;
         }
 
-        $frontmatter = $this->parseFrontmatter($content) ?? [];
+        $frontmatter = MarkdownFrontmatter::parse($content);
         $defaultName = basename(dirname($path));
-        $name = (string) ($frontmatter['name'] ?? $defaultName);
-        $description = (string) ($frontmatter['description'] ?? '');
-        $dir = dirname($path);
 
         return [
-            'name' => $name,
-            'description' => $description,
+            'name' => (string) ($frontmatter?->data['name'] ?? $defaultName),
+            'description' => (string) ($frontmatter?->data['description'] ?? ''),
             'path' => $path,
-            'dir' => $dir,
+            'dir' => dirname($path),
         ];
     }
 
@@ -146,55 +122,17 @@ final class SkillLibrary
             return null;
         }
 
-        $frontmatter = $this->parseFrontmatter($content);
-        $body = $this->extractBody($content);
+        $frontmatter = MarkdownFrontmatter::parse($content);
         $defaultName = basename(dirname($path));
-        $name = (string) ($frontmatter['name'] ?? $defaultName);
-        $description = (string) ($frontmatter['description'] ?? '');
         $dir = dirname($path);
-        $resources = $this->findResources($dir);
 
         return new Skill(
-            name: $name,
-            description: $description,
-            body: $body,
+            name: (string) ($frontmatter?->data['name'] ?? $defaultName),
+            description: (string) ($frontmatter?->data['description'] ?? ''),
+            body: $frontmatter?->body ?? trim($content),
             path: $path,
-            resources: $resources,
+            resources: $this->findResources($dir),
         );
-    }
-
-    /** @return array<string, mixed>|null */
-    private function parseFrontmatter(string $content): ?array {
-        if (!str_starts_with($content, '---')) {
-            return null;
-        }
-
-        $endPos = strpos($content, '---', 3);
-        if ($endPos === false) {
-            return null;
-        }
-
-        $yaml = substr($content, 3, $endPos - 3);
-
-        try {
-            $parsed = Yaml::parse(trim($yaml));
-            return is_array($parsed) ? $parsed : null;
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function extractBody(string $content): string {
-        if (!str_starts_with($content, '---')) {
-            return trim($content);
-        }
-
-        $endPos = strpos($content, '---', 3);
-        if ($endPos === false) {
-            return trim($content);
-        }
-
-        return trim(substr($content, $endPos + 3));
     }
 
     /** @return list<string> */

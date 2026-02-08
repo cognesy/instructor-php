@@ -17,7 +17,7 @@ describe('SelfCritique Capability', function () {
             ->withDriver(new FakeAgentDriver([
                 ScenarioStep::final('ok'),
             ]))
-            ->withCapability(new UseSelfCritique(maxIterations: 0, verbose: false))
+            ->withCapability(new UseSelfCritique(maxIterations: 0))
             ->build();
 
         $state = AgentState::empty()

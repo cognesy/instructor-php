@@ -22,11 +22,17 @@ final class SubagentCompleted extends AgentEvent
         public readonly int               $steps,
         public readonly ?Usage            $usage,
         public readonly DateTimeImmutable $startedAt,
+        public readonly ?string           $parentExecutionId = null,
+        public readonly ?int              $parentStepNumber = null,
+        public readonly ?string           $toolCallId = null,
     ) {
         $this->completedAt = new DateTimeImmutable();
 
         parent::__construct([
             'parentAgentId' => $this->parentAgentId,
+            'parentExecutionId' => $this->parentExecutionId,
+            'parentStepNumber' => $this->parentStepNumber,
+            'toolCallId' => $this->toolCallId,
             'subagentId' => $this->subagentId,
             'subagent' => $this->subagentName,
             'status' => $this->status->value,

@@ -9,7 +9,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Contract\CommandExecutor;
 use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 it('builds, executes stub, and parses structured output', function () {
     $request = new ClaudeRequest(

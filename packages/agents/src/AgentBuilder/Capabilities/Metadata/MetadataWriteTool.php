@@ -4,6 +4,8 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Metadata;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 /**
  * Tool for storing data in agent metadata.
@@ -13,7 +15,7 @@ use Cognesy\Utils\Json\Json;
  *
  * Other tools can then read this data using metadata_key parameter.
  */
-class MetadataWriteTool extends BaseTool
+final class MetadataWriteTool extends BaseTool
 {
     public const TOOL_NAME = 'store_metadata';
 
@@ -36,8 +38,8 @@ DESC,
 
     #[\Override]
     public function __invoke(mixed ...$args): MetadataWriteResult {
-        $key = (string) ($args['key'] ?? $args[0] ?? '');
-        $value = $args['value'] ?? $args[1] ?? null;
+        $key = (string) $this->arg($args, 'key', 0, '');
+        $value = $this->arg($args, 'value', 1);
 
         if ($key === '') {
             return new MetadataWriteResult(
@@ -76,25 +78,15 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'key' => [
-                            'type' => 'string',
-                            'description' => 'Unique identifier for this data (e.g., "current_lead", "scraped_content")',
-                        ],
-                        'value' => [
-                            'description' => 'The data to store. Can be any JSON-serializable value: string, number, object, array.',
-                        ],
-                    ],
-                    'required' => ['key', 'value'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('key', 'Unique identifier for this data (e.g., "current_lead", "scraped_content")'),
+                    JsonSchema::any('value', 'The data to store. Can be any JSON-serializable value: string, number, object, array.'),
+                ])
+                ->withRequiredProperties(['key', 'value'])
+        )->toArray();
     }
 }

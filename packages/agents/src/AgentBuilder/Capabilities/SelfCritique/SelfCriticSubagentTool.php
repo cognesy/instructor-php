@@ -6,12 +6,14 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Messages\Messages;
 
 class SelfCriticSubagentTool extends BaseTool
 {
-    private const CRITIC_PROMPT = <<<'PROMPT'
+    private const string CRITIC_PROMPT = <<<'PROMPT'
 You are a critical evaluator. Your job is to assess whether a proposed response adequately addresses the original task.
 
 ## Original Task
@@ -53,20 +55,20 @@ PROMPT;
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $originalTask = (string) ($args['original_task'] ?? $args[0] ?? '');
-        $proposedResponse = (string) ($args['proposed_response'] ?? $args[1] ?? '');
+        $originalTask = (string) $this->arg($args, 'original_task', 0, '');
+        $proposedResponse = (string) $this->arg($args, 'proposed_response', 1, '');
 
-        if (empty($originalTask)) {
+        if ($originalTask === '') {
             return "Error: original_task is required";
         }
-        if (empty($proposedResponse)) {
+        if ($proposedResponse === '') {
             return "Error: proposed_response is required";
         }
 
         $prompt = sprintf(self::CRITIC_PROMPT, $originalTask, $proposedResponse);
 
         // Create minimal subagent with no tools - pure evaluation
-        $subagent = AgentBuilder::new()->withTools(new Tools())->build();
+        $subagent = AgentBuilder::base()->withTools(new Tools())->build();
 
         $subState = AgentState::empty()->withMessages(
             Messages::fromString($prompt)
@@ -96,26 +98,15 @@ PROMPT;
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'original_task' => [
-                            'type' => 'string',
-                            'description' => 'The original task or question that needs to be addressed',
-                        ],
-                        'proposed_response' => [
-                            'type' => 'string',
-                            'description' => 'Your proposed response to evaluate before finalizing',
-                        ],
-                    ],
-                    'required' => ['original_task', 'proposed_response'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('original_task', 'The original task or question that needs to be addressed'),
+                    JsonSchema::string('proposed_response', 'Your proposed response to evaluate before finalizing'),
+                ])
+                ->withRequiredProperties(['original_task', 'proposed_response'])
+        )->toArray();
     }
 }

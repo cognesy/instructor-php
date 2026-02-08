@@ -210,20 +210,41 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     // SUBAGENT EVENTS ////////////////////////////////////////////
 
     #[\Override]
-    public function subagentSpawning(string $parentAgentId, string $subagentName, string $prompt, int $depth, int $maxDepth): void
-    {
+    public function subagentSpawning(
+        string $parentAgentId,
+        string $subagentName,
+        string $prompt,
+        int $depth,
+        int $maxDepth,
+        ?string $parentExecutionId = null,
+        ?int $parentStepNumber = null,
+        ?string $toolCallId = null,
+    ): void {
         $this->events->dispatch(new SubagentSpawning(
             parentAgentId: $parentAgentId,
             subagentName: $subagentName,
             prompt: $prompt,
             depth: $depth,
             maxDepth: $maxDepth,
+            parentExecutionId: $parentExecutionId,
+            parentStepNumber: $parentStepNumber,
+            toolCallId: $toolCallId,
         ));
     }
 
     #[\Override]
-    public function subagentCompleted(string $parentAgentId, string $subagentId, string $subagentName, ExecutionStatus $status, int $steps, ?Usage $usage, DateTimeImmutable $startedAt): void
-    {
+    public function subagentCompleted(
+        string $parentAgentId,
+        string $subagentId,
+        string $subagentName,
+        ExecutionStatus $status,
+        int $steps,
+        ?Usage $usage,
+        DateTimeImmutable $startedAt,
+        ?string $parentExecutionId = null,
+        ?int $parentStepNumber = null,
+        ?string $toolCallId = null,
+    ): void {
         $this->events->dispatch(new SubagentCompleted(
             parentAgentId: $parentAgentId,
             subagentId: $subagentId,
@@ -232,6 +253,9 @@ final class AgentEventEmitter implements CanEmitAgentEvents
             steps: $steps,
             usage: $usage,
             startedAt: $startedAt,
+            parentExecutionId: $parentExecutionId,
+            parentStepNumber: $parentStepNumber,
+            toolCallId: $toolCallId,
         ));
     }
 

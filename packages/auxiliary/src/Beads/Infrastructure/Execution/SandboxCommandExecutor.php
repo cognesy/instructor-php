@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Auxiliary\Beads\Infrastructure\Execution;
 
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
-use Cognesy\Utils\Sandbox\Sandbox;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Sandbox;
 use Throwable;
 
 /**

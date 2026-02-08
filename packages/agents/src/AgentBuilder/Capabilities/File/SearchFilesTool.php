@@ -3,6 +3,8 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\File;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -65,7 +67,7 @@ DESC,
                 $files
             );
 
-            if (!empty($relativePaths)) {
+            if ($relativePaths !== []) {
                 $patternResults[$pattern] = $relativePaths;
                 $allFiles = array_merge($allFiles, $relativePaths);
             }
@@ -75,7 +77,7 @@ DESC,
         $allFiles = array_unique($allFiles);
         $allFiles = array_slice($allFiles, 0, $this->maxResults);
 
-        if (empty($allFiles)) {
+        if ($allFiles === []) {
             $patternList = implode(', ', $patterns);
             return "No files found matching patterns: {$patternList}";
         }
@@ -185,26 +187,14 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'pattern' => [
-                            'type' => 'string',
-                            'description' => 'Search pattern. Examples: "composer.json" (recursive), "**/*.php" (recursive glob), "*.json" (root only), "./README.md" (exact path)',
-                        ],
-                        'patterns' => [
-                            'type' => 'array',
-                            'items' => ['type' => 'string'],
-                            'description' => 'Multiple patterns to search at once. Example: ["composer.json", "package.json", "*.xml"]',
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('pattern', 'Search pattern. Examples: "composer.json" (recursive), "**/*.php" (recursive glob), "*.json" (root only), "./README.md" (exact path)'),
+                    JsonSchema::array('patterns', JsonSchema::string(), 'Multiple patterns to search at once. Example: ["composer.json", "package.json", "*.xml"]'),
+                ])
+        )->toArray();
     }
 }

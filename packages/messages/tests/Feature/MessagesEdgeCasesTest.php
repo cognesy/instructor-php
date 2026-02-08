@@ -36,11 +36,16 @@ test('handles collections with empty messages', function () {
 });
 
 // Test error handling
-test('fromArray throws exception with completely invalid structure', function () {
-    expect(fn() => Messages::fromArray([
+test('fromArray normalizes completely invalid structure to user text message', function () {
+    $messages = Messages::fromArray([
         'not-a-message-object'
-    ]))->toThrow(Exception::class);
-})->skip('Currently we force correct structure in fromArray instead of throwing an exception');
+    ]);
+
+    expect($messages)->toBeInstanceOf(Messages::class)
+        ->and($messages->count())->toBe(1)
+        ->and($messages->first()->role()->value)->toBe('user')
+        ->and($messages->first()->content()->toString())->toBe('not-a-message-object');
+});
 
 test('fromAnyArray throws exception with invalid nested structure', function () {
     expect(fn() => Messages::fromAnyArray([

@@ -184,13 +184,13 @@ final readonly class ExecutionState
     public function totalDuration(): float {
         $endTime = $this->completedAt ?? new DateTimeImmutable();
         $startTime = $this->startedAt ?? $endTime;
-        return $endTime->getTimestamp() - $startTime->getTimestamp();
+        return (float) $endTime->format('U.u') - (float) $startTime->format('U.u');
     }
 
     public function currentStepDuration() : float {
         $endTime = new DateTimeImmutable();
         $startTime = $this->currentStepStartedAt ?? $endTime;
-        return $endTime->getTimestamp() - $startTime->getTimestamp();
+        return (float) $endTime->format('U.u') - (float) $startTime->format('U.u');
     }
 
     public function hasErrors() : bool {
@@ -267,15 +267,27 @@ final readonly class ExecutionState
     }
 
     public static function fromArray(array $data): self {
+        $currentStep = match (true) {
+            !isset($data['currentStep']) => null,
+            !is_array($data['currentStep']) => null,
+            $data['currentStep'] === [] => null,
+            default => AgentStep::fromArray($data['currentStep']),
+        };
+
+        $status = match (true) {
+            isset($data['status']) => ExecutionStatus::from($data['status']),
+            default => ExecutionStatus::Pending,
+        };
+
         return new self(
             executionId: $data['executionId'] ?? Uuid::uuid4(),
-            status: array_key_exists('status', $data) ? ExecutionStatus::from($data['status']) : ExecutionStatus::Pending,
+            status: $status,
             startedAt: self::makeDateTime('startedAt', $data, new DateTimeImmutable()),
             completedAt: self::makeDateTime('completedAt', $data, null),
             stepExecutions: StepExecutions::fromArray($data['stepExecutions'] ?? []),
             continuation: ExecutionContinuation::fromArray($data['continuation'] ?? []),
             currentStepStartedAt: self::makeDateTime('currentStepStartedAt', $data),
-            currentStep: AgentStep::fromArray($data['currentStep'] ?? []),
+            currentStep: $currentStep,
         );
     }
 
@@ -286,9 +298,16 @@ final readonly class ExecutionState
     }
 
     private static function makeDateTime(string $key, array $data, ?DateTimeImmutable $default = null): ?DateTimeImmutable {
-        return match(array_key_exists($key, $data)) {
-            true => DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $data[$key]),
-            false => $default,
-        };
+        $value = $data[$key] ?? null;
+
+        if (!is_string($value) || $value === '') {
+            return $default;
+        }
+
+        try {
+            return new DateTimeImmutable($value);
+        } catch (\Throwable) {
+            return $default;
+        }
     }
 }

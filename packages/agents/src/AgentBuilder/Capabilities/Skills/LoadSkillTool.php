@@ -3,12 +3,14 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Skills;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 class LoadSkillTool extends BaseTool
 {
     private SkillLibrary $library;
 
-    public function __construct(?SkillLibrary $library = null) {
+    public function __construct(SkillLibrary $library) {
         parent::__construct(
             name: 'load_skill',
             description: <<<'DESC'
@@ -23,7 +25,7 @@ Skills provide domain expertise, checklists, and step-by-step workflows.
 DESC,
         );
 
-        $this->library = $library ?? new SkillLibrary();
+        $this->library = $library;
     }
 
     public static function withLibrary(SkillLibrary $library): self {
@@ -32,8 +34,8 @@ DESC,
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $skill_name = $args['skill_name'] ?? $args[0] ?? null;
-        $list_skills = $args['list_skills'] ?? $args[1] ?? false;
+        $skill_name = $this->arg($args, 'skill_name', 0);
+        $list_skills = $this->arg($args, 'list_skills', 1, false);
 
         if ($list_skills || $skill_name === null) {
             return $this->library->renderSkillList();
@@ -54,26 +56,14 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'skill_name' => [
-                            'type' => 'string',
-                            'description' => 'Name of the skill to load',
-                        ],
-                        'list_skills' => [
-                            'type' => 'boolean',
-                            'description' => 'If true, list all available skills instead of loading one',
-                        ],
-                    ],
-                    'required' => [],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('skill_name', 'Name of the skill to load'),
+                    JsonSchema::boolean('list_skills', 'If true, list all available skills instead of loading one'),
+                ])
+        )->toArray();
     }
 }

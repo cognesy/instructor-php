@@ -3,35 +3,22 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Bash;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Execution\SandboxedExecution;
-use Cognesy\Utils\Sandbox\Result\ExecutionResult;
-use Cognesy\Utils\Sandbox\Sandbox;
-use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
-class BashTool extends BaseTool
+final class BashTool extends BaseTool
 {
-    private const DEFAULT_TIMEOUT = 120;
-    private const DEFAULT_STDOUT_LIMIT = 5 * 1024 * 1024; // 5MB
-    private const DEFAULT_STDERR_LIMIT = 1 * 1024 * 1024; // 1MB
-    private const DANGEROUS_PATTERNS = [
-        'rm -rf /',
-        'mkfs',
-        'shutdown',
-        'reboot',
-        'dd if=/dev/zero',
-        '>:',
-    ];
-
-    private CanStreamCommand $sandbox;
+    private CanExecuteCommand $sandbox;
     private BashPolicy $outputPolicy;
 
     public function __construct(
         ?ExecutionPolicy $policy = null,
-        ?string $baseDir = null,
-        int $timeout = self::DEFAULT_TIMEOUT,
+        string $baseDir = '',
         ?BashPolicy $outputPolicy = null,
-        ?CanStreamCommand $sandbox = null,
+        ?CanExecuteCommand $sandbox = null,
     ) {
         parent::__construct(
             name: 'bash',
@@ -49,39 +36,48 @@ Prefer dedicated tools when available: read_file over cat, search_files over fin
 DESC,
         );
 
+        $this->outputPolicy = $outputPolicy ?? new BashPolicy();
+
         if ($sandbox !== null) {
             $this->sandbox = $sandbox;
         } else {
-            $baseDir = $baseDir ?? getcwd() ?: '/tmp';
+            $baseDir = $this->resolveDir($baseDir);
             $policy = $policy ?? ExecutionPolicy::in($baseDir)
-                ->withTimeout($timeout)
+                ->withTimeout($this->outputPolicy->timeout)
                 ->withNetwork(false)
-                ->withOutputCaps(self::DEFAULT_STDOUT_LIMIT, self::DEFAULT_STDERR_LIMIT)
+                ->withOutputCaps($this->outputPolicy->stdoutLimitBytes, $this->outputPolicy->stderrLimitBytes)
                 ->inheritEnvironment();
             $this->sandbox = Sandbox::host($policy);
         }
-        $this->outputPolicy = $outputPolicy ?? new BashPolicy();
     }
 
     public static function inDirectory(
         string $baseDir,
-        int $timeout = self::DEFAULT_TIMEOUT,
         ?BashPolicy $outputPolicy = null,
     ): self {
-        return new self(baseDir: $baseDir, timeout: $timeout, outputPolicy: $outputPolicy);
+        return new self(
+            baseDir: $baseDir,
+            outputPolicy: $outputPolicy,
+        );
     }
 
     public static function withPolicy(ExecutionPolicy $policy, ?BashPolicy $outputPolicy = null): self {
-        return new self(policy: $policy, outputPolicy: $outputPolicy);
+        return new self(
+            policy: $policy,
+            outputPolicy: $outputPolicy,
+        );
     }
 
-    public static function withSandbox(CanStreamCommand $sandbox, ?BashPolicy $outputPolicy = null): self {
-        return new self(sandbox: $sandbox, outputPolicy: $outputPolicy);
+    public static function withSandbox(CanExecuteCommand $sandbox, ?BashPolicy $outputPolicy = null): self {
+        return new self(
+            outputPolicy: $outputPolicy,
+            sandbox: $sandbox,
+        );
     }
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $command = (string) ($args['command'] ?? $args[0] ?? '');
+        $command = (string) $this->arg($args, 'command', 0, '');
 
         if ($this->isDangerousCommand($command)) {
             return 'Error: Command blocked by safety policy';
@@ -134,7 +130,7 @@ DESC,
             $parts[] = "STDERR:\n{$error}";
         }
 
-        if (empty($parts)) {
+        if ($parts === []) {
             return "(no output)";
         }
 
@@ -180,7 +176,7 @@ DESC,
     }
 
     private function isDangerousCommand(string $command): bool {
-        foreach (self::DANGEROUS_PATTERNS as $pattern) {
+        foreach ($this->outputPolicy->dangerousPatterns as $pattern) {
             if (stripos($command, $pattern) !== false) {
                 return true;
             }
@@ -190,22 +186,18 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'command' => [
-                            'type' => 'string',
-                            'description' => 'The bash command to execute',
-                        ],
-                    ],
-                    'required' => ['command'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('command','The bash command to execute')
+                ])
+                ->withRequiredProperties(['command'])
+        )->toArray();
+    }
+
+    private function resolveDir(string $baseDir) : string {
+        return $baseDir;
     }
 }

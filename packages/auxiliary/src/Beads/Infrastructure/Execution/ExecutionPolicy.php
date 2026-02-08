@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Cognesy\Auxiliary\Beads\Infrastructure\Execution;
 
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy as SandboxPolicy;
+use Cognesy\Sandbox\Config\ExecutionPolicy as SandboxPolicy;
 
 /**
  * Execution Policy Configuration
  *
- * Wraps Cognesy\Utils\Sandbox ExecutionPolicy with sensible defaults for bd/bv execution.
+ * Wraps Cognesy\Sandbox ExecutionPolicy with sensible defaults for bd/bv execution.
  */
 final readonly class ExecutionPolicy
 {

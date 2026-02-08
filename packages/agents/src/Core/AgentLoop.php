@@ -213,18 +213,21 @@ class AgentLoop implements CanControlAgentLoop
         ?CanInterceptAgentLifecycle $interceptor = null,
     ): self {
         $resolvedTools = $tools ?? $this->tools;
-        // If tools changed but no executor provided, create new executor
-        $resolvedExecutor = $toolExecutor ?? (
-            $tools !== null
-                ? new ToolExecutor($resolvedTools, $this->eventEmitter, $this->interceptor)
-                : $this->toolExecutor
-        );
+        $resolvedEmitter = $eventEmitter ?? $this->eventEmitter;
+        $resolvedInterceptor = $interceptor ?? $this->interceptor;
+
+        $resolvedExecutor = match (true) {
+            $toolExecutor !== null => $toolExecutor,
+            $tools !== null => new ToolExecutor($resolvedTools, $resolvedEmitter, $resolvedInterceptor),
+            default => $this->toolExecutor,
+        };
+
         return new self(
             tools: $resolvedTools,
             toolExecutor: $resolvedExecutor,
             driver: $driver ?? $this->driver,
-            eventEmitter: $eventEmitter ?? $this->eventEmitter,
-            interceptor: $interceptor ?? $this->interceptor,
+            eventEmitter: $resolvedEmitter,
+            interceptor: $resolvedInterceptor,
         );
     }
 }

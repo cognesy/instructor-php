@@ -52,6 +52,10 @@ final readonly class ToolExecutions
         return $this->toolExecutions;
     }
 
+    public function first(): ?ToolExecution {
+        return $this->toolExecutions[0] ?? null;
+    }
+
     public function hasErrors(): bool {
         return count($this->havingErrors()) > 0;
     }

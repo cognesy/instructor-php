@@ -3,9 +3,11 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\File;
 
 use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Sandbox;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 class WriteFileTool extends BaseTool
 {
@@ -13,7 +15,7 @@ class WriteFileTool extends BaseTool
 
     public function __construct(
         ?ExecutionPolicy $policy = null,
-        ?string $baseDir = null,
+        string $baseDir = '',
     ) {
         parent::__construct(
             name: 'write_file',
@@ -28,7 +30,6 @@ Use edit_file for partial changes. write_file replaces entire file content.
 DESC,
         );
 
-        $baseDir = $baseDir ?? getcwd() ?: '/tmp';
         $policy = $policy ?? ExecutionPolicy::in($baseDir)
             ->withTimeout(30)
             ->withWritablePaths($baseDir)
@@ -47,8 +48,8 @@ DESC,
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $path = $args['path'] ?? $args[0] ?? '';
-        $content = $args['content'] ?? $args[1] ?? '';
+        $path = $this->arg($args, 'path', 0, '');
+        $content = $this->arg($args, 'content', 1, '');
 
         if (!$this->isValidPath($path)) {
             return "Error: Invalid file path";
@@ -91,26 +92,15 @@ DESC,
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'path' => [
-                            'type' => 'string',
-                            'description' => 'The path to the file to write',
-                        ],
-                        'content' => [
-                            'type' => 'string',
-                            'description' => 'The content to write to the file',
-                        ],
-                    ],
-                    'required' => ['path', 'content'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('path', 'The path to the file to write'),
+                    JsonSchema::string('content', 'The content to write to the file'),
+                ])
+                ->withRequiredProperties(['path', 'content'])
+        )->toArray();
     }
 }

@@ -25,7 +25,7 @@ class StopSignals
     }
 
     public function hasAny() : bool {
-        return !empty($this->signals);
+        return $this->signals !== [];
     }
 
     public function toString() : string {

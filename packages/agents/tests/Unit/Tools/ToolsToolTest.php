@@ -27,13 +27,13 @@ it('returns tool help', function () {
         ->and($result['tool']['name'])->toBe('alpha');
 });
 
-it('searches tools with command fallback', function () {
+it('searches tools by query', function () {
     $registry = new ToolRegistry();
     $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
     $registry->register(MockTool::returning('beta', 'Beta tool', 'ok'));
 
     $tool = new ToolsTool($registry);
-    $result = $tool(command: '--search beta');
+    $result = $tool(action: 'search', query: 'beta');
 
     expect($result['success'])->toBeTrue()
         ->and($result['count'])->toBe(1)

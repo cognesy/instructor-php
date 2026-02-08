@@ -10,14 +10,13 @@ class UseToolRegistry implements AgentCapability
 {
     public function __construct(
         private readonly ToolRegistryInterface $registry,
-        private readonly ?string $locale = null,
     ) {}
 
     #[\Override]
     public function install(AgentBuilder $builder): void
     {
         $builder->withTools(new Tools(
-            new ToolsTool($this->registry, $this->locale),
+            new ToolsTool($this->registry),
         ));
     }
 }

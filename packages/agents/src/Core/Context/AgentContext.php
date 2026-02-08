@@ -89,7 +89,7 @@ final readonly class AgentContext
 
     public function toInferenceContext(array $toolSchemas = []): CachedInferenceContext {
         $messages = match(true) {
-            empty($this->systemPrompt) => [],
+            $this->systemPrompt === '' => [],
             default => [['role' => 'system', 'content' => $this->systemPrompt]],
         };
         $responseFormat = match(true) {

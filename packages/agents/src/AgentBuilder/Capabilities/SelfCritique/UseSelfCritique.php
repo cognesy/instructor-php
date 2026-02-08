@@ -10,7 +10,6 @@ class UseSelfCritique implements AgentCapability
 {
     public function __construct(
         private int $maxIterations = 2,
-        private bool $verbose = true,
         private ?string $llmPreset = null,
     ) {}
 
@@ -18,7 +17,6 @@ class UseSelfCritique implements AgentCapability
     public function install(AgentBuilder $builder): void {
         $builder->addHook(new SelfCriticHook(
             maxCriticIterations: $this->maxIterations,
-            verbose: $this->verbose,
             llmPreset: $this->llmPreset,
         ), HookTriggers::afterStep());
     }

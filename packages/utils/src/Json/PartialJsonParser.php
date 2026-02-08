@@ -126,6 +126,11 @@ class PartialJsonParser
             [$key, $json] = $this->parseAny($json, $e);
             $json = trim($json);
 
+            if (!is_string($key) && !is_int($key) && !is_float($key) && !is_bool($key)) {
+                throw $e;
+            }
+            $key = (string) $key;
+
             if (!$json || $json[0] === '}') {
                 $acc[$key] = null;
                 break;

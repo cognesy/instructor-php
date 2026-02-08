@@ -3,11 +3,9 @@
 namespace Cognesy\Agents\AgentTemplate\Definitions;
 
 use Cognesy\Agents\Core\Collections\NameList;
-use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Metadata;
-use InvalidArgumentException;
 
 final readonly class AgentDefinition
 {
@@ -41,34 +39,6 @@ final readonly class AgentDefinition
 
     public function hasSkills(): bool {
         return $this->skills !== null && !$this->skills->isEmpty();
-    }
-
-    public function shouldInheritModel(): bool {
-        return empty($this->model);
-    }
-
-    public function filterTools(Tools $parentTools): Tools {
-        if ($this->inheritsAllTools()) {
-            return $parentTools;
-        }
-
-        $filtered = [];
-        foreach ($parentTools->all() as $tool) {
-            if ($this->tools?->has($tool->name()) ?? false) {
-                $filtered[] = $tool;
-            }
-        }
-
-        return new Tools(...$filtered);
-    }
-
-    public function resolveLlmProvider(?LLMProvider $parentProvider = null): LLMProvider {
-        return match (true) {
-            ($this->llmConfig instanceof LLMConfig) => LLMProvider::new()->withConfig($this->llmConfig),
-            empty($this->llmConfig) => $parentProvider ?? LLMProvider::new(),
-            is_string($this->llmConfig) => LLMProvider::using($this->llmConfig),
-            default => LLMProvider::new(),
-        };
     }
 
     /** @return array<string, mixed> */

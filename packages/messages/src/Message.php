@@ -7,6 +7,8 @@ use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Support\MessageInput;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Utils\Metadata;
+use Cognesy\Utils\Uuid;
+use DateTimeImmutable;
 
 /**
  * Represents a message entity with role, content, and metadata properties.
@@ -24,31 +26,46 @@ use Cognesy\Utils\Metadata;
  * such as sources, internal reasoning traces. They are not explicitly rendered
  * to a message content sent to a language model.
  *
- * Each chat message is uniquely identified by an ID, which is generated
- * in the constructor.
+ * Each chat message is uniquely identified by an immutable ID, which is generated
+ * in the constructor. The ID and createdAt timestamp are preserved across all
+ * mutations (with*() methods).
  *
  */
 final readonly class Message
 {
     public const DEFAULT_ROLE = 'user';
 
+    public string $id;
+    public DateTimeImmutable $createdAt;
+
     protected string $role;
     protected string $name;
     protected Content $content;
     protected Metadata $metadata;
+    protected ?string $parentId;
 
     /**
      * @param string|MessageRole|null $role
      * @param string|array|Content|null $content
      * @param string $name
      * @param Metadata|array<string,mixed> $metadata
+     * @param string|null $parentId Parent message ID for branching support (Pi-Mono style)
+     * @param string|null $id For deserialization - if null, generates new UUID
+     * @param DateTimeImmutable|null $createdAt For deserialization - if null, uses current time
      */
     public function __construct(
         string|MessageRole|null $role = '',
         string|array|Content|null $content = null,
         string $name = '',
         Metadata|array $metadata = [],
+        ?string $parentId = null,
+        // Identity fields - for deserialization
+        ?string $id = null,
+        ?DateTimeImmutable $createdAt = null,
     ) {
+        $this->id = $id ?? Uuid::uuid4();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+
         $this->role = match (true) {
             $role instanceof MessageRole => $role->value,
             ($role === '') || is_null($role) => self::DEFAULT_ROLE,
@@ -61,11 +78,12 @@ final readonly class Message
             is_array($metadata) => Metadata::fromArray($metadata),
             default => throw new \InvalidArgumentException('Metadata must be an array or Metadata instance.'),
         };
+        $this->parentId = $parentId;
     }
 
     // CONSTRUCTORS ///////////////////////////////////////
 
-    public static function empty() {
+    public static function empty(): self {
         return new self(
             role: self::DEFAULT_ROLE,
             content: Content::empty(),
@@ -133,11 +151,15 @@ final readonly class Message
     }
 
     public function clone(): self {
-        return new static(
+        return new self(
             role: $this->role,
             content: $this->content->clone(),
             name: $this->name,
             metadata: $this->metadata->toArray(),
+            parentId: $this->parentId,
+            // Preserve identity
+            id: $this->id,
+            createdAt: $this->createdAt,
         );
     }
 
@@ -200,49 +222,82 @@ final readonly class Message
         return $this->metadata;
     }
 
+    public function parentId(): ?string {
+        return $this->parentId;
+    }
+
     public function withMetadata(string $key, mixed $value): self {
         return new self(
             role: $this->role,
             content: $this->content,
             name: $this->name,
             metadata: $this->metadata->withKeyValue($key, $value),
+            parentId: $this->parentId,
+            // Preserve identity
+            id: $this->id,
+            createdAt: $this->createdAt,
         );
     }
 
     // MUTATORS ///////////////////////////////////////
 
-    public function withContent(Content $content): Message {
-        return new Message(
+    public function withContent(Content $content): self {
+        return new self(
             role: $this->role,
             content: $content,
             name: $this->name,
             metadata: $this->metadata,
+            parentId: $this->parentId,
+            // Preserve identity
+            id: $this->id,
+            createdAt: $this->createdAt,
         );
     }
 
-    public function withName(string $name): Message {
-        return new Message(
+    public function withName(string $name): self {
+        return new self(
             role: $this->role,
             content: $this->content,
             name: $name,
             metadata: $this->metadata,
+            parentId: $this->parentId,
+            // Preserve identity
+            id: $this->id,
+            createdAt: $this->createdAt,
         );
     }
 
-    public function withRole(string|MessageRole $role): Message {
+    public function withRole(string|MessageRole $role): self {
         $role = match (true) {
             is_string($role) => $role,
             $role instanceof MessageRole => $role->value,
         };
-        return new Message(
+        return new self(
             role: $role,
             content: $this->content,
             name: $this->name,
             metadata: $this->metadata,
+            parentId: $this->parentId,
+            // Preserve identity
+            id: $this->id,
+            createdAt: $this->createdAt,
         );
     }
 
-    public function addContentFrom(Message $source): Message {
+    public function withParentId(?string $parentId): self {
+        return new self(
+            role: $this->role,
+            content: $this->content,
+            name: $this->name,
+            metadata: $this->metadata,
+            parentId: $parentId,
+            // Preserve identity
+            id: $this->id,
+            createdAt: $this->createdAt,
+        );
+    }
+
+    public function addContentFrom(Message $source): self {
         $newContent = $this->content->clone();
         foreach ($source->content()->partsList()->all() as $part) {
             $newContent = $newContent->addContentPart($part);
@@ -250,7 +305,7 @@ final readonly class Message
         return $this->withContent($newContent);
     }
 
-    public function addContentPart(string|array|ContentPart $part): Message {
+    public function addContentPart(string|array|ContentPart $part): self {
         $newContent = $this->content->addContentPart(ContentPart::fromAny($part));
         return $this->withContent($newContent);
     }
@@ -259,6 +314,9 @@ final readonly class Message
 
     public function toArray(): array {
         return array_filter([
+            'id' => $this->id,
+            'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
+            'parentId' => $this->parentId,
             'role' => $this->role,
             'name' => $this->name,
             'content' => match (true) {

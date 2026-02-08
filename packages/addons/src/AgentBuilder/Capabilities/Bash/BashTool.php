@@ -3,11 +3,9 @@
 namespace Cognesy\Addons\AgentBuilder\Capabilities\Bash;
 
 use Cognesy\Addons\Agent\Tools\BaseTool;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Execution\SandboxedExecution;
-use Cognesy\Utils\Sandbox\Result\ExecutionResult;
-use Cognesy\Utils\Sandbox\Sandbox;
-use Cognesy\Utils\Sandbox\Contracts\CanStreamCommand;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Sandbox;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
 
 class BashTool extends BaseTool
 {
@@ -23,7 +21,7 @@ class BashTool extends BaseTool
         '>:',
     ];
 
-    private CanStreamCommand $sandbox;
+    private CanExecuteCommand $sandbox;
     private BashPolicy $outputPolicy;
 
     public function __construct(
@@ -31,7 +29,7 @@ class BashTool extends BaseTool
         ?string $baseDir = null,
         int $timeout = self::DEFAULT_TIMEOUT,
         ?BashPolicy $outputPolicy = null,
-        ?CanStreamCommand $sandbox = null,
+        ?CanExecuteCommand $sandbox = null,
     ) {
         parent::__construct(
             name: 'bash',
@@ -52,7 +50,7 @@ DESC,
         if ($sandbox !== null) {
             $this->sandbox = $sandbox;
         } else {
-            $baseDir = $baseDir ?? getcwd() ?: '/tmp';
+            $baseDir = $this->resolveWorkingDir($baseDir);
             $policy = $policy ?? ExecutionPolicy::in($baseDir)
                 ->withTimeout($timeout)
                 ->withNetwork(false)
@@ -75,7 +73,7 @@ DESC,
         return new self(policy: $policy, outputPolicy: $outputPolicy);
     }
 
-    public static function withSandbox(CanStreamCommand $sandbox, ?BashPolicy $outputPolicy = null): self {
+    public static function withSandbox(CanExecuteCommand $sandbox, ?BashPolicy $outputPolicy = null): self {
         return new self(sandbox: $sandbox, outputPolicy: $outputPolicy);
     }
 
@@ -207,5 +205,13 @@ DESC,
                 ],
             ],
         ];
+    }
+
+    private function resolveWorkingDir(?string $baseDir) : string {
+        return match(true) {
+            !is_null($baseDir) => $baseDir,
+            is_null(getcwd()) => '/tmp',
+            default => getcwd(),
+        };
     }
 }

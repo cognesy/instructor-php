@@ -104,9 +104,15 @@ describe('MessageList', function () {
             new Message('assistant', 'World'),
         ]);
 
-        expect($list->toArray())->toBe([
-            ['role' => 'user', 'content' => 'Hello'],
-            ['role' => 'assistant', 'content' => 'World'],
-        ]);
+        $array = $list->toArray();
+
+        // Check structure - messages now include id and createdAt
+        expect($array)->toHaveCount(2);
+        expect($array[0])->toHaveKey('id');
+        expect($array[0])->toHaveKey('createdAt');
+        expect($array[0]['role'])->toBe('user');
+        expect($array[0]['content'])->toBe('Hello');
+        expect($array[1]['role'])->toBe('assistant');
+        expect($array[1]['content'])->toBe('World');
     });
 });

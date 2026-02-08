@@ -186,7 +186,7 @@ final class AgentConsoleLogger
             $details[] = sprintf('duration=%dms', $event->durationMs);
         }
 
-        $detailsStr = !empty($details) ? ' [' . implode(', ', $details) . ']' : '';
+        $detailsStr = $details !== [] ? ' [' . implode(', ', $details) . ']' : '';
 
         $this->logWithAgent('STEP', 'blue', sprintf(
             'Step %d completed%s',
@@ -198,7 +198,7 @@ final class AgentConsoleLogger
     private function onToolStarted(ToolCallStarted $event): void
     {
         $argsStr = '';
-        if ($this->showToolArgs && is_array($event->args) && !empty($event->args)) {
+        if ($this->showToolArgs && is_array($event->args) && $event->args !== []) {
             $argsStr = ' ' . $this->formatArgs($event->args);
         }
 

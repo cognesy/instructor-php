@@ -28,6 +28,7 @@ use Throwable;
  * - Identity: agentId, parentAgentId
  * - Session timing: createdAt, updatedAt
  * - Context: messages, metadata, system prompt, response format
+ * - Budget: resource limits inherited from parent or definition
  *
  * Execution data (optional, null when between executions):
  * - Execution identity: executionId
@@ -46,6 +47,7 @@ final readonly class AgentState
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
     private AgentContext $context;
+    private Budget $budget;
 
     // Execution data - transient across executions
     private ?ExecutionState $execution;
@@ -56,6 +58,7 @@ final readonly class AgentState
         ?DateTimeImmutable      $createdAt = null,
         ?DateTimeImmutable      $updatedAt = null,
         ?AgentContext           $context = null,
+        ?Budget                 $budget = null,
         ?ExecutionState         $execution = null,
     ) {
         $now = new DateTimeImmutable();
@@ -66,6 +69,7 @@ final readonly class AgentState
         $this->createdAt = $createdAt ?? $now;
         $this->updatedAt = $updatedAt ?? $this->createdAt;
         $this->context = $context ?? new AgentContext();
+        $this->budget = $budget ?? Budget::unlimited();
 
         // Execution data (null = between executions)
         $this->execution = $execution;
@@ -122,6 +126,7 @@ final readonly class AgentState
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
             context: $this->context->withMessageStore($store),
+            budget: $this->budget,
             execution: null,
         );
     }
@@ -134,6 +139,7 @@ final readonly class AgentState
         ?DateTimeImmutable      $createdAt = null,
         ?DateTimeImmutable      $updatedAt = null,
         ?AgentContext           $context = null,
+        ?Budget                 $budget = null,
         ?ExecutionState         $execution = null,
     ): self {
         return new self(
@@ -142,6 +148,7 @@ final readonly class AgentState
             createdAt: $createdAt ?? $this->createdAt,
             updatedAt: $updatedAt ?? new DateTimeImmutable(),
             context: $context ?? $this->context,
+            budget: $budget ?? $this->budget,
             execution: $execution ?? $this->execution,
         );
     }
@@ -207,6 +214,14 @@ final readonly class AgentState
         return $this->context;
     }
 
+    public function budget(): Budget {
+        return $this->budget;
+    }
+
+    public function withBudget(Budget $budget): self {
+        return $this->with(budget: $budget);
+    }
+
     public function messages(): Messages {
         return $this->context->messages();
     }
@@ -249,6 +264,24 @@ final readonly class AgentState
             return $current;
         }
         return $this->lastStepExecution()?->step();
+    }
+
+    public function hasFinalResponse(): bool {
+        $step = $this->finalResponseStep();
+        return match (true) {
+            $step === null => false,
+            trim($step->outputMessages()->toString()) === '' => false,
+            default => true,
+        };
+    }
+
+    public function finalResponse(): Messages {
+        $step = $this->finalResponseStep();
+        return match (true) {
+            $step === null => Messages::empty(),
+            trim($step->outputMessages()->toString()) === '' => Messages::empty(),
+            default => $step->outputMessages(),
+        };
     }
 
     public function stepCount(): int {
@@ -381,18 +414,30 @@ final readonly class AgentState
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'context' => $this->context->toArray(),
+            'budget' => $this->budget->toArray(),
             'execution' => $this->execution?->toArray(),
         ];
     }
 
     public static function fromArray(array $data): self {
+        $execution = match (true) {
+            is_array($data['execution'] ?? null) => ExecutionState::fromArray($data['execution']),
+            default => null,
+        };
+
+        $budget = match (true) {
+            is_array($data['budget'] ?? null) => Budget::fromArray($data['budget']),
+            default => null,
+        };
+
         return new self(
             agentId: $data['agentId'] ?? null,
             parentAgentId: $data['parentAgentId'] ?? null,
             createdAt: self::parseDateFrom($data, 'createdAt'),
             updatedAt: self::parseDateFrom($data, 'updatedAt'),
             context: AgentContext::fromArray($data['context'] ?? []),
-            execution: ExecutionState::fromArray($data['execution'] ?? []),
+            budget: $budget,
+            execution: $execution,
         );
     }
 
@@ -404,6 +449,15 @@ final readonly class AgentState
             $value instanceof DateTimeImmutable => $value,
             is_string($value) && $value !== '' => new DateTimeImmutable($value),
             default => new DateTimeImmutable(),
+        };
+    }
+
+    private function finalResponseStep(): ?AgentStep {
+        $step = $this->currentStepOrLast();
+        return match (true) {
+            $step === null => null,
+            $step->stepType() !== AgentStepType::FinalResponse => null,
+            default => $step,
         };
     }
 

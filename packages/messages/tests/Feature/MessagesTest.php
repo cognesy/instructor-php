@@ -130,6 +130,12 @@ test('can get middle messages', function () {
         ['role' => 'assistant', 'content' => 'Middle'],
         ['role' => 'user', 'content' => 'Last']
     ]);
+
+    $middle = $messages->messageList()->get(1);
+
+    expect($middle)->toBeInstanceOf(Message::class)
+        ->and($middle?->role()->value)->toBe('assistant')
+        ->and($middle?->content()->toString())->toBe('Middle');
 });
 
 test('can check if messages collection is empty', function () {
@@ -393,14 +399,14 @@ test('can remap roles', function () {
     ]);
     
     $remapped = $messages->remapRoles([
-        'user' => 'human',
-        'assistant' => 'ai'
+        'user' => 'developer',
+        'assistant' => 'tool'
     ]);
     
-    expect($remapped->first()->role()->value)->toBe('human')
-        ->and($remapped->messageList()->get(1)?->role()->value)->toBe('ai')
+    expect($remapped->first()->role()->value)->toBe('developer')
+        ->and($remapped->messageList()->get(1)?->role()->value)->toBe('tool')
         ->and($remapped->last()->role()->value)->toBe('system'); // Not in mapping, should stay the same
-})->skip('Needs clarification on expected behavior');
+});
 
 test('can reverse messages', function () {
     $messages = Messages::fromArray([

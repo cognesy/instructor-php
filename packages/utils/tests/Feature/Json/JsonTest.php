@@ -191,29 +191,30 @@ describe('Json Class', function () {
         }';
         $json = Json::fromString($jsonWithComments);
         expect($json->toArray())->toBe(['name' => 'John', 'age' => 30]);
-    })->skip("Not supported yet");
+    });
 
     it('handles multiple JSON-like strings and returns the first valid one', function () {
         $text = "{\"invalid\": \"json\" {\"valid\": \"json\"}";
         $json = Json::fromString($text);
-        expect($json->toString())->toBe('{"valid": "json"}');
-    })->skip("Not supported yet");
+        expect($json->toString())->toBe('{"valid":"json"}');
+    });
 
     it('gracefully handles malformed JSON with extra commas', function () {
         $malformedJson = '{"name": "John",, "age": 30,}';
         $json = Json::fromPartial($malformedJson);
         expect($json->toArray())->toBe(['name' => 'John', 'age' => 30]);
-    })->skip("Not supported yet");
+    });
 
     it('handles escaped characters in JSON strings', function () {
-        $escapedJson = '{"message": "Hello \"World\"! \\ \/ \b \f \n \r \t"}';
+        $escapedJson = '{"message":"Hello \\"World\\"! \\\\ \\/ \\b \\f \\n \\r \\t"}';
         $json = Json::fromString($escapedJson);
 
         // Test that the parsed array contains the correct unescaped string
-        expect($json->toArray()['message'])->toBe("Hello \"World\"! \\ / \b \f \n \r \t");
+        $expectedMessage = json_decode($escapedJson, true)['message'];
+        expect($json->toArray()['message'])->toBe($expectedMessage);
 
         // Test that when re-encoded, the JSON is equivalent to the original
         $reEncodedJson = json_encode($json->toArray());
         expect(json_decode($reEncodedJson, true))->toBe(json_decode($escapedJson, true));
-    })->skip("Not supported yet");
+    });
 });

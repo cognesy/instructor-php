@@ -60,7 +60,7 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
     /** @return array<int, string> */
     #[\Override]
     public function names(): array {
-        return array_values(array_keys($this->definitions));
+        return array_keys($this->definitions);
     }
 
     #[\Override]
@@ -71,12 +71,8 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
     // FILE LOADING /////////////////////////////////////////////////
 
     public function loadFromFile(string $path): void {
-        try {
-            $definition = $this->loader->loadFile($path);
-            $this->register($definition);
-        } catch (\Throwable $e) {
-            $this->errors[$path] = $e->getMessage();
-        }
+        $definition = $this->loader->loadFile($path);
+        $this->register($definition);
     }
 
     public function loadFromDirectory(string $path, bool $recursive = false): void {
@@ -85,16 +81,19 @@ final class AgentDefinitionRegistry implements AgentDefinitionProvider
         }
 
         foreach ($this->listAgentFiles($path, $recursive) as $file) {
-            $this->loadFromFile($file);
+            try {
+                $this->loadFromFile($file);
+            } catch (\Throwable $e) {
+                $this->errors[$file] = $e->getMessage();
+            }
         }
     }
 
     public function autoDiscover(
-        ?string $projectPath = null,
+        string $projectPath,
         ?string $packagePath = null,
         ?string $userPath = null,
     ): void {
-        $projectPath = $projectPath ?? (getcwd() ?: '/tmp');
 
         $paths = [
             $userPath,

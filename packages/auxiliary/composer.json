@@ -27,6 +27,7 @@
     "php": "^8.3",
     "ext-dom": "*",
     "cognesy/instructor-messages": "^1.22",
+    "cognesy/instructor-sandbox": "^1.22",
     "cognesy/instructor-utils": "^1.22",
     "guzzlehttp/psr7": "^2.7",
     "league/html-to-markdown": "^5.1",

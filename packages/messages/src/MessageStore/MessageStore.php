@@ -166,4 +166,26 @@ final readonly class MessageStore
             parameters: $parameters,
         );
     }
+
+    // STORAGE INTEGRATION ////////////////////////////////////
+
+    /**
+     * Load MessageStore from storage.
+     */
+    public static function fromStorage(
+        Contracts\CanStoreMessages $storage,
+        string $sessionId,
+    ): self {
+        return $storage->load($sessionId);
+    }
+
+    /**
+     * Save MessageStore to storage.
+     */
+    public function toStorage(
+        Contracts\CanStoreMessages $storage,
+        string $sessionId,
+    ): Data\StoreMessagesResult {
+        return $storage->save($sessionId, $this);
+    }
 }

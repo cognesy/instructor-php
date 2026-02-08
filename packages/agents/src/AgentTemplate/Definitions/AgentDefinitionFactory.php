@@ -20,14 +20,15 @@ final class AgentDefinitionFactory
 
         try {
             return $class::fromDefinition($definition);
-        } catch (AgentTemplateException $e) {
-            throw $e;
         } catch (Throwable $e) {
-            throw AgentTemplateException::blueprintCreationFailed(
-                $class,
-                $definition->name,
-                $e,
-            );
+            throw match(true) {
+                $e instanceof AgentTemplateException => $e,
+                default => AgentTemplateException::blueprintCreationFailed(
+                    $class,
+                    $definition->name,
+                    $e,
+                ),
+            };
         }
     }
 

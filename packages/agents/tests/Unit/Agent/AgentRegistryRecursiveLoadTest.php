@@ -153,15 +153,13 @@ describe('AgentDefinitionRegistry::loadFromDirectory', function () {
         expect(array_key_exists($dir2 . '/bad2.md', $registry->errors()))->toBeTrue();
     });
 
-    it('records errors from loadFromFile', function () {
+    it('throws from loadFromFile on broken file', function () {
         $path = $this->tempDir . '/broken.md';
         file_put_contents($path, 'no frontmatter');
 
         $registry = new AgentDefinitionRegistry();
-        $registry->loadFromFile($path);
 
-        expect($registry->count())->toBe(0);
-        expect($registry->errors())->toHaveCount(1);
-        expect(array_key_exists($path, $registry->errors()))->toBeTrue();
+        expect(fn() => $registry->loadFromFile($path))
+            ->toThrow(\InvalidArgumentException::class);
     });
 });

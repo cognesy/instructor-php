@@ -4,7 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique;
 
 use Cognesy\Schema\Attributes\Description;
 
-class SelfCriticResult
+final readonly class SelfCriticResult
 {
     public function __construct(
         /** True if response answers the task with supporting evidence. False if response contradicts evidence or makes unsupported claims. */
@@ -22,14 +22,14 @@ class SelfCriticResult
     public function toFeedback(): string {
         $feedback = [];
 
-        if (!empty($this->weaknesses)) {
+        if ($this->weaknesses !== []) {
             $feedback[] = "**Issues to address:**";
             foreach ($this->weaknesses as $weakness) {
                 $feedback[] = "- {$weakness}";
             }
         }
 
-        if (!empty($this->suggestions)) {
+        if ($this->suggestions !== []) {
             $feedback[] = "\n**Suggestions:**";
             foreach ($this->suggestions as $suggestion) {
                 $feedback[] = "- {$suggestion}";

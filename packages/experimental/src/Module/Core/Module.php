@@ -45,7 +45,7 @@ abstract class Module implements CanInitiateModuleCall
     }
 
     public function using(
-        StructuredOutput $structuredOutput = null,
+        ?StructuredOutput $structuredOutput = null,
     ) : static {
         foreach($this->predictors() as $predictor) {
             $predictor->with(structuredOutput: $structuredOutput);

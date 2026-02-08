@@ -99,11 +99,11 @@ describe('AgentDefinition events', function () {
         $definition = new EventAgentDefinition();
         $handler = new TestEventHandler();
 
-        $definition->withEventHandler($handler);
-        $definition->wiretap(fn(object $event) => null);
+        $agent = $definition->withEventHandler($handler);
+        $agent->wiretap(fn(object $event) => null);
 
         $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
-        $definition->execute($state);
+        $agent->execute($state);
 
         $classes = array_map(
             static fn(object $event): string => $event::class,

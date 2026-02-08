@@ -162,6 +162,8 @@ class SimpleXmlParser
         if (strlen($textContent) > 0) {
             if ($this->includeAttributes && count($result) > 0) {
                 $result['_value'] = $textContent;
+            } elseif (count($result) > 0) {
+                return [$textContent, $result];
             } else {
                 return $textContent;
             }

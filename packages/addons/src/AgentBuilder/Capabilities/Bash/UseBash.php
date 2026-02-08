@@ -5,7 +5,7 @@ namespace Cognesy\Addons\AgentBuilder\Capabilities\Bash;
 use Cognesy\Addons\AgentBuilder\AgentBuilder;
 use Cognesy\Addons\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Addons\Agent\Core\Collections\Tools;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
 
 class UseBash implements AgentCapability
 {

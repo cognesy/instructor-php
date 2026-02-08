@@ -17,8 +17,8 @@ use Cognesy\Auxiliary\Beads\Infrastructure\Execution\ExecutionPolicy;
 use Cognesy\Auxiliary\Beads\Infrastructure\Parser\CommentParser;
 use Cognesy\Auxiliary\Beads\Infrastructure\Parser\TaskParser;
 use Cognesy\Auxiliary\Beads\Infrastructure\Repository\BdTaskRepository;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
-use Cognesy\Utils\Sandbox\Policy\SandboxPolicy;
+use Cognesy\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Policy\SandboxPolicy;
 
 // Helper function for creating test tasks
 function createTestTaskForRepo(string $id, string $title = 'Test Task'): Task {

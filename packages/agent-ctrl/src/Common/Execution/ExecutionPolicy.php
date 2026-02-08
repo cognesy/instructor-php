@@ -2,7 +2,7 @@
 
 namespace Cognesy\AgentCtrl\Common\Execution;
 
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy as SandboxPolicy;
+use Cognesy\Sandbox\Config\ExecutionPolicy as SandboxPolicy;
 
 /**
  * Execution Policy Configuration for CLI-based code agents.

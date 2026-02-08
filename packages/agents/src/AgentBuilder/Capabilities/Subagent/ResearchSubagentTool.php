@@ -5,6 +5,8 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Subagent;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
 use Cognesy\Messages\Messages;
@@ -27,10 +29,10 @@ class ResearchSubagentTool extends BaseTool
 
     #[\Override]
     public function __invoke(mixed ...$args): string {
-        $task = $args['task'] ?? $args[0] ?? '';
-        $files = $args['files'] ?? $args[1] ?? [];
+        $task = $this->arg($args, 'task', 0, '');
+        $files = $this->arg($args, 'files', 1, []);
 
-        if (empty($task)) {
+        if ($task === '') {
             return "Error: task is required";
         }
 
@@ -39,12 +41,12 @@ class ResearchSubagentTool extends BaseTool
             ReadFileTool::inDirectory($this->baseDir),
         );
 
-        $subagent = AgentBuilder::new()->withTools($subagentTools)->build();
+        $subagent = AgentBuilder::base()->withTools($subagentTools)->build();
 
         // Build context with file list
         $fileList = is_array($files) ? implode(', ', $files) : $files;
         $prompt = "You are a research assistant. {$task}\n";
-        if (!empty($fileList)) {
+        if ($fileList !== '') {
             $prompt .= "Relevant files to examine: {$fileList}\n";
         }
         $prompt .= "Provide a concise summary of your findings.";
@@ -61,27 +63,15 @@ class ResearchSubagentTool extends BaseTool
 
     #[\Override]
     public function toToolSchema(): array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->name(),
-                'description' => $this->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'task' => [
-                            'type' => 'string',
-                            'description' => 'The research task to perform',
-                        ],
-                        'files' => [
-                            'type' => 'array',
-                            'items' => ['type' => 'string'],
-                            'description' => 'List of file paths to examine',
-                        ],
-                    ],
-                    'required' => ['task'],
-                ],
-            ],
-        ];
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('task', 'The research task to perform'),
+                    JsonSchema::array('files', JsonSchema::string(), 'List of file paths to examine'),
+                ])
+                ->withRequiredProperties(['task'])
+        )->toArray();
     }
 }

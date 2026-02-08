@@ -108,11 +108,12 @@ test('map method with wildcard path returns array of Map instances', function ()
     $this->dataMap->set('users.user2.name', 'Bob');
 
     $userMaps = $this->dataMap->toMap('users.*');
-    expect($userMaps)->toBeArray();
-    expect(count($userMaps))->toBe(2);
-    expect($userMaps['users.user1'])->toBeInstanceOf(Map::class);
-    expect($userMaps['users.user2'])->toBeInstanceOf(Map::class);
-})->skip('Wildcard path not implemented yet');
+    expect($userMaps)->toBeInstanceOf(Map::class);
+    expect($userMaps->count())->toBe(2);
+    $values = array_values($userMaps->toArray());
+    expect($values)->toContain(['name' => 'Alice']);
+    expect($values)->toContain(['name' => 'Bob']);
+});
 
 test('jsonSerialize method returns array', function () {
     $serialized = $this->dataMap->jsonSerialize();

@@ -251,12 +251,17 @@ test('converts message to array', function () {
 
     $array = $message->toArray();
 
-    expect($array)->toBe([
-        'role' => 'system',
-        'name' => 'System',
-        'content' => 'System instruction',
-        '_metadata' => ['source' => 'test']
-    ]);
+    // Check identity fields are present
+    expect($array)->toHaveKey('id');
+    expect($array)->toHaveKey('createdAt');
+    expect($array['id'])->toBeString();
+    expect($array['createdAt'])->toBeString();
+
+    // Check content fields
+    expect($array['role'])->toBe('system');
+    expect($array['name'])->toBe('System');
+    expect($array['content'])->toBe('System instruction');
+    expect($array['_metadata'])->toBe(['source' => 'test']);
 });
 
 test('converts simple message to string', function () {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cognesy\Doctor\Freeze;
 
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Contracts\CanExecuteCommand;
-use Cognesy\Utils\Sandbox\Drivers\HostSandbox;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Contracts\CanExecuteCommand;
+use Cognesy\Sandbox\Drivers\HostSandbox;
 
 class FreezeCommand
 {

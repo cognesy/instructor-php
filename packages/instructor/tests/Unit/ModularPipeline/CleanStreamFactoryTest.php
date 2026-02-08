@@ -138,9 +138,9 @@ test('stream accumulates partials when enabled', function() {
 
     $final = end($results);
     expect($final)->toBeInstanceOf(\Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate::class)
-        ->and($final->partials)->not()->toBeNull()
-        ->and($final->partials->count())->toBeGreaterThan(0);
-})->skip('Integration test - better suited for Feature tests with FakeInferenceDriver');
+        ->and($final->partial)->not()->toBeNull()
+        ->and($final->partial->content())->toBe('{"test": "value1"}');
+});
 
 test('stream does not accumulate partials when disabled', function() {
     $factory = new ModularStreamFactory(
@@ -164,8 +164,8 @@ test('stream does not accumulate partials when disabled', function() {
     $results = iterator_to_array($stream);
     $final = end($results);
 
-    expect($final->partials)->toBeNull();
-})->skip('Integration test - better suited for Feature tests with FakeInferenceDriver');
+    expect($final->partial)->toBeNull();
+});
 
 test('handles JsonSchema output mode', function() {
     $factory = new ModularStreamFactory(
@@ -214,7 +214,7 @@ test('handles Tools output mode', function() {
 
     expect($results)->toBeArray()
         ->and($results)->not()->toBeEmpty();
-})->skip('Integration test - better suited for Feature tests with FakeInferenceDriver');
+});
 
 test('stream accumulates usage across chunks', function() {
     $factory = new ModularStreamFactory(
@@ -245,7 +245,7 @@ test('stream accumulates usage across chunks', function() {
 
     expect($final)->toBeInstanceOf(\Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate::class)
         ->and($final->usage->outputTokens)->toBeGreaterThan(5);
-})->skip('Integration test - better suited for Feature tests with FakeInferenceDriver');
+});
 
 test('stream handles finish reason', function() {
     $factory = new ModularStreamFactory(
@@ -273,7 +273,7 @@ test('stream handles finish reason', function() {
 
     expect($final)->toBeInstanceOf(\Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate::class)
         ->and($final->finishReason())->toBe('stop');
-})->skip('Integration test - better suited for Feature tests with FakeInferenceDriver');
+});
 
 test('factory uses provided deserializer', function() {
     $customDeserializer = new class implements CanDeserializeResponse {

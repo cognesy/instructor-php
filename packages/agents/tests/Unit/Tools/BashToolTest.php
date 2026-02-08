@@ -4,8 +4,8 @@ namespace Cognesy\Agents\Tests\Unit\Tools;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashPolicy;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
-use Cognesy\Utils\Sandbox\Config\ExecutionPolicy;
-use Cognesy\Utils\Sandbox\Testing\MockSandbox;
+use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Testing\MockSandbox;
 
 describe('BashTool', function () {
 
@@ -117,9 +117,24 @@ describe('BashTool', function () {
         $tool = new BashTool(baseDir: $this->tempDir);
         $schema = $tool->toToolSchema();
 
-        expect($schema['type'])->toBe('function');
-        expect($schema['function']['name'])->toBe('bash');
-        expect($schema['function']['parameters'])->toBeArray();
+        expect($schema)->toMatchArray([
+            'type' => 'function',
+            'function' => [
+                'name' => 'bash',
+                'description' => $tool->description(),
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'command' => [
+                            'type' => 'string',
+                            'description' => 'The bash command to execute',
+                        ],
+                    ],
+                    'required' => ['command'],
+                    'additionalProperties' => false,
+                ],
+            ],
+        ]);
     });
 
     it('executes using MockSandbox', function () {

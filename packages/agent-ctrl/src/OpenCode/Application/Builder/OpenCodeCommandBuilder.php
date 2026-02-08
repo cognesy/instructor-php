@@ -6,7 +6,7 @@ use Cognesy\AgentCtrl\Common\Value\Argv;
 use Cognesy\AgentCtrl\Common\Value\CommandSpec;
 use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
-use Cognesy\Utils\Sandbox\Utils\ProcUtils;
+use Cognesy\Sandbox\Utils\ProcUtils;
 use InvalidArgumentException;
 
 /**

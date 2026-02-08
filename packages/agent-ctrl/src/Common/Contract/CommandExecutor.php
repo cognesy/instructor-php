@@ -4,7 +4,7 @@ namespace Cognesy\AgentCtrl\Common\Contract;
 
 use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
 use Cognesy\AgentCtrl\Common\Value\CommandSpec;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 interface CommandExecutor
 {

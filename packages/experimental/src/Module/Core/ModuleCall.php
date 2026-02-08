@@ -19,7 +19,7 @@ class ModuleCall
 
     public function __construct(
         array $inputs = [],
-        Closure $moduleCall = null,
+        ?Closure $moduleCall = null,
     ) {
         $this->inputs = $inputs;
         $this->moduleCall = $moduleCall;

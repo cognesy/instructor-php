@@ -6,7 +6,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeResponse;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\Common\Collection\DecodedObjectCollection;
 use Cognesy\AgentCtrl\Common\Value\DecodedObject;
-use Cognesy\Utils\Sandbox\Data\ExecResult;
+use Cognesy\Sandbox\Data\ExecResult;
 
 final class ResponseParser
 {

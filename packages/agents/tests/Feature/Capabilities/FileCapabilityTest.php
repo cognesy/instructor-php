@@ -18,7 +18,7 @@ describe('File Capability', function () {
                     'new_string' => 'x',
                 ], executeTools: true),
             ]))
-            ->withCapability(new UseFileTools())
+            ->withCapability(new UseFileTools(sys_get_temp_dir()))
             ->build();
 
         // Get first step from iterate()

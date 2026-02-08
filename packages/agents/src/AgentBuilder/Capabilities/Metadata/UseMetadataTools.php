@@ -18,7 +18,7 @@ use Cognesy\Agents\Hooks\Collections\HookTriggers;
  *   1. extract_data(input: "...", schema: "lead", store_as: "current_lead")
  *   2. save_lead(metadata_key: "current_lead")
  */
-class UseMetadataTools implements AgentCapability
+final class UseMetadataTools implements AgentCapability
 {
     public function __construct(
         private ?MetadataPolicy $policy = null,
