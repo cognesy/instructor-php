@@ -1,0 +1,7 @@
+order:
+  - custom-config
+  - custom-http-client
+  - context-caching
+  - connection-mgmt
+  - json-schema
+  - extending
