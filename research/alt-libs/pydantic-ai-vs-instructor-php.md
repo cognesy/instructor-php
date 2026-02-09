@@ -35,7 +35,7 @@ There is no separate "LLM client" package — `models/` is part of the agent fra
 Each layer is a separate Composer package with its own interfaces:
 
 ```
-agents (cognesy/instructor-agents)
+agents (cognesy/agents)
   ↓ uses
 instructor (cognesy/instructor-struct)
   ↓ uses

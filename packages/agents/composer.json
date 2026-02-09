@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/instructor-agents",
+  "name": "cognesy/agents",
   "license": "MIT",
   "description": "Agent framework for building AI agents with tools, continuation criteria, and hooks",
   "autoload": {

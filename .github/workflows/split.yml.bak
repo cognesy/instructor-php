@@ -22,7 +22,7 @@ jobs:
             repo:  'cognesy/instructor-addons'
             name:  'instructor-addons'
           - local: 'packages/agents'
-            repo:  'cognesy/instructor-agents'
+            repo:  'cognesy/agents'
             name:  'instructor-agents'
           - local: 'packages/agent-ctrl'
             repo:  'cognesy/instructor-agent-ctrl'

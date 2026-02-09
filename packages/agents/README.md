@@ -7,7 +7,7 @@ This is a read-only split from the [Instructor PHP](https://github.com/cognesy/i
 ## Installation
 
 ```bash
-composer require cognesy/instructor-agents
+composer require cognesy/agents
 ```
 
 ## Documentation
