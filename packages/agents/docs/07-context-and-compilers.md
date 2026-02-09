@@ -1,0 +1,55 @@
+# Agent Context & Message Compilers
+
+## AgentContext
+
+`AgentContext` holds the conversation data: messages, system prompt, metadata, and an optional response format.
+
+```php
+$state = AgentState::empty()
+    ->withSystemPrompt('You are a helpful assistant.')
+    ->withMetadata('session_id', 'abc');
+
+// Access
+$state->context()->systemPrompt();
+$state->context()->messages();
+$state->context()->metadata();
+```
+
+## Message Compilers
+
+Before each LLM call, the driver uses a `CanCompileMessages` implementation to transform `AgentState` into the final `Messages` sent to the LLM.
+
+```php
+interface CanCompileMessages
+{
+    public function compile(AgentState $state): Messages;
+}
+```
+
+The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
+
+## Custom Compiler
+
+Implement `CanCompileMessages` for custom message assembly:
+
+```php
+use Cognesy\Agents\Context\CanCompileMessages;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Messages\Messages;
+
+class MyCompiler implements CanCompileMessages
+{
+    public function compile(AgentState $state): Messages
+    {
+        // Custom logic to build messages from state
+        return $state->messages();
+    }
+}
+```
+
+Inject it into the loop's driver:
+
+```php
+$driver = new ToolCallingDriver(messageCompiler: new MyCompiler());
+$loop = AgentLoop::default()->withDriver($driver);
+```

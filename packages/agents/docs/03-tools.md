@@ -1,0 +1,53 @@
+# Tools
+
+Tools let the agent take actions. The LLM decides which tool to call and with what arguments.
+
+## Registering Tools
+
+Pass tools to the `Tools` collection:
+
+```php
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Tools\MockTool;
+
+$calculator = MockTool::returning('calculator', 'Performs math', '42');
+$tools = new Tools($calculator);
+```
+
+## Using FunctionTool
+
+Wrap any callable as a tool. Parameter schema is auto-generated from the function signature:
+
+```php
+use Cognesy\Agents\Core\Tools\FunctionTool;
+
+$tool = FunctionTool::fromCallable(
+    function (string $city): string {
+        return "Weather in {$city}: 72F, sunny";
+    }
+);
+
+$tools = new Tools($tool);
+```
+
+## Agent with Tools
+
+```php
+use Cognesy\Agents\Core\AgentLoop;
+use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Data\AgentState;
+
+$loop = AgentLoop::default()->withTool($tool);
+
+$state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
+$result = $loop->execute($state);
+// LLM calls the weather tool, gets result, then responds
+```
+
+## How It Works
+
+1. LLM sees tool schemas and decides to call a tool
+2. `ToolExecutor` runs the tool with provided arguments
+3. Tool results are formatted as messages and fed back to the LLM
+4. LLM uses the results to formulate a final response
+5. Loop continues until LLM responds without tool calls

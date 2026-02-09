@@ -206,21 +206,23 @@ describe('ContentPart', function () {
         });
     });
 
-    describe('cloning', function () {
-        it('creates deep clone', function () {
+    describe('immutability', function () {
+        it('returns new instance on field update', function () {
             $part = ContentPart::text('Hello');
-            $clone = $part->clone();
-            expect($clone)->not->toBe($part);
-            expect($clone->type())->toBe($part->type());
-            expect($clone->fields())->toBe($part->fields());
+            $updated = $part->withField('new_field', 'value');
+            expect($updated)->not->toBe($part);
+            expect($updated->type())->toBe($part->type());
+            expect($updated->fields())->toBe([
+                'text' => 'Hello',
+                'new_field' => 'value',
+            ]);
         });
 
-        it('clones with independent fields', function () {
+        it('keeps original fields unchanged after update', function () {
             $part = ContentPart::text('Hello');
-            $clone = $part->clone();
-            $clone = $clone->withField('new_field', 'value');
+            $updated = $part->withField('new_field', 'value');
             expect($part->has('new_field'))->toBeFalse();
-            expect($clone->has('new_field'))->toBeTrue();
+            expect($updated->has('new_field'))->toBeTrue();
         });
     });
 

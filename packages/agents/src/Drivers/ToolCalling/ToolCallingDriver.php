@@ -2,9 +2,12 @@
 
 namespace Cognesy\Agents\Drivers\ToolCalling;
 
+use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
+use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
+use Cognesy\Agents\Core\Contracts\CanCompileMessages;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -34,7 +37,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider
+class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -43,6 +46,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     private array $responseFormat;
     private OutputMode $mode;
     private array $options;
+    private CanCompileMessages $messageCompiler;
     private ?InferenceRetryPolicy $retryPolicy;
     private bool $parallelToolCalls = false;
     private ToolExecutionFormatter $formatter;
@@ -56,6 +60,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         string       $model = '',
         array        $options = [],
         OutputMode   $mode = OutputMode::Tools,
+        ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanEmitAgentEvents $eventEmitter = null,
         ?CanInterceptAgentLifecycle $interceptor = null,
@@ -67,6 +72,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $this->responseFormat = $responseFormat;
         $this->mode = $mode;
         $this->options = $options;
+        $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
         $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
@@ -82,6 +88,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             model: $this->model,
             options: $this->options,
             mode: $this->mode,
+            messageCompiler: $this->messageCompiler,
             retryPolicy: $this->retryPolicy,
             eventEmitter: $this->eventEmitter,
         );
@@ -101,8 +108,30 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             model: $this->model,
             options: $this->options,
             mode: $this->mode,
+            messageCompiler: $this->messageCompiler,
             retryPolicy: $this->retryPolicy,
             eventEmitter: $eventEmitter,
+        );
+    }
+
+    #[\Override]
+    public function messageCompiler(): CanCompileMessages {
+        return $this->messageCompiler;
+    }
+
+    #[\Override]
+    public function withMessageCompiler(CanCompileMessages $compiler): static {
+        return new self(
+            llm: $this->llm,
+            httpClient: $this->httpClient,
+            toolChoice: $this->toolChoice,
+            responseFormat: $this->responseFormat,
+            model: $this->model,
+            options: $this->options,
+            mode: $this->mode,
+            messageCompiler: $compiler,
+            retryPolicy: $this->retryPolicy,
+            eventEmitter: $this->eventEmitter,
         );
     }
 
@@ -123,7 +152,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
 
         // Build AgentStep from response and executions
         $messages = $this->formatter->makeExecutionMessages($executions);
-        $context = $state->context()->messagesForInference();
+        $context = $this->messageCompiler->compile($state);
         $step = $this->buildStepFromResponse(
             response: $response,
             executions: $executions,
@@ -136,8 +165,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     // INTERNAL /////////////////////////////////////////////////
 
     private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
-        $messages = $state->context()->messagesForInference();
-        $cache = $state->context()->toInferenceContext($tools->toToolSchema());
+        $messages = $this->messageCompiler->compile($state);
+        $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
         // Emit inference request started event
         $requestStartedAt = new DateTimeImmutable();

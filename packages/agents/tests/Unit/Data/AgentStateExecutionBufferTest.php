@@ -2,33 +2,64 @@
 
 namespace Cognesy\Agents\Tests\Unit\Data;
 
-use Cognesy\Agents\Core\Context\AgentContext;
+use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ToolCall;
 
-describe('AgentState execution buffer', function () {
-    it('includes execution buffer in messagesForInference', function () {
-        $state = AgentState::empty();
-        $store = $state->store()
-            ->section(AgentContext::EXECUTION_BUFFER_SECTION)
-            ->setMessages(Messages::fromString('trace', 'tool'));
-        $state = $state->withMessageStore($store);
+describe('AgentState metadata-based trace filtering', function () {
+    it('includes current execution traces in compiled messages', function () {
+        $toolCall = ToolCall::fromArray([
+            'id' => 'call_1',
+            'name' => 'test_tool',
+            'arguments' => '{}',
+        ]);
+        $step = new AgentStep(
+            outputMessages: Messages::fromString('trace', 'tool'),
+            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+        );
 
-        $messages = $state->context()->messagesForInference();
+        $state = AgentState::empty()->withUserMessage('hello');
+        $state = $state->withCurrentStep($step);
 
-        expect($messages->filter(fn(Message $message): bool => $message->isTool())->count())->toBe(1);
+        $compiler = new ConversationWithCurrentToolTrace();
+        $messages = $compiler->compile($state);
+
+        expect($messages->filter(fn(Message $m): bool => $m->isTool())->count())->toBe(1);
     });
 
-    it('clears execution buffer during continuation reset', function () {
-        $state = AgentState::empty();
-        $store = $state->store()
-            ->section(AgentContext::EXECUTION_BUFFER_SECTION)
-            ->setMessages(Messages::fromString('trace', 'tool'));
-        $state = $state->withMessageStore($store);
+    it('excludes old execution traces after forNextExecution', function () {
+        $toolCall = ToolCall::fromArray([
+            'id' => 'call_1',
+            'name' => 'test_tool',
+            'arguments' => '{}',
+        ]);
+        $traceStep = new AgentStep(
+            outputMessages: Messages::fromString('trace', 'tool'),
+            inferenceResponse: new InferenceResponse(toolCalls: new ToolCalls($toolCall)),
+        );
+        $finalStep = new AgentStep(
+            outputMessages: Messages::fromString('done', 'assistant'),
+            inferenceResponse: new InferenceResponse(),
+        );
 
+        $state = AgentState::empty()->withUserMessage('hello');
+        $state = $state->withCurrentStep($traceStep);
+        $state = $state->withCurrentStepCompleted();
+        $state = $state->withCurrentStep($finalStep);
+        $state = $state->withCurrentStepCompleted();
+        $state = $state->withExecutionCompleted();
+
+        // After next execution, old traces should be filtered out
         $continued = $state->forNextExecution();
 
-        expect($continued->store()->section(AgentContext::EXECUTION_BUFFER_SECTION)->isEmpty())->toBeTrue();
+        $compiler = new ConversationWithCurrentToolTrace();
+        $messages = $compiler->compile($continued);
+
+        expect($messages->filter(fn(Message $m): bool => $m->isTool())->count())->toBe(0);
     });
 });

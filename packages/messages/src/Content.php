@@ -106,10 +106,6 @@ final readonly class Content
         };
     }
 
-    public function clone() : self {
-        return new self(...$this->parts->all());
-    }
-
     // UTILS /////////////////////////////////////////////////
 
     private function isNull(): bool {

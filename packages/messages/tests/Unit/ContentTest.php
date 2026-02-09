@@ -188,19 +188,19 @@ describe('Content', function () {
         });
     });
 
-    describe('cloning', function () {
-        it('creates deep clone', function () {
+    describe('reconstruction', function () {
+        it('rebuilds content from existing parts', function () {
             $content = Content::text('Hello');
-            $clone = $content->clone();
-            expect($clone)->not->toBe($content);
-            expect($clone->toString())->toBe('Hello');
+            $rebuilt = Content::fromParts($content->partsList());
+            expect($rebuilt)->not->toBe($content);
+            expect($rebuilt->toString())->toBe('Hello');
         });
 
-        it('clones with multiple parts', function () {
+        it('rebuilds content with multiple parts', function () {
             $content = Content::texts(...['Hello', 'world']);
-            $clone = $content->clone();
-            expect($clone->partsList()->count())->toBe(2);
-            expect($clone->toString())->toBe("Hello\nworld");
+            $rebuilt = Content::fromParts($content->partsList());
+            expect($rebuilt->partsList()->count())->toBe(2);
+            expect($rebuilt->toString())->toBe("Hello\nworld");
         });
     });
 

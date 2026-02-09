@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Context\AgentContext;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Enums\ExecutionStatus;

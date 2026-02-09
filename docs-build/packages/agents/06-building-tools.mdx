@@ -1,0 +1,93 @@
+# Building Tools
+
+## Using BaseTool
+
+Extend `BaseTool` and implement `__invoke()`. The parameter schema is auto-generated from the method signature:
+
+```php
+use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Schema\Attributes\Description;
+
+class GetWeather extends BaseTool
+{
+    public function __construct()
+    {
+        parent::__construct(
+            name: 'get_weather',
+            description: 'Get current weather for a city',
+        );
+    }
+
+    public function __invoke(
+        #[Description('City name')] string $city,
+        #[Description('Unit: celsius or fahrenheit')] string $unit = 'celsius',
+    ): string {
+        // Your implementation
+        return "Weather in {$city}: 22 {$unit}";
+    }
+}
+// @doctest id="d590"
+```
+
+## Using FunctionTool
+
+Wrap any callable without creating a class:
+
+```php
+use Cognesy\Agents\Core\Tools\FunctionTool;
+
+$tool = FunctionTool::fromCallable(function (string $query): string {
+    return "Results for: {$query}";
+});
+// @doctest id="9ff9"
+```
+
+## Accessing Agent State
+
+Implement `CanAccessAgentState` (already included in `BaseTool`) to receive the current agent state:
+
+```php
+class StatefulTool extends BaseTool
+{
+    public function __invoke(string $input): string
+    {
+        $stepCount = $this->agentState?->stepCount() ?? 0;
+        return "Step {$stepCount}: processing {$input}";
+    }
+}
+// @doctest id="b7f6"
+```
+
+## The ToolInterface
+
+All tools implement `ToolInterface`:
+
+```php
+interface ToolInterface
+{
+    public function use(mixed ...$args): Result;
+    public function toToolSchema(): array;
+    public function name(): string;
+    public function description(): string;
+    public function metadata(): array;
+    public function instructions(): array;
+}
+// @doctest id="a77b"
+```
+
+- `use()` - execute the tool, returns `Result` (success or failure)
+- `toToolSchema()` - OpenAI-compatible function schema for the LLM
+- `metadata()` - lightweight info for tool discovery
+- `instructions()` - full specification for detailed tool documentation
+
+## MockTool for Testing
+
+```php
+use Cognesy\Agents\Core\Tools\MockTool;
+
+$tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
+
+// Or with custom logic
+$tool = new MockTool('my_tool', 'Does something', fn($x) => strtoupper($x));
+// @doctest id="1820"
+```

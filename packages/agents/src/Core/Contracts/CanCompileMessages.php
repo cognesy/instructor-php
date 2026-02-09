@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Core\Context;
+namespace Cognesy\Agents\Core\Contracts;
 
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;

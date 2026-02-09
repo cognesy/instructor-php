@@ -2,14 +2,17 @@
 
 namespace Cognesy\Agents\Core;
 
+use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Contracts\ToolInterface;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Stop\AgentStopException;
 use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Events\AgentEventEmitter;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Agents\Exceptions\AgentException;
@@ -17,6 +20,8 @@ use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
 use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
+use Cognesy\Config\ConfigResolver;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Throwable;
 
 /**
@@ -26,20 +31,36 @@ use Throwable;
  * dynamic decision-making on whether to continue or stop based on stop signals
  * and continuation requests emitted by hooks.
  */
-class AgentLoop implements CanControlAgentLoop
+readonly class AgentLoop implements CanControlAgentLoop
 {
-    private CanEmitAgentEvents $eventEmitter;
-    private CanInterceptAgentLifecycle $interceptor;
-
     public function __construct(
-        private readonly Tools $tools,
-        private readonly CanExecuteToolCalls $toolExecutor,
-        private readonly CanUseTools $driver,
-        ?CanEmitAgentEvents $eventEmitter,
-        ?CanInterceptAgentLifecycle $interceptor,
-    ) {
-        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
-        $this->interceptor = $interceptor ?? new PassThroughInterceptor();
+        private Tools $tools,
+        private CanExecuteToolCalls $toolExecutor,
+        private CanUseTools $driver,
+        private CanEmitAgentEvents $eventEmitter,
+        private CanInterceptAgentLifecycle $interceptor,
+    ) {}
+
+    public static function default() : self {
+        $eventEmitter = new AgentEventEmitter();
+        $interceptor = new PassThroughInterceptor();
+        $tools = new Tools();
+        return new self(
+            tools: $tools,
+            toolExecutor: new ToolExecutor(
+                tools: $tools,
+                eventEmitter: $eventEmitter,
+                interceptor: $interceptor,
+            ),
+            driver: new ToolCallingDriver(
+                llm: LLMProvider::new($eventEmitter->eventHandler(), ConfigResolver::default()),
+                messageCompiler: new ConversationWithCurrentToolTrace(),
+                eventEmitter: $eventEmitter,
+                interceptor: $interceptor,
+            ),
+            eventEmitter: $eventEmitter,
+            interceptor: $interceptor,
+        );
     }
 
     // PUBLIC API //////////////////////////////////
@@ -229,5 +250,29 @@ class AgentLoop implements CanControlAgentLoop
             eventEmitter: $resolvedEmitter,
             interceptor: $resolvedInterceptor,
         );
+    }
+
+    public function withTools(Tools $tools): self {
+        return $this->with(tools: $tools);
+    }
+
+    public function withTool(ToolInterface $tool): self {
+        return $this->withTools($this->tools->withTool($tool));
+    }
+
+    public function withToolExecutor(CanExecuteToolCalls $executor): self {
+        return $this->with(toolExecutor: $executor);
+    }
+
+    public function withDriver(CanUseTools $driver): self {
+        return $this->with(driver: $driver);
+    }
+
+    public function withInterceptor(CanInterceptAgentLifecycle $interceptor): self {
+        return $this->with(interceptor: $interceptor);
+    }
+
+    public function withEventEmitter(CanEmitAgentEvents $emitter): self {
+        return $this->with(eventEmitter: $emitter);
     }
 }

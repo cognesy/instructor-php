@@ -9,6 +9,7 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SubagentPolicy;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\Context\Compilers\SelectedSections;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -146,7 +147,11 @@ describe('Subagent Capability', function () {
         expect($allMessages)->not->toContain('You are a reviewer agent with special instructions');
 
         // Parent messages do NOT contain subagent's internal output
-        $allParentMessages = $next->context()->messagesForInference()->toString();
+        $allParentMessages = (new SelectedSections([
+            'summary',
+            'buffer',
+            'messages',
+        ]))->compile($next)->toString();
         expect($allParentMessages)->not->toContain('You are a reviewer agent with special instructions');
     });
 

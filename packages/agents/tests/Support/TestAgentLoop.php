@@ -10,7 +10,7 @@ use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
 
-final class TestAgentLoop extends AgentLoop
+readonly final class TestAgentLoop extends AgentLoop
 {
     private int $maxIterations;
 

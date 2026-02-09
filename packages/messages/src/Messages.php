@@ -75,10 +75,6 @@ final readonly class Messages implements Countable, IteratorAggregate
         return MessagesInput::fromInput($input);
     }
 
-    public function clone() : self {
-        return new Messages(...$this->messages->map(fn(Message $message) => $message->clone()));
-    }
-
     // MUTATORS /////////////////////////////////////////////////////////////
 
     public function asSystem(string|array|Message|Messages|Content|ContentPart|ContentParts $message, string $name = '') : static {
@@ -436,11 +432,11 @@ final readonly class Messages implements Countable, IteratorAggregate
                 continue;
             }
             if ($callback === null) {
-                $filteredMessages[] = $message->clone();
+                $filteredMessages[] = $message;
                 continue;
             }
             if ($callback($message)) {
-                $filteredMessages[] = $message->clone();
+                $filteredMessages[] = $message;
             }
         }
         return new Messages(...$filteredMessages);

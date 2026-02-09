@@ -150,19 +150,6 @@ final readonly class Message
         return new static(role: $role, content: $image->toContent());
     }
 
-    public function clone(): self {
-        return new self(
-            role: $this->role,
-            content: $this->content->clone(),
-            name: $this->name,
-            metadata: $this->metadata->toArray(),
-            parentId: $this->parentId,
-            // Preserve identity
-            id: $this->id,
-            createdAt: $this->createdAt,
-        );
-    }
-
     // ACCESSORS ///////////////////////////////////////
 
     public function role(): MessageRole {
@@ -298,7 +285,7 @@ final readonly class Message
     }
 
     public function addContentFrom(Message $source): self {
-        $newContent = $this->content->clone();
+        $newContent = $this->content;
         foreach ($source->content()->partsList()->all() as $part) {
             $newContent = $newContent->addContentPart($part);
         }
@@ -365,4 +352,3 @@ final readonly class Message
         return is_array($message['content']);
     }
 }
-

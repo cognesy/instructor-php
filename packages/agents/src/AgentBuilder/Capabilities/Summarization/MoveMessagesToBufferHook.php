@@ -4,6 +4,7 @@ namespace Cognesy\Agents\AgentBuilder\Capabilities\Summarization;
 
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Events\MessagesMovedToBuffer;
 use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Utils\SplitMessages;
+use Cognesy\Agents\Context\ContextSections;
 use Cognesy\Agents\Hooks\Contracts\HookInterface;
 use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -48,7 +49,7 @@ final readonly class MoveMessagesToBufferHook implements HookInterface
         $newMessageStore = $state->store()
             ->section($this->bufferSection)
             ->appendMessages($overflow)
-            ->section('messages')
+            ->section(ContextSections::DEFAULT)
             ->setMessages($keep);
 
         return $context->withState($state->withMessageStore($newMessageStore));

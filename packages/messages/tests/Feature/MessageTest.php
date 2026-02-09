@@ -165,13 +165,13 @@ test('creates a message from content with role', function () {
         ->and($message->content()->toString())->toBe('System instruction');
 });
 
-test('creates a message from existing message through clone', function () {
+test('creates a message from existing message', function () {
     $original = new Message('user', 'Original message');
-    $cloned = $original->clone();
+    $resolved = Message::fromAny($original);
 
-    expect($cloned)->toBeInstanceOf(Message::class)
-        ->and($cloned->role())->toBe(MessageRole::User)
-        ->and($cloned->content()->toString())->toBe('Original message');
+    expect($resolved)->toBe($original)
+        ->and($resolved->role())->toBe(MessageRole::User)
+        ->and($resolved->content()->toString())->toBe('Original message');
 });
 
 test('creates a message from various source types', function () {

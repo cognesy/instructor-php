@@ -2,9 +2,12 @@
 
 namespace Cognesy\Agents\Drivers\ReAct;
 
+use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
+use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
+use Cognesy\Agents\Core\Contracts\CanCompileMessages;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -39,7 +42,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider
+final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -50,6 +53,7 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     private array $finalOptions;
     private int $maxRetries;
     private OutputMode $mode;
+    private CanCompileMessages $messageCompiler;
     private CanEmitAgentEvents $eventEmitter;
 
     public function __construct(
@@ -62,6 +66,7 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         array $finalOptions = [],
         int $maxRetries = 2,
         OutputMode $mode = OutputMode::Json,
+        ?CanCompileMessages $messageCompiler = null,
         ?CanEmitAgentEvents $eventEmitter = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
@@ -73,12 +78,13 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $this->finalOptions = $finalOptions;
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
+        $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
     }
 
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
-        $messages = $state->context()->messagesForInference();
+        $messages = $this->messageCompiler->compile($state);
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
 
@@ -129,7 +135,7 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $usage = $inferenceResponse->usage();
 
         if (!$decision->isCall()) {
-            $step = $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->context()->toInferenceContext());
+            $step = $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->context()->toCachedContext());
             return $state->withCurrentStep($step);
         }
 
@@ -168,6 +174,18 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     public function withEventEmitter(CanEmitAgentEvents $eventEmitter): static {
         $clone = clone $this;
         $clone->eventEmitter = $eventEmitter;
+        return $clone;
+    }
+
+    #[\Override]
+    public function messageCompiler(): CanCompileMessages {
+        return $this->messageCompiler;
+    }
+
+    #[\Override]
+    public function withMessageCompiler(CanCompileMessages $compiler): static {
+        $clone = clone $this;
+        $clone->messageCompiler = $compiler;
         return $clone;
     }
 

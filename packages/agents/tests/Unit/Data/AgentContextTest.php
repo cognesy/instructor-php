@@ -2,7 +2,10 @@
 
 namespace Cognesy\Agents\Tests\Unit\Data;
 
-use Cognesy\Agents\Core\Context\AgentContext;
+use Cognesy\Agents\Context\AgentContext;
+use Cognesy\Agents\Context\Compilers\SelectedSections;
+use Cognesy\Agents\Context\ContextSections;
+use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;
@@ -10,15 +13,20 @@ use Cognesy\Utils\Metadata;
 
 it('compiles inference messages in section order', function () {
     $store = MessageStore::fromSections(
-        new Section(AgentContext::SUMMARY_SECTION, Messages::fromString('SUMMARY', 'system')),
-        new Section(AgentContext::BUFFER_SECTION, Messages::fromString('BUFFER', 'user')),
-        new Section(AgentContext::DEFAULT_SECTION, Messages::fromString('RECENT', 'user')),
-        new Section(AgentContext::EXECUTION_BUFFER_SECTION, Messages::fromString('TRACE', 'tool')),
+        new Section(ContextSections::SUMMARY, Messages::fromString('SUMMARY', 'system')),
+        new Section(ContextSections::BUFFER, Messages::fromString('BUFFER', 'user')),
+        new Section(ContextSections::DEFAULT, Messages::fromString('RECENT', 'user')),
     );
 
-    $context = new AgentContext(store: $store);
+    $state = new AgentState(context: new AgentContext(store: $store));
 
-    expect(trim($context->messagesForInference()->toString()))->toBe("SUMMARY\nBUFFER\nRECENT\nTRACE");
+    $messages = (new SelectedSections([
+        ContextSections::SUMMARY,
+        ContextSections::BUFFER,
+        ContextSections::DEFAULT,
+    ]))->compile($state);
+
+    expect(trim($messages->toString()))->toBe("SUMMARY\nBUFFER\nRECENT");
 });
 
 it('serializes and restores context data', function () {

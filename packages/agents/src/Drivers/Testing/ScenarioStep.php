@@ -66,7 +66,7 @@ final readonly class ScenarioStep
         );
     }
 
-    public function toAgentStep(AgentState $state): AgentStep
+    public function toAgentStep(AgentState $state, ?Messages $inputMessages = null): AgentStep
     {
         $errors = match ($this->stepType) {
             AgentStepType::Error => new ErrorList(new \RuntimeException('Scenario step marked as error')),
@@ -79,7 +79,7 @@ final readonly class ScenarioStep
         );
 
         return new AgentStep(
-            inputMessages: $state->context()->messagesForInference(),
+            inputMessages: $inputMessages ?? $state->store()->toMessages(),
             outputMessages: Messages::fromString($this->response, 'assistant'),
             inferenceResponse: $response,
             errors: $errors,

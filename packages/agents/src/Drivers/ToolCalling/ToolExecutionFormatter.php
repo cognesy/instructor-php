@@ -25,8 +25,14 @@ class ToolExecutionFormatter
 
     protected function toolExecutionMessages(ToolExecution $toolExecution) : Messages {
         $messages = Messages::empty();
-        $messages = $messages->appendMessage($this->toolInvocationMessage($toolExecution->toolCall()));
-        $messages = $messages->appendMessage($this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result()));
+        $messages = $messages->appendMessage(
+            $this->toolInvocationMessage($toolExecution->toolCall())
+                ->withMetadata('tool_execution_id', $toolExecution->id())
+        );
+        $messages = $messages->appendMessage(
+            $this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result())
+                ->withMetadata('tool_execution_id', $toolExecution->id())
+        );
         return $messages;
     }
 

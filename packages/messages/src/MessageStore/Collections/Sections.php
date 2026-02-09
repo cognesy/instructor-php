@@ -177,7 +177,7 @@ final readonly class Sections implements Countable, IteratorAggregate
         foreach ($this->sections as $section) {
             foreach ($section as $message) {
                 if (!$message->isEmpty()) {
-                    $allMessages[] = $message->clone();
+                    $allMessages[] = $message;
                 }
             }
         }

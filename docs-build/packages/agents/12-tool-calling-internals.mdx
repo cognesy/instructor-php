@@ -1,0 +1,125 @@
+# Tool Calling Internals
+
+The agent's ability to use tools relies on two contracts and two drivers that implement them differently.
+
+## Architecture
+
+```
+AgentLoop
+  |-- CanUseTools (driver)          # decides what tools to call
+  |   |-- ToolCallingDriver         # native LLM function calling
+  |   |-- ReActDriver               # Thought/Action/Observation via structured output
+  |   |-- FakeAgentDriver           # scripted responses for testing
+  |
+  |-- CanExecuteToolCalls (executor) # runs the actual tools
+      |-- ToolExecutor              # default implementation
+// @doctest id="3681"
+```
+
+## The Two Contracts
+
+### CanUseTools (Driver)
+
+Sends state + tools to the LLM, gets back an updated state with tool call decisions:
+
+```php
+interface CanUseTools {
+    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState;
+}
+// @doctest id="0666"
+```
+
+### CanExecuteToolCalls (Executor)
+
+Runs tool calls and returns execution results:
+
+```php
+interface CanExecuteToolCalls {
+    public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
+}
+// @doctest id="a759"
+```
+
+## ToolCallingDriver
+
+Uses the LLM's native function calling API.
+
+**Flow:**
+1. Compile messages from state via `CanCompileMessages`
+2. Send messages + tool schemas to LLM via `Inference`
+3. Parse `InferenceResponse` for tool calls
+4. Pass tool calls to `ToolExecutor`
+5. Format execution results as assistant/tool message pairs
+6. Return updated state with new `AgentStep`
+
+```php
+$driver = new ToolCallingDriver(
+    llm: $llm,
+    model: 'gpt-4o',
+    toolChoice: 'auto',          // 'auto', 'required', or specific tool
+    mode: OutputMode::Tools,
+);
+// @doctest id="d2b7"
+```
+
+The LLM natively understands tools and returns structured `tool_calls` in its response.
+
+## ReActDriver
+
+Uses structured output to extract Thought/Action/Observation decisions.
+
+**Flow:**
+1. Build a system prompt describing available tools and ReAct format
+2. Use `StructuredOutput` to extract a `ReActDecision` from the LLM
+3. Validate the decision (type, tool existence, arguments)
+4. If `call_tool`: execute via `ToolExecutor`, format as Observation messages
+5. If `final_answer`: return the answer as the final response
+
+```php
+$driver = new ReActDriver(
+    llm: $llm,
+    model: 'gpt-4o',
+    mode: OutputMode::Json,
+    maxRetries: 2,               // retries on extraction failure
+    finalViaInference: false,    // optionally use separate LLM call for final answer
+);
+// @doctest id="9bb6"
+```
+
+The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, `args`, and `thought` fields.
+
+## ToolExecutor
+
+The default `CanExecuteToolCalls` implementation. For each tool call:
+
+1. **BeforeToolUse hook** - can modify the call or block it
+2. **Prepare tool** - inject `AgentState` if tool implements `CanAccessAgentState`
+3. **Validate args** - check required parameters
+4. **Execute** - call `$tool->use(...$args)`
+5. **AfterToolUse hook** - can modify the result
+6. **Emit events** - `ToolCallStarted`, `ToolCallCompleted`
+
+The `ToolExecutor` is created automatically by `AgentLoop::default()`. To customize it:
+
+```php
+$executor = new ToolExecutor(
+    tools: $tools,
+    eventEmitter: $eventEmitter,
+    interceptor: $interceptor,
+    throwOnToolFailure: false,  // true = throw on first tool error
+    stopOnToolBlock: false,     // true = stop executing remaining tools if one is blocked
+);
+
+$loop = AgentLoop::default()->withTools($tools)->withToolExecutor($executor);
+// @doctest id="c6d5"
+```
+
+## When to Use Which Driver
+
+| | ToolCallingDriver | ReActDriver |
+|---|---|---|
+| **Requires** | LLM with function calling | Any LLM with JSON output |
+| **Tool selection** | Native, reliable | Structured output extraction |
+| **Reasoning** | Implicit | Explicit (Thought field) |
+| **Reliability** | Higher (native API) | Lower (parsing required) |
+| **Flexibility** | Standard tools only | Custom decision schemas |

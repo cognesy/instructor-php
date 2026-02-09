@@ -24,7 +24,7 @@ final class MessageInput
         $resolved = match (true) {
             is_string($message) => new Message(role: $role, content: $message),
             is_array($message) => self::fromArray($message),
-            $message instanceof Message => $message->clone(),
+            $message instanceof Message => $message,
             $message instanceof Content => new Message(role: $role, content: $message),
             $message instanceof ContentPart => new Message(
                 role: $role,

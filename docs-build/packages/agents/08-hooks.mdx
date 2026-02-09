@@ -1,0 +1,135 @@
+# Hooks
+
+Hooks intercept agent lifecycle events to add custom behavior: logging, guards, state modification, tool blocking, and more.
+
+## Lifecycle Events
+
+| Trigger | When |
+|---------|------|
+| `BeforeExecution` | Before the loop starts |
+| `BeforeStep` | Before each LLM call |
+| `BeforeToolUse` | Before each tool execution |
+| `AfterToolUse` | After each tool execution |
+| `AfterStep` | After each loop iteration |
+| `OnStop` | When a stop signal is detected |
+| `AfterExecution` | After the loop ends |
+| `OnError` | When an error occurs |
+
+## Implementing a Hook
+
+Implement `HookInterface`:
+
+```php
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
+
+class LogStepsHook implements HookInterface
+{
+    public function handle(HookContext $context): HookContext
+    {
+        $steps = $context->state()->stepCount();
+        echo "Current step: {$steps}\n";
+        return $context;
+    }
+}
+// @doctest id="55f2"
+```
+
+## Registering Hooks
+
+Use `HookStack` to compose hooks with trigger filters and priorities:
+
+```php
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
+use Cognesy\Agents\Hooks\Interceptors\HookStack;
+
+$stack = new HookStack(new RegisteredHooks());
+$stack = $stack->with(
+    hook: new LogStepsHook(),
+    triggerTypes: HookTriggers::afterStep(),
+    priority: 10,
+    name: 'log_steps',
+);
+
+$loop = AgentLoop::default()->withInterceptor($stack);
+// @doctest id="b665"
+```
+
+## CallableHook
+
+Quick hooks without a class:
+
+```php
+use Cognesy\Agents\Hooks\Defaults\CallableHook;
+
+$hook = new CallableHook(function (HookContext $ctx): HookContext {
+    echo "Step done!\n";
+    return $ctx;
+});
+
+$stack = $stack->with($hook, HookTriggers::afterStep());
+// @doctest id="9852"
+```
+
+## Blocking Tool Execution
+
+In a `BeforeToolUse` hook, block a tool:
+
+```php
+class BlockDangerousTools implements HookInterface
+{
+    public function handle(HookContext $context): HookContext
+    {
+        if ($context->toolCall()?->name() === 'dangerous_tool') {
+            return $context->withToolExecutionBlocked('Not allowed');
+        }
+        return $context;
+    }
+}
+
+$stack = $stack->with(new BlockDangerousTools(), HookTriggers::beforeToolUse());
+// @doctest id="9072"
+```
+
+## Modifying State
+
+Hooks can modify `AgentState` through `HookContext`:
+
+```php
+$hook = new CallableHook(function (HookContext $ctx): HookContext {
+    $state = $ctx->state()->withMetadata('custom_key', 'value');
+    return $ctx->withState($state);
+});
+// @doctest id="16d4"
+```
+
+## Built-in Guard Hooks
+
+```php
+use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
+use Cognesy\Agents\Hooks\Guards\TokenUsageLimitHook;
+use Cognesy\Agents\Hooks\Guards\ExecutionTimeLimitHook;
+
+// Stop after 10 steps
+$stepsGuard = new StepsLimitHook(
+    maxSteps: 10,
+    stepCounter: fn($state) => $state->stepCount(),
+);
+
+// Stop after 5000 tokens
+$tokenGuard = new TokenUsageLimitHook(maxTotalTokens: 5000);
+
+// Stop after 30 seconds
+$timeGuard = new ExecutionTimeLimitHook(maxSeconds: 30.0);
+
+$stack = $stack
+    ->with($stepsGuard, HookTriggers::beforeStep(), priority: 100)
+    ->with($tokenGuard, HookTriggers::beforeStep(), priority: 100)
+    ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 100);
+// @doctest id="6c45"
+```
+
+## Hook Priority
+
+Higher priority hooks run first. Use priorities to ensure guards run before business logic.

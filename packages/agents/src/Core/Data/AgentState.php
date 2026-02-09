@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Core\Data;
 
+use Cognesy\Agents\Context\AgentContext;
 use Cognesy\Agents\Core\Collections\AgentSteps;
 use Cognesy\Agents\Core\Collections\ErrorList;
 use Cognesy\Agents\Core\Collections\StepExecutions;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
-use Cognesy\Agents\Core\Context\AgentContext;
-use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Enums\AgentStepType;
+use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Stop\ExecutionContinuation;
 use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
@@ -118,14 +118,12 @@ final readonly class AgentState
     }
 
     public function forNextExecution(): self {
-        $store = $this->context->store()->section(AgentContext::EXECUTION_BUFFER_SECTION)->clear();
-
         return new self(
             agentId: $this->agentId,
             parentAgentId: $this->parentAgentId,
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
-            context: $this->context->withMessageStore($store),
+            context: $this->context,
             budget: $this->budget,
             execution: null,
         );
@@ -162,9 +160,16 @@ final readonly class AgentState
     }
 
     public function withCurrentStep(AgentStep $step): self {
+        $execution = $this->ensureExecution();
+        $context = match(true) {
+            $step->outputMessages()->isEmpty() => $this->context,
+            default => $this->context->withAppendedMessages(
+                $this->tagMessages($step->outputMessages(), $step, $execution)
+            ),
+        };
         return $this->with(
-            context: $this->context->withStepOutputRouted($step),
-            execution: $this->ensureExecution()->withCurrentStep($step),
+            context: $context,
+            execution: $execution->withCurrentStep($step),
         );
     }
 
@@ -181,11 +186,12 @@ final readonly class AgentState
     }
 
     public function withUserMessage(string|Message $message): self {
-        $userMessage = Message::asUser($message);
-        $store = $this->context->store()
-            ->section(AgentContext::DEFAULT_SECTION)
-            ->appendMessages($userMessage);
-        return $this->with(context: $this->context->withMessageStore($store));
+        $userMessage = Messages::fromAny(Message::asUser($message));
+        return $this->with(context: $this->context->withAppendedMessages($userMessage));
+    }
+
+    public function withSystemPrompt(string $systemPrompt): self {
+        return $this->with(context: $this->context->withSystemPrompt($systemPrompt));
     }
 
     public function withExecutionStatus(ExecutionStatus $status): self {
@@ -464,4 +470,21 @@ final readonly class AgentState
     private function ensureExecution(): ExecutionState {
         return $this->execution ?? ExecutionState::fresh();
     }
+
+    private function tagMessages(Messages $messages, AgentStep $step, ExecutionState $execution): Messages {
+        $executionId = $execution->executionId();
+        $isTrace = $step->stepType() !== AgentStepType::FinalResponse;
+        $tagged = Messages::empty();
+        foreach ($messages->each() as $msg) {
+            $msg = $msg->withMetadata('step_id', $step->id())
+                ->withMetadata('execution_id', $executionId)
+                ->withMetadata('agent_id', $this->agentId);
+            if ($isTrace) {
+                $msg = $msg->withMetadata('is_trace', true);
+            }
+            $tagged = $tagged->appendMessage($msg);
+        }
+        return $tagged;
+    }
+
 }

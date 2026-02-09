@@ -2,9 +2,12 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
+use Cognesy\Agents\Context\Compilers\SelectedSections;
 use Cognesy\Agents\Core\Collections\ErrorList;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
+use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
+use Cognesy\Agents\Core\Contracts\CanCompileMessages;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -16,7 +19,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
+final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcceptMessageCompiler
 {
     /** @var list<ScenarioStep> */
     private array $steps;
@@ -26,6 +29,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
     private AgentStepType $defaultStepType;
     /** @var list<ScenarioStep>|null */
     private ?array $childSteps;
+    private CanCompileMessages $messageCompiler;
 
     /**
      * @param list<ScenarioStep> $steps
@@ -38,6 +42,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
         ?AgentStepType $defaultStepType = null,
         int $startIndex = 0,
         ?array $childSteps = null,
+        ?CanCompileMessages $messageCompiler = null,
     ) {
         $this->steps = $steps;
         $this->index = $startIndex;
@@ -45,6 +50,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
         $this->defaultUsage = $defaultUsage ?? new Usage(0, 0);
         $this->defaultStepType = $defaultStepType ?? AgentStepType::FinalResponse;
         $this->childSteps = $childSteps;
+        $this->messageCompiler = $messageCompiler ?? SelectedSections::default();
     }
 
     public static function fromSteps(ScenarioStep ...$steps): self {
@@ -71,6 +77,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
             defaultStepType: $this->defaultStepType,
             startIndex: 0,
             childSteps: $this->childSteps,
+            messageCompiler: $this->messageCompiler,
         );
     }
 
@@ -85,6 +92,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
             defaultStepType: $this->defaultStepType,
             startIndex: $this->index,
             childSteps: $steps,
+            messageCompiler: $this->messageCompiler,
         );
     }
 
@@ -102,6 +110,25 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,
             startIndex: 0,
+            messageCompiler: $this->messageCompiler,
+        );
+    }
+
+    #[\Override]
+    public function messageCompiler(): CanCompileMessages {
+        return $this->messageCompiler;
+    }
+
+    #[\Override]
+    public function withMessageCompiler(CanCompileMessages $compiler): static {
+        return new self(
+            steps: $this->steps,
+            defaultResponse: $this->defaultResponse,
+            defaultUsage: $this->defaultUsage,
+            defaultStepType: $this->defaultStepType,
+            startIndex: $this->index,
+            childSteps: $this->childSteps,
+            messageCompiler: $compiler,
         );
     }
 
@@ -128,9 +155,10 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
     }
 
     private function makeToolUseStep(ScenarioStep $step, AgentState $state, CanExecuteToolCalls $executor): AgentStep {
+        $inputMessages = $this->messageCompiler->compile($state);
         $toolCalls = $step->toolCalls ?? ToolCalls::empty();
         if ($toolCalls->hasNone()) {
-            return $step->toAgentStep($state);
+            return $step->toAgentStep($state, $inputMessages);
         }
         $response = new InferenceResponse(
             toolCalls: $toolCalls,
@@ -142,7 +170,7 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
         };
         $errors = $this->errorsForType($step->stepType);
         return new AgentStep(
-            inputMessages: $state->context()->messagesForInference(),
+            inputMessages: $inputMessages,
             outputMessages: Messages::fromString($step->response, 'assistant'),
             inferenceResponse: $response,
             toolExecutions: $executions,
@@ -151,13 +179,14 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider
     }
 
     private function defaultStep(AgentState $state): AgentStep {
+        $inputMessages = $this->messageCompiler->compile($state);
         $response = new InferenceResponse(
             toolCalls: ToolCalls::empty(),
             usage: $this->defaultUsage,
         );
         $errors = $this->errorsForType($this->defaultStepType);
         return new AgentStep(
-            inputMessages: $state->context()->messagesForInference(),
+            inputMessages: $inputMessages,
             outputMessages: Messages::fromString($this->defaultResponse, 'assistant'),
             inferenceResponse: $response,
             errors: $errors,

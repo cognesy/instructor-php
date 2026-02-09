@@ -140,10 +140,6 @@ final readonly class ContentPart
         return $this->fields['text'] ?? "";
     }
 
-    public function clone(): self {
-        return new self($this->type, $this->fields);
-    }
-
     // INTERNAL /////////////////////////////////////////////
 
     private function shouldExport(string|int $key, mixed $value): bool {

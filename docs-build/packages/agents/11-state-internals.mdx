@@ -1,0 +1,102 @@
+# Agent State Internals
+
+## AgentState Structure
+
+```
+AgentState (readonly)
+  |-- agentId: string              # UUID, auto-generated
+  |-- parentAgentId: ?string       # set for subagents
+  |-- createdAt: DateTimeImmutable
+  |-- updatedAt: DateTimeImmutable  # bumped on every mutation
+  |-- context: AgentContext
+  |   |-- store: MessageStore
+  |   |-- metadata: Metadata
+  |   |-- systemPrompt: string
+  |   |-- responseFormat: ResponseFormat
+  |-- budget: Budget
+  |   |-- maxSteps: ?int
+  |   |-- maxTokens: ?int
+  |   |-- maxSeconds: ?float
+  |   |-- maxCost: ?float
+  |   |-- deadline: ?DateTimeImmutable
+  |-- execution: ?ExecutionState    # null between executions
+      |-- executionId: string
+      |-- status: ExecutionStatus   # Pending|InProgress|Completed|Failed
+      |-- startedAt / completedAt
+      |-- stepExecutions: StepExecutions  # completed steps
+      |-- continuation: ExecutionContinuation
+      |   |-- stopSignals: StopSignals
+      |   |-- isContinuationRequested: bool
+      |-- currentStepStartedAt
+      |-- currentStep: ?AgentStep   # in-progress step
+          |-- inputMessages
+          |-- outputMessages
+          |-- inferenceResponse
+          |-- toolExecutions: ToolExecutions
+          |-- errors: ErrorList
+// @doctest id="8ee8"
+```
+
+## Key Accessors
+
+```php
+// Identity
+$state->agentId();
+$state->parentAgentId();
+
+// Timing
+$state->createdAt();
+$state->executionDuration();
+
+// Context
+$state->messages();
+$state->metadata();
+$state->context()->systemPrompt();
+
+// Budget
+$state->budget()->maxSteps;
+$state->budget()->isExhausted();
+
+// Execution
+$state->status();                    // ExecutionStatus enum
+$state->stepCount();
+$state->steps();                     // AgentSteps collection
+$state->lastStep();
+$state->lastStepType();
+$state->lastStopReason();
+$state->usage();                     // total token usage
+$state->errors();
+$state->hasErrors();
+
+// Final output
+$state->hasFinalResponse();
+$state->finalResponse()->toString();
+// @doctest id="e083"
+```
+
+## Budget
+
+Budgets propagate through delegation chains. Each subagent inherits the remaining budget:
+
+```php
+$budget = new Budget(maxSteps: 20, maxTokens: 10000, maxSeconds: 60.0);
+
+// After 5 steps and 3000 tokens:
+$remaining = $budget->remaining(stepsUsed: 5, tokensUsed: 3000);
+// maxSteps: 15, maxTokens: 7000, maxSeconds: 60.0
+
+// Cap by another budget:
+$capped = $budget->cappedBy(new Budget(maxSteps: 10));
+// maxSteps: 10 (takes minimum)
+// @doctest id="4e06"
+```
+
+## Serialization
+
+All state objects support `toArray()` / `fromArray()` for persistence:
+
+```php
+$data = $state->toArray();
+$restored = AgentState::fromArray($data);
+// @doctest id="affc"
+```

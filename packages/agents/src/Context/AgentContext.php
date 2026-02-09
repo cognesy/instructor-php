@@ -1,11 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Core\Context;
+namespace Cognesy\Agents\Context;
 
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
-use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\ResponseFormat;
@@ -13,11 +10,6 @@ use Cognesy\Utils\Metadata;
 
 final readonly class AgentContext
 {
-    public const string DEFAULT_SECTION = 'messages';
-    public const string BUFFER_SECTION = 'buffer';
-    public const string SUMMARY_SECTION = 'summary';
-    public const string EXECUTION_BUFFER_SECTION = 'execution_buffer';
-
     private MessageStore $store;
     private Metadata $metadata;
     private string $systemPrompt;
@@ -63,31 +55,10 @@ final readonly class AgentContext
     }
 
     public function messages(): Messages {
-        return $this->store->section(self::DEFAULT_SECTION)->get()->messages();
+        return $this->store->section(ContextSections::DEFAULT)->get()->messages();
     }
 
-    public function messagesForInference(): Messages {
-        $sectionNames = [
-            self::SUMMARY_SECTION,
-            self::BUFFER_SECTION,
-            self::DEFAULT_SECTION,
-            self::EXECUTION_BUFFER_SECTION,
-        ];
-        $resolved = [];
-        foreach ($sectionNames as $sectionName) {
-            $section = $this->store->sections()->get($sectionName);
-            if ($section === null) {
-                continue;
-            }
-            $resolved[] = $section;
-        }
-        if ($resolved === []) {
-            return Messages::empty();
-        }
-        return (new Sections(...$resolved))->toMessages();
-    }
-
-    public function toInferenceContext(array $toolSchemas = []): CachedInferenceContext {
+    public function toCachedContext(array $toolSchemas = []): CachedInferenceContext {
         $messages = match(true) {
             $this->systemPrompt === '' => [],
             default => [['role' => 'system', 'content' => $this->systemPrompt]],
@@ -101,15 +72,6 @@ final readonly class AgentContext
             tools: $toolSchemas,
             responseFormat: $responseFormat,
         );
-    }
-
-    public function withStepOutputRouted(?AgentStep $step): self {
-        return match (true) {
-            ($step === null) => $this,
-            $step->outputMessages()->isEmpty() => $this,
-            ($step->stepType() === AgentStepType::FinalResponse) => $this->withFinalResponseAppended($step->outputMessages()),
-            default => $this->withOutputBuffered($step->outputMessages()),
-        };
     }
 
     // MUTATORS /////////////////////////////////////////////////
@@ -134,8 +96,13 @@ final readonly class AgentContext
 
     public function withMessages(Messages $messages): self {
         return $this->with(
-            store: $this->store->section(self::DEFAULT_SECTION)->setMessages($messages),
+            store: $this->store->section(ContextSections::DEFAULT)->setMessages($messages),
         );
+    }
+
+    public function withAppendedMessages(Messages $messages): self {
+        $store = $this->store->section(ContextSections::DEFAULT)->appendMessages($messages);
+        return $this->with(store: $store);
     }
 
     public function withMetadataKey(string $name, mixed $value): self {
@@ -178,20 +145,4 @@ final readonly class AgentContext
         );
     }
 
-    // INTERNAL ////////////////////////////////////////////////
-
-    private function withOutputBuffered(Messages $output): self {
-        $store = $this->store()
-            ->section(self::EXECUTION_BUFFER_SECTION)
-            ->appendMessages($output);
-        return $this->withMessageStore($store);
-    }
-
-    private function withFinalResponseAppended(Messages $output): self {
-        $store = $this->store()
-            ->section(self::DEFAULT_SECTION)
-            ->appendMessages($output);
-        $store = $store->section(self::EXECUTION_BUFFER_SECTION)->clear();
-        return $this->withMessageStore($store);
-    }
 }

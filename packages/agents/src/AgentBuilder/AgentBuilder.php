@@ -6,6 +6,9 @@ use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
+use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
+use Cognesy\Agents\Core\Contracts\CanCompileMessages;
+use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
@@ -48,6 +51,7 @@ final class AgentBuilder
     private Tools $tools;
 
     private ?CanUseTools $driver = null;
+    private ?CanCompileMessages $contextCompiler = null;
     private CanHandleEvents $events;
     private ?string $llmPreset = null;
     private string $systemPrompt = '';
@@ -139,6 +143,11 @@ final class AgentBuilder
 
     public function withDriver(CanUseTools $driver): self {
         $this->driver = $driver;
+        return $this;
+    }
+
+    public function withContextCompiler(CanCompileMessages $compiler): self {
+        $this->contextCompiler = $compiler;
         return $this;
     }
 
@@ -303,11 +312,19 @@ final class AgentBuilder
     }
 
     private function buildDriver(CanEmitAgentEvents $eventEmitter): CanUseTools {
-        return match(true) {
+        $driver = match(true) {
             $this->driver instanceof CanAcceptAgentEventEmitter => $this->driver->withEventEmitter($eventEmitter),
             $this->driver !== null => $this->driver,
             default => $this->buildDefaultDriver($eventEmitter),
         };
+
+        $driver = match (true) {
+            $this->contextCompiler === null => $driver,
+            $driver instanceof CanAcceptMessageCompiler => $driver->withMessageCompiler($this->contextCompiler),
+            default => $driver,
+        };
+
+        return $driver;
     }
 
     private function buildDefaultDriver(CanEmitAgentEvents $eventEmitter): ToolCallingDriver {
@@ -323,6 +340,7 @@ final class AgentBuilder
 
         return new ToolCallingDriver(
             llm: $llmProvider,
+            messageCompiler: $this->contextCompiler ?? new ConversationWithCurrentToolTrace(),
             retryPolicy: $retryPolicy,
             eventEmitter: $eventEmitter,
         );
