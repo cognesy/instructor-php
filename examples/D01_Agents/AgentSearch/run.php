@@ -30,9 +30,10 @@ require 'examples/boot.php';
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 
@@ -48,20 +49,20 @@ $logger = new AgentConsoleLogger(
 $workDir = dirname(__DIR__, 3);
 
 // Register specialized subagents
-$registry = new AgentRegistry();
+$registry = new AgentDefinitionRegistry();
 
-$registry->register(new AgentSpec(
+$registry->register(new AgentDefinition(
     name: 'reader',
     description: 'Reads files and extracts relevant information',
     systemPrompt: 'You read files and extract relevant information. Be thorough and precise.',
-    tools: ['read_file'],
+    tools: NameList::fromArray(['read_file']),
 ));
 
-$registry->register(new AgentSpec(
+$registry->register(new AgentDefinition(
     name: 'searcher',
     description: 'Searches for files matching patterns',
     systemPrompt: 'You search for files matching patterns. Use glob patterns effectively.',
-    tools: ['search_files'],
+    tools: NameList::fromArray(['search_files']),
 ));
 
 // Build main orchestration agent

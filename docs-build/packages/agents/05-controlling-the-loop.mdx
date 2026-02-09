@@ -11,7 +11,7 @@ description: 'Run agents to completion with execute() or step through with itera
 
 ```php
 $finalState = $loop->execute($state);
-// @doctest id="2205"
+// @doctest id="96a2"
 ```
 
 `iterate()` yields state after each step, giving you full control:
@@ -26,7 +26,7 @@ foreach ($loop->iterate($state) as $stepState) {
         echo "  Tool: {$exec->name()} -> {$exec->value()}\n";
     }
 }
-// @doctest id="ed81"
+// @doctest id="531f"
 ```
 
 ## Inspecting State
@@ -52,7 +52,7 @@ $toolExec = $state->lastToolExecution();
 $toolExec?->name();     // 'weather'
 $toolExec?->value();    // '72F, sunny'
 $toolExec?->hasError(); // false
-// @doctest id="e007"
+// @doctest id="181c"
 ```
 
 ## Listening to Events
@@ -70,5 +70,5 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
 $loop->wiretap(function ($event) {
     echo get_class($event) . "\n";
 });
-// @doctest id="449f"
+// @doctest id="ec8b"
 ```

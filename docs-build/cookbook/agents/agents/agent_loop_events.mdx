@@ -1,0 +1,79 @@
+---
+title: 'Agent Events and Wiretap'
+docname: 'agent_loop_events'
+---
+
+## Overview
+
+The agent emits events throughout its lifecycle. Use `wiretap()` to observe all events,
+or `onEvent()` to listen for specific event types. Events are read-only and cannot modify
+agent behavior (use hooks for that).
+
+Key concepts:
+- `wiretap(callable)`: Receives every event dispatched by the agent
+- `onEvent(EventClass, callable)`: Listens for a specific event type
+- Events include: `AgentStepCompleted`, `ToolCallStarted`, `ToolCallCompleted`,
+  `AgentExecutionCompleted`, `ContinuationEvaluated`, and more
+- `AgentConsoleLogger`: A built-in wiretap that formats events for console output
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Events\AgentExecutionCompleted;
+use Cognesy\Agents\Events\AgentStepCompleted;
+use Cognesy\Agents\Events\ToolCallCompleted;
+use Cognesy\Agents\Events\ToolCallStarted;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withMaxSteps(5)
+    ->build();
+
+// 1. Wiretap: observe ALL events
+$agent->wiretap(function (object $event) {
+    $class = basename(str_replace('\\', '/', get_class($event)));
+    echo "[wiretap] {$class}: {$event}\n";
+});
+
+// 2. Targeted listeners: subscribe to specific event types
+$agent->onEvent(ToolCallStarted::class, function (ToolCallStarted $event) {
+    echo "\n  >>> Tool starting: {$event->tool}\n";
+});
+
+$agent->onEvent(ToolCallCompleted::class, function (ToolCallCompleted $event) {
+    $status = $event->success ? 'OK' : 'FAILED';
+    echo "  <<< Tool completed: {$event->tool} [{$status}]\n\n";
+});
+
+$agent->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
+    echo "  --- Step {$event->stepNumber} done (tokens: {$event->usage->total()}, " .
+         "tools: " . ($event->hasToolCalls ? 'yes' : 'no') . ")\n";
+});
+
+$agent->onEvent(AgentExecutionCompleted::class, function (AgentExecutionCompleted $event) {
+    echo "\n=== Execution Complete ===\n";
+    echo "  Agent: {$event->agentId}\n";
+    echo "  Steps: {$event->totalSteps}\n";
+    echo "  Tokens: {$event->totalUsage->total()}\n";
+    echo "  Status: {$event->status->value}\n";
+});
+
+// Run the agent
+$state = AgentState::empty()->withUserMessage(
+    'What is today\'s date? Use bash to find out. Be concise.'
+);
+
+echo "=== Agent Events Demo ===\n\n";
+$finalState = $agent->execute($state);
+
+echo "\n=== Agent Response ===\n";
+$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "Answer: {$response}\n";
+?>
+```

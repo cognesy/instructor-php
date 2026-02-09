@@ -32,6 +32,7 @@ packages:
     - laravel
   # Internal packages (excluded from public docs for Mkdocs and Mintlify)
   internal:
+    - addons
     - doctor
     - hub
     - tell

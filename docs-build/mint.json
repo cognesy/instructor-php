@@ -327,6 +327,23 @@
             ]
         },
         {
+            "group": "Agents",
+            "pages": [
+                "packages/agents/01-introduction",
+                "packages/agents/02-basic-agent",
+                "packages/agents/03-tools",
+                "packages/agents/04-basic-concepts",
+                "packages/agents/05-controlling-the-loop",
+                "packages/agents/06-building-tools",
+                "packages/agents/07-context-and-compilers",
+                "packages/agents/08-hooks",
+                "packages/agents/09-stop-conditions",
+                "packages/agents/10-testing",
+                "packages/agents/11-state-internals",
+                "packages/agents/12-tool-calling-internals"
+            ]
+        },
+        {
             "group": "HTTP Client",
             "pages": [
                 "packages/http/1-overview",
@@ -355,29 +372,6 @@
                 "packages/laravel/testing",
                 "packages/laravel/advanced",
                 "packages/laravel/troubleshooting"
-            ]
-        },
-        {
-            "group": "Addons",
-            "pages": [
-                "packages/addons/agent_hooks"
-            ]
-        },
-        {
-            "group": "Agents",
-            "pages": [
-                "packages/agents/01-introduction",
-                "packages/agents/02-basic-agent",
-                "packages/agents/03-tools",
-                "packages/agents/04-basic-concepts",
-                "packages/agents/05-controlling-the-loop",
-                "packages/agents/06-building-tools",
-                "packages/agents/07-context-and-compilers",
-                "packages/agents/08-hooks",
-                "packages/agents/09-stop-conditions",
-                "packages/agents/10-testing",
-                "packages/agents/11-state-internals",
-                "packages/agents/12-tool-calling-internals"
             ]
         },
         {
@@ -593,6 +587,14 @@
                 "cookbook/agents/agents/agent_basic",
                 "cookbook/agents/agents/agent_file_system",
                 "cookbook/agents/agents/agent_hooks",
+                "cookbook/agents/agents/agent_loop_bash_tool",
+                "cookbook/agents/agents/agent_loop_context_compiler",
+                "cookbook/agents/agents/agent_loop_custom_tool",
+                "cookbook/agents/agents/agent_loop_events",
+                "cookbook/agents/agents/agent_loop_execute",
+                "cookbook/agents/agents/agent_loop_hooks",
+                "cookbook/agents/agents/agent_loop_iterate",
+                "cookbook/agents/agents/agent_loop_stop_conditions",
                 "cookbook/agents/agents/agent_search",
                 "cookbook/agents/agents/agent_self_critique",
                 "cookbook/agents/agents/agent_structured_output",

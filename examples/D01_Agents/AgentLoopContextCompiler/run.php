@@ -1,0 +1,86 @@
+---
+title: 'Custom Context Compiler'
+docname: 'agent_loop_context_compiler'
+---
+
+## Overview
+
+Context compilers control which messages the LLM sees at each step. By default,
+`ConversationWithCurrentToolTrace` includes all conversation messages plus only
+the current execution's tool traces. You can swap in a different compiler to
+change what context the agent reasons over.
+
+Key concepts:
+- `CanCompileMessages`: Interface for message compilers
+- `ConversationWithCurrentToolTrace`: Default — includes conversation + current tool traces
+- `AllSections`: Includes all messages from all sections
+- `SelectedSections`: Pick specific sections to include
+- Custom compilers can filter, summarize, or transform messages
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Core\Contracts\CanCompileMessages;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
+
+// Custom compiler: adds a reminder message before each LLM call
+class ReminderCompiler implements CanCompileMessages
+{
+    public function __construct(
+        private readonly string $reminder,
+        private readonly CanCompileMessages $inner,
+    ) {}
+
+    #[\Override]
+    public function compile(AgentState $state): Messages
+    {
+        // Get messages from the inner compiler
+        $messages = $this->inner->compile($state);
+
+        // Append a system reminder at the end
+        return $messages->appendMessage(
+            new Message(role: 'system', content: $this->reminder)
+        );
+    }
+}
+
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+);
+
+// Use the default compiler wrapped with our reminder
+$defaultCompiler = new \Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace();
+$compiler = new ReminderCompiler(
+    reminder: 'Important: Always respond in exactly 2 sentences. No more, no less.',
+    inner: $defaultCompiler,
+);
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withContextCompiler($compiler)
+    ->withMaxSteps(5)
+    ->build()
+    ->wiretap($logger->wiretap());
+
+$state = AgentState::empty()->withUserMessage(
+    'What operating system is this? Use bash to check.'
+);
+
+echo "=== Agent with Custom Context Compiler ===\n\n";
+$finalState = $agent->execute($state);
+
+echo "\n=== Result ===\n";
+$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+?>
+```

@@ -1,0 +1,90 @@
+---
+title: 'Agent with Custom Tool'
+docname: 'agent_loop_custom_tool'
+---
+
+## Overview
+
+Build a custom tool by extending `BaseTool`. The parameter schema is auto-generated
+from the `__invoke()` method signature using PHP type hints and `#[Description]` attributes.
+
+This example creates a `SystemInfoTool` that reports memory usage, PHP version, and
+other runtime information. The agent calls it when asked about the system.
+
+Key concepts:
+- `BaseTool`: Abstract base class for custom tools
+- `#[Description]`: Annotate parameters for the LLM
+- `__invoke()`: The method the agent calls - schema is derived from its signature
+- `$this->agentState`: Access current agent state from within a tool
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Core\AgentLoop;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Messages\Messages;
+use Cognesy\Schema\Attributes\Description;
+
+// Custom tool that reports system information
+class SystemInfoTool extends BaseTool
+{
+    public function __construct() {
+        parent::__construct(
+            name: 'system_info',
+            description: 'Returns current system resource usage and PHP runtime information.',
+        );
+    }
+
+    #[Description('Get system information')]
+    public function __invoke(
+        #[Description('What to check: "memory", "php", or "all"')]
+        string $category = 'all',
+    ): string {
+        $info = [];
+
+        if ($category === 'memory' || $category === 'all') {
+            $memUsage = memory_get_usage(true);
+            $memPeak = memory_get_peak_usage(true);
+            $info[] = sprintf("Memory: %.2f MB (peak: %.2f MB)", $memUsage / 1048576, $memPeak / 1048576);
+        }
+
+        if ($category === 'php' || $category === 'all') {
+            $info[] = "PHP Version: " . PHP_VERSION;
+            $info[] = "OS: " . PHP_OS;
+            $info[] = "SAPI: " . PHP_SAPI;
+        }
+
+        if ($category === 'all') {
+            $info[] = "PID: " . getmypid();
+            $info[] = "Uptime: " . (int)(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) . "s";
+
+            // Show agent context if available
+            if ($this->agentState !== null) {
+                $info[] = "Agent step: " . $this->agentState->stepCount();
+                $info[] = "Agent tokens: " . $this->agentState->usage()->total();
+            }
+        }
+
+        return implode("\n", $info);
+    }
+}
+
+// Create loop with the custom tool
+$loop = AgentLoop::default()->withTool(new SystemInfoTool());
+
+$state = AgentState::empty()->withMessages(
+    Messages::fromString('Check the current memory usage and PHP version. Report back concisely.')
+);
+
+$finalState = $loop->execute($state);
+
+$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+?>
+```

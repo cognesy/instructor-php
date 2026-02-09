@@ -6,14 +6,14 @@ docname: 'agent_hooks'
 ## Overview
 
 Hooks allow you to intercept tool calls before and after execution. This example
-demonstrates using `onBeforeToolUse` to block dangerous bash commands - a practical
+demonstrates using a `BeforeToolUse` hook to block dangerous bash commands - a practical
 security pattern for agentic applications.
 
 Key concepts:
-- `onBeforeToolUse`: Intercept tool calls before execution
-- `ToolHookContext`: Provides access to tool call and agent state
-- `HookOutcome`: Control flow - proceed, block, or stop
-- `matcher`: Filter which tools the hook applies to (supports wildcards and regex)
+- `CallableHook`: Wraps a closure as a hook
+- `HookContext`: Provides access to tool call and agent state
+- `HookTriggers`: Defines when the hook fires (e.g., `beforeToolUse()`)
+- `addHook()`: Registers a hook on the builder with priority
 - `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 ## Example
@@ -25,8 +25,9 @@ require 'examples/boot.php';
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
-use Cognesy\Agents\AgentHooks\Data\HookOutcome;
-use Cognesy\Agents\AgentHooks\Data\ToolHookContext;
+use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Hooks\Defaults\CallableHook;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Agents\Core\Data\AgentState;
 
 // Create console logger for execution visibility
@@ -49,24 +50,29 @@ $blockedPatterns = [
 ];
 
 // Build agent with bash capability and security hook
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withCapability(new UseBash())
-    ->onBeforeToolUse(
-        callback: function (ToolHookContext $ctx) use ($blockedPatterns): HookOutcome {
-            $command = $ctx->toolCall()->args()['command'] ?? '';
+    ->addHook(
+        hook: new CallableHook(function (HookContext $ctx) use ($blockedPatterns): HookContext {
+            $toolCall = $ctx->toolCall();
+            if ($toolCall === null) {
+                return $ctx;
+            }
+
+            $command = $toolCall->args()['command'] ?? '';
 
             // Check for dangerous patterns
             foreach ($blockedPatterns as $pattern) {
                 if (str_contains($command, $pattern)) {
                     echo "         [HOOK] BLOCKED - Dangerous pattern detected: {$pattern}\n";
-                    return HookOutcome::block("Dangerous command: {$pattern}");
+                    return $ctx->withToolExecutionBlocked("Dangerous command: {$pattern}");
                 }
             }
 
             echo "         [HOOK] ALLOWED - {$command}\n";
-            return HookOutcome::proceed();
-        },
-        matcher: 'bash',     // Only apply to bash tool
+            return $ctx;
+        }),
+        triggers: HookTriggers::beforeToolUse(),
         priority: 100,       // High priority = runs first
     )
     ->build()
@@ -104,42 +110,46 @@ echo "Status: {$finalState2->status()->value}\n";
 
 ## How It Works
 
-1. **Hook Registration**: `onBeforeToolUse` registers a callback that runs before any tool execution
-2. **Context Access**: `ToolHookContext` provides `toolCall()` and `state()` accessors
-3. **Matcher**: The `'bash'` matcher ensures the hook only applies to the bash tool
-4. **Priority**: Higher priority (100) ensures this security check runs before other hooks
-5. **Blocking**: `HookOutcome::block($reason)` blocks the tool call with a reason
-6. **Allowing**: `HookOutcome::proceed()` allows execution to proceed
-
-## Matcher Patterns
-
-The matcher supports several patterns:
-- Exact: `'bash'` - matches only the "bash" tool
-- Wildcard: `'read_*'` - matches "read_file", "read_stdin", etc.
-- All: `'*'` - matches all tools
-- Regex: `'/^(read|write)_.+$/'` - matches using regex
+1. **Hook Registration**: `addHook()` registers a `CallableHook` with `HookTriggers::beforeToolUse()`
+2. **Context Access**: `HookContext` provides `toolCall()` and `state()` accessors
+3. **Priority**: Higher priority (100) ensures this security check runs before other hooks
+4. **Blocking**: `$ctx->withToolExecutionBlocked($reason)` blocks the tool call with a reason
+5. **Allowing**: Returning `$ctx` unchanged allows execution to proceed
 
 ## Other Hook Types
 
 ```php
 // After tool execution - for logging/metrics
-->onAfterToolUse(
-    callback: function (ToolHookContext $ctx): HookOutcome {
-        $exec = $ctx->execution();
-        $duration = $exec->endedAt()->getTimestamp() - $exec->startedAt()->getTimestamp();
-        echo "Tool {$ctx->toolCall()->name()} took {$duration}s\n";
-        return HookOutcome::proceed();
-    },
+->addHook(
+    hook: new CallableHook(function (HookContext $ctx): HookContext {
+        $exec = $ctx->toolExecution();
+        if ($exec !== null) {
+            echo "Tool {$exec->name()} completed\n";
+        }
+        return $ctx;
+    }),
+    triggers: HookTriggers::afterToolUse(),
 )
 
-// Before each step
-->onBeforeStep(fn(AgentState $state) => $state->withMetadata('step_started', microtime(true)))
+// Before each step - modify state
+->addHook(
+    hook: new CallableHook(function (HookContext $ctx): HookContext {
+        $state = $ctx->state()->withMetadata('step_started', microtime(true));
+        return $ctx->withState($state);
+    }),
+    triggers: HookTriggers::beforeStep(),
+)
 
 // After each step
-->onAfterStep(function (AgentState $state): AgentState {
-    $started = $state->metadata()->get('step_started');
-    $duration = microtime(true) - $started;
-    echo "Step took {$duration}s\n";
-    return $state;
-})
+->addHook(
+    hook: new CallableHook(function (HookContext $ctx): HookContext {
+        $started = $ctx->state()->metadata()->get('step_started');
+        if ($started !== null) {
+            $duration = microtime(true) - $started;
+            echo "Step took {$duration}s\n";
+        }
+        return $ctx;
+    }),
+    triggers: HookTriggers::afterStep(),
+)
 ```

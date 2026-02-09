@@ -17,6 +17,7 @@ packages:
   descriptions:
     instructor: 'Core structured output extraction library'
     polyglot: 'Unified LLM API abstraction layer'
+    agents: 'SDK for building custom AI agents'
     http-client: 'Framework-agnostic HTTP client'
     laravel: 'Laravel integration for Instructor'
   # Target directory names in output (defaults to package name)
@@ -26,10 +27,12 @@ packages:
   order:
     - instructor
     - polyglot
+    - agents
     - http-client
     - laravel
   # Internal packages (excluded from public docs for Mkdocs and Mintlify)
   internal:
+    - addons
     - doctor
     - hub
     - tell

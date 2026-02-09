@@ -9,7 +9,7 @@ Common issues and their solutions.
 **Error:**
 ```
 Package cognesy/instructor-laravel not found
-// @doctest id="a58b"
+// @doctest id="2b6f"
 ```
 
 **Solution:**
@@ -18,7 +18,7 @@ Ensure you have the correct package name and your Composer is up to date:
 ```bash
 composer clear-cache
 composer require cognesy/instructor-laravel
-# @doctest id="12a5"
+# @doctest id="e551"
 ```
 
 ### Service Provider Not Registered
@@ -26,7 +26,7 @@ composer require cognesy/instructor-laravel
 **Error:**
 ```
 Class 'Cognesy\Instructor\Laravel\Facades\StructuredOutput' not found
-// @doctest id="b561"
+// @doctest id="e057"
 ```
 
 **Solution:**
@@ -37,7 +37,7 @@ If auto-discovery is disabled, manually register the provider:
 'providers' => [
     Cognesy\Instructor\Laravel\InstructorServiceProvider::class,
 ],
-// @doctest id="f97c"
+// @doctest id="18fb"
 ```
 
 Or clear the cached configuration:
@@ -45,7 +45,7 @@ Or clear the cached configuration:
 ```bash
 php artisan config:clear
 php artisan cache:clear
-# @doctest id="a4c1"
+# @doctest id="37d4"
 ```
 
 ---
@@ -57,7 +57,7 @@ php artisan cache:clear
 **Error:**
 ```
 No API key configured for connection 'openai'
-// @doctest id="7be8"
+// @doctest id="950d"
 ```
 
 **Solution:**
@@ -65,14 +65,14 @@ Add your API key to `.env`:
 
 ```env
 OPENAI_API_KEY=sk-your-key-here
-// @doctest id="2ed5"
+// @doctest id="dfd0"
 ```
 
 Then clear config cache:
 
 ```bash
 php artisan config:clear
-# @doctest id="dd78"
+# @doctest id="1863"
 ```
 
 ### Invalid API Key
@@ -80,7 +80,7 @@ php artisan config:clear
 **Error:**
 ```
 401 Unauthorized: Invalid API key
-// @doctest id="e204"
+// @doctest id="bab8"
 ```
 
 **Solution:**
@@ -94,7 +94,7 @@ php artisan config:clear
 **Error:**
 ```
 429 Too Many Requests
-// @doctest id="1267"
+// @doctest id="f29d"
 ```
 
 **Solution:**
@@ -110,7 +110,7 @@ if (RateLimiter::tooManyAttempts('llm-calls', 60)) {
 }
 
 RateLimiter::hit('llm-calls');
-// @doctest id="4a9b"
+// @doctest id="8930"
 ```
 
 ---
@@ -122,7 +122,7 @@ RateLimiter::hit('llm-calls');
 **Error:**
 ```
 Failed to deserialize response to PersonData
-// @doctest id="f3dc"
+// @doctest id="372b"
 ```
 
 **Solution:**
@@ -148,7 +148,7 @@ $result = StructuredOutput::with(
     maxRetries: 5,  // Increase retries
     examples: [...], // Add examples
 )->get();
-// @doctest id="8aad"
+// @doctest id="9af4"
 ```
 
 ### Validation Failures
@@ -156,7 +156,7 @@ $result = StructuredOutput::with(
 **Error:**
 ```
 Validation failed after 3 retries
-// @doctest id="3789"
+// @doctest id="8c8e"
 ```
 
 **Solution:**
@@ -171,7 +171,7 @@ $result = StructuredOutput::with(
     maxRetries: 5,
     retryPrompt: 'Previous response failed: {errors}. Please fix these specific issues.',
 )->get();
-// @doctest id="e8b1"
+// @doctest id="d4f9"
 ```
 
 ### Null Values for Required Fields
@@ -189,7 +189,7 @@ $result = StructuredOutput::with(
     responseModel: MyModel::class,
     system: 'Extract all available information. If a field is not found in the text, make a reasonable inference based on context.',
 )->get();
-// @doctest id="c9b1"
+// @doctest id="083e"
 ```
 
 ---
@@ -201,7 +201,7 @@ $result = StructuredOutput::with(
 **Error:**
 ```
 cURL error 28: Operation timed out
-// @doctest id="29ad"
+// @doctest id="1043"
 ```
 
 **Solution:**
@@ -213,7 +213,7 @@ Increase timeout in configuration:
     'timeout' => 300, // 5 minutes
     'connect_timeout' => 60,
 ],
-// @doctest id="c424"
+// @doctest id="ba26"
 ```
 
 Or per-request:
@@ -222,7 +222,7 @@ Or per-request:
 $result = StructuredOutput::withOptions([
     'timeout' => 300,
 ])->with(...)->get();
-// @doctest id="58aa"
+// @doctest id="7d09"
 ```
 
 ### Streaming Timeout
@@ -236,7 +236,7 @@ set_time_limit(0); // Disable PHP timeout
 $stream = StructuredOutput::with(...)
     ->withStreaming()
     ->stream();
-// @doctest id="2e5b"
+// @doctest id="80b9"
 ```
 
 ---
@@ -258,7 +258,7 @@ $result = $myService->extract(); // Uses fake
 // WRONG
 $result = $myService->extract(); // Real API call
 $fake = StructuredOutput::fake([...]); // Too late!
-// @doctest id="0634"
+// @doctest id="1267"
 ```
 
 ### Http::fake() Not Mocking
@@ -273,7 +273,7 @@ Ensure the HTTP driver is set to 'laravel':
 'http' => [
     'driver' => 'laravel',
 ],
-// @doctest id="dd26"
+// @doctest id="994b"
 ```
 
 ---
@@ -297,7 +297,7 @@ $result = StructuredOutput::using('groq')
 $result = Cache::remember($cacheKey, 3600, fn () =>
     StructuredOutput::with(...)->get()
 );
-// @doctest id="7a9d"
+// @doctest id="4d15"
 ```
 
 ### High Token Usage
@@ -316,7 +316,7 @@ $result = StructuredOutput::with(
     responseModel: MyModel::class,
     system: 'Extract data. Be concise.', // Short prompt
 )->get();
-// @doctest id="7e0b"
+// @doctest id="d228"
 ```
 
 ---
@@ -328,7 +328,7 @@ $result = StructuredOutput::with(
 **Error:**
 ```
 Allowed memory size exhausted
-// @doctest id="64aa"
+// @doctest id="7697"
 ```
 
 **Solution:**
@@ -346,7 +346,7 @@ $documents->chunk(10)->each(function ($chunk) {
     }
     gc_collect_cycles();
 });
-// @doctest id="1ef7"
+// @doctest id="7d5e"
 ```
 
 ---

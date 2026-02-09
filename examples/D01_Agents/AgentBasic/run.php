@@ -35,7 +35,7 @@ $logger = new AgentConsoleLogger(
 );
 
 // Build a basic agent
-$agent = AgentBuilder::new()
+$agent = AgentBuilder::base()
     ->withLlmPreset('anthropic')
     ->build()
     ->wiretap($logger->wiretap());

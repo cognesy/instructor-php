@@ -17,8 +17,8 @@ provides:
 
 Key concepts:
 - `UseSubagents`: Capability that enables subagent spawning
-- `AgentRegistry`: Registry of available subagent specifications
-- `AgentSpec`: Defines subagent role, tools, and behavior
+- `AgentDefinitionRegistry`: Registry of available subagent definitions
+- `AgentDefinition`: Defines subagent role, tools, and behavior
 - `AgentConsoleLogger`: Shows parent/child agent IDs for tracking orchestration
 
 ## Example
@@ -29,11 +29,11 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Agents\AgentTemplate\Registry\AgentRegistry;
-use Cognesy\Agents\AgentTemplate\Spec\AgentSpec;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
 use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 
@@ -49,25 +49,23 @@ $logger = new AgentConsoleLogger(
 $workDir = dirname(__DIR__, 3);
 
 // Create subagent registry
-$registry = new AgentRegistry();
+$registry = new AgentDefinitionRegistry();
 
 // Register code reviewer subagent
-$registry->register(new AgentSpec(
+$registry->register(new AgentDefinition(
     name: 'reviewer',
     description: 'Reviews code files and identifies issues',
     systemPrompt: 'You review code files and identify issues. Read the file and provide a concise assessment focusing on code quality, potential bugs, and improvements.',
-    tools: ['read_file'],
+    tools: NameList::fromArray(['read_file']),
 ));
 
 // Register documentation generator subagent
-$registry->register(new AgentSpec(
+$registry->register(new AgentDefinition(
     name: 'documenter',
     description: 'Generates documentation for code',
     systemPrompt: 'You generate documentation for code. Read the file and create brief, clear documentation explaining what the code does and how to use it.',
-    tools: ['read_file'],
+    tools: NameList::fromArray(['read_file']),
 ));
-
-SpawnSubagentTool::clearSubagentStates();
 
 // Build main orchestration agent
 $agent = AgentBuilder::base()
@@ -100,7 +98,6 @@ echo "\n=== Result ===\n";
 $summary = $finalState->currentStep()?->outputMessages()->toString() ?? 'No summary';
 echo "Answer: {$summary}\n";
 echo "Steps: {$finalState->stepCount()}\n";
-echo "Subagents spawned: " . count(SpawnSubagentTool::getSubagentStates()) . "\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
 ?>

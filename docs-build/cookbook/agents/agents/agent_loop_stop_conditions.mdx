@@ -1,0 +1,84 @@
+---
+title: 'Agent Stop Conditions'
+docname: 'agent_loop_stop_conditions'
+---
+
+## Overview
+
+The agent loop stops when `AgentState::shouldStop()` returns true. You can trigger stops
+from within tools using `AgentStopException`, or configure built-in guards via the builder
+(`withMaxSteps`, `withMaxTokens`, `withTimeout`).
+
+Key concepts:
+- `AgentStopException`: Throw from a tool to stop the loop immediately
+- `StopSignal` / `StopReason`: Describes why the loop stopped
+- `withMaxSteps()`: Built-in guard that stops after N steps
+- `withMaxTokens()`: Built-in guard that stops after N total tokens
+- `withTimeout()`: Built-in guard that stops after N seconds
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\Core\AgentLoop;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Stop\AgentStopException;
+use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Messages\Messages;
+use Cognesy\Schema\Attributes\Description;
+
+// A tool that counts up and stops when it reaches a target
+class CounterTool extends BaseTool
+{
+    private static int $count = 0;
+
+    public function __construct(private int $stopAt = 3) {
+        parent::__construct(
+            name: 'counter',
+            description: 'Increments a counter and returns the current value. Call this tool repeatedly.',
+        );
+    }
+
+    #[Description('Increment the counter')]
+    public function __invoke(): string {
+        self::$count++;
+        echo "  [Counter] Value: " . self::$count . "\n";
+
+        if (self::$count >= $this->stopAt) {
+            // Throw AgentStopException to halt the loop
+            throw new AgentStopException(
+                signal: new StopSignal(
+                    reason: StopReason::StopRequested,
+                    message: "Counter reached target: {$this->stopAt}",
+                ),
+                context: ['final_count' => self::$count],
+                source: self::class,
+            );
+        }
+
+        return "Counter is at " . self::$count . ". Keep going — call counter again.";
+    }
+}
+
+// Create loop with the counter tool
+$loop = AgentLoop::default()->withTool(new CounterTool(stopAt: 3));
+
+$state = AgentState::empty()->withMessages(
+    Messages::fromString('Call the counter tool repeatedly until it stops you.')
+);
+
+echo "=== Agent with Stop Condition ===\n\n";
+$finalState = $loop->execute($state);
+
+echo "\n=== Result ===\n";
+$stopSignals = $finalState->execution()?->continuation()->stopSignals();
+$reason = $stopSignals?->first()?->toString() ?? 'unknown';
+echo "Stop reason: {$reason}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Status: {$finalState->status()->value}\n";
+?>
+```

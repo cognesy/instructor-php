@@ -17,7 +17,7 @@ use Cognesy\Agents\Core\Tools\MockTool;
 
 $calculator = MockTool::returning('calculator', 'Performs math', '42');
 $tools = new Tools($calculator);
-// @doctest id="db7a"
+// @doctest id="49d0"
 ```
 
 ## Using FunctionTool
@@ -34,7 +34,7 @@ $tool = FunctionTool::fromCallable(
 );
 
 $tools = new Tools($tool);
-// @doctest id="094a"
+// @doctest id="3e7d"
 ```
 
 ## Agent with Tools
@@ -49,7 +49,7 @@ $loop = AgentLoop::default()->withTool($tool);
 $state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
 $result = $loop->execute($state);
 // LLM calls the weather tool, gets result, then responds
-// @doctest id="ecd1"
+// @doctest id="5dcf"
 ```
 
 ## How It Works

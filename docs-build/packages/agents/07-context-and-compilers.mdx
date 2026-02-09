@@ -18,7 +18,7 @@ $state = AgentState::empty()
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
-// @doctest id="b8a7"
+// @doctest id="53f5"
 ```
 
 ## Message Compilers
@@ -30,7 +30,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="310a"
+// @doctest id="751e"
 ```
 
 The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
@@ -52,7 +52,7 @@ class MyCompiler implements CanCompileMessages
         return $state->messages();
     }
 }
-// @doctest id="8d33"
+// @doctest id="f3d0"
 ```
 
 Inject it into the loop's driver:
@@ -60,5 +60,5 @@ Inject it into the loop's driver:
 ```php
 $driver = new ToolCallingDriver(messageCompiler: new MyCompiler());
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="863a"
+// @doctest id="3592"
 ```

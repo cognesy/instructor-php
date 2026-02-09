@@ -262,6 +262,20 @@ nav:
           - { Internals: [{ Overview: packages/polyglot/internals/overview.md }, { Lifecycle: packages/polyglot/internals/lifecycle.md }, { Configuration: packages/polyglot/internals/configuration.md }, { Providers: packages/polyglot/internals/providers.md }, { Adapters: packages/polyglot/internals/adapters.md }, { 'Http Client': packages/polyglot/internals/http-client.md }, { 'Request Response': packages/polyglot/internals/request-response.md }, { Events: packages/polyglot/internals/events.md }, { 'Public Api': packages/polyglot/internals/public-api.md }] }
           - { Troubleshooting: [{ Overview: packages/polyglot/troubleshooting/overview.md }, { Debugging: packages/polyglot/troubleshooting/debugging.md }, { 'Issues Connection': packages/polyglot/troubleshooting/issues-connection.md }, { 'Issues Authentication': packages/polyglot/troubleshooting/issues-authentication.md }, { 'Issues Configuration': packages/polyglot/troubleshooting/issues-configuration.md }, { 'Issues Rate Limits': packages/polyglot/troubleshooting/issues-rate-limits.md }, { 'Issues Streaming': packages/polyglot/troubleshooting/issues-streaming.md }, { 'Issues Model Specific': packages/polyglot/troubleshooting/issues-model-specific.md }, { 'Issues Provider Specific': packages/polyglot/troubleshooting/issues-provider-specific.md }] }
       -
+        Agents:
+          - { Introduction: packages/agents/01-introduction.md }
+          - { 'Basic Agent': packages/agents/02-basic-agent.md }
+          - { Tools: packages/agents/03-tools.md }
+          - { 'Basic Concepts': packages/agents/04-basic-concepts.md }
+          - { 'Controlling The Loop': packages/agents/05-controlling-the-loop.md }
+          - { 'Building Tools': packages/agents/06-building-tools.md }
+          - { 'Context And Compilers': packages/agents/07-context-and-compilers.md }
+          - { Hooks: packages/agents/08-hooks.md }
+          - { 'Stop Conditions': packages/agents/09-stop-conditions.md }
+          - { Testing: packages/agents/10-testing.md }
+          - { 'State Internals': packages/agents/11-state-internals.md }
+          - { 'Tool Calling Internals': packages/agents/12-tool-calling-internals.md }
+      -
         'HTTP Client':
           - { Overview: packages/http/1-overview.md }
           - { 'Getting Started': packages/http/2-getting-started.md }
@@ -286,23 +300,6 @@ nav:
           - { Testing: packages/laravel/testing.md }
           - { Advanced: packages/laravel/advanced.md }
           - { Troubleshooting: packages/laravel/troubleshooting.md }
-      -
-        Addons:
-          - { 'Agent Hooks': packages/addons/agent_hooks.md }
-      -
-        Agents:
-          - { Introduction: packages/agents/01-introduction.md }
-          - { 'Basic Agent': packages/agents/02-basic-agent.md }
-          - { Tools: packages/agents/03-tools.md }
-          - { 'Basic Concepts': packages/agents/04-basic-concepts.md }
-          - { 'Controlling The Loop': packages/agents/05-controlling-the-loop.md }
-          - { 'Building Tools': packages/agents/06-building-tools.md }
-          - { 'Context And Compilers': packages/agents/07-context-and-compilers.md }
-          - { Hooks: packages/agents/08-hooks.md }
-          - { 'Stop Conditions': packages/agents/09-stop-conditions.md }
-          - { Testing: packages/agents/10-testing.md }
-          - { 'State Internals': packages/agents/11-state-internals.md }
-          - { 'Tool Calling Internals': packages/agents/12-tool-calling-internals.md }
   -
     Cookbook:
       -
@@ -488,6 +485,14 @@ nav:
           - { 'Basic Agent Usage': cookbook/agents/agents/agent_basic.md }
           - { 'Agent with File System Tools': cookbook/agents/agents/agent_file_system.md }
           - { 'Agent Hooks - Tool Interception': cookbook/agents/agents/agent_hooks.md }
+          - { 'Agent with Bash Tool': cookbook/agents/agents/agent_loop_bash_tool.md }
+          - { 'Custom Context Compiler': cookbook/agents/agents/agent_loop_context_compiler.md }
+          - { 'Agent with Custom Tool': cookbook/agents/agents/agent_loop_custom_tool.md }
+          - { 'Agent Events and Wiretap': cookbook/agents/agents/agent_loop_events.md }
+          - { 'AgentLoop::execute()': cookbook/agents/agents/agent_loop_execute.md }
+          - { 'Agent Lifecycle Hooks': cookbook/agents/agents/agent_loop_hooks.md }
+          - { 'AgentLoop::iterate()': cookbook/agents/agents/agent_loop_iterate.md }
+          - { 'Agent Stop Conditions': cookbook/agents/agents/agent_loop_stop_conditions.md }
           - { 'Agent-Driven Codebase Search': cookbook/agents/agents/agent_search.md }
           - { 'Agent Self-Critique Pattern': cookbook/agents/agents/agent_self_critique.md }
           - { 'Agent with Structured Output Extraction': cookbook/agents/agents/agent_structured_output.md }
