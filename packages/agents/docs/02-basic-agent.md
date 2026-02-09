@@ -1,3 +1,8 @@
+---
+title: 'Basic Agent'
+description: 'Create your first agent with AgentLoop and get a response from an LLM'
+---
+
 # Basic Agent
 
 The simplest agent uses `AgentLoop` to send a message and get a response.

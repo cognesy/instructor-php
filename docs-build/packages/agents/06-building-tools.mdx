@@ -1,3 +1,8 @@
+---
+title: 'Building Tools'
+description: 'Create custom tools by extending BaseTool with auto-generated parameter schemas'
+---
+
 # Building Tools
 
 ## Using BaseTool
@@ -26,7 +31,7 @@ class GetWeather extends BaseTool
         return "Weather in {$city}: 22 {$unit}";
     }
 }
-// @doctest id="d590"
+// @doctest id="2b82"
 ```
 
 ## Using FunctionTool
@@ -39,7 +44,7 @@ use Cognesy\Agents\Core\Tools\FunctionTool;
 $tool = FunctionTool::fromCallable(function (string $query): string {
     return "Results for: {$query}";
 });
-// @doctest id="9ff9"
+// @doctest id="bcd9"
 ```
 
 ## Accessing Agent State
@@ -55,7 +60,7 @@ class StatefulTool extends BaseTool
         return "Step {$stepCount}: processing {$input}";
     }
 }
-// @doctest id="b7f6"
+// @doctest id="d935"
 ```
 
 ## The ToolInterface
@@ -72,7 +77,7 @@ interface ToolInterface
     public function metadata(): array;
     public function instructions(): array;
 }
-// @doctest id="a77b"
+// @doctest id="7e9f"
 ```
 
 - `use()` - execute the tool, returns `Result` (success or failure)
@@ -89,5 +94,5 @@ $tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
 
 // Or with custom logic
 $tool = new MockTool('my_tool', 'Does something', fn($x) => strtoupper($x));
-// @doctest id="1820"
+// @doctest id="edb9"
 ```

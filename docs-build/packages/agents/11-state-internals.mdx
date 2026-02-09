@@ -1,3 +1,8 @@
+---
+title: 'State Internals'
+description: 'Deep dive into AgentState structure, execution tracking, and message metadata'
+---
+
 # Agent State Internals
 
 ## AgentState Structure
@@ -34,7 +39,7 @@ AgentState (readonly)
           |-- inferenceResponse
           |-- toolExecutions: ToolExecutions
           |-- errors: ErrorList
-// @doctest id="8ee8"
+// @doctest id="859e"
 ```
 
 ## Key Accessors
@@ -71,7 +76,7 @@ $state->hasErrors();
 // Final output
 $state->hasFinalResponse();
 $state->finalResponse()->toString();
-// @doctest id="e083"
+// @doctest id="7fd2"
 ```
 
 ## Budget
@@ -88,7 +93,7 @@ $remaining = $budget->remaining(stepsUsed: 5, tokensUsed: 3000);
 // Cap by another budget:
 $capped = $budget->cappedBy(new Budget(maxSteps: 10));
 // maxSteps: 10 (takes minimum)
-// @doctest id="4e06"
+// @doctest id="6cfb"
 ```
 
 ## Serialization
@@ -98,5 +103,5 @@ All state objects support `toArray()` / `fromArray()` for persistence:
 ```php
 $data = $state->toArray();
 $restored = AgentState::fromArray($data);
-// @doctest id="affc"
+// @doctest id="c791"
 ```

@@ -1,3 +1,8 @@
+---
+title: 'Building Tools'
+description: 'Create custom tools by extending BaseTool with auto-generated parameter schemas'
+---
+
 # Building Tools
 
 ## Using BaseTool

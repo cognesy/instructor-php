@@ -1,3 +1,8 @@
+---
+title: 'Hooks'
+description: 'Intercept agent lifecycle events for logging, guards, state modification, and tool blocking'
+---
+
 # Hooks
 
 Hooks intercept agent lifecycle events to add custom behavior: logging, guards, state modification, tool blocking, and more.

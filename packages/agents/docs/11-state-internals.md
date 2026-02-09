@@ -1,3 +1,8 @@
+---
+title: 'State Internals'
+description: 'Deep dive into AgentState structure, execution tracking, and message metadata'
+---
+
 # Agent State Internals
 
 ## AgentState Structure

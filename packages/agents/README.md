@@ -1,6 +1,6 @@
 # Instructor Agents
 
-Agent framework for building AI agents with tools, continuation criteria, and hooks.
+SDK for building custom AI agents.
 
 This is a read-only split from the [Instructor PHP](https://github.com/cognesy/instructor-php) monorepo.
 

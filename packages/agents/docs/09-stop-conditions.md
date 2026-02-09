@@ -1,3 +1,8 @@
+---
+title: 'Stop Conditions'
+description: 'Control when the agent loop stops using stop signals, continuation logic, and exceptions'
+---
+
 # Stop Conditions
 
 The agent loop stops when `ExecutionState::shouldStop()` returns true. This is controlled by `ExecutionContinuation`, `StopSignals`, and `AgentStopException`.

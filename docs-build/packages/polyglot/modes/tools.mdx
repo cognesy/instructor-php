@@ -136,7 +136,7 @@ function simulateWeatherApi(string $location, string $unit): array {
         'humidity' => 65,
     ];
 }
-// @doctest id="3b1d"
+// @doctest id="05d1"
 ```
 
 ## Controlling Tool Usage
@@ -178,7 +178,7 @@ $noToolResponse = $inference->with(
     toolChoice: 'none',
     mode: OutputMode::Tools
 )->response();
-// @doctest id="3a41"
+// @doctest id="7a47"
 ```
 
 
@@ -250,7 +250,7 @@ if (!empty($toolName) && !empty($toolArgs)) {
         echo "Error parsing tool arguments: " . $e->getMessage() . "\n";
     }
 }
-// @doctest id="52cf"
+// @doctest id="e1a1"
 ```
 
 

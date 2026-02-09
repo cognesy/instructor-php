@@ -1,3 +1,8 @@
+---
+title: 'Tools'
+description: 'Register and use tools that let agents take actions based on LLM decisions'
+---
+
 # Tools
 
 Tools let the agent take actions. The LLM decides which tool to call and with what arguments.

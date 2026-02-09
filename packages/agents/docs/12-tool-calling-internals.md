@@ -1,3 +1,8 @@
+---
+title: 'Tool Calling Internals'
+description: 'How ToolCallingDriver and ReActDriver implement tool use through different strategies'
+---
+
 # Tool Calling Internals
 
 The agent's ability to use tools relies on two contracts and two drivers that implement them differently.

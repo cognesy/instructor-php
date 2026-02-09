@@ -1,3 +1,8 @@
+---
+title: Hooks
+description: 'Intercept agent lifecycle events for logging, guards, state modification, and tool blocking'
+---
+
 # Hooks
 
 Hooks intercept agent lifecycle events to add custom behavior: logging, guards, state modification, tool blocking, and more.
@@ -32,7 +37,7 @@ class LogStepsHook implements HookInterface
         return $context;
     }
 }
-// @doctest id="55f2"
+// @doctest id="a6f7"
 ```
 
 ## Registering Hooks
@@ -53,7 +58,7 @@ $stack = $stack->with(
 );
 
 $loop = AgentLoop::default()->withInterceptor($stack);
-// @doctest id="b665"
+// @doctest id="0e58"
 ```
 
 ## CallableHook
@@ -69,7 +74,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
 });
 
 $stack = $stack->with($hook, HookTriggers::afterStep());
-// @doctest id="9852"
+// @doctest id="bce3"
 ```
 
 ## Blocking Tool Execution
@@ -89,7 +94,7 @@ class BlockDangerousTools implements HookInterface
 }
 
 $stack = $stack->with(new BlockDangerousTools(), HookTriggers::beforeToolUse());
-// @doctest id="9072"
+// @doctest id="5ba6"
 ```
 
 ## Modifying State
@@ -101,7 +106,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
     $state = $ctx->state()->withMetadata('custom_key', 'value');
     return $ctx->withState($state);
 });
-// @doctest id="16d4"
+// @doctest id="c787"
 ```
 
 ## Built-in Guard Hooks
@@ -127,7 +132,7 @@ $stack = $stack
     ->with($stepsGuard, HookTriggers::beforeStep(), priority: 100)
     ->with($tokenGuard, HookTriggers::beforeStep(), priority: 100)
     ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 100);
-// @doctest id="6c45"
+// @doctest id="3486"
 ```
 
 ## Hook Priority

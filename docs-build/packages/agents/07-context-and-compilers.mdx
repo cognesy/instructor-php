@@ -1,3 +1,8 @@
+---
+title: 'Context & Compilers'
+description: 'Manage conversation data with AgentContext and control message compilation for LLM calls'
+---
+
 # Agent Context & Message Compilers
 
 ## AgentContext
@@ -13,7 +18,7 @@ $state = AgentState::empty()
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
-// @doctest id="f816"
+// @doctest id="b8a7"
 ```
 
 ## Message Compilers
@@ -25,7 +30,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="26a1"
+// @doctest id="310a"
 ```
 
 The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
@@ -47,7 +52,7 @@ class MyCompiler implements CanCompileMessages
         return $state->messages();
     }
 }
-// @doctest id="f69c"
+// @doctest id="8d33"
 ```
 
 Inject it into the loop's driver:
@@ -55,5 +60,5 @@ Inject it into the loop's driver:
 ```php
 $driver = new ToolCallingDriver(messageCompiler: new MyCompiler());
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="9786"
+// @doctest id="863a"
 ```

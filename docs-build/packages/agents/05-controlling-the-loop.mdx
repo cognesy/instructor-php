@@ -1,3 +1,8 @@
+---
+title: 'Controlling the Loop'
+description: 'Run agents to completion with execute() or step through with iterate() for fine-grained control'
+---
+
 # Controlling the Loop
 
 ## execute() vs iterate()
@@ -6,7 +11,7 @@
 
 ```php
 $finalState = $loop->execute($state);
-// @doctest id="93fa"
+// @doctest id="2205"
 ```
 
 `iterate()` yields state after each step, giving you full control:
@@ -21,7 +26,7 @@ foreach ($loop->iterate($state) as $stepState) {
         echo "  Tool: {$exec->name()} -> {$exec->value()}\n";
     }
 }
-// @doctest id="465f"
+// @doctest id="ed81"
 ```
 
 ## Inspecting State
@@ -47,7 +52,7 @@ $toolExec = $state->lastToolExecution();
 $toolExec?->name();     // 'weather'
 $toolExec?->value();    // '72F, sunny'
 $toolExec?->hasError(); // false
-// @doctest id="c8fa"
+// @doctest id="e007"
 ```
 
 ## Listening to Events
@@ -65,5 +70,5 @@ $loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
 $loop->wiretap(function ($event) {
     echo get_class($event) . "\n";
 });
-// @doctest id="19fb"
+// @doctest id="449f"
 ```

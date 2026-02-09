@@ -1,3 +1,8 @@
+---
+title: 'Basic Concepts'
+description: 'Core components of the agent system: AgentLoop, AgentState, drivers, tools, and hooks'
+---
+
 # Basic Concepts
 
 ## AgentLoop

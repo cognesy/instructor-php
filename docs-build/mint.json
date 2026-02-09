@@ -358,6 +358,29 @@
             ]
         },
         {
+            "group": "Addons",
+            "pages": [
+                "packages/addons/agent_hooks"
+            ]
+        },
+        {
+            "group": "Agents",
+            "pages": [
+                "packages/agents/01-introduction",
+                "packages/agents/02-basic-agent",
+                "packages/agents/03-tools",
+                "packages/agents/04-basic-concepts",
+                "packages/agents/05-controlling-the-loop",
+                "packages/agents/06-building-tools",
+                "packages/agents/07-context-and-compilers",
+                "packages/agents/08-hooks",
+                "packages/agents/09-stop-conditions",
+                "packages/agents/10-testing",
+                "packages/agents/11-state-internals",
+                "packages/agents/12-tool-calling-internals"
+            ]
+        },
+        {
             "group": "Structured Outputs \\ Basics",
             "pages": [
                 "cookbook/structured_outputs/basics/basic_use",
@@ -386,6 +409,7 @@
                 "cookbook/structured_outputs/advanced/config_providers",
                 "cookbook/structured_outputs/advanced/context_cache_structured",
                 "cookbook/structured_outputs/advanced/context_cache_structured_oai",
+                "cookbook/structured_outputs/advanced/context_cache_structured_oai_responses",
                 "cookbook/structured_outputs/advanced/custom_config",
                 "cookbook/structured_outputs/advanced/custom_http_client",
                 "cookbook/structured_outputs/advanced/custom_http_client_laravel",
@@ -404,6 +428,7 @@
         {
             "group": "Structured Outputs \\ Troubleshooting",
             "pages": [
+                "cookbook/structured_outputs/troubleshooting/cost_calculation",
                 "cookbook/structured_outputs/troubleshooting/debugging",
                 "cookbook/structured_outputs/troubleshooting/logging_laravel",
                 "cookbook/structured_outputs/troubleshooting/logging_monolog",
@@ -436,6 +461,7 @@
                 "cookbook/structured_outputs/api_support/moonshotai",
                 "cookbook/structured_outputs/api_support/ollama",
                 "cookbook/structured_outputs/api_support/openai",
+                "cookbook/structured_outputs/api_support/openai-responses",
                 "cookbook/structured_outputs/api_support/openrouter",
                 "cookbook/structured_outputs/api_support/perplexity",
                 "cookbook/structured_outputs/api_support/sambanova",
@@ -457,6 +483,7 @@
                 "cookbook/structured_outputs/extras/image_to_data_anthropic",
                 "cookbook/structured_outputs/extras/image_to_data_gemini",
                 "cookbook/structured_outputs/extras/schema",
+                "cookbook/structured_outputs/extras/streaming_structured_openai_responses",
                 "cookbook/structured_outputs/extras/output_format_array",
                 "cookbook/structured_outputs/extras/output_format_instance_of",
                 "cookbook/structured_outputs/extras/output_format_streaming",
@@ -527,6 +554,7 @@
                 "cookbook/llm_inference/llm_api_support/moonshotai",
                 "cookbook/llm_inference/llm_api_support/ollama",
                 "cookbook/llm_inference/llm_api_support/openai",
+                "cookbook/llm_inference/llm_api_support/openai-responses",
                 "cookbook/llm_inference/llm_api_support/openrouter",
                 "cookbook/llm_inference/llm_api_support/perplexity",
                 "cookbook/llm_inference/llm_api_support/sambanova",
@@ -541,6 +569,7 @@
                 "cookbook/llm_inference/llm_extras/chat_with_summary",
                 "cookbook/llm_inference/llm_extras/image_data",
                 "cookbook/llm_inference/llm_extras/metrics_streaming",
+                "cookbook/llm_inference/llm_extras/streaming_inference_openai_responses",
                 "cookbook/llm_inference/llm_extras/prompt_templates",
                 "cookbook/llm_inference/llm_extras/summary_with_llm",
                 "cookbook/llm_inference/llm_extras/tool_use",
@@ -563,6 +592,7 @@
             "pages": [
                 "cookbook/agents/agents/agent_basic",
                 "cookbook/agents/agents/agent_file_system",
+                "cookbook/agents/agents/agent_hooks",
                 "cookbook/agents/agents/agent_search",
                 "cookbook/agents/agents/agent_self_critique",
                 "cookbook/agents/agents/agent_structured_output",

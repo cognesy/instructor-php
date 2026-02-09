@@ -1,3 +1,8 @@
+---
+title: Introduction
+description: 'Overview of the Agents SDK for building LLM-powered agents that reason and act through tool use'
+---
+
 # Introduction
 
 The Agents package provides a minimal, composable foundation for building LLM-powered agents that reason and act through tool use.
@@ -20,7 +25,7 @@ Hooks/          # Lifecycle interceptors and guard hooks
 Drivers/        # ToolCallingDriver, ReActDriver, FakeAgentDriver
 Events/         # Agent event system
 Exceptions/     # Domain exceptions
-// @doctest id="60e4"
+// @doctest id="edd9"
 ```
 
 ## Minimal Example
@@ -34,5 +39,5 @@ $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="a416"
+// @doctest id="4696"
 ```

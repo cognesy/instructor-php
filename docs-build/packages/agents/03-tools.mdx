@@ -1,3 +1,8 @@
+---
+title: Tools
+description: 'Register and use tools that let agents take actions based on LLM decisions'
+---
+
 # Tools
 
 Tools let the agent take actions. The LLM decides which tool to call and with what arguments.
@@ -12,7 +17,7 @@ use Cognesy\Agents\Core\Tools\MockTool;
 
 $calculator = MockTool::returning('calculator', 'Performs math', '42');
 $tools = new Tools($calculator);
-// @doctest id="6d99"
+// @doctest id="db7a"
 ```
 
 ## Using FunctionTool
@@ -29,7 +34,7 @@ $tool = FunctionTool::fromCallable(
 );
 
 $tools = new Tools($tool);
-// @doctest id="9675"
+// @doctest id="094a"
 ```
 
 ## Agent with Tools
@@ -44,7 +49,7 @@ $loop = AgentLoop::default()->withTool($tool);
 $state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
 $result = $loop->execute($state);
 // LLM calls the weather tool, gets result, then responds
-// @doctest id="255a"
+// @doctest id="ecd1"
 ```
 
 ## How It Works

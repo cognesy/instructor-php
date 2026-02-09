@@ -1,3 +1,8 @@
+---
+title: 'Basic Agent'
+description: 'Create your first agent with AgentLoop and get a response from an LLM'
+---
+
 # Basic Agent
 
 The simplest agent uses `AgentLoop` to send a message and get a response.
@@ -14,7 +19,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="635f"
+// @doctest id="3d3b"
 ```
 
 ## What Happens
@@ -38,7 +43,7 @@ $loop = AgentLoop::default()->withTool($myTool);
 
 // Swap driver
 $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
-// @doctest id="ded1"
+// @doctest id="e16b"
 ```
 
 ## System Prompt
@@ -47,5 +52,5 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
-// @doctest id="aae4"
+// @doctest id="054f"
 ```

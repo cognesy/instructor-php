@@ -1,3 +1,8 @@
+---
+title: 'Introduction'
+description: 'Overview of the Agents SDK for building LLM-powered agents that reason and act through tool use'
+---
+
 # Introduction
 
 The Agents package provides a minimal, composable foundation for building LLM-powered agents that reason and act through tool use.

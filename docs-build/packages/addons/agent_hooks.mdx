@@ -44,7 +44,7 @@ $agent = AgentBuilder::new()
     })
 
     ->build();
-// @doctest id="0b6a"
+// @doctest id="4a3c"
 ```
 
 ## Lifecycle Events
@@ -104,7 +104,7 @@ HookOutcome::block('Dangerous command detected');
 
 // Stop the entire agent execution
 HookOutcome::stop('Budget exceeded');
-// @doctest id="c30c"
+// @doctest id="c201"
 ```
 
 ### Semantic Differences
@@ -146,7 +146,7 @@ function afterTool(ToolHookContext $ctx): HookOutcome {
 
     return HookOutcome::proceed();
 }
-// @doctest id="c2c9"
+// @doctest id="4201"
 ```
 
 ### StepHookContext
@@ -167,7 +167,7 @@ function onStep(StepHookContext $ctx): HookOutcome {
 
     return HookOutcome::proceed();
 }
-// @doctest id="a05b"
+// @doctest id="fd25"
 ```
 
 ### StopHookContext
@@ -187,7 +187,7 @@ function onStop(StopHookContext $ctx): HookOutcome {
 
     return HookOutcome::proceed(); // Allow stop
 }
-// @doctest id="4b98"
+// @doctest id="3b0d"
 ```
 
 ### ExecutionHookContext
@@ -206,7 +206,7 @@ function onExecution(ExecutionHookContext $ctx): HookOutcome {
 
     return HookOutcome::proceed();
 }
-// @doctest id="b2ba"
+// @doctest id="57d7"
 ```
 
 ### FailureHookContext
@@ -223,7 +223,7 @@ function onFailure(FailureHookContext $ctx): HookOutcome {
 
     return HookOutcome::proceed();
 }
-// @doctest id="d10a"
+// @doctest id="804d"
 ```
 
 ## Matchers
@@ -247,7 +247,7 @@ new ToolNameMatcher('*');        // Match all
 
 // Regex patterns
 new ToolNameMatcher('/^(read|write)_.+$/');
-// @doctest id="551f"
+// @doctest id="5eb1"
 ```
 
 ### EventTypeMatcher
@@ -263,7 +263,7 @@ new EventTypeMatcher(HookEvent::PreToolUse);
 
 // Multiple events
 new EventTypeMatcher(HookEvent::BeforeStep, HookEvent::AfterStep);
-// @doctest id="e7d1"
+// @doctest id="2351"
 ```
 
 ### CompositeMatcher
@@ -294,7 +294,7 @@ $matcher = CompositeMatcher::and(
     ),
     new CallableMatcher(fn($ctx) => $ctx->state()->metadata()->get('safe_mode')),
 );
-// @doctest id="3fa0"
+// @doctest id="cb15"
 ```
 
 ### CallableMatcher
@@ -307,7 +307,7 @@ use Cognesy\Addons\Agent\Hooks\Matchers\CallableMatcher;
 $matcher = new CallableMatcher(function (HookContext $ctx): bool {
     return $ctx->state()->metadata()->get('priority') === 'high';
 });
-// @doctest id="11ff"
+// @doctest id="bfd8"
 ```
 
 ## Priority
@@ -324,7 +324,7 @@ $builder
 
     // Logging hooks run last (low priority)
     ->onAfterToolUse($logger, priority: -100);
-// @doctest id="cc4f"
+// @doctest id="1ca4"
 ```
 
 **Priority Guidelines:**
@@ -352,7 +352,7 @@ $builder->onAfterToolUse(
     priority: int = 0,
     matcher: string|HookMatcher|null = null,
 );
-// @doctest id="1890"
+// @doctest id="415b"
 ```
 
 ### Step Hooks
@@ -367,7 +367,7 @@ $builder->onBeforeStep(
 $builder->onAfterStep(
     callback: callable,  // (AgentState) -> AgentState
 );
-// @doctest id="1cde"
+// @doctest id="abcf"
 ```
 
 ### Execution Hooks
@@ -384,7 +384,7 @@ $builder->onExecutionEnd(
     callback: callable,  // (ExecutionHookContext) -> HookOutcome|void
     priority: int = 0,
 );
-// @doctest id="03ea"
+// @doctest id="8bc7"
 ```
 
 ### Continuation Hooks
@@ -401,7 +401,7 @@ $builder->onSubagentStop(
     callback: callable,  // (StopHookContext) -> HookOutcome|void
     priority: int = 0,
 );
-// @doctest id="e288"
+// @doctest id="2b75"
 ```
 
 ### Error Hooks
@@ -412,7 +412,7 @@ $builder->onAgentFailed(
     callback: callable,  // (FailureHookContext) -> HookOutcome|void
     priority: int = 0,
 );
-// @doctest id="8753"
+// @doctest id="139c"
 ```
 
 ### Unified Registration
@@ -428,7 +428,7 @@ $builder->addHook(
     hook: new CallableHook($callback, $matcher),
     priority: 100,
 );
-// @doctest id="f4ae"
+// @doctest id="004c"
 ```
 
 ## Creating Custom Hooks
@@ -457,7 +457,7 @@ class RateLimitHook implements Hook
         return $next($context);
     }
 }
-// @doctest id="b8bf"
+// @doctest id="6a23"
 ```
 
 ## Using HookStack Directly
@@ -482,7 +482,7 @@ if ($outcome->isBlocked()) {
 } elseif ($outcome->isStopped()) {
     // Handle stopped
 }
-// @doctest id="0117"
+// @doctest id="2c20"
 ```
 
 ## Backward Compatibility
@@ -498,7 +498,7 @@ use Cognesy\Addons\Agent\Hooks\Adapters\StateProcessorAdapter;
 
 $processor = new YourStateProcessor();
 $hook = new StateProcessorAdapter($processor, position: 'after');
-// @doctest id="cc72"
+// @doctest id="73e6"
 ```
 
 ### ContinuationCriteriaAdapter
@@ -508,7 +508,7 @@ use Cognesy\Addons\Agent\Hooks\Adapters\ContinuationCriteriaAdapter;
 
 $criterion = new YourContinuationCriterion();
 $hook = new ContinuationCriteriaAdapter($criterion);
-// @doctest id="3046"
+// @doctest id="47ad"
 ```
 
 ## Common Patterns
@@ -533,7 +533,7 @@ $builder->onBeforeToolUse(
     priority: 100, // Run first
     matcher: 'bash',
 );
-// @doctest id="954f"
+// @doctest id="5e50"
 ```
 
 ### Execution Timing
@@ -550,7 +550,7 @@ $builder
         $duration = microtime(true) - $started;
         $this->metrics->record('execution_duration', $duration);
     });
-// @doctest id="b850"
+// @doctest id="2674"
 ```
 
 ### Conditional Continuation
@@ -573,7 +573,7 @@ $builder->onStop(function (StopHookContext $ctx): HookOutcome {
 
     return HookOutcome::proceed();
 });
-// @doctest id="3ec4"
+// @doctest id="fa6a"
 ```
 
 ### Error Recovery Logging
@@ -599,7 +599,7 @@ $builder->onAgentFailed(function (FailureHookContext $ctx): void {
         $this->alerting->sendCritical($exception);
     }
 });
-// @doctest id="973e"
+// @doctest id="8e96"
 ```
 
 ## Architecture
@@ -631,7 +631,7 @@ $builder->onAgentFailed(function (FailureHookContext $ctx): void {
 │  │ execution│  │ action   │  │ entirely │                  │
 │  └──────────┘  └──────────┘  └──────────┘                  │
 └─────────────────────────────────────────────────────────────┘
-// @doctest id="d779"
+// @doctest id="cd8e"
 ```
 
 ## File Structure
@@ -672,5 +672,5 @@ packages/addons/src/Agent/Hooks/
 └── Adapters/
     ├── StateProcessorAdapter.php
     └── ContinuationCriteriaAdapter.php
-// @doctest id="5d5f"
+// @doctest id="164e"
 ```

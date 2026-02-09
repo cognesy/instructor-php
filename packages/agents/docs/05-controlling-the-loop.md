@@ -1,3 +1,8 @@
+---
+title: 'Controlling the Loop'
+description: 'Run agents to completion with execute() or step through with iterate() for fine-grained control'
+---
+
 # Controlling the Loop
 
 ## execute() vs iterate()

@@ -14,7 +14,7 @@ Key concepts:
 - `UseFileTools`: Capability that adds file system tools to the agent
 - Working directory: Root path for all file operations (security boundary)
 - Available tools: `read_file`, `write_file`, `edit_file`, `list_dir`, `search_files`
-- Multi-step execution: Agent reads files, analyzes content, and responds
+- `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -22,10 +22,19 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\AgentBuilder\AgentBuilder;
-use Cognesy\Addons\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Addons\Agent\Core\Data\AgentState;
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
+
+// Create console logger for execution visibility
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
 
 // Configure working directory (security boundary)
 $workDir = dirname(__DIR__, 3);  // Project root
@@ -33,7 +42,8 @@ $workDir = dirname(__DIR__, 3);  // Project root
 // Build agent with file system capabilities
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // Create task that requires file access
 $task = <<<TASK
@@ -49,28 +59,16 @@ $state = AgentState::empty()->withMessages(
     Messages::fromString($task)
 );
 
-// Run agent loop
-while ($agent->hasNextStep($state)) {
-    $state = $agent->nextStep($state);
+echo "=== Agent Execution Log ===\n\n";
 
-    $step = $state->currentStep();
-    echo "Step {$state->stepCount()}: [{$step->stepType()->value}]\n";
+// Execute agent until completion
+$finalState = $agent->execute($state);
 
-    if ($step->hasToolCalls()) {
-        foreach ($step->toolCalls()->all() as $toolCall) {
-            echo "  → {$toolCall->name()}()\n";
-        }
-    }
-}
-
-// Extract final response
-$response = $state->currentStep()?->outputMessages()->toString() ?? 'No response';
-
-echo "\nAnswer:\n";
-echo $response . "\n\n";
-
-echo "Stats:\n";
-echo "  Steps: {$state->stepCount()}\n";
-echo "  Status: {$state->status()->value}\n";
+echo "\n=== Result ===\n";
+$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "Answer: {$response}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
 ?>
 ```
