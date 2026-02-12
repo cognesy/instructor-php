@@ -8,7 +8,7 @@ use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 final class UseSubagents implements AgentCapability
@@ -37,7 +37,7 @@ final class UseSubagents implements AgentCapability
 
     #[\Override]
     public function install(AgentBuilder $builder): void {
-        $builder->addToolFactory(function (Tools $tools, CanUseTools $driver, CanEmitAgentEvents $emitter) {
+        $builder->addToolFactory(function (Tools $tools, CanUseTools $driver, CanHandleEvents $events) {
             $llmProvider = match (true) {
                 $driver instanceof CanAcceptLLMProvider => $driver->llmProvider(),
                 default => LLMProvider::new(),
@@ -51,7 +51,7 @@ final class UseSubagents implements AgentCapability
                 parentLlmProvider: $llmProvider,
                 currentDepth: 0,
                 policy: $this->policy,
-                eventEmitter: $emitter,
+                events: $events,
             );
         });
     }

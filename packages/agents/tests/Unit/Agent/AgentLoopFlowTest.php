@@ -10,18 +10,20 @@ use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
 use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Events\AgentExecutionCompleted;
+use Cognesy\Agents\Events\AgentExecutionFailed;
+use Cognesy\Agents\Events\AgentStepCompleted;
+use Cognesy\Agents\Events\AgentStepStarted;
+use Cognesy\Agents\Events\ToolCallBlocked;
 use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
 use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Agents\Hooks\Enums\HookTrigger;
 use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Polyglot\Inference\Data\Usage;
-use DateTimeImmutable;
 use RuntimeException;
 
-final class CountingEventEmitter implements CanEmitAgentEvents
+final class CountingEventListener
 {
     public int $stepStartedCount = 0;
     public int $stepCompletedCount = 0;
@@ -29,73 +31,19 @@ final class CountingEventEmitter implements CanEmitAgentEvents
     public int $toolCallBlockedCount = 0;
     public ?ExecutionStatus $finishedStatus = null;
 
-    public function executionStarted(AgentState $state, int $availableTools): void {}
-
-    public function stepStarted(AgentState $state): void {
-        $this->stepStartedCount++;
+    public function wiretap(): callable
+    {
+        return function (object $event): void {
+            match (true) {
+                $event instanceof AgentStepStarted => $this->stepStartedCount++,
+                $event instanceof AgentStepCompleted => $this->stepCompletedCount++,
+                $event instanceof AgentExecutionFailed => $this->executionFailedCount++,
+                $event instanceof ToolCallBlocked => $this->toolCallBlockedCount++,
+                $event instanceof AgentExecutionCompleted => $this->finishedStatus = $event->status,
+                default => null,
+            };
+        };
     }
-
-    public function stepCompleted(AgentState $state): void {
-        $this->stepCompletedCount++;
-    }
-
-    public function stateUpdated(AgentState $state): void {}
-
-    public function continuationEvaluated(AgentState $state): void {}
-
-    public function executionStopped(AgentState $state): void {}
-
-    public function executionFinished(AgentState $state): void {
-        $this->finishedStatus = $state->status();
-    }
-
-    public function executionFailed(AgentState $state, \Throwable $exception): void {
-        $this->executionFailedCount++;
-    }
-
-    public function toolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {}
-
-    public function toolCallCompleted(\Cognesy\Agents\Core\Data\ToolExecution $execution): void {}
-
-    public function toolCallBlocked(ToolCall $toolCall, string $reason, ?string $hookName = null): void {
-        $this->toolCallBlockedCount++;
-    }
-
-    public function inferenceRequestStarted(AgentState $state, int $messageCount, ?string $model = null): void {}
-
-    public function inferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void {}
-
-    public function subagentSpawning(
-        string $parentAgentId,
-        string $subagentName,
-        string $prompt,
-        int $depth,
-        int $maxDepth,
-        ?string $parentExecutionId = null,
-        ?int $parentStepNumber = null,
-        ?string $toolCallId = null,
-    ): void {}
-
-    public function subagentCompleted(
-        string $parentAgentId,
-        string $subagentId,
-        string $subagentName,
-        ExecutionStatus $status,
-        int $steps,
-        ?Usage $usage,
-        DateTimeImmutable $startedAt,
-        ?string $parentExecutionId = null,
-        ?int $parentStepNumber = null,
-        ?string $toolCallId = null,
-    ): void {}
-
-    public function hookExecuted(string $triggerType, ?string $hookName, DateTimeImmutable $startedAt): void {}
-
-    public function decisionExtractionFailed(AgentState $state, string $errorMessage, string $errorType, int $attemptNumber = 1, int $maxAttempts = 1): void {}
-
-    public function validationFailed(AgentState $state, string $validationType, array $errors): void {}
-
-    public function stopSignalReceived(\Cognesy\Agents\Core\Stop\StopSignal $signal) {}
 }
 
 final class ThrowingInterceptor implements CanInterceptAgentLifecycle
@@ -127,10 +75,18 @@ final class InjectStepInterceptor implements CanInterceptAgentLifecycle
     }
 }
 
+function makeTestEvents(CountingEventListener $listener): EventDispatcher
+{
+    $events = new EventDispatcher();
+    $events->wiretap($listener->wiretap());
+    return $events;
+}
+
 describe('AgentLoop flow', function () {
     it('skips after-step when before-step hook throws', function () {
         $tools = new Tools();
-        $eventEmitter = new CountingEventEmitter();
+        $listener = new CountingEventListener();
+        $events = makeTestEvents($listener);
         $interceptor = new ThrowingInterceptor(HookTrigger::BeforeStep);
 
         $driver = new class implements CanUseTools {
@@ -142,23 +98,24 @@ describe('AgentLoop flow', function () {
 
         $loop = new AgentLoop(
             tools: $tools,
-            toolExecutor: new ToolExecutor($tools, $eventEmitter, $interceptor),
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
             driver: $driver,
-            eventEmitter: $eventEmitter,
+            events: $events,
             interceptor: $interceptor,
         );
 
         $finalState = $loop->execute(AgentState::empty());
 
-        expect($eventEmitter->stepStartedCount)->toBe(1);
-        expect($eventEmitter->stepCompletedCount)->toBe(0);
+        expect($listener->stepStartedCount)->toBe(1);
+        expect($listener->stepCompletedCount)->toBe(0);
         expect($finalState->stepCount())->toBe(0);
         expect($finalState->status())->toBe(ExecutionStatus::Failed);
     });
 
     it('records a failed step when tool use throws after a step is prepared', function () {
         $tools = new Tools();
-        $eventEmitter = new CountingEventEmitter();
+        $listener = new CountingEventListener();
+        $events = makeTestEvents($listener);
         $step = new AgentStep();
         $interceptor = new InjectStepInterceptor($step);
 
@@ -171,9 +128,9 @@ describe('AgentLoop flow', function () {
 
         $loop = new AgentLoop(
             tools: $tools,
-            toolExecutor: new ToolExecutor($tools, $eventEmitter, $interceptor),
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
             driver: $driver,
-            eventEmitter: $eventEmitter,
+            events: $events,
             interceptor: $interceptor,
         );
 
@@ -182,12 +139,13 @@ describe('AgentLoop flow', function () {
         expect($finalState->status())->toBe(ExecutionStatus::Failed);
         expect($finalState->stepCount())->toBe(1);
         expect($finalState->errors()->hasAny())->toBeTrue();
-        expect($eventEmitter->stepCompletedCount)->toBe(1);
+        expect($listener->stepCompletedCount)->toBe(1);
     });
 
     it('emits tool-block and failure events when tool execution is blocked', function () {
         $tools = new Tools();
-        $eventEmitter = new CountingEventEmitter();
+        $listener = new CountingEventListener();
+        $events = makeTestEvents($listener);
         $step = new AgentStep();
         $interceptor = new InjectStepInterceptor($step);
 
@@ -206,24 +164,26 @@ describe('AgentLoop flow', function () {
 
         $loop = new AgentLoop(
             tools: $tools,
-            toolExecutor: new ToolExecutor($tools, $eventEmitter, $interceptor),
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
             driver: $driver,
-            eventEmitter: $eventEmitter,
+            events: $events,
             interceptor: $interceptor,
         );
 
         $finalState = $loop->execute(AgentState::empty());
 
         expect($finalState->status())->toBe(ExecutionStatus::Failed);
-        expect($eventEmitter->toolCallBlockedCount)->toBe(1);
-        expect($eventEmitter->executionFailedCount)->toBe(1);
-        expect($eventEmitter->stepCompletedCount)->toBe(1);
+        expect($listener->toolCallBlockedCount)->toBe(1);
+        expect($listener->executionFailedCount)->toBe(1);
+        expect($listener->stepCompletedCount)->toBe(1);
     });
 
-    it('uses new emitter in executor when with() receives both tools and eventEmitter', function () {
+    it('uses new events in executor when with() receives both tools and events', function () {
         $tools = new Tools();
-        $oldEmitter = new CountingEventEmitter();
-        $newEmitter = new CountingEventEmitter();
+        $oldListener = new CountingEventListener();
+        $newListener = new CountingEventListener();
+        $oldEvents = makeTestEvents($oldListener);
+        $newEvents = makeTestEvents($newListener);
         $step = new AgentStep();
         $interceptor = new InjectStepInterceptor($step);
 
@@ -236,26 +196,27 @@ describe('AgentLoop flow', function () {
 
         $originalLoop = new AgentLoop(
             tools: $tools,
-            toolExecutor: new ToolExecutor($tools, $oldEmitter, $interceptor),
+            toolExecutor: new ToolExecutor($tools, $oldEvents, $interceptor),
             driver: $driver,
-            eventEmitter: $oldEmitter,
+            events: $oldEvents,
             interceptor: $interceptor,
         );
 
         $newTools = new Tools();
-        $newLoop = $originalLoop->with(tools: $newTools, eventEmitter: $newEmitter);
+        $newLoop = $originalLoop->with(tools: $newTools, events: $newEvents);
 
         $newLoop->execute(AgentState::empty());
 
-        expect($newEmitter->stepStartedCount)->toBe(1)
-            ->and($newEmitter->stepCompletedCount)->toBe(1)
-            ->and($oldEmitter->stepStartedCount)->toBe(0)
-            ->and($oldEmitter->stepCompletedCount)->toBe(0);
+        expect($newListener->stepStartedCount)->toBe(1)
+            ->and($newListener->stepCompletedCount)->toBe(1)
+            ->and($oldListener->stepStartedCount)->toBe(0)
+            ->and($oldListener->stepCompletedCount)->toBe(0);
     });
 
     it('emits executionFinished with Completed status, not InProgress', function () {
         $tools = new Tools();
-        $eventEmitter = new CountingEventEmitter();
+        $listener = new CountingEventListener();
+        $events = makeTestEvents($listener);
         $interceptor = new InjectStepInterceptor(new AgentStep());
 
         // Driver that returns immediately (no tool calls) — simulates LLM finish=stop
@@ -268,16 +229,16 @@ describe('AgentLoop flow', function () {
 
         $loop = new AgentLoop(
             tools: $tools,
-            toolExecutor: new ToolExecutor($tools, $eventEmitter, $interceptor),
+            toolExecutor: new ToolExecutor($tools, $events, $interceptor),
             driver: $driver,
-            eventEmitter: $eventEmitter,
+            events: $events,
             interceptor: $interceptor,
         );
 
         $finalState = $loop->execute(AgentState::empty());
 
         // The event must carry the final status, not the transient in-progress status
-        expect($eventEmitter->finishedStatus)->toBe(ExecutionStatus::Completed);
+        expect($listener->finishedStatus)->toBe(ExecutionStatus::Completed);
         expect($finalState->status())->toBe(ExecutionStatus::Completed);
     });
 });

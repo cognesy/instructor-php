@@ -10,6 +10,7 @@ use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\Exceptions\SubagentNotFoun
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptEventHandler;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
@@ -17,16 +18,17 @@ use Cognesy\Agents\Core\Data\Budget;
 use Cognesy\Agents\Core\Enums\ExecutionStatus;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\Core\Tools\CanAccessToolCall;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
-use Cognesy\Utils\JsonSchema\JsonSchema;
-use Cognesy\Utils\JsonSchema\ToolSchema;
-use Cognesy\Agents\Events\AgentEventEmitter;
-use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Events\SubagentCompleted;
+use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 use DateTimeImmutable;
 
 final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
@@ -38,7 +40,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
     private ?LLMProvider $parentLlmProvider;
     private int $currentDepth;
     private SubagentPolicy $policy;
-    private CanEmitAgentEvents $eventEmitter;
+    private CanHandleEvents $events;
     private ?ToolCall $toolCall = null;
 
     public function __construct(
@@ -49,7 +51,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         ?LLMProvider $parentLlmProvider = null,
         int $currentDepth = 0,
         ?SubagentPolicy $policy = null,
-        ?CanEmitAgentEvents $eventEmitter = null,
+        ?CanHandleEvents $events = null,
     ) {
         parent::__construct(
             name: 'spawn_subagent',
@@ -63,7 +65,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         $this->parentLlmProvider = $parentLlmProvider;
         $this->policy = $policy ?? SubagentPolicy::default();
         $this->currentDepth = $currentDepth;
-        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
+        $this->events = EventBusResolver::using($events);
     }
 
     #[\Override]
@@ -84,7 +86,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         ?LLMProvider $parentLlmProvider = null,
         ?int $currentDepth = null,
         ?SubagentPolicy $policy = null,
-        ?CanEmitAgentEvents $eventEmitter = null,
+        ?CanHandleEvents $events = null,
         ?ToolCall $toolCall = null,
         ?AgentState $agentState = null,
     ): static {
@@ -96,7 +98,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
             parentLlmProvider: $parentLlmProvider ?? $this->parentLlmProvider,
             currentDepth: $currentDepth ?? $this->currentDepth,
             policy: $policy ?? $this->policy,
-            eventEmitter: $eventEmitter ?? $this->eventEmitter,
+            events: $events ?? $this->events,
         );
         $new->toolCall = $toolCall ?? $this->toolCall;
         $new->agentState = $agentState ?? $this->agentState;
@@ -129,7 +131,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         $toolCallId = $this->toolCall?->id();
 
         $spawnStartedAt = new DateTimeImmutable();
-        $this->eventEmitter->subagentSpawning(
+        $this->emitSubagentSpawning(
             parentAgentId: $parentAgentId,
             subagentName: $subagentName,
             prompt: $prompt,
@@ -144,7 +146,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         $initialState = $this->createInitialState($prompt, $spec, $parentAgentId);
         $finalState = $subagentLoop->execute($initialState);
 
-        $this->eventEmitter->subagentCompleted(
+        $this->emitSubagentCompleted(
             parentAgentId: $parentAgentId,
             subagentId: $finalState->agentId(),
             subagentName: $subagentName,
@@ -178,7 +180,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
                 parentLlmProvider: $this->parentLlmProvider,
                 currentDepth: $this->currentDepth + 1,
                 policy: $this->policy,
-                eventEmitter: $this->eventEmitter,
+                events: $this->events,
             );
 
             $tools = $tools->withToolRemoved('spawn_subagent')
@@ -192,8 +194,8 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
             $subagentDriver = $subagentDriver->withLLMProvider($llmProvider);
         }
 
-        if ($subagentDriver instanceof CanAcceptAgentEventEmitter) {
-            $subagentDriver = $subagentDriver->withEventEmitter($this->eventEmitter);
+        if ($subagentDriver instanceof CanAcceptEventHandler) {
+            $subagentDriver = $subagentDriver->withEventHandler($this->events);
         }
 
         // Compute effective budget: parent's remaining capped by definition limits
@@ -202,7 +204,7 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         $builder = AgentBuilder::base()
             ->withTools($tools)
             ->withDriver($subagentDriver)
-            ->withEvents($this->eventEmitter->eventHandler());
+            ->withEvents($this->events);
 
         $builder = $this->applyBudgetConstraints($builder, $effectiveBudget);
 
@@ -210,7 +212,6 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
     }
 
     private function computeEffectiveBudget(AgentDefinition $spec): Budget {
-        // Start with parent's remaining budget
         $parentBudget = $this->agentState?->budget() ?? Budget::unlimited();
         $parentExecution = $this->agentState?->execution();
 
@@ -219,7 +220,6 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
             default => $parentBudget->remainingFrom($parentExecution),
         };
 
-        // Cap with definition's limits
         $definitionBudget = Budget::fromDefinition(
             maxSteps: $spec->maxSteps,
             maxTokens: $spec->maxTokens,
@@ -253,7 +253,6 @@ final class SpawnSubagentTool extends BaseTool implements CanAccessToolCall
         $messages = $this->appendSkillMessages($messages, $spec);
         $messages = $messages->appendMessage(Message::asUser($prompt));
 
-        // Pass effective budget to child so it can propagate further
         $effectiveBudget = $this->computeEffectiveBudget($spec);
 
         return AgentState::empty()
@@ -380,5 +379,55 @@ Spawn a specialized subagent for a focused task. Returns only the final response
 Each subagent has specific expertise, tools, and capabilities optimized for its domain.
 Choose the most appropriate subagent based on the task requirements.
 DESC;
+    }
+
+    // EVENT EMISSION ////////////////////////////////////////////
+
+    private function emitSubagentSpawning(
+        string $parentAgentId,
+        string $subagentName,
+        string $prompt,
+        int $depth,
+        int $maxDepth,
+        ?string $parentExecutionId,
+        ?int $parentStepNumber,
+        ?string $toolCallId,
+    ): void {
+        $this->events->dispatch(new SubagentSpawning(
+            parentAgentId: $parentAgentId,
+            subagentName: $subagentName,
+            prompt: $prompt,
+            depth: $depth,
+            maxDepth: $maxDepth,
+            parentExecutionId: $parentExecutionId,
+            parentStepNumber: $parentStepNumber,
+            toolCallId: $toolCallId,
+        ));
+    }
+
+    private function emitSubagentCompleted(
+        string $parentAgentId,
+        string $subagentId,
+        string $subagentName,
+        ExecutionStatus $status,
+        int $steps,
+        ?\Cognesy\Polyglot\Inference\Data\Usage $usage,
+        DateTimeImmutable $startedAt,
+        ?string $parentExecutionId,
+        ?int $parentStepNumber,
+        ?string $toolCallId,
+    ): void {
+        $this->events->dispatch(new SubagentCompleted(
+            parentAgentId: $parentAgentId,
+            subagentId: $subagentId,
+            subagentName: $subagentName,
+            status: $status,
+            steps: $steps,
+            usage: $usage,
+            startedAt: $startedAt,
+            parentExecutionId: $parentExecutionId,
+            parentStepNumber: $parentStepNumber,
+            toolCallId: $toolCallId,
+        ));
     }
 }

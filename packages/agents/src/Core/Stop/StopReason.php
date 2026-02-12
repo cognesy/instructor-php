@@ -26,6 +26,7 @@ enum StopReason: string
             self::FinishReasonReceived => 6,
             self::UserRequested => 7,
             self::Completed => 8,
+            self::Unknown => 9,
         };
     }
 

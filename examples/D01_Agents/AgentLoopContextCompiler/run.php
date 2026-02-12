@@ -32,9 +32,9 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Contracts\CanCompileMessages;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 

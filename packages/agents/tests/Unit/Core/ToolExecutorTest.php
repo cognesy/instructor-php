@@ -6,7 +6,7 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
-use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Agents\Exceptions\ToolExecutionException;
 use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -45,7 +45,7 @@ it('throws exception on tool failure when throwOnToolFailure is true', function 
     $tools = new Tools(new FailingTool());
     $executor = new ToolExecutor(
         tools: $tools,
-        eventEmitter: new AgentEventEmitter(),
+        events: new EventDispatcher(),
         interceptor: new PassThroughInterceptor(),
         throwOnToolFailure: true,
     );
@@ -62,7 +62,7 @@ it('does not throw on tool failure when throwOnToolFailure is false', function (
     $tools = new Tools(new FailingTool());
     $executor = new ToolExecutor(
         tools: $tools,
-        eventEmitter: new AgentEventEmitter(),
+        events: new EventDispatcher(),
         interceptor: new PassThroughInterceptor(),
         throwOnToolFailure: false,
     );
@@ -81,7 +81,7 @@ it('executes successful tools without throwing', function () {
     $tools = new Tools(new SucceedingTool());
     $executor = new ToolExecutor(
         tools: $tools,
-        eventEmitter: new AgentEventEmitter(),
+        events: new EventDispatcher(),
         interceptor: new PassThroughInterceptor(),
         throwOnToolFailure: true,
     );

@@ -8,12 +8,14 @@ use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\ToolInterface;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Agents\Core\Stop\AgentStopException;
+use Cognesy\Agents\Events\ToolCallCompleted;
+use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Agents\Exceptions\InvalidToolArgumentsException;
 use Cognesy\Agents\Exceptions\ToolExecutionException;
 use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
@@ -30,20 +32,20 @@ use Throwable;
 final readonly class ToolExecutor implements CanExecuteToolCalls
 {
     private Tools $tools;
-    private CanEmitAgentEvents $eventEmitter;
+    private CanHandleEvents $events;
     private CanInterceptAgentLifecycle $interceptor;
     private bool $throwOnToolFailure;
     private bool $stopOnToolBlock;
 
     public function __construct(
         Tools $tools,
-        CanEmitAgentEvents $eventEmitter,
+        CanHandleEvents $events,
         CanInterceptAgentLifecycle $interceptor,
         bool $throwOnToolFailure = false,
         bool $stopOnToolBlock = false,
     ) {
         $this->tools = $tools;
-        $this->eventEmitter = $eventEmitter;
+        $this->events = $events;
         $this->interceptor = $interceptor;
         $this->throwOnToolFailure = $throwOnToolFailure;
         $this->stopOnToolBlock = $stopOnToolBlock;
@@ -51,6 +53,7 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
 
     // MAIN API /////////////////////////////////////////////
 
+    #[\Override]
     public function executeTools(
         ToolCalls $toolCalls,
         AgentState $state,
@@ -76,13 +79,13 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
             }
 
             // Emit tool call started event
-            $this->eventEmitter->toolCallStarted($toolCall, new DateTimeImmutable());
+            $this->emitToolCallStarted($toolCall, new DateTimeImmutable());
 
             // Execute the tool call
             $execution = $this->executeToolCall($toolCall, $state);
 
             // Emit tool call completed event
-            $this->eventEmitter->toolCallCompleted($execution);
+            $this->emitToolCallCompleted($execution);
 
             // After tool use hook
             $hookContext = $this->interceptor->intercept(HookContext::afterToolUse($state, $execution));
@@ -188,5 +191,25 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
                 previous: $failure->exception(),
             ),
         };
+    }
+
+    // EVENT EMISSION ////////////////////////////////////////////
+
+    private function emitToolCallStarted(ToolCall $toolCall, DateTimeImmutable $startedAt): void {
+        $this->events->dispatch(new ToolCallStarted(
+            tool: $toolCall->name(),
+            args: $toolCall->args(),
+            startedAt: $startedAt,
+        ));
+    }
+
+    private function emitToolCallCompleted(ToolExecution $execution): void {
+        $this->events->dispatch(new ToolCallCompleted(
+            tool: $execution->toolCall()->name(),
+            success: $execution->result()->isSuccess(),
+            error: $execution->errorAsString(),
+            startedAt: $execution->startedAt(),
+            completedAt: $execution->completedAt(),
+        ));
     }
 }

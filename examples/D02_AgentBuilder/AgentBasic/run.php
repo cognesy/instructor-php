@@ -25,7 +25,7 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 // Create a console logger for visibility into agent execution

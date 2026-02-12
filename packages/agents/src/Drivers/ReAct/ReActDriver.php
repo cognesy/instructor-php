@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Drivers\ReAct;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptEventHandler;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
 use Cognesy\Agents\Core\Contracts\CanCompileMessages;
@@ -19,10 +20,13 @@ use Cognesy\Agents\Drivers\ReAct\Data\DecisionWithDetails;
 use Cognesy\Agents\Drivers\ReAct\Data\ReActDecision;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActFormatter;
 use Cognesy\Agents\Drivers\ReAct\Utils\ReActValidator;
-use Cognesy\Agents\Events\AgentEventEmitter;
-use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Events\DecisionExtractionFailed;
+use Cognesy\Agents\Events\InferenceRequestStarted;
+use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Agents\Events\ValidationFailed;
 use Cognesy\Agents\Exceptions\AgentException;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
 use Cognesy\Instructor\PendingStructuredOutput;
@@ -42,7 +46,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider, CanAcceptMessageCompiler
+final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAcceptLLMProvider, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -54,7 +58,7 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     private int $maxRetries;
     private OutputMode $mode;
     private CanCompileMessages $messageCompiler;
-    private CanEmitAgentEvents $eventEmitter;
+    private CanHandleEvents $events;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -67,7 +71,7 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         int $maxRetries = 2,
         OutputMode $mode = OutputMode::Json,
         ?CanCompileMessages $messageCompiler = null,
-        ?CanEmitAgentEvents $eventEmitter = null,
+        ?CanHandleEvents $events = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -79,7 +83,7 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
-        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
+        $this->events = EventBusResolver::using($events);
     }
 
     #[\Override]
@@ -88,15 +92,14 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
 
-        // Emit inference request started event
         $requestStartedAt = new DateTimeImmutable();
-        $this->eventEmitter->inferenceRequestStarted($state, $messages->count(), $this->model ?: null);
+        $this->emitInferenceRequestStarted($state, $messages->count(), $this->model ?: null);
 
         $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext));
 
         if ($extraction->isFailure()) {
             $error = $extraction->error();
-            $this->eventEmitter->decisionExtractionFailed(
+            $this->emitDecisionExtractionFailed(
                 state: $state,
                 errorMessage: $error->getMessage(),
                 errorType: get_class($error),
@@ -113,14 +116,12 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
 
         $inferenceResponse = $this->resolveInferenceResponse($state, $inferenceResponse);
 
-        // Emit inference response received event
-        $this->eventEmitter->inferenceResponseReceived($state, $inferenceResponse, $requestStartedAt);
+        $this->emitInferenceResponseReceived($state, $inferenceResponse, $requestStartedAt);
 
-        // Basic validation: decision type + tool exists
         $validator = new ReActValidator();
         $validation = $validator->validateBasicDecision($decision, $tools->names());
         if ($validation->isInvalid()) {
-            $this->eventEmitter->validationFailed(
+            $this->emitValidationFailed(
                 state: $state,
                 validationType: 'decision',
                 errors: [$validation->getErrorMessage()],
@@ -129,7 +130,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             return $state->withCurrentStep($step)->withFailure(new AgentException($validation->getErrorMessage()));
         }
 
-        // Extract tool calls independent of execution
         $toolCalls = (new MakeToolCalls($tools, $validator))($decision);
 
         $usage = $inferenceResponse->usage();
@@ -139,7 +139,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             return $state->withCurrentStep($step);
         }
 
-        // Execute tool calls and assemble follow-ups
         $executions = $executor->executeTools($toolCalls, $state);
 
         $outputMessages = $this->makeFollowUps($decision, $executions);
@@ -171,9 +170,10 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return $clone;
     }
 
-    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): static {
+    #[\Override]
+    public function withEventHandler(CanHandleEvents $events): static {
         $clone = clone $this;
-        $clone->eventEmitter = $eventEmitter;
+        $clone->events = $events;
         return $clone;
     }
 
@@ -215,8 +215,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     }
 
     /**
-     * Extracts a ReAct decision via StructuredOutput and returns usage data.
-     *
      * @param class-string|array|object $decisionModel
      */
     private function extractDecisionWithUsage(
@@ -248,7 +246,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return $structured->create();
     }
 
-    /** Builds a failure step when decision fails validation. */
     private function buildValidationFailureStep(ValidationResult $validation, Messages $context): AgentStep {
         $formatter = new ReActFormatter();
         $error = new \RuntimeException($validation->getErrorMessage());
@@ -267,7 +264,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         );
     }
 
-    /** Builds a failure step when decision extraction fails. */
     private function buildExtractionFailureStep(\Throwable $e, Messages $context): AgentStep {
         $formatter = new ReActFormatter();
         $messagesErr = $formatter->decisionExtractionErrorMessages($e);
@@ -285,7 +281,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         );
     }
 
-    /** Builds a step for a final_answer decision (optionally finalizes via Inference). */
     private function buildFinalAnswerStep(
         ReActDecision          $decision,
         ?Usage                 $usage,
@@ -308,7 +303,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         );
     }
 
-    /** Creates follow-up messages including assistant Thought/Action and observations. */
     private function makeFollowUps(ReActDecision $decision, ToolExecutions $executions): Messages {
         $formatter = new ReActFormatter();
         $messages = Messages::empty()->appendMessage($formatter->assistantThoughtActionMessage($decision));
@@ -318,7 +312,6 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return $messages;
     }
 
-    /** Generates a plain-text final answer via Inference and returns PendingInference. */
     private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cache): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
@@ -364,5 +357,50 @@ final class ReActDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return new StructuredCachedContext(
             messages: [['role' => 'system', 'content' => $systemPrompt]],
         );
+    }
+
+    // EVENT EMISSION ////////////////////////////////////////////
+
+    private function emitInferenceRequestStarted(AgentState $state, int $messageCount, ?string $model): void {
+        $this->events->dispatch(new InferenceRequestStarted(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stepNumber: $state->stepCount() + 1,
+            messageCount: $messageCount,
+            model: $model,
+        ));
+    }
+
+    private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void {
+        $this->events->dispatch(new InferenceResponseReceived(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stepNumber: $state->stepCount() + 1,
+            usage: $response?->usage(),
+            finishReason: $response?->finishReason()?->value,
+            requestStartedAt: $requestStartedAt,
+        ));
+    }
+
+    private function emitDecisionExtractionFailed(AgentState $state, string $errorMessage, string $errorType, int $attemptNumber, int $maxAttempts): void {
+        $this->events->dispatch(new DecisionExtractionFailed(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stepNumber: $state->stepCount() + 1,
+            errorMessage: $errorMessage,
+            errorType: $errorType,
+            attemptNumber: $attemptNumber,
+            maxAttempts: $maxAttempts,
+        ));
+    }
+
+    private function emitValidationFailed(AgentState $state, string $validationType, array $errors): void {
+        $this->events->dispatch(new ValidationFailed(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stepNumber: $state->stepCount() + 1,
+            validationType: $validationType,
+            errors: $errors,
+        ));
     }
 }

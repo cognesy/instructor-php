@@ -27,8 +27,8 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 
 $workDir = dirname(__DIR__, 3);
 

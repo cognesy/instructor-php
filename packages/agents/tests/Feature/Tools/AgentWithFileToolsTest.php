@@ -9,9 +9,9 @@ use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
-use Cognesy\Agents\Tests\Support\NullEventEmitter;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Agents\Tests\Support\TestHelpers;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -24,17 +24,17 @@ describe('Agent with File Tools', function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_file_test_' . uniqid();
         mkdir($this->tempDir, 0755, true);
         $this->makeAgent = function (Tools $tools, FakeInferenceDriver $driver, int $maxIterations): TestAgentLoop {
-            $eventEmitter = new NullEventEmitter();
+            $events = new EventDispatcher();
             $interceptor = new PassThroughInterceptor();
             $llm = LLMProvider::new()->withDriver($driver);
-            $toolDriver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
-            $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter, interceptor: $interceptor);
+            $toolDriver = new ToolCallingDriver(llm: $llm, events: $events);
+            $toolExecutor = new ToolExecutor($tools, events: $events, interceptor: $interceptor);
 
             return new TestAgentLoop(
                 tools: $tools,
                 toolExecutor: $toolExecutor,
                 driver: $toolDriver,
-                eventEmitter: $eventEmitter,
+                events: $events,
                 interceptor: $interceptor,
                 maxIterations: $maxIterations,
             );
@@ -46,7 +46,6 @@ describe('Agent with File Tools', function () {
     });
 
     it('reads file using read_file tool', function () {
-        // Setup: Create a test file
         $testFile = $this->tempDir . '/test.txt';
         file_put_contents($testFile, "Hello World");
 
@@ -76,12 +75,9 @@ describe('Agent with File Tools', function () {
             Messages::fromString('Read the test file')
         );
 
-        // Act
         $finalState = $agent->execute($state);
 
-        // Assert
         expect($finalState->stepCount())->toBe(2);
-        // Verify the read was performed (by checking that tool was called)
         $firstStep = $finalState->steps()->stepAt(0);
         expect($firstStep->hasToolCalls())->toBeTrue();
         expect($firstStep->toolCalls()->first()->name())->toBe('read_file');
@@ -117,16 +113,13 @@ describe('Agent with File Tools', function () {
             Messages::fromString('Create a new file')
         );
 
-        // Act
         $agent->execute($state);
 
-        // Assert: Verify file was actually created
         expect(file_exists($testFile))->toBeTrue();
         expect(file_get_contents($testFile))->toBe($content);
     });
 
     it('edits file using edit_file tool', function () {
-        // Setup: Create a file to edit
         $testFile = $this->tempDir . '/edit_me.txt';
         file_put_contents($testFile, 'Hello World');
 
@@ -160,31 +153,26 @@ describe('Agent with File Tools', function () {
             Messages::fromString('Change World to Universe')
         );
 
-        // Act
         $agent->execute($state);
 
-        // Assert: Verify edit was applied
         expect(file_get_contents($testFile))->toBe('Hello Universe');
     });
 
     it('chains multiple file operations', function () {
         $testFile = $this->tempDir . '/chained.txt';
 
-        // First: write file
         $writeCall = ToolCall::fromArray([
             'id' => 'call_1',
             'name' => 'write_file',
             'arguments' => json_encode(['path' => $testFile, 'content' => 'Original content']),
         ]);
 
-        // Second: read file
         $readCall = ToolCall::fromArray([
             'id' => 'call_2',
             'name' => 'read_file',
             'arguments' => json_encode(['path' => $testFile]),
         ]);
 
-        // Third: edit file
         $editCall = ToolCall::fromArray([
             'id' => 'call_3',
             'name' => 'edit_file',
@@ -214,10 +202,8 @@ describe('Agent with File Tools', function () {
             Messages::fromString('Create, read, and modify a file')
         );
 
-        // Act
         $finalState = $agent->execute($state);
 
-        // Assert - file operations should complete regardless of step count
         expect($finalState->stepCount())->toBeGreaterThanOrEqual(2);
         expect(file_get_contents($testFile))->toBe('Modified content');
     });

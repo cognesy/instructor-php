@@ -33,9 +33,9 @@ use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
 use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
 use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 // Create console logger for execution visibility

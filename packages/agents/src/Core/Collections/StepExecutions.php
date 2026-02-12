@@ -47,7 +47,10 @@ final readonly class StepExecutions
     }
 
     public function last() : ?StepExecution {
-        return $this->items[count($this->items) - 1] ?? null;
+        if ($this->items === []) {
+            return null;
+        }
+        return $this->items[count($this->items) - 1];
     }
 
     public function totalDuration(): float {

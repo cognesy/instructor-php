@@ -3,8 +3,8 @@
 namespace Cognesy\Agents\AgentBuilder\Capabilities\Tasks;
 
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Hooks\HookContext;
-use Cognesy\Agents\Hooks\HookInterface;
+use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Data\HookContext;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
@@ -38,7 +38,7 @@ final readonly class TodoRenderHook implements HookInterface
             return $context;
         }
 
-        $taskList = TaskList::fromArray($tasks, $this->policy);
+        $taskList = TaskList::fromArray($tasks);
         $rendered = implode("\n", [
             self::MARKER,
             $taskList->render(),

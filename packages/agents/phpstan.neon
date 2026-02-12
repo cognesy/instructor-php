@@ -4,5 +4,6 @@ parameters:
     - src
     - tests
   reportUnmatchedIgnoredErrors: false
-  checkGenericClassInNonGenericObjectType: false
   tmpDir: /tmp
+  ignoreErrors:
+    - identifier: missingType.generics

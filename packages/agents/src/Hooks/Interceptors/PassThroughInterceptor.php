@@ -10,6 +10,7 @@ class PassThroughInterceptor implements CanInterceptAgentLifecycle
         return new self();
     }
 
+    #[\Override]
     public function intercept(HookContext $context): HookContext {
         return $context;
     }

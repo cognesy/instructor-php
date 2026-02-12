@@ -5,6 +5,7 @@ namespace Cognesy\Agents\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptEventHandler;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
 use Cognesy\Agents\Core\Contracts\CanCompileMessages;
@@ -12,9 +13,6 @@ use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Agents\Events\AgentEventEmitter;
-use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
 use Cognesy\Agents\Hooks\Collections\HookTriggers;
 use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
 use Cognesy\Agents\Hooks\Contracts\HookInterface;
@@ -65,7 +63,7 @@ final class AgentBuilder
     /** @var list<InferenceFinishReason> */
     private array $finishReasons = [];
 
-    /** @var array<callable(Tools, CanUseTools, CanEmitAgentEvents): BaseTool> */
+    /** @var array<callable(Tools, CanUseTools, CanHandleEvents): BaseTool> */
     private array $toolFactories = [];
 
     /** @var HookStack Unified hook stack for lifecycle and tool hooks */
@@ -89,7 +87,7 @@ final class AgentBuilder
     /**
      * Register a factory that produces a tool after driver/emitter are resolved.
      *
-     * @param callable(Tools, CanUseTools, CanEmitAgentEvents): BaseTool $factory
+     * @param callable(Tools, CanUseTools, CanHandleEvents): BaseTool $factory
      */
     public function addToolFactory(callable $factory): self {
         $this->toolFactories[] = $factory;
@@ -195,18 +193,6 @@ final class AgentBuilder
      * @param HookInterface $hook The hook to add
      * @param HookTriggers $triggers Triggers that execute the hook
      * @param int $priority Higher priority = runs earlier. Default is 0.
-     *
-     * @example
-     * // Add a custom hook
-     * $builder->addHook(new MyCustomHook(), HookTriggers::afterStep(), priority: 100);
-     *
-     * @example
-     * // Add a callable hook for specific events
-     * $builder->addHook(
-     *     new MyCustomHook(),
-     *     HookTriggers::beforeStep(),
-     *     priority: 50,
-     * );
      */
     public function addHook(HookInterface $hook, HookTriggers $triggers, int $priority = 0, ?string $name = null): self {
         $this->hookStack = $this->hookStack->with($hook, $triggers, $priority, $name);
@@ -220,22 +206,21 @@ final class AgentBuilder
     // BUILD /////////////////////////////////////////////////////
 
     public function build(): AgentLoop {
-        $eventEmitter = new AgentEventEmitter($this->events);
-        $driver = $this->buildDriver($eventEmitter);
+        $driver = $this->buildDriver();
 
-        // Resolve tool factories — each receives base tools + resolved driver/emitter
+        // Resolve tool factories — each receives base tools + resolved driver + event handler
         $tools = $this->tools;
         foreach ($this->toolFactories as $factory) {
-            $tool = $factory($tools, $driver, $eventEmitter);
+            $tool = $factory($tools, $driver, $this->events);
             $tools = $tools->merge(new Tools($tool));
         }
 
         // Snapshot: base hooks + user hooks — never mutates $this->hookStack
-        $interceptor = $this->buildHookStack($eventEmitter);
+        $interceptor = $this->buildHookStack();
 
         $toolExecutor = new ToolExecutor(
             tools: $tools,
-            eventEmitter: $eventEmitter,
+            events: $this->events,
             interceptor: $interceptor,
             throwOnToolFailure: false,
         );
@@ -244,7 +229,7 @@ final class AgentBuilder
             tools: $tools,
             toolExecutor: $toolExecutor,
             driver: $driver,
-            eventEmitter: $eventEmitter,
+            events: $this->events,
             interceptor: $interceptor,
         );
     }
@@ -252,11 +237,10 @@ final class AgentBuilder
     // INTERNAL //////////////////////////////////////////////////
 
     /** Combine base hooks with user-registered hooks into a fresh stack. */
-    private function buildHookStack(CanEmitAgentEvents $eventEmitter): HookStack {
+    private function buildHookStack(): HookStack {
         $stack = new HookStack(
             hooks: new RegisteredHooks(),
-            onHookExecuted: fn(string $triggerType, ?string $hookName, \DateTimeImmutable $startedAt)
-                => $eventEmitter->hookExecuted($triggerType, $hookName, $startedAt),
+            events: $this->events,
         );
         // Re-register all hooks from the builder's stack into the new wired stack
         foreach ($this->hookStack->hooks() as $hook) {
@@ -324,11 +308,11 @@ final class AgentBuilder
         );
     }
 
-    private function buildDriver(CanEmitAgentEvents $eventEmitter): CanUseTools {
+    private function buildDriver(): CanUseTools {
         $driver = match(true) {
-            $this->driver instanceof CanAcceptAgentEventEmitter => $this->driver->withEventEmitter($eventEmitter),
+            $this->driver instanceof CanAcceptEventHandler => $this->driver->withEventHandler($this->events),
             $this->driver !== null => $this->driver,
-            default => $this->buildDefaultDriver($eventEmitter),
+            default => $this->buildDefaultDriver(),
         };
 
         $driver = match (true) {
@@ -340,7 +324,7 @@ final class AgentBuilder
         return $driver;
     }
 
-    private function buildDefaultDriver(CanEmitAgentEvents $eventEmitter): ToolCallingDriver {
+    private function buildDefaultDriver(): ToolCallingDriver {
         $llmProvider = match($this->llmPreset) {
             null => LLMProvider::new(),
             default => LLMProvider::using($this->llmPreset),
@@ -355,7 +339,7 @@ final class AgentBuilder
             llm: $llmProvider,
             messageCompiler: $this->contextCompiler ?? new ConversationWithCurrentToolTrace(),
             retryPolicy: $retryPolicy,
-            eventEmitter: $eventEmitter,
+            events: $this->events,
         );
     }
 

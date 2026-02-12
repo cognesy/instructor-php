@@ -26,10 +26,10 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;

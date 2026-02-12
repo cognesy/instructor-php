@@ -7,7 +7,7 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
 
 readonly final class TestAgentLoop extends AgentLoop
@@ -18,7 +18,7 @@ readonly final class TestAgentLoop extends AgentLoop
         Tools $tools,
         CanExecuteToolCalls $toolExecutor,
         CanUseTools $driver,
-        CanEmitAgentEvents $eventEmitter,
+        CanHandleEvents $events,
         ?CanInterceptAgentLifecycle $interceptor = null,
         int $maxIterations = 1,
     ) {
@@ -26,7 +26,7 @@ readonly final class TestAgentLoop extends AgentLoop
             tools: $tools,
             toolExecutor: $toolExecutor,
             driver: $driver,
-            eventEmitter: $eventEmitter,
+            events: $events,
             interceptor: $interceptor,
         );
         $this->maxIterations = $maxIterations;

@@ -4,12 +4,10 @@ namespace Cognesy\Agents\AgentTemplate\Definitions;
 
 use Cognesy\Agents\Core\Collections\NameList;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Metadata;
 
 final readonly class AgentDefinition
 {
-    /** @param array<string, mixed> $metadata */
     public function __construct(
         public string $name,
         public string $description,
@@ -88,9 +86,9 @@ final readonly class AgentDefinition
 
     // PRIVATE HELPERS //////////////////////////////////////////////
 
-    private static function deserializeLlmConfig(mixed $param) : LlmConfig|string|null {
+    private static function deserializeLlmConfig(mixed $param) : LLMConfig|string|null {
         return match(true) {
-            is_string($param) => LLMProvider::using($param),
+            is_string($param) => $param,
             is_array($param) => LLMConfig::fromArray($param),
             default => null,
         };

@@ -128,7 +128,7 @@ final readonly class ToolExecution
                 'arguments' => $this->toolCall->args(),
             ],
             'result' => $this->result->isSuccess() ? json_encode($this->value()) : null,
-            'error' => $failure?->errorMessage(),
+            'error' => $failure?->exception()->getMessage(),
             'startedAt' => $this->startedAt->format(DateTimeInterface::ATOM),
             'completedAt' => $this->completedAt->format(DateTimeInterface::ATOM),
         ];

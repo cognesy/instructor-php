@@ -23,9 +23,9 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 // AgentConsoleLogger shows execution lifecycle events on the console

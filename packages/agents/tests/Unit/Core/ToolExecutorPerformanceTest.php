@@ -6,7 +6,7 @@ use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Agents\Core\Tools\ToolExecutor;
-use Cognesy\Agents\Events\AgentEventEmitter;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -29,7 +29,7 @@ it('executes many tool calls efficiently without O(n²) degradation', function (
     $tools = new Tools(new NoOpTool());
     $executor = new ToolExecutor(
         tools: $tools,
-        eventEmitter: new AgentEventEmitter(),
+        events: new EventDispatcher(),
         interceptor: new PassThroughInterceptor(),
         throwOnToolFailure: false,
     );

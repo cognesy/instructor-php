@@ -32,10 +32,10 @@ use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;
 use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
 use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;
 use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\BaseTool;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 use Symfony\Component\Validator\Constraints as Assert;
 

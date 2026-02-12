@@ -27,11 +27,11 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Events\AgentConsoleLogger;
 use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
 use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hooks\Defaults\CallableHook;
 
 // AgentConsoleLogger shows execution lifecycle alongside hook output
 $logger = new AgentConsoleLogger(

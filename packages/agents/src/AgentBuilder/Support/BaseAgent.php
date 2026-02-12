@@ -22,21 +22,25 @@ abstract class BaseAgent implements AgentInterface
     private ?AgentLoop $agentLoop = null;
     private ?CanHandleEvents $events = null;
 
+    #[\Override]
     abstract public function descriptor(): AgentDescriptor;
 
     abstract protected function configureLoop(AgentBuilder $builder): AgentBuilder;
 
+    #[\Override]
     public function execute(AgentState $state): AgentState {
         return $this->ensureLoop()->execute($state);
     }
 
+    #[\Override]
     public function iterate(AgentState $state): iterable {
         return $this->ensureLoop()->iterate($state);
     }
 
     public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
-        $agent = new static();
+        $agent = clone $this;
         $agent->events = EventBusResolver::using($events);
+        $agent->agentLoop = null; // force rebuild with new events
         return $agent;
     }
 

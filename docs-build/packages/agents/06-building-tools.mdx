@@ -31,7 +31,7 @@ class GetWeather extends BaseTool
         return "Weather in {$city}: 22 {$unit}";
     }
 }
-// @doctest id="a1b2"
+// @doctest id="d268"
 ```
 
 ## Using FunctionTool
@@ -44,7 +44,7 @@ use Cognesy\Agents\Core\Tools\FunctionTool;
 $tool = FunctionTool::fromCallable(function (string $query): string {
     return "Results for: {$query}";
 });
-// @doctest id="5ee0"
+// @doctest id="e2dc"
 ```
 
 ## Accessing Agent State
@@ -60,7 +60,7 @@ class StatefulTool extends BaseTool
         return "Step {$stepCount}: processing {$input}";
     }
 }
-// @doctest id="f911"
+// @doctest id="6378"
 ```
 
 ## The ToolInterface
@@ -77,7 +77,7 @@ interface ToolInterface
     public function metadata(): array;
     public function instructions(): array;
 }
-// @doctest id="3e67"
+// @doctest id="d9d0"
 ```
 
 - `use()` - execute the tool, returns `Result` (success or failure)
@@ -94,5 +94,5 @@ $tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
 
 // Or with custom logic
 $tool = new MockTool('my_tool', 'Does something', fn($x) => strtoupper($x));
-// @doctest id="be68"
+// @doctest id="4b5a"
 ```

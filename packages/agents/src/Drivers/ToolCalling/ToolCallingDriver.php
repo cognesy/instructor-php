@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Drivers\ToolCalling;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Core\Collections\ToolExecutions;
 use Cognesy\Agents\Core\Collections\Tools;
+use Cognesy\Agents\Core\Contracts\CanAcceptEventHandler;
 use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
 use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
 use Cognesy\Agents\Core\Contracts\CanCompileMessages;
@@ -12,10 +13,10 @@ use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Core\Contracts\CanUseTools;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Events\AgentEventEmitter;
-use Cognesy\Agents\Events\CanAcceptAgentEventEmitter;
-use Cognesy\Agents\Events\CanEmitAgentEvents;
-use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Events\InferenceRequestStarted;
+use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -37,7 +38,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanAcceptLLMProvider, CanAcceptMessageCompiler
+class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAcceptLLMProvider, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -50,7 +51,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     private ?InferenceRetryPolicy $retryPolicy;
     private bool $parallelToolCalls = false;
     private ToolExecutionFormatter $formatter;
-    private CanEmitAgentEvents $eventEmitter;
+    private CanHandleEvents $events;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -62,8 +63,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         OutputMode   $mode = OutputMode::Tools,
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
-        ?CanEmitAgentEvents $eventEmitter = null,
-        ?CanInterceptAgentLifecycle $interceptor = null,
+        ?CanHandleEvents $events = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -75,7 +75,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
-        $this->eventEmitter = $eventEmitter ?? new AgentEventEmitter();
+        $this->events = EventBusResolver::using($events);
     }
 
     #[\Override]
@@ -90,7 +90,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             mode: $this->mode,
             messageCompiler: $this->messageCompiler,
             retryPolicy: $this->retryPolicy,
-            eventEmitter: $this->eventEmitter,
+            events: $this->events,
         );
     }
 
@@ -99,7 +99,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return $this->llm;
     }
 
-    public function withEventEmitter(CanEmitAgentEvents $eventEmitter): static {
+    #[\Override]
+    public function withEventHandler(CanHandleEvents $events): static {
         return new self(
             llm: $this->llm,
             httpClient: $this->httpClient,
@@ -110,7 +111,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             mode: $this->mode,
             messageCompiler: $this->messageCompiler,
             retryPolicy: $this->retryPolicy,
-            eventEmitter: $eventEmitter,
+            events: $events,
         );
     }
 
@@ -131,29 +132,16 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
             mode: $this->mode,
             messageCompiler: $compiler,
             retryPolicy: $this->retryPolicy,
-            eventEmitter: $this->eventEmitter,
+            events: $this->events,
         );
     }
 
-    /**
-     * Executes tool usage within a given context and returns the result as a AgentStep.
-     *
-     * @param AgentState $state The context containing messages, tools, and other related information required for tool usage.
-     * @return AgentState Returns an instance of AgentStep containing the response, executed tools, follow-up messages, and additional usage data.
-     */
     #[Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentState {
-        // Compile context once and reuse for both LLM request and step recording
         $context = $this->messageCompiler->compile($state);
-
-        // Get the tool call response from the LLM
         $response = $this->getToolCallResponse($state, $tools, $context);
         $toolCalls = $response->toolCalls();
-
-        // Execute each tool call
         $executions = $executor->executeTools($toolCalls, $state);
-
-        // Build AgentStep from response and executions
         $messages = $this->formatter->makeExecutionMessages($executions);
         $step = $this->buildStepFromResponse(
             response: $response,
@@ -169,16 +157,13 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
     private function getToolCallResponse(AgentState $state, Tools $tools, Messages $messages) : InferenceResponse {
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
-        // Emit inference request started event
         $requestStartedAt = new DateTimeImmutable();
-        $this->eventEmitter->inferenceRequestStarted($state, $messages->count(), $this->model ?: null);
+        $this->emitInferenceRequestStarted($state, $messages->count(), $this->model ?: null);
         $response = $this->buildPendingInference($messages, $tools, $cache)->response();
-        // Emit inference response received event
-        $this->eventEmitter->inferenceResponseReceived($state, $response, $requestStartedAt);
+        $this->emitInferenceResponseReceived($state, $response, $requestStartedAt);
         return $response;
     }
 
-    /** Builds a PendingInference configured for tool-calling. */
     private function buildPendingInference(
         Messages $messages,
         Tools $tools,
@@ -193,7 +178,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         $hasCachedTools = ($cache?->tools() ?? []) !== [];
         $toolSchemas = ($hasTools && !$hasCachedTools) ? $tools->toToolSchema() : [];
 
-        // Only include parallel_tool_calls when tools are specified (API requirement)
         $options = $this->options;
         if ($hasTools) {
             $options = array_merge($options, ['parallel_tool_calls' => $this->parallelToolCalls]);
@@ -224,7 +208,6 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return $inference->create();
     }
 
-    /** Builds the final AgentStep from inference response and executions. */
     private function buildStepFromResponse(
         InferenceResponse $response,
         ToolExecutions $executions,
@@ -275,5 +258,26 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
         return $json->toArray();
     }
 
+    // EVENT EMISSION ////////////////////////////////////////////
 
+    private function emitInferenceRequestStarted(AgentState $state, int $messageCount, ?string $model): void {
+        $this->events->dispatch(new InferenceRequestStarted(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stepNumber: $state->stepCount() + 1,
+            messageCount: $messageCount,
+            model: $model,
+        ));
+    }
+
+    private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void {
+        $this->events->dispatch(new InferenceResponseReceived(
+            agentId: $state->agentId(),
+            parentAgentId: $state->parentAgentId(),
+            stepNumber: $state->stepCount() + 1,
+            usage: $response?->usage(),
+            finishReason: $response?->finishReason()?->value,
+            requestStartedAt: $requestStartedAt,
+        ));
+    }
 }

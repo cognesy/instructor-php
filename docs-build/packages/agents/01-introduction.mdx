@@ -25,7 +25,7 @@ Hooks/          # Lifecycle interceptors and guard hooks
 Drivers/        # ToolCallingDriver, ReActDriver, FakeAgentDriver
 Events/         # Agent event system
 Exceptions/     # Domain exceptions
-// @doctest id="1f0b"
+// @doctest id="6f24"
 ```
 
 ## Minimal Example
@@ -39,5 +39,5 @@ $state = AgentState::empty()->withUserMessage('Hello!');
 $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
-// @doctest id="79e0"
+// @doctest id="99ee"
 ```

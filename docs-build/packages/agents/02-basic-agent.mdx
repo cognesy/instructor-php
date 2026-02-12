@@ -19,7 +19,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="bacf"
+// @doctest id="57a5"
 ```
 
 ## What Happens
@@ -43,7 +43,7 @@ $loop = AgentLoop::default()->withTool($myTool);
 
 // Swap driver
 $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
-// @doctest id="fdd0"
+// @doctest id="b54c"
 ```
 
 ## System Prompt
@@ -52,5 +52,5 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
-// @doctest id="3efc"
+// @doctest id="23ed"
 ```

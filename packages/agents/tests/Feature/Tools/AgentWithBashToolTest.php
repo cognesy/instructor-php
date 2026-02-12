@@ -8,8 +8,8 @@ use Cognesy\Agents\Core\Tools\ToolExecutor;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
-use Cognesy\Agents\Tests\Support\NullEventEmitter;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -22,17 +22,17 @@ describe('Agent with BashTool', function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_bash_test_' . uniqid();
         mkdir($this->tempDir, 0755, true);
         $this->makeAgent = function (Tools $tools, FakeInferenceDriver $driver, int $maxIterations): TestAgentLoop {
-            $eventEmitter = new NullEventEmitter();
+            $events = new EventDispatcher();
             $interceptor = new PassThroughInterceptor();
             $llm = LLMProvider::new()->withDriver($driver);
-            $toolDriver = new ToolCallingDriver(llm: $llm, eventEmitter: $eventEmitter);
-            $toolExecutor = new ToolExecutor($tools, eventEmitter: $eventEmitter, interceptor: $interceptor);
+            $toolDriver = new ToolCallingDriver(llm: $llm, events: $events);
+            $toolExecutor = new ToolExecutor($tools, events: $events, interceptor: $interceptor);
 
             return new TestAgentLoop(
                 tools: $tools,
                 toolExecutor: $toolExecutor,
                 driver: $toolDriver,
-                eventEmitter: $eventEmitter,
+                events: $events,
                 interceptor: $interceptor,
                 maxIterations: $maxIterations,
             );
@@ -47,7 +47,6 @@ describe('Agent with BashTool', function () {
     });
 
     it('executes bash command and returns output', function () {
-        // Arrange: Create mock responses
         $toolCall = ToolCall::fromArray([
             'id' => 'call_1',
             'name' => 'bash',
@@ -55,12 +54,10 @@ describe('Agent with BashTool', function () {
         ]);
 
         $driver = new FakeInferenceDriver([
-            // First response: LLM calls bash tool
             new InferenceResponse(
                 content: '',
                 toolCalls: new ToolCalls($toolCall),
             ),
-            // Second response: LLM provides final answer
             new InferenceResponse(
                 content: 'The command output was: Hello from bash',
             ),
@@ -75,10 +72,8 @@ describe('Agent with BashTool', function () {
             Messages::fromString('Run echo "Hello from bash"')
         );
 
-        // Act
         $finalState = $agent->execute($state);
 
-        // Assert
         expect($finalState->stepCount())->toBeGreaterThanOrEqual(1);
         expect($driver->responseCalls)->toBe(2);
     });
@@ -109,12 +104,10 @@ describe('Agent with BashTool', function () {
             Messages::fromString('What is the current directory?')
         );
 
-        // Act: Manual stepping using iterate()
         $stepCount = 0;
         foreach ($agent->iterate($state) as $currentState) {
             $stepCount++;
 
-            // First step should have tool call
             if ($stepCount === 1) {
                 $lastStep = $currentState->steps()->lastStep();
                 expect($lastStep?->hasToolCalls())->toBeTrue();
@@ -122,7 +115,6 @@ describe('Agent with BashTool', function () {
             }
         }
 
-        // Assert
         expect($stepCount)->toBe(2);
     });
 
@@ -152,13 +144,11 @@ describe('Agent with BashTool', function () {
             Messages::fromString('List files')
         );
 
-        // Act: Use iterate()
         $steps = [];
         foreach ($agent->iterate($state) as $currentState) {
             $steps[] = $currentState->steps()->lastStep();
         }
 
-        // Assert
         expect($steps)->toHaveCount(2);
         expect($steps[0]->stepType())->toBe(AgentStepType::ToolExecution);
         expect($steps[1]->stepType())->toBe(AgentStepType::FinalResponse);
