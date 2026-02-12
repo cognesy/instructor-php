@@ -1,8 +1,8 @@
 ---
 title: 'Select Effective Examples'
 docname: 'select_effective_samples'
+id: '1fe6'
 ---
-
 ## Overview
 
 Select effective in-context examples by choosing those semantically closest to the query using KNN

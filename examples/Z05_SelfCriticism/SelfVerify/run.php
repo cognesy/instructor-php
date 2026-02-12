@@ -1,8 +1,8 @@
 ---
 title: 'Self-Verify Responses'
 docname: 'self_verify'
+id: '4ac5'
 ---
-
 ## Overview
 
 Self-Verification generates multiple candidates via CoT, rewrites them as declaratives, and verifies them via TFV to select the best candidate.

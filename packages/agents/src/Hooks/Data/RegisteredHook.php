@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Hooks\Data;
 
 use Cognesy\Agents\Hooks\Collections\HookTriggers;
 use Cognesy\Agents\Hooks\Contracts\HookInterface;
+use Cognesy\Agents\Hooks\Enums\HookTrigger;
 
 class RegisteredHook
 {
@@ -18,10 +19,11 @@ class RegisteredHook
         return $this->hook;
     }
 
-    public function tryOn(HookContext $context): HookContext {
-        if (!$this->triggers->triggersOn($context->triggerType())) {
-            return $context;
-        }
+    public function triggersOn(HookTrigger $trigger): bool {
+        return $this->triggers->triggersOn($trigger);
+    }
+
+    public function handle(HookContext $context): HookContext {
         return $this->hook->handle($context);
     }
 

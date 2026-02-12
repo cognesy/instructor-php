@@ -1,8 +1,8 @@
 ---
 title: 'Pure Array Processing (No Classes)'
 docname: 'pure_array_processing'
+id: '0857'
 ---
-
 ## Overview
 
 This example demonstrates extraction using ONLY arrays - no PHP classes,

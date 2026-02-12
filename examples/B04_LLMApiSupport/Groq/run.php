@@ -1,8 +1,8 @@
 ---
 title: 'Groq'
-docname: 'groq'
+docname: 'llm_groq'
+id: '7c03'
 ---
-
 ## Overview
 
 Groq is LLM providers offering a very fast inference thanks to their

@@ -1,8 +1,8 @@
 ---
 title: 'Working directly with LLMs and JSON - JSON mode'
 docname: 'llm_json'
+id: 'efd0'
 ---
-
 ## Overview
 
 While working with `Inference` class, you can also generate JSON output

@@ -2,8 +2,8 @@
 title: 'Inference Logging with Laravel'
 docname: 'llm_logging_laravel_inference'
 path: ''
+id: 'a1c9'
 ---
-
 ## Overview
 
 Simple Inference operation logging using Monolog.

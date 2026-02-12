@@ -1,8 +1,8 @@
 ---
 title: 'Combine Different Specialized LLMs'
 docname: 'combine_specialized_llms'
+id: '575d'
 ---
-
 ## Overview
 
 Mixture of Reasoning Experts (MoRE) combines specialized experts (e.g., factual with evidence, and multi-hop reasoning) and selects the best answer using a scorer.

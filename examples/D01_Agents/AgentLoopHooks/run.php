@@ -1,8 +1,9 @@
 ---
 title: 'Agent Lifecycle Hooks'
 docname: 'agent_loop_hooks'
+order: 5
+id: '407a'
 ---
-
 ## Overview
 
 Hooks intercept agent lifecycle events to observe or modify state. Each hook receives
@@ -26,10 +27,20 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Hooks\Collections\HookTriggers;
 use Cognesy\Agents\Hooks\Defaults\CallableHook;
 use Cognesy\Agents\Hooks\Data\HookContext;
+
+// AgentConsoleLogger shows execution lifecycle alongside hook output
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+    showHooks: true,
+);
 
 // Track timing data
 $timings = [];
@@ -43,12 +54,12 @@ $agent = AgentBuilder::base()
         hook: new CallableHook(function (HookContext $ctx) use (&$timings): HookContext {
             $step = $ctx->state()->stepCount() + 1;
             $timings[$step] = microtime(true);
-            echo "[BeforeStep] Step {$step} starting\n";
             return $ctx->withState(
                 $ctx->state()->withMetadata('step_started_at', microtime(true))
             );
         }),
         triggers: HookTriggers::beforeStep(),
+        name: 'timing:start',
     )
 
     // Hook 2: After each step — calculate duration
@@ -58,20 +69,22 @@ $agent = AgentBuilder::base()
             $started = $timings[$step] ?? null;
             $duration = $started ? round((microtime(true) - $started) * 1000) : 0;
             $tokens = $ctx->state()->usage()->total();
-            echo "[AfterStep]  Step {$step} completed in {$duration}ms (total tokens: {$tokens})\n";
+            echo "  [timing] Step {$step}: {$duration}ms (total tokens: {$tokens})\n";
             return $ctx;
         }),
         triggers: HookTriggers::afterStep(),
+        name: 'timing:end',
     )
 
     // Hook 3: Before tool use — log which tool is about to run
     ->addHook(
         hook: new CallableHook(function (HookContext $ctx): HookContext {
             $toolName = $ctx->toolCall()?->name() ?? 'unknown';
-            echo "[BeforeTool] About to execute: {$toolName}\n";
+            echo "  [audit] About to execute: {$toolName}\n";
             return $ctx;
         }),
         triggers: HookTriggers::beforeToolUse(),
+        name: 'audit:tool',
     )
 
     // Hook 4: After tool use — log tool result status
@@ -80,24 +93,27 @@ $agent = AgentBuilder::base()
             $exec = $ctx->toolExecution();
             if ($exec !== null) {
                 $status = $exec->wasBlocked() ? 'BLOCKED' : 'OK';
-                echo "[AfterTool]  {$exec->name()} -> {$status}\n";
+                echo "  [audit] Tool {$exec->name()} -> {$status}\n";
             }
             return $ctx;
         }),
         triggers: HookTriggers::afterToolUse(),
+        name: 'audit:result',
     )
 
     // Hook 5: On stop — final summary
     ->addHook(
         hook: new CallableHook(function (HookContext $ctx): HookContext {
             $state = $ctx->state();
-            echo "[OnStop]     Agent stopping after {$state->stepCount()} steps\n";
+            echo "  [summary] Agent stopping after {$state->stepCount()} steps\n";
             return $ctx;
         }),
         triggers: HookTriggers::onStop(),
+        name: 'summary',
     )
 
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
 // Run the agent
 $state = AgentState::empty()->withUserMessage(
@@ -108,7 +124,7 @@ echo "=== Agent Execution with Hooks ===\n\n";
 $finalState = $agent->execute($state);
 
 echo "\n=== Result ===\n";
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+$response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 ?>
 ```

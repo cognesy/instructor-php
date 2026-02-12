@@ -134,6 +134,7 @@ final class CodexBridgeBuilder extends AbstractBridgeBuilder
             sandboxDriver: $this->sandboxDriver,
             timeout: $this->timeout,
             maxRetries: $this->maxRetries,
+            events: $this->events,
         );
     }
 }

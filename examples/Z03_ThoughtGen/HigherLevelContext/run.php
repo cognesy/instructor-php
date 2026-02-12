@@ -1,8 +1,8 @@
 ---
 title: 'Consider Higher-Level Context'
 docname: 'higher_level_context'
+id: '1496'
 ---
-
 ## Overview
 
 Encourage the model to think through high-level context required to answer a query. Step-back prompting proceeds in two steps:

@@ -584,36 +584,14 @@
         {
             "group": "Agents and Agent Controllers \\ Agents",
             "pages": [
-                "cookbook/agents/agents/agent_basic",
-                "cookbook/agents/agents/agent_file_system",
-                "cookbook/agents/agents/agent_hooks",
-                "cookbook/agents/agents/agent_loop_bash_tool",
-                "cookbook/agents/agents/agent_loop_context_compiler",
-                "cookbook/agents/agents/agent_loop_custom_tool",
-                "cookbook/agents/agents/agent_loop_events",
                 "cookbook/agents/agents/agent_loop_execute",
-                "cookbook/agents/agents/agent_loop_hooks",
                 "cookbook/agents/agents/agent_loop_iterate",
+                "cookbook/agents/agents/agent_loop_bash_tool",
+                "cookbook/agents/agents/agent_loop_custom_tool",
+                "cookbook/agents/agents/agent_loop_hooks",
+                "cookbook/agents/agents/agent_loop_context_compiler",
                 "cookbook/agents/agents/agent_loop_stop_conditions",
-                "cookbook/agents/agents/agent_search",
-                "cookbook/agents/agents/agent_self_critique",
-                "cookbook/agents/agents/agent_structured_output",
-                "cookbook/agents/agents/agent_subagents"
-            ]
-        },
-        {
-            "group": "Agents and Agent Controllers \\ Agent Controllers",
-            "pages": [
-                "cookbook/agents/agent_controllers/agent_ctrl_basic",
-                "cookbook/agents/agent_controllers/agent_ctrl_events",
-                "cookbook/agents/agent_controllers/agent_ctrl_streaming",
-                "cookbook/agents/agent_controllers/agent_ctrl_switching",
-                "cookbook/agents/agent_controllers/claude_code_basic",
-                "cookbook/agents/agent_controllers/claude_code_search",
-                "cookbook/agents/agent_controllers/codex_basic",
-                "cookbook/agents/agent_controllers/codex_streaming",
-                "cookbook/agents/agent_controllers/opencode_basic",
-                "cookbook/agents/agent_controllers/opencode_streaming"
+                "cookbook/agents/agents/agent_loop_events"
             ]
         },
         {
@@ -709,6 +687,33 @@
                 "cookbook/prompting/misc/summary_with_keywords",
                 "cookbook/prompting/misc/component_reuse",
                 "cookbook/prompting/misc/component_reuse_cot"
+            ]
+        },
+        {
+            "group": "Cookbook \\ Agents \\ Agent Builder",
+            "pages": [
+                "cookbook/agents/agent_builder/agent_basic",
+                "cookbook/agents/agent_builder/agent_file_system",
+                "cookbook/agents/agent_builder/agent_structured_output",
+                "cookbook/agents/agent_builder/agent_hooks",
+                "cookbook/agents/agent_builder/agent_self_critique",
+                "cookbook/agents/agent_builder/agent_search",
+                "cookbook/agents/agent_builder/agent_subagents"
+            ]
+        },
+        {
+            "group": "Cookbook \\ Agents \\ Agent Controllers",
+            "pages": [
+                "cookbook/agents/agent_controllers/agent_ctrl_basic",
+                "cookbook/agents/agent_controllers/agent_ctrl_events",
+                "cookbook/agents/agent_controllers/agent_ctrl_streaming",
+                "cookbook/agents/agent_controllers/agent_ctrl_switching",
+                "cookbook/agents/agent_controllers/claude_code_basic",
+                "cookbook/agents/agent_controllers/claude_code_search",
+                "cookbook/agents/agent_controllers/codex_basic",
+                "cookbook/agents/agent_controllers/codex_streaming",
+                "cookbook/agents/agent_controllers/opencode_basic",
+                "cookbook/agents/agent_controllers/opencode_streaming"
             ]
         }
     ],

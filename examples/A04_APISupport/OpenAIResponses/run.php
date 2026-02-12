@@ -1,8 +1,8 @@
 ---
 title: 'OpenAI Responses API'
 docname: 'openai-responses'
+id: 'aada'
 ---
-
 ## Overview
 
 OpenAI's Responses API is their new recommended API for inference, offering improved

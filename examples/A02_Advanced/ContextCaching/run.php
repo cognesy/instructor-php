@@ -1,8 +1,8 @@
 ---
 title: 'Context caching (structured output)'
 docname: 'context_cache_structured'
+id: 'd7cc'
 ---
-
 ## Overview
 
 Instructor offers a simplified way to work with LLM providers' APIs supporting caching,

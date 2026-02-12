@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 use Cognesy\Agents\Broadcasting\AgentEventBroadcaster;
 use Cognesy\Agents\Broadcasting\BroadcastConfig;
 use Cognesy\Agents\Broadcasting\CanBroadcastAgentEvents;
-use Cognesy\Agents\Core\Stop\ExecutionContinuation;
+use Cognesy\Agents\Core\Data\ExecutionState;
 use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
@@ -110,12 +110,12 @@ it('emits continuation events when enabled', function () {
         agentId: 'agent-1',
         parentAgentId: null,
         stepNumber: 1,
-        continuation: ExecutionContinuation::fresh()->withNewStopSignal($stopSignal),
+        executionState: ExecutionState::fresh()->withStopSignal($stopSignal),
     ));
 
     $payload = $broadcaster->calls[0]['envelope']['payload'];
     expect($broadcaster->calls[0]['envelope']['type'])->toBe('agent.continuation');
-    expect($payload['should_continue'])->toBeFalse();
+    expect($payload['should_stop'])->toBeTrue();
 });
 
 it('returns wiretap callable that handles all events', function () {
@@ -207,7 +207,7 @@ it('auto-transitions status on lifecycle events', function () {
         agentId: 'agent-1',
         parentAgentId: null,
         stepNumber: 1,
-        continuation: ExecutionContinuation::fresh()->withNewStopSignal($stopSignal),
+        executionState: ExecutionState::fresh()->withStopSignal($stopSignal),
     ));
 
     // Find the status event
@@ -244,7 +244,7 @@ it('maps StopReason to correct status', function () {
         agentId: 'agent-1',
         parentAgentId: null,
         stepNumber: 1,
-        continuation: ExecutionContinuation::fresh()->withNewStopSignal($stopSignal),
+        executionState: ExecutionState::fresh()->withStopSignal($stopSignal),
     ));
 
     $statusEvents = array_filter($broadcaster->calls, fn($call) =>

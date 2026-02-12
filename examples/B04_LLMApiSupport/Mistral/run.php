@@ -1,8 +1,8 @@
 ---
 title: 'Mistral AI'
-docname: 'mistralai'
+docname: 'llm_mistralai'
+id: '23fa'
 ---
-
 ## Overview
 
 Mistral.ai is a company that builds OS language models, but also offers a platform

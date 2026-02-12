@@ -2,8 +2,8 @@
 title: 'PSR-3 Logging with Functional Pipeline'
 docname: 'logging_psr'
 path: ''
+id: '7cbd'
 ---
-
 ## Overview
 
 Simple PSR-3 logging integration using Instructor's functional pipeline.

@@ -1,8 +1,8 @@
 ---
 title: 'DeepSeek'
 docname: 'deepseek'
+id: '2302'
 ---
-
 ## Overview
 
 Support for DeepSeek API which provides strong models at affordable price.

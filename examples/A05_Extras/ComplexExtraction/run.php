@@ -1,8 +1,8 @@
 ---
 title: 'Extraction of complex objects'
 docname: 'complex_extraction'
+id: '5e55'
 ---
-
 ## Overview
 
 This is an example of extraction of a very complex structure from

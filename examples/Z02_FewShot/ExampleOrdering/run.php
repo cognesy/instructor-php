@@ -1,8 +1,8 @@
 ---
 title: 'Example Ordering'
 docname: 'example_ordering'
+id: '7510'
 ---
-
 ## Overview
 
 The order of few-shot examples in the prompt can affect LLM outputs. Consider permutating

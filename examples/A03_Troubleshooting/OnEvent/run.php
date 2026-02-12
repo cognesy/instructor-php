@@ -1,8 +1,8 @@
 ---
 title: 'Receive specific internal event with onEvent()'
 docname: 'on_event'
+id: '379f'
 ---
-
 ## Overview
 
 `(new StructuredOutput)->onEvent(string $class, callable $callback)` method allows

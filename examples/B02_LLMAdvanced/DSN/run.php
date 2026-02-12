@@ -1,8 +1,8 @@
 ---
 title: 'Customize LLM Configuration with DSN string'
 docname: 'custom_llm_via_dsn'
+id: '835d'
 ---
-
 ## Overview
 
 You can provide your own LLM configuration data to `Inference` object with DSN string.

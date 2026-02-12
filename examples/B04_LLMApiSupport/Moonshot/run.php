@@ -1,8 +1,8 @@
 ---
 title: 'MoonshotAI'
-docname: 'moonshotai'
+docname: 'llm_moonshotai'
+id: '83d1'
 ---
-
 ## Overview
 
 Support for MoonshotAI's API.

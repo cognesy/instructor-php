@@ -1,8 +1,8 @@
 ---
 title: 'Independently Verify Responses'
 docname: 'verify_independently'
+id: '7157'
 ---
-
 ## Overview
 
 Chain-of-Verification (CoVe) verifies an answer by generating validation questions, answering them independently, and judging the original answer.

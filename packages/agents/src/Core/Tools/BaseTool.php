@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Core\Tools;
 
 use Cognesy\Agents\Core\Contracts\ToolInterface;
 use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Core\Stop\AgentStopException;
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
@@ -53,6 +54,8 @@ abstract class BaseTool implements ToolInterface, CanAccessAgentState
     public function use(mixed ...$args): Result {
         try {
             $value = $this->__invoke(...$args);
+        } catch (AgentStopException $e) {
+            throw $e;
         } catch (Throwable $e) {
             return Result::failure($e);
         }

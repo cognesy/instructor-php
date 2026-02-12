@@ -1,0 +1,77 @@
+---
+title: 'Agent Self-Critique Pattern'
+docname: 'agent_self_critique'
+order: 5
+---
+
+## Overview
+
+Self-critique enables agents to evaluate their own outputs and request revisions when
+answers are incomplete or incorrect. This pattern uses a critic subagent that reviews
+each final response and decides whether it meets quality standards or needs refinement.
+
+This significantly improves accuracy by:
+- Catching incomplete answers
+- Detecting logical errors
+- Ensuring answers match the original question
+- Forcing deeper investigation when initial responses are superficial
+
+Key concepts:
+- `UseSelfCritique`: Capability that adds self-evaluation after each response
+- `maxIterations`: Maximum number of critique-revision cycles (default: 2)
+- `AgentConsoleLogger`: Provides visibility into continuation decisions showing SelfCritic evaluations
+
+## Example
+
+```php
+<?php
+require 'examples/boot.php';
+
+use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
+use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
+use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Messages\Messages;
+
+// Create console logger - showContinuation reveals self-critique decisions
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,  // Shows SelfCritic criterion in evaluation
+    showToolArgs: true,
+);
+
+// Configure working directory
+$workDir = dirname(__DIR__, 3);
+
+// Build agent with self-critique capability
+$agent = AgentBuilder::base()
+    ->withCapability(new UseFileTools($workDir))
+    ->withCapability(new UseSelfCritique(
+        maxIterations: 2,  // Allow up to 2 critique iterations
+    ))
+    ->build()
+    ->wiretap($logger->wiretap());
+
+// Ask a question where the agent might give a superficial answer
+$question = "What testing framework does this project use? Be specific. Provide fragments of files as evidence.";
+
+$state = AgentState::empty()->withMessages(
+    Messages::fromString($question)
+);
+
+echo "=== Agent Execution Log ===\n";
+echo "Question: {$question}\n\n";
+
+// Execute agent until completion
+$finalState = $agent->execute($state);
+
+echo "\n=== Result ===\n";
+$answer = $finalState->currentStep()?->outputMessages()->toString() ?? 'No answer';
+echo "Answer: {$answer}\n";
+echo "Steps: {$finalState->stepCount()}\n";
+echo "Tokens: {$finalState->usage()->total()}\n";
+echo "Status: {$finalState->status()->value}\n";
+?>
+```

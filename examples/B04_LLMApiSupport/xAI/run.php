@@ -1,8 +1,8 @@
 ---
 title: 'xAI / Grok'
-docname: 'xai'
+docname: 'llm_xai'
+id: '59fd'
 ---
-
 ## Overview
 
 Support for xAI's API, which offers access to X.com's Grok model.

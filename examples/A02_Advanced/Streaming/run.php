@@ -1,8 +1,8 @@
 ---
 title: 'Streaming'
 docname: 'streaming'
+id: '921b'
 ---
-
 ## Overview
 
 Instructor can process LLM's streamed responses to provide partial response model

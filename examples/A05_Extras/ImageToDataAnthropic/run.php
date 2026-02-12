@@ -1,8 +1,8 @@
 ---
 title: 'Image to data (Anthropic)'
 docname: 'image_to_data_anthropic'
+id: '0577'
 ---
-
 ## Overview
 
 This is an example of how to extract structured data from an image using

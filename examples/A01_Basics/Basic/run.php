@@ -2,8 +2,8 @@
 title: 'Basic use'
 docname: 'basic_use'
 path: ''
+id: '5265'
 ---
-
 ## Overview
 
 Instructor allows you to use large language models to extract information

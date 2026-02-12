@@ -1,8 +1,8 @@
 ---
 title: 'Azure OpenAI'
-docname: 'azure_openai'
+docname: 'llm_azure_openai'
+id: '50a3'
 ---
-
 ## Overview
 
 You can connect to Azure OpenAI instance using a dedicated client provided

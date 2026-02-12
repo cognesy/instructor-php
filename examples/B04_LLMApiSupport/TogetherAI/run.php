@@ -1,8 +1,8 @@
 ---
 title: 'Together.ai'
-docname: 'togetherai'
+docname: 'llm_togetherai'
+id: '84d0'
 ---
-
 ## Overview
 
 Together.ai hosts a number of language models and offers inference API with support for

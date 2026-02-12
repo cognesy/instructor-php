@@ -1,8 +1,8 @@
 ---
 title: 'Debugging'
 docname: 'debugging'
+id: '9a35'
 ---
-
 ## Overview
 
 The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.

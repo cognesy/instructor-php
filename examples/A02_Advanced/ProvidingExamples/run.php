@@ -1,8 +1,8 @@
 ---
 title: 'Providing example inputs and outputs'
 docname: 'demonstrations'
+id: 'b438'
 ---
-
 ## Overview
 
 To improve the results of LLM inference you can provide examples of the expected output.

@@ -11,17 +11,23 @@ class ExampleInfo
         public string $title,
         public string $docName,
         public string $content,
+        public ?int $order = null,
+        public string $id = '',
     ) {}
 
     public static function fromFile(string $path, string $name) : ExampleInfo {
         [$content, $data] = self::yamlFrontMatter($path);
         $title = $data['title'] ?? self::getTitle($content);
         $docName = $data['docname'] ?? Str::snake($name);
+        $order = isset($data['order']) ? (int) $data['order'] : null;
+        $id = $data['id'] ?? '';
 
         return new ExampleInfo(
             title: $title,
             docName: $docName,
             content: $content,
+            order: $order,
+            id: $id,
         );
     }
 

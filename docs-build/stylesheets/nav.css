@@ -35,6 +35,11 @@
   font-size: 0.75rem;
 }
 
+/* Add vertical space between package groups (top-level nested sections) */
+.md-nav__item--nested + .md-nav__item--nested {
+  margin-top: 0.8rem;
+}
+
 /* Hover effect for section headers */
 .md-nav__item--nested > .md-nav__link:hover {
   color: var(--md-accent-fg-color);

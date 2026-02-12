@@ -1,8 +1,8 @@
 ---
 title: 'Generating JSON Schema from PHP classes'
 docname: 'schema'
+id: 'cb50'
 ---
-
 ## Overview
 
 Instructor has a built-in support for generating JSON Schema from

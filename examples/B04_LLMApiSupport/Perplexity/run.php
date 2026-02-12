@@ -1,8 +1,8 @@
 ---
 title: 'Perplexity'
-docname: 'perplexity'
+docname: 'llm_perplexity'
+id: 'e1f5'
 ---
-
 ## Overview
 
 Perplexity is a search engine that provides an API for generating text. It is designed to

@@ -62,7 +62,7 @@ interface CanEmitAgentEvents
     ): void;
 
     // Hook events
-    public function hookExecuted(string $hookType, string $tool, string $outcome, ?string $reason, DateTimeImmutable $startedAt): void;
+    public function hookExecuted(string $triggerType, ?string $hookName, DateTimeImmutable $startedAt): void;
 
     // Extraction/Validation events
     public function decisionExtractionFailed(AgentState $state, string $errorMessage, string $errorType, int $attemptNumber = 1, int $maxAttempts = 1): void;

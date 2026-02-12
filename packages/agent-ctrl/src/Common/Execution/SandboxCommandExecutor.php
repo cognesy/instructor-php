@@ -27,6 +27,7 @@ final class SandboxCommandExecutor implements CommandExecutor
     private ExecutionPolicy $policy;
     private int $maxRetries;
     private SandboxDriver $driver;
+    private AgentType $agentType;
 
     public function __construct(
         ExecutionPolicy $policy,
@@ -34,7 +35,9 @@ final class SandboxCommandExecutor implements CommandExecutor
         int $maxRetries = 0,
         int $timeout = 120,
         private ?CanHandleEvents $events = null,
+        AgentType $agentType = AgentType::ClaudeCode,
     ) {
+        $this->agentType = $agentType;
         $setupStart = microtime(true);
 
         // Configure policy with timing
@@ -45,7 +48,7 @@ final class SandboxCommandExecutor implements CommandExecutor
         $this->driver = $driver;
         $policyDuration = (microtime(true) - $policyStart) * 1000;
         $this->dispatch(new SandboxPolicyConfigured(
-            AgentType::ClaudeCode, // Note: This executor is used by all agent types, but events need agent type
+            $this->agentType,
             $driver->value,
             $timeout,
             true, // networkEnabled - could be extracted from policy
@@ -56,13 +59,13 @@ final class SandboxCommandExecutor implements CommandExecutor
         $initStart = microtime(true);
         $this->sandbox = $this->makeSandbox($this->policy, $driver);
         $initDuration = (microtime(true) - $initStart) * 1000;
-        $this->dispatch(new SandboxInitialized(AgentType::ClaudeCode, $driver->value, $initDuration));
+        $this->dispatch(new SandboxInitialized($this->agentType, $driver->value, $initDuration));
 
         $this->maxRetries = max(0, $maxRetries);
 
         // Emit ready event
         $totalSetupDuration = (microtime(true) - $setupStart) * 1000;
-        $this->dispatch(new SandboxReady(AgentType::ClaudeCode, $driver->value, $totalSetupDuration));
+        $this->dispatch(new SandboxReady($this->agentType, $driver->value, $totalSetupDuration));
     }
 
     private function dispatch(object $event): void
@@ -73,8 +76,8 @@ final class SandboxCommandExecutor implements CommandExecutor
     /**
      * Create default executor (Host sandbox, no retries).
      */
-    public static function default(?CanHandleEvents $events = null): self {
-        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0, 120, $events);
+    public static function default(?CanHandleEvents $events = null, AgentType $agentType = AgentType::ClaudeCode): self {
+        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0, 120, $events, $agentType);
     }
 
     /**
@@ -86,7 +89,7 @@ final class SandboxCommandExecutor implements CommandExecutor
         int $timeout = 120,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries, $timeout, $events);
+        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries, $timeout, $events, AgentType::ClaudeCode);
     }
 
     /**
@@ -98,7 +101,7 @@ final class SandboxCommandExecutor implements CommandExecutor
         int $timeout = 120,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries, $timeout, $events);
+        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries, $timeout, $events, AgentType::Codex);
     }
 
     /**
@@ -110,7 +113,7 @@ final class SandboxCommandExecutor implements CommandExecutor
         int $timeout = 120,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries, $timeout, $events);
+        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries, $timeout, $events, AgentType::OpenCode);
     }
 
     /**
@@ -155,7 +158,7 @@ final class SandboxCommandExecutor implements CommandExecutor
 
                 $attemptDuration = (microtime(true) - $attemptStart) * 1000;
                 $this->dispatch(new ExecutionAttempted(
-                    AgentType::ClaudeCode,
+                    $this->agentType,
                     $attempt,
                     false, // willRetry = false (success)
                     $attemptDuration
@@ -163,7 +166,7 @@ final class SandboxCommandExecutor implements CommandExecutor
 
                 $totalDuration = (microtime(true) - $executionStart) * 1000;
                 $this->dispatch(new ProcessExecutionCompleted(
-                    AgentType::ClaudeCode,
+                    $this->agentType,
                     $attempt,
                     $totalDuration,
                     $attempt // successAttempt
@@ -176,7 +179,7 @@ final class SandboxCommandExecutor implements CommandExecutor
                 $willRetry = $attempt <= $this->maxRetries;
 
                 $this->dispatch(new ExecutionAttempted(
-                    AgentType::ClaudeCode,
+                    $this->agentType,
                     $attempt,
                     $willRetry,
                     $attemptDuration,

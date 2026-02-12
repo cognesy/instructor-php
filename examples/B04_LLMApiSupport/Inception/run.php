@@ -1,8 +1,8 @@
 ---
 title: 'Inception'
-docname: 'inception'
+docname: 'llm_inception'
+id: 'f90e'
 ---
-
 ## Overview
 
 Inception API provides OpenAI-compatible endpoints for chat completions.

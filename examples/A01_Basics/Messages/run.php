@@ -2,8 +2,8 @@
 title: 'Messages API'
 docname: 'messages_api'
 path: ''
+id: 'e4e7'
 ---
-
 ## Overview
 
 Instructor allows you to use `Messages` and `Message` classes to work with chat

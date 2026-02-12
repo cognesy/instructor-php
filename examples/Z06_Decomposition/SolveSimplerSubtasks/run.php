@@ -1,8 +1,8 @@
 ---
 title: 'Solve Simpler Subproblems'
 docname: 'solve_simpler_subtasks'
+id: '6be9'
 ---
-
 ## Overview
 
 How can we encourage an LLM to solve complex problems by breaking them down?

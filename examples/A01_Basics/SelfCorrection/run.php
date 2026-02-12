@@ -1,8 +1,8 @@
 ---
 title: 'Automatic correction based on validation results'
 docname: 'self_correction'
+id: '0f49'
 ---
-
 ## Overview
 
 Instructor uses validation errors to inform LLM on the problems identified

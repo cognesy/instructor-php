@@ -1,8 +1,8 @@
 ---
 title: 'Use Ensembles To Test Prompts'
 docname: 'ensemble_test_prompts'
+id: 'c50c'
 ---
-
 ## Overview
 
 ### What's Max Mutual Information?

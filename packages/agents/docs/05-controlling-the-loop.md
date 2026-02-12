@@ -33,7 +33,6 @@ After execution, query the state for results:
 
 ```php
 $state->stepCount();                    // total steps executed
-$state->finalResponse()->toString();    // final text response
 $state->lastStepType();                 // AgentStepType enum
 $state->lastStopReason();               // StopReason enum
 $state->usage();                        // token usage
@@ -50,6 +49,63 @@ $toolExec = $state->lastToolExecution();
 $toolExec?->name();     // 'weather'
 $toolExec?->value();    // '72F, sunny'
 $toolExec?->hasError(); // false
+```
+
+## Reading the Agent's Response
+
+`AgentState` provides two methods for accessing the agent's text output.
+They differ in strictness — choose the one that fits your use case.
+
+### finalResponse()
+
+Returns the agent's output **only** when the agent completed naturally
+(the LLM's last step had no tool calls). Returns empty `Messages` in
+all other cases: forced stops, errors, budget exhaustion, etc.
+
+```php
+$state->hasFinalResponse();             // true only on natural completion
+$state->finalResponse()->toString();    // strict: empty when interrupted
+```
+
+Use `finalResponse()` when you need to distinguish between a genuine
+answer and an incomplete execution. This is the right choice when
+the agent's response is only meaningful if the LLM finished on its own terms.
+
+### currentResponse()
+
+Returns the best available text output: `finalResponse()` if present,
+otherwise the last step's output messages regardless of step type.
+
+```php
+$state->currentResponse()->toString();  // pragmatic: last output text
+```
+
+Use `currentResponse()` when you want to show *something* to the user
+even if the agent was interrupted — for example in a UI that always
+needs to display the most recent LLM output.
+
+### When the agent is stopped externally
+
+When a tool throws `AgentStopException` or a budget limit is hit, the
+last step is typically a `ToolExecution` (not `FinalResponse`), so
+`finalResponse()` returns empty. In these cases:
+
+- **Stop via exception** — the answer is usually in metadata or the
+  stop signal context, not in the LLM's text output. Check
+  `$state->lastStopSignal()` and `$state->metadata()`.
+- **Budget exhaustion** — the agent was interrupted mid-work.
+  `currentResponse()` gives you the last LLM output, but it may
+  be incomplete or reference pending tool calls.
+- **Error** — inspect `$state->lastStepErrors()` for details.
+
+```php
+if ($state->hasFinalResponse()) {
+    echo $state->finalResponse()->toString();
+} else {
+    $reason = $state->lastStopReason();
+    echo "Agent stopped: {$reason->value}\n";
+    echo $state->currentResponse()->toString();
+}
 ```
 
 ## Listening to Events

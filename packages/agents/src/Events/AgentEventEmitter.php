@@ -105,7 +105,7 @@ final class AgentEventEmitter implements CanEmitAgentEvents
             agentId: $state->agentId(),
             parentAgentId: $state->parentAgentId(),
             stepNumber: $state->stepCount(),
-            continuation: $state->executionContinuation(),
+            executionState: $state->execution(),
         ));
     }
 
@@ -262,13 +262,11 @@ final class AgentEventEmitter implements CanEmitAgentEvents
     // HOOK EVENTS ////////////////////////////////////////////
 
     #[\Override]
-    public function hookExecuted(string $hookType, string $tool, string $outcome, ?string $reason, DateTimeImmutable $startedAt): void
+    public function hookExecuted(string $triggerType, ?string $hookName, DateTimeImmutable $startedAt): void
     {
         $this->events->dispatch(new HookExecuted(
-            hookType: $hookType,
-            tool: $tool,
-            outcome: $outcome,
-            reason: $reason,
+            triggerType: $triggerType,
+            hookName: $hookName,
             startedAt: $startedAt,
         ));
     }

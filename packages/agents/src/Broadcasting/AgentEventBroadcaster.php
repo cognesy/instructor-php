@@ -145,10 +145,10 @@ final class AgentEventBroadcaster
     public function onContinuationEvaluated(ContinuationEvaluated $event): void
     {
         $stopSignal = $event->stopSignal();
-        $shouldContinue = $event->shouldContinue();
+        $shouldStop = $event->shouldStop();
 
         // Auto-transition status on stop
-        if ($this->config->autoStatusTracking && !$shouldContinue) {
+        if ($this->config->autoStatusTracking && $shouldStop) {
             $stopReason = $event->stopReason();
             $finalStatus = match ($stopReason) {
                 StopReason::Completed => 'completed',
@@ -169,7 +169,7 @@ final class AgentEventBroadcaster
         $stopReason = $event->stopReason();
         $this->emit('agent.continuation', [
             'step_number' => $event->stepNumber,
-            'should_continue' => $shouldContinue,
+            'should_stop' => $shouldStop,
             'stop_reason' => $stopReason?->value,
             'resolved_by' => $event->resolvedBy(),
         ]);

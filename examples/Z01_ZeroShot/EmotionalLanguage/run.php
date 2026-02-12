@@ -1,8 +1,8 @@
 ---
 title: 'Emotional Stimuli'
 docname: 'emotional_stimuli'
+id: '9f2c'
 ---
-
 ## Overview
 
 Do language models respond to emotional stimuli?

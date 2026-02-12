@@ -231,7 +231,7 @@ final class AgentBuilder
         }
 
         // Snapshot: base hooks + user hooks — never mutates $this->hookStack
-        $interceptor = $this->buildHookStack();
+        $interceptor = $this->buildHookStack($eventEmitter);
 
         $toolExecutor = new ToolExecutor(
             tools: $tools,
@@ -252,8 +252,16 @@ final class AgentBuilder
     // INTERNAL //////////////////////////////////////////////////
 
     /** Combine base hooks with user-registered hooks into a fresh stack. */
-    private function buildHookStack(): HookStack {
-        $stack = $this->hookStack;
+    private function buildHookStack(CanEmitAgentEvents $eventEmitter): HookStack {
+        $stack = new HookStack(
+            hooks: new RegisteredHooks(),
+            onHookExecuted: fn(string $triggerType, ?string $hookName, \DateTimeImmutable $startedAt)
+                => $eventEmitter->hookExecuted($triggerType, $hookName, $startedAt),
+        );
+        // Re-register all hooks from the builder's stack into the new wired stack
+        foreach ($this->hookStack->hooks() as $hook) {
+            $stack = $stack->withHook($hook);
+        }
         $stack = $this->addGuardHooks($stack);
         $stack = $this->addContextHooks($stack);
         $stack = $this->addMessageHooks($stack);
@@ -269,6 +277,7 @@ final class AgentBuilder
                 ),
                 HookTriggers::beforeStep(),
                 200,
+                'guard:steps_limit',
             )
             ->with(
                 new TokenUsageLimitHook(
@@ -276,6 +285,7 @@ final class AgentBuilder
                 ),
                 HookTriggers::beforeStep(),
                 200,
+                'guard:token_limit',
             )
             ->with(
                 new ExecutionTimeLimitHook(
@@ -283,6 +293,7 @@ final class AgentBuilder
                 ),
                 HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep),
                 200,
+                'guard:time_limit',
             );
     }
 
@@ -295,6 +306,7 @@ final class AgentBuilder
                 new ApplyContextConfigHook($this->systemPrompt, $this->responseFormat),
                 HookTriggers::beforeStep(),
                 100,
+                'context:config',
             ),
             default => $stack,
         };
@@ -308,6 +320,7 @@ final class AgentBuilder
             ),
             HookTriggers::afterStep(),
             -200,
+            'finish_reason',
         );
     }
 

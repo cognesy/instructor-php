@@ -1,8 +1,8 @@
 ---
 title: 'Minimaxi'
-docname: 'minimaxi'
+docname: 'llm_minimaxi'
+id: '89a2'
 ---
-
 ## Overview
 
 Support for Minimaxi's API.

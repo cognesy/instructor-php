@@ -1,8 +1,8 @@
 ---
 title: 'Getters and setters'
 docname: 'getters_and_setters'
+id: 'e4bb'
 ---
-
 ## Overview
 
 Instructor can extract data from the LLM response and use it

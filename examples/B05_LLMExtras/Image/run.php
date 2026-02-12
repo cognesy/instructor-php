@@ -1,8 +1,8 @@
 ---
 title: 'Using images in prompts'
 docname: 'image_data'
+id: '1c85'
 ---
-
 ## Overview
 
 `Image` class in Instructor PHP provides an easy way to include images in your prompts.

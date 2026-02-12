@@ -2,8 +2,8 @@
 title: 'Inference Logging with Monolog'
 docname: 'llm_logging_monolog'
 path: ''
+id: '2c5c'
 ---
-
 ## Overview
 
 Simple Inference operation logging using Monolog.

@@ -1,8 +1,8 @@
 ---
 title: 'Tracking token usage via events'
 docname: 'token_usage_events'
+id: '57c7'
 ---
-
 ## Overview
 
 Some use cases require tracking the token usage of the API responses.

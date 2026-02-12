@@ -1,8 +1,8 @@
 ---
 title: 'Handling errors'
 docname: 'handling_errors'
+id: '670b'
 ---
-
 ## Overview
 
 You can create a wrapper class to hold either the result of an operation or an error message.

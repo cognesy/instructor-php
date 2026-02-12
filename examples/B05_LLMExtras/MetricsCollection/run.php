@@ -1,8 +1,8 @@
 ---
 title: 'Streaming metrics (Polyglot)'
 docname: 'metrics_streaming'
+id: '94c4'
 ---
-
 ## Overview
 
 Collect simple streaming metrics from Polyglot inference events: time to first chunk,

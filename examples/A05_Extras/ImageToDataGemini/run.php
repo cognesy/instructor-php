@@ -1,8 +1,8 @@
 ---
 title: 'Image to data (Gemini)'
 docname: 'image_to_data_gemini'
+id: '22c8'
 ---
-
 ## Overview
 
 This is an example of how to extract structured data from an image using

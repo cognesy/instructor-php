@@ -1,6 +1,7 @@
 ---
 title: 'Prioritize Consistent Examples'
 docname: 'consistent_examples'
+id: '616d'
 ---
 Consistency Based Self Adaptive Prompting (COSP)1 aims to improve LLM output quality by generating high quality few shot examples to be included in the final prompt. These are examples without labelled ground truth so they use self-consistency and a metric known as normalized entropy to select the best examples.
 

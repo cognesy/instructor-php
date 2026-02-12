@@ -2,17 +2,17 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Agents\Core\Stop\ExecutionContinuation;
+use Cognesy\Agents\Core\Data\ExecutionState;
 use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
 
 final class ContinuationEvaluated extends AgentEvent
 {
     public function __construct(
-        public readonly string                 $agentId,
-        public readonly ?string                $parentAgentId,
-        public readonly int                    $stepNumber,
-        public readonly ?ExecutionContinuation $continuation = null,
+        public readonly string          $agentId,
+        public readonly ?string         $parentAgentId,
+        public readonly int             $stepNumber,
+        public readonly ?ExecutionState $executionState = null,
     ) {
         parent::__construct([
             'agentId' => $this->agentId,
@@ -25,7 +25,7 @@ final class ContinuationEvaluated extends AgentEvent
 
     #[\Override]
     public function __toString(): string {
-        $action = $this->shouldContinue() ? 'CONTINUE' : 'STOP';
+        $action = $this->shouldStop() ? 'STOP' : 'CONTINUE';
         $reason = $this->explain();
 
         return sprintf(
@@ -38,15 +38,15 @@ final class ContinuationEvaluated extends AgentEvent
     }
 
     public function explain(): string {
-        return $this->continuation?->explain() ?? 'No continuation';
+        return $this->executionState?->continuation()->explain() ?? 'No continuation';
     }
 
-    public function shouldContinue(): bool {
-        return $this->continuation !== null && !$this->continuation->shouldStop();
+    public function shouldStop(): bool {
+        return $this->executionState?->shouldStop() ?? true;
     }
 
     public function stopSignal(): ?StopSignal {
-        return $this->continuation?->stopSignals()->first();
+        return $this->executionState?->continuation()->stopSignals()->first();
     }
 
     public function stopReason(): ?StopReason {

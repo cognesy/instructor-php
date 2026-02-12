@@ -2,8 +2,8 @@
 title: 'Embeddings Logging with Laravel'
 docname: 'llm_logging_laravel_embeddings'
 path: ''
+id: 'ba2a'
 ---
-
 ## Overview
 
 Simple Embeddings operation logging with Laravel-style context.

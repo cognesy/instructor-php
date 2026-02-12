@@ -91,19 +91,24 @@ groups:
     title: Agents and Agent Controllers
     subgroups:
       - id: agents
-        title: Agents
+        title: Agent Loop
         include:
           - source: addons
             path: '*'
           - source: root
             path: D01_Agents
+      - id: agent_builder
+        title: Agent Builder
+        include:
+          - source: root
+            path: D02_AgentBuilder
       - id: agent_controllers
         title: Agent Controllers
         include:
           - source: agent-ctrl
             path: '*'
           - source: root
-            path: D02_AgentCtrl
+            path: D03_AgentCtrl
   - id: prompting
     title: Prompting
     subgroups:

@@ -1,8 +1,8 @@
 ---
 title: 'Meta'
-docname: 'meta'
+docname: 'llm_meta'
+id: '2dca'
 ---
-
 ## Overview
 
 Instructor supports Meta LLM inference API. You can find the details on how to configure

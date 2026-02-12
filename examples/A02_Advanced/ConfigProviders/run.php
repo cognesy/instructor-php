@@ -1,8 +1,8 @@
 ---
 title: 'Use custom configuration providers'
 docname: 'config_providers'
+id: '01f2'
 ---
-
 ## Overview
 
 You can inject your own configuration providers to StructuredOutput class.

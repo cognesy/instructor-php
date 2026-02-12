@@ -1,8 +1,8 @@
 ---
 title: 'Using LLM API connection presets from config file'
 docname: 'using_config'
+id: '7dda'
 ---
-
 ## Overview
 
 Instructor allows you to define multiple API connection presets in `llm.php` file.

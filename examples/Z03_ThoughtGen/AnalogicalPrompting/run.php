@@ -1,8 +1,8 @@
 ---
 title: 'Analogical Prompting'
 docname: 'analogical_prompting'
+id: '6cc3'
 ---
-
 ## Overview
 
 ### Generate Examples First

@@ -1,8 +1,8 @@
 ---
 title: 'Streaming (Structured Output, OpenAI Responses)'
 docname: 'streaming_structured_openai_responses'
+id: '1f8e'
 ---
-
 ## Overview
 
 A minimal structured-output streaming example using the `openai-responses`

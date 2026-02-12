@@ -129,7 +129,9 @@ class EnhancedRunAllExamples extends Command
         Cli::outln('');
 
         foreach ($examples as $example) {
+            $idTag = !empty($example->id) ? "[x{$example->id}] " : '';
             Cli::out("  [{$example->index}] ", [Color::DARK_GRAY]);
+            Cli::out($idTag, [Color::CYAN]);
             Cli::outln("{$example->group}/{$example->name}", [Color::WHITE]);
         }
         Cli::outln('');

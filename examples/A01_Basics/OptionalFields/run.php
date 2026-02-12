@@ -1,8 +1,8 @@
 ---
 title: 'Making some fields optional'
 docname: 'optional_fields'
+id: 'f3d7'
 ---
-
 ## Overview
 
 Use PHP's nullable types by prefixing type name with question mark (?) to declare

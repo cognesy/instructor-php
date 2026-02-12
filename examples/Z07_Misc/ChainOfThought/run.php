@@ -1,8 +1,8 @@
 ---
 title: 'Chain of Thought'
 docname: 'chain_of_thought'
+id: '32ff'
 ---
-
 ## Overview
 
 This approach to "chain of thought" improves data quality, by eliciting LLM reasoning to

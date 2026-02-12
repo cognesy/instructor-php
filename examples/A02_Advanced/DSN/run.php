@@ -1,8 +1,8 @@
 ---
 title: 'Customize parameters via DSN'
 docname: 'custom_llm_with_dsn'
+id: 'fc0f'
 ---
-
 ## Overview
 
 You can provide your own LLM configuration data to `StructuredOutput` object with DSN string.

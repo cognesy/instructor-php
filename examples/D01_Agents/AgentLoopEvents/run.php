@@ -1,20 +1,26 @@
 ---
 title: 'Agent Events and Wiretap'
 docname: 'agent_loop_events'
+order: 8
+id: '58c9'
 ---
-
 ## Overview
 
-The agent emits events throughout its lifecycle. Use `wiretap()` to observe all events,
-or `onEvent()` to listen for specific event types. Events are read-only and cannot modify
-agent behavior (use hooks for that).
+The agent emits events throughout its lifecycle. Events are read-only observations —
+they cannot modify agent behavior (use hooks for that).
+
+Two ways to observe events:
+- `wiretap(callable)`: Receives **every** event — `AgentConsoleLogger` uses this internally
+- `onEvent(EventClass, callable)`: Subscribes to a **specific** event type for custom logic
+
+Both can be used together. The logger provides general visibility while `onEvent()` lets
+you collect metrics, trigger side effects, or react to specific events.
 
 Key concepts:
-- `wiretap(callable)`: Receives every event dispatched by the agent
-- `onEvent(EventClass, callable)`: Listens for a specific event type
+- `AgentConsoleLogger`: Built-in wiretap that formats all events for console output
+- `onEvent()`: Targeted listener for a single event class
 - Events include: `AgentStepCompleted`, `ToolCallStarted`, `ToolCallCompleted`,
-  `AgentExecutionCompleted`, `ContinuationEvaluated`, and more
-- `AgentConsoleLogger`: A built-in wiretap that formats events for console output
+  `InferenceResponseReceived`, `AgentExecutionCompleted`, `ContinuationEvaluated`, and more
 
 ## Example
 
@@ -24,44 +30,42 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentBuilder\AgentBuilder;
 use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
-use Cognesy\Agents\Events\AgentStepCompleted;
-use Cognesy\Agents\Events\ToolCallCompleted;
-use Cognesy\Agents\Events\ToolCallStarted;
+use Cognesy\Agents\Events\InferenceResponseReceived;
+
+// AgentConsoleLogger uses wiretap() internally to show all lifecycle events
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
     ->withMaxSteps(5)
-    ->build();
+    ->build()
+    ->wiretap($logger->wiretap());
 
-// 1. Wiretap: observe ALL events
-$agent->wiretap(function (object $event) {
-    $class = basename(str_replace('\\', '/', get_class($event)));
-    echo "[wiretap] {$class}: {$event}\n";
+// onEvent(): subscribe to specific event types for custom logic
+// This runs alongside the logger — use it to collect metrics, trigger
+// side effects, or react to specific events the logger doesn't cover.
+
+$totalInferenceMs = 0;
+
+$agent->onEvent(InferenceResponseReceived::class, function (InferenceResponseReceived $event) use (&$totalInferenceMs) {
+    $ms = $event->receivedAt->getTimestamp() * 1000 + (int)($event->receivedAt->format('u') / 1000)
+        - $event->requestStartedAt->getTimestamp() * 1000 - (int)($event->requestStartedAt->format('u') / 1000);
+    $totalInferenceMs += $ms;
 });
 
-// 2. Targeted listeners: subscribe to specific event types
-$agent->onEvent(ToolCallStarted::class, function (ToolCallStarted $event) {
-    echo "\n  >>> Tool starting: {$event->tool}\n";
-});
-
-$agent->onEvent(ToolCallCompleted::class, function (ToolCallCompleted $event) {
-    $status = $event->success ? 'OK' : 'FAILED';
-    echo "  <<< Tool completed: {$event->tool} [{$status}]\n\n";
-});
-
-$agent->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
-    echo "  --- Step {$event->stepNumber} done (tokens: {$event->usage->total()}, " .
-         "tools: " . ($event->hasToolCalls ? 'yes' : 'no') . ")\n";
-});
-
-$agent->onEvent(AgentExecutionCompleted::class, function (AgentExecutionCompleted $event) {
-    echo "\n=== Execution Complete ===\n";
-    echo "  Agent: {$event->agentId}\n";
-    echo "  Steps: {$event->totalSteps}\n";
-    echo "  Tokens: {$event->totalUsage->total()}\n";
-    echo "  Status: {$event->status->value}\n";
+$agent->onEvent(AgentExecutionCompleted::class, function (AgentExecutionCompleted $event) use (&$totalInferenceMs) {
+    echo "\n  [custom] Execution summary:\n";
+    echo "    Steps: {$event->totalSteps}\n";
+    echo "    Total tokens: {$event->totalUsage->total()}\n";
+    echo "    LLM time: {$totalInferenceMs}ms\n";
 });
 
 // Run the agent
@@ -72,8 +76,8 @@ $state = AgentState::empty()->withUserMessage(
 echo "=== Agent Events Demo ===\n\n";
 $finalState = $agent->execute($state);
 
-echo "\n=== Agent Response ===\n";
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "\n=== Result ===\n";
+$response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 ?>
 ```

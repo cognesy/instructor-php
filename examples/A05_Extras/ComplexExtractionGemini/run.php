@@ -1,8 +1,8 @@
 ---
 title: 'Extraction of complex objects (Gemini)'
 docname: 'complex_extraction_gemini'
+id: '7a98'
 ---
-
 ## Overview
 
 This is an example of extraction of a very complex structure from

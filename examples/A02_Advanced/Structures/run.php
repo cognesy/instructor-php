@@ -1,8 +1,8 @@
 ---
 title: 'Structures'
 docname: 'structures'
+id: '40e1'
 ---
-
 ## Overview
 
 Structures allow dynamically define the shape of data to be extracted

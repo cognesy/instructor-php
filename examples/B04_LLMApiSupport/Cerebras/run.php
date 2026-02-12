@@ -1,8 +1,8 @@
 ---
 title: 'Cerebras'
-docname: 'cerebras'
+docname: 'llm_cerebras'
+id: '134c'
 ---
-
 ## Overview
 
 Support for Cerebras API which uses custom hardware for super fast inference.

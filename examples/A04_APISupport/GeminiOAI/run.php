@@ -1,8 +1,8 @@
 ---
 title: 'Google Gemini (OpenAI compatible API)'
 docname: 'google_gemini_oai'
+id: '5cb7'
 ---
-
 ## Overview
 
 Google offers Gemini models which perform well in benchmarks.

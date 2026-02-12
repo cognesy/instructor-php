@@ -1,8 +1,9 @@
 ---
 title: 'AgentLoop::execute()'
 docname: 'agent_loop_execute'
+order: 1
+id: '2df1'
 ---
-
 ## Overview
 
 The simplest way to run an agent: `AgentLoop::execute()` runs the loop to completion and
@@ -13,7 +14,8 @@ Key concepts:
 - `AgentLoop::default()`: Creates a minimal agent loop with sensible defaults
 - `AgentState::empty()`: Creates an empty immutable state container
 - `execute()`: Runs the full loop and returns the final state
-- `currentStep()`: Access the last completed step for output
+- `AgentConsoleLogger`: Attach via `wiretap()` to see execution lifecycle events
+- `finalResponse()`: Access the agent's final text output
 
 ## Example
 
@@ -21,12 +23,21 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Messages\Messages;
 
+// AgentConsoleLogger shows execution lifecycle events on the console
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+);
+
 // Create a default agent loop (no tools, just LLM conversation)
-$loop = AgentLoop::default();
+$loop = AgentLoop::default()
+    ->wiretap($logger->wiretap());
 
 // Prepare initial state with a user message
 $state = AgentState::empty()->withMessages(
@@ -34,10 +45,12 @@ $state = AgentState::empty()->withMessages(
 );
 
 // Execute the loop to completion
+echo "=== Agent Execution ===\n\n";
 $finalState = $loop->execute($state);
 
 // Read the result
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "\n=== Result ===\n";
+$response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens used: {$finalState->usage()->total()}\n";

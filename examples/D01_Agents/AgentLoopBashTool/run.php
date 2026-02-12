@@ -1,8 +1,9 @@
 ---
 title: 'Agent with Bash Tool'
 docname: 'agent_loop_bash_tool'
+order: 3
+id: '06e7'
 ---
-
 ## Overview
 
 The `UseBash` capability gives the agent the ability to execute shell commands. This is
@@ -47,7 +48,7 @@ echo "=== Agent Execution ===\n\n";
 $finalState = $loop->execute($state);
 
 echo "\n=== Result ===\n";
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+$response = $finalState->finalResponse()->toString() ?? 'No response';
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";

@@ -1,8 +1,8 @@
 ---
 title: 'Generating JSON Schema dynamically'
 docname: 'schema_dynamic'
+id: '8ba1'
 ---
-
 ## Overview
 
 Instructor has a built-in support for generating JSON Schema from

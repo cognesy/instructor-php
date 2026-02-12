@@ -1,8 +1,8 @@
 ---
 title: 'Auto-Refine The Prompt'
 docname: 'auto_refine'
+id: 'c595'
 ---
-
 ## Overview
 
 How do we remove irrelevant information from the prompt?

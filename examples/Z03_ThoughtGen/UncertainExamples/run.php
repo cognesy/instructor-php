@@ -1,8 +1,8 @@
 ---
 title: 'Prioritize Uncertain Examples'
 docname: 'uncertain_examples'
+id: '52cc'
 ---
-
 ## Overview
 
 When we have a large pool of unlabeled examples that could be used in a prompt, how should we decide which examples to manually label?

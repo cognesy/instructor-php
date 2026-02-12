@@ -1,8 +1,8 @@
 ---
 title: 'Use different class for schema and output'
 docname: 'output_format_instance_of'
+id: 'e273'
 ---
-
 ## Overview
 
 Sometimes you want to define the extraction schema using one class but receive

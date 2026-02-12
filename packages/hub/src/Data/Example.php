@@ -15,10 +15,12 @@ class Example
         public bool   $hasTitle = false,
         public string $title = '',
         public string $docName = '',
+        public string $id = '',
         public string $content = '',
         public string $directory = '',
         public string $relativePath = '',
         public string $runPath = '',
+        public ?int   $order = null,
     ) {}
 
     /**
@@ -73,8 +75,9 @@ class Example
             'Z06_Decomposition' => ['tab' => 'prompting', 'name' => 'decomposition', 'title' => 'Cookbook \ Prompting \ Decomposition'],
             'Z07_Misc' => ['tab' => 'prompting', 'name' => 'misc', 'title' => 'Cookbook \ Prompting \ Miscellaneous'],
             'C01_Http' => ['tab' => 'http', 'name' => 'http_client', 'title' => 'Cookbook \ HTTP Client'],
-            'D01_Agents' => ['tab' => 'agents', 'name' => 'agents', 'title' => 'Cookbook \ Agents \ Agents'],
-            'D02_AgentCtrl' => ['tab' => 'agents', 'name' => 'agent_controllers', 'title' => 'Cookbook \ Agents \ Agent Controllers'],
+            'D01_Agents' => ['tab' => 'agents', 'name' => 'agents', 'title' => 'Cookbook \ Agents \ Agent Loop'],
+            'D02_AgentBuilder' => ['tab' => 'agents', 'name' => 'agent_builder', 'title' => 'Cookbook \ Agents \ Agent Builder'],
+            'D03_AgentCtrl' => ['tab' => 'agents', 'name' => 'agent_controllers', 'title' => 'Cookbook \ Agents \ Agent Controllers'],
         ];
 
         $tab = $assignment?->tab ?? ($mapping[$group]['tab'] ?? '');
@@ -89,10 +92,12 @@ class Example
             hasTitle: $info->hasTitle(),
             title: $info->title,
             docName: $info->docName,
+            id: $info->id,
             content: $info->content,
             directory: $baseDir . $path,
             relativePath: './' . $tab . '/' . $path . '/run.php',
             runPath: $baseDir . $path . '/run.php',
+            order: $info->order,
         );
     }
 }

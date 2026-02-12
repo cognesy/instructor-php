@@ -1,8 +1,8 @@
 ---
 title: 'Multiclass classification'
 docname: 'classification_multiclass'
+id: '8167'
 ---
-
 ## Overview
 
 We start by defining the structures.

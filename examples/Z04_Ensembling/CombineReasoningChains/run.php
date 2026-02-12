@@ -1,8 +1,8 @@
 ---
 title: 'Combine Multiple Reasoning Chains'
 docname: 'combine_reasoning_chains'
+id: '7549'
 ---
-
 ## Overview
 
 Meta Chain-of-Thought (Meta-CoT) decomposes a query into sub-queries, solves each with its own reasoning chain, then composes a final answer from those chains.

@@ -290,6 +290,19 @@ final readonly class AgentState
         };
     }
 
+    public function currentResponse(): Messages {
+        $final = $this->finalResponse();
+        if ($final->notEmpty()) {
+            return $final;
+        }
+        $step = $this->currentStepOrLast();
+        if ($step === null) {
+            return Messages::empty();
+        }
+        $output = $step->outputMessages();
+        return trim($output->toString()) === '' ? Messages::empty() : $output;
+    }
+
     public function stepCount(): int {
         return $this->execution?->stepCount() ?? 0;
     }

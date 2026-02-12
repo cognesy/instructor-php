@@ -1,8 +1,8 @@
 ---
 title: 'Define Style'
 docname: 'define_style'
+id: '489b'
 ---
-
 ## Overview
 
 How can we constrain model outputs through prompting alone?

@@ -1,8 +1,8 @@
 ---
 title: 'DeepSeek'
-docname: 'deepseek'
+docname: 'llm_deepseek'
+id: 'e416'
 ---
-
 ## Overview
 
 Support for DeepSeek API which provides strong models at affordable price.

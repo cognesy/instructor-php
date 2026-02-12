@@ -9,6 +9,7 @@ use Cognesy\Agents\Core\Contracts\ToolInterface;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Data\ToolExecution;
 use Cognesy\Agents\Events\CanEmitAgentEvents;
+use Cognesy\Agents\Core\Stop\AgentStopException;
 use Cognesy\Agents\Exceptions\InvalidToolArgumentsException;
 use Cognesy\Agents\Exceptions\ToolExecutionException;
 use Cognesy\Agents\Hooks\Data\HookContext;
@@ -102,6 +103,8 @@ final readonly class ToolExecutor implements CanExecuteToolCalls
         $startedAt = new DateTimeImmutable();
         try {
             $result = $this->doExecute($toolCall, $state);
+        } catch (AgentStopException $e) {
+            throw $e;
         } catch (Throwable $e) {
             $result = Result::failure(
                 new ToolExecutionException(

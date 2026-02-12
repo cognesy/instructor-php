@@ -1,8 +1,8 @@
 ---
 title: 'Use LLMs to Combine Different Responses'
 docname: 'combine_responses'
+id: 'f34d'
 ---
-
 ## Overview
 
 Universal Self-Consistency uses a second LLM to judge the quality of multiple responses to a query and select the most consistent one.

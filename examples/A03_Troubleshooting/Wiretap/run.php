@@ -1,8 +1,8 @@
 ---
 title: 'Receive all internal events with wiretap()'
 docname: 'wiretap'
+id: '83b1'
 ---
-
 ## Overview
 
 # Receive all internal events with wiretap()

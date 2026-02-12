@@ -1,17 +1,26 @@
 ---
 title: 'Agent Stop Conditions'
 docname: 'agent_loop_stop_conditions'
+order: 7
+id: '368a'
 ---
-
 ## Overview
 
 The agent loop stops when `AgentState::shouldStop()` returns true. You can trigger stops
 from within tools using `AgentStopException`, or configure built-in guards via the builder
 (`withMaxSteps`, `withMaxTokens`, `withTimeout`).
 
+When a tool stops the agent, the last step is a `ToolExecution` — not a `FinalResponse`.
+This means `finalResponse()` returns empty. Use `currentResponse()` to get the best
+available output regardless of how the agent stopped:
+
+- `finalResponse()` — strict: only returns text when the LLM completed naturally (no pending tool calls)
+- `currentResponse()` — pragmatic: returns `finalResponse()` if available, otherwise the last step's output
+
 Key concepts:
 - `AgentStopException`: Throw from a tool to stop the loop immediately
 - `StopSignal` / `StopReason`: Describes why the loop stopped
+- `finalResponse()` vs `currentResponse()`: Strict vs pragmatic response access
 - `withMaxSteps()`: Built-in guard that stops after N steps
 - `withMaxTokens()`: Built-in guard that stops after N total tokens
 - `withTimeout()`: Built-in guard that stops after N seconds
@@ -22,6 +31,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Stop\AgentStopException;
@@ -29,7 +39,8 @@ use Cognesy\Agents\Core\Stop\StopReason;
 use Cognesy\Agents\Core\Stop\StopSignal;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Messages\Messages;
-use Cognesy\Schema\Attributes\Description;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 // A tool that counts up and stops when it reaches a target
 class CounterTool extends BaseTool
@@ -43,8 +54,8 @@ class CounterTool extends BaseTool
         );
     }
 
-    #[Description('Increment the counter')]
-    public function __invoke(): string {
+    #[\Override]
+    public function __invoke(mixed ...$args): string {
         self::$count++;
         echo "  [Counter] Value: " . self::$count . "\n";
 
@@ -62,10 +73,28 @@ class CounterTool extends BaseTool
 
         return "Counter is at " . self::$count . ". Keep going — call counter again.";
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters'),
+        )->toArray();
+    }
 }
 
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
+
 // Create loop with the counter tool
-$loop = AgentLoop::default()->withTool(new CounterTool(stopAt: 3));
+$loop = AgentLoop::default()
+    ->withTool(new CounterTool(stopAt: 3))
+    ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withMessages(
     Messages::fromString('Call the counter tool repeatedly until it stops you.')
@@ -74,10 +103,37 @@ $state = AgentState::empty()->withMessages(
 echo "=== Agent with Stop Condition ===\n\n";
 $finalState = $loop->execute($state);
 
+// =========================================================================
+// Reading the response after a forced stop
+// =========================================================================
+//
+// When a tool throws AgentStopException, the last step is a ToolExecution
+// (the LLM was requesting tool calls when the stop happened). This means:
+//
+//   finalResponse()   -> empty (no FinalResponse step exists)
+//   currentResponse() -> last step's LLM output (best available text)
+//
+// For stop-exception scenarios the real "answer" is typically in the stop
+// signal context or agent metadata — not in the LLM's text output.
+
 echo "\n=== Result ===\n";
-$stopSignals = $finalState->execution()?->continuation()->stopSignals();
-$reason = $stopSignals?->first()?->toString() ?? 'unknown';
-echo "Stop reason: {$reason}\n";
+
+// finalResponse() is empty because the agent was stopped mid-tool-execution
+$final = $finalState->finalResponse()->toString();
+echo "finalResponse():  " . ($final !== '' ? $final : '(empty — agent was stopped, not completed)') . "\n";
+
+// currentResponse() falls back to the last step's output
+$current = $finalState->currentResponse()->toString();
+echo "currentResponse(): " . ($current !== '' ? $current : '(empty)') . "\n";
+
+// hasFinalResponse() lets you branch on how the agent ended
+echo "hasFinalResponse(): " . ($finalState->hasFinalResponse() ? 'true' : 'false') . "\n";
+
+// The stop signal carries the reason and context set by the tool
+$stopSignal = $finalState->lastStopSignal();
+echo "Stop reason: " . ($stopSignal?->toString() ?? 'unknown') . "\n";
+echo "Stop context: " . json_encode($stopSignal?->context ?? []) . "\n";
+
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Status: {$finalState->status()->value}\n";
 ?>

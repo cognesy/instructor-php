@@ -1,8 +1,8 @@
 ---
 title: 'Handling errors with `Maybe` helper class'
 docname: 'maybe'
+id: '122b'
 ---
-
 ## Overview
 
 You can create a wrapper class to hold either the result of an operation or an error message.

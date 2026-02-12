@@ -9,16 +9,13 @@ describe('MetadataListTool schema', function () {
         $tool = new MetadataListTool();
         $schema = $tool->toToolSchema();
 
-        expect($schema)->toMatchArray([
-            'type' => 'function',
-            'function' => [
-                'name' => 'list_metadata',
-                'description' => $tool->description(),
-                'parameters' => [
-                    'type' => 'object',
-                    'additionalProperties' => false,
-                ],
-            ],
-        ]);
+        expect($schema['type'])->toBe('function');
+        expect($schema['function']['name'])->toBe('list_metadata');
+        expect($schema['function']['description'])->toBe($tool->description());
+        expect($schema['function']['parameters']['type'])->toBe('object');
+        expect($schema['function']['parameters']['additionalProperties'])->toBeFalse();
+        // Parameterless tools must emit "properties": {} for LLM API compatibility
+        expect($schema['function']['parameters'])->toHaveKey('properties');
+        expect($schema['function']['parameters']['properties'])->toBeInstanceOf(\stdClass::class);
     });
 });

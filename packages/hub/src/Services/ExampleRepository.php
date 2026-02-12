@@ -44,15 +44,29 @@ class ExampleRepository {
     }
 
     public function argToExample(string $input) : ?Example {
-        // handle example provided by index
-        $example = (int) $input;
-        if ($example > 0) {
-            $locations = $this->getExampleLocations();
-            $offset = $example - 1;
-            if (isset($locations[$offset])) {
-                return $this->getExample($locations[$offset], $offset);
+        // 1. Try short ID lookup (x-prefixed hex, e.g. x5265)
+        if (preg_match('/^x([0-9a-f]{4,6})$/', $input, $matches)) {
+            $match = $this->findByShortId($matches[1]);
+            if ($match !== null) {
+                return $match;
             }
         }
+
+        // 2. Handle example provided by numeric index
+        $index = (int) $input;
+        if ($index > 0) {
+            $allExamples = $this->getAllExamples();
+            $offset = $index - 1;
+            return $allExamples[$offset] ?? null;
+        }
+
+        // 3. Try docname lookup
+        $match = $this->findByDocName($input);
+        if ($match !== null) {
+            return $match;
+        }
+
+        // 4. Fall back to directory path lookup
         $location = $this->findExampleLocation($input);
         if ($location === null) {
             return null;
@@ -60,24 +74,36 @@ class ExampleRepository {
         return $this->getExample($location);
     }
 
-    /** @return array<Example> */
-    public function getAllExamples() : array {
-        return $this->forEachExample(fn($example) => true);
-    }
-
-    public function getCanonicalIndex(Example $example) : int {
-        $allExamples = $this->getAllExamples();
-        foreach ($allExamples as $index => $ex) {
-            if ($ex->relativePath === $example->relativePath) {
-                return $index;
+    private function findByShortId(string $id): ?Example {
+        foreach ($this->getAllExamples() as $example) {
+            if ($example->id === $id) {
+                return $example;
             }
         }
-        throw new \RuntimeException("Example not found in repository: {$example->relativePath}");
+        return null;
     }
 
-    public function getExampleByCanonicalIndex(int $index) : ?Example {
-        $allExamples = $this->getAllExamples();
-        return $allExamples[$index] ?? null;
+    private function findByDocName(string $docName): ?Example {
+        foreach ($this->getAllExamples() as $example) {
+            if ($example->docName === $docName) {
+                return $example;
+            }
+        }
+        return null;
+    }
+
+    /** @return array<Example> */
+    public function getAllExamples() : array {
+        $groups = $this->getExampleGroups();
+        $examples = [];
+        $index = 1;
+        foreach ($groups as $group) {
+            foreach ($group->examples as $example) {
+                $example->index = $index++;
+                $examples[] = $example;
+            }
+        }
+        return $examples;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +111,7 @@ class ExampleRepository {
     /** @return array<string, ExampleGroup> */
     private function getExamplesInGroups() : array {
         $examples = $this->forEachExample(fn($example) => true);
+        $this->validateUniqueness($examples);
         $groups = [];
         foreach ($examples as $example) {
             $group = $example->group;
@@ -93,7 +120,41 @@ class ExampleRepository {
             }
             $groups[$group]->addExample($example);
         }
+        // Sort examples within each group by front-matter 'order' property
+        foreach ($groups as $group) {
+            $group->sortExamples();
+        }
         return $groups;
+    }
+
+    /** @param Example[] $examples */
+    private function validateUniqueness(array $examples): void {
+        $docNames = [];
+        $ids = [];
+
+        foreach ($examples as $example) {
+            // Check docname uniqueness
+            if (isset($docNames[$example->docName])) {
+                throw new \RuntimeException(
+                    "Duplicate docname '{$example->docName}' found in:\n"
+                    . "  - {$docNames[$example->docName]}\n"
+                    . "  - {$example->relativePath}"
+                );
+            }
+            $docNames[$example->docName] = $example->relativePath;
+
+            // Check id uniqueness (only for examples that have an id)
+            if (!empty($example->id)) {
+                if (isset($ids[$example->id])) {
+                    throw new \RuntimeException(
+                        "Duplicate id '{$example->id}' found in:\n"
+                        . "  - {$ids[$example->id]}\n"
+                        . "  - {$example->relativePath}"
+                    );
+                }
+                $ids[$example->id] = $example->relativePath;
+            }
+        }
     }
 
     private function getExample(ExampleLocation $location, int $index = 0) : Example {

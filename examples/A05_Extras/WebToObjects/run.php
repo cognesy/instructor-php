@@ -1,8 +1,8 @@
 ---
 title: 'Web page to PHP objects'
 docname: 'web_to_objects'
+id: 'a3e6'
 ---
-
 ## Overview
 
 This example demonstrates how to extract structured data from a web page and get

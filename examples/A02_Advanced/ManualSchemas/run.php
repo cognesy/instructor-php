@@ -1,8 +1,8 @@
 ---
 title: 'Manual Schema Building'
 docname: 'manual_schemas'
+id: '44ad'
 ---
-
 ## Overview
 
 While InstructorPHP can automatically generate schemas from PHP classes,

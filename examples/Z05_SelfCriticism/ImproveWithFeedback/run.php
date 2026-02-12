@@ -1,8 +1,8 @@
 ---
 title: 'Improve With Feedback'
 docname: 'improve_with_feedback'
+id: '600f'
 ---
-
 ## Overview
 
 Self-Refine iteratively generates an answer, critiques it, and refines it until a stopping condition is met.

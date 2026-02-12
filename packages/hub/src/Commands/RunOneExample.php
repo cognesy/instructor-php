@@ -59,8 +59,9 @@ class RunOneExample extends Command
 
     public function doRun(Example $example): int
     {
+        $idTag = !empty($example->id) ? " [x{$example->id}]" : '';
         Cli::outln('');
-        Cli::outln("Executing example: {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
+        Cli::outln("Executing example:{$idTag} {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
         Cli::outln('');
 
         $timeStart = microtime(true);
@@ -94,8 +95,9 @@ class RunOneExample extends Command
      */
     private function doRawRun(Example $example): int
     {
+        $idTag = !empty($example->id) ? " [x{$example->id}]" : '';
         Cli::outln('');
-        Cli::outln("Executing example (raw output): {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
+        Cli::outln("Executing example (raw output):{$idTag} {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
         Cli::outln('');
 
         $timeStart = microtime(true);

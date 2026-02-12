@@ -138,8 +138,8 @@ readonly class AgentLoop implements CanControlAgentLoop
 
     protected function onAfterExecution(AgentState $state): AgentState {
         $state = $this->interceptor->intercept(HookContext::afterExecution($state))->state();
-        $this->eventEmitter->executionFinished($state);
         $state = $state->withExecutionCompleted();
+        $this->eventEmitter->executionFinished($state);
         return $state;
     }
 

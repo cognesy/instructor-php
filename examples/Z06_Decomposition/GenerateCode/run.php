@@ -1,8 +1,8 @@
 ---
 title: 'Generate Code for Intermediate Steps'
 docname: 'generate_code'
+id: '9f72'
 ---
-
 ## Overview
 
 How can we leverage external code execution to generate intermediate reasoning steps?

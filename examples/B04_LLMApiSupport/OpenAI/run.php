@@ -1,8 +1,8 @@
 ---
 title: 'OpenAI'
-docname: 'openai'
+docname: 'llm_openai'
+id: '2e9b'
 ---
-
 ## Overview
 
 This is the default client used by Instructor.

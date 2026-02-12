@@ -1,8 +1,8 @@
 ---
 title: 'Streaming partial updates during inference'
 docname: 'partials'
+id: 'c2dc'
 ---
-
 ## Overview
 
 Instructor can process LLM's streamed responses to provide partial updates that you

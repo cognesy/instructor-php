@@ -2,8 +2,8 @@
 title: 'Laravel Logging Integration'
 docname: 'logging_laravel'
 path: ''
+id: '4914'
 ---
-
 ## Overview
 
 Laravel integration with Instructor's functional logging pipeline.

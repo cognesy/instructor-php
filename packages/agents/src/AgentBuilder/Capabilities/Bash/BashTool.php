@@ -198,6 +198,6 @@ DESC,
     }
 
     private function resolveDir(string $baseDir) : string {
-        return $baseDir;
+        return $baseDir !== '' ? $baseDir : getcwd();
     }
 }

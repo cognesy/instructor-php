@@ -1,8 +1,8 @@
 ---
 title: 'Single label classification'
 docname: 'classification'
+id: 'e89d'
 ---
-
 ## Overview
 
 For single-label classification, we first define an `enum` for possible labels

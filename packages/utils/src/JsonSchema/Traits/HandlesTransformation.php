@@ -103,12 +103,13 @@ trait HandlesTransformation
     }
 
     private function objectToArray() : array {
+        $properties = $this->propertiesAsArray();
         return $this->prepare([
             'type' => 'object',
             'nullable' => $this->nullable,
             'description' => $this->description,
             'title' => $this->title,
-            'properties' => $this->propertiesAsArray(),
+            'properties' => $properties === [] ? new \stdClass() : $properties,
             'required' => $this->requiredProperties,
             'additionalProperties' => $this->additionalProperties,
         ], $this->meta);

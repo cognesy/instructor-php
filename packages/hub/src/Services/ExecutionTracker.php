@@ -12,8 +12,8 @@ use Cognesy\InstructorHub\Data\ExecutionStatus;
 
 class ExecutionTracker implements CanTrackExecution
 {
-    /** @var array<int, ExampleExecutionStatus> */
-    private array $statusByCanonicalIndex = [];
+    /** @var array<string, ExampleExecutionStatus> keyed by example short ID */
+    private array $statusById = [];
     private array $metadata = [];
     private bool $modified = false;
 
@@ -30,29 +30,31 @@ class ExecutionTracker implements CanTrackExecution
         $data = $this->repository->load();
 
         $this->metadata = $data['metadata'] ?? [
-            'version' => '1.0',
+            'version' => '2.0',
             'lastUpdated' => (new \DateTimeImmutable())->format('c'),
             'totalExamples' => 0,
         ];
 
-        $this->statusByCanonicalIndex = [];
+        $this->statusById = [];
         foreach ($data['examples'] ?? [] as $statusArray) {
             $status = ExampleExecutionStatus::fromArray($statusArray);
-            $this->statusByCanonicalIndex[$status->index] = $status;
+            $key = !empty($status->docName) ? $status->docName : (string) $status->index;
+            $this->statusById[$key] = $status;
         }
     }
 
     #[\Override]
     public function recordStart(Example $example): void
     {
-        $canonicalIndex = $this->examples->getCanonicalIndex($example);
+        $key = $this->exampleKey($example);
 
         // Get existing status or create new one
-        $currentStatus = $this->statusByCanonicalIndex[$canonicalIndex]
+        $currentStatus = $this->statusById[$key]
             ?? new ExampleExecutionStatus(
-                index: $canonicalIndex,
+                index: $example->index,
                 name: $example->name,
                 group: $example->group,
+                docName: $example->docName,
                 relativePath: $example->relativePath,
                 absolutePath: $example->runPath,
                 status: ExecutionStatus::PENDING,
@@ -65,10 +67,11 @@ class ExecutionTracker implements CanTrackExecution
             );
 
         // Create new status with running state
-        $this->statusByCanonicalIndex[$canonicalIndex] = new ExampleExecutionStatus(
-            index: $canonicalIndex,
+        $this->statusById[$key] = new ExampleExecutionStatus(
+            index: $example->index,
             name: $example->name,
             group: $example->group,
+            docName: $example->docName,
             relativePath: $example->relativePath,
             absolutePath: $example->runPath,
             status: ExecutionStatus::RUNNING,
@@ -90,14 +93,15 @@ class ExecutionTracker implements CanTrackExecution
     #[\Override]
     public function recordResult(Example $example, ExecutionResult $result): void
     {
-        $canonicalIndex = $this->examples->getCanonicalIndex($example);
+        $key = $this->exampleKey($example);
 
         // Get existing status or create new one
-        $currentStatus = $this->statusByCanonicalIndex[$canonicalIndex]
+        $currentStatus = $this->statusById[$key]
             ?? new ExampleExecutionStatus(
-                index: $canonicalIndex,
+                index: $example->index,
                 name: $example->name,
                 group: $example->group,
+                docName: $example->docName,
                 relativePath: $example->relativePath,
                 absolutePath: $example->runPath,
                 status: ExecutionStatus::PENDING,
@@ -117,10 +121,11 @@ class ExecutionTracker implements CanTrackExecution
         }
 
         // Create new status with updated data
-        $this->statusByCanonicalIndex[$canonicalIndex] = new ExampleExecutionStatus(
-            index: $canonicalIndex,
+        $this->statusById[$key] = new ExampleExecutionStatus(
+            index: $example->index,
             name: $example->name,
             group: $example->group,
+            docName: $example->docName,
             relativePath: $example->relativePath,
             absolutePath: $example->runPath,
             status: $result->status,
@@ -150,28 +155,28 @@ class ExecutionTracker implements CanTrackExecution
     #[\Override]
     public function getStatus(Example $example): ?ExampleExecutionStatus
     {
-        $canonicalIndex = $this->examples->getCanonicalIndex($example);
-        return $this->statusByCanonicalIndex[$canonicalIndex] ?? null;
+        $key = $this->exampleKey($example);
+        return $this->statusById[$key] ?? null;
     }
 
     #[\Override]
     public function hasStatus(Example $example): bool
     {
-        $canonicalIndex = $this->examples->getCanonicalIndex($example);
-        return isset($this->statusByCanonicalIndex[$canonicalIndex]);
+        $key = $this->exampleKey($example);
+        return isset($this->statusById[$key]);
     }
 
     #[\Override]
     public function getAllStatuses(): array
     {
-        return array_values($this->statusByCanonicalIndex);
+        return array_values($this->statusById);
     }
 
     #[\Override]
     public function getSummary(): ExecutionSummary
     {
         // Calculate statistics from current DTOs
-        $stats = $this->calculateStatistics(array_values($this->statusByCanonicalIndex));
+        $stats = $this->calculateStatistics(array_values($this->statusById));
 
         return ExecutionSummary::fromArray($stats);
     }
@@ -182,14 +187,14 @@ class ExecutionTracker implements CanTrackExecution
         if ($this->modified) {
             // Convert DTOs to arrays for storage
             $examples = [];
-            foreach ($this->statusByCanonicalIndex as $status) {
-                $examples[$status->index] = $status->toArray();
+            foreach ($this->statusById as $key => $status) {
+                $examples[$key] = $status->toArray();
             }
 
             $dataToSave = [
                 'metadata' => $this->metadata,
                 'examples' => $examples,
-                'statistics' => $this->calculateStatistics(array_values($this->statusByCanonicalIndex)),
+                'statistics' => $this->calculateStatistics(array_values($this->statusById)),
             ];
 
             $this->repository->save($dataToSave);
@@ -204,9 +209,9 @@ class ExecutionTracker implements CanTrackExecution
 
     public function clearAllStatuses(): void
     {
-        $this->statusByCanonicalIndex = [];
+        $this->statusById = [];
         $this->metadata = [
-            'version' => '1.0',
+            'version' => '2.0',
             'lastUpdated' => (new \DateTimeImmutable())->format('c'),
             'totalExamples' => 0,
         ];
@@ -214,10 +219,10 @@ class ExecutionTracker implements CanTrackExecution
         $this->save();
     }
 
-    public function removeStatus(int $index): void
+    public function removeStatus(string $key): void
     {
-        if (isset($this->statusByCanonicalIndex[$index])) {
-            unset($this->statusByCanonicalIndex[$index]);
+        if (isset($this->statusById[$key])) {
+            unset($this->statusById[$key]);
             $this->updateMetadata();
             $this->modified = true;
             if ($this->autoSave) {
@@ -229,9 +234,9 @@ class ExecutionTracker implements CanTrackExecution
     public function removeCompletedStatuses(): int
     {
         $removed = 0;
-        foreach ($this->statusByCanonicalIndex as $index => $status) {
+        foreach ($this->statusById as $key => $status) {
             if ($status->status === ExecutionStatus::COMPLETED) {
-                unset($this->statusByCanonicalIndex[$index]);
+                unset($this->statusById[$key]);
                 $removed++;
             }
         }
@@ -252,9 +257,9 @@ class ExecutionTracker implements CanTrackExecution
         $cutoff = (new \DateTimeImmutable())->sub($interval);
         $removed = 0;
 
-        foreach ($this->statusByCanonicalIndex as $index => $status) {
+        foreach ($this->statusById as $key => $status) {
             if ($status->lastExecuted !== null && $status->lastExecuted < $cutoff) {
-                unset($this->statusByCanonicalIndex[$index]);
+                unset($this->statusById[$key]);
                 $removed++;
             }
         }
@@ -270,12 +275,21 @@ class ExecutionTracker implements CanTrackExecution
         return $removed;
     }
 
+    private function exampleKey(Example $example): string
+    {
+        if (!empty($example->id)) {
+            return $example->id;
+        }
+        // Fallback for examples without IDs yet
+        return $example->docName;
+    }
+
     private function updateMetadata(): void
     {
         $this->metadata = [
-            'version' => '1.0',
+            'version' => '2.0',
             'lastUpdated' => (new \DateTimeImmutable())->format('c'),
-            'totalExamples' => count($this->statusByCanonicalIndex),
+            'totalExamples' => count($this->statusById),
         ];
     }
 

@@ -1,8 +1,8 @@
 ---
 title: 'Generating JSON Schema from PHP classes'
-docname: 'json_schema_api'
+docname: 'llm_with_schema_helper'
+id: '4391'
 ---
-
 ## Overview
 
 Polyglot has a built-in support for dynamically constructing JSON Schema using

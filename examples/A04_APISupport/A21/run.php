@@ -1,8 +1,8 @@
 ---
 title: 'A21'
 docname: 'a21'
+id: '6991'
 ---
-
 ## Overview
 
 Support for A21 Jamba - MAMBA architecture models, very strong at handling

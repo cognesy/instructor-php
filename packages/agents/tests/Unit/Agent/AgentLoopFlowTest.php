@@ -27,6 +27,7 @@ final class CountingEventEmitter implements CanEmitAgentEvents
     public int $stepCompletedCount = 0;
     public int $executionFailedCount = 0;
     public int $toolCallBlockedCount = 0;
+    public ?ExecutionStatus $finishedStatus = null;
 
     public function executionStarted(AgentState $state, int $availableTools): void {}
 
@@ -44,7 +45,9 @@ final class CountingEventEmitter implements CanEmitAgentEvents
 
     public function executionStopped(AgentState $state): void {}
 
-    public function executionFinished(AgentState $state): void {}
+    public function executionFinished(AgentState $state): void {
+        $this->finishedStatus = $state->status();
+    }
 
     public function executionFailed(AgentState $state, \Throwable $exception): void {
         $this->executionFailedCount++;
@@ -86,7 +89,7 @@ final class CountingEventEmitter implements CanEmitAgentEvents
         ?string $toolCallId = null,
     ): void {}
 
-    public function hookExecuted(string $hookType, string $tool, string $outcome, ?string $reason, DateTimeImmutable $startedAt): void {}
+    public function hookExecuted(string $triggerType, ?string $hookName, DateTimeImmutable $startedAt): void {}
 
     public function decisionExtractionFailed(AgentState $state, string $errorMessage, string $errorType, int $attemptNumber = 1, int $maxAttempts = 1): void {}
 
@@ -248,5 +251,33 @@ describe('AgentLoop flow', function () {
             ->and($newEmitter->stepCompletedCount)->toBe(1)
             ->and($oldEmitter->stepStartedCount)->toBe(0)
             ->and($oldEmitter->stepCompletedCount)->toBe(0);
+    });
+
+    it('emits executionFinished with Completed status, not InProgress', function () {
+        $tools = new Tools();
+        $eventEmitter = new CountingEventEmitter();
+        $interceptor = new InjectStepInterceptor(new AgentStep());
+
+        // Driver that returns immediately (no tool calls) — simulates LLM finish=stop
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $loop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $eventEmitter, $interceptor),
+            driver: $driver,
+            eventEmitter: $eventEmitter,
+            interceptor: $interceptor,
+        );
+
+        $finalState = $loop->execute(AgentState::empty());
+
+        // The event must carry the final status, not the transient in-progress status
+        expect($eventEmitter->finishedStatus)->toBe(ExecutionStatus::Completed);
+        expect($finalState->status())->toBe(ExecutionStatus::Completed);
     });
 });

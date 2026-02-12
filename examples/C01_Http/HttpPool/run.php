@@ -1,8 +1,8 @@
 ---
 title: 'HTTP Client – Pool Basics'
 docname: 'http_client_pool_basics'
+id: 'bb83'
 ---
-
 ## Overview
 
 Demonstrates executing multiple HTTP requests in parallel using the pool feature. Shows

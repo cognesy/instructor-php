@@ -1,8 +1,8 @@
 ---
 title: 'Extracting scalar values'
 docname: 'scalars'
+id: '318e'
 ---
-
 ## Overview
 
 Sometimes we just want to get quick results without defining a class for

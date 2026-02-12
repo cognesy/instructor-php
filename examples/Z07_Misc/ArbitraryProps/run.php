@@ -1,8 +1,8 @@
 ---
 title: 'Arbitrary properties'
 docname: 'arbitrary_properties'
+id: '6f3e'
 ---
-
 ## Overview
 
 When you need to extract undefined attributes, use a list of key-value pairs.

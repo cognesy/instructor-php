@@ -1,8 +1,8 @@
 ---
 title: 'Local / Ollama'
 docname: 'ollama'
+id: '3d6b'
 ---
-
 ## Overview
 
 You can use Instructor with local Ollama instance.

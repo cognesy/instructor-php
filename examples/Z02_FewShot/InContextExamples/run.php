@@ -1,8 +1,8 @@
 ---
 title: 'Generate In-Context Examples'
 docname: 'in_context_examples'
+id: '3244'
 ---
-
 ## Overview
 
 How can we generate examples for our prompt?

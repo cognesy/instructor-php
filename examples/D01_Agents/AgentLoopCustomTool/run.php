@@ -1,20 +1,23 @@
 ---
 title: 'Agent with Custom Tool'
 docname: 'agent_loop_custom_tool'
+order: 4
+id: '1f01'
 ---
-
 ## Overview
 
-Build a custom tool by extending `BaseTool`. The parameter schema is auto-generated
-from the `__invoke()` method signature using PHP type hints and `#[Description]` attributes.
+Build a custom tool by extending `BaseTool`. Override `__invoke(mixed ...$args)` to
+implement the tool logic, use `$this->arg()` to extract named parameters, and override
+`toToolSchema()` to define the parameter schema for the LLM.
 
 This example creates a `SystemInfoTool` that reports memory usage, PHP version, and
 other runtime information. The agent calls it when asked about the system.
 
 Key concepts:
 - `BaseTool`: Abstract base class for custom tools
-- `#[Description]`: Annotate parameters for the LLM
-- `__invoke()`: The method the agent calls - schema is derived from its signature
+- `__invoke(mixed ...$args)`: The method the agent calls
+- `$this->arg()`: Extract named or positional parameters from args
+- `toToolSchema()`: Define the JSON Schema the LLM sees for this tool
 - `$this->agentState`: Access current agent state from within a tool
 
 ## Example
@@ -23,11 +26,13 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Agents\Broadcasting\AgentConsoleLogger;
 use Cognesy\Agents\Core\AgentLoop;
 use Cognesy\Agents\Core\Data\AgentState;
 use Cognesy\Agents\Core\Tools\BaseTool;
 use Cognesy\Messages\Messages;
-use Cognesy\Schema\Attributes\Description;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
 // Custom tool that reports system information
 class SystemInfoTool extends BaseTool
@@ -39,11 +44,9 @@ class SystemInfoTool extends BaseTool
         );
     }
 
-    #[Description('Get system information')]
-    public function __invoke(
-        #[Description('What to check: "memory", "php", or "all"')]
-        string $category = 'all',
-    ): string {
+    #[\Override]
+    public function __invoke(mixed ...$args): string {
+        $category = (string) $this->arg($args, 'category', 0, 'all');
         $info = [];
 
         if ($category === 'memory' || $category === 'all') {
@@ -71,18 +74,43 @@ class SystemInfoTool extends BaseTool
 
         return implode("\n", $info);
     }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::string('category', 'What to check: "memory", "php", or "all"'),
+                ])
+                ->withRequiredProperties([])
+        )->toArray();
+    }
 }
 
+// AgentConsoleLogger shows execution lifecycle events on the console
+$logger = new AgentConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showContinuation: true,
+    showToolArgs: true,
+);
+
 // Create loop with the custom tool
-$loop = AgentLoop::default()->withTool(new SystemInfoTool());
+$loop = AgentLoop::default()
+    ->withTool(new SystemInfoTool())
+    ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withMessages(
     Messages::fromString('Check the current memory usage and PHP version. Report back concisely.')
 );
 
+echo "=== Agent Execution ===\n\n";
 $finalState = $loop->execute($state);
 
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+echo "\n=== Result ===\n";
+$response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";

@@ -1,8 +1,8 @@
 ---
 title: 'Consistent values of arbitrary properties'
 docname: 'arbitrary_properties_consistent'
+id: '8767'
 ---
-
 ## Overview
 
 For multiple records containing arbitrary properties, instruct LLM to get more

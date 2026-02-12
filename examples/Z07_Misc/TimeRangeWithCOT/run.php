@@ -1,8 +1,8 @@
 ---
 title: 'Using CoT to improve interpretation of component data'
 docname: 'component_reuse_cot'
+id: '46bd'
 ---
-
 ## Overview
 
 You can reuse the same component for different contexts within a model. In this

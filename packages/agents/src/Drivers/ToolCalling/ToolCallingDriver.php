@@ -143,16 +143,18 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
      */
     #[Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentState {
+        // Compile context once and reuse for both LLM request and step recording
+        $context = $this->messageCompiler->compile($state);
+
         // Get the tool call response from the LLM
-        $response = $this->getToolCallResponse($state, $tools); // InferenceResponse
-        $toolCalls = $response->toolCalls(); // ToolCalls
+        $response = $this->getToolCallResponse($state, $tools, $context);
+        $toolCalls = $response->toolCalls();
 
         // Execute each tool call
         $executions = $executor->executeTools($toolCalls, $state);
 
         // Build AgentStep from response and executions
         $messages = $this->formatter->makeExecutionMessages($executions);
-        $context = $this->messageCompiler->compile($state);
         $step = $this->buildStepFromResponse(
             response: $response,
             executions: $executions,
@@ -164,8 +166,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptAgentEventEmitter, CanA
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function getToolCallResponse(AgentState $state, Tools $tools) : InferenceResponse {
-        $messages = $this->messageCompiler->compile($state);
+    private function getToolCallResponse(AgentState $state, Tools $tools, Messages $messages) : InferenceResponse {
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
         // Emit inference request started event

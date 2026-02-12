@@ -2,8 +2,8 @@
 title: 'Reasoning Content Access'
 docname: 'reasoning_content'
 path: ''
+id: '0b56'
 ---
-
 ## Overview
 
 Deepseek API allows to access reasoning content, which is a detailed explanation of how the response was generated.

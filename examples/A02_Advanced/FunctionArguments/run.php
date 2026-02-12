@@ -1,8 +1,8 @@
 ---
 title: 'Extracting arguments of function or method'
 docname: 'function_calls'
+id: 'bce8'
 ---
-
 ## Overview
 
 Instructor offers FunctionCall class to extract arguments of a function

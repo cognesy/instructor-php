@@ -40,11 +40,40 @@ describe('JsonSchema::object()', function () {
         expect($array['required'])->toBe(['name', 'email']);
     });
 
-    it('omits empty properties', function () {
+    it('emits empty properties as stdClass for valid JSON object schema', function () {
         $schema = JsonSchema::object('empty');
         $array = $schema->toArray();
 
-        expect($array)->not->toHaveKey('properties');
+        // Must have 'properties' key even when empty — LLM APIs require it
+        expect($array)->toHaveKey('properties');
+        expect($array['properties'])->toBeInstanceOf(\stdClass::class);
+        expect($array)->not->toHaveKey('required');
+
+        // Verify it JSON-encodes as {} not []
+        $json = json_encode($array);
+        expect($json)->toContain('"properties":{}');
+    });
+
+    it('emits empty properties via withProperties([])', function () {
+        $schema = JsonSchema::object('empty')
+            ->withProperties([]);
+        $array = $schema->toArray();
+
+        expect($array)->toHaveKey('properties');
+        expect($array['properties'])->toBeInstanceOf(\stdClass::class);
+
+        $json = json_encode($array);
+        expect($json)->toContain('"properties":{}');
+    });
+
+    it('emits empty properties via withRequiredProperties([])', function () {
+        $schema = JsonSchema::object('empty')
+            ->withProperties([])
+            ->withRequiredProperties([]);
+        $array = $schema->toArray();
+
+        expect($array)->toHaveKey('properties');
+        expect($array['properties'])->toBeInstanceOf(\stdClass::class);
         expect($array)->not->toHaveKey('required');
     });
 

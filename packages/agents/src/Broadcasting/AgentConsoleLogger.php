@@ -236,9 +236,9 @@ final class AgentConsoleLogger
         }
 
         $stopSignal = $event->stopSignal();
-        $shouldContinue = $event->shouldContinue();
-        $decision = $shouldContinue ? 'CONTINUE' : 'STOP';
-        $color = $shouldContinue ? 'magenta' : 'cyan';
+        $shouldStop = $event->shouldStop();
+        $decision = $shouldStop ? 'STOP' : 'CONTINUE';
+        $color = $shouldStop ? 'cyan' : 'magenta';
         $stopReason = $event->stopReason();
 
         $details = [
@@ -349,20 +349,13 @@ final class AgentConsoleLogger
             return;
         }
 
-        $reasonInfo = $event->reason ? sprintf(' (%s)', $this->truncate($event->reason, 50)) : '';
+        $name = $event->hookName ?? 'anonymous';
         $duration = $this->durationMs($event->startedAt, $event->completedAt);
 
-        $color = match ($event->outcome) {
-            'blocked', 'stopped' => 'red',
-            default => 'dark',
-        };
-
-        $this->log('HOOK', $color, sprintf(
-            '%s hook for "%s": %s%s [%dms]',
-            $event->hookType,
-            $event->tool,
-            $event->outcome,
-            $reasonInfo,
+        $this->log('HOOK', 'dark', sprintf(
+            '%s "%s" [%dms]',
+            $event->triggerType,
+            $name,
             $duration,
         ));
     }

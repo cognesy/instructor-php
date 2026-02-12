@@ -1,8 +1,8 @@
 ---
 title: 'Extraction of complex objects (Cohere)'
 docname: 'complex_extraction_cohere'
+id: 'a36c'
 ---
-
 ## Overview
 
 This is an example of extraction of a very complex structure from

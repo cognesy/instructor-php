@@ -1,8 +1,8 @@
 ---
 title: 'Context caching (text inference, OpenAI)'
 docname: 'context_cache_llm_oai'
+id: '63a7'
 ---
-
 ## Overview
 
 Instructor offers a simplified way to work with LLM providers' APIs supporting caching,

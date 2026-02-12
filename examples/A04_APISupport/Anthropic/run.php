@@ -1,8 +1,8 @@
 ---
 title: 'Anthropic'
 docname: 'anthropic'
+id: '1b36'
 ---
-
 ## Overview
 
 Instructor supports Anthropic API - you can find the details on how to configure

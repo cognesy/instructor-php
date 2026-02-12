@@ -1,8 +1,8 @@
 ---
 title: 'Working directly with LLMs'
 docname: 'inference'
+id: 'e986'
 ---
-
 ## Overview
 
 `Inference` class offers access to LLM APIs and convenient methods to execute

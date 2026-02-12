@@ -7,6 +7,7 @@ use Cognesy\InstructorHub\Config\ExampleGroupingConfig;
 use Cognesy\InstructorHub\Commands\CleanCommand;
 use Cognesy\InstructorHub\Commands\EnhancedRunAllExamples;
 use Cognesy\InstructorHub\Commands\ErrorsCommand;
+use Cognesy\InstructorHub\Commands\GenerateExampleIds;
 use Cognesy\InstructorHub\Commands\HubHelpCommand;
 use Cognesy\InstructorHub\Commands\ListAllExamples;
 use Cognesy\InstructorHub\Commands\RawCommand;
@@ -69,9 +70,12 @@ Hub provides example execution with comprehensive status tracking, selective re-
   status [--detailed] [--format]  Show execution status and summaries
   stats [--slowest=N]             Show performance metrics and analytics
   clean [--completed] [--all]     Clean status data
+  gen:ids [--dry-run]             Generate stable short hex IDs for examples
 
 <comment>EXAMPLES:</comment>
-  composer hub run 35             # Real-time streaming output with colors
+  composer hub run 35             # Run by ephemeral index
+  composer hub run x5265          # Run by stable short ID
+  composer hub run basic_use      # Run by docname
   composer hub all --filter=errors # Re-run only failed examples
   composer hub status --detailed   # Per-example breakdown
   composer hub stats --slowest=10  # Show 10 slowest examples
@@ -125,6 +129,7 @@ HELP;
 
             // Maintenance commands
             new CleanCommand($this->tracker, $this->statusRepo),
+            new GenerateExampleIds($this->exampleRepo),
         ]);
     }
 
