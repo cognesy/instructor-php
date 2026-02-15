@@ -41,7 +41,7 @@ it('Cohere V2: does not map tool deltas into contentDelta', function () {
         ],
     ]);
 
-    $partial = $adapter->fromStreamResponse($event);
+    $partial = iterator_to_array($adapter->fromStreamResponses([$event]))[0] ?? null;
     expect($partial)->not->toBeNull();
     expect($partial->contentDelta)->toBe('');
     expect($partial->toolArgs)->toContain('Hello');

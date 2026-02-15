@@ -99,8 +99,10 @@ it('yields sequence updates only when new items complete and dispatches events',
     expect($updates[0]->count())->toBe(1);
     expect($updates[1]->count())->toBe(2);
 
-    // Events dispatched: multiple StructuredOutputResponseUpdated and 1 StructuredOutputResponseGenerated
+    // Events dispatched: StructuredOutputStarted (constructor) + multiple StructuredOutputResponseUpdated (per-item)
+    // StructuredOutputResponseGenerated only fires from finalResponse(), not from sequence()
     $types = array_map(fn($e) => get_class($e), $dispatcher->events);
+    expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputStarted')))->not()->toBeEmpty();
     expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseUpdated')))->not()->toBeEmpty();
-    expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseGenerated')))->not()->toBeEmpty();
+    expect(array_filter($types, fn($t) => str_contains($t, 'StructuredOutputResponseGenerated')))->toBeEmpty();
 });

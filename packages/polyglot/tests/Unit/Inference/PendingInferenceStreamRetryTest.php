@@ -1,8 +1,6 @@
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
@@ -55,18 +53,6 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
             // Second attempt: return valid stream chunks
             yield new PartialInferenceResponse(contentDelta: 'Hello');
             yield new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop');
-        }
-
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
         }
 
         public function capabilities(?string $model = null): DriverCapabilities {
@@ -134,18 +120,6 @@ it('does not re-execute when response() is called after stream() and dispatches 
             $this->streamCalls++;
             yield new PartialInferenceResponse(contentDelta: 'Hello');
             yield new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop');
-        }
-
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
         }
 
         public function capabilities(?string $model = null): DriverCapabilities {
@@ -217,18 +191,6 @@ it('creates a fresh stream for length recovery continuation', function () {
             }
         }
 
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
-        }
-
         public function capabilities(?string $model = null): DriverCapabilities {
             return new DriverCapabilities();
         }
@@ -292,18 +254,6 @@ it('reports partial usage in failure event when stream throws after emitting chu
                 usageIsCumulative: true,
             );
             throw new TimeoutException('connection lost mid-stream');
-        }
-
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
         }
 
         public function capabilities(?string $model = null): DriverCapabilities {
@@ -387,18 +337,6 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
             yield new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop');
         }
 
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
-        }
-
         public function capabilities(?string $model = null): DriverCapabilities {
             return new DriverCapabilities();
         }
@@ -472,18 +410,6 @@ it('throws and dispatches failure events when stream-first response has a failed
             yield new PartialInferenceResponse(contentDelta: ' output', finishReason: 'length');
         }
 
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
-        }
-
         public function capabilities(?string $model = null): DriverCapabilities {
             return new DriverCapabilities();
         }
@@ -520,4 +446,130 @@ it('throws and dispatches failure events when stream-first response has a failed
     expect($capturedCompleted->isSuccess)->toBeFalse();
     expect($capturedFailure)->not->toBeNull();
     expect($capturedFailure->willRetry)->toBeFalse();
+});
+
+/**
+ * Regression: failed response() must throw on every subsequent call.
+ *
+ * Before the fix, failure branches stored the failed response via
+ * withFailedAttempt() then threw. On the second call,
+ * $this->execution->response() returned the failed response and the
+ * early return silently succeeded — returning a response with
+ * finishReason=length instead of throwing.
+ *
+ * The fix stores the terminal error and re-throws it on subsequent calls.
+ */
+it('re-throws on repeated response() calls after non-streaming failure', function () {
+    $events = new EventDispatcher();
+
+    $driver = new class implements CanHandleInference {
+        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
+            return new InferenceResponse(content: 'truncated', finishReason: 'length');
+        }
+
+        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
+            return [];
+        }
+
+        public function capabilities(?string $model = null): DriverCapabilities {
+            return new DriverCapabilities();
+        }
+    };
+
+    $request = (new InferenceRequestBuilder())
+        ->withMessages('Test failure idempotency')
+        ->withRetryPolicy(new InferenceRetryPolicy(maxAttempts: 1))
+        ->create();
+
+    $execution = InferenceExecution::fromRequest($request);
+
+    $pending = new PendingInference(
+        execution: $execution,
+        driver: $driver,
+        eventDispatcher: $events,
+    );
+
+    // First call throws
+    $firstError = null;
+    try {
+        $pending->response();
+    } catch (\RuntimeException $e) {
+        $firstError = $e;
+    }
+    expect($firstError)->not->toBeNull();
+    expect($firstError->getMessage())->toContain('length');
+
+    // Second call must also throw (same error)
+    $secondError = null;
+    try {
+        $pending->response();
+    } catch (\RuntimeException $e) {
+        $secondError = $e;
+    }
+    expect($secondError)->not->toBeNull();
+    expect($secondError)->toBe($firstError);
+
+    // get() must also throw
+    $thirdError = null;
+    try {
+        $pending->get();
+    } catch (\RuntimeException $e) {
+        $thirdError = $e;
+    }
+    expect($thirdError)->toBe($firstError);
+});
+
+it('re-throws on repeated response() calls after stream-first failure', function () {
+    $events = new EventDispatcher();
+
+    $driver = new class implements CanHandleInference {
+        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
+            throw new \LogicException('Should not be called in streaming mode');
+        }
+
+        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
+            yield new PartialInferenceResponse(contentDelta: 'partial');
+            yield new PartialInferenceResponse(contentDelta: ' content', finishReason: 'content_filter');
+        }
+
+        public function capabilities(?string $model = null): DriverCapabilities {
+            return new DriverCapabilities();
+        }
+    };
+
+    $request = (new InferenceRequestBuilder())
+        ->withMessages('Test stream failure idempotency')
+        ->withStreaming(true)
+        ->create();
+
+    $execution = InferenceExecution::fromRequest($request);
+
+    $pending = new PendingInference(
+        execution: $execution,
+        driver: $driver,
+        eventDispatcher: $events,
+    );
+
+    // Consume stream first
+    $stream = $pending->stream();
+    $stream->final();
+
+    // First response() call should throw (content_filter)
+    $firstError = null;
+    try {
+        $pending->response();
+    } catch (\RuntimeException $e) {
+        $firstError = $e;
+    }
+    expect($firstError)->not->toBeNull();
+    expect($firstError->getMessage())->toContain('content_filter');
+
+    // Second response() call must also throw (same error)
+    $secondError = null;
+    try {
+        $pending->response();
+    } catch (\RuntimeException $e) {
+        $secondError = $e;
+    }
+    expect($secondError)->toBe($firstError);
 });

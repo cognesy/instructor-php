@@ -44,6 +44,7 @@ class PendingInference
     private int $attemptNumber = 0;
     private ?InferenceResponse $cachedResponse = null;
     private ?InferenceStream $cachedStream = null;
+    private ?\Throwable $terminalError = null;
 
     public function __construct(
         InferenceExecution $execution,
@@ -132,6 +133,9 @@ class PendingInference
      * @return InferenceResponse The constructed InferenceResponse object, either fully or from partial responses if streaming is enabled.
      */
     public function response() : InferenceResponse {
+        if ($this->terminalError !== null) {
+            throw $this->terminalError;
+        }
         $existingResponse = $this->execution->response();
         if ($existingResponse !== null) {
             return $existingResponse;
@@ -154,6 +158,7 @@ class PendingInference
                 $error = new \RuntimeException('Inference execution failed: ' . $finishReason->value);
                 $this->handleAttemptFailure($error, $response, false);
                 $this->dispatchInferenceCompleted(isSuccess: false);
+                $this->terminalError = $error;
                 throw $error;
             }
 
@@ -185,6 +190,7 @@ class PendingInference
                 $this->handleAttemptFailure($e, null, $shouldRetry);
                 if (!$shouldRetry) {
                     $this->dispatchInferenceCompleted(isSuccess: false);
+                    $this->terminalError = $e;
                     throw $e;
                 }
 
@@ -217,6 +223,7 @@ class PendingInference
                     $error = new \RuntimeException('Inference blocked by content filter');
                     $this->handleAttemptFailure($error, $response, false);
                     $this->dispatchInferenceCompleted(isSuccess: false);
+                    $this->terminalError = $error;
                     throw $error;
                 }
 
@@ -226,6 +233,7 @@ class PendingInference
                 $this->handleAttemptFailure($error, $response, $shouldRetry);
                 if (!$shouldRetry) {
                     $this->dispatchInferenceCompleted(isSuccess: false);
+                    $this->terminalError = $error;
                     throw $error;
                 }
                 $delayMs = $policy->delayMsForAttempt($this->attemptNumber);

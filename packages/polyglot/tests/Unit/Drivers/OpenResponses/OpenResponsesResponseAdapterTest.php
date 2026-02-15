@@ -24,6 +24,27 @@ class OpenResponsesResponseAdapterTest extends TestCase
         return HttpResponse::sync(200, [], json_encode($data));
     }
 
+    /**
+     * Helper: send a single event body through fromStreamResponses and return the first result.
+     */
+    private function streamOne(string $eventBody): ?PartialInferenceResponse
+    {
+        foreach ($this->adapter->fromStreamResponses([$eventBody]) as $partial) {
+            return $partial;
+        }
+        return null;
+    }
+
+    /**
+     * Helper: send multiple event bodies through fromStreamResponses and return all results.
+     * @param string[] $eventBodies
+     * @return PartialInferenceResponse[]
+     */
+    private function streamAll(array $eventBodies): array
+    {
+        return iterator_to_array($this->adapter->fromStreamResponses($eventBodies), false);
+    }
+
     public function test_parses_basic_response(): void
     {
         $responseData = [
@@ -268,7 +289,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
             'delta' => 'Hello',
         ]);
 
-        $result = $this->adapter->fromStreamResponse($eventBody, null);
+        $result = $this->streamOne($eventBody);
 
         $this->assertEquals('Hello', $result->contentDelta);
     }
@@ -280,7 +301,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
             'delta' => 'Thinking...',
         ]);
 
-        $result = $this->adapter->fromStreamResponse($eventBody, null);
+        $result = $this->streamOne($eventBody);
 
         $this->assertEquals('Thinking...', $result->reasoningContentDelta);
     }
@@ -296,7 +317,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
             ],
         ]);
 
-        $result = $this->adapter->fromStreamResponse($eventBody, null);
+        $result = $this->streamOne($eventBody);
 
         $this->assertEquals('call_xyz', $result->toolId);
         $this->assertEquals('get_weather', $result->toolName);
@@ -310,7 +331,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
             'delta' => '{"loc',
         ]);
 
-        $result = $this->adapter->fromStreamResponse($eventBody, null);
+        $result = $this->streamOne($eventBody);
 
         $this->assertEquals('{"loc', $result->toolArgs);
     }
@@ -321,7 +342,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
             'type' => 'response.completed',
         ]);
 
-        $result = $this->adapter->fromStreamResponse($eventBody, null);
+        $result = $this->streamOne($eventBody);
 
         $this->assertEquals('stop', $result->finishReason());
     }
@@ -332,29 +353,29 @@ class OpenResponsesResponseAdapterTest extends TestCase
             'type' => 'response.failed',
         ]);
 
-        $result = $this->adapter->fromStreamResponse($eventBody, null);
+        $result = $this->streamOne($eventBody);
 
         $this->assertEquals('error', $result->finishReason());
     }
 
     public function test_handles_null_event_body(): void
     {
-        $result = $this->adapter->fromStreamResponse('', null);
+        $result = $this->streamOne('');
 
         $this->assertNull($result);
     }
 
     public function test_handles_invalid_json(): void
     {
-        $result = $this->adapter->fromStreamResponse('not json', null);
+        $result = $this->streamOne('not json');
 
         $this->assertNull($result);
     }
 
     public function test_stream_function_call_done_with_item_id_preserves_call_id(): void
     {
-        $events = [
-            [
+        $eventBodies = [
+            (string) json_encode([
                 'type' => 'response.output_item.added',
                 'item' => [
                     'type' => 'function_call',
@@ -362,32 +383,30 @@ class OpenResponsesResponseAdapterTest extends TestCase
                     'call_id' => 'call_1',
                     'name' => 'get_weather',
                 ],
-            ],
-            [
+            ]),
+            (string) json_encode([
                 'type' => 'response.function_call_arguments.delta',
                 'item_id' => 'item_1',
                 'delta' => '{"city":"Par',
-            ],
-            [
+            ]),
+            (string) json_encode([
                 'type' => 'response.function_call_arguments.done',
                 'item_id' => 'item_1',
                 'name' => 'get_weather',
                 'arguments' => '{"city":"Paris"}',
-            ],
-            [
+            ]),
+            (string) json_encode([
                 'type' => 'response.completed',
                 'response' => [
                     'status' => 'completed',
                 ],
-            ],
+            ]),
         ];
 
         $prior = PartialInferenceResponse::empty();
         $last = null;
 
-        foreach ($events as $event) {
-            $partial = $this->adapter->fromStreamResponse((string) json_encode($event), null);
-            $this->assertNotNull($partial);
+        foreach ($this->adapter->fromStreamResponses($eventBodies) as $partial) {
             $last = $partial->withAccumulatedContent($prior);
             $prior = $last;
         }
@@ -403,7 +422,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
     public function test_stream_usage_is_extracted_from_nested_response(): void
     {
-        $event = [
+        $eventBody = (string) json_encode([
             'type' => 'response.completed',
             'response' => [
                 'status' => 'completed',
@@ -412,11 +431,11 @@ class OpenResponsesResponseAdapterTest extends TestCase
                     'output_tokens' => 9,
                 ],
             ],
-        ];
+        ]);
 
-        $partial = $this->adapter->fromStreamResponse((string) json_encode($event), null);
-        $this->assertNotNull($partial);
-        $accumulated = $partial->withAccumulatedContent(PartialInferenceResponse::empty());
+        $result = $this->streamOne($eventBody);
+        $this->assertNotNull($result);
+        $accumulated = $result->withAccumulatedContent(PartialInferenceResponse::empty());
 
         $this->assertEquals(21, $accumulated->usage()->inputTokens);
         $this->assertEquals(9, $accumulated->usage()->outputTokens);

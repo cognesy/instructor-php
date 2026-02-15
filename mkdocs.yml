@@ -214,6 +214,3 @@ nav:
         Introduction: cookbook/introduction.md
       -
         Contributing: cookbook/contributing.md
-      -
-        'Test Group':
-          - { 'Test Example': cookbook/basics/TestGroup/.md }

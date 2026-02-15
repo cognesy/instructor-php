@@ -37,7 +37,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="d995"
+// @doctest id="400e"
 ```
 
 Key methods:
@@ -72,7 +72,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="8d08"
+// @doctest id="0ed4"
 ```
 
 Key methods:
@@ -91,27 +91,20 @@ Several interfaces define the contract for LLM drivers and adapters:
 namespace Cognesy\Polyglot\Inference\Contracts;
 
 interface CanHandleInference {
-    public function handle(InferenceRequest $request): HttpResponse;
-    public function fromResponse(HttpResponse $response): ?InferenceResponse;
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;
-    public function toEventBody(string $data): string|bool;
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse;
+    /** @return iterable<PartialInferenceResponse> */
+    public function makeStreamResponsesFor(InferenceRequest $request): iterable;
+    public function capabilities(?string $model = null): DriverCapabilities;
 }
 
-interface ProviderRequestAdapter {
-    public function toHttpClientRequest(
-        array $messages,
-        string $model,
-        array $tools,
-        string|array $toolChoice,
-        array $responseFormat,
-        array $options,
-        Mode $mode
-    ): HttpRequest;
+interface CanTranslateInferenceRequest {
+    public function toHttpRequest(InferenceRequest $request): HttpRequest;
 }
 
-interface ProviderResponseAdapter {
+interface CanTranslateInferenceResponse {
     public function fromResponse(HttpResponse $response): ?InferenceResponse;
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;
+    /** @return iterable<PartialInferenceResponse> */
+    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable;
     public function toEventBody(string $data): string|bool;
 }
 
@@ -120,21 +113,13 @@ interface CanMapMessages {
 }
 
 interface CanMapRequestBody {
-    public function map(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        Mode $mode
-    ): array;
+    public function toRequestBody(InferenceRequest $request): array;
 }
 
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="16a7"
+// @doctest id="4146"
 ```
 
 
@@ -167,34 +152,34 @@ interface EmbedResponseAdapter {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="ceab"
+// @doctest id="251c"
 ```
 
 
 
-## ModularLLMDriver
+## BaseInferenceDriver
 
-The `ModularLLMDriver` is a central component that implements the `CanHandleInference` interface using adapters:
+The `BaseInferenceDriver` is the abstract base class that implements `CanHandleInference` using request/response translators:
 
 ```php
 namespace Cognesy\Polyglot\Inference\Drivers;
 
-class ModularLLMDriver implements CanHandleInference {
-    public function __construct(
-        protected LLMConfig $config,
-        protected ProviderRequestAdapter $requestAdapter,
-        protected ProviderResponseAdapter $responseAdapter,
-        protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcher $events = null
-    ) { ... }
+abstract class BaseInferenceDriver implements CanHandleInference {
+    protected LLMConfig $config;
+    protected HttpClient $httpClient;
+    protected EventDispatcherInterface $events;
+    protected CanTranslateInferenceRequest $requestTranslator;
+    protected CanTranslateInferenceResponse $responseTranslator;
 
-    public function handle(InferenceRequest $request): HttpResponse { ... }
-    public function fromResponse(HttpResponse $response): ?InferenceResponse { ... }
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
-    public function toEventBody(string $data): string|bool { ... }
+    public function makeResponseFor(InferenceRequest $request): InferenceResponse { ... }
+    /** @return iterable<PartialInferenceResponse> */
+    public function makeStreamResponsesFor(InferenceRequest $request): iterable { ... }
+    public function capabilities(?string $model = null): DriverCapabilities { ... }
 }
-// @doctest id="78dc"
+// @doctest id="9260"
 ```
+
+Provider-specific drivers (e.g. `OpenAIDriver`, `AnthropicDriver`) extend `BaseInferenceDriver` and wire up their own request/response translators in the constructor.
 
 
 
@@ -222,7 +207,7 @@ class InferenceDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="99a5"
+// @doctest id="6ae6"
 ```
 
 ### EmbeddingsDriverFactory
@@ -247,5 +232,5 @@ class EmbeddingsDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="d718"
+// @doctest id="0bef"
 ```

@@ -27,20 +27,6 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
  */
 class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 {
-    // Track current streaming state for multi-item responses
-    private string $currentItemId = '';
-    private string $currentItemType = '';
-    /** @var array<string, string> */
-    private array $itemToCallId = [];
-    /** @var array<string, string> */
-    private array $itemToName = [];
-    /** @var array<string, bool> */
-    private array $seenOutputTextItems = [];
-    /** @var array<string, bool> */
-    private array $seenReasoningItems = [];
-    /** @var array<string, string> */
-    private array $toolArgsAccumulated = [];
-
     public function __construct(
         protected CanMapUsage $usageFormat,
     ) {}
@@ -65,28 +51,30 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
-        $data = json_decode($eventBody, true);
-        if ($data === null || empty($data)) {
-            return null;
+    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $ctx = new OpenResponsesStreamContext();
+
+        foreach ($eventBodies as $eventBody) {
+            $data = json_decode($eventBody, true);
+            if ($data === null || empty($data)) {
+                continue;
+            }
+
+            $eventType = $data['type'] ?? '';
+            $this->updateItemContext($ctx, $data);
+
+            yield new PartialInferenceResponse(
+                contentDelta: $this->extractStreamContentDelta($ctx, $data, $eventType),
+                reasoningContentDelta: $this->extractStreamReasoningDelta($ctx, $data, $eventType),
+                toolId: $this->extractStreamToolId($ctx, $data, $eventType),
+                toolName: $this->extractStreamToolName($ctx, $data, $eventType),
+                toolArgs: $this->extractStreamToolArgs($ctx, $data, $eventType),
+                finishReason: $this->extractStreamFinishReason($data, $eventType),
+                usage: $this->usageFormat->fromData($data),
+                usageIsCumulative: true,
+                responseData: $responseData,
+            );
         }
-
-        $eventType = $data['type'] ?? '';
-
-        // Track item context for multi-item responses
-        $this->updateItemContext($data);
-
-        return new PartialInferenceResponse(
-            contentDelta: $this->extractStreamContentDelta($data, $eventType),
-            reasoningContentDelta: $this->extractStreamReasoningDelta($data, $eventType),
-            toolId: $this->extractStreamToolId($data, $eventType),
-            toolName: $this->extractStreamToolName($data, $eventType),
-            toolArgs: $this->extractStreamToolArgs($data, $eventType),
-            finishReason: $this->extractStreamFinishReason($data, $eventType),
-            usage: $this->usageFormat->fromData($data),
-            usageIsCumulative: true,
-            responseData: $responseData,
-        );
     }
 
     #[\Override]
@@ -227,21 +215,21 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
     // STREAMING EXTRACTION ////////////////////////////////////////////
 
-    protected function updateItemContext(array $data): void {
+    protected function updateItemContext(OpenResponsesStreamContext $ctx, array $data): void {
         $eventType = $data['type'] ?? '';
 
         if ($eventType === 'response.output_item.added' || $eventType === 'response.output_item.done') {
-            $this->handleOutputItemEvent($data);
+            $this->handleOutputItemEvent($ctx, $data);
         }
 
-        $itemId = $this->resolveItemId($data);
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId === '') {
             return;
         }
-        $this->currentItemId = $itemId;
+        $ctx->currentItemId = $itemId;
     }
 
-    protected function handleOutputItemEvent(array $data): void {
+    protected function handleOutputItemEvent(OpenResponsesStreamContext $ctx, array $data): void {
         $item = $data['item'] ?? [];
         if (empty($item)) {
             return;
@@ -252,41 +240,41 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             return;
         }
 
-        $this->currentItemId = $itemId;
-        $this->currentItemType = $item['type'] ?? '';
+        $ctx->currentItemId = $itemId;
+        $ctx->currentItemType = $item['type'] ?? '';
 
-        if ($this->currentItemType !== 'function_call') {
+        if ($ctx->currentItemType !== 'function_call') {
             return;
         }
 
         $callId = $item['call_id'] ?? $itemId;
         $name = $item['name'] ?? '';
-        $this->itemToCallId[$itemId] = $callId;
-        $this->itemToName[$itemId] = $name;
+        $ctx->itemToCallId[$itemId] = $callId;
+        $ctx->itemToName[$itemId] = $name;
     }
 
-    protected function extractStreamContentDelta(array $data, string $eventType): string {
+    protected function extractStreamContentDelta(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
         return match($eventType) {
-            'response.output_text.delta' => $this->markOutputTextSeen($data, (string) ($data['delta'] ?? '')),
-            'response.text.delta' => $this->markOutputTextSeen($data, (string) ($data['delta'] ?? '')),
-            'response.output_text.done' => $this->maybeEmitDoneText($data),
-            'response.text.done' => $this->maybeEmitDoneText($data),
+            'response.output_text.delta' => $this->markOutputTextSeen($ctx, $data, (string) ($data['delta'] ?? '')),
+            'response.text.delta' => $this->markOutputTextSeen($ctx, $data, (string) ($data['delta'] ?? '')),
+            'response.output_text.done' => $this->maybeEmitDoneText($ctx, $data),
+            'response.text.done' => $this->maybeEmitDoneText($ctx, $data),
             default => '',
         };
     }
 
-    protected function extractStreamReasoningDelta(array $data, string $eventType): string {
+    protected function extractStreamReasoningDelta(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
         return match($eventType) {
-            'response.reasoning_text.delta' => $this->markReasoningSeen($data, (string) ($data['delta'] ?? '')),
-            'response.reasoning.delta' => $this->markReasoningSeen($data, (string) ($data['delta'] ?? '')),
-            'response.reasoning_summary_text.delta' => $this->markReasoningSeen($data, (string) ($data['delta'] ?? '')),
-            'response.reasoning_text.done' => $this->maybeEmitDoneReasoning($data),
-            'response.reasoning_summary_text.done' => $this->maybeEmitDoneReasoning($data),
+            'response.reasoning_text.delta' => $this->markReasoningSeen($ctx, $data, (string) ($data['delta'] ?? '')),
+            'response.reasoning.delta' => $this->markReasoningSeen($ctx, $data, (string) ($data['delta'] ?? '')),
+            'response.reasoning_summary_text.delta' => $this->markReasoningSeen($ctx, $data, (string) ($data['delta'] ?? '')),
+            'response.reasoning_text.done' => $this->maybeEmitDoneReasoning($ctx, $data),
+            'response.reasoning_summary_text.done' => $this->maybeEmitDoneReasoning($ctx, $data),
             default => '',
         };
     }
 
-    protected function extractStreamToolId(array $data, string $eventType): string {
+    protected function extractStreamToolId(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
         return match($eventType) {
             'response.output_item.added' => match($data['item']['type'] ?? '') {
                 'function_call' => $data['item']['call_id'] ?? $data['item']['id'] ?? '',
@@ -296,13 +284,13 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 'function_call' => $data['item']['call_id'] ?? $data['item']['id'] ?? '',
                 default => '',
             },
-            'response.function_call_arguments.delta' => $this->resolveCallId($data),
-            'response.function_call_arguments.done' => $this->resolveCallId($data),
+            'response.function_call_arguments.delta' => $this->resolveCallId($ctx, $data),
+            'response.function_call_arguments.done' => $this->resolveCallId($ctx, $data),
             default => '',
         };
     }
 
-    protected function extractStreamToolName(array $data, string $eventType): string {
+    protected function extractStreamToolName(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
         return match($eventType) {
             'response.output_item.added' => match($data['item']['type'] ?? '') {
                 'function_call' => $data['item']['name'] ?? '',
@@ -312,17 +300,17 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 'function_call' => $data['item']['name'] ?? '',
                 default => '',
             },
-            'response.function_call_arguments.done' => $this->resolveToolName($data),
+            'response.function_call_arguments.done' => $this->resolveToolName($ctx, $data),
             default => '',
         };
     }
 
-    protected function extractStreamToolArgs(array $data, string $eventType): string {
+    protected function extractStreamToolArgs(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
         return match($eventType) {
-            'response.function_call_arguments.delta' => $this->markToolArgsSeen($data, (string) ($data['delta'] ?? '')),
-            'response.function_call_arguments.done' => $this->maybeEmitDoneToolArgs($data),
+            'response.function_call_arguments.delta' => $this->markToolArgsSeen($ctx, $data, (string) ($data['delta'] ?? '')),
+            'response.function_call_arguments.done' => $this->maybeEmitDoneToolArgs($ctx, $data),
             'response.output_item.done' => match($data['item']['type'] ?? '') {
-                'function_call' => $this->maybeEmitDoneToolArgs($data, (string) ($data['item']['arguments'] ?? '')),
+                'function_call' => $this->maybeEmitDoneToolArgs($ctx, $data, (string) ($data['item']['arguments'] ?? '')),
                 default => '',
             },
             default => '',
@@ -339,105 +327,105 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         };
     }
 
-    protected function resolveItemId(array $data): string {
+    protected function resolveItemId(OpenResponsesStreamContext $ctx, array $data): string {
         if (isset($data['item_id']) && $data['item_id'] !== '') {
             return (string) $data['item_id'];
         }
         if (isset($data['item']['id']) && $data['item']['id'] !== '') {
             return (string) $data['item']['id'];
         }
-        return $this->currentItemId;
+        return $ctx->currentItemId;
     }
 
-    protected function resolveCallId(array $data): string {
+    protected function resolveCallId(OpenResponsesStreamContext $ctx, array $data): string {
         if (isset($data['call_id']) && $data['call_id'] !== '') {
             return (string) $data['call_id'];
         }
-        $itemId = $this->resolveItemId($data);
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId === '') {
             return '';
         }
-        if (isset($this->itemToCallId[$itemId]) && $this->itemToCallId[$itemId] !== '') {
-            return $this->itemToCallId[$itemId];
+        if (isset($ctx->itemToCallId[$itemId]) && $ctx->itemToCallId[$itemId] !== '') {
+            return $ctx->itemToCallId[$itemId];
         }
         return $itemId;
     }
 
-    protected function resolveToolName(array $data): string {
+    protected function resolveToolName(OpenResponsesStreamContext $ctx, array $data): string {
         if (isset($data['name']) && $data['name'] !== '') {
             return (string) $data['name'];
         }
-        $itemId = $this->resolveItemId($data);
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId === '') {
             return '';
         }
-        return $this->itemToName[$itemId] ?? '';
+        return $ctx->itemToName[$itemId] ?? '';
     }
 
-    protected function markOutputTextSeen(array $data, string $delta): string {
-        $itemId = $this->resolveItemId($data);
+    protected function markOutputTextSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId !== '') {
-            $this->seenOutputTextItems[$itemId] = true;
+            $ctx->seenOutputTextItems[$itemId] = true;
         }
         return $delta;
     }
 
-    protected function hasSeenOutputText(array $data): bool {
-        $itemId = $this->resolveItemId($data);
+    protected function hasSeenOutputText(OpenResponsesStreamContext $ctx, array $data): bool {
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId === '') {
             return false;
         }
-        return $this->seenOutputTextItems[$itemId] ?? false;
+        return $ctx->seenOutputTextItems[$itemId] ?? false;
     }
 
-    protected function maybeEmitDoneText(array $data): string {
-        if ($this->hasSeenOutputText($data)) {
+    protected function maybeEmitDoneText(OpenResponsesStreamContext $ctx, array $data): string {
+        if ($this->hasSeenOutputText($ctx, $data)) {
             return '';
         }
         return (string) ($data['text'] ?? '');
     }
 
-    protected function markReasoningSeen(array $data, string $delta): string {
-        $itemId = $this->resolveItemId($data);
+    protected function markReasoningSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId !== '') {
-            $this->seenReasoningItems[$itemId] = true;
+            $ctx->seenReasoningItems[$itemId] = true;
         }
         return $delta;
     }
 
-    protected function hasSeenReasoning(array $data): bool {
-        $itemId = $this->resolveItemId($data);
+    protected function hasSeenReasoning(OpenResponsesStreamContext $ctx, array $data): bool {
+        $itemId = $this->resolveItemId($ctx, $data);
         if ($itemId === '') {
             return false;
         }
-        return $this->seenReasoningItems[$itemId] ?? false;
+        return $ctx->seenReasoningItems[$itemId] ?? false;
     }
 
-    protected function maybeEmitDoneReasoning(array $data): string {
-        if ($this->hasSeenReasoning($data)) {
+    protected function maybeEmitDoneReasoning(OpenResponsesStreamContext $ctx, array $data): string {
+        if ($this->hasSeenReasoning($ctx, $data)) {
             return '';
         }
         return (string) ($data['text'] ?? '');
     }
 
-    protected function markToolArgsSeen(array $data, string $delta): string {
-        $callId = $this->resolveCallId($data);
+    protected function markToolArgsSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
+        $callId = $this->resolveCallId($ctx, $data);
         if ($callId !== '') {
-            $this->toolArgsAccumulated[$callId] = ($this->toolArgsAccumulated[$callId] ?? '') . $delta;
+            $ctx->toolArgsAccumulated[$callId] = ($ctx->toolArgsAccumulated[$callId] ?? '') . $delta;
         }
         return $delta;
     }
 
-    protected function maybeEmitDoneToolArgs(array $data, ?string $arguments = null): string {
-        $callId = $this->resolveCallId($data);
+    protected function maybeEmitDoneToolArgs(OpenResponsesStreamContext $ctx, array $data, ?string $arguments = null): string {
+        $callId = $this->resolveCallId($ctx, $data);
         $fullArgs = (string) ($arguments ?? ($data['arguments'] ?? ''));
 
         if ($callId === '' || $fullArgs === '') {
             return $fullArgs;
         }
 
-        $existing = $this->toolArgsAccumulated[$callId] ?? '';
-        $this->toolArgsAccumulated[$callId] = $fullArgs;
+        $existing = $ctx->toolArgsAccumulated[$callId] ?? '';
+        $ctx->toolArgsAccumulated[$callId] = $fullArgs;
 
         if ($existing === '') {
             return $fullArgs;

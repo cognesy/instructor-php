@@ -4,8 +4,6 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAIResponses;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
-use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesBodyFormat;
@@ -37,23 +35,25 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class OpenAIResponsesDriver extends BaseInferenceDriver
 {
-    protected CanTranslateInferenceRequest $requestTranslator;
-    protected CanTranslateInferenceResponse $responseTranslator;
-
     public function __construct(
-        protected LLMConfig $config,
-        protected HttpClient $httpClient,
-        protected EventDispatcherInterface $events,
+        LLMConfig $config,
+        HttpClient $httpClient,
+        EventDispatcherInterface $events,
     ) {
-        $this->requestTranslator = new OpenAIResponsesRequestAdapter(
-            $config,
-            new OpenResponsesBodyFormat(
+        parent::__construct(
+            config: $config,
+            httpClient: $httpClient,
+            events: $events,
+            requestTranslator: new OpenAIResponsesRequestAdapter(
                 $config,
-                new OpenResponsesMessageFormat(),
-            )
-        );
-        $this->responseTranslator = new OpenResponsesResponseAdapter(
-            new OpenResponsesUsageFormat()
+                new OpenResponsesBodyFormat(
+                    $config,
+                    new OpenResponsesMessageFormat(),
+                )
+            ),
+            responseTranslator: new OpenResponsesResponseAdapter(
+                new OpenResponsesUsageFormat()
+            ),
         );
     }
 

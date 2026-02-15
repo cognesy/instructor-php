@@ -18,7 +18,7 @@ $state = AgentState::empty()
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
-// @doctest id="c344"
+// @doctest id="a771"
 ```
 
 ## Message Compilers
@@ -30,7 +30,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="7cd7"
+// @doctest id="256f"
 ```
 
 The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
@@ -50,7 +50,7 @@ class MyCompiler implements CanCompileMessages
         return $state->messages();
     }
 }
-// @doctest id="8d24"
+// @doctest id="f118"
 ```
 
 Inject it into the loop's driver:
@@ -58,7 +58,7 @@ Inject it into the loop's driver:
 ```php
 $driver = new ToolCallingDriver(messageCompiler: new MyCompiler());
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="0ed3"
+// @doctest id="0bce"
 ```
 
 Or via `AgentBuilder`:
@@ -70,7 +70,7 @@ use Cognesy\Agents\Capability\Core\UseContextCompiler;
 $agent = AgentBuilder::base()
     ->withCapability(new UseContextCompiler(new MyCompiler()))
     ->build();
-// @doctest id="6daa"
+// @doctest id="ad75"
 ```
 
 ## Use Cases
@@ -113,7 +113,7 @@ class TokenLimitCompiler implements CanCompileMessages
         return Messages::fromArray($kept);
     }
 }
-// @doctest id="5045"
+// @doctest id="438c"
 ```
 
 Use as a decorator via `UseContextCompilerDecorator`:
@@ -126,7 +126,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="105e"
+// @doctest id="466b"
 ```
 
 The decorator pattern wraps the default compiler, so you get standard message assembly plus your custom logic on top.

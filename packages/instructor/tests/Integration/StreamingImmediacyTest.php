@@ -60,8 +60,13 @@ it('dispatches per-chunk updates immediately when streaming', function () {
     $third = $iter->current();
     $iter->next(); // advance past last
 
-    // Now both update and generated events should be present
+    // All 3 updates present, but Generated only fires from finalResponse(), not from responses()
     $types = array_map(fn($e) => get_class($e), $captured);
     expect(array_filter($types, fn($t) => $t === StructuredOutputResponseUpdated::class))->toHaveCount(3);
+    expect(array_filter($types, fn($t) => $t === StructuredOutputResponseGenerated::class))->toHaveCount(0);
+
+    // Now explicitly request final response — this triggers the Generated event
+    $stream->finalResponse();
+    $types = array_map(fn($e) => get_class($e), $captured);
     expect(array_filter($types, fn($t) => $t === StructuredOutputResponseGenerated::class))->toHaveCount(1);
 });

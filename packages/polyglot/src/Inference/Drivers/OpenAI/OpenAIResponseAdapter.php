@@ -30,7 +30,16 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        foreach ($eventBodies as $eventBody) {
+            $partial = $this->fromStreamResponse($eventBody, $responseData);
+            if ($partial !== null) {
+                yield $partial;
+            }
+        }
+    }
+
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;

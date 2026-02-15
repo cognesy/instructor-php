@@ -11,15 +11,19 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 class IdempotencyStruct { public string $name; public int $age; }
 
 /**
- * Regression: PendingStructuredOutput::response() called multiple times
- * after stream() must not re-dispatch StructuredOutputResponseGenerated.
+ * Regression: stream()->finalResponse() then response() must emit
+ * StructuredOutputResponseGenerated exactly once total.
  *
- * Before the fix, getResponse() always delegated to cachedStream->finalResponse()
- * which re-iterated streamResponses() and dispatched the event again on every call.
- * The fix caches the response from the stream-first path so subsequent calls
- * short-circuit.
+ * Before the fix, StructuredOutputStream::streamResponses() dispatched
+ * the generated event at the end of every pass. When PendingStructuredOutput
+ * delegated to cachedStream->finalResponse() on the first response() call,
+ * it re-iterated streamResponses() and dispatched the event a second time.
+ *
+ * The fix adds a $generated flag in StructuredOutputStream so the event
+ * fires only on the first streamResponses() pass, and PendingStructuredOutput
+ * caches the result so subsequent response() calls short-circuit entirely.
  */
-it('does not re-emit StructuredOutputResponseGenerated on repeated response() calls after stream', function () {
+it('emits StructuredOutputResponseGenerated exactly once across stream and response calls', function () {
     $events = new EventDispatcher();
 
     $generatedCount = 0;
@@ -47,30 +51,25 @@ it('does not re-emit StructuredOutputResponseGenerated on repeated response() ca
         )
         ->create();
 
-    // Consume the stream first
+    // Consume the stream — dispatches generated event once
     $stream = $pending->stream();
-    $final = $stream->finalValue();
-    expect($final)->toBeInstanceOf(IdempotencyStruct::class);
-    expect($final->name)->toBe('Alice');
-    expect($final->age)->toBe(30);
+    $final = $stream->finalResponse();
+    expect($final->content())->toContain('Alice');
+    expect($generatedCount)->toBe(1);
 
-    // finalValue() consumed streamResponses() which dispatched the event once
-    $countAfterStream = $generatedCount;
-    expect($countAfterStream)->toBe(1);
-
-    // First response() call — may delegate to cachedStream->finalResponse()
+    // response() delegates to cachedStream->finalResponse() — must not dispatch again
     $first = $pending->response();
-    $countAfterFirstResponse = $generatedCount;
+    expect($generatedCount)->toBe(1);
 
-    // Second response() call — must hit cachedResponse early return, no new events
+    // Repeated response() calls — still exactly 1
     $second = $pending->response();
-    expect($generatedCount)->toBe($countAfterFirstResponse);
+    expect($generatedCount)->toBe(1);
 
-    // Third response() call — still idempotent
     $third = $pending->response();
-    expect($generatedCount)->toBe($countAfterFirstResponse);
+    expect($generatedCount)->toBe(1);
 
     // All return the same content
-    expect($first->content())->toBe($second->content());
-    expect($second->content())->toBe($third->content());
+    expect($first->content())->toBe($final->content());
+    expect($second->content())->toBe($final->content());
+    expect($third->content())->toBe($final->content());
 });

@@ -32,7 +32,16 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        foreach ($eventBodies as $eventBody) {
+            $partial = $this->fromStreamResponse($eventBody, $responseData);
+            if ($partial !== null) {
+                yield $partial;
+            }
+        }
+    }
+
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
         //$eventBody = $this->normalizeUnknownValues($responseBody);
         $data = json_decode($eventBody, true);
         if (empty($data)) {
@@ -56,11 +65,7 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         if (!str_starts_with($data, 'data:')) {
             return '';
         }
-        $data = trim(substr($data, 5));
-        return match(true) {
-            $data === 'event: message_stop' => false,
-            default => $data,
-        };
+        return trim(substr($data, 5));
     }
 
     // INTERNAL //////////////////////////////////////////////

@@ -28,17 +28,17 @@ class StructuredOutputStream
     private CanHandleStructuredOutputAttempts $attemptHandler;
     private EventDispatcherInterface $events;
 
-    private Generator $stream;
     /** @var ArrayList<StructuredOutputExecution> */
     private ArrayList $cachedResponseStream;
 
     private StructuredOutputExecution $execution;
     private InferenceResponse|null $lastResponse = null;
+    private ?InferenceResponse $finalizedResponse = null;
     private ResponseCachePolicy $cachePolicy;
-    private bool $started = false;
 
     /**
-     * @param Generator<StructuredOutputExecution> $stream
+     * @param StructuredOutputExecution $execution
+     * @param CanHandleStructuredOutputAttempts $attemptHandler
      * @param EventDispatcherInterface $events
      */
     public function __construct(
@@ -51,7 +51,7 @@ class StructuredOutputStream
         $this->events = $events;
         $this->cachePolicy = $execution->config()->responseCachePolicy();
         $this->cachedResponseStream = ArrayList::empty();
-        $this->stream = $this->getStream($execution);
+        $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
     }
 
     /**
@@ -140,26 +140,32 @@ class StructuredOutputStream
 
     /**
      * Processes response stream and returns only the final response.
+     * Memoized: drains the stream on first call, returns cached result on subsequent calls.
      */
     public function finalResponse() : InferenceResponse {
+        if ($this->finalizedResponse !== null) {
+            return $this->finalizedResponse;
+        }
         foreach ($this->streamResponses() as $_) {
-            // Just consume the stream, processStream() handles the updates
+            // Just consume the stream, streamResponses() handles the updates
         }
         if (is_null($this->lastResponse)) {
             throw new RuntimeException('Expected final InferenceResponse, got null');
         }
-        return $this->lastResponse;
+        $this->finalizedResponse = $this->lastResponse;
+        $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $this->lastResponse]));
+        return $this->finalizedResponse;
     }
 
     /**
      * Returns raw stream for custom processing.
-     * StructuredOutputStarted may have already been dispatched when the stream was created.
+     * StructuredOutputStarted is dispatched when the stream is created.
      * Processing with this method does not emit response update events or usage updates.
      *
      * @return Generator<StructuredOutputExecution>
      */
     public function getIterator() : Generator {
-        return $this->stream;
+        return $this->makeStream($this->execution);
     }
 
     /**
@@ -172,14 +178,14 @@ class StructuredOutputStream
     // INTERNAL ///////////////////////////////////////////////////////////
 
     /**
-     * Private method that handles stream iteration, usage accumulation, and last response tracking.
-     * This centralizes the common iteration logic used by all stream processing methods.
+     * Handles stream iteration, usage accumulation, and last response tracking.
+     * Dispatches per-item StructuredOutputResponseUpdated events.
      *
      * @return Generator<InferenceResponse> Yields inference responses (partials and final).
      */
     private function streamResponses(): Generator {
         /** @var StructuredOutputExecution $execution */
-        foreach ($this->getStream($this->execution) as $execution) {
+        foreach ($this->makeStream($this->execution) as $execution) {
             // Update execution reference to capture accumulated state (including usage)
             $this->execution = $execution;
             $response = $execution->inferenceResponse();
@@ -190,23 +196,14 @@ class StructuredOutputStream
             $this->events->dispatch(new StructuredOutputResponseUpdated(['response' => $response]));
             yield $response;
         }
-        if ($this->lastResponse !== null) {
-            $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $this->lastResponse]));
-        }
     }
 
     /**
-     * Gets a stream of partial responses for the given execution.
+     * Creates a new stream of execution updates from the attempt handler.
      *
-     * @param StructuredOutputExecution $execution The execution for which to get the response stream.
-     * @return Generator<StructuredOutputExecution> A generator yielding structured output execution updates.
+     * @return Generator<StructuredOutputExecution>
      */
-    private function getStream(StructuredOutputExecution $execution) : Generator {
-        if (!$this->started) {
-            $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
-            $this->started = true;
-        }
-
+    private function makeStream(StructuredOutputExecution $execution) : Generator {
         return match($this->shouldCache()) {
             false => $this->streamWithoutCaching($execution),
             true => $this->streamWithCaching($execution),

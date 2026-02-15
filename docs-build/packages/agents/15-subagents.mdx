@@ -54,7 +54,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and src/AgentState.php, then summarize the findings.'
 );
 $result = $agent->execute($state);
-// @doctest id="12b2"
+// @doctest id="0e45"
 ```
 
 The LLM sees a `spawn_subagent` tool with the available subagent names and descriptions. It decides which subagent to call and formulates the prompt for each.
@@ -81,7 +81,7 @@ Parent agent step:
   5. Runs the child loop to completion
   6. Returns the child's final AgentState to the parent
   7. Parent LLM receives the subagent result and continues
-// @doctest id="07ab"
+// @doctest id="5650"
 ```
 
 The parent never sees the subagent's internal conversation — only its final output. This is the key isolation guarantee.
@@ -120,7 +120,7 @@ $registry->registerMany(
         budget: new AgentBudget(maxSteps: 10),
     ),
 );
-// @doctest id="26f3"
+// @doctest id="62c0"
 ```
 
 ### File-Based Definitions
@@ -130,7 +130,7 @@ Load from markdown, YAML, or JSON files:
 ```php
 $registry = new AgentDefinitionRegistry();
 $registry->loadFromDirectory('/agents/', recursive: true);
-// @doctest id="3253"
+// @doctest id="0193"
 ```
 
 A markdown definition file:
@@ -152,7 +152,7 @@ You review code. Focus on:
 - Suggestions for improvement
 
 Be concise. Report only significant findings.
-// @doctest id="9739"
+// @doctest id="7a14"
 ```
 
 See [Agent Templates](14-agent-templates.md) for full details on definition formats and loading.
@@ -172,7 +172,7 @@ new AgentDefinition(
     systemPrompt: 'You help with various tasks.',
     // tools: null → inherits all parent tools
 );
-// @doctest id="d326"
+// @doctest id="395d"
 ```
 
 ### Allow-List
@@ -186,7 +186,7 @@ new AgentDefinition(
     systemPrompt: 'You analyze files. You cannot modify anything.',
     tools: new NameList(['read_file', 'list_dir', 'search_files']),
 );
-// @doctest id="be1c"
+// @doctest id="a42f"
 ```
 
 Only tools matching these names (from the parent's tool set) are passed to the subagent.
@@ -202,7 +202,7 @@ new AgentDefinition(
     systemPrompt: 'You write code. Never use bash or delete files.',
     toolsDeny: new NameList(['bash', 'edit_file']),
 );
-// @doctest id="9c94"
+// @doctest id="91c9"
 ```
 
 ### Combined Filtering
@@ -218,7 +218,7 @@ new AgentDefinition(
     toolsDeny: new NameList(['bash']),
     // Result: only read_file and write_file
 );
-// @doctest id="f1ad"
+// @doctest id="08c1"
 ```
 
 ## Budget Propagation
@@ -239,7 +239,7 @@ Budgets flow from parent to child, preventing subagents from consuming more reso
 // Definition says: maxSteps: 80
 // Parent remaining: 60 steps
 // Child effective budget: min(80, 60) = 60 steps
-// @doctest id="deaa"
+// @doctest id="b826"
 ```
 
 ### Multi-Level Propagation
@@ -251,7 +251,7 @@ Root (100 steps)
   → Level 1 gets min(definition, 100) = 80 steps
     → Level 1 uses 30 steps, 50 remaining
       → Level 2 gets min(definition, 50) = 50 steps
-// @doctest id="d3df"
+// @doctest id="6d9c"
 ```
 
 This ensures the total resource usage across the entire agent tree never exceeds the root budget.
@@ -267,7 +267,7 @@ new AgentDefinition(
     systemPrompt: 'Be concise.',
     budget: new AgentBudget(maxSteps: 5, maxTokens: 2000, maxSeconds: 15.0),
 );
-// @doctest id="b16e"
+// @doctest id="0e68"
 ```
 
 On the parent via guards:
@@ -277,7 +277,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->withCapability(new UseGuards(maxSteps: 50, maxTokens: 32768))
     ->build();
-// @doctest id="acc1"
+// @doctest id="5a5f"
 ```
 
 ## Depth Control
@@ -300,7 +300,7 @@ $agent = AgentBuilder::base()
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::withDepth(2, provider: $registry))
     ->build();
-// @doctest id="4b2a"
+// @doctest id="aab7"
 ```
 
 When the depth limit is reached, `SpawnSubagentTool` throws `SubagentDepthExceededException`, which the parent sees as a tool error.
@@ -323,7 +323,7 @@ new AgentDefinition(
     systemPrompt: 'Provide thorough, detailed analysis.',
     llmConfig: 'anthropic',            // use a different provider
 );
-// @doctest id="aaf9"
+// @doctest id="3638"
 ```
 
 When `llmConfig` is omitted, the subagent inherits the parent's LLM provider.
@@ -350,7 +350,7 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
 $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "'{$e->subagentName}' completed in {$e->steps} steps\n";
 });
-// @doctest id="41b7"
+// @doctest id="5b04"
 ```
 
 Use `AgentConsoleLogger` to see parent/child agent IDs in console output:
@@ -360,7 +360,7 @@ use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 
 $logger = new AgentConsoleLogger(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
-// @doctest id="ada7"
+// @doctest id="fdcd"
 ```
 
 ## Error Handling
@@ -385,7 +385,7 @@ $tool = ResearchSubagentTool::inDirectory('/my/project');
 $agent = AgentBuilder::base()
     ->withTool($tool)
     ->build();
-// @doctest id="cbfa"
+// @doctest id="c370"
 ```
 
 The LLM calls it with a `task` and optional `files` list. The tool spawns a subagent with read-only file access, runs the research, and returns the findings.
@@ -418,7 +418,7 @@ $agent = AgentBuilder::base()
 
 $result = $agent->execute(AgentState::empty());
 expect($result->finalResponse()->toString())->toContain('code looks good');
-// @doctest id="d79b"
+// @doctest id="7625"
 ```
 
 ## Typical Patterns
@@ -434,7 +434,7 @@ Parent: "Review these 5 files"
   → spawn reviewer for file3 → "1 critical bug"
   → ...
 Parent: "Summary: file1 has 2 issues, file3 has a critical bug..."
-// @doctest id="74a5"
+// @doctest id="2f39"
 ```
 
 ### Specialized Roles
@@ -446,7 +446,7 @@ Parent: "Analyze this codebase and write docs"
   → spawn researcher → "The module handles X, Y, Z..."
   → spawn writer → "# Module Documentation\n..."
 Parent: combines research + docs into final output
-// @doctest id="5938"
+// @doctest id="2fd1"
 ```
 
 ### Hierarchical Delegation
@@ -458,7 +458,7 @@ Orchestrator (depth 0)
   → Analyst (depth 1)
     → File reader (depth 2)
   → Writer (depth 1)
-// @doctest id="62e3"
+// @doctest id="0028"
 ```
 
 Control the maximum depth via `SubagentPolicy` to prevent unbounded recursion.

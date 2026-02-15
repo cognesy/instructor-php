@@ -56,9 +56,8 @@ it('OpenAI golden adapter: complex request + streaming response assembly', funct
         json_encode(['choices' => [[ 'delta' => [ 'tool_calls' => [[ 'id' => 'c1', 'function' => [ 'name' => 'search', 'arguments' => '{"q":"Hello"}' ] ]] ] ]]]),
     ];
     $acc = PartialInferenceResponse::empty();
-    foreach ($chunks as $e) {
-        $p = $resAdapter->fromStreamResponse($e);
-        if ($p) { $acc = $p->withAccumulatedContent($acc); }
+    foreach ($resAdapter->fromStreamResponses($chunks) as $p) {
+        $acc = $p->withAccumulatedContent($acc);
     }
     $final = InferenceResponse::fromAccumulatedPartial($acc);
     expect(str_starts_with($final->content(), 'Hello'))->toBeTrue();

@@ -46,7 +46,7 @@ it('Anthropic: parses streaming text and tool args deltas', function () {
     $adapter = new AnthropicResponseAdapter(new AnthropicUsageFormat());
 
     $eventText = json_encode(['delta' => ['text' => 'Hel']]);
-    $p1 = $adapter->fromStreamResponse($eventText);
+    $p1 = iterator_to_array($adapter->fromStreamResponses([$eventText]))[0] ?? null;
     expect($p1)->not->toBeNull();
     expect($p1->contentDelta)->toBe('Hel');
 
@@ -54,7 +54,7 @@ it('Anthropic: parses streaming text and tool args deltas', function () {
         'content_block' => ['id' => 'c1', 'name' => 'search'],
         'delta' => ['partial_json' => json_encode(['q' => 'Hello'])],
     ]);
-    $p2 = $adapter->fromStreamResponse($eventTool);
+    $p2 = iterator_to_array($adapter->fromStreamResponses([$eventTool]))[0] ?? null;
     expect($p2)->not->toBeNull();
     expect($p2->contentDelta)->toBe('');
     expect($p2->toolName)->toBe('search');
@@ -70,7 +70,7 @@ it('Anthropic: sets usageIsCumulative=true for streaming responses with usage da
         'usage' => ['input_tokens' => 100, 'output_tokens' => 2]
     ]);
 
-    $partial = $adapter->fromStreamResponse($eventWithUsage);
+    $partial = iterator_to_array($adapter->fromStreamResponses([$eventWithUsage]))[0] ?? null;
     expect($partial)->not->toBeNull();
     expect($partial->contentDelta)->toBe('Hello');
 

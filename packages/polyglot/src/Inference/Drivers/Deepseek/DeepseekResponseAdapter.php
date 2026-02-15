@@ -25,7 +25,7 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
     }
 
     #[\Override]
-    public function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;

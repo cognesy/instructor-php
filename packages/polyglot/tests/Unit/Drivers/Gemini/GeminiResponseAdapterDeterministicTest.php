@@ -62,7 +62,7 @@ it('Gemini native: parses streaming partial with text and tool args', function (
         ]],
     ]);
 
-    $p1 = $adapter->fromStreamResponse($event);
+    $p1 = iterator_to_array($adapter->fromStreamResponses([$event]))[0] ?? null;
     expect($p1)->not->toBeNull();
     expect($p1->contentDelta)->toBe('Hel');
 
@@ -75,7 +75,7 @@ it('Gemini native: parses streaming partial with text and tool args', function (
             ],
         ]],
     ]);
-    $p2 = $adapter->fromStreamResponse($event2);
+    $p2 = iterator_to_array($adapter->fromStreamResponses([$event2]))[0] ?? null;
     expect($p2)->not->toBeNull();
     expect($p2->contentDelta)->toBe('');
     expect($p2->toolName)->toBe('search');
@@ -94,7 +94,7 @@ it('Gemini native: sets usageIsCumulative=true for streaming responses with usag
         'usageMetadata' => ['promptTokenCount' => 120, 'candidatesTokenCount' => 3]
     ]);
 
-    $partial = $adapter->fromStreamResponse($eventWithUsage);
+    $partial = iterator_to_array($adapter->fromStreamResponses([$eventWithUsage]))[0] ?? null;
     expect($partial)->not->toBeNull();
     expect($partial->contentDelta)->toBe('Hello');
 

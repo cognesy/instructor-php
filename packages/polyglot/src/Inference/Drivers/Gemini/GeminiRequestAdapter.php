@@ -38,16 +38,16 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
         $urlParams = [];
 
         if ($request->isStreamed()) {
-            $this->config->endpoint = '/models/{model}:streamGenerateContent';
+            $endpoint = '/models/{model}:streamGenerateContent';
             $urlParams['alt'] = 'sse';
         } else {
-            $this->config->endpoint = '/models/{model}:generateContent';
+            $endpoint = '/models/{model}:generateContent';
         }
 
         $base = str_replace(
             search: '{model}',
             replace: $model,
-            subject: "{$this->config->apiUrl}{$this->config->endpoint}"
+            subject: "{$this->config->apiUrl}{$endpoint}"
         );
 
         $query = http_build_query($urlParams);

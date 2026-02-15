@@ -75,7 +75,7 @@ class MistralBodyFormat implements CanMapRequestBody
             ]);
 
         $result = $responseFormat->as($mode);
-        return array_filter($result, fn($value) => $value !== null && ($value !== [] || $value !== ''));
+        return array_filter($result, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     private function toTools(InferenceRequest $request) : array {

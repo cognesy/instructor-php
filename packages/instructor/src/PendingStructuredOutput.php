@@ -123,7 +123,7 @@ class PendingStructuredOutput
         if ($this->shouldCache()) {
             $this->cachedResponse = $response;
         }
-        $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
+        $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $response]));
         return $response;
     }
 

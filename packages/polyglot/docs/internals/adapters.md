@@ -13,24 +13,16 @@ Request adapters convert Polyglot's unified request format to provider-specific 
 ```php
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
-class OpenAIRequestAdapter implements ProviderRequestAdapter {
+class OpenAIRequestAdapter implements CanTranslateInferenceRequest {
     public function __construct(
         protected LLMConfig $config,
-        protected CanMapRequestBody $bodyFormat
+        protected CanMapRequestBody $bodyFormat,
     ) { ... }
 
-    public function toHttpClientRequest(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        Mode $mode
-    ): HttpRequest { ... }
+    public function toHttpRequest(InferenceRequest $request): HttpRequest { ... }
 
-    protected function toHeaders(): array { ... }
-    protected function toUrl(string $model = '', bool $stream = false): string { ... }
+    protected function toHeaders(InferenceRequest $request): array { ... }
+    protected function toUrl(InferenceRequest $request): string { ... }
 }
 ```
 
@@ -61,26 +53,10 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 class OpenAIBodyFormat implements CanMapRequestBody {
     public function __construct(
         protected LLMConfig $config,
-        protected CanMapMessages $messageFormat
+        protected CanMapMessages $messageFormat,
     ) { ... }
 
-    public function map(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        Mode $mode
-    ): array { ... }
-
-    private function applyMode(
-        array $request,
-        Mode $mode,
-        array $tools,
-        string|array $toolChoice,
-        array $responseFormat
-    ): array { ... }
+    public function toRequestBody(InferenceRequest $request): array { ... }
 }
 ```
 
@@ -92,13 +68,14 @@ Response adapters convert provider-specific responses to Polyglot's unified form
 ```php
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
-class OpenAIResponseAdapter implements ProviderResponseAdapter {
+class OpenAIResponseAdapter implements CanTranslateInferenceResponse {
     public function __construct(
-        protected CanMapUsage $usageFormat
+        protected CanMapUsage $usageFormat,
     ) { ... }
 
     public function fromResponse(HttpResponse $response): ?InferenceResponse { ... }
-    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
+    /** @return iterable<PartialInferenceResponse> */
+    public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable { ... }
     public function toEventBody(string $data): string|bool { ... }
 
     protected function makeToolCalls(array $data): ToolCalls { ... }
