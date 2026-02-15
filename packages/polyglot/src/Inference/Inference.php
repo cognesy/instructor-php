@@ -10,6 +10,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
@@ -26,7 +27,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * Inference class is facade for handling inference requests and responses.
  */
-class Inference implements CanAcceptLLMConfig
+class Inference implements CanAcceptLLMConfig, CanCreateInference
 {
     use HandlesEvents;
 
@@ -114,25 +115,27 @@ class Inference implements CanAcceptLLMConfig
         return $this;
     }
 
-    public function create(): PendingInference {
+    public function create(?InferenceRequest $request = null): PendingInference {
+        $request = $request ?? $this->requestBuilder->create();
+        return $this->makeRuntime()->create($request);
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////
+
+    private function makeRuntime(): InferenceRuntime {
         $resolver = $this->llmResolver ?? $this->llmProvider;
         $config = $resolver->resolveConfig();
 
         $httpClient = $this->makeHttpClient();
         $inferenceDriver = $this->makeInferenceDriver($httpClient, $resolver, $config);
-        $request = $this->requestBuilder->create();
-        $execution = InferenceExecution::fromRequest($request);
         $pricing = $config->getPricing();
 
-        return new PendingInference(
-            execution: $execution,
+        return new InferenceRuntime(
             driver: $inferenceDriver,
-            eventDispatcher: $this->events,
+            events: $this->events,
             pricing: $pricing->hasAnyPricing() ? $pricing : null,
         );
     }
-
-    // INTERNAL ////////////////////////////////////////////////////////////
 
     private function getInferenceFactory(): InferenceDriverFactory {
         return $this->inferenceFactory ??= new InferenceDriverFactory($this->events);

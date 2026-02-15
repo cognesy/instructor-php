@@ -24,7 +24,9 @@ use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
@@ -54,6 +56,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     private bool $parallelToolCalls = false;
     private ToolExecutionFormatter $formatter;
     private CanHandleEvents $events;
+    private ?CanCreateInference $inference = null;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -66,6 +69,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanHandleEvents $events = null,
+        ?CanCreateInference $inference = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -78,16 +82,20 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
         $this->events = EventBusResolver::using($events);
+        $this->inference = $inference;
     }
 
     #[\Override]
     public function withLLMProvider(LLMProvider $llm): static {
-        return $this->with(llm: $llm);
+        return $this->with(llm: $llm, resetInference: true);
     }
 
     #[\Override]
     public function withLLMConfig(LLMConfig $config): static {
-        return $this->with(llm: $this->llm->withLLMConfig($config));
+        return $this->with(
+            llm: $this->llm->withLLMConfig($config),
+            resetInference: true,
+        );
     }
 
     #[\Override]
@@ -140,6 +148,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanHandleEvents $events = null,
+        ?CanCreateInference $inference = null,
+        bool $resetInference = false,
     ): static {
         return new static(
             llm: $llm ?? $this->llm,
@@ -152,6 +162,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
             messageCompiler: $messageCompiler ?? $this->messageCompiler,
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
             events: $events ?? $this->events,
+            inference: $resetInference ? null : ($inference ?? $this->inference),
         );
     }
 
@@ -184,30 +195,29 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         if ($hasTools) {
             $options = array_merge($options, ['parallel_tool_calls' => $this->parallelToolCalls]);
         }
+
+        $request = new InferenceRequest(
+            messages: $messages,
+            model: $this->model,
+            tools: $toolSchemas,
+            toolChoice: $hasTools ? $toolChoice : '',
+            responseFormat: $this->responseFormat,
+            options: $options,
+            mode: $this->mode,
+            cachedContext: $cache,
+            retryPolicy: $this->retryPolicy,
+        );
+
+        if ($this->inference !== null) {
+            return $this->inference->create($request);
+        }
+
         $inference = (new Inference)
-            ->withLLMProvider($this->resolveLLMProvider($state))
-            ->withMessages($messages->toArray())
-            ->withModel($this->model)
-            ->withTools($toolSchemas)
-            ->withToolChoice($hasTools ? $toolChoice : '')
-            ->withResponseFormat($this->responseFormat)
-            ->withOptions($options)
-            ->withOutputMode($this->mode);
-        if ($this->retryPolicy !== null) {
-            $inference = $inference->withRetryPolicy($this->retryPolicy);
-        }
-        if ($cache !== null) {
-            $inference = $inference->withCachedContext(
-                messages: $cache->messages()->toArray(),
-                tools: $cache->tools(),
-                toolChoice: $cache->toolChoice(),
-                responseFormat: $cache->responseFormat()->toArray(),
-            );
-        }
+            ->withLLMProvider($this->resolveLLMProvider($state));
         if ($this->httpClient !== null) {
             $inference = $inference->withHttpClient($this->httpClient);
         }
-        return $inference->create();
+        return $inference->create($request);
     }
 
     private function buildStepFromResponse(

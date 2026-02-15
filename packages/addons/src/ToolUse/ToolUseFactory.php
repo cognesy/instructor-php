@@ -23,6 +23,7 @@ use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\Inference;
 
 class ToolUseFactory
 {
@@ -41,7 +42,7 @@ class ToolUseFactory
             toolExecutor: (new ToolExecutor($tools))->withEventHandler($events),
             processors: $processors ?? self::defaultProcessors(),
             continuationCriteria: $continuationCriteria ?? self::defaultContinuationCriteria(),
-            driver: $driver ?? new ToolCallingDriver,
+            driver: $driver ?? new ToolCallingDriver(inference: new Inference()),
             events: $events,
         ));
     }

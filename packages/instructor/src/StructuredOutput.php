@@ -9,9 +9,8 @@ use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
-use Cognesy\Instructor\Creation\StructuredOutputExecutionBuilder;
-use Cognesy\Instructor\Creation\StructuredOutputPipelineFactory;
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
@@ -19,16 +18,22 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
+use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\Traits\HandlesLLMProvider;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
@@ -38,13 +43,12 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
  *
  * @template TResponse
  */
-class StructuredOutput implements CanAcceptLLMConfig
+class StructuredOutput implements CanAcceptLLMConfig, CanCreateStructuredOutput
 {
     use HandlesEvents;
     use HandlesLLMProvider;
 
     // Builder instances
-    protected StructuredOutputExecutionBuilder $executionBuilder;
     private StructuredOutputRequest $request;
     private StructuredOutputConfigBuilder $configBuilder;
 
@@ -66,6 +70,7 @@ class StructuredOutput implements CanAcceptLLMConfig
     protected ?CanExtractResponse $extractor = null;
     /** @var array<CanExtractResponse|class-string<CanExtractResponse>> */
     protected array $extractors = [];
+    private ?InferenceDriverFactory $inferenceFactory = null;
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
@@ -76,7 +81,6 @@ class StructuredOutput implements CanAcceptLLMConfig
         $this->events = EventBusResolver::using($events);
         $this->configBuilder = new StructuredOutputConfigBuilder(configProvider: $configProvider);
         $this->request = new StructuredOutputRequest();
-        $this->executionBuilder = new StructuredOutputExecutionBuilder($this->events);
         $this->llmProvider = LLMProvider::new(
             configProvider: $configProvider,
         );
@@ -404,40 +408,74 @@ class StructuredOutput implements CanAcceptLLMConfig
      *
      * @return PendingStructuredOutput<TResponse> A response object providing access to various results retrieval methods.
      */
-    public function create(): PendingStructuredOutput {
-        if (!$this->request->hasRequestedSchema()) {
+    public function create(?StructuredOutputRequest $request = null): PendingStructuredOutput {
+        $request = $request ?? $this->request;
+        if (!$request->hasRequestedSchema()) {
             throw new \InvalidArgumentException('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
-        $config = $this->configBuilder->create();
-        $request = $this->request;
-        $execution = $this->executionBuilder->createWith(
-            request: $request,
-            config: $config,
-        );
-
-        $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
-
-        $pipelineFactory = new StructuredOutputPipelineFactory(
+        return (new StructuredOutputRuntime(
+            inference: $this->makeInferenceRuntime(),
             events: $this->events,
-            config: $config,
-            llmProvider: $this->llmProvider,
-            httpClient: $this->httpClient,
-            httpDebugPreset: $this->httpDebugPreset,
+            config: $this->configBuilder->create(),
             validators: $this->validators,
             transformers: $this->transformers,
             deserializers: $this->deserializers,
             extractor: $this->extractor,
             extractors: $this->extractors,
+        ))->create($request);
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function makeInferenceRuntime() : CanCreateInference {
+        $resolver = $this->llmResolver ?? $this->llmProvider;
+        $config = $resolver->resolveConfig();
+        $driver = $this->makeInferenceDriver(
+            httpClient: $this->makeHttpClient(),
+            resolver: $resolver,
+            config: $config,
         );
+        $pricing = $config->getPricing();
 
-        $executorFactory = $pipelineFactory->createIteratorFactory();
-
-        $pending = new PendingStructuredOutput(
-            execution: $execution,
-            executorFactory: $executorFactory,
+        return new InferenceRuntime(
+            driver: $driver,
             events: $this->events,
+            pricing: $pricing->hasAnyPricing() ? $pricing : null,
         );
-        return $pending;
+    }
+
+    private function getInferenceFactory() : InferenceDriverFactory {
+        return $this->inferenceFactory ??= new InferenceDriverFactory($this->events);
+    }
+
+    private function makeInferenceDriver(
+        HttpClient $httpClient,
+        CanResolveLLMConfig $resolver,
+        LLMConfig $config,
+    ) : CanProcessInferenceRequest {
+        $explicit = $resolver instanceof HasExplicitInferenceDriver
+            ? $resolver->explicitInferenceDriver()
+            : null;
+
+        if ($explicit !== null) {
+            return $explicit;
+        }
+
+        return $this->getInferenceFactory()->makeDriver(
+            config: $config,
+            httpClient: $httpClient,
+        );
+    }
+
+    private function makeHttpClient() : HttpClient {
+        if ($this->httpClient !== null) {
+            return $this->httpClient;
+        }
+        $builder = new HttpClientBuilder(events: $this->events);
+        if ($this->httpDebugPreset !== null) {
+            $builder = $builder->withDebugPreset($this->httpDebugPreset);
+        }
+        return $builder->create();
     }
 
     // OVERRIDES ///////////////////////////////////////////////////////////////

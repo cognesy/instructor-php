@@ -16,6 +16,7 @@ use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tool\Contracts\CanManageTools;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use InvalidArgumentException;
 
@@ -51,7 +52,10 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
         }
 
         return $builder->withCapability(
-            new UseDriver(new ToolCallingDriver(llm: $llm))
+            new UseDriver(new ToolCallingDriver(
+                llm: $llm,
+                inference: (new Inference())->withLLMProvider($llm),
+            ))
         );
     }
 

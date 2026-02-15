@@ -2,6 +2,7 @@
 
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 
 it('returns content for OpenAI chat completions (non-streaming)', function () {
@@ -31,4 +32,35 @@ it('returns content for OpenAI chat completions (non-streaming)', function () {
         ->get();
 
     expect($content)->toBe('Hi there!');
+});
+
+it('supports runtime-style create with explicit request', function () {
+    $mock = new MockHttpDriver();
+    $mock->on()
+        ->post('https://api.openai.com/v1/chat/completions')
+        ->withJsonSubset([
+            'model' => 'gpt-4o-mini',
+        ])
+        ->replyJson([
+            'id' => 'cmpl_test',
+            'choices' => [
+                ['message' => ['content' => 'Hi from request!'], 'finish_reason' => 'stop']
+            ],
+            'usage' => [
+                'prompt_tokens' => 3,
+                'completion_tokens' => 3,
+            ],
+        ]);
+    $http = (new HttpClientBuilder())->withDriver($mock)->create();
+
+    $content = (new Inference())
+        ->withHttpClient($http)
+        ->using('openai')
+        ->create(new InferenceRequest(
+            messages: 'Hello',
+            model: 'gpt-4o-mini',
+        ))
+        ->get();
+
+    expect($content)->toBe('Hi from request!');
 });

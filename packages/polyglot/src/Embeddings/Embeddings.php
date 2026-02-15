@@ -7,6 +7,7 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
+use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -14,7 +15,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * Embeddings is a facade responsible for generating embeddings for provided input data
  */
-class Embeddings
+class Embeddings implements CanCreateEmbeddings
 {
     use HandlesEvents;
 

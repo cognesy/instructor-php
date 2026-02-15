@@ -3,8 +3,6 @@
 namespace Cognesy\Instructor\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
@@ -16,7 +14,7 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
-use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 
 final readonly class StructuredOutputPipelineFactory
 {
@@ -27,9 +25,7 @@ final readonly class StructuredOutputPipelineFactory
     public function __construct(
         private CanHandleEvents $events,
         private StructuredOutputConfig $config,
-        private LLMProvider $llmProvider,
-        private ?HttpClient $httpClient = null,
-        private ?string $httpDebugPreset = null,
+        private CanCreateInference $inference,
         private array $validators = [],
         private array $transformers = [],
         private array $deserializers = [],
@@ -57,16 +53,14 @@ final readonly class StructuredOutputPipelineFactory
         );
 
         $extractor = $this->resolveExtractor();
-        $httpClient = $this->resolveHttpClient();
 
         return new ResponseIteratorFactory(
-            llmProvider: $this->llmProvider,
+            inference: $this->inference,
             responseDeserializer: $responseDeserializer,
             responseValidator: $responseValidator,
             responseTransformer: $responseTransformer,
             events: $this->events,
             extractor: $extractor,
-            httpClient: $httpClient,
         );
     }
 
@@ -111,18 +105,4 @@ final readonly class StructuredOutputPipelineFactory
         };
     }
 
-    private function resolveHttpClient(): HttpClient {
-        return match (true) {
-            $this->httpClient !== null => $this->httpClient,
-            default => $this->makeDefaultHttpClient(),
-        };
-    }
-
-    private function makeDefaultHttpClient(): HttpClient {
-        $builder = new HttpClientBuilder(events: $this->events);
-        if ($this->httpDebugPreset === null) {
-            return $builder->create();
-        }
-        return $builder->withDebugPreset($this->httpDebugPreset)->create();
-    }
 }

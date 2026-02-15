@@ -28,6 +28,8 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Data\CachedContext as StructuredCachedContext;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\ValidationResult;
@@ -37,7 +39,9 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -61,6 +65,8 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     private OutputMode $mode;
     private CanCompileMessages $messageCompiler;
     private CanHandleEvents $events;
+    private ?CanCreateInference $inference = null;
+    private ?CanCreateStructuredOutput $structuredOutput = null;
 
     public function __construct(
         ?LLMProvider $llm = null,
@@ -74,6 +80,8 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         OutputMode $mode = OutputMode::Json,
         ?CanCompileMessages $messageCompiler = null,
         ?CanHandleEvents $events = null,
+        ?CanCreateInference $inference = null,
+        ?CanCreateStructuredOutput $structuredOutput = null,
     ) {
         $this->llm = $llm ?? LLMProvider::new();
         $this->httpClient = $httpClient;
@@ -86,6 +94,8 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         $this->mode = $mode;
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->events = EventBusResolver::using($events);
+        $this->inference = $inference;
+        $this->structuredOutput = $structuredOutput;
     }
 
     #[\Override]
@@ -176,12 +186,20 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function withLLMProvider(LLMProvider $llm): static {
-        return $this->with(llm: $llm);
+        return $this->with(
+            llm: $llm,
+            resetInference: true,
+            resetStructuredOutput: true,
+        );
     }
 
     #[\Override]
     public function withLLMConfig(LLMConfig $config): static {
-        return $this->with(llm: $this->llm->withLLMConfig($config));
+        return $this->with(
+            llm: $this->llm->withLLMConfig($config),
+            resetInference: true,
+            resetStructuredOutput: true,
+        );
     }
 
     #[\Override]
@@ -213,6 +231,10 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         ?OutputMode $mode = null,
         ?CanCompileMessages $messageCompiler = null,
         ?CanHandleEvents $events = null,
+        ?CanCreateInference $inference = null,
+        ?CanCreateStructuredOutput $structuredOutput = null,
+        bool $resetInference = false,
+        bool $resetStructuredOutput = false,
     ): self {
         return new self(
             llm: $llm ?? $this->llm,
@@ -226,6 +248,8 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
             mode: $mode ?? $this->mode,
             messageCompiler: $messageCompiler ?? $this->messageCompiler,
             events: $events ?? $this->events,
+            inference: $resetInference ? null : ($inference ?? $this->inference),
+            structuredOutput: $resetStructuredOutput ? null : ($structuredOutput ?? $this->structuredOutput),
         );
     }
 
@@ -268,27 +292,28 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         ?StructuredCachedContext $cachedContext,
         LLMProvider $llmProvider,
     ): PendingStructuredOutput {
+        $request = new StructuredOutputRequest(
+            messages: $messages,
+            requestedSchema: $decisionModel,
+            system: $system,
+            model: $this->model,
+            options: $this->options,
+            cachedContext: $cachedContext,
+        );
+
+        if ($this->structuredOutput !== null) {
+            // Injected creator path expects outputMode/maxRetries to be preconfigured on creator runtime/facade.
+            return $this->structuredOutput->create($request);
+        }
+
         $structured = (new StructuredOutput())
-            ->withSystem($system)
-            ->withMessages($messages)
-            ->withResponseModel($decisionModel)
             ->withOutputMode($this->mode)
-            ->withModel($this->model)
-            ->withOptions($this->options)
             ->withMaxRetries($this->maxRetries)
             ->withLLMProvider($llmProvider);
-        if ($cachedContext !== null && !$cachedContext->isEmpty()) {
-            $structured = $structured->withCachedContext(
-                messages: $cachedContext->messages()->toArray(),
-                system: $cachedContext->system(),
-                prompt: $cachedContext->prompt(),
-                examples: $cachedContext->examples(),
-            );
-        }
         if ($this->httpClient !== null) {
             $structured = $structured->withHttpClient($this->httpClient);
         }
-        return $structured->create();
+        return $structured->create($request);
     }
 
     private function buildValidationFailureStep(ValidationResult $validation, Messages $context): AgentStep {
@@ -363,21 +388,32 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),
         ]);
-        $inference = (new Inference)
-            ->withLLMProvider($llmProvider)
-            ->withMessages($finalMessages->toArray())
-            ->withModel($this->finalModel ?: $this->model)
-            ->withOptions($this->finalOptions ?: $this->options)
-            ->withOutputMode(OutputMode::Text);
-        if (!$cache->isEmpty()) {
-            $inference = $inference->withCachedContext(
+
+        $cachedContext = match ($cache->isEmpty()) {
+            true => null,
+            default => new CachedInferenceContext(
                 messages: $cache->messages()->toArray(),
-            );
+            ),
+        };
+
+        $request = new InferenceRequest(
+            messages: $finalMessages,
+            model: $this->finalModel ?: $this->model,
+            options: $this->finalOptions ?: $this->options,
+            mode: OutputMode::Text,
+            cachedContext: $cachedContext,
+        );
+
+        if ($this->inference !== null) {
+            return $this->inference->create($request);
         }
+
+        $inference = (new Inference)
+            ->withLLMProvider($llmProvider);
         if ($this->httpClient !== null) {
             $inference = $inference->withHttpClient($this->httpClient);
         }
-        return $inference->create();
+        return $inference->create($request);
     }
 
     private function withToolCalls(InferenceResponse $response, ToolCalls $toolCalls): InferenceResponse {

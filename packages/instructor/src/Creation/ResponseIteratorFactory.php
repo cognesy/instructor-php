@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Creation;
 
 use Closure;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Contracts\CanDetermineRetry;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStructuredOutputAttempts;
@@ -25,34 +24,31 @@ use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Validation\Contracts\CanValidateResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 
 class ResponseIteratorFactory
 {
-    private readonly LLMProvider $llmProvider;
+    private readonly CanCreateInference $inference;
     private readonly CanDeserializeResponse $responseDeserializer;
     private readonly CanValidateResponse $responseValidator;
     private readonly CanTransformResponse $responseTransformer;
     private readonly CanExtractResponse $extractor;
     private readonly CanHandleEvents $events;
-    private readonly ?HttpClient $httpClient;
 
     public function __construct(
-        LLMProvider $llmProvider,
+        CanCreateInference $inference,
         CanDeserializeResponse $responseDeserializer,
         CanValidateResponse $responseValidator,
         CanTransformResponse $responseTransformer,
         CanHandleEvents $events,
         CanExtractResponse $extractor,
-        ?HttpClient $httpClient = null,
     ) {
-        $this->llmProvider = $llmProvider;
+        $this->inference = $inference;
         $this->responseDeserializer = $responseDeserializer;
         $this->responseValidator = $responseValidator;
         $this->responseTransformer = $responseTransformer;
         $this->extractor = $extractor;
         $this->events = $events;
-        $this->httpClient = $httpClient;
     }
 
     public function makeExecutor(StructuredOutputExecution $execution) : CanHandleStructuredOutputAttempts {
@@ -108,10 +104,9 @@ class ResponseIteratorFactory
 
     private function makeInferenceProvider(): InferenceProvider {
         return new InferenceProvider(
-            llmProvider: $this->llmProvider,
+            llmProvider: $this->inference,
             requestMaterializer: new RequestMaterializer(),
             events: $this->events,
-            httpClient: $this->httpClient,
         );
     }
 

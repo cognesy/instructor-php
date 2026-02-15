@@ -6,6 +6,7 @@ use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 final readonly class UseLLMConfig implements CanProvideAgentCapability
@@ -36,6 +37,7 @@ final readonly class UseLLMConfig implements CanProvideAgentCapability
             new ToolCallingDriver(
                 llm: $llm,
                 retryPolicy: $retryPolicy,
+                inference: (new Inference())->withLLMProvider($llm),
             )
         );
     }

@@ -6,6 +6,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Contracts\HasExplicitEmbeddingsDriver;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 
 // EmbeddingsRequested dispatched by driver; avoid duplicate here
@@ -49,8 +50,8 @@ trait HandlesInvocation
      * Generates embeddings for the provided input data.
      * @return PendingEmbeddings
      */
-    public function create() : PendingEmbeddings {
-        $request = new EmbeddingsRequest(
+    public function create(?EmbeddingsRequest $request = null) : PendingEmbeddings {
+        $request = $request ?? new EmbeddingsRequest(
             input: $this->inputs,
             options: $this->options,
             model: $this->model,
@@ -84,10 +85,9 @@ trait HandlesInvocation
             $driver = $this->getEmbeddingsFactory()->makeDriver($config, $client);
         }
 
-        return new PendingEmbeddings(
-            request: $request,
+        return (new EmbeddingsRuntime(
             driver: $driver,
             events: $this->events,
-        );
+        ))->create($request);
     }
 }

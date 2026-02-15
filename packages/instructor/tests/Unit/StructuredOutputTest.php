@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -108,3 +109,22 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
     expect($user->age)->toBe(25);
 });
 
+it('supports runtime-style create with explicit request', function () {
+    $driver = new FakeInferenceRequestDriver([
+        new InferenceResponse(content: '{"name":"Mia","age":31}')
+    ]);
+
+    $pending = (new StructuredOutput)
+        ->withDriver($driver)
+        ->withOutputMode(OutputMode::Json)
+        ->create(new StructuredOutputRequest(
+            messages: 'Extract user',
+            requestedSchema: TestUserStruct::class,
+        ));
+
+    $user = $pending->get();
+
+    expect($user)->toBeInstanceOf(TestUserStruct::class);
+    expect($user->name)->toBe('Mia');
+    expect($user->age)->toBe(31);
+});
