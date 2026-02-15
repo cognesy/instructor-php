@@ -29,7 +29,7 @@ class FunctionInfo
         $class = $reflection->getClosureScopeClass()?->getName();
         $functionName = $reflection->getName();
         return new self(match(true) {
-            !empty($class) && !str_starts_with($functionName, '{closure') => new ReflectionMethod($class, $functionName),
+            !empty($class) && !str_contains($functionName, '{closure') => new ReflectionMethod($class, $functionName),
             !empty($functionName) => $reflection,
             default => throw new \InvalidArgumentException('Unsupported callable type: ' . gettype($closure)),
         });

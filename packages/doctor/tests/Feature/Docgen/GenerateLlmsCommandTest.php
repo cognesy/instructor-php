@@ -42,7 +42,11 @@ MD);
 
     // Create application and add command
     $this->application = new Application();
-    $this->application->addCommand($this->command);
+    if (method_exists($this->application, 'addCommand')) {
+        $this->application->addCommand($this->command);
+    } else {
+        $this->application->add($this->command);
+    }
 });
 
 afterEach(function () {

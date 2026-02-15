@@ -32,6 +32,7 @@ use Cognesy\Auxiliary\Beads\Presentation\Console\Command\ReadyCommand;
 use Cognesy\Auxiliary\Beads\Presentation\Console\Command\ShowCommand;
 use Cognesy\Auxiliary\Beads\Presentation\Console\Command\UpdateCommand;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
 
 class TbdApplicationFactory
 {
@@ -44,19 +45,33 @@ class TbdApplicationFactory
         $ids = new TbdIdFactory();
         $map = new TbdInputMapper();
 
-        $app->addCommand(new InitCommand(new InitAction($store)));
-        $app->addCommand(new ListCommand(new ListAction($store), $map));
-        $app->addCommand(new ReadyCommand(new ReadyAction($store)));
-        $app->addCommand(new ShowCommand(new ShowAction($store)));
-        $app->addCommand(new CreateCommand(new CreateAction($store, $ids, $clock, $map), $map));
-        $app->addCommand(new UpdateCommand(new UpdateAction($store, $clock, $map), $map));
-        $app->addCommand(new CloseCommand(new CloseAction($store, $clock)));
-        $app->addCommand(new CommentCommand(new CommentAction($store, $clock)));
-        $app->addCommand(new DepAddCommand(new DepAddAction($store, $clock, $map)));
-        $app->addCommand(new DepRemoveCommand(new DepRemoveAction($store, $clock)));
-        $app->addCommand(new DepTreeCommand(new DepTreeAction($store), $map));
-        $app->addCommand(new CompactCommand(new CompactAction($store)));
+        $commands = [
+            new InitCommand(new InitAction($store)),
+            new ListCommand(new ListAction($store), $map),
+            new ReadyCommand(new ReadyAction($store)),
+            new ShowCommand(new ShowAction($store)),
+            new CreateCommand(new CreateAction($store, $ids, $clock, $map), $map),
+            new UpdateCommand(new UpdateAction($store, $clock, $map), $map),
+            new CloseCommand(new CloseAction($store, $clock)),
+            new CommentCommand(new CommentAction($store, $clock)),
+            new DepAddCommand(new DepAddAction($store, $clock, $map)),
+            new DepRemoveCommand(new DepRemoveAction($store, $clock)),
+            new DepTreeCommand(new DepTreeAction($store), $map),
+            new CompactCommand(new CompactAction($store)),
+        ];
+
+        foreach ($commands as $command) {
+            $this->registerCommand($app, $command);
+        }
 
         return $app;
+    }
+
+    private function registerCommand(Application $app, Command $command): void {
+        if (method_exists($app, 'addCommand')) {
+            $app->addCommand($command);
+        } else {
+            $app->add($command);
+        }
     }
 }
