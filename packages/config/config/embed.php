@@ -34,7 +34,7 @@ return [
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/{model}:batchEmbedContents',
-            'model' => 'models/text-embedding-004',
+            'model' => 'models/gemini-embedding-001',
             'dimensions' => 768,
             'maxInputs' => 100, // max 2048 tokens
         ],

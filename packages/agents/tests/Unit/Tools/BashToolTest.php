@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Tools;
 
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashPolicy;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
+use Cognesy\Agents\Capability\Bash\BashPolicy;
+use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
 use Cognesy\Sandbox\Testing\MockSandbox;
 

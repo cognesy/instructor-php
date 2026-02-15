@@ -60,7 +60,7 @@ class OpenResponsesMessageFormat implements CanMapMessages
         $content = $message['content'] ?? '';
 
         // Convert content to the appropriate format
-        $contentItems = $this->toContentItems($content);
+        $contentItems = $this->toContentItems($content, $role);
 
         return [
             'type' => 'message',
@@ -122,10 +122,12 @@ class OpenResponsesMessageFormat implements CanMapMessages
     /**
      * Convert content to content items array.
      */
-    protected function toContentItems(string|array $content): array {
+    protected function toContentItems(string|array $content, string $role = 'user'): array {
+        $textType = $role === 'assistant' ? 'output_text' : 'input_text';
+
         if (is_string($content)) {
             return [[
-                'type' => 'input_text',
+                'type' => $textType,
                 'text' => $content,
             ]];
         }
@@ -135,14 +137,14 @@ class OpenResponsesMessageFormat implements CanMapMessages
         foreach ($content as $part) {
             if (is_string($part)) {
                 $items[] = [
-                    'type' => 'input_text',
+                    'type' => $textType,
                     'text' => $part,
                 ];
             } elseif (isset($part['type'])) {
                 // Handle different content types
                 $items[] = match($part['type']) {
                     'text' => [
-                        'type' => 'input_text',
+                        'type' => $textType,
                         'text' => $part['text'] ?? '',
                     ],
                     'image_url' => [

@@ -17,7 +17,7 @@ Key concepts:
 - `CallableHook`: Wraps a closure as a `HookInterface`
 - `HookTriggers`: Specifies when the hook fires (e.g., `beforeStep()`, `afterStep()`)
 - `HookContext`: Carries `AgentState`, tool call info, and trigger type
-- `addHook()`: Registers hooks on `AgentBuilder` with priority ordering
+- `HookStack`: Registers hooks directly on `AgentLoop` via `withInterceptor()`
 
 ## Example
 
@@ -25,13 +25,15 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Bash\BashTool;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Collections\RegisteredHooks;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
 
 // AgentConsoleLogger shows execution lifecycle alongside hook output
 $logger = new AgentConsoleLogger(
@@ -45,12 +47,9 @@ $logger = new AgentConsoleLogger(
 // Track timing data
 $timings = [];
 
-$agent = AgentBuilder::base()
-    ->withCapability(new UseBash())
-    ->withMaxSteps(5)
-
+$hooks = (new HookStack(new RegisteredHooks()))
     // Hook 1: Before each step — inject timing metadata
-    ->addHook(
+    ->with(
         hook: new CallableHook(function (HookContext $ctx) use (&$timings): HookContext {
             $step = $ctx->state()->stepCount() + 1;
             $timings[$step] = microtime(true);
@@ -58,12 +57,11 @@ $agent = AgentBuilder::base()
                 $ctx->state()->withMetadata('step_started_at', microtime(true))
             );
         }),
-        triggers: HookTriggers::beforeStep(),
+        triggerTypes: HookTriggers::beforeStep(),
         name: 'timing:start',
     )
-
     // Hook 2: After each step — calculate duration
-    ->addHook(
+    ->with(
         hook: new CallableHook(function (HookContext $ctx) use (&$timings): HookContext {
             $step = $ctx->state()->stepCount();
             $started = $timings[$step] ?? null;
@@ -72,23 +70,21 @@ $agent = AgentBuilder::base()
             echo "  [timing] Step {$step}: {$duration}ms (total tokens: {$tokens})\n";
             return $ctx;
         }),
-        triggers: HookTriggers::afterStep(),
+        triggerTypes: HookTriggers::afterStep(),
         name: 'timing:end',
     )
-
     // Hook 3: Before tool use — log which tool is about to run
-    ->addHook(
+    ->with(
         hook: new CallableHook(function (HookContext $ctx): HookContext {
             $toolName = $ctx->toolCall()?->name() ?? 'unknown';
             echo "  [audit] About to execute: {$toolName}\n";
             return $ctx;
         }),
-        triggers: HookTriggers::beforeToolUse(),
+        triggerTypes: HookTriggers::beforeToolUse(),
         name: 'audit:tool',
     )
-
     // Hook 4: After tool use — log tool result status
-    ->addHook(
+    ->with(
         hook: new CallableHook(function (HookContext $ctx): HookContext {
             $exec = $ctx->toolExecution();
             if ($exec !== null) {
@@ -97,22 +93,23 @@ $agent = AgentBuilder::base()
             }
             return $ctx;
         }),
-        triggers: HookTriggers::afterToolUse(),
+        triggerTypes: HookTriggers::afterToolUse(),
         name: 'audit:result',
     )
-
     // Hook 5: On stop — final summary
-    ->addHook(
+    ->with(
         hook: new CallableHook(function (HookContext $ctx): HookContext {
             $state = $ctx->state();
             echo "  [summary] Agent stopping after {$state->stepCount()} steps\n";
             return $ctx;
         }),
-        triggers: HookTriggers::onStop(),
+        triggerTypes: HookTriggers::onStop(),
         name: 'summary',
-    )
+    );
 
-    ->build()
+$agent = AgentLoop::default()
+    ->withTool(BashTool::inDirectory(getcwd()))
+    ->withInterceptor($hooks)
     ->wiretap($logger->wiretap());
 
 // Run the agent

@@ -25,10 +25,10 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\File\ReadFileTool;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 
 $workDir = dirname(__DIR__, 3);
 
@@ -39,11 +39,9 @@ $logger = new AgentConsoleLogger(
     showToolArgs: true,
 );
 
-// Build an agent with file reading capability
-$loop = AgentBuilder::base()
-    ->withCapability(new UseFileTools($workDir))
-    ->withMaxSteps(5)
-    ->build()
+// Build an agent with direct file reading tool
+$loop = AgentLoop::default()
+    ->withTool(ReadFileTool::inDirectory($workDir))
     ->wiretap($logger->wiretap());
 
 // === Execution 1: Ask the agent to read composer.json ===

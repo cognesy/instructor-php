@@ -24,8 +24,11 @@ class PackagesIndexGenerator
     public function generate(array $packages): string
     {
         // Use manually maintained source file if it exists
-        if ($this->sourceFile && file_exists($this->sourceFile)) {
-            return file_get_contents($this->sourceFile);
+        if ($this->sourceFile !== '' && file_exists($this->sourceFile)) {
+            $content = file_get_contents($this->sourceFile);
+            if ($content !== false) {
+                return $content;
+            }
         }
 
         // Fallback to auto-generated listing

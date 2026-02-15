@@ -1,0 +1,151 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Agents\Template;
+
+use Cognesy\Agents\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+
+/** Stores agent definitions (data) keyed by name. Loads from .md/.yaml/.yml/.json files. */
+final class AgentDefinitionRegistry implements CanManageAgentDefinitions
+{
+    /** @var array<string, AgentDefinition> */
+    private array $definitions = [];
+    /** @var array<string, string> */
+    private array $errors = [];
+    private AgentDefinitionLoader $loader;
+
+    public function __construct(?AgentDefinitionLoader $loader = null)
+    {
+        $this->loader = $loader ?? new AgentDefinitionLoader();
+    }
+
+    // REGISTRATION /////////////////////////////////////////////////
+
+    public function register(AgentDefinition $definition): void {
+        $this->definitions[$definition->name] = $definition;
+    }
+
+    public function registerMany(AgentDefinition ...$definitions): void {
+        foreach ($definitions as $definition) {
+            $this->register($definition);
+        }
+    }
+
+    // AGENT DEFINITION PROVIDER ////////////////////////////////////
+
+    #[\Override]
+    public function get(string $name): AgentDefinition {
+        if (!$this->has($name)) {
+            $available = implode(', ', $this->names());
+            throw new AgentNotFoundException(
+                "Agent '{$name}' not found. Available: {$available}"
+            );
+        }
+
+        return $this->definitions[$name];
+    }
+
+    public function has(string $name): bool {
+        return isset($this->definitions[$name]);
+    }
+
+    /** @return array<string, AgentDefinition> */
+    #[\Override]
+    public function all(): array {
+        return $this->definitions;
+    }
+
+    /** @return array<int, string> */
+    #[\Override]
+    public function names(): array {
+        return array_keys($this->definitions);
+    }
+
+    #[\Override]
+    public function count(): int {
+        return count($this->definitions);
+    }
+
+    // FILE LOADING /////////////////////////////////////////////////
+
+    public function loadFromFile(string $path): void {
+        $definition = $this->loader->loadFile($path);
+        $this->register($definition);
+    }
+
+    public function loadFromDirectory(string $path, bool $recursive = false): void {
+        if (!is_dir($path)) {
+            return;
+        }
+
+        foreach ($this->listAgentFiles($path, $recursive) as $file) {
+            try {
+                $this->loadFromFile($file);
+            } catch (\Throwable $e) {
+                $this->errors[$file] = $e->getMessage();
+            }
+        }
+    }
+
+    public function autoDiscover(
+        string $projectPath,
+        ?string $packagePath = null,
+        ?string $userPath = null,
+    ): void {
+
+        $paths = [
+            $userPath,
+            $packagePath,
+            $projectPath . '/.claude/agents',
+        ];
+
+        foreach ($paths as $path) {
+            if ($path === null || !is_dir($path)) {
+                continue;
+            }
+            $this->loadFromDirectory($path, false);
+        }
+    }
+
+    /** @return array<string, string> */
+    public function errors(): array {
+        return $this->errors;
+    }
+
+    // PRIVATE //////////////////////////////////////////////////////
+
+    /** @return list<string> */
+    private function listAgentFiles(string $path, bool $recursive): array {
+        $files = [];
+        $extensions = ['md', 'yaml', 'yml', 'json'];
+
+        if ($recursive) {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            /** @var \SplFileInfo $file */
+            foreach ($iterator as $file) {
+                if (!$file->isFile()) {
+                    continue;
+                }
+                $ext = strtolower($file->getExtension());
+                if (in_array($ext, $extensions, true)) {
+                    $files[] = $file->getPathname();
+                }
+            }
+        } else {
+            $matches = glob($path . '/*.{md,yml,yaml,json}', GLOB_BRACE);
+            if ($matches !== false) {
+                $files = $matches;
+            }
+        }
+
+        sort($files);
+
+        return $files;
+    }
+}

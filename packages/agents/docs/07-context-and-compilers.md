@@ -38,9 +38,7 @@ The default compiler assembles messages from the agent's context. You can replac
 Implement `CanCompileMessages` for custom message assembly:
 
 ```php
-use Cognesy\Agents\Context\CanCompileMessages;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Context\CanCompileMessages;use Cognesy\Agents\Data\AgentState;use Cognesy\Messages\Messages;
 
 class MyCompiler implements CanCompileMessages
 {
@@ -58,3 +56,70 @@ Inject it into the loop's driver:
 $driver = new ToolCallingDriver(messageCompiler: new MyCompiler());
 $loop = AgentLoop::default()->withDriver($driver);
 ```
+
+Or via `AgentBuilder`:
+
+```php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseContextCompiler;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseContextCompiler(new MyCompiler()))
+    ->build();
+```
+
+## Use Cases
+
+Custom compilers give you full control over what the LLM sees on each step. Common patterns include:
+
+- **Context window management** — trim or summarize older messages when the conversation exceeds the model's token limit, keeping the most recent and most relevant exchanges
+- **Filtering** — exclude internal tool traces, metadata messages, or debug output that the LLM doesn't need
+- **Injection** — prepend dynamic instructions, inject retrieved context (RAG), or append reminders based on the current state
+- **Format transformation** — restructure messages for a specific model's expected format or optimize token usage
+
+### Example: Trimming to Token Limit
+
+A compiler that keeps only the most recent messages within a token budget:
+
+```php
+class TokenLimitCompiler implements CanCompileMessages
+{
+    public function __construct(
+        private CanCompileMessages $inner,
+        private int $maxTokens = 8000,
+    ) {}
+
+    public function compile(AgentState $state): Messages
+    {
+        $messages = $this->inner->compile($state);
+        $kept = [];
+        $tokens = 0;
+
+        // Walk backwards, keeping recent messages first
+        foreach (array_reverse($messages->toArray()) as $message) {
+            $estimate = (int) ceil(strlen($message->content()) / 4);
+            if ($tokens + $estimate > $this->maxTokens) {
+                break;
+            }
+            $tokens += $estimate;
+            array_unshift($kept, $message);
+        }
+
+        return Messages::fromArray($kept);
+    }
+}
+```
+
+Use as a decorator via `UseContextCompilerDecorator`:
+
+```php
+use Cognesy\Agents\Capability\Core\UseContextCompilerDecorator;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseContextCompilerDecorator(
+        fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
+    ))
+    ->build();
+```
+
+The decorator pattern wraps the default compiler, so you get standard message assembly plus your custom logic on top.

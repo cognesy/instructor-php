@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Tests\Support;
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
 
 readonly final class TestAgentLoop extends AgentLoop
 {

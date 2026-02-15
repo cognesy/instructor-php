@@ -55,7 +55,7 @@ final readonly class InferenceRetryPolicy
     public function delayMsForAttempt(int $attemptNumber): int {
         $attempt = max(1, $attemptNumber);
         $base = $this->baseDelayMs * (2 ** ($attempt - 1));
-        $capped = min($base, $this->maxDelayMs);
+        $capped = (int) min($base, $this->maxDelayMs);
 
         return match ($this->jitter) {
             'none' => $capped,

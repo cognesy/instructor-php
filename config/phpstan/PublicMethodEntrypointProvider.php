@@ -13,6 +13,7 @@ use ShipMonk\PHPStan\DeadCode\Provider\SimpleMethodEntrypointProvider;
  */
 class PublicMethodEntrypointProvider extends SimpleMethodEntrypointProvider
 {
+    #[\Override]
     public function isEntrypointMethod(ReflectionMethod $method): bool
     {
         return $method->isPublic();

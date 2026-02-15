@@ -2,10 +2,10 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
-use Cognesy\Agents\Core\Collections\ErrorList;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\AgentStepType;
+use Cognesy\Agents\Collections\ErrorList;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

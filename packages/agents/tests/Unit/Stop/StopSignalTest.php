@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Stop;
 
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 
 it('roundtrips stop signals through arrays', function () {
     $signal = new StopSignal(

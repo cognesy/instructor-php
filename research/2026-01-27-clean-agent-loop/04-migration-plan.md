@@ -146,7 +146,7 @@ Create new unified interface alongside old one:
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Data\AgentState;
 
 interface CanObserveAgentLifecycle
 {
@@ -206,7 +206,7 @@ public function onBeforeToolUse(AgentState $state): AgentState
 
 namespace Cognesy\Agents\Core\Lifecycle;
 
-use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;
+use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;
 
 final class CompositeObserver implements CanObserveAgentLifecycle
 {

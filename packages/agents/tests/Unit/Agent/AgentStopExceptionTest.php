@@ -2,17 +2,18 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\ExecutionStatus;
-use Cognesy\Agents\Core\Stop\AgentStopException;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Continuation\AgentStopException;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\ContinuationEvaluated;
+use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Messages\Messages;
 
 describe('AgentStopException', function () {
@@ -35,7 +36,7 @@ describe('AgentStopException', function () {
         $events = [];
 
         $agentLoop = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->build();
 
         $agentLoop->wiretap(function (object $event) use (&$events): void {

@@ -11,7 +11,7 @@ orchestrates multiple subagents, each with specialized roles and tools. This pat
 provides:
 
 - **Context isolation**: Each subagent has clean context without cross-contamination
-- **Parallel execution**: Multiple subagents can work simultaneously
+- **Isolated execution**: Each subagent runs independently with its own state
 - **Specialized capabilities**: Each subagent has specific tools for its role
 - **Scalability**: Handle many independent subtasks without context overflow
 - **Result aggregation**: Main agent synthesizes subagent outputs
@@ -28,14 +28,15 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
-use Cognesy\Agents\Core\Collections\NameList;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\File\UseFileTools;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Messages\Messages;
 
 // Create console logger - shows agent IDs for parent/child tracking
@@ -72,15 +73,16 @@ $registry->register(new AgentDefinition(
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
     ->withCapability(new UseSubagents(provider: $registry))
+    ->withCapability(new UseGuards(maxSteps: 10, maxTokens: 12288, maxExecutionTime: 90))
     ->build()
     ->wiretap($logger->wiretap());
 
 // Task requiring multiple isolated reviews
 $task = <<<TASK
 Review these three files and provide a summary:
-1. packages/agents/src/AgentBuilder/AgentBuilder.php
-2. packages/agents/src/Core/Data/AgentState.php
-3. packages/agents/src/Core/AgentLoop.php
+1. packages/agents/src/Builder/AgentBuilder.php
+2. packages/agents/src/Data/AgentState.php
+3. packages/agents/src/AgentLoop.php
 
 For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;

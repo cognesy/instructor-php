@@ -76,7 +76,7 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
         if (!isset($data['id'])) {
             return null;
         }
-        return ToolCall::fromArray($data['function'])?->withId($data['id']);
+        return ToolCall::fromArray($data['function'])->withId($data['id']);
     }
 
     protected function makeContent(array $data): string {

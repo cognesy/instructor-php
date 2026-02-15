@@ -2,10 +2,12 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
-use Cognesy\Agents\Core\Contracts\CanCompileMessages;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseContextCompiler;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Context\CanAcceptMessageCompiler;
+use Cognesy\Agents\Context\CanCompileMessages;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Messages\Messages;
@@ -19,8 +21,8 @@ describe('AgentBuilder context compiler wiring', function () {
         };
 
         $agent = AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver([ScenarioStep::final('ok')]))
-            ->withContextCompiler($compiler)
+            ->withCapability(new UseDriver(new FakeAgentDriver([ScenarioStep::final('ok')])))
+            ->withCapability(new UseContextCompiler($compiler))
             ->build();
 
         $final = $agent->execute(AgentState::empty()->withUserMessage('ORIGINAL INPUT'));
@@ -39,7 +41,7 @@ describe('AgentBuilder context compiler wiring', function () {
         };
 
         $agent = AgentBuilder::base()
-            ->withContextCompiler($compiler)
+            ->withCapability(new UseContextCompiler($compiler))
             ->build();
 
         $driver = $agent->driver();

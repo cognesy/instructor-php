@@ -2,15 +2,15 @@
 
 namespace Cognesy\Agents\Tests\Feature\Core;
 
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\AgentStepType;
-use Cognesy\Agents\Core\Tools\MockTool;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
+use Cognesy\Agents\Enums\AgentStepType;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
+use Cognesy\Agents\Tool\ToolExecutor;
+use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;

@@ -5,7 +5,7 @@ namespace Cognesy\Agents\Tests\Unit\Data;
 use Cognesy\Agents\Context\AgentContext;
 use Cognesy\Agents\Context\Compilers\SelectedSections;
 use Cognesy\Agents\Context\ContextSections;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Messages\MessageStore\Section;

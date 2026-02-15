@@ -23,13 +23,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentExecutionCompleted;
-use Cognesy\Agents\Events\AgentStepCompleted;
-use Cognesy\Agents\Events\ToolCallCompleted;
-use Cognesy\Agents\Events\ToolCallStarted;
+use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Capabilities\Bash\UseBash;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\AgentExecutionCompleted;use Cognesy\Agents\Events\AgentStepCompleted;use Cognesy\Agents\Events\ToolCallCompleted;use Cognesy\Agents\Events\ToolCallStarted;
 
 $agent = AgentBuilder::base()
     ->withCapability(new UseBash())

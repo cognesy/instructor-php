@@ -39,6 +39,10 @@ class DocsMetadata
 
         try {
             $content = file_get_contents($metaFile);
+            if ($content === false) {
+                $this->metaCache[$dirPath] = null;
+                return null;
+            }
             $meta = Yaml::parse($content);
 
             // Support both simple list and object with 'order' key
@@ -75,6 +79,10 @@ class DocsMetadata
 
         try {
             $content = file_get_contents($filePath);
+            if ($content === false) {
+                $this->frontMatterCache[$filePath] = null;
+                return null;
+            }
             $frontMatter = $this->parseFrontMatter($content);
 
             $position = $frontMatter['sidebarPosition'] ?? $frontMatter['sidebar_position'] ?? null;
@@ -137,6 +145,7 @@ class DocsMetadata
 
     /**
      * Sort items by explicit order list
+     * @param callable(mixed): string $getKey
      */
     private function sortByExplicitOrder(array $items, array $order, callable $getKey): array
     {
@@ -144,12 +153,12 @@ class DocsMetadata
             $aKey = $getKey($a);
             $bKey = $getKey($b);
 
-            $aIndex = array_search($aKey, $order);
-            $bIndex = array_search($bKey, $order);
+            $aIndex = array_search($aKey, $order, true);
+            $bIndex = array_search($bKey, $order, true);
 
             // Both in order list - sort by position
             if ($aIndex !== false && $bIndex !== false) {
-                return $aIndex - $bIndex;
+                return $aIndex <=> $bIndex;
             }
             // Only a in list - a comes first
             if ($aIndex !== false) {

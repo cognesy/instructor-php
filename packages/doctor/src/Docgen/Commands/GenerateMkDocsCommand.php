@@ -84,7 +84,7 @@ class GenerateMkDocsCommand extends Command
 
         if ($packagesOnly) {
             $result = $this->generatePackagesOnly($documentation, $view);
-        } elseif (!empty($examplesOnly)) {
+        } elseif ($examplesOnly) {
             $result = $this->generateExamplesOnly($documentation, $view);
         } else {
             $result = $this->generateAll($documentation, $view);

@@ -17,7 +17,7 @@ analyzing results without predefined workflows. The agent decides which files to
 based on search results.
 
 Key concepts:
-- `SearchFilesTool`: Search for files by pattern or content
+- `SearchFilesTool`: Search for files by filename/path pattern
 - `ReadFileTool`: Read file contents
 - `UseSubagents`: Spawn specialized subagents for subtasks
 - `AgentConsoleLogger`: Provides visibility into agent execution stages
@@ -28,14 +28,18 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
-use Cognesy\Agents\Core\Collections\NameList;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\File\ListDirTool;
+use Cognesy\Agents\Capability\File\SearchFilesTool;
+use Cognesy\Agents\Capability\File\UseFileTools;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Messages\Messages;
 
 // Create console logger for execution visibility
@@ -61,20 +65,25 @@ $registry->register(new AgentDefinition(
 
 $registry->register(new AgentDefinition(
     name: 'searcher',
-    description: 'Searches for files matching patterns',
-    systemPrompt: 'You search for files matching patterns. Use glob patterns effectively.',
+    description: 'Searches for files by filename/path patterns',
+    systemPrompt: 'You search for files by filename/path patterns. Use glob patterns effectively.',
     tools: NameList::fromArray(['search_files']),
 ));
 
 // Build main orchestration agent
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
+    ->withCapability(new UseTools(
+        ListDirTool::inDirectory($workDir),
+        SearchFilesTool::inDirectory($workDir),
+    ))
     ->withCapability(new UseSubagents(provider: $registry))
+    ->withCapability(new UseGuards(maxSteps: 12, maxTokens: 12288, maxExecutionTime: 90))
     ->build()
     ->wiretap($logger->wiretap());
 
 // Ask a question that requires search
-$question = "Find all test files related to Agent capabilities and tell me what they test";
+$question = "Find capability test files (e.g. *CapabilityTest.php under packages/agents/tests) and summarize what each one verifies.";
 
 $state = AgentState::empty()->withMessages(
     Messages::fromString($question)

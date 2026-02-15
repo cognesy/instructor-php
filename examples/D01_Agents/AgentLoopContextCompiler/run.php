@@ -30,13 +30,22 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Core\Contracts\CanCompileMessages;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Bash\BashTool;
+use Cognesy\Agents\Context\CanAcceptMessageCompiler;
+use Cognesy\Agents\Context\CanCompileMessages;
+use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+
+$logger = new AgentConsoleLogger(
+        useColors: true,
+        showTimestamps: true,
+        showContinuation: true,
+        showToolArgs: true,
+);
 
 // Custom compiler that filters and enriches the context
 class InstrumentedCompiler implements CanCompileMessages
@@ -114,25 +123,16 @@ class InstrumentedCompiler implements CanCompileMessages
     }
 }
 
-$logger = new AgentConsoleLogger(
-    useColors: true,
-    showTimestamps: true,
-    showContinuation: true,
-    showToolArgs: true,
-);
-
 // Wrap the default compiler with our instrumented one
-$defaultCompiler = new \Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace();
 $compiler = new InstrumentedCompiler(
-    inner: $defaultCompiler,
+    inner: new ConversationWithCurrentToolTrace(),
     maxToolResultLength: 200,
 );
 
-$agent = AgentBuilder::base()
-    ->withCapability(new UseBash())
-    ->withContextCompiler($compiler)
-    ->withMaxSteps(5)
-    ->build()
+$agent = AgentLoop::default();
+$agent = $agent
+    ->withTool(BashTool::inDirectory(getcwd() ?: __DIR__))
+    ->withDriver($agent->driver()->withMessageCompiler($compiler))
     ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withUserMessage(

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\Capabilities\Metadata\MetadataListTool;
+use Cognesy\Agents\Capability\Metadata\MetadataListTool;
 
 describe('MetadataListTool schema', function () {
     it('generates valid schema for parameterless tool', function () {

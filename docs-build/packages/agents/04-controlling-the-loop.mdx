@@ -1,0 +1,133 @@
+---
+title: 'Controlling the Loop'
+description: 'Run agents to completion with execute() or step through with iterate() for fine-grained control'
+---
+
+# Controlling the Loop
+
+## execute() vs iterate()
+
+`execute()` runs the loop to completion and returns the final state:
+
+```php
+$finalState = $loop->execute($state);
+// @doctest id="88f9"
+```
+
+`iterate()` yields state after each step, giving you full control:
+
+```php
+foreach ($loop->iterate($state) as $stepState) {
+    $step = $stepState->lastStep();
+    echo "Step {$stepState->stepCount()}: {$step->stepType()->value}\n";
+
+    // Access tool executions from this step
+    foreach ($step->toolExecutions()->all() as $exec) {
+        echo "  Tool: {$exec->name()} -> {$exec->value()}\n";
+    }
+}
+// @doctest id="81fb"
+```
+
+## Inspecting State
+
+After execution, query the state for results:
+
+```php
+$state->stepCount();                    // total steps executed
+$state->lastStepType();                 // AgentStepType enum
+$state->lastStopReason();               // StopReason enum
+$state->usage();                        // token usage
+$state->executionDuration();            // seconds elapsed
+
+// Access all steps
+foreach ($state->steps()->all() as $step) {
+    echo $step->stepType()->value . ': ';
+    echo $step->outputMessages()->toString() . "\n";
+}
+
+// Last tool execution
+$toolExec = $state->lastToolExecution();
+$toolExec?->name();     // 'weather'
+$toolExec?->value();    // '72F, sunny'
+$toolExec?->hasError(); // false
+// @doctest id="58bc"
+```
+
+## Reading the Agent's Response
+
+`AgentState` provides two methods for accessing the agent's text output.
+They differ in strictness — choose the one that fits your use case.
+
+### finalResponse()
+
+Returns the agent's output **only** when the agent completed naturally
+(the LLM's last step had no tool calls). Returns empty `Messages` in
+all other cases: forced stops, errors, budget exhaustion, etc.
+
+```php
+$state->hasFinalResponse();             // true only on natural completion
+$state->finalResponse()->toString();    // strict: empty when interrupted
+// @doctest id="b3cf"
+```
+
+Use `finalResponse()` when you need to distinguish between a genuine
+answer and an incomplete execution. This is the right choice when
+the agent's response is only meaningful if the LLM finished on its own terms.
+
+### currentResponse()
+
+Returns the best available text output: `finalResponse()` if present,
+otherwise the last step's output messages regardless of step type.
+
+```php
+$state->currentResponse()->toString();  // pragmatic: last output text
+// @doctest id="2629"
+```
+
+Use `currentResponse()` when you want to show *something* to the user
+even if the agent was interrupted — for example in a UI that always
+needs to display the most recent LLM output.
+
+### When the agent is stopped externally
+
+When a tool throws `AgentStopException` or a budget limit is hit, the
+last step is typically a `ToolExecution` (not `FinalResponse`), so
+`finalResponse()` returns empty. In these cases:
+
+- **Stop via exception** — the answer is usually in metadata or the
+  stop signal context, not in the LLM's text output. Check
+  `$state->lastStopSignal()` and `$state->metadata()`.
+- **Budget exhaustion** — the agent was interrupted mid-work.
+  `currentResponse()` gives you the last LLM output, but it may
+  be incomplete or reference pending tool calls.
+- **Error** — inspect `$state->lastStepErrors()` for details.
+
+```php
+if ($state->hasFinalResponse()) {
+    echo $state->finalResponse()->toString();
+} else {
+    $reason = $state->lastStopReason();
+    echo "Agent stopped: {$reason->value}\n";
+    echo $state->currentResponse()->toString();
+}
+// @doctest id="f024"
+```
+
+## Listening to Events
+
+Attach listeners to monitor execution:
+
+```php
+use Cognesy\Agents\Events\AgentStepCompleted;
+
+$loop->onEvent(AgentStepCompleted::class, function (AgentStepCompleted $event) {
+    echo "Step {$event->stepNumber} completed (tokens: {$event->usage->total()})\n";
+});
+
+// Or listen to all events
+$loop->wiretap(function ($event) {
+    echo get_class($event) . "\n";
+});
+// @doctest id="fdfa"
+```

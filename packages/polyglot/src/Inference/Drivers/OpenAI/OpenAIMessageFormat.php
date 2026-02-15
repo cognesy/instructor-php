@@ -27,8 +27,16 @@ class OpenAIMessageFormat implements CanMapMessages
                 => $this->toNativeToolCall($message),
             ($message['role'] ?? '') === 'tool'
                 => $this->toNativeToolResult($message),
-            default => $message,
+            default => $this->toNativeTextMessage($message),
         };
+    }
+
+    protected function toNativeTextMessage(array $message) : array {
+        return array_filter([
+            'role' => $message['role'] ?? 'user',
+            'content' => $message['content'] ?? '',
+            'name' => $message['name'] ?? '',
+        ]);
     }
 
     protected function toNativeToolCall(array $message) : array {

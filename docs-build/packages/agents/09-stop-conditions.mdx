@@ -23,7 +23,7 @@ public function shouldStop(): bool {
         default => true,                                 // no tools = done
     };
 }
-// @doctest id="b37e"
+// @doctest id="9b83"
 ```
 
 ## StopSignal
@@ -31,8 +31,7 @@ public function shouldStop(): bool {
 A signal requesting the loop to stop, with a reason and context:
 
 ```php
-use Cognesy\Agents\Core\Stop\StopSignal;
-use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Continuation\StopReason;use Cognesy\Agents\Continuation\StopSignal;
 
 $signal = new StopSignal(
     reason: StopReason::StepsLimitReached,
@@ -40,7 +39,7 @@ $signal = new StopSignal(
     context: ['currentSteps' => 10, 'maxSteps' => 10],
     source: MyGuard::class,
 );
-// @doctest id="a29f"
+// @doctest id="3bc7"
 ```
 
 ## StopReason
@@ -55,7 +54,7 @@ ErrorForbade        - Error prevented continuation
 StopRequested       - Explicit stop via AgentStopException
 FinishReasonReceived - LLM finish reason matched
 UserRequested       - User-initiated stop
-// @doctest id="013f"
+// @doctest id="52fd"
 ```
 
 ## AgentStopException
@@ -63,7 +62,7 @@ UserRequested       - User-initiated stop
 Throw from a tool to immediately stop the loop:
 
 ```php
-use Cognesy\Agents\Core\Stop\AgentStopException;
+use Cognesy\Agents\Continuation\AgentStopException;
 
 class StopTool extends BaseTool
 {
@@ -77,7 +76,7 @@ class StopTool extends BaseTool
         );
     }
 }
-// @doctest id="6eff"
+// @doctest id="c1da"
 ```
 
 ## ExecutionContinuation
@@ -98,7 +97,7 @@ $state = $context->state()->withStopSignal(new StopSignal(
     message: 'Limit reached',
 ));
 return $context->withState($state);
-// @doctest id="037b"
+// @doctest id="bdfb"
 ```
 
 The loop checks `shouldStop()` after each step and breaks if true.

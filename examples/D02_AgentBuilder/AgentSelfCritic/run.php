@@ -27,11 +27,15 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\AgentBuilder\Capabilities\SelfCritique\UseSelfCritique;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\File\ListDirTool;
+use Cognesy\Agents\Capability\File\SearchFilesTool;
+use Cognesy\Agents\Capability\File\UseFileTools;
+use Cognesy\Agents\Capability\SelfCritique\UseSelfCritique;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 // Create console logger - showContinuation reveals self-critique decisions
@@ -48,9 +52,14 @@ $workDir = dirname(__DIR__, 3);
 // Build agent with self-critique capability
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
+    ->withCapability(new UseTools(
+        ListDirTool::inDirectory($workDir),
+        SearchFilesTool::inDirectory($workDir),
+    ))
     ->withCapability(new UseSelfCritique(
         maxIterations: 2,  // Allow up to 2 critique iterations
     ))
+    ->withCapability(new UseGuards(maxSteps: 12, maxTokens: 12288, maxExecutionTime: 90))
     ->build()
     ->wiretap($logger->wiretap());
 

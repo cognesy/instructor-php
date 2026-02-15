@@ -1,0 +1,73 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Agents\Capability\Metadata;
+
+use Cognesy\Agents\Tool\Tools\StateAwareTool;
+use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
+
+/**
+ * Tool for listing all keys in agent metadata.
+ *
+ * Allows the agent to see what data has been stored:
+ *   list_metadata()
+ */
+class MetadataListTool extends StateAwareTool
+{
+    public const TOOL_NAME = 'list_metadata';
+
+    public function __construct() {
+        parent::__construct(new MetadataListToolDescriptor());
+    }
+
+    #[\Override]
+    public function __invoke(mixed ...$args): string {
+        if ($this->agentState === null) {
+            return 'Error: Agent state not available';
+        }
+
+        $metadata = $this->agentState->metadata();
+
+        if ($metadata->isEmpty()) {
+            return 'No metadata stored. Use store_metadata(key, value) to store data.';
+        }
+
+        $entries = [];
+        foreach ($metadata as $key => $value) {
+            $type = $this->describeType($value);
+            $entries[] = [
+                'key' => $key,
+                'type' => $type,
+            ];
+        }
+
+        return Json::encode([
+            'count' => count($entries),
+            'keys' => $entries,
+        ]);
+    }
+
+    private function describeType(mixed $value): string {
+        return match (true) {
+            is_null($value) => 'null',
+            is_bool($value) => 'boolean',
+            is_int($value) => 'integer',
+            is_float($value) => 'float',
+            is_string($value) => 'string',
+            is_array($value) && array_is_list($value) => 'array[' . count($value) . ']',
+            is_array($value) => 'object',
+            is_object($value) => 'object<' . get_class($value) . '>',
+            default => gettype($value),
+        };
+    }
+
+    #[\Override]
+    public function toToolSchema(): array {
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+        )->toArray();
+    }
+}

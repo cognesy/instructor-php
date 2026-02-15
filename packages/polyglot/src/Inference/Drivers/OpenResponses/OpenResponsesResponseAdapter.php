@@ -201,7 +201,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         return ToolCall::fromArray([
             'name' => $name,
             'arguments' => $arguments,
-        ])?->withId($callId);
+        ])->withId($callId);
     }
 
     /**

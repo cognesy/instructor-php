@@ -2,19 +2,19 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
+use Cognesy\Agents\Collections\ErrorList;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Context\CanAcceptMessageCompiler;
+use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\SelectedSections;
-use Cognesy\Agents\Core\Collections\ErrorList;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
-use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
-use Cognesy\Agents\Core\Contracts\CanCompileMessages;
-use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\AgentStepType;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Enums\AgentStepType;
+use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;

@@ -6,12 +6,12 @@ id: '06e7'
 ---
 ## Overview
 
-The `UseBash` capability gives the agent the ability to execute shell commands. This is
+Attaching `BashTool` directly to `AgentLoop` gives the agent the ability to execute shell commands. This is
 useful for system administration tasks, running scripts, or gathering system information.
 The agent decides which commands to run based on the task.
 
 Key concepts:
-- `UseBash`: Capability that adds bash command execution
+- `AgentLoop::withTool()`: Adds a tool directly to the loop
 - `BashTool`: Executes shell commands with configurable sandboxing
 - The agent autonomously decides which commands to run
 - `AgentConsoleLogger`: Shows tool arguments including executed commands
@@ -22,10 +22,10 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Bash\BashTool;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 
 $logger = new AgentConsoleLogger(
     useColors: true,
@@ -33,11 +33,9 @@ $logger = new AgentConsoleLogger(
     showToolArgs: true,
 );
 
-// Build agent with bash capability
-$loop = AgentBuilder::base()
-    ->withCapability(new UseBash())
-    ->withMaxSteps(5)
-    ->build()
+// Build loop with BashTool directly
+$loop = AgentLoop::default()
+    ->withTool(BashTool::inDirectory(getcwd()))
     ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withUserMessage(

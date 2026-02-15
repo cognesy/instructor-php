@@ -1,0 +1,134 @@
+---
+title: 'Tools'
+description: 'Register and use tools that let agents take actions based on LLM decisions'
+---
+
+# Tools
+
+Tools let the agent take actions. The LLM decides which tool to call and with what arguments.
+
+## Registering Tools
+
+Pass tools to the `Tools` collection:
+
+```php
+use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Tool\Tools\MockTool;
+
+$calculator = MockTool::returning('calculator', 'Performs math', '42');
+$tools = new Tools($calculator);
+```
+
+## Using FunctionTool
+
+Wrap any callable as a tool. Parameter schema is auto-generated from the function signature:
+
+```php
+use Cognesy\Agents\Tool\Tools\FunctionTool;
+
+$tool = FunctionTool::fromCallable(
+    function (string $city): string {
+        return "Weather in {$city}: 72F, sunny";
+    }
+);
+
+$tools = new Tools($tool);
+```
+
+## Multiple Tools
+
+Pass multiple tools to `Tools` and the LLM chooses which to call:
+
+```php
+use Cognesy\Agents\Tool\Tools\FunctionTool;
+use Cognesy\Agents\Collections\Tools;
+
+$weather = FunctionTool::fromCallable(
+    function (string $city): string {
+        return "Weather in {$city}: 72F, sunny";
+    }
+);
+
+$calculator = FunctionTool::fromCallable(
+    function (string $expression): string {
+        return (string) eval("return {$expression};");
+    }
+);
+
+$tools = new Tools($weather, $calculator);
+```
+
+## Agent with Tools
+
+```php
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+
+$loop = AgentLoop::default()->withTools($tools);
+
+$state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
+$result = $loop->execute($state);
+// LLM calls the weather tool, gets result, then responds
+```
+
+## Tool Contracts
+
+Every tool implements two interfaces:
+
+### ToolInterface
+
+The execution and schema contract:
+
+```php
+interface ToolInterface {
+    public function use(mixed ...$args): Result;    // execute the tool
+    public function toToolSchema(): array;           // JSON schema sent to LLM
+    public function descriptor(): CanDescribeTool;   // metadata accessor
+}
+```
+
+### CanDescribeTool
+
+The description contract — provides identity and documentation:
+
+```php
+interface CanDescribeTool {
+    public function name(): string;          // tool name (e.g., 'file.read')
+    public function description(): string;   // what the tool does
+    public function metadata(): array;       // summary for browsing/discovery
+    public function instructions(): array;   // full specification with parameters
+}
+```
+
+`metadata()` returns lightweight info (name, summary, namespace) for tool listings. `instructions()` returns the complete specification including parameters and return type.
+
+### BaseTool
+
+`BaseTool` implements both interfaces and is the standard base class for custom tools. It auto-generates parameter schemas from the `__invoke()` method signature:
+
+```php
+use Cognesy\Agents\Tool\Tools\BaseTool;
+
+class WeatherTool extends BaseTool
+{
+    public function __construct() {
+        parent::__construct(
+            name: 'weather',
+            description: 'Get current weather for a city',
+        );
+    }
+
+    public function __invoke(string $city): string {
+        return "Weather in {$city}: 72F, sunny";
+    }
+}
+```
+
+See [Building Tools](06-building-tools.md) for the full guide on creating custom tools.
+
+## How It Works
+
+1. LLM sees tool schemas and decides to call a tool
+2. `ToolExecutor` runs the tool with provided arguments
+3. Tool results are formatted as messages and fed back to the LLM
+4. LLM uses the results to formulate a final response
+5. Loop continues until LLM responds without tool calls

@@ -40,7 +40,7 @@ class OpenResponsesMessageFormatTest extends TestCase
         $this->assertCount(1, $result);
         $this->assertEquals('message', $result[0]['type']);
         $this->assertEquals('assistant', $result[0]['role']);
-        $this->assertEquals('input_text', $result[0]['content'][0]['type']);
+        $this->assertEquals('output_text', $result[0]['content'][0]['type']);
         $this->assertEquals('Hi there!', $result[0]['content'][0]['text']);
     }
 

@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Agents\Core\Data\ExecutionState;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Data\ExecutionState;
 
 final class ContinuationEvaluated extends AgentEvent
 {

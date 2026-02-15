@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Tools;
 
-use Cognesy\Agents\AgentBuilder\Capabilities\File\EditFileTool;
+use Cognesy\Agents\Capability\File\EditFileTool;
 
 describe('EditFileTool', function () {
 

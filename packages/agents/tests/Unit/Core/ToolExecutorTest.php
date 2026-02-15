@@ -2,13 +2,13 @@
 
 namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Exceptions\ToolExecutionException;
-use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Tool\ToolExecutor;
+use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use RuntimeException;

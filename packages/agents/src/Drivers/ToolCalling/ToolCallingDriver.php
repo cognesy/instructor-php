@@ -2,19 +2,18 @@
 
 namespace Cognesy\Agents\Drivers\ToolCalling;
 
+use Cognesy\Agents\Collections\ToolExecutions;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Context\CanAcceptMessageCompiler;
+use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
-use Cognesy\Agents\Core\Collections\ToolExecutions;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanAcceptEventHandler;
-use Cognesy\Agents\Core\Contracts\CanAcceptLLMProvider;
-use Cognesy\Agents\Core\Contracts\CanAcceptMessageCompiler;
-use Cognesy\Agents\Core\Contracts\CanCompileMessages;
-use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
+use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
@@ -22,6 +21,7 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

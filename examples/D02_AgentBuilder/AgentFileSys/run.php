@@ -12,7 +12,8 @@ refactoring assistance, and other file-based operations. The agent determines wh
 operations to perform based on the task.
 
 Key concepts:
-- `UseFileTools`: Capability that adds file system tools to the agent
+- `UseFileTools`: Capability that adds core file tools (`read_file`, `write_file`, `edit_file`)
+- `UseTools`: Adds extra tools explicitly when needed (`list_dir`, `search_files`)
 - Working directory: Root path for all file operations (security boundary)
 - Available tools: `read_file`, `write_file`, `edit_file`, `list_dir`, `search_files`
 - `AgentConsoleLogger`: Provides visibility into agent execution stages
@@ -23,10 +24,14 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\File\ListDirTool;
+use Cognesy\Agents\Capability\File\SearchFilesTool;
+use Cognesy\Agents\Capability\File\UseFileTools;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 // Create console logger for execution visibility
@@ -43,6 +48,11 @@ $workDir = dirname(__DIR__, 3);  // Project root
 // Build agent with file system capabilities
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
+    ->withCapability(new UseTools(
+        ListDirTool::inDirectory($workDir),
+        SearchFilesTool::inDirectory($workDir),
+    ))
+    ->withCapability(new UseGuards(maxSteps: 8, maxTokens: 8192, maxExecutionTime: 45))
     ->build()
     ->wiretap($logger->wiretap());
 

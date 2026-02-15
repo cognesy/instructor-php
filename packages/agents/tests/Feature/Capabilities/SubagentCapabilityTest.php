@@ -2,35 +2,36 @@
 
 namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\Exceptions\SubagentDepthExceededException;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\Exceptions\SubagentNotFoundException;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SpawnSubagentTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\SubagentPolicy;
-use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentDepthExceededException;
+use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentNotFoundException;
+use Cognesy\Agents\Capability\Subagent\SpawnSubagentTool;
+use Cognesy\Agents\Capability\Subagent\SubagentPolicy;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Context\Compilers\SelectedSections;
-use Cognesy\Agents\Core\Collections\NameList;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\Budget;
-use Cognesy\Agents\Core\Tools\MockTool;
+use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Agents\Events\SubagentCompleted;
 use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tests\Support\FakeSubagentProvider;
+use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Messages\Messages;
 
 describe('Subagent Capability', function () {
     it('marks tool execution as failed when subagent spec not found', function () {
         $agent = AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver([
+            ->withCapability(new UseDriver(new FakeAgentDriver([
                 ScenarioStep::toolCall('spawn_subagent', [
                     'subagent' => 'reviewer',
                     'prompt' => 'Review this',
                 ], executeTools: true),
-            ]))
+            ])))
             ->withCapability(new UseSubagents())
             ->build();
 
@@ -57,7 +58,7 @@ describe('Subagent Capability', function () {
         $driver = new FakeAgentDriver();
 
         $tool = new SpawnSubagentTool(
-            parentTools: new \Cognesy\Agents\Core\Collections\Tools(),
+            parentTools: new \Cognesy\Agents\Collections\Tools(),
             parentDriver: $driver,
             provider: $provider,
             currentDepth: 3,
@@ -87,7 +88,7 @@ describe('Subagent Capability', function () {
         ]);
 
         $agent = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->withCapability(new UseSubagents(provider: $provider))
             ->build();
 
@@ -122,7 +123,7 @@ describe('Subagent Capability', function () {
         ]);
 
         $agent = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->withCapability(new UseSubagents(provider: $provider))
             ->build();
 
@@ -174,7 +175,7 @@ describe('Subagent Capability', function () {
         ]);
 
         $agent = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->withCapability(new UseSubagents(provider: $provider))
             ->build();
 
@@ -208,7 +209,7 @@ describe('Subagent Capability', function () {
         ]);
 
         $agent = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->withCapability(new UseSubagents(provider: $provider))
             ->build();
 
@@ -242,7 +243,7 @@ describe('Subagent Capability', function () {
         ]);
 
         $agent = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->withCapability(new UseSubagents(provider: $provider))
             ->build();
 
@@ -377,15 +378,14 @@ describe('Subagent Capability', function () {
             name: 'budgeted',
             description: 'A budgeted agent',
             systemPrompt: 'You have limits',
-            maxSteps: 100,   // definition wants 100
-            maxTokens: 5000, // definition wants 5000
+            budget: new AgentBudget(maxSteps: 100, maxTokens: 5000), // definition wants 100/5000
             llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
         $driver = new FakeAgentDriver();
 
         // Parent has remaining budget of only 10 steps and 1000 tokens
-        $parentBudget = new Budget(maxSteps: 10, maxTokens: 1000);
+        $parentBudget = new AgentBudget(maxSteps: 10, maxTokens: 1000);
         $parentState = AgentState::empty()->withBudget($parentBudget);
 
         $tool = new SpawnSubagentTool(
@@ -412,16 +412,14 @@ describe('Subagent Capability', function () {
             name: 'limited',
             description: 'A limited agent',
             systemPrompt: 'You have definition limits',
-            maxSteps: 5,
-            maxTokens: 500,
-            timeoutSec: 30,
+            budget: new AgentBudget(maxSteps: 5, maxTokens: 500, maxSeconds: 30.0),
             llmConfig: '',
         );
         $provider = new FakeSubagentProvider($spec);
         $driver = new FakeAgentDriver();
 
         // Parent has unlimited budget
-        $parentState = AgentState::empty()->withBudget(Budget::unlimited());
+        $parentState = AgentState::empty()->withBudget(AgentBudget::unlimited());
 
         $tool = new SpawnSubagentTool(
             parentTools: new Tools(),
@@ -451,7 +449,7 @@ describe('Subagent Capability', function () {
             name: 'level1',
             description: 'Level 1 agent',
             systemPrompt: 'You are level 1',
-            maxSteps: 80,
+            budget: new AgentBudget(maxSteps: 80),
             llmConfig: '',
         );
 
@@ -460,14 +458,14 @@ describe('Subagent Capability', function () {
             name: 'level2',
             description: 'Level 2 agent',
             systemPrompt: 'You are level 2',
-            maxSteps: 100,
+            budget: new AgentBudget(maxSteps: 100),
             llmConfig: '',
         );
 
         $driver = new FakeAgentDriver();
 
         // Root has budget of 100 steps
-        $rootBudget = new Budget(maxSteps: 100);
+        $rootBudget = new AgentBudget(maxSteps: 100);
 
         // --- Level 1 spawning ---
         $rootState = AgentState::empty()->withBudget($rootBudget);
@@ -510,7 +508,7 @@ describe('Subagent Capability', function () {
     });
 
     it('chains budget exhaustion check through nesting levels', function () {
-        $budget = new Budget(maxSteps: 10, maxTokens: 1000);
+        $budget = new AgentBudget(maxSteps: 10, maxTokens: 1000);
 
         // After consuming most resources
         $remaining = $budget->remaining(stepsUsed: 8, tokensUsed: 900);

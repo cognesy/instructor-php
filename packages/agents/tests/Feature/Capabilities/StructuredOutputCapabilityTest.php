@@ -2,13 +2,14 @@
 
 namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputResult;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\StructuredOutput\StructuredOutputResult;
+use Cognesy\Agents\Capability\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 
 describe('StructuredOutput Capability', function () {
     it('executes structured output tool deterministically with validation failure', function () {
@@ -17,12 +18,12 @@ describe('StructuredOutput Capability', function () {
         ]);
 
         $agent = AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver([
+            ->withCapability(new UseDriver(new FakeAgentDriver([
                 ScenarioStep::toolCall('structured_output', [
                     'input' => '',
                     'schema' => 'demo',
                 ], executeTools: true),
-            ]))
+            ])))
             ->withCapability(new UseStructuredOutputs($schemas))
             ->build();
 

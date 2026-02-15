@@ -2,13 +2,14 @@
 
 namespace Cognesy\Agents\Tests\Feature\Core;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Core\UseTools;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Tools\MockTool;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -32,8 +33,8 @@ describe('Agent metadata-based trace isolation', function () {
         $tool = MockTool::returning('test_tool', 'A test tool', 'Executed');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools(new Tools($tool))
-            ->withDriver(new ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools($tool))
+            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('Use the tool'));
@@ -75,8 +76,8 @@ describe('Agent metadata-based trace isolation', function () {
         $tool = MockTool::returning('lookup', 'Search tool', 'sunny and warm');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools(new Tools($tool))
-            ->withDriver(new ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools($tool))
+            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('What is the weather?'));
@@ -130,8 +131,8 @@ describe('Agent metadata-based trace isolation', function () {
         $tool = MockTool::returning('search', 'Search tool', 'result');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools(new Tools($tool))
-            ->withDriver(new ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools($tool))
+            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('Search twice'));
@@ -180,8 +181,8 @@ describe('Agent metadata-based trace isolation', function () {
         $tool = MockTool::returning('test_tool', 'Test', 'ok');
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools(new Tools($tool))
-            ->withDriver(new ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools($tool))
+            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('Hello agent'));

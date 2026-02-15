@@ -2,13 +2,14 @@
 
 namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Core\Tools\MockTool;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistry;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\UseToolRegistry;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Tools\UseToolRegistry;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\Tool\ToolRegistry;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 describe('ToolRegistry Capability', function () {
     it('lists registry tools deterministically through the agent', function () {
@@ -16,9 +17,9 @@ describe('ToolRegistry Capability', function () {
         $registry->register(MockTool::returning('demo_tool', 'Demo tool', 'ok'));
 
         $agent = AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver([
+            ->withCapability(new UseDriver(new FakeAgentDriver([
                 ScenarioStep::toolCall('tools', ['action' => 'list'], executeTools: true),
-            ]))
+            ])))
             ->withCapability(new UseToolRegistry($registry))
             ->build();
 

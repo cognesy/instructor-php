@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Data\ExecutionState;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Core\Stop\StopSignal;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Data\ExecutionState;
 use Cognesy\Agents\Events\ContinuationEvaluated;
 
 it('renders continuation evaluated event summary', function () {

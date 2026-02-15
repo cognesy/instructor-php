@@ -79,7 +79,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         if (!isset($data['id'])) {
             return null;
         }
-        return ToolCall::fromArray($data['function'] ?? [])?->withId($data['id'] ?? '');
+        return ToolCall::fromArray($data['function'] ?? [])->withId($data['id'] ?? '');
     }
 
     #[\Override]

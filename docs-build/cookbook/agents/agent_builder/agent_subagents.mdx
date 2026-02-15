@@ -28,7 +28,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;use Cognesy\Agents\AgentBuilder\Capabilities\Subagent\UseSubagents;use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;use Cognesy\Agents\Core\Collections\NameList;use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Events\AgentConsoleLogger;use Cognesy\Messages\Messages;
+use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Capabilities\File\UseFileTools;use Cognesy\Agents\Capabilities\Subagent\UseSubagents;use Cognesy\Agents\Collections\NameList;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\Support\AgentConsoleLogger;use Cognesy\Messages\Messages;
 
 // Create console logger - shows agent IDs for parent/child tracking
 $logger = new AgentConsoleLogger(

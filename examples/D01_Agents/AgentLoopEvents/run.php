@@ -28,12 +28,12 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Bash\BashTool;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 
 // AgentConsoleLogger uses wiretap() internally to show all lifecycle events
 $logger = new AgentConsoleLogger(
@@ -43,10 +43,8 @@ $logger = new AgentConsoleLogger(
     showToolArgs: true,
 );
 
-$agent = AgentBuilder::base()
-    ->withCapability(new UseBash())
-    ->withMaxSteps(5)
-    ->build()
+$agent = AgentLoop::default()
+    ->withTool(BashTool::inDirectory(getcwd()))
     ->wiretap($logger->wiretap());
 
 // onEvent(): subscribe to specific event types for custom logic

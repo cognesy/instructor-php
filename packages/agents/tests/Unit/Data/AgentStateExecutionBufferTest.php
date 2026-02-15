@@ -3,8 +3,8 @@
 namespace Cognesy\Agents\Tests\Unit\Data;
 
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;

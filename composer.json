@@ -22,6 +22,82 @@
     ],
     "type": "library",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Dariusz Debowczyk",
+            "email": "ddebowczyk@gmail.com"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        },
+        "sort-packages": true,
+        "process-timeout": 600
+    },
+    "require": {
+        "php": "^8.3|^8.4|^8.5",
+        "ext-ctype": "*",
+        "adbario/php-dot-notation": "^3.3",
+        "aimeos/map": "^3.8",
+        "gioni06/gpt3-tokenizer": "^1.2",
+        "phpdocumentor/reflection-docblock": "^5.6",
+        "psr/event-dispatcher": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^2.0",
+        "psr/log": "^3.0",
+        "symfony/console": "^7.1",
+        "symfony/filesystem": "^7.1",
+        "symfony/process": "^7.0",
+        "symfony/property-access": "^7.0",
+        "symfony/property-info": "^7.0",
+        "symfony/serializer": "^7.0",
+        "symfony/validator": "^7.0",
+        "symfony/var-dumper": "^7.0",
+        "symfony/yaml": "^7.0",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "scripts": {
+        "bench": "@php ./vendor/bin/phpbench run",
+        "docs": "@php ./bin/instructor-docs",
+        "hub": "php ./bin/instructor-hub",
+        "phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
+        "psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
+        "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
+        "tell": "bin/tell",
+        "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression",
+        "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression",
+        "test-all": "@php ./vendor/bin/pest",
+        "dead-code": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
+        "dead-code-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
+        "unused-deps": "@php ./vendor/bin/composer-unused",
+        "setup": "bin/instructor-setup",
+        "make-package": "scripts/make-package"
+    },
+    "bin": [
+        "bin/instructor-setup",
+        "bin/instructor-hub",
+        "bin/instructor-docs",
+        "bin/tell",
+        "scripts/make-package",
+        "packages/auxiliary/bin/tbd"
+    ],
+    "suggest": {
+        "cognesy/instructor-laravel": "For Laravel facades, testing fakes, and framework integration",
+        "ext-dom": "Used by Cognesy\\Auxiliary\\Web\\Html for HTML parsing",
+        "ext-fileinfo": "Used by Cognesy\\Addon\\Image\\Image for MIME information extraction",
+        "ext-libxml": "Used by Cognesy\\Utils\\Template\\Template for prompt template support",
+        "ext-simplexml": "Used by Cognesy\\Utils\\Template\\Template for prompt template support",
+        "ext-xmlreader": "Used by Cognesy\\Utils\\Template\\Template for prompt template support",
+        "eftec/bladeone": "For BladeOne template engine support",
+        "spatie/browsershot": "Used by Cognesy\\Auxiliary\\Web for Browsershot web crawler support",
+        "symfony/http-client": "For Symfony HTTP client support",
+        "symfony/http-client-contracts": "For Symfony HTTP client support",
+        "twig/twig": "For Twig template engine support",
+        "guzzlehttp/guzzle": "For Guzzle HTTP client support",
+        "guzzlehttp/psr7": "For Guzzle PSR-7 support"
+    },
     "autoload": {
         "psr-4": {
             "Cognesy\\Addons\\": "packages/addons/src/",
@@ -95,12 +171,6 @@
             "packages/instructor/tests/Support/TestHelpers.php"
         ]
     },
-    "authors": [
-        {
-            "name": "Dariusz Debowczyk",
-            "email": "ddebowczyk@gmail.com"
-        }
-    ],
     "require-dev": {
         "ext-SimpleXML": "*",
         "ext-curl": "*",
@@ -136,75 +206,5 @@
         "toolkit/cli-utils": "^2.0",
         "twig/twig": "^3.0",
         "vimeo/psalm": "^6.0"
-    },
-    "config": {
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        },
-        "sort-packages": true,
-        "process-timeout": 600
-    },
-    "require": {
-        "php": "^8.3|^8.4|^8.5",
-        "ext-ctype": "*",
-        "adbario/php-dot-notation": "^3.3",
-        "aimeos/map": "^3.8",
-        "gioni06/gpt3-tokenizer": "^1.2",
-        "phpdocumentor/reflection-docblock": "^5.6",
-        "psr/event-dispatcher": "^1.0",
-        "psr/http-client": "^1.0",
-        "psr/http-message": "^2.0",
-        "psr/log": "^3.0",
-        "symfony/console": "^7.1",
-        "symfony/filesystem": "^7.1",
-        "symfony/process": "^7.0",
-        "symfony/property-access": "^7.0",
-        "symfony/property-info": "^7.0",
-        "symfony/serializer": "^7.0",
-        "symfony/validator": "^7.0",
-        "symfony/var-dumper": "^7.0",
-        "symfony/yaml": "^7.0",
-        "vlucas/phpdotenv": "^5.6"
-    },
-    "scripts": {
-        "bench": "@php ./vendor/bin/phpbench run",
-        "docs": "@php ./bin/instructor-docs",
-        "hub": "php ./bin/instructor-hub",
-        "phpstan": "@php ./vendor/bin/phpstan analyse -c phpstan.neon",
-        "psalm": "@php ./vendor/bin/psalm -c packages/instructor/psalm.xml",
-        "psalm-unused": "@php ./vendor/bin/psalm --find-unused-code",
-        "tell": "bin/tell",
-        "test": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression",
-        "tests": "@php -d memory_limit=512M ./vendor/bin/pest --compact --testsuite=Unit,Feature,Regression",
-        "test-all": "@php ./vendor/bin/pest",
-        "dead-code": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table",
-        "dead-code-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
-        "unused-deps": "@php ./vendor/bin/composer-unused",
-        "setup": "bin/instructor-setup",
-        "make-package": "scripts/make-package"
-    },
-    "bin": [
-        "bin/instructor-setup",
-        "bin/instructor-hub",
-        "bin/instructor-docs",
-        "bin/tell",
-        "scripts/make-package",
-        "packages/auxiliary/bin/tbd"
-    ],
-    "suggest": {
-        "cognesy/instructor-laravel": "For Laravel facades, testing fakes, and framework integration",
-        "ext-dom": "Used by Cognesy\\Auxiliary\\Web\\Html for HTML parsing",
-        "ext-fileinfo": "Used by Cognesy\\Addon\\Image\\Image for MIME information extraction",
-        "ext-libxml": "Used by Cognesy\\Utils\\Template\\Template for prompt template support",
-        "ext-simplexml": "Used by Cognesy\\Utils\\Template\\Template for prompt template support",
-        "ext-xmlreader": "Used by Cognesy\\Utils\\Template\\Template for prompt template support",
-        "eftec/bladeone": "For BladeOne template engine support",
-        "spatie/browsershot": "Used by Cognesy\\Auxiliary\\Web for Browsershot web crawler support",
-        "symfony/http-client": "For Symfony HTTP client support",
-        "symfony/http-client-contracts": "For Symfony HTTP client support",
-        "twig/twig": "For Twig template engine support",
-        "guzzlehttp/guzzle": "For Guzzle HTTP client support",
-        "guzzlehttp/psr7": "For Guzzle PSR-7 support"
     }
 }

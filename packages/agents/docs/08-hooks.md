@@ -25,8 +25,8 @@ Hooks intercept agent lifecycle events to add custom behavior: logging, guards, 
 Implement `HookInterface`:
 
 ```php
-use Cognesy\Agents\Hooks\Contracts\HookInterface;
-use Cognesy\Agents\Hooks\Data\HookContext;
+use Cognesy\Agents\Hook\Contracts\HookInterface;
+use Cognesy\Agents\Hook\Data\HookContext;
 
 class LogStepsHook implements HookInterface
 {
@@ -41,12 +41,31 @@ class LogStepsHook implements HookInterface
 
 ## Registering Hooks
 
-Use `HookStack` to compose hooks with trigger filters and priorities:
+### Via AgentBuilder (recommended)
+
+Use the `UseHook` capability to register hooks declaratively:
 
 ```php
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
-use Cognesy\Agents\Hooks\Interceptors\HookStack;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseHook;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseHook(
+        hook: new LogStepsHook(),
+        triggers: HookTriggers::afterStep(),
+        priority: 10,
+        name: 'log_steps',
+    ))
+    ->build();
+```
+
+### Via HookStack (manual)
+
+For direct `AgentLoop` usage, compose hooks with `HookStack`:
+
+```php
+use Cognesy\Agents\Hook\Collections\HookTriggers;use Cognesy\Agents\Hook\Collections\RegisteredHooks;use Cognesy\Agents\Hook\HookStack;
 
 $stack = new HookStack(new RegisteredHooks());
 $stack = $stack->with(
@@ -64,7 +83,7 @@ $loop = AgentLoop::default()->withInterceptor($stack);
 Quick hooks without a class:
 
 ```php
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
 
 $hook = new CallableHook(function (HookContext $ctx): HookContext {
     echo "Step done!\n";
@@ -106,10 +125,24 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
 
 ## Built-in Guard Hooks
 
+### Via UseGuards capability (recommended)
+
 ```php
-use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
-use Cognesy\Agents\Hooks\Guards\TokenUsageLimitHook;
-use Cognesy\Agents\Hooks\Guards\ExecutionTimeLimitHook;
+use Cognesy\Agents\Capability\Core\UseGuards;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseGuards(
+        maxSteps: 10,
+        maxTokens: 5000,
+        maxExecutionTime: 30.0,
+    ))
+    ->build();
+```
+
+### Manual registration
+
+```php
+use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;use Cognesy\Agents\Hook\Hooks\StepsLimitHook;use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
 
 // Stop after 10 steps
 $stepsGuard = new StepsLimitHook(

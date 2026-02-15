@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Collections\NameList;
+use Cognesy\Agents\Collections\NameList;
 
 describe('NameList', function () {
     it('normalizes and deduplicates names', function () {

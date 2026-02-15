@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Tools;
 
-use Cognesy\Agents\AgentBuilder\Capabilities\File\WriteFileTool;
+use Cognesy\Agents\Capability\File\WriteFileTool;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
 

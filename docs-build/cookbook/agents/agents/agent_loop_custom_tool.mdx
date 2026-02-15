@@ -24,11 +24,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Messages\Messages;
-use Cognesy\Schema\Attributes\Description;
+use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Tool\Tools\BaseTool;use Cognesy\Messages\Messages;use Cognesy\Schema\Attributes\Description;
 
 // Custom tool that reports system information
 class SystemInfoTool extends BaseTool

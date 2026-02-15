@@ -30,8 +30,7 @@ public function shouldStop(): bool {
 A signal requesting the loop to stop, with a reason and context:
 
 ```php
-use Cognesy\Agents\Core\Stop\StopSignal;
-use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Continuation\StopReason;use Cognesy\Agents\Continuation\StopSignal;
 
 $signal = new StopSignal(
     reason: StopReason::StepsLimitReached,
@@ -60,7 +59,7 @@ UserRequested       - User-initiated stop
 Throw from a tool to immediately stop the loop:
 
 ```php
-use Cognesy\Agents\Core\Stop\AgentStopException;
+use Cognesy\Agents\Continuation\AgentStopException;
 
 class StopTool extends BaseTool
 {

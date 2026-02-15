@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
-use Cognesy\Agents\Hooks\Defaults\FinishReasonHook;
-use Cognesy\Agents\Hooks\Enums\HookTrigger;
-use Cognesy\Agents\Hooks\Guards\ExecutionTimeLimitHook;
-use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
-use Cognesy\Agents\Hooks\Guards\TokenUsageLimitHook;
-use Cognesy\Agents\Hooks\Interceptors\HookStack;
-use Cognesy\Agents\Hooks\Interceptors\PassThroughInterceptor;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Collections\RegisteredHooks;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
+use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;
+use Cognesy\Agents\Hook\Hooks\FinishReasonHook;
+use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
+use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
+use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 
 // ── FinishReasonHook ──────────────────────────────────────────────

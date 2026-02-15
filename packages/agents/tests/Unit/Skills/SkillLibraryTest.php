@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Skills;
 
-use Cognesy\Agents\AgentBuilder\Capabilities\Skills\Skill;
-use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
+use Cognesy\Agents\Capability\Skills\Skill;
+use Cognesy\Agents\Capability\Skills\SkillLibrary;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
 

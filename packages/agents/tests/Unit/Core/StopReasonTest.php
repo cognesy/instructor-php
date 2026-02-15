@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Continuation\StopReason;
 
 it('defines all stop reasons', function () {
     $values = array_map(

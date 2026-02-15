@@ -2,12 +2,13 @@
 
 namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Skills\SkillLibrary;
-use Cognesy\Agents\AgentBuilder\Capabilities\Skills\UseSkills;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Skills\SkillLibrary;
+use Cognesy\Agents\Capability\Skills\UseSkills;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 
 describe('Skills Capability', function () {
     it('injects skills metadata deterministically through the agent', function () {
@@ -27,9 +28,9 @@ describe('Skills Capability', function () {
 
         $library = SkillLibrary::inDirectory($skillsDir);
         $agent = AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver([
+            ->withCapability(new UseDriver(new FakeAgentDriver([
                 ScenarioStep::final('ok'),
-            ]))
+            ])))
             ->withCapability(new UseSkills($library))
             ->build();
 

@@ -13,7 +13,8 @@ a message, processing it through the LLM, and returning a response.
 Key concepts:
 - `AgentBuilder`: Constructs configured agent instances
 - `AgentState`: Immutable state container for messages and metadata
-- `Agent::execute()`: Executes the agent loop until completion
+- `AgentLoop::execute()`: Executes the agent loop until completion
+- `UseGuards`: Adds step/token/time safety limits
 - `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 
@@ -23,9 +24,11 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseLlmConfig;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 // Create a console logger for visibility into agent execution
@@ -37,7 +40,8 @@ $logger = new AgentConsoleLogger(
 
 // Build a basic agent
 $agent = AgentBuilder::base()
-    ->withLlmPreset('anthropic')
+    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseGuards(maxSteps: 3, maxTokens: 4096, maxExecutionTime: 30))
     ->build()
     ->wiretap($logger->wiretap());
 

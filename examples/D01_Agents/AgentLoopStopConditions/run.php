@@ -7,8 +7,8 @@ id: '368a'
 ## Overview
 
 The agent loop stops when `AgentState::shouldStop()` returns true. You can trigger stops
-from within tools using `AgentStopException`, or configure built-in guards via the builder
-(`withMaxSteps`, `withMaxTokens`, `withTimeout`).
+from within tools using `AgentStopException`, or apply guard hooks directly
+(`StepsLimitHook`, `TokenUsageLimitHook`, `ExecutionTimeLimitHook`).
 
 When a tool stops the agent, the last step is a `ToolExecution` — not a `FinalResponse`.
 This means `finalResponse()` returns empty. Use `currentResponse()` to get the best
@@ -21,9 +21,7 @@ Key concepts:
 - `AgentStopException`: Throw from a tool to stop the loop immediately
 - `StopSignal` / `StopReason`: Describes why the loop stopped
 - `finalResponse()` vs `currentResponse()`: Strict vs pragmatic response access
-- `withMaxSteps()`: Built-in guard that stops after N steps
-- `withMaxTokens()`: Built-in guard that stops after N total tokens
-- `withTimeout()`: Built-in guard that stops after N seconds
+- Guard hooks: step/token/time limits implemented via lifecycle interception
 
 ## Example
 
@@ -31,13 +29,13 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Stop\AgentStopException;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Core\Stop\StopSignal;
-use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Continuation\AgentStopException;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;

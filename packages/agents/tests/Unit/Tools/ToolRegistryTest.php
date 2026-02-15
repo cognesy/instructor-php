@@ -1,56 +1,38 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolPolicy;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistry;
-use Cognesy\Agents\Core\Tools\MockTool;
 use Cognesy\Agents\Exceptions\InvalidToolException;
+use Cognesy\Agents\Tool\ToolRegistry;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
-it('registers and lists tool metadata', function () {
+it('registers tool instances', function () {
     $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
+    $alpha = MockTool::returning('alpha', 'Alpha tool', 'ok');
+    $registry->register($alpha);
 
-    $metadata = $registry->listMetadata();
-
-    expect($metadata)->toHaveCount(1)
-        ->and($metadata[0]['name'])->toBe('alpha');
+    expect($registry->has('alpha'))->toBeTrue()
+        ->and($registry->get('alpha'))->toBe($alpha);
 });
 
-it('resolves tools and builds collections', function () {
+it('registers tool factories', function () {
     $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
-    $registry->register(MockTool::returning('beta', 'Beta tool', 'ok'));
+    $registry->registerFactory('alpha', fn() => MockTool::returning('alpha', 'Alpha tool', 'ok'));
 
-    $tools = $registry->buildTools();
-
-    expect($tools->names())->toEqual(['alpha', 'beta']);
+    expect($registry->has('alpha'))->toBeTrue()
+        ->and($registry->get('alpha')->name())->toBe('alpha');
 });
 
-it('applies tool policy when building collections', function () {
+it('returns registered names', function () {
     $registry = new ToolRegistry();
     $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
-    $registry->register(MockTool::returning('beta', 'Beta tool', 'ok'));
+    $registry->registerFactory('beta', fn() => MockTool::returning('beta', 'Beta tool', 'ok'));
 
-    $policy = new ToolPolicy(allowlist: ['beta']);
-    $tools = $registry->buildTools(policy: $policy);
-
-    expect($tools->names())->toEqual(['beta']);
+    expect($registry->names())->toEqual(['beta', 'alpha']);
 });
 
-it('searches tools by name or description', function () {
-    $registry = new ToolRegistry();
-    $registry->register(MockTool::returning('alpha', 'Alpha tool', 'ok'));
-    $registry->register(MockTool::returning('beta', 'Beta tool', 'ok'));
-
-    $results = $registry->search('beta');
-
-    expect($results)->toHaveCount(1)
-        ->and($results[0]['name'])->toBe('beta');
-});
-
-it('throws when resolving missing tool', function () {
+it('throws when getting missing tool', function () {
     $registry = new ToolRegistry();
 
-    $resolve = fn () => $registry->resolve('missing');
+    $resolve = fn () => $registry->get('missing');
 
     expect($resolve)->toThrow(InvalidToolException::class);
 });

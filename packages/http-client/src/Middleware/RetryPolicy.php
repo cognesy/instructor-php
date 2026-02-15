@@ -60,7 +60,7 @@ final readonly class RetryPolicy
     public function delayMsForAttempt(int $attemptNumber, ?HttpResponse $response = null): int {
         $attempt = max(1, $attemptNumber);
         $base = $this->baseDelayMs * (2 ** ($attempt - 1));
-        $capped = min($base, $this->maxDelayMs);
+        $capped = (int) min($base, $this->maxDelayMs);
 
         $delay = match ($this->jitter) {
             'none' => $capped,

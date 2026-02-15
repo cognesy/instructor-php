@@ -104,7 +104,7 @@ The `ToolExecutor` is created automatically by `AgentLoop::default()`. To custom
 ```php
 $executor = new ToolExecutor(
     tools: $tools,
-    eventEmitter: $eventEmitter,
+    events: $events,
     interceptor: $interceptor,
     throwOnToolFailure: false,  // true = throw on first tool error
     stopOnToolBlock: false,     // true = stop executing remaining tools if one is blocked

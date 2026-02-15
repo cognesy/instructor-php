@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Core;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -87,7 +87,7 @@ it('handles malformed datetime strings gracefully', function () {
         'continuation' => [],
     ];
 
-    $execution = \Cognesy\Agents\Core\Data\ExecutionState::fromArray($data);
+    $execution = \Cognesy\Agents\Data\ExecutionState::fromArray($data);
     $array = $execution->toArray();
 
     expect($execution->executionId())->toBe('test-id')
@@ -105,7 +105,7 @@ it('handles empty string datetime values gracefully', function () {
         'continuation' => [],
     ];
 
-    $execution = \Cognesy\Agents\Core\Data\ExecutionState::fromArray($data);
+    $execution = \Cognesy\Agents\Data\ExecutionState::fromArray($data);
     $array = $execution->toArray();
 
     expect($array['startedAt'])->toBeString()
@@ -113,7 +113,7 @@ it('handles empty string datetime values gracefully', function () {
 });
 
 it('calculates totalDuration with sub-second precision', function () {
-    $execution = \Cognesy\Agents\Core\Data\ExecutionState::fresh();
+    $execution = \Cognesy\Agents\Data\ExecutionState::fresh();
 
     usleep(50000); // 50ms
 

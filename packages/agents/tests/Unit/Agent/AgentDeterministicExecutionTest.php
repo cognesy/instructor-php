@@ -2,21 +2,24 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\ExecutionStatus;
-use Cognesy\Agents\Core\Tools\MockTool;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Core\UseHook;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
+use Cognesy\Agents\Enums\ExecutionStatus;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
+use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Messages\Messages;
 
 describe('Deterministic agent execution', function () {
     it('runs a trivial scenario without tools or LLM', function () {
         $agent = AgentBuilder::base()
-            ->withDriver(FakeAgentDriver::fromResponses('Paris'))
+            ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('Paris')))
             ->build();
 
         $state = AgentState::empty()
@@ -57,9 +60,9 @@ describe('Deterministic agent execution', function () {
         );
 
         $agent = AgentBuilder::base()
-            ->withTools([$tool])
-            ->withDriver($driver)
-            ->addHook($continuationHook, HookTriggers::afterStep(), -200)
+            ->withCapability(new UseTools($tool))
+            ->withCapability(new UseDriver($driver))
+            ->withCapability(new UseHook($continuationHook, HookTriggers::afterStep(), -200))
             ->build();
 
         $state = AgentState::empty()
@@ -82,7 +85,7 @@ describe('Deterministic agent execution', function () {
         ]);
 
         $agentLoop = AgentBuilder::base()
-            ->withDriver($driver)
+            ->withCapability(new UseDriver($driver))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('ping'));

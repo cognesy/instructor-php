@@ -14,7 +14,7 @@ Key concepts:
 - `CallableHook`: Wraps a closure as a hook
 - `HookContext`: Provides access to tool call and agent state
 - `HookTriggers`: Defines when the hook fires (e.g., `beforeToolUse()`)
-- `addHook()`: Registers a hook on the builder with priority
+- `UseHook`: Registers a hook capability with explicit trigger/priority
 - `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 ## Example
@@ -23,13 +23,15 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\UseBash;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Bash\UseBash;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseHook;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
 
 // Create console logger for execution visibility
 $logger = new AgentConsoleLogger(
@@ -49,18 +51,30 @@ $blockedPatterns = [
     'dd if=',
     ':(){:|:&};:',  // Fork bomb
 ];
+$blockedPatterns = array_map(
+    static fn(string $pattern): string => strtolower(trim($pattern)),
+    $blockedPatterns,
+);
 
 // Build agent with bash capability and security hook
 $agent = AgentBuilder::base()
     ->withCapability(new UseBash())
-    ->addHook(
+    ->withCapability(new UseHook(
         hook: new CallableHook(function (HookContext $ctx) use ($blockedPatterns): HookContext {
             $toolCall = $ctx->toolCall();
             if ($toolCall === null) {
                 return $ctx;
             }
 
-            $command = $toolCall->args()['command'] ?? '';
+            $args = $toolCall->args();
+            $rawCommand = match (true) {
+                is_array($args) && isset($args['command']) && is_string($args['command']) => $args['command'],
+                default => '',
+            };
+            $command = strtolower(trim((string) preg_replace('/\s+/', ' ', $rawCommand)));
+            if ($command === '') {
+                return $ctx;
+            }
 
             // Check for dangerous patterns
             foreach ($blockedPatterns as $pattern) {
@@ -70,12 +84,13 @@ $agent = AgentBuilder::base()
                 }
             }
 
-            echo "         [HOOK] ALLOWED - {$command}\n";
+            echo "         [HOOK] ALLOWED - {$rawCommand}\n";
             return $ctx;
         }),
         triggers: HookTriggers::beforeToolUse(),
         priority: 100,       // High priority = runs first
-    )
+    ))
+    ->withCapability(new UseGuards(maxSteps: 8, maxTokens: 4096, maxExecutionTime: 30))
     ->build()
     ->wiretap($logger->wiretap());
 
@@ -111,7 +126,7 @@ echo "Status: {$finalState2->status()->value}\n";
 
 ## How It Works
 
-1. **Hook Registration**: `addHook()` registers a `CallableHook` with `HookTriggers::beforeToolUse()`
+1. **Hook Registration**: `UseHook` registers a `CallableHook` with `HookTriggers::beforeToolUse()`
 2. **Context Access**: `HookContext` provides `toolCall()` and `state()` accessors
 3. **Priority**: Higher priority (100) ensures this security check runs before other hooks
 4. **Blocking**: `$ctx->withToolExecutionBlocked($reason)` blocks the tool call with a reason
@@ -121,7 +136,7 @@ echo "Status: {$finalState2->status()->value}\n";
 
 ```php
 // After tool execution - for logging/metrics
-->addHook(
+->withCapability(new UseHook(
     hook: new CallableHook(function (HookContext $ctx): HookContext {
         $exec = $ctx->toolExecution();
         if ($exec !== null) {
@@ -130,19 +145,19 @@ echo "Status: {$finalState2->status()->value}\n";
         return $ctx;
     }),
     triggers: HookTriggers::afterToolUse(),
-)
+))
 
 // Before each step - modify state
-->addHook(
+->withCapability(new UseHook(
     hook: new CallableHook(function (HookContext $ctx): HookContext {
         $state = $ctx->state()->withMetadata('step_started', microtime(true));
         return $ctx->withState($state);
     }),
     triggers: HookTriggers::beforeStep(),
-)
+))
 
 // After each step
-->addHook(
+->withCapability(new UseHook(
     hook: new CallableHook(function (HookContext $ctx): HookContext {
         $started = $ctx->state()->metadata()->get('step_started');
         if ($started !== null) {
@@ -152,5 +167,5 @@ echo "Status: {$finalState2->status()->value}\n";
         return $ctx;
     }),
     triggers: HookTriggers::afterStep(),
-)
+))
 ```

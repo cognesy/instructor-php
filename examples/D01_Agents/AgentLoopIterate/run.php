@@ -26,10 +26,10 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\UseFileTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\File\ReadFileTool;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 use Cognesy\Messages\Messages;
 
 $workDir = dirname(__DIR__, 3);
@@ -41,10 +41,8 @@ $logger = new AgentConsoleLogger(
     showContinuation: true,
 );
 
-$loop = AgentBuilder::base()
-    ->withCapability(new UseFileTools($workDir))
-    ->withMaxSteps(10)
-    ->build()
+$loop = AgentLoop::default()
+    ->withTool(ReadFileTool::inDirectory($workDir))
     ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withMessages(

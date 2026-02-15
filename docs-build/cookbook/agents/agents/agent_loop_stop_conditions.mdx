@@ -23,14 +23,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Stop\AgentStopException;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Core\Stop\StopSignal;
-use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Messages\Messages;
-use Cognesy\Schema\Attributes\Description;
+use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Continuation\AgentStopException;use Cognesy\Agents\Continuation\StopReason;use Cognesy\Agents\Continuation\StopSignal;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Tool\Tools\BaseTool;use Cognesy\Messages\Messages;use Cognesy\Schema\Attributes\Description;
 
 // A tool that counts up and stops when it reaches a target
 class CounterTool extends BaseTool

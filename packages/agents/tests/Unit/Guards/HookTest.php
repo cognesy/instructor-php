@@ -2,15 +2,15 @@
 
 namespace Cognesy\Agents\Tests\Unit\Guards;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Stop\StopReason;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Defaults\CallableHook;
-use Cognesy\Agents\Hooks\Enums\HookTrigger;
-use Cognesy\Agents\Hooks\Guards\StepsLimitHook;
-use Cognesy\Agents\Hooks\Interceptors\HookStack;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Collections\RegisteredHooks;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Hook\Hooks\CallableHook;
+use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
+use Cognesy\Agents\Hook\HookStack;
 
 it('HookStack processes hooks for matching triggers', function () {
     $stack = (new HookStack(new RegisteredHooks()))

@@ -2,21 +2,22 @@
 
 namespace Cognesy\Agents\Tests\Feature\Capabilities;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Metadata\UseMetadataTools;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 
 describe('Metadata Capability', function () {
     it('persists metadata deterministically through the agent', function () {
         $agent = AgentBuilder::base()
-            ->withDriver(new FakeAgentDriver([
+            ->withCapability(new UseDriver(new FakeAgentDriver([
                 ScenarioStep::toolCall('store_metadata', [
                     'key' => 'current_lead',
                     'value' => ['name' => 'Ada'],
                 ], executeTools: true),
-            ]))
+            ])))
             ->withCapability(new UseMetadataTools())
             ->build();
 

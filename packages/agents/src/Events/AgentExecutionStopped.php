@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Continuation\StopReason;
 use DateTimeImmutable;
 
 /**

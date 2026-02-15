@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
-use Cognesy\Agents\Hooks\Collections\RegisteredHooks;
-use Cognesy\Agents\Hooks\Contracts\HookInterface;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Enums\HookTrigger;
-use Cognesy\Agents\Hooks\Interceptors\HookStack;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Collections\RegisteredHooks;
+use Cognesy\Agents\Hook\Contracts\HookInterface;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Hook\HookStack;
 
 it('accumulates hooks when chaining withHook()', function () {
     $stack = new HookStack(new RegisteredHooks());

@@ -160,9 +160,6 @@ final readonly class ToolExecution
         }
 
         $toolCall = ToolCall::fromArray($toolCallPayload);
-        if ($toolCall === null) {
-            throw new ToolExecutionException('Tool execution payload is missing tool call information.');
-        }
 
         $id = $toolCallPayload['id'] ?? '';
         return $id !== '' ? $toolCall->withId((string) $id) : $toolCall;

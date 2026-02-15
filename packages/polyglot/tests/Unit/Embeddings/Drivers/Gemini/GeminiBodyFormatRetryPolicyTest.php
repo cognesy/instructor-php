@@ -10,7 +10,7 @@ it('Embeddings Gemini: omits retryPolicy from request body', function () {
         apiUrl: 'https://example.googleapis.com/v1beta',
         apiKey: 'KEY',
         endpoint: '/models/{model}:batchEmbedContents',
-        model: 'models/text-embedding-004',
+        model: 'models/gemini-embedding-001',
         driver: 'gemini',
         maxInputs: 10,
     );
@@ -19,7 +19,7 @@ it('Embeddings Gemini: omits retryPolicy from request body', function () {
 
     $req = new EmbeddingsRequest(
         input: ['hello'],
-        model: 'models/text-embedding-004',
+        model: 'models/gemini-embedding-001',
         retryPolicy: new EmbeddingsRetryPolicy(maxAttempts: 2),
     );
 

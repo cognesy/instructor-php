@@ -129,7 +129,7 @@ vendor/bin/pest packages/addons/tests/Feature
 vendor/bin/pest packages/addons/tests/Integration --group=integration
 
 # Specific category
-vendor/bin/pest packages/addons/tests/Feature/Capabilities
+vendor/bin/pest packages/addons/tests/Feature/Capability
 vendor/bin/pest packages/addons/tests/Unit/Tools
 ```
 

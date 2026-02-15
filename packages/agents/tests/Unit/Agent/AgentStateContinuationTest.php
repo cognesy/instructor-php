@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\ExecutionStatus;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;

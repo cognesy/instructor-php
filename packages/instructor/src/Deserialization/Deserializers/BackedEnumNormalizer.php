@@ -30,6 +30,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
      * @phpstan-ignore method.childReturnType
      */
     /** @psalm-suppress MissingOverrideAttribute */
+    #[\Override]
     public function getSupportedTypes(?string $format): array
     {
         return [

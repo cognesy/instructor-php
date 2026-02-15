@@ -199,7 +199,7 @@ $agent = AgentBuilder::base()
 
 **Implementation**:
 ```php
-// packages/addons/src/Agent/Capabilities/Subagent/UseSubagents.php
+// packages/addons/src/Agent/Capability/Subagent/UseSubagents.php
 class UseSubagents implements Capability
 {
     public function process(AgentState $state): AgentState {
@@ -259,7 +259,7 @@ public function toSystemPrompt(): string {
 **Implementation**:
 
 ```php
-// packages/addons/src/Agent/Capabilities/Suggestion/UseAgentSuggestions.php
+// packages/addons/src/Agent/Capability/Suggestion/UseAgentSuggestions.php
 namespace Cognesy\Addons\AgentBuilder\Capabilities\Suggestion;
 
 use Cognesy\Addons\AgentBuilder\Capabilities\Capability;use Cognesy\Addons\Agent\Core\Data\AgentState;use Cognesy\Addons\AgentTemplate\Registry\AgentRegistry;
@@ -354,7 +354,7 @@ while ($agent->hasNextStep($state)) {
 
 **Implementation**:
 ```php
-// packages/addons/src/Agent/Capabilities/Subagent/UseSubagents.php
+// packages/addons/src/Agent/Capability/Subagent/UseSubagents.php
 class UseSubagents implements Capability
 {
     private array $backgroundAgents = [];

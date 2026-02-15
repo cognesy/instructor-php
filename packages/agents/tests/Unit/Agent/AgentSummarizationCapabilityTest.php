@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\Contracts\CanSummarizeMessages;
-use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\SummarizationPolicy;
-use Cognesy\Agents\AgentBuilder\Capabilities\Summarization\UseSummarization;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Summarization\Contracts\CanSummarizeMessages;
+use Cognesy\Agents\Capability\Summarization\SummarizationPolicy;
+use Cognesy\Agents\Capability\Summarization\UseSummarization;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\Tokenizer;
@@ -26,7 +27,7 @@ it('moves overflow messages into the buffer when summarization is enabled', func
     );
 
     $agent = AgentBuilder::base()
-        ->withDriver(new FakeAgentDriver([ScenarioStep::final('ok')]))
+        ->withCapability(new UseDriver(new FakeAgentDriver([ScenarioStep::final('ok')])))
         ->withCapability(new UseSummarization($policy, $summarizer))
         ->build();
 

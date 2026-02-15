@@ -856,7 +856,7 @@ $agent = AgentBuilder::new()
     ->continueWhen(new MaxTokens(50000))
     ->continueWhen(new StopOnNoToolCalls())
 
-    // Capabilities (register their own hooks)
+    // Capability (register their own hooks)
     ->with(new UseTaskPlanning())
     ->with(new UseSelfCritique())
 

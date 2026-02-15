@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionLoader;
+use Cognesy\Agents\Template\AgentDefinitionLoader;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 use RuntimeException;
 
@@ -58,6 +58,24 @@ YAML;
         expect($definition->name)->toBe('md-agent');
         expect($definition->label())->toBe('Markdown Agent');
         expect($definition->systemPrompt)->toBe('You are a markdown agent.');
+    });
+
+    it('loads a JSON file', function () {
+        $json = <<<'JSON'
+{
+  "name": "json-agent",
+  "description": "JSON agent",
+  "systemPrompt": "You are a JSON agent."
+}
+JSON;
+        $path = $this->tempDir . '/agent.json';
+        file_put_contents($path, $json);
+
+        $definition = (new AgentDefinitionLoader())->loadFile($path);
+
+        expect($definition->name)->toBe('json-agent');
+        expect($definition->description)->toBe('JSON agent');
+        expect($definition->systemPrompt)->toBe('You are a JSON agent.');
     });
 
     it('throws for unsupported file extension', function () {

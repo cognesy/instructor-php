@@ -1,16 +1,19 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Bash\BashTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\EditFileTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\ReadFileTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\File\WriteFileTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\PersistTasksHook;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tasks\TodoWriteTool;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Enums\AgentStepType;
-use Cognesy\Agents\Hooks\Collections\HookTriggers;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Bash\BashTool;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Core\UseHook;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\File\EditFileTool;
+use Cognesy\Agents\Capability\File\ReadFileTool;
+use Cognesy\Agents\Capability\File\WriteFileTool;
+use Cognesy\Agents\Capability\Tasks\PersistTasksHook;
+use Cognesy\Agents\Capability\Tasks\TodoWriteTool;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Enums\AgentStepType;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 use Cognesy\Messages\Messages;
@@ -68,8 +71,8 @@ describe('Coding Agent Workflow', function () {
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools(...$tools->all()))
+            ->withCapability(new UseDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(
@@ -122,8 +125,8 @@ describe('Coding Agent Workflow', function () {
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools(...$tools->all()))
+            ->withCapability(new UseDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(
@@ -159,9 +162,9 @@ describe('Coding Agent Workflow', function () {
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
-            ->addHook(new PersistTasksHook(), HookTriggers::afterStep())
+            ->withCapability(new UseTools(...$tools->all()))
+            ->withCapability(new UseDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm)))
+            ->withCapability(new UseHook(new PersistTasksHook(), HookTriggers::afterStep()))
             ->build();
 
         $state = AgentState::empty()->withMessages(
@@ -198,8 +201,8 @@ describe('Coding Agent Workflow', function () {
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools(...$tools->all()))
+            ->withCapability(new UseDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(
@@ -263,8 +266,8 @@ describe('Coding Agent Workflow', function () {
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools(...$tools->all()))
+            ->withCapability(new UseDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(
@@ -299,8 +302,8 @@ describe('Coding Agent Workflow', function () {
 
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
-            ->withTools($tools)
-            ->withDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm))
+            ->withCapability(new UseTools(...$tools->all()))
+            ->withCapability(new UseDriver(new \Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver(llm: $llm)))
             ->build();
 
         $state = AgentState::empty()->withMessages(

@@ -35,6 +35,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\CanProcessAnyState;
  */
 final class CallableProcessor implements CanProcessAnyState
 {
+    /** @var Closure(TState): TState */
     private Closure $callback;
 
     /**

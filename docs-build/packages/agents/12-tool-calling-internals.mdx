@@ -18,7 +18,7 @@ AgentLoop
   |
   |-- CanExecuteToolCalls (executor) # runs the actual tools
       |-- ToolExecutor              # default implementation
-// @doctest id="c9af"
+// @doctest id="f110"
 ```
 
 ## The Two Contracts
@@ -31,7 +31,7 @@ Sends state + tools to the LLM, gets back an updated state with tool call decisi
 interface CanUseTools {
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState;
 }
-// @doctest id="e64e"
+// @doctest id="6c6a"
 ```
 
 ### CanExecuteToolCalls (Executor)
@@ -42,7 +42,7 @@ Runs tool calls and returns execution results:
 interface CanExecuteToolCalls {
     public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }
-// @doctest id="ef4e"
+// @doctest id="7b2d"
 ```
 
 ## ToolCallingDriver
@@ -64,7 +64,7 @@ $driver = new ToolCallingDriver(
     toolChoice: 'auto',          // 'auto', 'required', or specific tool
     mode: OutputMode::Tools,
 );
-// @doctest id="0361"
+// @doctest id="91c5"
 ```
 
 The LLM natively understands tools and returns structured `tool_calls` in its response.
@@ -88,7 +88,7 @@ $driver = new ReActDriver(
     maxRetries: 2,               // retries on extraction failure
     finalViaInference: false,    // optionally use separate LLM call for final answer
 );
-// @doctest id="480a"
+// @doctest id="c585"
 ```
 
 The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, `args`, and `thought` fields.
@@ -109,14 +109,14 @@ The `ToolExecutor` is created automatically by `AgentLoop::default()`. To custom
 ```php
 $executor = new ToolExecutor(
     tools: $tools,
-    eventEmitter: $eventEmitter,
+    events: $events,
     interceptor: $interceptor,
     throwOnToolFailure: false,  // true = throw on first tool error
     stopOnToolBlock: false,     // true = stop executing remaining tools if one is blocked
 );
 
 $loop = AgentLoop::default()->withTools($tools)->withToolExecutor($executor);
-// @doctest id="ab88"
+// @doctest id="10b6"
 ```
 
 ## When to Use Which Driver

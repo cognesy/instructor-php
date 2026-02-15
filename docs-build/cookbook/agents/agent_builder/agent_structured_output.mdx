@@ -26,7 +26,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;use Cognesy\Agents\AgentBuilder\Capabilities\Metadata\UseMetadataTools;use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;use Cognesy\Agents\Core\Collections\Tools;use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Core\Tools\BaseTool;use Cognesy\Agents\Events\AgentConsoleLogger;use Cognesy\Messages\Messages;use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Capabilities\Metadata\UseMetadataTools;use Cognesy\Agents\Capabilities\StructuredOutput\SchemaDefinition;use Cognesy\Agents\Capabilities\StructuredOutput\StructuredOutputPolicy;use Cognesy\Agents\Capabilities\StructuredOutput\UseStructuredOutputs;use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\Support\AgentConsoleLogger;use Cognesy\Agents\Tool\Tools\BaseTool;use Cognesy\Messages\Messages;use Symfony\Component\Validator\Constraints as Assert;
 
 // =============================================================================
 // 1. Define the Lead schema (what we want to extract)

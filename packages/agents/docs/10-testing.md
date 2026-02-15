@@ -38,12 +38,7 @@ ScenarioStep::toolCall(                      // Tool call with execution
 ### Full Test Example
 
 ```php
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Tools\MockTool;
-use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
-use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;use Cognesy\Agents\Drivers\Testing\ScenarioStep;use Cognesy\Agents\Tool\Tools\MockTool;
 
 it('executes tools and produces final response', function () {
     $tool = MockTool::returning('search', 'Search the web', 'PHP is great');
@@ -83,7 +78,7 @@ expect($steps[1]->lastStepType())->toBe(AgentStepType::FinalResponse);
 Stub tools with fixed return values or custom logic:
 
 ```php
-use Cognesy\Agents\Core\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 // Fixed return value
 $tool = MockTool::returning('search', 'Search the web', 'result text');

@@ -10,8 +10,7 @@ The simplest agent uses `AgentLoop` to send a message and get a response.
 ## Hello World
 
 ```php
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;
 
 $loop = AgentLoop::default();
 $state = AgentState::empty()->withUserMessage('What is 2+2?');
@@ -29,12 +28,34 @@ echo $result->finalResponse()->toString();
 4. The loop detects no tool calls and stops
 5. Final response is available via `$result->finalResponse()`
 
+## Agent with a Tool
+
+Give the agent a tool and it will decide when to use it:
+
+```php
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Tool\Tools\FunctionTool;
+
+$weather = FunctionTool::fromCallable(
+    function (string $city): string {
+        return "Weather in {$city}: 72F, sunny";
+    }
+);
+
+$loop = AgentLoop::default()->withTool($weather);
+$state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
+$result = $loop->execute($state);
+
+echo $result->finalResponse()->toString();
+// "The weather in Paris is 72°F and sunny."
+```
+
 ## Customizing the Loop
 
 Use `with()` to swap components on the default loop:
 
 ```php
-use Cognesy\Agents\Core\Collections\Tools;
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
 
 // Add tools
@@ -51,3 +72,24 @@ $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
 ```
+
+## Using AgentBuilder
+
+For more complex agents, use `AgentBuilder` to compose capabilities:
+
+```php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Bash\UseBash;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseLlmConfig;
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseBash())
+    ->withCapability(new UseGuards(maxSteps: 10))
+    ->build();
+
+$result = $agent->execute($state);
+```
+
+See [AgentBuilder & Capabilities](13-agent-builder.md) for details.

@@ -18,7 +18,7 @@ After extracting step recording to `CoreLifecycleObserver`:
 
 namespace Cognesy\Agents\Core;
 
-use Cognesy\Agents\Core\Collections\Tools;use Cognesy\Agents\Core\Contracts\CanControlAgentLoop;use Cognesy\Agents\Core\Contracts\CanUseTools;use Cognesy\Agents\Core\Data\AgentState;use Cognesy\Agents\Core\Data\CurrentExecution;use Cognesy\Agents\Core\Enums\ExecutionStatus;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;use DateTimeImmutable;use Throwable;
+use Cognesy\Agents\CanControlAgentLoop;use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Core\Data\CurrentExecution;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Drivers\CanUseTools;use Cognesy\Agents\Enums\ExecutionStatus;use Cognesy\Agents\Lifecycle\CanObserveAgentLifecycle;use DateTimeImmutable;use Throwable;
 
 /**
  * Minimal orchestration loop for agent execution.

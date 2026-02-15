@@ -40,6 +40,7 @@ final readonly class StepResult
 
     /**
      * Serialize to array.
+     * @param callable(object): array $stepSerializer
      */
     public function toArray(callable $stepSerializer): array {
         return [
@@ -50,6 +51,7 @@ final readonly class StepResult
 
     /**
      * Deserialize from array.
+     * @param callable(array): object $stepDeserializer
      */
     public static function fromArray(array $data, callable $stepDeserializer): self {
         return new self(

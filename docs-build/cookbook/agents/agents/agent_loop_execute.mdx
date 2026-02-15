@@ -22,9 +22,7 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;use Cognesy\Messages\Messages;
 
 // Create a default agent loop (no tools, just LLM conversation)
 $loop = AgentLoop::default();

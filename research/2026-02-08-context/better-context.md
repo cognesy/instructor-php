@@ -62,8 +62,7 @@ Drivers and `AgentLoop` should depend on this contract only.
 
 namespace Cognesy\Agents\Core\Contracts;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Data\AgentState;use Cognesy\Messages\Messages;
 
 interface CanCompileMessages
 {
@@ -92,9 +91,7 @@ They are optional collaborators for concrete `CanCompileMessages` implementation
 
 namespace Cognesy\Agents\Core\Context;
 
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Data\AgentStep;use Cognesy\Messages\Messages;
 
 interface CanRouteStepOutput
 {
@@ -143,9 +140,7 @@ Only one contract is mandatory (`CanCompileMessages`), complexity is selected by
 
 namespace Cognesy\Agents\Core\Context;
 
-use Cognesy\Agents\Core\Contracts\CanCompileMessages;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Messages\Messages;
+use Cognesy\Agents\Context\CanCompileMessages;use Cognesy\Agents\Data\AgentState;use Cognesy\Messages\Messages;
 
 final readonly class PragmaticMessageCompiler implements CanCompileMessages
 {

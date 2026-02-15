@@ -33,7 +33,7 @@ class InferenceProvider
             ->with(
                 messages: $this->requestMaterializer->toMessages($execution),
                 model: $request->model(),
-                tools: $responseModel->toolCallSchema() ?? [],
+                tools: $responseModel->toolCallSchema(),
                 toolChoice: $responseModel->toolChoice(),
                 responseFormat: $responseModel->responseFormat(),
                 options: $request->options(),

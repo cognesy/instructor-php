@@ -2,7 +2,6 @@
 
 namespace Cognesy\Addons\StepByStep\Continuation\Criteria;
 
-use Cognesy\Addons\Agent\Core\Continuation\AgentErrorContextResolver;
 use Cognesy\Addons\StepByStep\Continuation\CanEvaluateContinuation;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationDecision;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationEvaluation;
@@ -25,8 +24,8 @@ final readonly class ErrorPolicyCriterion implements CanEvaluateContinuation
         private CanResolveErrorContext $contextResolver,
     ) {}
 
-    public static function withPolicy(ErrorPolicy $policy): self {
-        return new self($policy, new AgentErrorContextResolver());
+    public static function withPolicy(ErrorPolicy $policy, CanResolveErrorContext $contextResolver): self {
+        return new self($policy, $contextResolver);
     }
 
     /**

@@ -39,6 +39,7 @@ class JsonlStorage implements CanStoreMessages
 
     // SESSION OPERATIONS ////////////////////////////////////
 
+    #[\Override]
     public function createSession(?string $sessionId = null): string {
         $id = $sessionId ?? Uuid::uuid4();
         $file = $this->sessionFile($id);
@@ -62,10 +63,12 @@ class JsonlStorage implements CanStoreMessages
         return $id;
     }
 
+    #[\Override]
     public function hasSession(string $sessionId): bool {
         return file_exists($this->sessionFile($sessionId));
     }
 
+    #[\Override]
     public function load(string $sessionId): MessageStore {
         $this->ensureLoaded($sessionId);
 
@@ -92,6 +95,7 @@ class JsonlStorage implements CanStoreMessages
         return MessageStore::fromSections(...$sections);
     }
 
+    #[\Override]
     public function save(string $sessionId, MessageStore $store): StoreMessagesResult {
         $startedAt = new DateTimeImmutable();
 
@@ -176,6 +180,7 @@ class JsonlStorage implements CanStoreMessages
         }
     }
 
+    #[\Override]
     public function delete(string $sessionId): void {
         $file = $this->sessionFile($sessionId);
         if (file_exists($file)) {
@@ -186,6 +191,7 @@ class JsonlStorage implements CanStoreMessages
 
     // MESSAGE OPERATIONS ////////////////////////////////////
 
+    #[\Override]
     public function append(string $sessionId, string $section, Message $message): Message {
         $this->ensureLoaded($sessionId);
 
@@ -216,6 +222,7 @@ class JsonlStorage implements CanStoreMessages
         return $message;
     }
 
+    #[\Override]
     public function get(string $sessionId, string $messageId): ?Message {
         $this->ensureLoaded($sessionId);
 
@@ -227,6 +234,7 @@ class JsonlStorage implements CanStoreMessages
         return Message::fromArray($entry['data']);
     }
 
+    #[\Override]
     public function getSection(string $sessionId, string $section, ?int $limit = null): Messages {
         $this->ensureLoaded($sessionId);
 
@@ -250,11 +258,13 @@ class JsonlStorage implements CanStoreMessages
 
     // BRANCHING OPERATIONS //////////////////////////////////
 
+    #[\Override]
     public function getLeafId(string $sessionId): ?string {
         $this->ensureLoaded($sessionId);
         return $this->sessions[$sessionId]['leafId'];
     }
 
+    #[\Override]
     public function navigateTo(string $sessionId, string $messageId): void {
         $this->ensureLoaded($sessionId);
 
@@ -265,6 +275,7 @@ class JsonlStorage implements CanStoreMessages
         $this->sessions[$sessionId]['leafId'] = $messageId;
     }
 
+    #[\Override]
     public function getPath(string $sessionId, ?string $toMessageId = null): Messages {
         $this->ensureLoaded($sessionId);
 
@@ -289,6 +300,7 @@ class JsonlStorage implements CanStoreMessages
         return new Messages(...$path);
     }
 
+    #[\Override]
     public function fork(string $sessionId, string $fromMessageId): string {
         $this->ensureLoaded($sessionId);
 
@@ -308,6 +320,7 @@ class JsonlStorage implements CanStoreMessages
 
     // LABELS (CHECKPOINTS) //////////////////////////////////
 
+    #[\Override]
     public function addLabel(string $sessionId, string $messageId, string $label): void {
         $this->ensureLoaded($sessionId);
 
@@ -329,6 +342,7 @@ class JsonlStorage implements CanStoreMessages
         file_put_contents($this->sessions[$sessionId]['file'], json_encode($entry) . "\n", FILE_APPEND);
     }
 
+    #[\Override]
     public function getLabels(string $sessionId): array {
         $this->ensureLoaded($sessionId);
         return $this->sessions[$sessionId]['labels'];

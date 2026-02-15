@@ -5,6 +5,7 @@ namespace Cognesy\InstructorHub\Config;
 use IteratorAggregate;
 use Traversable;
 
+/** @implements IteratorAggregate<int, ExampleSubgroupDefinition> */
 final class ExampleSubgroupDefinitions implements IteratorAggregate
 {
     /** @var ExampleSubgroupDefinition[] */
@@ -34,6 +35,7 @@ final class ExampleSubgroupDefinitions implements IteratorAggregate
     /**
      * @return Traversable<ExampleSubgroupDefinition>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         yield from $this->subgroups;

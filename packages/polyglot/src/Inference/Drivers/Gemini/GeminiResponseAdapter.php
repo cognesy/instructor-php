@@ -63,6 +63,7 @@ class GeminiResponseAdapter implements CanTranslateInferenceResponse
     // INTERNAL /////////////////////////////////////////////
 
     private function makeToolCalls(array $data) : ToolCalls {
+        /** @var array<array<string, mixed>> $parts */
         $parts = $data['candidates'][0]['content']['parts'] ?? [];
         $functionCalls = array_filter($parts, fn(array $part) => isset($part['functionCall']));
         return ToolCalls::fromMapper(

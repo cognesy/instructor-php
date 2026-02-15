@@ -170,9 +170,9 @@ nav:
         Agents:
           - { Introduction: packages/agents/01-introduction.md }
           - { 'Basic Agent': packages/agents/02-basic-agent.md }
-          - { Tools: packages/agents/03-tools.md }
-          - { 'Basic Concepts': packages/agents/04-basic-concepts.md }
-          - { 'Controlling The Loop': packages/agents/05-controlling-the-loop.md }
+          - { 'Basic Concepts': packages/agents/03-basic-concepts.md }
+          - { 'Controlling The Loop': packages/agents/04-controlling-the-loop.md }
+          - { Tools: packages/agents/05-tools.md }
           - { 'Building Tools': packages/agents/06-building-tools.md }
           - { 'Context And Compilers': packages/agents/07-context-and-compilers.md }
           - { Hooks: packages/agents/08-hooks.md }
@@ -180,6 +180,9 @@ nav:
           - { Testing: packages/agents/10-testing.md }
           - { 'State Internals': packages/agents/11-state-internals.md }
           - { 'Tool Calling Internals': packages/agents/12-tool-calling-internals.md }
+          - { 'Agent Builder': packages/agents/13-agent-builder.md }
+          - { 'Agent Templates': packages/agents/14-agent-templates.md }
+          - { Subagents: packages/agents/15-subagents.md }
       -
         'HTTP Client':
           - { Overview: packages/http/1-overview.md }

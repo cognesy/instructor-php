@@ -1,0 +1,442 @@
+---
+title: 'Subagents'
+description: 'Delegate tasks to isolated subagents for context isolation, specialized tool use, and multi-agent orchestration'
+---
+
+# Subagents
+
+Subagents let a parent agent delegate focused tasks to independent child agents. Each subagent runs in isolation with its own context, tools, and budget — then returns a result to the parent.
+
+## Why Subagents
+
+A single agent working on a complex task accumulates context: tool outputs, intermediate reasoning, file contents. This leads to problems:
+
+- **Context pollution** — irrelevant details from one subtask confuse the LLM during another
+- **Tool overload** — the LLM sees tools it doesn't need, increasing error rates
+- **Budget waste** — all tokens go against one shared limit with no per-task control
+
+Subagents solve these by providing:
+
+- **Context isolation** — each subagent starts with a clean conversation
+- **Specialized tools** — each subagent sees only the tools it needs
+- **Budget propagation** — parent budget flows down, preventing runaway children
+- **Result aggregation** — the parent synthesizes subagent outputs into a final answer
+
+## Quick Start
+
+```php
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\File\UseFileTools;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+
+// 1. Define available subagents
+$registry = new AgentDefinitionRegistry();
+$registry->register(new AgentDefinition(
+    name: 'reviewer',
+    description: 'Reviews code files and identifies issues',
+    systemPrompt: 'You review code. Read the file and provide a concise assessment.',
+    tools: new NameList(['read_file']),
+));
+
+// 2. Build the parent agent with subagent capability
+$agent = AgentBuilder::base()
+    ->withCapability(new UseFileTools('/my/project'))
+    ->withCapability(new UseSubagents(provider: $registry))
+    ->withCapability(new UseGuards(maxSteps: 15))
+    ->build();
+
+// 3. Run — the LLM decides when to spawn subagents
+$state = AgentState::empty()->withUserMessage(
+    'Review src/AgentLoop.php and src/AgentState.php, then summarize the findings.'
+);
+$result = $agent->execute($state);
+```
+
+The LLM sees a `spawn_subagent` tool with the available subagent names and descriptions. It decides which subagent to call and formulates the prompt for each.
+
+## How It Works
+
+### The spawn_subagent Tool
+
+`UseSubagents` installs a `SpawnSubagentTool` that the LLM calls with two arguments:
+
+- `subagent` — name of the subagent to spawn (from the registry)
+- `prompt` — the task description for the subagent
+
+The tool schema includes an enum of available subagent names and their descriptions, so the LLM can make informed choices.
+
+### Execution Flow
+
+```
+Parent agent step:
+  1. LLM decides to call spawn_subagent(subagent: "reviewer", prompt: "Review AgentLoop.php")
+  2. SpawnSubagentTool looks up "reviewer" in the registry
+  3. Creates a child AgentLoop with filtered tools and budget
+  4. Creates child AgentState with the subagent's system prompt + user prompt
+  5. Runs the child loop to completion
+  6. Returns the child's final AgentState to the parent
+  7. Parent LLM receives the subagent result and continues
+```
+
+The parent never sees the subagent's internal conversation — only its final output. This is the key isolation guarantee.
+
+### What the Parent Receives
+
+The `SpawnSubagentTool` returns the child's complete `AgentState`. The `ToolExecutionFormatter` extracts the final response text and feeds it back to the parent LLM as the tool result.
+
+## Defining Subagents
+
+Each subagent is described by an `AgentDefinition`. You can register them programmatically or load from files.
+
+### Programmatic Registration
+
+```php
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Data\AgentBudget;
+
+$registry = new AgentDefinitionRegistry();
+
+$registry->registerMany(
+    new AgentDefinition(
+        name: 'researcher',
+        description: 'Searches and analyzes information',
+        systemPrompt: 'You are a research assistant. Be thorough and cite sources.',
+        tools: new NameList(['read_file', 'search_files']),
+        budget: new AgentBudget(maxSteps: 8, maxTokens: 4000),
+    ),
+    new AgentDefinition(
+        name: 'writer',
+        description: 'Writes and edits content',
+        systemPrompt: 'You are a technical writer. Write clear, concise documentation.',
+        tools: new NameList(['read_file', 'write_file']),
+        budget: new AgentBudget(maxSteps: 10),
+    ),
+);
+```
+
+### File-Based Definitions
+
+Load from markdown, YAML, or JSON files:
+
+```php
+$registry = new AgentDefinitionRegistry();
+$registry->loadFromDirectory('/agents/', recursive: true);
+```
+
+A markdown definition file:
+
+```markdown
+---
+name: reviewer
+description: Reviews code files and identifies issues
+tools:
+  - read_file
+budget:
+  maxSteps: 5
+  maxTokens: 4000
+---
+
+You review code. Focus on:
+- Code quality and readability
+- Potential bugs or edge cases
+- Suggestions for improvement
+
+Be concise. Report only significant findings.
+```
+
+See [Agent Templates](14-agent-templates.md) for full details on definition formats and loading.
+
+## Tool Filtering
+
+Subagents don't automatically get all parent tools. You control access via allow-lists and deny-lists on the definition.
+
+### Default: Inherit All Tools
+
+When `tools` is omitted, the subagent inherits all parent tools:
+
+```php
+new AgentDefinition(
+    name: 'helper',
+    description: 'General purpose helper',
+    systemPrompt: 'You help with various tasks.',
+    // tools: null → inherits all parent tools
+);
+```
+
+### Allow-List
+
+Specify exactly which tools the subagent can use:
+
+```php
+new AgentDefinition(
+    name: 'reader',
+    description: 'Read-only file analyst',
+    systemPrompt: 'You analyze files. You cannot modify anything.',
+    tools: new NameList(['read_file', 'list_dir', 'search_files']),
+);
+```
+
+Only tools matching these names (from the parent's tool set) are passed to the subagent.
+
+### Deny-List
+
+Block specific tools while inheriting the rest:
+
+```php
+new AgentDefinition(
+    name: 'safe_coder',
+    description: 'Codes without dangerous operations',
+    systemPrompt: 'You write code. Never use bash or delete files.',
+    toolsDeny: new NameList(['bash', 'edit_file']),
+);
+```
+
+### Combined Filtering
+
+When both are specified, the allow-list is applied first, then the deny-list filters out any remaining denied tools:
+
+```php
+new AgentDefinition(
+    name: 'restricted',
+    description: 'Highly restricted agent',
+    systemPrompt: 'You operate under strict constraints.',
+    tools: new NameList(['read_file', 'write_file', 'bash']),
+    toolsDeny: new NameList(['bash']),
+    // Result: only read_file and write_file
+);
+```
+
+## Budget Propagation
+
+Budgets flow from parent to child, preventing subagents from consuming more resources than the parent has remaining.
+
+### How It Works
+
+1. Parent has a budget (e.g., 100 steps, 10000 tokens)
+2. Parent uses some resources before spawning a subagent
+3. Child's effective budget = min(definition budget, parent's remaining budget)
+4. Child runs within its effective budget
+
+```php
+// Parent budget: 100 steps
+// Parent has used 40 steps before spawning
+
+// Definition says: maxSteps: 80
+// Parent remaining: 60 steps
+// Child effective budget: min(80, 60) = 60 steps
+```
+
+### Multi-Level Propagation
+
+Budget constraints cascade through nesting levels:
+
+```
+Root (100 steps)
+  → Level 1 gets min(definition, 100) = 80 steps
+    → Level 1 uses 30 steps, 50 remaining
+      → Level 2 gets min(definition, 50) = 50 steps
+```
+
+This ensures the total resource usage across the entire agent tree never exceeds the root budget.
+
+### Setting Budgets
+
+On the definition:
+
+```php
+new AgentDefinition(
+    name: 'quick_task',
+    description: 'Fast, focused task',
+    systemPrompt: 'Be concise.',
+    budget: new AgentBudget(maxSteps: 5, maxTokens: 2000, maxSeconds: 15.0),
+);
+```
+
+On the parent via guards:
+
+```php
+$agent = AgentBuilder::base()
+    ->withCapability(new UseSubagents(provider: $registry))
+    ->withCapability(new UseGuards(maxSteps: 50, maxTokens: 32768))
+    ->build();
+```
+
+## Depth Control
+
+Subagents can themselves spawn subagents (recursive delegation). `SubagentPolicy` controls the maximum nesting depth:
+
+```php
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Capability\Subagent\SubagentPolicy;
+
+// Allow up to 2 levels of nesting (default is 3)
+$agent = AgentBuilder::base()
+    ->withCapability(new UseSubagents(
+        provider: $registry,
+        policy: new SubagentPolicy(maxDepth: 2),
+    ))
+    ->build();
+
+// Or use the convenience factory
+$agent = AgentBuilder::base()
+    ->withCapability(UseSubagents::withDepth(2, provider: $registry))
+    ->build();
+```
+
+When the depth limit is reached, `SpawnSubagentTool` throws `SubagentDepthExceededException`, which the parent sees as a tool error.
+
+## LLM Configuration
+
+Each subagent can use a different LLM. Specify via `llmConfig` on the definition:
+
+```php
+new AgentDefinition(
+    name: 'cheap_summarizer',
+    description: 'Summarizes text using a fast model',
+    systemPrompt: 'Summarize the given content concisely.',
+    llmConfig: 'openai:gpt-4o-mini',   // use a preset name
+);
+
+new AgentDefinition(
+    name: 'deep_analyst',
+    description: 'Deep analysis using a powerful model',
+    systemPrompt: 'Provide thorough, detailed analysis.',
+    llmConfig: 'anthropic',            // use a different provider
+);
+```
+
+When `llmConfig` is omitted, the subagent inherits the parent's LLM provider.
+
+## Events
+
+Subagent lifecycle emits events for monitoring and debugging:
+
+| Event | When |
+|---|---|
+| `SubagentSpawning` | Before subagent execution starts |
+| `SubagentCompleted` | After subagent execution finishes |
+
+Both events include correlation data: `parentAgentId`, `parentExecutionId`, `parentStepNumber`, `toolCallId`, `depth`, and `subagentName`. This enables tracing the full delegation chain.
+
+```php
+use Cognesy\Agents\Events\SubagentSpawning;
+use Cognesy\Agents\Events\SubagentCompleted;
+
+$agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
+    echo "Spawning '{$e->subagentName}' at depth {$e->depth}/{$e->maxDepth}\n";
+});
+
+$agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
+    echo "'{$e->subagentName}' completed in {$e->steps} steps\n";
+});
+```
+
+Use `AgentConsoleLogger` to see parent/child agent IDs in console output:
+
+```php
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+
+$logger = new AgentConsoleLogger(useColors: true, showTimestamps: true);
+$agent->wiretap($logger->wiretap());
+```
+
+## Error Handling
+
+| Exception | When |
+|---|---|
+| `SubagentNotFoundException` | Subagent name not found in registry |
+| `SubagentDepthExceededException` | Nesting depth limit reached |
+| `SubagentExecutionException` | Subagent execution failed (wraps child errors) |
+
+All three are subclasses of `AgentException`. When a subagent fails, the parent sees a tool error with the exception details and can decide how to proceed.
+
+## ResearchSubagentTool
+
+For simpler use cases, `ResearchSubagentTool` provides a pre-built subagent that reads files and returns a summary — without requiring a registry or definitions:
+
+```php
+use Cognesy\Agents\Capability\Subagent\ResearchSubagentTool;
+
+$tool = ResearchSubagentTool::inDirectory('/my/project');
+
+$agent = AgentBuilder::base()
+    ->withTool($tool)
+    ->build();
+```
+
+The LLM calls it with a `task` and optional `files` list. The tool spawns a subagent with read-only file access, runs the research, and returns the findings.
+
+## Testing Subagents
+
+Use `FakeAgentDriver` with `withChildSteps()` to script subagent behavior:
+
+```php
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+
+$driver = (new FakeAgentDriver([
+    // Parent step: LLM calls spawn_subagent
+    ScenarioStep::toolCall('spawn_subagent', [
+        'subagent' => 'reviewer',
+        'prompt' => 'Review this code',
+    ], executeTools: true),
+    // Parent step: LLM produces final response
+    ScenarioStep::final('Based on the review, the code looks good.'),
+]))->withChildSteps([
+    // Subagent produces this response
+    ScenarioStep::final('I found 3 minor issues.'),
+]);
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseDriver($driver))
+    ->withCapability(new UseSubagents(provider: $registry))
+    ->build();
+
+$result = $agent->execute(AgentState::empty());
+expect($result->finalResponse()->toString())->toContain('code looks good');
+```
+
+## Typical Patterns
+
+### Fan-Out Review
+
+One parent spawns multiple subagents for independent subtasks, then synthesizes:
+
+```
+Parent: "Review these 5 files"
+  → spawn reviewer for file1 → "2 issues found"
+  → spawn reviewer for file2 → "looks good"
+  → spawn reviewer for file3 → "1 critical bug"
+  → ...
+Parent: "Summary: file1 has 2 issues, file3 has a critical bug..."
+```
+
+### Specialized Roles
+
+Different subagents handle different aspects of a task:
+
+```
+Parent: "Analyze this codebase and write docs"
+  → spawn researcher → "The module handles X, Y, Z..."
+  → spawn writer → "# Module Documentation\n..."
+Parent: combines research + docs into final output
+```
+
+### Hierarchical Delegation
+
+Subagents spawn their own subagents for further decomposition:
+
+```
+Orchestrator (depth 0)
+  → Analyst (depth 1)
+    → File reader (depth 2)
+  → Writer (depth 1)
+```
+
+Control the maximum depth via `SubagentPolicy` to prevent unbounded recursion.

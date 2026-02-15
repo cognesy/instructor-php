@@ -1,0 +1,203 @@
+---
+title: 'Agent Templates'
+description: 'Define agents as data using markdown, YAML, or JSON files and instantiate them via registries and factories'
+---
+
+# Agent Templates
+
+Agent templates let you define agents as data — in markdown, YAML, or JSON files — and instantiate them at runtime. This separates agent configuration from code and enables dynamic agent loading.
+
+## AgentDefinition
+
+`AgentDefinition` is a data class that describes an agent's configuration:
+
+```php
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Agents\Data\AgentBudget;
+
+$definition = new AgentDefinition(
+    name: 'researcher',
+    description: 'Searches for information on a topic',
+    systemPrompt: 'You are a research assistant. Find and summarize information.',
+    label: 'Research Agent',           // optional display name
+    llmConfig: 'anthropic',            // optional LLM preset or LLMConfig
+    budget: new AgentBudget(maxSteps: 10, maxTokens: 8000),
+    tools: new NameList(['bash', 'file.read']),       // optional tool allow-list
+    toolsDeny: new NameList(['file.write']),           // optional tool deny-list
+    capabilities: new NameList(['use_bash']),          // capability names to install
+);
+```
+
+All fields except `name`, `description`, and `systemPrompt` are optional.
+
+## Definition Files
+
+### Markdown (with YAML frontmatter)
+
+```markdown
+---
+name: researcher
+description: Searches for information on a topic
+label: Research Agent
+llmConfig: anthropic
+budget:
+  maxSteps: 10
+  maxTokens: 8000
+tools:
+  - bash
+  - file.read
+capabilities:
+  - use_bash
+---
+
+You are a research assistant. Find and summarize information accurately.
+Use available tools to search and verify your findings.
+```
+
+The body after the frontmatter becomes the `systemPrompt`.
+
+### YAML
+
+```yaml
+name: researcher
+description: Searches for information on a topic
+systemPrompt: |
+  You are a research assistant. Find and summarize information.
+budget:
+  maxSteps: 10
+```
+
+### JSON
+
+```json
+{
+  "name": "researcher",
+  "description": "Searches for information on a topic",
+  "systemPrompt": "You are a research assistant.",
+  "budget": { "maxSteps": 10 }
+}
+```
+
+## Loading Definitions
+
+### AgentDefinitionLoader
+
+Loads a single file and returns an `AgentDefinition`:
+
+```php
+use Cognesy\Agents\Template\AgentDefinitionLoader;
+
+$loader = new AgentDefinitionLoader();
+$definition = $loader->loadFile('/path/to/researcher.md');
+```
+
+Supported extensions: `.md`, `.json`, `.yaml`, `.yml`.
+
+### AgentDefinitionRegistry
+
+Stores definitions by name and supports bulk loading:
+
+```php
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+
+$registry = new AgentDefinitionRegistry();
+
+// Register programmatically
+$registry->register($definition);
+$registry->registerMany($def1, $def2, $def3);
+
+// Load from files
+$registry->loadFromFile('/agents/researcher.md');
+$registry->loadFromDirectory('/agents/', recursive: true);
+
+// Auto-discover from conventional locations
+$registry->autoDiscover(projectPath: '/my/project');
+// Looks in: $projectPath/.claude/agents/
+
+// Query
+$registry->get('researcher');    // AgentDefinition (throws if not found)
+$registry->has('researcher');    // bool
+$registry->names();              // ['researcher', 'writer', ...]
+$registry->count();              // int
+```
+
+Loading errors are collected silently — check `$registry->errors()` for any files that failed to parse.
+
+## Custom Parsers
+
+Implement `CanParseAgentDefinition` for custom formats:
+
+```php
+use Cognesy\Agents\Template\Parsers\CanParseAgentDefinition;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+
+class TomlDefinitionParser implements CanParseAgentDefinition
+{
+    public function parse(string $content): AgentDefinition
+    {
+        $data = toml_parse($content);
+        return AgentDefinition::fromArray($data);
+    }
+}
+
+// Register with custom extension
+$loader = new AgentDefinitionLoader([
+    'toml' => new TomlDefinitionParser(),
+    'md' => new MarkdownDefinitionParser(),   // keep defaults
+]);
+```
+
+## Instantiation Factories
+
+Templates provide factories to convert definitions into runtime objects:
+
+### DefinitionStateFactory
+
+Creates an `AgentState` from a definition:
+
+```php
+use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
+
+$factory = new DefinitionStateFactory();
+$state = $factory->create($definition);
+// AgentState with systemPrompt, budget, and metadata from definition
+```
+
+### DefinitionLoopFactory
+
+Creates an `AgentLoop` from a definition using `AgentBuilder` and a capability registry:
+
+```php
+use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
+use Cognesy\Agents\Capability\AgentCapabilityRegistry;
+
+$capabilities = new AgentCapabilityRegistry();
+// register capabilities that definitions can reference by name
+
+$factory = new DefinitionLoopFactory($capabilities);
+$loop = $factory->create($definition);
+```
+
+## Using with Subagents
+
+The registry implements `CanManageAgentDefinitions`, making it the standard provider for `UseSubagents`:
+
+```php
+$registry = new AgentDefinitionRegistry();
+$registry->loadFromDirectory('/agents/');
+
+$agent = AgentBuilder::base()
+    ->withCapability(new UseSubagents(provider: $registry))
+    ->build();
+```
+
+When the agent spawns a subagent by name, the registry provides the definition, and the factory creates the corresponding loop and state.
+
+## Serialization
+
+`AgentDefinition` supports `toArray()` / `fromArray()` for serialization:
+
+```php
+$data = $definition->toArray();
+$restored = AgentDefinition::fromArray($data);
+```

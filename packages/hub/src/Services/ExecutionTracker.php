@@ -19,7 +19,7 @@ class ExecutionTracker implements CanTrackExecution
 
     public function __construct(
         private CanPersistStatus $repository,
-        private ExampleRepository $examples,
+        ExampleRepository $examples,
         private bool $autoSave = true,
     ) {
         $this->loadStatusData();

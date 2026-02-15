@@ -2,7 +2,8 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
+use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 
 describe('AgentDefinition::fromArray', function () {
     it('parses a full agent definition', function () {
@@ -10,13 +11,10 @@ describe('AgentDefinition::fromArray', function () {
             'name' => 'partner-assistant',
             'label' => 'Partner Assistant',
             'description' => 'Partner management helper',
-            'blueprint' => 'basic',
             'systemPrompt' => "You are a Partner Management Assistant.",
             'tools' => ['tools', 'actions', 'invoke_action'],
             'toolsDeny' => ['bash'],
-            'maxSteps' => 8,
-            'maxTokens' => 50000,
-            'timeoutSec' => 300,
+            'budget' => ['maxSteps' => 8, 'maxTokens' => 50000, 'maxSeconds' => 300.0],
             'capabilities' => ['tool_discovery', 'work_context'],
             'metadata' => ['cost_tier' => 'low'],
         ];
@@ -27,11 +25,7 @@ describe('AgentDefinition::fromArray', function () {
         expect($definition->label())->toBe('Partner Assistant');
         expect($definition->description)->toBe('Partner management helper');
         expect($definition->systemPrompt)->toContain('Partner Management Assistant');
-        expect($definition->blueprint)->toBe('basic');
-        expect($definition->blueprintClass)->toBeNull();
-        expect($definition->maxSteps)->toBe(8);
-        expect($definition->maxTokens)->toBe(50000);
-        expect($definition->timeoutSec)->toBe(300);
+        expect($definition->budget())->toEqual(new AgentBudget(maxSteps: 8, maxTokens: 50000, maxSeconds: 300.0));
         expect($definition->tools->all())->toBe(['tools', 'actions', 'invoke_action']);
         expect($definition->toolsDeny->all())->toBe(['bash']);
         expect($definition->capabilities->all())->toBe(['tool_discovery', 'work_context']);
@@ -48,9 +42,7 @@ describe('AgentDefinition::fromArray', function () {
         $definition = AgentDefinition::fromArray($data);
 
         expect($definition->label())->toBe('minimal-agent');
-        expect($definition->blueprint)->toBeNull();
-        expect($definition->blueprintClass)->toBeNull();
-        expect($definition->maxSteps)->toBeNull();
+        expect($definition->budget()->isEmpty())->toBeTrue();
         expect($definition->tools)->not->toBeNull();
         expect($definition->tools?->isEmpty())->toBeTrue();
         expect($definition->capabilities->isEmpty())->toBeTrue();

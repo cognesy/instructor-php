@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Events;
 
-use Cognesy\Agents\Core\Enums\ExecutionStatus;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use DateTimeImmutable;
 
 /**

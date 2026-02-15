@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
 function writeAgentSpec(string $dir, string $filename, string $name): string {

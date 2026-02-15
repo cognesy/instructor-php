@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Context\Compilers;
 
-use Cognesy\Agents\Core\Contracts\CanCompileMessages;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Context\CanCompileMessages;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 

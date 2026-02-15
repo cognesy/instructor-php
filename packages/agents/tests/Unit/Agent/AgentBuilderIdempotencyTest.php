@@ -2,45 +2,48 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Hooks\Interceptors\HookStack;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
+use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Messages\Messages;
 
 describe('AgentBuilder::build() idempotency', function () {
-    it('does not mutate builder hook stack when build is called', function () {
-        $builder = AgentBuilder::base()->withMaxSteps(5);
-
-        $stackBefore = $builder->hookStack();
-        $builder->build();
-
-        expect($builder->hookStack())->toBe($stackBefore);
-    });
-
-    it('does not duplicate hooks across multiple builds', function () {
-        $builder = AgentBuilder::base()->withMaxSteps(5);
-
-        $stackBefore = $builder->hookStack();
-        $builder->build();
-        $builder->build();
-        $builder->build();
-
-        expect($builder->hookStack())->toBe($stackBefore);
-    });
-
-    it('produces identical interceptors from repeated builds', function () {
-        $builder = AgentBuilder::base()->withMaxSteps(3);
+    it('produces a fresh interceptor on each build', function () {
+        $builder = AgentBuilder::base()
+            ->withCapability(new UseGuards(
+                maxSteps: 3,
+                maxTokens: null,
+                maxExecutionTime: null,
+            ));
 
         $loop1 = $builder->build();
         $loop2 = $builder->build();
 
-        $interceptor1 = $loop1->interceptor();
-        $interceptor2 = $loop2->interceptor();
+        expect($loop1->interceptor())->toBeInstanceOf(HookStack::class);
+        expect($loop2->interceptor())->toBeInstanceOf(HookStack::class);
+        expect($loop1->interceptor())->not->toBe($loop2->interceptor());
+    });
 
-        // Both should be HookStack instances with the same structure
-        expect($interceptor1)->toBeInstanceOf(HookStack::class);
-        expect($interceptor2)->toBeInstanceOf(HookStack::class);
+    it('produces equivalent runtime behavior across repeated builds', function () {
+        $builder = AgentBuilder::base()
+            ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('ok')))
+            ->withCapability(new UseGuards(
+                maxSteps: 3,
+                maxTokens: null,
+                maxExecutionTime: null,
+            ));
 
-        // They should be different objects (fresh per build) but not the builder's stack
-        expect($interceptor1)->not->toBe($interceptor2);
-        expect($interceptor1)->not->toBe($builder->hookStack());
+        $loop1 = $builder->build();
+        $loop2 = $builder->build();
+
+        $state = AgentState::empty()->withMessages(Messages::fromString('ping'));
+        $result1 = $loop1->execute($state);
+        $result2 = $loop2->execute($state);
+
+        expect($result1->stepCount())->toBe($result2->stepCount());
+        expect($result1->finalResponse()->toString())->toBe($result2->finalResponse()->toString());
     });
 });

@@ -5,6 +5,7 @@ namespace Cognesy\InstructorHub\Config;
 use IteratorAggregate;
 use Traversable;
 
+/** @implements IteratorAggregate<int, ExampleSource> */
 final class ExampleSources implements IteratorAggregate
 {
     /** @var ExampleSource[] */
@@ -41,6 +42,7 @@ final class ExampleSources implements IteratorAggregate
     /**
      * @return Traversable<ExampleSource>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         yield from $this->sources;

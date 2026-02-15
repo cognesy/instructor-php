@@ -16,22 +16,49 @@ At its core, an agent is a **loop**: send messages to an LLM, receive a response
 - **Lifecycle hooks** - Intercept any phase of execution to add guards, logging, or custom behavior.
 - **Testable by default** - `FakeAgentDriver` lets you script deterministic scenarios without LLM calls.
 
+## Two Layers
+
+**AgentLoop** is the stateless execution engine. It takes an `AgentState`, runs the step loop, and returns the final state. Use it directly for simple agents or full manual control.
+
+**AgentBuilder** is the composition layer. It assembles an `AgentLoop` from pluggable capabilities (`Use*` classes) that install tools, hooks, guards, drivers, and compilers. Use it when you want modular, reusable configuration.
+
+```php
+// Direct: AgentLoop
+$loop = AgentLoop::default()->withTool($myTool);
+
+// Composed: AgentBuilder
+$agent = AgentBuilder::base()
+    ->withCapability(new UseBash())
+    ->withCapability(new UseGuards(maxSteps: 10))
+    ->build();
+```
+
 ## Package Structure
 
 ```
-Core/           # AgentLoop, AgentState, tools, stop signals
-Context/        # AgentContext, message compilers
-Hooks/          # Lifecycle interceptors and guard hooks
-Drivers/        # ToolCallingDriver, ReActDriver, FakeAgentDriver
-Events/         # Agent event system
-Exceptions/     # Domain exceptions
+AgentLoop.php         # Core execution loop
+CanControlAgentLoop   # Loop interface (execute/iterate)
+Builder/              # AgentBuilder, AgentConfigurator, capability contracts
+Capability/           # Use* capabilities (Core, Bash, File, Subagent, etc.)
+Collections/          # Tools, AgentSteps, StepExecutions, ErrorList, etc.
+Context/              # AgentContext, message compilers (CanCompileMessages)
+Continuation/         # StopSignal, StopReason, ExecutionContinuation
+Data/                 # AgentState, ExecutionState, AgentStep, AgentBudget
+Drivers/              # ToolCallingDriver, ReActDriver, FakeAgentDriver
+Enums/                # AgentStepType, ExecutionStatus
+Events/               # Agent event system
+Exceptions/           # Domain exceptions
+Hook/                 # HookStack, HookInterface, HookContext, built-in hooks
+Interception/         # CanInterceptAgentLifecycle, PassThroughInterceptor
+Template/             # Agent definitions, parsers, registry
+Tool/                 # ToolInterface, BaseTool, FunctionTool, ToolExecutor
+
 ```
 
 ## Minimal Example
 
 ```php
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;
 
 $loop = AgentLoop::default();
 $state = AgentState::empty()->withUserMessage('Hello!');

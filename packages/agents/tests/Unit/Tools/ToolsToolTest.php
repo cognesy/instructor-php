@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Agents\Core\Tools\MockTool;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolRegistry;
-use Cognesy\Agents\AgentBuilder\Capabilities\Tools\ToolsTool;
+use Cognesy\Agents\Capability\Tools\ToolsTool;
+use Cognesy\Agents\Tool\ToolRegistry;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 it('lists available tools', function () {
     $registry = new ToolRegistry();

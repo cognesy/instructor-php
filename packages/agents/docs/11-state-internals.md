@@ -18,7 +18,7 @@ AgentState (readonly)
   |   |-- metadata: Metadata
   |   |-- systemPrompt: string
   |   |-- responseFormat: ResponseFormat
-  |-- budget: Budget
+  |-- budget: AgentBudget
   |   |-- maxSteps: ?int
   |   |-- maxTokens: ?int
   |   |-- maxSeconds: ?float
@@ -57,7 +57,7 @@ $state->messages();
 $state->metadata();
 $state->context()->systemPrompt();
 
-// Budget
+// AgentBudget
 $state->budget()->maxSteps;
 $state->budget()->isExhausted();
 
@@ -77,19 +77,19 @@ $state->hasFinalResponse();
 $state->finalResponse()->toString();
 ```
 
-## Budget
+## AgentBudget
 
 Budgets propagate through delegation chains. Each subagent inherits the remaining budget:
 
 ```php
-$budget = new Budget(maxSteps: 20, maxTokens: 10000, maxSeconds: 60.0);
+$budget = new AgentBudget(maxSteps: 20, maxTokens: 10000, maxSeconds: 60.0);
 
 // After 5 steps and 3000 tokens:
 $remaining = $budget->remaining(stepsUsed: 5, tokensUsed: 3000);
 // maxSteps: 15, maxTokens: 7000, maxSeconds: 60.0
 
 // Cap by another budget:
-$capped = $budget->cappedBy(new Budget(maxSteps: 10));
+$capped = $budget->cappedBy(new AgentBudget(maxSteps: 10));
 // maxSteps: 10 (takes minimum)
 ```
 

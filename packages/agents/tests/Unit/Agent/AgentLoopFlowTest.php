@@ -2,24 +2,29 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Core\AgentLoop;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Contracts\CanExecuteToolCalls;
-use Cognesy\Agents\Core\Contracts\CanUseTools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\AgentStep;
-use Cognesy\Agents\Core\Enums\ExecutionStatus;
-use Cognesy\Agents\Core\Tools\ToolExecutor;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ToolCallBlocked;
+use Cognesy\Agents\Events\ToolCallCompleted;
+use Cognesy\Agents\Events\ToolCallStarted;
 use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
-use Cognesy\Agents\Hooks\Data\HookContext;
-use Cognesy\Agents\Hooks\Enums\HookTrigger;
-use Cognesy\Agents\Hooks\Interceptors\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Hook\Data\HookContext;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
+use Cognesy\Agents\Tool\ToolExecutor;
+use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use RuntimeException;
 
@@ -29,6 +34,8 @@ final class CountingEventListener
     public int $stepCompletedCount = 0;
     public int $executionFailedCount = 0;
     public int $toolCallBlockedCount = 0;
+    public int $toolCallStartedCount = 0;
+    public int $toolCallCompletedCount = 0;
     public ?ExecutionStatus $finishedStatus = null;
 
     public function wiretap(): callable
@@ -39,6 +46,8 @@ final class CountingEventListener
                 $event instanceof AgentStepCompleted => $this->stepCompletedCount++,
                 $event instanceof AgentExecutionFailed => $this->executionFailedCount++,
                 $event instanceof ToolCallBlocked => $this->toolCallBlockedCount++,
+                $event instanceof ToolCallStarted => $this->toolCallStartedCount++,
+                $event instanceof ToolCallCompleted => $this->toolCallCompletedCount++,
                 $event instanceof AgentExecutionCompleted => $this->finishedStatus = $event->status,
                 default => null,
             };
@@ -70,6 +79,17 @@ final class InjectStepInterceptor implements CanInterceptAgentLifecycle
             HookTrigger::BeforeStep => $context->withState(
                 $context->state()->withCurrentStep($this->step),
             ),
+            default => $context,
+        };
+    }
+}
+
+final class BlockingBeforeToolUseInterceptor implements CanInterceptAgentLifecycle
+{
+    public function intercept(HookContext $context): HookContext
+    {
+        return match ($context->triggerType()) {
+            HookTrigger::BeforeToolUse => $context->withToolExecutionBlocked('blocked by new interceptor'),
             default => $context,
         };
     }
@@ -211,6 +231,80 @@ describe('AgentLoop flow', function () {
             ->and($newListener->stepCompletedCount)->toBe(1)
             ->and($oldListener->stepStartedCount)->toBe(0)
             ->and($oldListener->stepCompletedCount)->toBe(0);
+    });
+
+    it('uses new events in executor when withEventHandler() receives only events', function () {
+        $tool = MockTool::returning('test_tool', 'A test tool', 'ok');
+        $tools = new Tools($tool);
+        $oldListener = new CountingEventListener();
+        $newListener = new CountingEventListener();
+        $oldEvents = makeTestEvents($oldListener);
+        $newEvents = makeTestEvents($newListener);
+        $interceptor = new PassThroughInterceptor();
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $originalLoop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $oldEvents, $interceptor),
+            driver: $driver,
+            events: $oldEvents,
+            interceptor: $interceptor,
+        );
+
+        $newLoop = $originalLoop->withEventHandler($newEvents);
+        $toolCall = ToolCall::fromArray([
+            'id' => 'call_1',
+            'name' => 'test_tool',
+            'arguments' => json_encode([]),
+        ]);
+        $newLoop->toolExecutor()->executeTools(new ToolCalls($toolCall), AgentState::empty());
+
+        expect($newListener->toolCallStartedCount)->toBe(1)
+            ->and($newListener->toolCallCompletedCount)->toBe(1)
+            ->and($oldListener->toolCallStartedCount)->toBe(0)
+            ->and($oldListener->toolCallCompletedCount)->toBe(0);
+    });
+
+    it('uses new interceptor in executor when withInterceptor() receives only interceptor', function () {
+        $tool = MockTool::returning('test_tool', 'A test tool', 'ok');
+        $tools = new Tools($tool);
+        $events = new EventDispatcher();
+        $oldInterceptor = new PassThroughInterceptor();
+        $newInterceptor = new BlockingBeforeToolUseInterceptor();
+
+        $driver = new class implements CanUseTools {
+            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            {
+                return $state;
+            }
+        };
+
+        $originalLoop = new AgentLoop(
+            tools: $tools,
+            toolExecutor: new ToolExecutor($tools, $events, $oldInterceptor),
+            driver: $driver,
+            events: $events,
+            interceptor: $oldInterceptor,
+        );
+
+        $newLoop = $originalLoop->withInterceptor($newInterceptor);
+        $toolCall = ToolCall::fromArray([
+            'id' => 'call_1',
+            'name' => 'test_tool',
+            'arguments' => json_encode([]),
+        ]);
+
+        $originalResult = $originalLoop->toolExecutor()->executeTools(new ToolCalls($toolCall), AgentState::empty());
+        $newResult = $newLoop->toolExecutor()->executeTools(new ToolCalls($toolCall), AgentState::empty());
+
+        expect($originalResult->first()?->hasError())->toBeFalse()
+            ->and($newResult->first()?->hasError())->toBeTrue();
     });
 
     it('emits executionFinished with Completed status, not InProgress', function () {

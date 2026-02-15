@@ -26,16 +26,17 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Capabilities\Metadata\UseMetadataTools;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaDefinition;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\SchemaRegistry;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\StructuredOutputPolicy;
-use Cognesy\Agents\AgentBuilder\Capabilities\StructuredOutput\UseStructuredOutputs;
-use Cognesy\Agents\Core\Collections\Tools;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Agents\Events\AgentConsoleLogger;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\Metadata\UseMetadataTools;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaDefinition;
+use Cognesy\Agents\Capability\StructuredOutput\StructuredOutputPolicy;
+use Cognesy\Agents\Capability\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -163,8 +164,8 @@ $agent = AgentBuilder::base()
         ),
     ))
     ->withCapability(new UseMetadataTools())
-    ->withTools(new Tools(new CreateLeadTool()))
-    ->withMaxSteps(10)
+    ->withCapability(new UseTools(new CreateLeadTool()))
+    ->withCapability(new UseGuards(maxSteps: 10, maxTokens: 12288, maxExecutionTime: 90))
     ->build()
     ->wiretap($logger->wiretap());
 

@@ -2,46 +2,49 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Contracts\AgentCapability;
-use Cognesy\Agents\AgentTemplate\Registry\AgentCapabilityRegistry;
+use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
+use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
+use Cognesy\Agents\Capability\AgentCapabilityRegistry;
 use InvalidArgumentException;
 
-final class TestCapability implements AgentCapability
+final class TestCapabilityCanProvide implements CanProvideAgentCapability
 {
-    public function install(AgentBuilder $builder): void
-    {
-        // No-op for tests.
+    public static function capabilityName(): string {
+        return 'test_capability';
+    }
+
+    public function configure(CanConfigureAgent $agent): CanConfigureAgent {
+        return $agent;
     }
 }
 
 describe('AgentCapabilityRegistry', function () {
-    it('registers and resolves capability instances', function () {
+    it('registers and gets capability instances', function () {
         $registry = new AgentCapabilityRegistry();
-        $capability = new TestCapability();
+        $capability = new TestCapabilityCanProvide();
 
         $registry->register('tool_discovery', $capability);
 
         expect($registry->has('tool_discovery'))->toBeTrue();
-        expect($registry->resolve('tool_discovery'))->toBe($capability);
+        expect($registry->get('tool_discovery'))->toBe($capability);
     });
 
-    it('registers and resolves capability factories', function () {
+    it('registers and gets capability factories', function () {
         $registry = new AgentCapabilityRegistry();
 
-        $registry->registerFactory('work_context', fn() => new TestCapability());
+        $registry->registerFactory('work_context', fn() => new TestCapabilityCanProvide());
 
-        $resolved = $registry->resolve('work_context');
+        $resolved = $registry->get('work_context');
 
-        expect($resolved)->toBeInstanceOf(TestCapability::class);
-        expect($registry->resolve('work_context'))->toBe($resolved);
+        expect($resolved)->toBeInstanceOf(TestCapabilityCanProvide::class);
+        expect($registry->get('work_context'))->toBe($resolved);
     });
 
     it('rejects factories that return invalid types', function () {
         $registry = new AgentCapabilityRegistry();
         $registry->registerFactory('bad', fn() => new \stdClass());
 
-        $resolve = fn() => $registry->resolve('bad');
+        $resolve = fn() => $registry->get('bad');
 
         expect($resolve)->toThrow(InvalidArgumentException::class);
     });
@@ -49,7 +52,7 @@ describe('AgentCapabilityRegistry', function () {
     it('rejects missing capabilities', function () {
         $registry = new AgentCapabilityRegistry();
 
-        $resolve = fn() => $registry->resolve('missing');
+        $resolve = fn() => $registry->get('missing');
 
         expect($resolve)->toThrow(InvalidArgumentException::class);
     });

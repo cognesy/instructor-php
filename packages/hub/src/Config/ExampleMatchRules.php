@@ -6,6 +6,7 @@ use Cognesy\InstructorHub\Data\ExampleLocation;
 use IteratorAggregate;
 use Traversable;
 
+/** @implements IteratorAggregate<int, ExampleMatchRule> */
 final class ExampleMatchRules implements IteratorAggregate
 {
     /** @var ExampleMatchRule[] */
@@ -55,6 +56,7 @@ final class ExampleMatchRules implements IteratorAggregate
     /**
      * @return Traversable<ExampleMatchRule>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         yield from $this->rules;

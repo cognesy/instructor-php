@@ -2,15 +2,16 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Messages\Messages;
 use DateTimeImmutable;
 
 it('records step timing data on completed steps', function () {
     $agent = AgentBuilder::base()
-        ->withDriver(FakeAgentDriver::fromResponses('done'))
+        ->withCapability(new UseDriver(FakeAgentDriver::fromResponses('done')))
         ->build();
 
     $state = AgentState::empty()->withMessages(Messages::fromString('ping'));

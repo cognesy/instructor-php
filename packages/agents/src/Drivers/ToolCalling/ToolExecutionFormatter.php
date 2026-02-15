@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Drivers\ToolCalling;
 
-use Cognesy\Agents\Core\Collections\ToolExecutions;
-use Cognesy\Agents\Core\Data\AgentState;
-use Cognesy\Agents\Core\Data\ToolExecution;
+use Cognesy\Agents\Collections\ToolExecutions;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\ToolCall;

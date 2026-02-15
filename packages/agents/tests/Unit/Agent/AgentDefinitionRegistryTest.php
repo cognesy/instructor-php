@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;
 use Cognesy\Agents\Exceptions\AgentNotFoundException;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 
 describe('AgentDefinitionRegistry', function () {
@@ -60,7 +60,7 @@ YAML;
         expect($get)->toThrow(AgentNotFoundException::class);
     });
 
-    it('implements AgentDefinitionProvider', function () {
+    it('implements CanManageAgentDefinitions', function () {
         $registry = new AgentDefinitionRegistry();
         $a = new AgentDefinition(name: 'alpha', description: 'Alpha', systemPrompt: 'Alpha prompt');
         $b = new AgentDefinition(name: 'beta', description: 'Beta', systemPrompt: 'Beta prompt');

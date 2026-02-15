@@ -2,11 +2,10 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\AgentBuilder\AgentBuilder;
-use Cognesy\Agents\AgentBuilder\Data\AgentDescriptor;
-use Cognesy\Agents\AgentBuilder\Support\BaseAgent;
-use Cognesy\Agents\Core\Collections\NameList;
-use Cognesy\Agents\Core\Data\AgentState;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseDriver;
+use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionStarted;
@@ -44,6 +43,7 @@ final class TestEventHandler implements CanHandleEvents
         return $event;
     }
 
+    /** @return iterable<int, callable(object): void> */
     public function getListenersForEvent(object $event): iterable
     {
         $listeners = $this->listeners[$event::class] ?? [];
@@ -52,31 +52,20 @@ final class TestEventHandler implements CanHandleEvents
     }
 }
 
-final class EventAgentDefinition extends BaseAgent
+function makeEventLoop(): AgentLoop
 {
-    public function descriptor(): AgentDescriptor
-    {
-        return new AgentDescriptor(
-            name: 'event-agent',
-            description: 'Event agent',
-            tools: new NameList(),
-            capabilities: new NameList(),
-        );
-    }
-
-    protected function configureLoop(AgentBuilder $builder): AgentBuilder
-    {
-        return $builder->withDriver(new FakeAgentDriver());
-    }
+    return AgentBuilder::base()
+        ->withCapability(new UseDriver(new FakeAgentDriver()))
+        ->build();
 }
 
 describe('AgentDefinition events', function () {
     it('emits core agent lifecycle events', function () {
-        $definition = new EventAgentDefinition();
+        $agent = makeEventLoop();
         $captured = [];
         $completed = 0;
 
-        $definition
+        $agent
             ->wiretap(function (object $event) use (&$captured): void {
                 $captured[] = $event::class;
             })
@@ -85,7 +74,7 @@ describe('AgentDefinition events', function () {
             });
 
         $state = AgentState::empty()->withMessages(Messages::fromString('hi'));
-        $definition->execute($state);
+        $agent->execute($state);
 
         expect($completed)->toBe(1);
         expect($captured)->toContain(AgentStepStarted::class);
@@ -96,10 +85,8 @@ describe('AgentDefinition events', function () {
     });
 
     it('uses provided event handler', function () {
-        $definition = new EventAgentDefinition();
         $handler = new TestEventHandler();
-
-        $agent = $definition->withEventHandler($handler);
+        $agent = makeEventLoop()->withEventHandler($handler);
         $agent->wiretap(fn(object $event) => null);
 
         $state = AgentState::empty()->withMessages(Messages::fromString('hi'));

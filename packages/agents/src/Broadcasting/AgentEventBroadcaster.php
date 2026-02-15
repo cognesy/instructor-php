@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Broadcasting;
 
-use Cognesy\Agents\Core\Stop\StopReason;
+use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Events\AgentStepCompleted;
 use Cognesy\Agents\Events\AgentStepStarted;
 use Cognesy\Agents\Events\ContinuationEvaluated;

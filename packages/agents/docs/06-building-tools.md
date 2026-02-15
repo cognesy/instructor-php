@@ -10,8 +10,7 @@ description: 'Create custom tools by extending BaseTool with auto-generated para
 Extend `BaseTool` and implement `__invoke()`. The parameter schema is auto-generated from the method signature:
 
 ```php
-use Cognesy\Agents\Core\Tools\BaseTool;
-use Cognesy\Schema\Attributes\Description;
+use Cognesy\Agents\Tool\Tools\BaseTool;use Cognesy\Schema\Attributes\Description;
 
 class GetWeather extends BaseTool
 {
@@ -38,7 +37,7 @@ class GetWeather extends BaseTool
 Wrap any callable without creating a class:
 
 ```php
-use Cognesy\Agents\Core\Tools\FunctionTool;
+use Cognesy\Agents\Tool\Tools\FunctionTool;
 
 $tool = FunctionTool::fromCallable(function (string $query): string {
     return "Results for: {$query}";
@@ -69,22 +68,85 @@ interface ToolInterface
 {
     public function use(mixed ...$args): Result;
     public function toToolSchema(): array;
-    public function name(): string;
-    public function description(): string;
-    public function metadata(): array;
-    public function instructions(): array;
+    public function descriptor(): CanDescribeTool;
 }
 ```
 
 - `use()` - execute the tool, returns `Result` (success or failure)
 - `toToolSchema()` - OpenAI-compatible function schema for the LLM
-- `metadata()` - lightweight info for tool discovery
-- `instructions()` - full specification for detailed tool documentation
+- `descriptor()` - returns a `CanDescribeTool` with `name()`, `description()`, `metadata()`, `instructions()`
+
+`BaseTool` implements both `ToolInterface` and `CanDescribeTool`, acting as its own descriptor by default.
+
+## Externalizing Descriptors with ToolDescriptor
+
+For tools with rich documentation — examples, usage notes, error descriptions — you can separate the descriptor into its own class. This keeps tool logic clean and makes documentation reusable.
+
+`ToolDescriptor` is a readonly data class that implements `CanDescribeTool`:
+
+```php
+use Cognesy\Agents\Tool\ToolDescriptor;
+
+final readonly class MyToolDescriptor extends ToolDescriptor
+{
+    public function __construct() {
+        parent::__construct(
+            name: 'my_tool',
+            description: 'Does something useful with detailed guidance.',
+            metadata: [
+                'namespace' => 'domain',
+                'tags' => ['analysis', 'data'],
+            ],
+            instructions: [
+                'parameters' => [
+                    'input' => 'The data to process.',
+                ],
+                'returns' => 'Processed result as string.',
+                'usage' => [
+                    'Pass structured data for best results.',
+                ],
+                'errors' => [
+                    'Returns error message on invalid input.',
+                ],
+            ],
+        );
+    }
+}
+```
+
+Then wire it into your tool:
+
+```php
+class MyTool extends BaseTool
+{
+    private MyToolDescriptor $descriptor;
+
+    public function __construct() {
+        $descriptor = new MyToolDescriptor();
+        parent::__construct(
+            name: $descriptor->name(),
+            description: $descriptor->description(),
+        );
+        $this->descriptor = $descriptor;
+    }
+
+    #[\Override]
+    public function descriptor(): CanDescribeTool {
+        return $this->descriptor;
+    }
+
+    public function __invoke(string $input): string {
+        return "Processed: {$input}";
+    }
+}
+```
+
+Most built-in tools use this pattern — `BashTool` has `BashToolDescriptor`, each file tool has its own descriptor, and so on. The `metadata()` and `instructions()` arrays power progressive disclosure: tool registries can show lightweight summaries via `metadata()`, while the LLM receives full specifications via `instructions()` when needed.
 
 ## MockTool for Testing
 
 ```php
-use Cognesy\Agents\Core\Tools\MockTool;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 $tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
 
