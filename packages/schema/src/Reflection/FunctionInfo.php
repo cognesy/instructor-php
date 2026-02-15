@@ -89,7 +89,7 @@ class FunctionInfo
                 $this->function->getDeclaringClass()->getName(),
                 $this->function->getName()
             ),
-            default => str_starts_with($this->function->getName(), '{closure')
+            default => str_contains($this->function->getName(), '{closure')
                 ? ''
                 : Descriptions::forFunction($this->function->getName()),
         };
@@ -102,7 +102,7 @@ class FunctionInfo
                 $this->function->getName(),
                 $argument
             ),
-            default => str_starts_with($this->function->getName(), '{closure')
+            default => str_contains($this->function->getName(), '{closure')
                 ? ''
                 : Descriptions::forFunctionParameter($this->function->getName(), $argument),
         };
