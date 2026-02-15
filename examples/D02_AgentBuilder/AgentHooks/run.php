@@ -121,6 +121,11 @@ $hasErrors = $finalState2->currentStep()?->hasErrors() ?? false;
 echo "Command was " . ($hasErrors ? "BLOCKED (security hook worked!)" : "executed") . "\n";
 echo "Steps: {$finalState2->stepCount()}\n";
 echo "Status: {$finalState2->status()->value}\n";
+
+// Assertions
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response from safe commands');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step for safe commands');
+assert($finalState2->stepCount() >= 1, 'Expected at least 1 step for dangerous command test');
 ?>
 ```
 

@@ -31,7 +31,7 @@ final class LaravelConfigProvider implements CanProvideConfig
     {
         // Handle preset lookups (e.g., 'llm.presets.openai')
         if (str_starts_with($path, 'llm.')) {
-            return $this->getLlmConfig($path, $default);
+            return $this->getLLMConfig($path, $default);
         }
 
         if (str_starts_with($path, 'embed.')) {
@@ -53,7 +53,7 @@ final class LaravelConfigProvider implements CanProvideConfig
     public function has(string $path): bool
     {
         if (str_starts_with($path, 'llm.')) {
-            return $this->hasLlmConfig($path);
+            return $this->hasLLMConfig($path);
         }
 
         if (str_starts_with($path, 'embed.')) {
@@ -70,16 +70,16 @@ final class LaravelConfigProvider implements CanProvideConfig
     /**
      * Get LLM preset configuration.
      */
-    private function getLlmConfig(string $path, mixed $default): mixed
+    private function getLLMConfig(string $path, mixed $default): mixed
     {
         // Handle 'llm.presets' or 'llm.presets.{name}'
         if ($path === 'llm' || $path === 'llm.presets') {
-            return $this->buildAllLlmPresets();
+            return $this->buildAllLLMPresets();
         }
 
         if (str_starts_with($path, 'llm.presets.')) {
             $presetName = substr($path, strlen('llm.presets.'));
-            return $this->buildLlmPreset($presetName);
+            return $this->buildLLMPreset($presetName);
         }
 
         if ($path === 'llm.defaultPreset') {
@@ -125,7 +125,7 @@ final class LaravelConfigProvider implements CanProvideConfig
     /**
      * Check if LLM config exists.
      */
-    private function hasLlmConfig(string $path): bool
+    private function hasLLMConfig(string $path): bool
     {
         if ($path === 'llm' || $path === 'llm.presets' || $path === 'llm.defaultPreset') {
             return true;
@@ -167,7 +167,7 @@ final class LaravelConfigProvider implements CanProvideConfig
     /**
      * Build all LLM presets from Laravel config.
      */
-    private function buildAllLlmPresets(): array
+    private function buildAllLLMPresets(): array
     {
         $connections = $this->app['config']->get('instructor.connections', []);
         $presets = [];
@@ -185,7 +185,7 @@ final class LaravelConfigProvider implements CanProvideConfig
     /**
      * Build a single LLM preset.
      */
-    private function buildLlmPreset(string $name): ?array
+    private function buildLLMPreset(string $name): ?array
     {
         $config = $this->app['config']->get("instructor.connections.{$name}");
 

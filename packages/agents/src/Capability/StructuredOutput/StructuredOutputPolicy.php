@@ -34,7 +34,7 @@ final readonly class StructuredOutputPolicy
         );
     }
 
-    public function withLlmPreset(string $preset): self {
+    public function withLLMPreset(string $preset): self {
         return $this->with(llmPreset: $preset);
     }
 

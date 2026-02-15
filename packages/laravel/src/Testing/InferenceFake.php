@@ -6,6 +6,7 @@ namespace Cognesy\Instructor\Laravel\Testing;
 
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use PHPUnit\Framework\Assert as PHPUnit;
 
@@ -177,6 +178,11 @@ class InferenceFake
     }
 
     public function withConfig($config): self
+    {
+        return $this;
+    }
+
+    public function withLLMConfig(LLMConfig $config): self
     {
         return $this;
     }

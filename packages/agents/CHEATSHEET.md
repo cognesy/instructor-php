@@ -22,7 +22,7 @@ Root namespace: `Cognesy\Agents`
 
 | Class | Role |
 |---|---|
-| `AgentState` | Immutable session+execution state. Session: `agentId`, `parentAgentId`, `createdAt`, `updatedAt`, `context: AgentContext`, `budget: AgentBudget`. Execution: `?ExecutionState`. Key methods: `withCurrentStep()`, `withStopSignal()`, `withFailure()`, `forNextExecution()`, `finalResponse()`, `currentResponse()`, `debug()`. Serializable via `toArray()`/`fromArray()`. |
+| `AgentState` | Immutable session+execution state. Session: `agentId`, `parentAgentId`, `createdAt`, `updatedAt`, `context: AgentContext`, `budget: AgentBudget`. Execution: `?ExecutionState`. Key methods: `withCurrentStep()`, `withStopSignal()`, `withFailure()`, `finalResponse()`, `currentResponse()`, `debug()`. `forNextExecution()` resets execution while preserving session — called automatically by `AgentLoop` for terminal states. Serializable via `toArray()`/`fromArray()`. |
 | `ExecutionState` | Per-execution transient data: `executionId`, `status`, steps, continuation, timing. `fresh()` factory creates new UUID. |
 | `AgentStep` | Single step result: `id`, `stepType: AgentStepType`, `outputMessages`, `toolExecutions`, `errors`, `usage`, `finishReason`. |
 | `StepExecution` | Wraps `AgentStep` with timing (`startedAt`, `completedAt`, `duration`) and continuation state. |
@@ -238,7 +238,7 @@ Capabilities implement `CanProvideAgentCapability` and configure the agent via `
 | `UseContextCompiler` | Sets the `CanCompileMessages` compiler |
 | `UseContextCompilerDecorator` | Wraps existing compiler |
 | `UseContextConfig` | Sets system prompt and/or response format via `ApplyContextConfigHook` |
-| `UseLlmConfig` | Configures LLM provider settings |
+| `UseLLMConfig` | Configures LLM provider settings |
 
 ### Domain Capabilities
 

@@ -67,7 +67,7 @@ final class UseSubagents implements CanProvideAgentCapability
                     parentDriver: $driver,
                     provider: $this->provider,
                     skillLibrary: $this->skillLibrary,
-                    parentLlmProvider: $llmProvider,
+                    parentLLMProvider: $llmProvider,
                     currentDepth: 0,
                     policy: $this->policy,
                     events: $context->events(),

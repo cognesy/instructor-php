@@ -6,6 +6,7 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Enums\AgentStepType;
+use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
@@ -13,6 +14,7 @@ use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -180,5 +182,56 @@ describe('Agent Loop', function () {
 
         expect(count($messages))->toBe(3);
         expect($messages[2]['content'] ?? null)->toBe('Calling tool');
+    });
+
+    it('hydrates state llm config from driver when missing', function () {
+        $driver = new FakeInferenceDriver([
+            new InferenceResponse(content: 'Hydrated'),
+        ]);
+
+        $defaultConfig = new LLMConfig(
+            model: 'driver-default-model',
+            contextLength: 64000,
+        );
+
+        $llm = LLMProvider::new()
+            ->withConfig($defaultConfig)
+            ->withDriver($driver);
+        $agent = makeTestLoop($llm, new Tools(), 1);
+
+        $state = AgentState::empty()->withMessages(Messages::fromString('Hi'));
+        $finalState = $agent->execute($state);
+
+        expect($finalState->llmConfig())->not->toBeNull()
+            ->and($finalState->llmConfig()?->model)->toBe('driver-default-model')
+            ->and($finalState->llmConfig()?->contextLength)->toBe(64000);
+    });
+
+    it('prefers state llm config over driver defaults', function () {
+        $driver = new FakeInferenceDriver([
+            new InferenceResponse(content: 'Override'),
+        ]);
+
+        $driverConfig = new LLMConfig(model: 'driver-model');
+        $stateConfig = new LLMConfig(model: 'state-model');
+
+        $llm = LLMProvider::new()
+            ->withConfig($driverConfig)
+            ->withDriver($driver);
+        $agent = makeTestLoop($llm, new Tools(), 1);
+
+        $seenModel = null;
+        $agent->onEvent(InferenceRequestStarted::class, function (InferenceRequestStarted $event) use (&$seenModel): void {
+            $seenModel = $event->model;
+        });
+
+        $state = AgentState::empty()
+            ->withMessages(Messages::fromString('Hi'))
+            ->withLLMConfig($stateConfig);
+
+        $finalState = $agent->execute($state);
+
+        expect($seenModel)->toBe('state-model')
+            ->and($finalState->llmConfig()?->model)->toBe('state-model');
     });
 });

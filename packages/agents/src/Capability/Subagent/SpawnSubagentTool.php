@@ -40,7 +40,7 @@ final class SpawnSubagentTool extends ContextAwareTool
     private CanUseTools $parentDriver;
     private CanManageAgentDefinitions $provider;
     private ?SkillLibrary $skillLibrary;
-    private ?LLMProvider $parentLlmProvider;
+    private ?LLMProvider $parentLLMProvider;
     private int $currentDepth;
     private SubagentPolicy $policy;
     private CanHandleEvents $events;
@@ -50,7 +50,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         CanUseTools $parentDriver,
         CanManageAgentDefinitions $provider,
         ?SkillLibrary $skillLibrary = null,
-        ?LLMProvider $parentLlmProvider = null,
+        ?LLMProvider $parentLLMProvider = null,
         int $currentDepth = 0,
         ?SubagentPolicy $policy = null,
         ?CanHandleEvents $events = null,
@@ -61,7 +61,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         $this->parentDriver = $parentDriver;
         $this->provider = $provider;
         $this->skillLibrary = $skillLibrary;
-        $this->parentLlmProvider = $parentLlmProvider;
+        $this->parentLLMProvider = $parentLLMProvider;
         $this->policy = $policy ?? SubagentPolicy::default();
         $this->currentDepth = $currentDepth;
         $this->events = EventBusResolver::using($events);
@@ -82,7 +82,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         ?CanUseTools $parentDriver = null,
         ?CanManageAgentDefinitions $provider = null,
         ?SkillLibrary $skillLibrary = null,
-        ?LLMProvider $parentLlmProvider = null,
+        ?LLMProvider $parentLLMProvider = null,
         ?int $currentDepth = null,
         ?SubagentPolicy $policy = null,
         ?CanHandleEvents $events = null,
@@ -94,7 +94,7 @@ final class SpawnSubagentTool extends ContextAwareTool
             parentDriver: $parentDriver ?? $this->parentDriver,
             provider: $provider ?? $this->provider,
             skillLibrary: $skillLibrary ?? $this->skillLibrary,
-            parentLlmProvider: $parentLlmProvider ?? $this->parentLlmProvider,
+            parentLLMProvider: $parentLLMProvider ?? $this->parentLLMProvider,
             currentDepth: $currentDepth ?? $this->currentDepth,
             policy: $policy ?? $this->policy,
             events: $events ?? $this->events,
@@ -149,7 +149,7 @@ final class SpawnSubagentTool extends ContextAwareTool
             parentAgentId: $parentAgentId,
             subagentId: $finalState->agentId(),
             subagentName: $subagentName,
-            status: $finalState->status(),
+            status: $finalState->status() ?? ExecutionStatus::Pending,
             steps: $finalState->stepCount(),
             usage: $finalState->usage(),
             startedAt: $spawnStartedAt,
@@ -176,7 +176,7 @@ final class SpawnSubagentTool extends ContextAwareTool
                 parentDriver: $this->parentDriver,
                 provider: $this->provider,
                 skillLibrary: $this->skillLibrary,
-                parentLlmProvider: $this->parentLlmProvider,
+                parentLLMProvider: $this->parentLLMProvider,
                 currentDepth: $this->currentDepth + 1,
                 policy: $this->policy,
                 events: $this->events,
@@ -189,7 +189,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         $subagentDriver = $this->parentDriver;
 
         if ($subagentDriver instanceof CanAcceptLLMProvider) {
-            $llmProvider = $this->resolveLlmProvider($spec, $this->parentLlmProvider);
+            $llmProvider = $this->resolveLLMProvider($spec, $this->parentLLMProvider);
             $subagentDriver = $subagentDriver->withLLMProvider($llmProvider);
         }
 
@@ -341,7 +341,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         return new Tools(...$filtered);
     }
 
-    private function resolveLlmProvider(AgentDefinition $spec, ?LLMProvider $parentProvider): LLMProvider {
+    private function resolveLLMProvider(AgentDefinition $spec, ?LLMProvider $parentProvider): LLMProvider {
         return match (true) {
             $spec->llmConfig instanceof LLMConfig => LLMProvider::new()->withConfig($spec->llmConfig),
             $spec->llmConfig === null => $parentProvider ?? LLMProvider::new(),

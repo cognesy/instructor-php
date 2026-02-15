@@ -75,10 +75,6 @@ final readonly class ExecutionState
         return $this->with(continuation: $this->continuation->withContinuationRequested(true));
     }
 
-    public function withContinuationRequestCleared() : self {
-        return $this->with(continuation: $this->continuation->withContinuationRequested(false));
-    }
-
     public function completed(?ExecutionStatus $status = null): self {
         $stepExecutions = match(true) {
             ($this->currentStep === null) => $this->stepExecutions,

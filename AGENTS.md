@@ -61,7 +61,7 @@ Each package in `packages/` may contain:
 - **AgentStep** = immutable snapshot of one step: input/output messages, inference response, tool executions, errors
 - **StepExecution** = wraps AgentStep with timing and continuation metadata — keeps step data immutable while tracking execution details
 - State updates are always atomic — `withCurrentStepCompleted()` chains through the layers to prevent partial/inconsistent states
-- `AgentState.forNextExecution()` clears execution data while preserving session state
+- `AgentLoop` auto-resets terminal executions (completed/failed) on entry — no manual `forNextExecution()` needed
 
 ### Stop/Continuation
 
@@ -74,7 +74,7 @@ Each package in `packages/` may contain:
 
 The boundary between `\Core` and `\Hook` is **whether the behavior is optional**:
 
-- **Core state transitions** = invariant. Always happens, can't be removed, not configurable. Folded into `with*()` methods on state objects. Examples: `withCurrentStep()` routes step output to the correct message section; `forNextExecution()` clears the execution buffer; `withCurrentStepCompleted()` archives the step.
+- **Core state transitions** = invariant. Always happens, can't be removed, not configurable. Folded into `with*()` methods on state objects. Examples: `withCurrentStep()` routes step output to the correct message section; `withCurrentStepCompleted()` archives the step; `AgentLoop.ensureNextExecution()` auto-resets terminal executions on entry.
 - **Hooks** = variant. Configurable, optional, composable via builder. Examples: step limits, token limits, summarization, finish reason stopping. If you could imagine an agent that doesn't need it, it's a hook.
 
 **State transitions must be complete.** Every `with*()` call leaves the state fully consistent — no follow-up call required. If behavior always follows a transition, fold it into that transition. A separate "remember to also call X" method implies the behavior is optional; if it isn't optional, the separation is wrong.

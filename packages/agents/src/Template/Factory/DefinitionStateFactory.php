@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Template\Factory;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentState;
 use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 final readonly class DefinitionStateFactory implements CanInstantiateAgentState
 {
@@ -16,7 +17,8 @@ final readonly class DefinitionStateFactory implements CanInstantiateAgentState
         $state = $seed ?? AgentState::empty();
         $state = $this->withSystemPrompt($state, $definition);
         $state = $this->withMetadata($state, $definition);
-        return $this->withBudget($state, $definition);
+        $state = $this->withBudget($state, $definition);
+        return $this->withLLMConfig($state, $definition);
     }
 
     // INTERNALS ////////////////////////////////////////////////////
@@ -46,5 +48,13 @@ final readonly class DefinitionStateFactory implements CanInstantiateAgentState
         }
 
         return $state->withBudget($state->budget()->cappedBy($definitionBudget));
+    }
+
+    private function withLLMConfig(AgentState $state, AgentDefinition $definition): AgentState {
+        if (!$definition->llmConfig instanceof LLMConfig) {
+            return $state;
+        }
+
+        return $state->withLLMConfig($definition->llmConfig);
     }
 }

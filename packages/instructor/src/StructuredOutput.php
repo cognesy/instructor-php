@@ -26,6 +26,7 @@ use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -38,21 +39,21 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
  *
  * @template TResponse
  */
-class StructuredOutput
+class StructuredOutput implements CanAcceptLLMConfig
 {
     use HandlesEvents;
 
     // From traits - builder instances
-    private ?LLMProvider $llmProvider = null;
+    private LLMProvider $llmProvider;
     protected StructuredOutputExecutionBuilder $executionBuilder;
     private StructuredOutputRequest $request;
     private StructuredOutputConfigBuilder $configBuilder;
 
     // From traits - callback handlers
-    /** @var callable(object): void|null */
-    protected $onPartialResponse = null;
-    /** @var callable(object): void|null */
-    protected $onSequenceUpdate = null;
+    /** @var array<callable(object): void> */
+    protected array $onPartialResponse = [];
+    /** @var array<callable(object): void> */
+    protected array $onSequenceUpdate = [];
 
     // Local properties
     /** @var HttpClient|null Facade-level HTTP client (optional) */
@@ -100,6 +101,7 @@ class StructuredOutput
         return $this;
     }
 
+    #[\Override]
     public function withLLMConfig(LLMConfig $config): static {
         $this->llmProvider->withConfig($config);
         return $this;
@@ -148,7 +150,7 @@ class StructuredOutput
     /**
      * Backward-compatible alias for HTTP debug presets.
      */
-    public function withDebugPreset(string $preset): static {
+    public function withDebugPreset(?string $preset): static {
         return $this->withHttpDebugPreset($preset);
     }
 
@@ -281,7 +283,7 @@ class StructuredOutput
 
     // CONFIG BUILDER METHODS (from HandlesConfigBuilder) /////////////////////
 
-    public function withMaxRetries(int $maxRetries): self {
+    public function withMaxRetries(int $maxRetries): static {
         $this->configBuilder->withMaxRetries($maxRetries);
         return $this;
     }
@@ -331,22 +333,22 @@ class StructuredOutput
         return $this;
     }
 
-    public function withDefaultToStdClass(bool $defaultToStdClass = true): self {
+    public function withDefaultToStdClass(bool $defaultToStdClass = true): static {
         $this->configBuilder->withDefaultToStdClass($defaultToStdClass);
         return $this;
     }
 
-    public function withDeserializationErrorPrompt(string $deserializationErrorPrompt): self {
+    public function withDeserializationErrorPrompt(string $deserializationErrorPrompt): static {
         $this->configBuilder->withDeserializationErrorPrompt($deserializationErrorPrompt);
         return $this;
     }
 
-    public function withThrowOnTransformationFailure(bool $throwOnTransformationFailure = true): self {
+    public function withThrowOnTransformationFailure(bool $throwOnTransformationFailure = true): static {
         $this->configBuilder->withThrowOnTransformationFailure($throwOnTransformationFailure);
         return $this;
     }
 
-    public function withResponseCachePolicy(ResponseCachePolicy $responseCachePolicy): self {
+    public function withResponseCachePolicy(ResponseCachePolicy $responseCachePolicy): static {
         $this->configBuilder->withResponseCachePolicy($responseCachePolicy);
         return $this;
     }
@@ -359,17 +361,19 @@ class StructuredOutput
      * @param callable(object): void $listener
      */
     public function onPartialUpdate(callable $listener): static {
-        $this->onPartialResponse = $listener;
-        $this->events->addListener(
-            PartialResponseGenerated::class,
-            $this->handlePartialResponse(...)
-        );
+        if (empty($this->onPartialResponse)) {
+            $this->events->addListener(
+                PartialResponseGenerated::class,
+                $this->handlePartialResponse(...)
+            );
+        }
+        $this->onPartialResponse[] = $listener;
         return $this;
     }
 
     private function handlePartialResponse(PartialResponseGenerated $event): void {
-        if (!is_null($this->onPartialResponse)) {
-            ($this->onPartialResponse)($event->partialResponse);
+        foreach ($this->onPartialResponse as $listener) {
+            $listener($event->partialResponse);
         }
     }
 
@@ -379,17 +383,19 @@ class StructuredOutput
      * @param callable(object): void $listener
      */
     public function onSequenceUpdate(callable $listener): static {
-        $this->onSequenceUpdate = $listener;
-        $this->events->addListener(
-            SequenceUpdated::class,
-            $this->handleSequenceUpdate(...)
-        );
+        if (empty($this->onSequenceUpdate)) {
+            $this->events->addListener(
+                SequenceUpdated::class,
+                $this->handleSequenceUpdate(...)
+            );
+        }
+        $this->onSequenceUpdate[] = $listener;
         return $this;
     }
 
     private function handleSequenceUpdate(SequenceUpdated $event): void {
-        if (!is_null($this->onSequenceUpdate)) {
-            ($this->onSequenceUpdate)($event->sequence);
+        foreach ($this->onSequenceUpdate as $listener) {
+            $listener($event->sequence);
         }
     }
 
@@ -470,7 +476,7 @@ class StructuredOutput
      */
     public function create(): PendingStructuredOutput {
         if (!$this->request->hasRequestedSchema()) {
-            throw new \Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
+            throw new \InvalidArgumentException('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
         $config = $this->configBuilder->create();
         $request = $this->request;
@@ -484,7 +490,7 @@ class StructuredOutput
         $pipelineFactory = new StructuredOutputPipelineFactory(
             events: $this->events,
             config: $config,
-            llmProvider: $this->llmProvider ?? LLMProvider::new(events: $this->events),
+            llmProvider: $this->llmProvider,
             httpClient: $this->httpClient,
             httpDebugPreset: $this->httpDebugPreset,
             validators: $this->validators,

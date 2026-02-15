@@ -18,7 +18,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="a05f"
+// @doctest id="7515"
 ```
 
 ## What Happens
@@ -50,7 +50,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "The weather in Paris is 72°F and sunny."
-// @doctest id="4372"
+// @doctest id="3fc4"
 ```
 
 ## Customizing the Loop
@@ -65,7 +65,7 @@ $loop = AgentLoop::default()->withTool($myTool);
 
 // Swap driver
 $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
-// @doctest id="a341"
+// @doctest id="efe4"
 ```
 
 ## System Prompt
@@ -74,7 +74,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
-// @doctest id="eed1"
+// @doctest id="8b35"
 ```
 
 ## Using AgentBuilder
@@ -85,16 +85,16 @@ For more complex agents, use `AgentBuilder` to compose capabilities:
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
-use Cognesy\Agents\Capability\Core\UseLlmConfig;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
 
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();
 
 $result = $agent->execute($state);
-// @doctest id="2535"
+// @doctest id="f8c9"
 ```
 
 See [AgentBuilder & Capabilities](13-agent-builder.md) for details.

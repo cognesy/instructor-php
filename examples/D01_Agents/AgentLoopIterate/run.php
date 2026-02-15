@@ -78,5 +78,10 @@ $response = $stepState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 echo "Total steps: {$stepState->stepCount()}\n";
 echo "Total tokens: {$stepState->usage()->total()}\n";
+
+// Assertions
+assert($stepNum >= 1, 'Expected at least 1 step from iterate()');
+assert(!empty($stepState->currentResponse()->toString()), 'Expected non-empty response');
+assert($stepState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
 ```

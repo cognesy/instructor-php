@@ -2,7 +2,6 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
@@ -17,7 +16,6 @@ class PendingEmbeddings
     private readonly EventDispatcherInterface $events;
     private readonly EmbeddingsRequest $request;
 
-    private ?HttpResponse $httpResponse = null;
     private ?EmbeddingsResponse $response = null;
 
     public function __construct(
@@ -41,7 +39,7 @@ class PendingEmbeddings
         return $this->response;
     }
 
-    public function makeResponse() : EmbeddingsResponse {
+    private function makeResponse() : EmbeddingsResponse {
         $policy = $this->request->retryPolicy() ?? new EmbeddingsRetryPolicy();
         $maxAttempts = max(1, $policy->maxAttempts);
         $attempt = 0;
@@ -50,8 +48,8 @@ class PendingEmbeddings
             $attempt++;
 
             try {
-                $this->httpResponse = $this->driver->handle($this->request);
-                $data = Json::decode($this->httpResponse->body()) ?? [];
+                $httpResponse = $this->driver->handle($this->request);
+                $data = Json::decode($httpResponse->body()) ?? [];
                 $response = $this->driver->fromData($data);
                 if ($response === null) {
                     throw new \RuntimeException('Failed to create embeddings response from data');

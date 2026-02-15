@@ -15,6 +15,7 @@ use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
 use Cognesy\Utils\Uuid;
@@ -48,6 +49,7 @@ final readonly class AgentState
     private DateTimeImmutable $updatedAt;
     private AgentContext $context;
     private AgentBudget $budget;
+    private ?LLMConfig $llmConfig;
 
     // Execution data - transient across executions
     private ?ExecutionState $execution;
@@ -59,6 +61,7 @@ final readonly class AgentState
         ?DateTimeImmutable $updatedAt = null,
         ?AgentContext      $context = null,
         ?AgentBudget       $budget = null,
+        ?LLMConfig         $llmConfig = null,
         ?ExecutionState    $execution = null,
     ) {
         $now = new DateTimeImmutable();
@@ -70,6 +73,7 @@ final readonly class AgentState
         $this->updatedAt = $updatedAt ?? $this->createdAt;
         $this->context = $context ?? new AgentContext();
         $this->budget = $budget ?? AgentBudget::unlimited();
+        $this->llmConfig = $llmConfig;
 
         // Execution data (null = between executions)
         $this->execution = $execution;
@@ -82,13 +86,6 @@ final readonly class AgentState
     }
 
     // STATE TRANSITIONS ////////////////////////////////////////
-
-    public function withContinuationRequestCleared() : self {
-        return match(true) {
-            ($this->execution === null) => $this,
-            default => $this->with(execution: $this->execution->withContinuationRequestCleared()),
-        };
-    }
 
     public function withCurrentStepCompleted(?ExecutionStatus $status = null) : self {
         if ($this->execution?->currentStep() === null) {
@@ -125,6 +122,7 @@ final readonly class AgentState
             updatedAt: new DateTimeImmutable(),
             context: $this->context,
             budget: $this->budget,
+            llmConfig: $this->llmConfig,
             execution: null,
         );
     }
@@ -138,6 +136,7 @@ final readonly class AgentState
         ?DateTimeImmutable $updatedAt = null,
         ?AgentContext      $context = null,
         ?AgentBudget       $budget = null,
+        ?LLMConfig         $llmConfig = null,
         ?ExecutionState    $execution = null,
     ): self {
         return new self(
@@ -147,6 +146,7 @@ final readonly class AgentState
             updatedAt: $updatedAt ?? new DateTimeImmutable(),
             context: $context ?? $this->context,
             budget: $budget ?? $this->budget,
+            llmConfig: $llmConfig ?? $this->llmConfig,
             execution: $execution ?? $this->execution,
         );
     }
@@ -224,8 +224,25 @@ final readonly class AgentState
         return $this->budget;
     }
 
+    public function llmConfig(): ?LLMConfig {
+        return $this->llmConfig;
+    }
+
     public function withBudget(AgentBudget $budget): self {
         return $this->with(budget: $budget);
+    }
+
+    public function withLLMConfig(?LLMConfig $llmConfig): self {
+        return new self(
+            agentId: $this->agentId,
+            parentAgentId: $this->parentAgentId,
+            createdAt: $this->createdAt,
+            updatedAt: new DateTimeImmutable(),
+            context: $this->context,
+            budget: $this->budget,
+            llmConfig: $llmConfig,
+            execution: $this->execution,
+        );
     }
 
     public function messages(): Messages {
@@ -434,6 +451,7 @@ final readonly class AgentState
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'context' => $this->context->toArray(),
             'budget' => $this->budget->toArray(),
+            'llmConfig' => $this->llmConfig?->toArray(),
             'execution' => $this->execution?->toArray(),
         ];
     }
@@ -449,6 +467,11 @@ final readonly class AgentState
             default => null,
         };
 
+        $llmConfig = match (true) {
+            is_array($data['llmConfig'] ?? null) => LLMConfig::fromArray($data['llmConfig']),
+            default => null,
+        };
+
         return new self(
             agentId: $data['agentId'] ?? null,
             parentAgentId: $data['parentAgentId'] ?? null,
@@ -456,6 +479,7 @@ final readonly class AgentState
             updatedAt: self::parseDateFrom($data, 'updatedAt'),
             context: AgentContext::fromArray($data['context'] ?? []),
             budget: $budget,
+            llmConfig: $llmConfig,
             execution: $execution,
         );
     }

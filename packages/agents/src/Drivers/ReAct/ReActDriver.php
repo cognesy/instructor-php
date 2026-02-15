@@ -34,6 +34,8 @@ use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -46,7 +48,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAcceptLLMProvider, CanAcceptMessageCompiler
+final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -88,14 +90,16 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
+        $state = $this->ensureStateLLMConfig($state);
+        $llmProvider = $this->resolveLLMProvider($state);
         $messages = $this->messageCompiler->compile($state);
         $system = $this->buildSystemPrompt($tools);
         $cachedContext = $this->structuredCachedContext($state);
 
         $requestStartedAt = new DateTimeImmutable();
-        $this->emitInferenceRequestStarted($state, $messages->count(), $this->model ?: null);
+        $this->emitInferenceRequestStarted($state, $messages->count(), $this->resolveModel($state));
 
-        $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext));
+        $extraction = Result::try(fn() => $this->extractDecision($messages, $system, $cachedContext, $llmProvider));
 
         if ($extraction->isFailure()) {
             $error = $extraction->error();
@@ -135,7 +139,14 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         $usage = $inferenceResponse->usage();
 
         if (!$decision->isCall()) {
-            $step = $this->buildFinalAnswerStep($decision, $usage, $inferenceResponse, $messages, $state->context()->toCachedContext());
+            $step = $this->buildFinalAnswerStep(
+                decision: $decision,
+                usage: $usage,
+                inferenceResponse: $inferenceResponse,
+                messages: $messages,
+                cachedContext: $state->context()->toCachedContext(),
+                llmProvider: $llmProvider,
+            );
             return $state->withCurrentStep($step);
         }
 
@@ -171,6 +182,13 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     }
 
     #[\Override]
+    public function withLLMConfig(LLMConfig $config): static {
+        $provider = clone $this->llm;
+        $provider->withLLMConfig($config);
+        return $this->withLLMProvider($provider);
+    }
+
+    #[\Override]
     public function withEventHandler(CanHandleEvents $events): static {
         $clone = clone $this;
         $clone->events = $events;
@@ -199,12 +217,18 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         return (new MakeReActPrompt($tools))();
     }
 
-    private function extractDecision(Messages $messages, string $system, ?StructuredCachedContext $cachedContext): DecisionWithDetails {
+    private function extractDecision(
+        Messages $messages,
+        string $system,
+        ?StructuredCachedContext $cachedContext,
+        LLMProvider $llmProvider,
+    ): DecisionWithDetails {
         $pending = $this->extractDecisionWithUsage(
             messages: $messages,
             system: $system,
             decisionModel: ReActDecision::class,
             cachedContext: $cachedContext,
+            llmProvider: $llmProvider,
         );
         /** @var ReActDecision $decision */
         $decision = $pending->get();
@@ -222,6 +246,7 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         string $system,
         string|array|object $decisionModel,
         ?StructuredCachedContext $cachedContext,
+        LLMProvider $llmProvider,
     ): PendingStructuredOutput {
         $structured = (new StructuredOutput())
             ->withSystem($system)
@@ -231,7 +256,7 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
             ->withModel($this->model)
             ->withOptions($this->options)
             ->withMaxRetries($this->maxRetries)
-            ->withLLMProvider($this->llm);
+            ->withLLMProvider($llmProvider);
         if ($cachedContext !== null && !$cachedContext->isEmpty()) {
             $structured = $structured->withCachedContext(
                 messages: $cachedContext->messages()->toArray(),
@@ -287,10 +312,11 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         ?InferenceResponse     $inferenceResponse,
         Messages               $messages,
         CachedInferenceContext $cachedContext,
+        LLMProvider            $llmProvider,
     ): AgentStep {
         $finalText = $decision->answer();
         if ($this->finalViaInference) {
-            $pending = $this->finalizeAnswerViaInference($messages, $cachedContext);
+            $pending = $this->finalizeAnswerViaInference($messages, $cachedContext, $llmProvider);
             $inferenceResponse = $pending->response();
             $finalText = $inferenceResponse->content();
             $usage = $inferenceResponse->usage();
@@ -312,13 +338,13 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         return $messages;
     }
 
-    private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cache): PendingInference {
+    private function finalizeAnswerViaInference(Messages $messages, CachedInferenceContext $cache, LLMProvider $llmProvider): PendingInference {
         $finalMessages = Messages::fromArray([
             ['role' => 'system', 'content' => 'Return only the final answer as plain text.'],
             ...$messages->toArray(),
         ]);
         $inference = (new Inference)
-            ->withLLMProvider($this->llm)
+            ->withLLMProvider($llmProvider)
             ->withMessages($finalMessages->toArray())
             ->withModel($this->finalModel ?: $this->model)
             ->withOptions($this->finalOptions ?: $this->options)
@@ -357,6 +383,34 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         return new StructuredCachedContext(
             messages: [['role' => 'system', 'content' => $systemPrompt]],
         );
+    }
+
+    private function ensureStateLLMConfig(AgentState $state): AgentState {
+        if ($state->llmConfig() !== null) {
+            return $state;
+        }
+
+        return $state->withLLMConfig($this->llm->resolveConfig());
+    }
+
+    private function resolveLLMProvider(AgentState $state): LLMProvider {
+        $provider = clone $this->llm;
+        $config = $state->llmConfig();
+        if ($config === null) {
+            return $provider;
+        }
+
+        $provider->withLLMConfig($config);
+        return $provider;
+    }
+
+    private function resolveModel(AgentState $state): ?string {
+        if ($this->model !== '') {
+            return $this->model;
+        }
+
+        $model = $state->llmConfig()?->model ?? '';
+        return $model !== '' ? $model : null;
     }
 
     // EVENT EMISSION ////////////////////////////////////////////

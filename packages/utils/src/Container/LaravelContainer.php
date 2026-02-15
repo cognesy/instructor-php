@@ -29,11 +29,13 @@ final class LaravelContainer implements Container
         return $this->app->bound($id) || $this->app->has($id);
     }
 
+    /** @param Closure(Container): mixed $factory */
     #[\Override]
     public function set(string $id, Closure $factory): void {
         $this->app->bind($id, fn ($app) => $factory(new self($app)));
     }
 
+    /** @param Closure(Container): mixed $factory */
     #[\Override]
     public function singleton(string $id, Closure $factory): void {
         $this->app->singleton($id, fn ($app) => $factory(new self($app)));

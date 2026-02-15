@@ -55,5 +55,11 @@ echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens used: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert($finalState->status() === \Cognesy\Agents\Enums\ExecutionStatus::Completed);
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+assert($finalState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
 ```

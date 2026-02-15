@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
@@ -64,25 +62,6 @@ final class RecordingInferenceDriver implements CanHandleInference
 
     /** @return iterable<PartialInferenceResponse> */
     public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-        return [];
-    }
-
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        return new HttpRequest(
-            url: 'https://mock.local/llm',
-            method: 'POST',
-            headers: [],
-            body: ['messages' => $request->messages()],
-            options: ['stream' => $request->isStreamed()],
-        );
-    }
-
-    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-        return new InferenceResponse(content: '');
-    }
-
-    /** @return iterable<PartialInferenceResponse> */
-    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
         return [];
     }
 

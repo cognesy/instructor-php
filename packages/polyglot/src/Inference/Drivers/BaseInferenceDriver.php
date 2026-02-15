@@ -56,14 +56,31 @@ abstract class BaseInferenceDriver implements CanHandleInference
         return $this->httpResponseToInferenceStream($httpResponse);
     }
 
+    /**
+     * Get driver capabilities, optionally for a specific model.
+     *
+     * Default implementation returns full capabilities.
+     * Override in subclasses for providers with restrictions.
+     */
     #[\Override]
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
+    public function capabilities(?string $model = null): DriverCapabilities {
+        return new DriverCapabilities(
+            outputModes: OutputMode::cases(),
+            streaming: true,
+            toolCalling: true,
+            jsonSchema: true,
+            responseFormatWithTools: true,
+        );
+    }
+
+    // INTERNAL //////////////////////////////////////////////
+
+    protected function toHttpRequest(InferenceRequest $request): HttpRequest {
         $this->events->dispatch(new InferenceRequested(['request' => $request->toArray()]));
         return $this->requestTranslator->toHttpRequest($request);
     }
 
-    #[\Override]
-    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
+    protected function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
         try {
             $inferenceResponse = $this->responseTranslator->fromResponse($httpResponse);
             if ($inferenceResponse === null) {
@@ -87,8 +104,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
     /**
      * @return iterable<PartialInferenceResponse>
      */
-    #[\Override]
-    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
+    protected function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
         $reader = new EventStreamReader(
             events: $this->events,
             parser: $this->toEventBody(...),
@@ -106,25 +122,6 @@ abstract class BaseInferenceDriver implements CanHandleInference
             throw $e;
         }
     }
-
-    /**
-     * Get driver capabilities, optionally for a specific model.
-     *
-     * Default implementation returns full capabilities.
-     * Override in subclasses for providers with restrictions.
-     */
-    #[\Override]
-    public function capabilities(?string $model = null): DriverCapabilities {
-        return new DriverCapabilities(
-            outputModes: OutputMode::cases(),
-            streaming: true,
-            toolCalling: true,
-            jsonSchema: true,
-            responseFormatWithTools: true,
-        );
-    }
-
-    // INTERNAL //////////////////////////////////////////////
 
     protected function makeHttpResponse(HttpRequest $request): HttpResponse {
         try {

@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withOptions(array $options)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withHttpClient(\Cognesy\Http\HttpClient $httpClient)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withConfig(\Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig $config)
- * @method static \Cognesy\Polyglot\Embeddings\Embeddings withConfigOverrides(array $overrides)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withDsn(string $dsn)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withHttpDebugPreset(?string $preset)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withHttpDebug(bool $enabled = true)
@@ -26,8 +25,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings onEvent(string $eventClass, callable $callback)
  * @method static \Cognesy\Polyglot\Embeddings\PendingEmbeddings create()
  * @method static \Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse get()
- * @method static array first()
- * @method static array all()
+ * @method static ?\Cognesy\Polyglot\Embeddings\Data\Vector first()
+ * @method static \Cognesy\Polyglot\Embeddings\Data\Vector[] vectors()
  * @method static void registerDriver(string $name, string|callable $driver)
  *
  * @see \Cognesy\Polyglot\Embeddings\Embeddings

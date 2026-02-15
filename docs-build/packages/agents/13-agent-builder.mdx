@@ -17,17 +17,17 @@ description: 'Compose agents from modular capabilities using AgentBuilder'
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
-use Cognesy\Agents\Capability\Core\UseLlmConfig;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
 
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 20, maxTokens: 32768))
     ->build();
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="33cd"
+// @doctest id="3149"
 ```
 
 ## Core API
@@ -39,7 +39,7 @@ $result = $agent->execute($state);
 ```php
 $builder->withCapability(CanProvideAgentCapability $capability): self;
 $builder->build(): AgentLoop;
-// @doctest id="d83e"
+// @doctest id="1edf"
 ```
 
 **`CanConfigureAgent`** (capability-facing):
@@ -59,7 +59,7 @@ $agent->withHooks(HookStack $hooks): self;
 
 $agent->deferredTools(): DeferredToolProviders;
 $agent->withDeferredTools(DeferredToolProviders $providers): self;
-// @doctest id="34fc"
+// @doctest id="7db0"
 ```
 
 ## Writing a Capability
@@ -89,7 +89,7 @@ class UseRateLimiting implements CanProvideAgentCapability
         return $agent->withHooks($hooks);
     }
 }
-// @doctest id="6038"
+// @doctest id="f097"
 ```
 
 Capabilities can configure any aspect of the agent: tools, hooks, driver, compiler, and deferred tool providers.
@@ -117,7 +117,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->tools()->merge(new Tools($myTool))
     );
 }
-// @doctest id="4186"
+// @doctest id="a4ed"
 ```
 
 ### Adding Hooks
@@ -133,7 +133,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
     );
     return $agent->withHooks($hooks);
 }
-// @doctest id="eebe"
+// @doctest id="4f87"
 ```
 
 ### Deferred Tools
@@ -156,7 +156,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->deferredTools()->withProvider($deferred)
     );
 }
-// @doctest id="6c93"
+// @doctest id="3e59"
 ```
 
 `UseSubagents` uses this pattern — the `SpawnSubagentTool` needs the parent's driver and event bus, which are only finalized at build time.
@@ -179,7 +179,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 
     return $agent;
 }
-// @doctest id="9f79"
+// @doctest id="eabd"
 ```
 
 ### Capability Names
@@ -193,7 +193,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | Capability | Purpose |
 |---|---|
 | `UseGuards` | Step, token, time, and finish-reason guards |
-| `UseLlmConfig` | LLM provider preset and retry policy |
+| `UseLLMConfig` | LLM provider preset and retry policy |
 | `UseContextConfig` | System prompt and response format |
 | `UseDriver` | Custom driver implementation |
 | `UseTools` | Individual tool instances |
@@ -224,20 +224,20 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 
 ```php
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->build();
-// @doctest id="22ac"
+// @doctest id="2df8"
 ```
 
 ### File system agent with guards
 
 ```php
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'openai'))
+    ->withCapability(new UseLLMConfig(preset: 'openai'))
     ->withCapability(new UseFileTools(baseDir: '/home/user/workspace'))
     ->withCapability(new UseGuards(maxSteps: 15, maxExecutionTime: 60.0))
     ->build();
-// @doctest id="7e92"
+// @doctest id="2063"
 ```
 
 ### Agent with custom hook
@@ -257,7 +257,7 @@ $agent = AgentBuilder::base()
         priority: 100,
     ))
     ->build();
-// @doctest id="db75"
+// @doctest id="adc7"
 ```
 
 ### Custom context compiler
@@ -273,7 +273,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitingCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="6a02"
+// @doctest id="682b"
 ```
 
 ## Build Resolution Order
@@ -312,7 +312,7 @@ $agent = AgentBuilder::base($events)
 // Or attach a logger after building
 $logger = new AgentConsoleLogger(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
-// @doctest id="ed26"
+// @doctest id="7912"
 ```
 
 ## Immutability
@@ -321,13 +321,13 @@ $agent->wiretap($logger->wiretap());
 
 ```php
 $base = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->withCapability(new UseGuards(maxSteps: 20));
 
 $bashAgent = $base->withCapability(new UseBash())->build();
 $fileAgent = $base->withCapability(new UseFileTools(baseDir: '.'))->build();
 // $base is unchanged
-// @doctest id="60f6"
+// @doctest id="3b78"
 ```
 
 ## Builder Internals
@@ -347,7 +347,7 @@ AgentConfigurator (internal, implements CanConfigureAgent)
   → deferredTools: DeferredToolProviders
   → events: CanHandleEvents
   → toAgentLoop(): resolves driver → tools → interceptor → AgentLoop
-// @doctest id="8e1c"
+// @doctest id="6991"
 ```
 
 Each `capability.configure(configurator)` call returns a new `AgentConfigurator` with the applied changes. When all capabilities are installed, `toAgentLoop()` runs the resolution pipeline and produces the final `AgentLoop`.

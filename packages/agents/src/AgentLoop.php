@@ -9,6 +9,7 @@ use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\AgentExecutionFailed;
@@ -125,6 +126,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     // LIFECYCLE HOOKS ////////////////////////////////////
 
     protected function onBeforeExecution(AgentState $state): AgentState {
+        $state = $this->ensureNextExecution($state);
         $this->emitExecutionStarted($state, count($this->tools->names()));
         $state = $this->interceptor->intercept(HookContext::beforeExecution($state))->state();
         return $state;
@@ -182,6 +184,13 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $signal = StopSignal::fromStopException($stop);
         $this->emitStopSignalReceived($signal);
         return $state->withStopSignal($signal);
+    }
+
+    private function ensureNextExecution(AgentState $state): AgentState {
+        return match ($state->status()) {
+            ExecutionStatus::Completed, ExecutionStatus::Failed => $state->forNextExecution(),
+            default => $state,
+        };
     }
 
     protected function shouldStop(AgentState $state): bool {

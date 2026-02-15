@@ -34,11 +34,13 @@ final class PsrContainer implements Container
         return $this->local->has($id) || $this->inner->has($id);
     }
 
+    /** @param Closure(Container): mixed $factory */
     #[\Override]
     public function set(string $id, Closure $factory): void {
         $this->local->set($id, $factory);
     }
 
+    /** @param Closure(Container): mixed $factory */
     #[\Override]
     public function singleton(string $id, Closure $factory): void {
         $this->local->singleton($id, $factory);

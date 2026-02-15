@@ -9,11 +9,13 @@ interface Container extends ContainerInterface
 {
     /**
      * Register a transient factory — called every time get() is invoked.
+     * @param Closure(Container): mixed $factory
      */
     public function set(string $id, Closure $factory): void;
 
     /**
      * Register a singleton factory — called once, result cached.
+     * @param Closure(Container): mixed $factory
      */
     public function singleton(string $id, Closure $factory): void;
 

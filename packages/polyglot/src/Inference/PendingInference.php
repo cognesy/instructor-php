@@ -140,6 +140,33 @@ class PendingInference
             return $this->cachedResponse;
         }
 
+        // If a stream was already created, delegate to it — do not re-execute
+        if ($this->cachedStream !== null) {
+            $this->dispatchInferenceStarted();
+            $this->dispatchAttemptStarted();
+
+            $response = $this->cachedStream->final()
+                ?? throw new \RuntimeException('Failed to generate final response from stream');
+
+            if ($response->hasFinishedWithFailure()) {
+                $this->execution = $this->execution->withFailedAttempt(response: $response);
+                $finishReason = $response->finishReason();
+                $error = new \RuntimeException('Inference execution failed: ' . $finishReason->value);
+                $this->handleAttemptFailure($error, $response, false);
+                $this->dispatchInferenceCompleted(isSuccess: false);
+                throw $error;
+            }
+
+            $this->execution = $this->execution->withSuccessfulAttempt(response: $response);
+            $this->handleAttemptSuccess($response);
+            $this->dispatchInferenceCompleted(isSuccess: true);
+
+            if ($this->shouldCache()) {
+                $this->cachedResponse = $response;
+            }
+            return $response;
+        }
+
         $policy = $this->execution->request()->retryPolicy() ?? new InferenceRetryPolicy();
         $maxAttempts = max(1, $policy->maxAttempts);
 
@@ -147,6 +174,7 @@ class PendingInference
         $this->dispatchInferenceStarted();
 
         while (true) {
+            $this->cachedStream = null;
             $this->dispatchAttemptStarted();
 
             try {
@@ -290,7 +318,9 @@ class PendingInference
         bool $willRetry = false
     ): void {
         $attemptId = $this->currentAttemptId();
-        $partialUsage = $response?->usage() ?? $this->execution->partialResponse()?->usage();
+        $partialUsage = $response?->usage()
+            ?? $this->cachedStream?->execution()->partialResponse()?->usage()
+            ?? $this->execution->partialResponse()?->usage();
         $statusCode = $error instanceof HttpRequestException ? $error->getStatusCode() : null;
 
         $this->events->dispatch(InferenceAttemptFailed::fromThrowable(

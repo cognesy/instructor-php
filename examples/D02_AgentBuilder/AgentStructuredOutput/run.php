@@ -222,14 +222,17 @@ echo "\n=== Result ===\n";
 
 // Get the extracted lead from metadata
 $extractedLead = $finalState->metadata()->get('current_lead');
+$fields = match(true) {
+    is_object($extractedLead) => get_object_vars($extractedLead),
+    is_array($extractedLead) => $extractedLead,
+    default => [],
+};
 
 if ($extractedLead !== null) {
     echo "Extracted Lead (from metadata):\n";
-    if (is_object($extractedLead)) {
-        foreach (get_object_vars($extractedLead) as $key => $value) {
-            if ($value !== null && $value !== '') {
-                echo "  {$key}: {$value}\n";
-            }
+    foreach ($fields as $key => $value) {
+        if ($value !== null && $value !== '') {
+            echo "  {$key}: {$value}\n";
         }
     }
     echo "\n";
@@ -240,5 +243,13 @@ echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert($extractedLead !== null, 'Expected extracted lead in metadata');
+assert(!empty($fields), 'Expected non-empty lead fields');
+assert(!empty($fields['name'] ?? null), 'Expected lead to have a name');
+assert(!empty($fields['email'] ?? null), 'Expected lead to have an email');
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
 ?>
 ```

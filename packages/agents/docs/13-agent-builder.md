@@ -17,10 +17,10 @@ description: 'Compose agents from modular capabilities using AgentBuilder'
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
-use Cognesy\Agents\Capability\Core\UseLlmConfig;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
 
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 20, maxTokens: 32768))
     ->build();
@@ -185,7 +185,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | Capability | Purpose |
 |---|---|
 | `UseGuards` | Step, token, time, and finish-reason guards |
-| `UseLlmConfig` | LLM provider preset and retry policy |
+| `UseLLMConfig` | LLM provider preset and retry policy |
 | `UseContextConfig` | System prompt and response format |
 | `UseDriver` | Custom driver implementation |
 | `UseTools` | Individual tool instances |
@@ -216,7 +216,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 
 ```php
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->build();
 ```
 
@@ -224,7 +224,7 @@ $agent = AgentBuilder::base()
 
 ```php
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'openai'))
+    ->withCapability(new UseLLMConfig(preset: 'openai'))
     ->withCapability(new UseFileTools(baseDir: '/home/user/workspace'))
     ->withCapability(new UseGuards(maxSteps: 15, maxExecutionTime: 60.0))
     ->build();
@@ -308,7 +308,7 @@ $agent->wiretap($logger->wiretap());
 
 ```php
 $base = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->withCapability(new UseGuards(maxSteps: 20));
 
 $bashAgent = $base->withCapability(new UseBash())->build();

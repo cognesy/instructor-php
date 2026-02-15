@@ -134,5 +134,11 @@ echo "Stop context: " . json_encode($stopSignal?->context ?? []) . "\n";
 
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert($finalState->hasFinalResponse() === false, 'Expected no final response (agent was stopped)');
+assert($finalState->lastStopSignal() !== null, 'Expected a stop signal');
+assert($finalState->lastStopSignal()->context['final_count'] === 3, 'Expected counter to reach 3');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
 ?>
 ```

@@ -11,7 +11,7 @@ trait HandlesFluentMethods
     private array $options = [];
     private ?EmbeddingsRetryPolicy $retryPolicy = null;
 
-    public function withInputs(string|array $input) : self {
+    public function withInputs(string|array $input) : static {
         $this->inputs = $input;
         return $this;
     }
@@ -21,7 +21,7 @@ trait HandlesFluentMethods
      * @param string $model
      * @return $this
      */
-    public function withModel(string $model) : self {
+    public function withModel(string $model) : static {
         $this->model = $model;
         return $this;
     }
@@ -31,12 +31,12 @@ trait HandlesFluentMethods
      * @param array $options
      * @return $this
      */
-    public function withOptions(array $options) : self {
+    public function withOptions(array $options) : static {
         $this->options = $options;
         return $this;
     }
 
-    public function withRetryPolicy(EmbeddingsRetryPolicy $retryPolicy) : self {
+    public function withRetryPolicy(EmbeddingsRetryPolicy $retryPolicy) : static {
         $this->retryPolicy = $retryPolicy;
         return $this;
     }

@@ -68,6 +68,7 @@ class TbdApplicationFactory
     }
 
     private function registerCommand(Application $app, Command $command): void {
+        /** @phpstan-ignore function.alreadyNarrowedType (Symfony version compatibility) */
         if (method_exists($app, 'addCommand')) {
             $app->addCommand($command);
         } else {

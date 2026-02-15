@@ -16,7 +16,7 @@ class InferenceAdapter
     /** @var Closure(object):void|null */
     private ?Closure $wiretap = null;
 
-    public function withDebugPreset(string $preset) : self {
+    public function withDebugPreset(?string $preset) : self {
         $this->debugPreset = $preset;
         return $this;
     }

@@ -77,5 +77,10 @@ $finalState = $agent->execute($state);
 echo "\n=== Result ===\n";
 $response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
+
+// Assertions
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+assert($totalInferenceMs > 0, 'Expected inference time to be tracked');
 ?>
 ```

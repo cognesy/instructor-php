@@ -81,10 +81,10 @@ For more complex agents, use `AgentBuilder` to compose capabilities:
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
-use Cognesy\Agents\Capability\Core\UseLlmConfig;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
 
 $agent = AgentBuilder::base()
-    ->withCapability(new UseLlmConfig(preset: 'anthropic'))
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->withCapability(new UseBash())
     ->withCapability(new UseGuards(maxSteps: 10))
     ->build();

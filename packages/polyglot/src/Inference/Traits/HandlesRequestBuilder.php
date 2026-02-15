@@ -73,7 +73,7 @@ trait HandlesRequestBuilder
         array        $tools = [],
         string|array $toolChoice = [],
         array        $responseFormat = [],
-    ): self {
+    ): static {
         $this->requestBuilder->withCachedContext($messages, $tools, $toolChoice, $responseFormat);
         return $this;
     }

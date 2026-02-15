@@ -170,7 +170,7 @@ class StructuredOutputFake
         return $this;
     }
 
-    public function withDebugPreset(string $preset): self
+    public function withDebugPreset(?string $preset): self
     {
         return $this;
     }

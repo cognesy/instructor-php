@@ -1,8 +1,6 @@
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
@@ -29,18 +27,6 @@ it('dispatches completion events once for streamed responses', function () {
 
         public function makeStreamResponsesFor(InferenceRequest $request): iterable {
             yield new PartialInferenceResponse(contentDelta: 'Hello', finishReason: 'stop');
-        }
-
-        public function toHttpRequest(InferenceRequest $request): HttpRequest {
-            return new HttpRequest(url: 'http://example.test', method: 'POST', headers: [], body: '', options: []);
-        }
-
-        public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-            return [];
         }
 
         public function capabilities(?string $model = null): DriverCapabilities {

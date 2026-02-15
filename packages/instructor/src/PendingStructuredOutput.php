@@ -22,9 +22,9 @@ class PendingStructuredOutput
     use HandlesResultTypecasting;
 
     private readonly CanHandleEvents $events;
-    private readonly CanHandleStructuredOutputAttempts $attemptHandler;
     private readonly ResponseIteratorFactory $executorFactory;
     private StructuredOutputExecution $execution;
+    private ?CanHandleStructuredOutputAttempts $attemptHandler = null;
     private ?InferenceResponse $cachedResponse = null;
     private ?StructuredOutputStream $cachedStream = null;
 
@@ -35,7 +35,6 @@ class PendingStructuredOutput
     ) {
         $this->execution = $execution;
         $this->executorFactory = $executorFactory;
-        $this->attemptHandler = $executorFactory->makeExecutor($execution);
         $this->events = $events;
     }
 
@@ -96,21 +95,26 @@ class PendingStructuredOutput
     // INTERNAL /////////////////////////////////////////////////
 
     private function getResponse() : InferenceResponse {
-        $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
         $existingResponse = $this->execution->inferenceResponse();
         if ($existingResponse !== null) {
             return $existingResponse;
         }
-        if ($this->shouldCache() && $this->cachedResponse !== null) {
-            $this->events->dispatch(new StructuredOutputResponseGenerated([
-                'value' => json_encode($this->cachedResponse->value()),
-                'cached' => true,
-            ]));
+        if ($this->cachedResponse !== null) {
             return $this->cachedResponse;
         }
 
-        while ($this->attemptHandler->hasNext($this->execution)) {
-            $this->execution = $this->attemptHandler->nextUpdate($this->execution);
+        // If a stream was already created, delegate to it — do not re-execute
+        if ($this->cachedStream !== null) {
+            $response = $this->cachedStream->finalResponse();
+            $this->cachedResponse = $response;
+            return $response;
+        }
+
+        $this->events->dispatch(new StructuredOutputStarted(['request' => $this->execution->request()->toArray()]));
+
+        $handler = $this->getAttemptHandler();
+        while ($handler->hasNext($this->execution)) {
+            $this->execution = $handler->nextUpdate($this->execution);
         }
         $response = $this->execution->inferenceResponse();
         if ($response === null) {
@@ -121,6 +125,13 @@ class PendingStructuredOutput
         }
         $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
         return $response;
+    }
+
+    private function getAttemptHandler(): CanHandleStructuredOutputAttempts {
+        if ($this->attemptHandler === null) {
+            $this->attemptHandler = $this->executorFactory->makeExecutor($this->execution);
+        }
+        return $this->attemptHandler;
     }
 
     private function shouldCache(): bool {

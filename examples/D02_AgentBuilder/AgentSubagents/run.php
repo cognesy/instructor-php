@@ -77,12 +77,12 @@ $agent = AgentBuilder::base()
     ->build()
     ->wiretap($logger->wiretap());
 
-// Task requiring multiple isolated reviews
+// Task requiring multiple isolated reviews (small files to keep token usage low)
 $task = <<<TASK
-Review these three files and provide a summary:
-1. packages/agents/src/Builder/AgentBuilder.php
-2. packages/agents/src/Data/AgentState.php
-3. packages/agents/src/AgentLoop.php
+Review these three capability files and provide a summary:
+1. packages/agents/src/Capability/Core/UseTools.php
+2. packages/agents/src/Capability/File/UseFileTools.php
+3. packages/agents/src/Capability/SelfCritique/UseSelfCritique.php
 
 For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;
@@ -103,5 +103,10 @@ echo "Answer: {$summary}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+assert($finalState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
 ```

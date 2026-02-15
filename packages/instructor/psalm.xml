@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <psalm
     errorLevel="7"
-    resolveFromConfigFile="true"
+    resolveFromConfigFile="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
@@ -9,17 +9,11 @@
     findUnusedCode="false"
 >
     <projectFiles>
-        <directory name="src" />
+        <directory name="packages/instructor/src" />
         <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
-        <MissingOverrideAttribute>
-            <errorLevel type="suppress">
-                <file name="src/Deserialization/Deserializers/FlexibleDateDenormalizer.php" />
-                <file name="src/Deserialization/Deserializers/BackedEnumNormalizer.php" />
-            </errorLevel>
-        </MissingOverrideAttribute>
     </issueHandlers>
 </psalm>

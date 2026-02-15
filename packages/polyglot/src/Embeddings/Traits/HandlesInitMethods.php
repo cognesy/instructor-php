@@ -11,47 +11,42 @@ use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
 trait HandlesInitMethods
 {
-    public function using(string $preset) : self {
+    public function using(string $preset) : static {
         $this->embeddingsProvider->withPreset($preset);
         return $this;
     }
 
-    public function withPreset(string $preset) : self {
-        $this->embeddingsProvider->withPreset($preset);
-        return $this;
-    }
-
-    public function withDsn(string $dsn) : self {
+    public function withDsn(string $dsn) : static {
         $this->embeddingsProvider->withDsn($dsn);
         return $this;
     }
 
-    public function withConfig(EmbeddingsConfig $config) : self {
+    public function withConfig(EmbeddingsConfig $config) : static {
         $this->embeddingsProvider->withConfig($config);
         return $this;
     }
 
-    public function withConfigProvider(CanProvideConfig $configProvider) : self {
+    public function withConfigProvider(CanProvideConfig $configProvider) : static {
         $this->embeddingsProvider->withConfigProvider($configProvider);
         return $this;
     }
 
-    public function withDriver(CanHandleVectorization $driver) : self {
+    public function withDriver(CanHandleVectorization $driver) : static {
         $this->embeddingsProvider->withDriver($driver);
         return $this;
     }
 
-    public function withProvider(EmbeddingsProvider $provider) : self {
+    public function withProvider(EmbeddingsProvider $provider) : static {
         $this->embeddingsProvider = $provider;
         return $this;
     }
 
-    public function withEmbeddingsResolver(CanResolveEmbeddingsConfig $resolver) : self {
+    public function withEmbeddingsResolver(CanResolveEmbeddingsConfig $resolver) : static {
         $this->embeddingsResolver = $resolver;
         return $this;
     }
 
-    public function withHttpClient(HttpClient $httpClient) : self {
+    public function withHttpClient(HttpClient $httpClient) : static {
         $this->httpClient = $httpClient;
         return $this;
     }
@@ -59,7 +54,7 @@ trait HandlesInitMethods
     /**
      * Set HTTP debug preset explicitly (clearer than withDebugPreset()).
      */
-    public function withHttpDebugPreset(?string $preset) : self {
+    public function withHttpDebugPreset(?string $preset) : static {
         $this->httpDebugPreset = $preset;
         return $this;
     }
@@ -67,7 +62,7 @@ trait HandlesInitMethods
     /**
      * Convenience toggle for HTTP debugging.
      */
-    public function withHttpDebug(bool $enabled = true) : self {
+    public function withHttpDebug(bool $enabled = true) : static {
         $preset = match ($enabled) {
             true => 'on',
             false => 'off',
@@ -78,7 +73,7 @@ trait HandlesInitMethods
     /**
      * Backward-compatible alias for HTTP debug presets.
      */
-    public function withDebugPreset(?string $debug) : self {
+    public function withDebugPreset(?string $debug) : static {
         return $this->withHttpDebugPreset($debug);
     }
 }

@@ -21,6 +21,8 @@ use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\CachedInferenceContext;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -38,7 +40,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAcceptLLMProvider, CanAcceptMessageCompiler
+class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -95,6 +97,13 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     }
 
     #[\Override]
+    public function withLLMConfig(LLMConfig $config): static {
+        $provider = clone $this->llm;
+        $provider->withLLMConfig($config);
+        return $this->withLLMProvider($provider);
+    }
+
+    #[\Override]
     public function llmProvider(): LLMProvider {
         return $this->llm;
     }
@@ -138,6 +147,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[Override]
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentState {
+        $state = $this->ensureStateLLMConfig($state);
         $context = $this->messageCompiler->compile($state);
         $response = $this->getToolCallResponse($state, $tools, $context);
         $toolCalls = $response->toolCalls();
@@ -158,13 +168,14 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
         $cache = $cache->isEmpty() ? null : $cache;
         $requestStartedAt = new DateTimeImmutable();
-        $this->emitInferenceRequestStarted($state, $messages->count(), $this->model ?: null);
-        $response = $this->buildPendingInference($messages, $tools, $cache)->response();
+        $this->emitInferenceRequestStarted($state, $messages->count(), $this->resolveModel($state));
+        $response = $this->buildPendingInference($state, $messages, $tools, $cache)->response();
         $this->emitInferenceResponseReceived($state, $response, $requestStartedAt);
         return $response;
     }
 
     private function buildPendingInference(
+        AgentState $state,
         Messages $messages,
         Tools $tools,
         ?CachedInferenceContext $cache = null,
@@ -183,7 +194,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
             $options = array_merge($options, ['parallel_tool_calls' => $this->parallelToolCalls]);
         }
         $inference = (new Inference)
-            ->withLLMProvider($this->llm)
+            ->withLLMProvider($this->resolveLLMProvider($state))
             ->withMessages($messages->toArray())
             ->withModel($this->model)
             ->withTools($toolSchemas)
@@ -256,6 +267,34 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
             return null;
         }
         return $json->toArray();
+    }
+
+    private function ensureStateLLMConfig(AgentState $state): AgentState {
+        if ($state->llmConfig() !== null) {
+            return $state;
+        }
+
+        return $state->withLLMConfig($this->llm->resolveConfig());
+    }
+
+    private function resolveLLMProvider(AgentState $state): LLMProvider {
+        $provider = clone $this->llm;
+        $config = $state->llmConfig();
+        if ($config === null) {
+            return $provider;
+        }
+
+        $provider->withLLMConfig($config);
+        return $provider;
+    }
+
+    private function resolveModel(AgentState $state): ?string {
+        if ($this->model !== '') {
+            return $this->model;
+        }
+
+        $model = $state->llmConfig()?->model ?? '';
+        return $model !== '' ? $model : null;
     }
 
     // EVENT EMISSION ////////////////////////////////////////////

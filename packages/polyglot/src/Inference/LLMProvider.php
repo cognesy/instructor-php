@@ -11,13 +11,14 @@ use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriver
+final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriver, CanAcceptLLMConfig
 {
     private readonly CanHandleEvents $events;
     private readonly CanProvideConfig $configProvider;
@@ -85,9 +86,14 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
         return $this;
     }
 
-    public function withConfig(LLMConfig $config): self {
+    #[\Override]
+    public function withLLMConfig(LLMConfig $config): self {
         $this->explicitConfig = $config;
         return $this;
+    }
+
+    public function withConfig(LLMConfig $config): self {
+        return $this->withLLMConfig($config);
     }
 
     public function withConfigOverrides(array $overrides): self {

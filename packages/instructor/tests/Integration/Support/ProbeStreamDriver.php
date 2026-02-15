@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Instructor\Tests\Support;
+namespace Cognesy\Instructor\Tests\Integration\Support;
 
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
@@ -32,18 +30,6 @@ class ProbeStreamDriver implements CanHandleInference
     public function makeStreamResponsesFor(InferenceRequest $request): iterable {
         $this->streamCalls++;
         return $this->iterator; // single live iterator instance
-    }
-
-    public function toHttpRequest(InferenceRequest $request): HttpRequest {
-        return new HttpRequest(url: 'mock://probe', method: 'POST');
-    }
-
-    public function httpResponseToInference(HttpResponse $httpResponse): InferenceResponse {
-        return $this->syncResponse ?? new InferenceResponse(content: '');
-    }
-
-    public function httpResponseToInferenceStream(HttpResponse $httpResponse): iterable {
-        return $this->iterator;
     }
 
     public function capabilities(?string $model = null): DriverCapabilities

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * Facade for StructuredOutput
  *
  * @method static \Cognesy\Instructor\StructuredOutput using(string $preset)
- * @method static \Cognesy\Instructor\StructuredOutput with(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages|null $messages = null, string|array|object|null $responseModel = null, ?string $system = null, ?string $prompt = null, ?array $examples = null, ?string $model = null, ?int $maxRetries = null, ?array $options = null, ?string $toolName = null, ?string $toolDescription = null, ?string $retryPrompt = null, ?\Cognesy\Polyglot\Inference\Enums\OutputMode $mode = null)
+ * @method static \Cognesy\Instructor\StructuredOutput with(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages|null $messages = null, string|array|object|null $responseModel = null, ?string $system = null, ?string $prompt = null, ?array $examples = null, ?string $model = null, ?int $maxRetries = null, ?array $options = null, ?string $toolName = null, ?string $toolDescription = null, ?string $retryPrompt = null, ?\Cognesy\Polyglot\Inference\Enums\OutputMode $mode = null, ?\Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy $responseCachePolicy = null)
  * @method static \Cognesy\Instructor\StructuredOutput withMessages(string|array|\Cognesy\Messages\Message|\Cognesy\Messages\Messages $messages)
  * @method static \Cognesy\Instructor\StructuredOutput withResponseModel(string|array|object $responseModel)
  * @method static \Cognesy\Instructor\StructuredOutput withSystem(string $system)
@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Instructor\StructuredOutput withValidators(\Cognesy\Instructor\Validation\Contracts\CanValidateObject|string ...$validators)
  * @method static \Cognesy\Instructor\StructuredOutput withTransformers(\Cognesy\Instructor\Transformation\Contracts\CanTransformData|string ...$transformers)
  * @method static \Cognesy\Instructor\StructuredOutput withDeserializers(\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass|string ...$deserializers)
+ * @method static \Cognesy\Instructor\StructuredOutput withLLMConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
+ * @method static \Cognesy\Instructor\StructuredOutput withLLMConfigOverrides(array $overrides)
+ * @method static \Cognesy\Instructor\StructuredOutput withDriver(\Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpClient(\Cognesy\Http\HttpClient $httpClient)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpDebugPreset(?string $preset)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpDebug(bool $enabled = true)

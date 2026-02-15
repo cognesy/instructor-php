@@ -30,7 +30,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
     #[\Override]
     public function instantiateAgentLoop(AgentDefinition $definition): CanControlAgentLoop {
         $builder = AgentBuilder::base($this->events);
-        $builder = $this->withLlmConfig($builder, $definition);
+        $builder = $this->withLLMConfig($builder, $definition);
         $builder = $this->withGuards($builder, $definition);
         $builder = $this->withCapabilities($builder, $definition);
         $builder = $this->withTools($builder, $definition);
@@ -39,7 +39,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
 
     // INTERNALS ////////////////////////////////////////////////////
 
-    private function withLlmConfig(AgentBuilder $builder, AgentDefinition $definition): AgentBuilder {
+    private function withLLMConfig(AgentBuilder $builder, AgentDefinition $definition): AgentBuilder {
         $llm = match (true) {
             $definition->llmConfig instanceof LLMConfig => LLMProvider::new()->withConfig($definition->llmConfig),
             is_string($definition->llmConfig) && $definition->llmConfig !== '' => LLMProvider::using($definition->llmConfig),

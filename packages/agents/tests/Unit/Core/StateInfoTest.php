@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Tests\Unit\Core;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -30,6 +31,20 @@ it('serializes and deserializes state timestamps', function () {
 
     expect($restored->createdAt()->format(DateTimeImmutable::ATOM))->toBe('2026-01-02T00:00:00+00:00')
         ->and($restored->updatedAt()->format(DateTimeImmutable::ATOM))->toBe('2026-01-02T01:00:00+00:00');
+});
+
+it('round-trips llm config in state serialization', function () {
+    $config = new LLMConfig(
+        model: 'gpt-4o-mini',
+        contextLength: 128000,
+    );
+
+    $state = AgentState::empty()->withLLMConfig($config);
+    $restored = AgentState::fromArray($state->toArray());
+
+    expect($restored->llmConfig())->not->toBeNull()
+        ->and($restored->llmConfig()?->model)->toBe('gpt-4o-mini')
+        ->and($restored->llmConfig()?->contextLength)->toBe(128000);
 });
 
 it('preserves null execution on round-trip serialization', function () {

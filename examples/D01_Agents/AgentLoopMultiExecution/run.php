@@ -7,17 +7,17 @@ id: 'db3d'
 ## Overview
 
 An agent can handle multiple rounds of execution, where each round builds on the previous
-conversation history. Use `forNextExecution()` to reset execution state while preserving
-the full message context, then add a new user message and run `execute()` again.
+conversation history. Just add a new user message to the returned state and call `execute()`
+again — `AgentLoop` automatically resets completed executions before starting a new one.
 
 This enables multi-turn interactions where the agent reasons over past tool results
 to answer follow-up questions without re-executing tools.
 
 Key concepts:
-- `forNextExecution()`: Resets execution state, preserves conversation context
 - `withUserMessage()`: Appends a follow-up user message to the existing conversation
 - The agent sees all prior messages including tool calls and results from previous executions
 - Follow-up questions can reference data gathered in earlier rounds
+- `AgentLoop` auto-resets terminal execution state (completed/failed) on entry
 
 ## Example
 
@@ -60,8 +60,8 @@ $query2 = 'Based on what you read, does the project use PSR-4 autoloading? What 
 echo "=== Execution 2 ===\n";
 echo "Query: {$query2}\n\n";
 
-// forNextExecution() resets execution state but keeps the full conversation history
-$state = $state->forNextExecution()->withUserMessage($query2);
+// Just add a new message — AgentLoop auto-resets the completed execution
+$state = $state->withUserMessage($query2);
 $state = $loop->execute($state);
 
 $response2 = $state->finalResponse()->toString() ?: 'No response';
@@ -72,10 +72,16 @@ $query3 = 'Given what you know about this project, what type of project is it �
 echo "=== Execution 3 ===\n";
 echo "Query: {$query3}\n\n";
 
-$state = $state->forNextExecution()->withUserMessage($query3);
+$state = $state->withUserMessage($query3);
 $state = $loop->execute($state);
 
 $response3 = $state->finalResponse()->toString() ?: 'No response';
 echo "\nResponse: {$response3}\n";
+
+// Assertions
+assert(!empty($response1) && $response1 !== 'No response', 'Expected non-empty response from execution 1');
+assert(!empty($response2) && $response2 !== 'No response', 'Expected non-empty response from execution 2');
+assert(!empty($response3) && $response3 !== 'No response', 'Expected non-empty response from execution 3');
+assert($state->stepCount() >= 1, 'Expected at least 1 step in final execution');
 ?>
 ```

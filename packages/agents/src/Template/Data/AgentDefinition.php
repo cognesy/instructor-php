@@ -50,7 +50,7 @@ final readonly class AgentDefinition
             'label' => $this->label(),
             'description' => $this->description,
             'systemPrompt' => $this->systemPrompt,
-            'llmConfig' => $this->serializeLlmConfig(),
+            'llmConfig' => $this->serializeLLMConfig(),
             'tools' => $this->tools?->toArray(),
             'toolsDeny' => $this->toolsDeny?->toArray(),
             'skills' => $this->skills?->toArray(),
@@ -70,7 +70,7 @@ final readonly class AgentDefinition
             description: $data['description'] ?? '',
             systemPrompt: $data['systemPrompt'] ?? '',
             label: $label,
-            llmConfig: self::deserializeLlmConfig($data['llmConfig'] ?? null),
+            llmConfig: self::deserializeLLMConfig($data['llmConfig'] ?? null),
             capabilities: NameList::fromArray($data['capabilities'] ?? []),
             tools: NameList::fromArray($data['tools'] ?? []),
             toolsDeny: NameList::fromArray($data['toolsDeny'] ?? []),
@@ -82,7 +82,7 @@ final readonly class AgentDefinition
 
     // PRIVATE HELPERS //////////////////////////////////////////////
 
-    private static function deserializeLlmConfig(mixed $param) : LLMConfig|string|null {
+    private static function deserializeLLMConfig(mixed $param) : LLMConfig|string|null {
         return match(true) {
             is_string($param) => $param,
             is_array($param) => LLMConfig::fromArray($param),
@@ -97,7 +97,7 @@ final readonly class AgentDefinition
         };
     }
 
-    private function serializeLlmConfig(): array|string|null {
+    private function serializeLLMConfig(): array|string|null {
         return match(true) {
             is_string($this->llmConfig) => $this->llmConfig,
             $this->llmConfig instanceof LLMConfig => $this->llmConfig->toArray(),

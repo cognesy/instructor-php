@@ -8,10 +8,10 @@ use Cognesy\Utils\Container\Exceptions\NotFoundException;
 
 final class SimpleContainer implements Container
 {
-    /** @var array<string, Closure> Transient factories — invoked on every get() */
+    /** @var array<string, Closure(Container): mixed> Transient factories — invoked on every get() */
     private array $factories = [];
 
-    /** @var array<string, Closure> Singleton factories — invoked once, then cached in $instances */
+    /** @var array<string, Closure(Container): mixed> Singleton factories — invoked once, then cached in $instances */
     private array $singletons = [];
 
     /** @var array<string, object> Resolved singletons + directly registered instances */
@@ -61,12 +61,14 @@ final class SimpleContainer implements Container
             || isset($this->factories[$id]);
     }
 
+    /** @param Closure(Container): mixed $factory */
     #[\Override]
     public function set(string $id, Closure $factory): void {
         unset($this->singletons[$id], $this->instances[$id]);
         $this->factories[$id] = $factory;
     }
 
+    /** @param Closure(Container): mixed $factory */
     #[\Override]
     public function singleton(string $id, Closure $factory): void {
         unset($this->factories[$id], $this->instances[$id]);

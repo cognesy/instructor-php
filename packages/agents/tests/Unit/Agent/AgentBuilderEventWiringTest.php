@@ -4,7 +4,7 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseDriver;
-use Cognesy\Agents\Capability\Core\UseLlmConfig;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
@@ -58,9 +58,9 @@ describe('AgentBuilder event wiring', function () {
             ->and($driver->eventHandler())->toBe($loop->eventHandler());
     });
 
-    it('rebinds ToolCallingDriver events provided by UseLlmConfig during build', function () {
+    it('rebinds ToolCallingDriver events provided by UseLLMConfig during build', function () {
         $loop = AgentBuilder::base()
-            ->withCapability(new UseLlmConfig())
+            ->withCapability(new UseLLMConfig())
             ->build();
 
         $driver = $loop->driver();

@@ -9,6 +9,7 @@ use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
@@ -25,7 +26,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * Inference class is facade for handling inference requests and responses.
  */
-class Inference
+class Inference implements CanAcceptLLMConfig
 {
     use HandlesEvents;
 
@@ -117,14 +118,14 @@ class Inference
     }
 
     public function create(): PendingInference {
+        $resolver = $this->llmResolver ?? $this->llmProvider;
+        $config = $resolver->resolveConfig();
+
         $httpClient = $this->makeHttpClient();
-        $inferenceDriver = $this->makeInferenceDriver($httpClient);
+        $inferenceDriver = $this->makeInferenceDriver($httpClient, $resolver, $config);
         $request = $this->requestBuilder->create();
         $execution = InferenceExecution::fromRequest($request);
-
-        // Get pricing from config if available
-        $resolver = $this->llmResolver ?? $this->llmProvider;
-        $pricing = $resolver->resolveConfig()->getPricing();
+        $pricing = $config->getPricing();
 
         return new PendingInference(
             execution: $execution,
@@ -140,9 +141,12 @@ class Inference
         return $this->inferenceFactory ??= new InferenceDriverFactory($this->events);
     }
 
-    private function makeInferenceDriver(HttpClient $httpClient) : CanHandleInference {
+    private function makeInferenceDriver(
+        HttpClient $httpClient,
+        CanResolveLLMConfig $resolver,
+        LLMConfig $config,
+    ) : CanHandleInference {
         // Prefer explicit driver if provided via interface
-        $resolver = $this->llmResolver ?? $this->llmProvider;
         $explicit = $resolver instanceof HasExplicitInferenceDriver
             ? $resolver->explicitInferenceDriver()
             : null;
@@ -152,7 +156,7 @@ class Inference
         }
 
         return $this->getInferenceFactory()->makeDriver(
-            config: $resolver->resolveConfig(),
+            config: $config,
             httpClient: $httpClient
         );
     }

@@ -22,7 +22,7 @@ final class FrontMatter
         }
 
         $frontMatter = trim($matches[1]);
-        $document = $matches[2] ?? '';
+        $document = $matches[2];
 
         if ($frontMatter === '') {
             return new self([], $document, true);
