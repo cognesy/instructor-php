@@ -24,7 +24,7 @@ $inference = (new Inference())
 
 // Make a request - debug output will show the request and response details
 $response = $inference->with(messages: 'What is the capital of France?')->get();
-// @doctest id="47be"
+// @doctest id="6c8e"
 ```
 
 
@@ -47,7 +47,7 @@ $inference = (new Inference())
     ->onEvent(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
 
 $response = $inference->with(messages: 'What is the capital of France?')->get();
-// @doctest id="f9d1"
+// @doctest id="e89b"
 ```
 
 
@@ -84,7 +84,7 @@ $inference = new Inference(events: $events);
 $response = $inference->with(
     messages: 'What is the capital of France?'
 )->get();
-// @doctest id="90ea"
+// @doctest id="1126"
 ```
 
 
@@ -135,5 +135,5 @@ $inference = new Inference(events: $events);
 $response = $inference->with(
     messages: 'What is artificial intelligence?'
 )->get();
-// @doctest id="dfb8"
+// @doctest id="e931"
 ```
