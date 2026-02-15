@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Polyglot\Inference\Inference withRequest(\Cognesy\Polyglot\Inference\Data\InferenceRequest $request)
  * @method static \Cognesy\Polyglot\Inference\Inference withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider $llm)
  * @method static \Cognesy\Polyglot\Inference\Inference withLLMResolver(\Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig $resolver)
- * @method static \Cognesy\Polyglot\Inference\Inference withDriver(\Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver)
+ * @method static \Cognesy\Polyglot\Inference\Inference withDriver(\Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver)
  * @method static \Cognesy\Polyglot\Inference\Inference withHttpClient(\Cognesy\Http\HttpClient $httpClient)
  * @method static \Cognesy\Polyglot\Inference\Inference withConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Polyglot\Inference\Inference withLLMConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)

@@ -24,7 +24,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Result\Result;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\ErrorPresenceCheck;
 use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
@@ -36,7 +36,7 @@ use Cognesy\Addons\ToolUse\Continuation\ToolCallPresenceCheck;
 function _sum(int $a, int $b): int { return $a + $b; }
 
 it('continues loop on tool failure and formats error message', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(new ToolCall('_sum', ['a' => 2])) // missing required 'b'

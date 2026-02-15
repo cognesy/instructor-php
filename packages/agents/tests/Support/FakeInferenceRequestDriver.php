@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Addons\Support;
+namespace Cognesy\Agents\Tests\Support;
 
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
-class FakeInferenceDriver implements CanHandleInference
+class FakeInferenceRequestDriver implements CanProcessInferenceRequest
 {
     /** @var InferenceResponse[] */
     private array $responses;

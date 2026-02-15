@@ -25,13 +25,12 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Polyglot\Inference\Traits\HandlesLLMProvider;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 /**
@@ -42,14 +41,14 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 class StructuredOutput implements CanAcceptLLMConfig
 {
     use HandlesEvents;
+    use HandlesLLMProvider;
 
-    // From traits - builder instances
-    private LLMProvider $llmProvider;
+    // Builder instances
     protected StructuredOutputExecutionBuilder $executionBuilder;
     private StructuredOutputRequest $request;
     private StructuredOutputConfigBuilder $configBuilder;
 
-    // From traits - callback handlers
+    // Callback handlers
     /** @var array<callable(object): void> */
     protected array $onPartialResponse = [];
     /** @var array<callable(object): void> */
@@ -79,80 +78,11 @@ class StructuredOutput implements CanAcceptLLMConfig
         $this->request = new StructuredOutputRequest();
         $this->executionBuilder = new StructuredOutputExecutionBuilder($this->events);
         $this->llmProvider = LLMProvider::new(
-            events: $this->events,
             configProvider: $configProvider,
         );
     }
 
-    // LLM PROVIDER METHODS (from HandlesLLMProvider) /////////////////////////
-
-    public function withDsn(string $dsn): static {
-        $this->llmProvider->withDsn($dsn);
-        return $this;
-    }
-
-    public function using(string $preset): static {
-        $this->llmProvider->withLLMPreset($preset);
-        return $this;
-    }
-
-    public function withLLMProvider(LLMProvider $llm): static {
-        $this->llmProvider = $llm;
-        return $this;
-    }
-
-    #[\Override]
-    public function withLLMConfig(LLMConfig $config): static {
-        $this->llmProvider->withConfig($config);
-        return $this;
-    }
-
-    public function withLLMConfigOverrides(array $overrides): static {
-        $this->llmProvider->withConfigOverrides($overrides);
-        return $this;
-    }
-
-    public function withDriver(CanHandleInference $driver): static {
-        $this->llmProvider->withDriver($driver);
-        return $this;
-    }
-
-    public function withHttpClient(HttpClient $httpClient): static {
-        $this->httpClient = $httpClient;
-        return $this;
-    }
-
-    public function withHttpClientPreset(string $preset): static {
-        $builder = new HttpClientBuilder(events: $this->events);
-        $this->httpClient = $builder->withPreset($preset)->create();
-        return $this;
-    }
-
-    /**
-     * Set HTTP debug preset explicitly (clearer than withDebugPreset()).
-     */
-    public function withHttpDebugPreset(?string $preset): static {
-        $this->httpDebugPreset = $preset;
-        return $this;
-    }
-
-    /**
-     * Convenience toggle for HTTP debugging.
-     */
-    public function withHttpDebug(bool $enabled = true): static {
-        $preset = match ($enabled) {
-            true => 'on',
-            false => 'off',
-        };
-        return $this->withHttpDebugPreset($preset);
-    }
-
-    /**
-     * Backward-compatible alias for HTTP debug presets.
-     */
-    public function withDebugPreset(?string $preset): static {
-        return $this->withHttpDebugPreset($preset);
-    }
+    // LLM PROVIDER OVERRIDES /////////////////////////////////////////////////
 
     public function withClientInstance(string $driverName, object $clientInstance): static {
         $builder = new HttpClientBuilder(events: $this->events);

@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Instructor\StructuredOutput withDeserializers(\Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass|string ...$deserializers)
  * @method static \Cognesy\Instructor\StructuredOutput withLLMConfig(\Cognesy\Polyglot\Inference\Config\LLMConfig $config)
  * @method static \Cognesy\Instructor\StructuredOutput withLLMConfigOverrides(array $overrides)
- * @method static \Cognesy\Instructor\StructuredOutput withDriver(\Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver)
+ * @method static \Cognesy\Instructor\StructuredOutput withDriver(\Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpClient(\Cognesy\Http\HttpClient $httpClient)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpDebugPreset(?string $preset)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpDebug(bool $enabled = true)

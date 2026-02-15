@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAIResponses;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
-use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesBodyFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenResponses\OpenResponsesResponseAdapter;
@@ -33,7 +33,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * @see https://platform.openai.com/docs/api-reference/responses
  */
-class OpenAIResponsesDriver extends BaseInferenceDriver
+class OpenAIResponsesDriver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,

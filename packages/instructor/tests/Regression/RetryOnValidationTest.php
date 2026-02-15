@@ -7,14 +7,14 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 // Simple models for validation
 class SyncRetryUser { public int $age; }
 class StreamRetryUser { public int $age; }
 
 it('retries sync request after validation failure and succeeds on second attempt', function () {
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [
             new InferenceResponse(content: 'not json'),
             new InferenceResponse(content: '{"age":21}'),
@@ -58,7 +58,7 @@ it('retries streaming (transducer) request after validation failure and succeeds
         new PartialInferenceResponse(contentDelta: '36}'),
     ];
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [],
         streamBatches: [ $batch1, $batch2 ],
     );

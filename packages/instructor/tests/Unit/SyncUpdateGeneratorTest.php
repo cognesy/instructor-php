@@ -10,7 +10,7 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\ResponseIterators\Sync\SyncUpdateGenerator;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -33,7 +33,7 @@ function makeSyncResponseModel(): ResponseModel {
 it('makes single inference request and marks as exhausted', function () {
     $response = InferenceResponse::empty()->withContent('{"name":"Alice","age":30}');
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [$response]
     );
 
@@ -79,7 +79,7 @@ it('makes single inference request and marks as exhausted', function () {
 it('returns single chunk with empty partials list', function () {
     $response = InferenceResponse::empty()->withContent('{"name":"Bob","age":25}');
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [$response]
     );
 
@@ -115,7 +115,7 @@ it('returns single chunk with empty partials list', function () {
 it('normalizes content based on output mode', function () {
     $response = InferenceResponse::empty()->withContent('  {"name":"Charlie","age":35}  ');
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [$response]
     );
 
@@ -153,7 +153,7 @@ it('normalizes content based on output mode', function () {
 it('does not call nextChunk when already exhausted', function () {
     $response = InferenceResponse::empty()->withContent('{"name":"Dave","age":40}');
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [$response]
     );
 

@@ -9,7 +9,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Generator;
@@ -168,7 +168,7 @@ class InferenceCases
     /**
      * Get driver instance for a given preset.
      */
-    private function getDriverForPreset(string $preset) : ?CanHandleInference {
+    private function getDriverForPreset(string $preset) : ?CanProcessInferenceRequest {
         $config = $this->getConfigForPreset($preset);
         if ($config === null) {
             return null;

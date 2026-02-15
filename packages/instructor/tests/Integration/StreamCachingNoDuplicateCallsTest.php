@@ -4,7 +4,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 
 class StreamUserStructC { public int $age; public string $name; }
 
@@ -15,7 +15,7 @@ it('does not re-start driver when accessing final after partials', function () {
         new PartialInferenceResponse(contentDelta: '30}', finishReason: 'stop', usage: new Usage(outputTokens: 1)),
     ];
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [],
         streamBatches: [ $chunks ]
     );

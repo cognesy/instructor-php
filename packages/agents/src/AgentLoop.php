@@ -67,7 +67,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
                 interceptor: $interceptor,
             ),
             driver: new ToolCallingDriver(
-                llm: LLMProvider::new($events, ConfigResolver::default()),
+                llm: LLMProvider::new(ConfigResolver::default()),
                 messageCompiler: new ConversationWithCurrentToolTrace(),
                 events: $events,
             ),

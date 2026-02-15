@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference;
 
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
@@ -33,7 +33,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class PendingInference
 {
-    protected readonly CanHandleInference $driver;
+    protected readonly CanProcessInferenceRequest $driver;
     protected readonly EventDispatcherInterface $events;
 
     protected InferenceExecution $execution;
@@ -47,10 +47,10 @@ class PendingInference
     private ?\Throwable $terminalError = null;
 
     public function __construct(
-        InferenceExecution $execution,
-        CanHandleInference $driver,
-        EventDispatcherInterface $eventDispatcher,
-        ?Pricing $pricing = null,
+        InferenceExecution         $execution,
+        CanProcessInferenceRequest $driver,
+        EventDispatcherInterface   $eventDispatcher,
+        ?Pricing                   $pricing = null,
     ) {
         $this->execution = $execution;
         $this->events = $eventDispatcher;

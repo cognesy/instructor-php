@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../../../vendor/autoload.php';
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -100,7 +100,7 @@ final class MemoryAnalyzer
     private function measureStream(string $driver, int $payloadSize): array
     {
         $chunks = $this->makeStream($payloadSize);
-        $fakeDriver = new FakeInferenceDriver(streamBatches: [$chunks]);
+        $fakeDriver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
 
         // Clean baseline
         gc_collect_cycles();
@@ -136,7 +136,7 @@ final class MemoryAnalyzer
     private function measureSync(string $driver, int $payloadSize): array
     {
         $json = $this->makeJson($payloadSize);
-        $fakeDriver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
+        $fakeDriver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $json)]);
 
         // Clean baseline
         gc_collect_cycles();

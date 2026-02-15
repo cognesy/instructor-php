@@ -17,13 +17,13 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Time\FrozenClock;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function _noop(): string { return 'ok'; }
 
 it('sets react_last_decision_type for call_tool and final_answer', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: json_encode([
             'thought' => 'x', 'type' => 'call_tool', 'tool' => '_noop', 'args' => []
         ])),
@@ -54,7 +54,7 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
 
 it('records extraction failures inside failure steps (deterministic)', function () {
     // malformed JSON to trigger failure inside StructuredOutput path
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: '{bad json'),
     ]);
 

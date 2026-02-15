@@ -12,7 +12,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 it('runs multi-participant chat with proper turn-taking and conversation history', function () {
     // Setup participants similar to the ChatWithManyParticipants example
@@ -29,7 +29,7 @@ it('runs multi-participant chat with proper turn-taking and conversation history
         name: 'dr_chen',
         inference: (new Inference())->withLLMProvider(
             LLMProvider::new()->withDriver(
-                new FakeInferenceDriver([
+                new FakeInferenceRequestDriver([
                     new InferenceResponse(content: 'I am Dr. Chen, AI researcher. - Dr. Chen'),
                     new InferenceResponse(content: 'My expertise is machine learning safety. - Dr. Chen'),
                 ])
@@ -42,7 +42,7 @@ it('runs multi-participant chat with proper turn-taking and conversation history
         name: 'marcus',
         inference: (new Inference())->withLLMProvider(
             LLMProvider::new()->withDriver(
-                new FakeInferenceDriver([
+                new FakeInferenceRequestDriver([
                     new InferenceResponse(content: 'I am Marcus, Senior AI Engineer. - Marcus'),
                     new InferenceResponse(content: 'I focus on production AI systems. - Marcus'),
                 ])
@@ -141,7 +141,7 @@ it('stops conversation when ResponseContentCheck detects empty response', functi
         name: 'assistant',
         inference: (new Inference())->withLLMProvider(
             LLMProvider::new()->withDriver(
-                new FakeInferenceDriver([
+                new FakeInferenceRequestDriver([
                     new InferenceResponse(content: 'Hi there!'),
                     new InferenceResponse(content: ''), // Empty response should stop
                 ])

@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Streaming;
 
 use Closure;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -25,7 +25,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceStream
 {
     protected readonly EventDispatcherInterface $events;
-    protected readonly CanHandleInference $driver;
+    protected readonly CanProcessInferenceRequest $driver;
     /** @var (Closure(PartialInferenceResponse): void)|null */
     protected ?Closure $onPartialResponse = null;
 
@@ -42,12 +42,12 @@ class InferenceStream
     private ?Pricing $pricing = null;
 
     public function __construct(
-        InferenceExecution $execution,
-        CanHandleInference $driver,
-        EventDispatcherInterface $eventDispatcher,
-        ?DateTimeImmutable $startedAt = null,
-        ?ResponseCachePolicy $cachePolicy = null,
-        ?Pricing $pricing = null,
+        InferenceExecution         $execution,
+        CanProcessInferenceRequest $driver,
+        EventDispatcherInterface   $eventDispatcher,
+        ?DateTimeImmutable         $startedAt = null,
+        ?ResponseCachePolicy       $cachePolicy = null,
+        ?Pricing                   $pricing = null,
     ) {
         $this->execution = $execution;
         $this->driver = $driver;
@@ -239,8 +239,9 @@ class InferenceStream
             $this->execution = $this->execution->withUpdatedResponse($response);
         }
 
-        $this->events->dispatch(new InferenceResponseCreated($response));
-
+        if ($response !== null) {
+            $this->events->dispatch(new InferenceResponseCreated($response));
+        }
     }
 
     private function shouldCache(): bool

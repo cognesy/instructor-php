@@ -4,7 +4,7 @@ use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 
 it('onSequenceUpdate emits last item for final sequence in partials engine', function () {
     if (!class_exists('EvtPerson')) {
@@ -19,7 +19,7 @@ it('onSequenceUpdate emits last item for final sequence in partials engine', fun
         new PartialInferenceResponse(contentDelta: ']}', finishReason: 'stop'),
     ];
 
-    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
+    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
 
     $seen = [];
     $pending = (new StructuredOutput())

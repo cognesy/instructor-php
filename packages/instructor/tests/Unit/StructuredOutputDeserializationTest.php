@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 
 
 // 1) Public properties
@@ -32,7 +32,7 @@ class SO_Constructor_User {
 }
 
 it('deserializes via public properties', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: '{"name":"Alice","age":30}')
     ]);
 
@@ -51,7 +51,7 @@ it('deserializes via public properties', function () {
 });
 
 it('deserializes via setters', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: '{"name":"Bob","age":28}')
     ]);
 
@@ -70,7 +70,7 @@ it('deserializes via setters', function () {
 });
 
 it('deserializes via constructor args', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: '{"name":"Cara","age":33}')
     ]);
 

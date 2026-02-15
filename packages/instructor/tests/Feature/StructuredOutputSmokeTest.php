@@ -9,7 +9,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 
 // Simple DTOs
 class SmokeUser { public int $age; public string $name; }
@@ -19,7 +19,7 @@ enum SmokeStatus: string { case Active = 'active'; case Inactive = 'inactive'; }
 // 1) Sync: generate response PHP object using provided response class
 it('sync: deserializes object into provided class', function () {
     $json = '{"age":30,"name":"Alex"}';
-    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
+    $driver = new FakeInferenceRequestDriver(responses: [ new InferenceResponse(content: $json) ]);
 
     $obj = (new StructuredOutput())
         ->withDriver($driver)
@@ -40,7 +40,7 @@ it('stream: yields partial updates of object progressively', function () {
         new PartialInferenceResponse(contentDelta: '0,"name":"A'),
         new PartialInferenceResponse(contentDelta: 'lex"}'),
     ];
-    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
+    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $stream ]);
 
     $partials = [];
     $pending = (new StructuredOutput())
@@ -114,7 +114,7 @@ it('scalars: boolean, float and enum deserialize correctly', function () {
 // 4) Sequence::of(class) as response model - sync and stream
 it('sequence: sync deserializes list of items', function () {
     $json = '{"list":[{"title":"A"},{"title":"B"}]}';
-    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
+    $driver = new FakeInferenceRequestDriver(responses: [ new InferenceResponse(content: $json) ]);
 
     /** @var \Cognesy\Instructor\Extras\Sequence\Sequence $seq */
     $seq = (new StructuredOutput())
@@ -142,7 +142,7 @@ it('sequence: streaming yields updates with complete items', function () {
         (new PartialInferenceResponse(contentDelta: ''))->withValue($s1),
         (new PartialInferenceResponse(contentDelta: ''))->withValue($s2),
     ];
-    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $sequenceStream ]);
+    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $sequenceStream ]);
 
     $pending = (new StructuredOutput())
         ->withDriver($driver)
@@ -173,7 +173,7 @@ class ToolUser { public int $age; }
 it('tools mode: sync uses tool call args as JSON', function () {
     $tool = new ToolCall('extract', ['age' => 25]);
     $resp = new InferenceResponse(content: '', finishReason: 'stop', toolCalls: new ToolCalls($tool));
-    $driver = new FakeInferenceDriver(responses: [ $resp ]);
+    $driver = new FakeInferenceRequestDriver(responses: [ $resp ]);
 
     $obj = (new StructuredOutput())
         ->withDriver($driver)
@@ -191,7 +191,7 @@ it('tools mode: streaming assembles args from tool deltas', function () {
         new PartialInferenceResponse(toolName: 'extract', toolArgs: '{"age":'),
         new PartialInferenceResponse(toolName: 'extract', toolArgs: '42}'),
     ];
-    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
+    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $stream ]);
 
     $pending = (new StructuredOutput())
         ->withDriver($driver)

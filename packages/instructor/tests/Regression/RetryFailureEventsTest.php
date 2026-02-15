@@ -8,7 +8,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 // Minimal DTOs
 class RetryFailSyncUser { public int $age; }
@@ -16,7 +16,7 @@ class RetryFailStreamUser { public int $age; }
 
 it('emits retry events and throws after max retries (sync)', function () {
     // Two failing responses (no JSON)
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [
             new InferenceResponse(content: 'not json 1'),
             new InferenceResponse(content: 'not json 2'),
@@ -49,7 +49,7 @@ it('emits retry events and throws after max retries (streaming)', function () {
     // Two failing streaming attempts: no deltas in both batches
     $batch1 = [];
     $batch2 = [];
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [],
         streamBatches: [ $batch1, $batch2 ],
     );

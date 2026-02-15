@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Tests\Integration\Support;
 
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -12,7 +12,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
  * Test-only driver that returns a provided iterator for streaming
  * and counts calls to both sync and stream methods.
  */
-class ProbeStreamDriver implements CanHandleInference
+class ProbeStreamDriver implements CanProcessInferenceRequest
 {
     public int $responseCalls = 0;
     public int $streamCalls = 0;

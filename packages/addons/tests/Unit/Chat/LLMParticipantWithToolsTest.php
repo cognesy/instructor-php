@@ -19,7 +19,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function test_add(int $a, int $b): int {
@@ -42,7 +42,7 @@ it('creates participant with correct name and system prompt', function () {
 });
 
 it('executes tool calls and returns chat step with tool results', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(new ToolCall('test_add', ['a' => 5, 'b' => 3])),
@@ -88,7 +88,7 @@ it('executes tool calls and returns chat step with tool results', function () {
 });
 
 it('handles multiple tool calls in sequence', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(
@@ -137,7 +137,7 @@ it('handles multiple tool calls in sequence', function () {
 });
 
 it('prepends system prompt when provided', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: 'Hello! I am a helpful math assistant.',
             finishReason: 'stop',
@@ -172,7 +172,7 @@ it('prepends system prompt when provided', function () {
 });
 
 it('works without system prompt', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: 'Hello!',
             toolCalls: new ToolCalls(),
@@ -217,7 +217,7 @@ it('dispatches tool use events', function () {
         $completedEvents[] = $event;
     });
 
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: 'Result is ready.',
             toolCalls: new ToolCalls(),

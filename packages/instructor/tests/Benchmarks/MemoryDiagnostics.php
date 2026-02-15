@@ -6,7 +6,7 @@ use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -102,7 +102,7 @@ final class MemoryDiagnostics
         $gcBefore = gc_status();
 
         $json = self::makeJson(self::PAYLOAD_SIZE);
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
+        $driver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $json)]);
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
@@ -127,7 +127,7 @@ final class MemoryDiagnostics
         $gcBefore = gc_status();
 
         $chunks = self::makeStream(self::PAYLOAD_SIZE);
-        $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
 
         $so = (new StructuredOutput)
             ->withDriver($driver)
@@ -164,13 +164,13 @@ final class MemoryDiagnostics
         // Layer 2: Driver
         gc_collect_cycles();
         $before = memory_get_usage(false);
-        $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
         $after = memory_get_usage(false);
         $layer2 = $after - $before;
         printf("  Layer 2 (Driver):          %s\n", self::formatBytes($layer2));
 
         // Layer 3: Iteration
-        $driver = new FakeInferenceDriver(streamBatches: [self::makeStream(self::PAYLOAD_SIZE)]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [self::makeStream(self::PAYLOAD_SIZE)]);
         gc_collect_cycles();
         gc_disable(); // Prevent GC during measurement
         $before = memory_get_usage(false);
@@ -185,7 +185,7 @@ final class MemoryDiagnostics
         printf("  Layer 3 (Iteration):       %s\n", self::formatBytes($layer3));
 
         // Layer 4: Full pipeline
-        $driver = new FakeInferenceDriver(streamBatches: [self::makeStream(self::PAYLOAD_SIZE)]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [self::makeStream(self::PAYLOAD_SIZE)]);
         gc_collect_cycles();
         gc_disable(); // Prevent GC during measurement
         $before = memory_get_usage(false);
@@ -235,7 +235,7 @@ final class MemoryDiagnostics
         gc_collect_cycles();
         echo "  After chunks:              " . self::formatDelta($baseline) . "\n";
 
-        $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
         gc_collect_cycles();
         echo "  After driver:              " . self::formatDelta($baseline) . "\n";
 
@@ -379,7 +379,7 @@ final class MemoryDiagnostics
             $before = memory_get_usage(false);
 
             $chunks = self::makeStream($size);
-            $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
+            $driver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
 
             $so = (new StructuredOutput)
                 ->withDriver($driver)
@@ -449,7 +449,7 @@ final class MemoryDiagnostics
         gc_collect_cycles();
         memory_reset_peak_usage();
         $json = self::makeJson(self::PAYLOAD_SIZE);
-        $syncDriver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
+        $syncDriver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $json)]);
 
         $soSync = (new StructuredOutput)
             ->withDriver($syncDriver)
@@ -464,7 +464,7 @@ final class MemoryDiagnostics
         gc_collect_cycles();
         memory_reset_peak_usage();
         $chunks = self::makeStream(self::PAYLOAD_SIZE);
-        $driver = new FakeInferenceDriver(streamBatches: [$chunks]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
 
         // Invariant 1: Stream peak ≤ Sync peak (for same payload)
         $so = (new StructuredOutput)

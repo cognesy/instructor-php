@@ -8,7 +8,7 @@ use Cognesy\Agents\Capability\Core\UseTools;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -25,7 +25,7 @@ describe('Agent metadata-based trace isolation', function () {
             'arguments' => json_encode(['arg' => 'val']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'All done.'),
         ]);
@@ -68,7 +68,7 @@ describe('Agent metadata-based trace isolation', function () {
             'arguments' => json_encode(['query' => 'weather']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'Done.'),
         ]);
@@ -122,7 +122,7 @@ describe('Agent metadata-based trace isolation', function () {
             'arguments' => json_encode(['q' => 'second']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($call1)),
             new InferenceResponse(content: '', toolCalls: new ToolCalls($call2)),
             new InferenceResponse(content: 'Final answer.'),
@@ -173,7 +173,7 @@ describe('Agent metadata-based trace isolation', function () {
             'arguments' => json_encode(['x' => 1]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'Done.'),
         ]);

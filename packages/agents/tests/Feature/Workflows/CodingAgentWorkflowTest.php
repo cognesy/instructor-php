@@ -14,7 +14,7 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Agents\Tests\Support\TestHelpers;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
@@ -58,7 +58,7 @@ describe('Coding Agent Workflow', function () {
             ]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
             new InferenceResponse(content: '', toolCalls: new ToolCalls($editCall)),
             new InferenceResponse(content: 'Config file created and updated.'),
@@ -112,7 +112,7 @@ describe('Coding Agent Workflow', function () {
             ]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($bashCall)),
             new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
             new InferenceResponse(content: 'Environment verified and documented.'),
@@ -153,7 +153,7 @@ describe('Coding Agent Workflow', function () {
             ]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($todoCall)),
             new InferenceResponse(content: 'Tasks created.'),
         ]);
@@ -192,7 +192,7 @@ describe('Coding Agent Workflow', function () {
             ]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($writeCall)),
             new InferenceResponse(content: 'File written.'),
         ]);
@@ -252,7 +252,7 @@ describe('Coding Agent Workflow', function () {
             'arguments' => json_encode(['path' => $file2]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($write1)),
             new InferenceResponse(content: '', toolCalls: new ToolCalls($write2)),
             new InferenceResponse(content: '', toolCalls: new ToolCalls($read1, $read2)),
@@ -293,7 +293,7 @@ describe('Coding Agent Workflow', function () {
             'arguments' => json_encode(['path' => $testFile]),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($readCall)),
             new InferenceResponse(content: 'File contains test content.'),
         ]);

@@ -12,5 +12,5 @@ interface HasExplicitInferenceDriver
     /**
      * Returns an explicit inference driver or null if none set.
      */
-    public function explicitInferenceDriver(): ?CanHandleInference;
+    public function explicitInferenceDriver(): ?CanProcessInferenceRequest;
 }

@@ -12,13 +12,13 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function _noop_feat(): string { return 'ok'; }
 
 it('stops due to token usage limit being reached', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: '', toolCalls: new ToolCalls(new ToolCall('_noop_feat', [])), usage: new Usage(8, 1)),
         new InferenceResponse(content: 'final', usage: new Usage(2, 0)),
     ]);

@@ -7,7 +7,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
-interface CanHandleInference
+interface CanProcessInferenceRequest
 {
     public function makeResponseFor(InferenceRequest $request) : InferenceResponse;
 

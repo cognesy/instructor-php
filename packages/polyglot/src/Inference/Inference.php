@@ -10,7 +10,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
@@ -37,8 +37,6 @@ class Inference implements CanAcceptLLMConfig
     protected ?HttpClient $httpClient = null;
     /** @var string|null Facade-level HTTP debug preset (optional) */
     protected ?string $httpDebugPreset = null;
-    /** @var CanResolveLLMConfig|null Optional external config resolver */
-    protected ?CanResolveLLMConfig $llmResolver = null;
 
     /** @var InferenceDriverFactory|null */
     private ?InferenceDriverFactory $inferenceFactory = null;
@@ -53,13 +51,12 @@ class Inference implements CanAcceptLLMConfig
         $this->events = EventBusResolver::using($events);
         $this->requestBuilder = new InferenceRequestBuilder();
         $this->llmProvider = LLMProvider::new(
-            $this->events,
             $configProvider,
         );
     }
 
     /**
-     * @param string|callable(LLMConfig, HttpClient, EventDispatcherInterface): CanHandleInference $driver
+     * @param string|callable(LLMConfig, HttpClient, EventDispatcherInterface): CanProcessInferenceRequest $driver
      */
     public static function registerDriver(string $name, string|callable $driver): void {
         InferenceDriverFactory::registerDriver($name, $driver);
@@ -145,7 +142,7 @@ class Inference implements CanAcceptLLMConfig
         HttpClient $httpClient,
         CanResolveLLMConfig $resolver,
         LLMConfig $config,
-    ) : CanHandleInference {
+    ) : CanProcessInferenceRequest {
         // Prefer explicit driver if provided via interface
         $explicit = $resolver instanceof HasExplicitInferenceDriver
             ? $resolver->explicitInferenceDriver()

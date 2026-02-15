@@ -17,7 +17,7 @@ use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularUpdateGenerator;
 use Cognesy\Instructor\RetryPolicy\DefaultRetryPolicy;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -54,7 +54,7 @@ function makeModularStreamIterator(EventDispatcher $events, InferenceProvider $i
 }
 
 it('processes successful streaming attempt end-to-end', function () {
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         streamBatches: [
             [
                 new PartialInferenceResponse(contentDelta: '{"name":"'),
@@ -120,7 +120,7 @@ it('processes successful streaming attempt end-to-end', function () {
 
 it('retries on validation failure when retries available', function () {
     // First batch fails validation, second succeeds
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         streamBatches: [
             // First attempt - invalid age (string instead of int)
             [
@@ -187,7 +187,7 @@ it('retries on validation failure when retries available', function () {
 
 it('throws exception when max retries exceeded', function () {
     // Both attempts fail validation
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         streamBatches: [
             [new PartialInferenceResponse(contentDelta: '{"name":"Charlie","age":"bad"}')],
             [new PartialInferenceResponse(contentDelta: '{"name":"Charlie","age":"also bad"}')],
@@ -242,7 +242,7 @@ it('throws exception when max retries exceeded', function () {
 });
 
 it('hasNext returns false when execution is finalized', function () {
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         streamBatches: [
             [
                 new PartialInferenceResponse(contentDelta: '{"name":"Dave","age":40}'),
@@ -298,7 +298,7 @@ it('hasNext returns false when execution is finalized', function () {
 
 it('clears attempt state between attempts', function () {
     // First attempt fails, second succeeds
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         streamBatches: [
             [new PartialInferenceResponse(contentDelta: '{"name":"Eve","age":"wrong"}')],
             [new PartialInferenceResponse(contentDelta: '{"name":"Eve","age":28}')],

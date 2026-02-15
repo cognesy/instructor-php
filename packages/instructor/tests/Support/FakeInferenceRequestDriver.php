@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Tests\Support;
 
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -14,7 +14,7 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
  * - Returns queued InferenceResponse objects for non-streaming
  * - Returns queued arrays of PartialInferenceResponse for streaming
  */
-class FakeInferenceDriver implements CanHandleInference
+class FakeInferenceRequestDriver implements CanProcessInferenceRequest
 {
     /** @var InferenceResponse[] */
     private array $responses;

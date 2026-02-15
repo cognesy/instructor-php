@@ -4,7 +4,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 
 
 class StreamUserStruct { public int $age; public string $name; }
@@ -16,7 +16,7 @@ it('assembles streamed content into final typed value and accumulates usage', fu
         new PartialInferenceResponse(contentDelta: '30}', finishReason: 'stop', usage: new Usage(outputTokens: 3)),
     ];
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [],
         streamBatches: [ $chunks ]
     );
@@ -46,7 +46,7 @@ it('accumulates usage correctly via stream->usage() after iterating responses', 
         new PartialInferenceResponse(contentDelta: '25}', finishReason: 'stop', usage: new Usage(inputTokens: 50, outputTokens: 3)),
     ];
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [],
         streamBatches: [ $chunks ]
     );

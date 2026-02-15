@@ -12,17 +12,17 @@ use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 it('handles multi-participant chat with role mapping', function () {
     // Create two different assistants
-    $driverA = new FakeInferenceDriver([
+    $driverA = new FakeInferenceRequestDriver([
         new InferenceResponse(content: 'Response from A'),
     ]);
     $inferenceA = (new Inference())->withLLMProvider(LLMProvider::new()->withDriver($driverA));
     $assistantA = new LLMParticipant(name: 'assistantA', inference: $inferenceA, systemPrompt: 'You are assistant A');
 
-    $driverB = new FakeInferenceDriver([
+    $driverB = new FakeInferenceRequestDriver([
         new InferenceResponse(content: 'Response from B'),
     ]);
     $inferenceB = (new Inference())->withLLMProvider(LLMProvider::new()->withDriver($driverB));

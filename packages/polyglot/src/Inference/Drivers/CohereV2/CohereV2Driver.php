@@ -5,12 +5,12 @@ namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
-use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class CohereV2Driver extends BaseInferenceDriver
+class CohereV2Driver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,

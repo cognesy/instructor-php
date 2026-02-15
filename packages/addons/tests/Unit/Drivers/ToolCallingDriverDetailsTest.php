@@ -13,7 +13,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function _inc(int $x): int { return $x + 1; }
@@ -28,7 +28,7 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
         ),
         usage: new Usage(3,4)
     );
-    $driver = new FakeInferenceDriver([$resp]);
+    $driver = new FakeInferenceRequestDriver([$resp]);
 
     $tools = new Tools(
         FunctionTool::fromCallable(_inc(...)),

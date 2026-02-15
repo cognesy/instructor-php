@@ -17,13 +17,13 @@ use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function _react_add(int $a, int $b): int { return $a + $b; }
 
 it('runs a ReAct call then final answer', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         // step 1: call tool
         new InferenceResponse(content: json_encode([
             'thought' => 'I will add numbers',
@@ -58,7 +58,7 @@ it('runs a ReAct call then final answer', function () {
 });
 
 it('surfaces tool arg validation errors as observation', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: json_encode([
             'thought' => 'I will add numbers',
             'type' => 'call_tool',
@@ -96,7 +96,7 @@ it('surfaces tool arg validation errors as observation', function () {
 });
 
 it('can finalize via Inference when configured', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: json_encode([
             'thought' => 'I have the result already',
             'type' => 'final_answer',

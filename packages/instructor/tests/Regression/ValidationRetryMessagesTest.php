@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -34,7 +34,7 @@ class ValidationRetryUser
     }
 }
 
-final class RecordingInferenceDriver implements CanHandleInference
+final class RecordingInferenceRequestDriver implements CanProcessInferenceRequest
 {
     /** @var ArrayList<InferenceResponse> */
     private ArrayList $responses;
@@ -117,7 +117,7 @@ it('includes validation errors in retry messages for the next LLM attempt', func
             ],
         ])),
     ];
-    $driver = new RecordingInferenceDriver($responses);
+    $driver = new RecordingInferenceRequestDriver($responses);
 
     $result = (new StructuredOutput())
         ->withDriver($driver)

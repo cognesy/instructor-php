@@ -5,11 +5,11 @@ namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
-use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class GeminiDriver extends BaseInferenceDriver
+class GeminiDriver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,

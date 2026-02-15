@@ -6,7 +6,7 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -21,7 +21,7 @@ describe('Agent with BashTool', function () {
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir() . '/agent_bash_test_' . uniqid();
         mkdir($this->tempDir, 0755, true);
-        $this->makeAgent = function (Tools $tools, FakeInferenceDriver $driver, int $maxIterations): TestAgentLoop {
+        $this->makeAgent = function (Tools $tools, FakeInferenceRequestDriver $driver, int $maxIterations): TestAgentLoop {
             $events = new EventDispatcher();
             $interceptor = new PassThroughInterceptor();
             $llm = LLMProvider::new()->withDriver($driver);
@@ -53,7 +53,7 @@ describe('Agent with BashTool', function () {
             'arguments' => json_encode(['command' => 'echo "Hello from bash"']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(
                 content: '',
                 toolCalls: new ToolCalls($toolCall),
@@ -85,7 +85,7 @@ describe('Agent with BashTool', function () {
             'arguments' => json_encode(['command' => 'pwd']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(
                 content: '',
                 toolCalls: new ToolCalls($toolCall),
@@ -125,7 +125,7 @@ describe('Agent with BashTool', function () {
             'arguments' => json_encode(['command' => 'ls']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(
                 content: '',
                 toolCalls: new ToolCalls($toolCall),

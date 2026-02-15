@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\Mistral;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
-use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
@@ -13,7 +13,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIUsageFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class MistralDriver extends BaseInferenceDriver
+class MistralDriver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,

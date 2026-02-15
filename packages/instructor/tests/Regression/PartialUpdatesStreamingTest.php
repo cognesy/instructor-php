@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 class StreamUser
 {
@@ -17,7 +17,7 @@ it('calls onPartialUpdate for each partial value', function () {
     $p2 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(2));
     $p3 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(3));
 
-    $driver = new FakeInferenceDriver(
+    $driver = new FakeInferenceRequestDriver(
         responses: [],
         streamBatches: [[ $p1, $p2, $p3 ]],
     );

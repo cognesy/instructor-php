@@ -36,12 +36,10 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
     protected function toUrl(InferenceRequest $request): string {
         $model = $request->model() ?: $this->config->model;
         $urlParams = [];
+        $endpoint = $this->endpointFor($request);
 
         if ($request->isStreamed()) {
-            $endpoint = '/models/{model}:streamGenerateContent';
             $urlParams['alt'] = 'sse';
-        } else {
-            $endpoint = '/models/{model}:generateContent';
         }
 
         $base = str_replace(
@@ -52,5 +50,25 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
 
         $query = http_build_query($urlParams);
         return $query !== '' ? "$base?$query" : $base;
+    }
+
+    private function endpointFor(InferenceRequest $request): string {
+        $endpoint = $this->config->endpoint !== ''
+            ? $this->config->endpoint
+            : '/models/{model}:generateContent';
+
+        if (!$request->isStreamed()) {
+            return $endpoint;
+        }
+
+        if (str_contains($endpoint, ':streamGenerateContent')) {
+            return $endpoint;
+        }
+
+        if (str_contains($endpoint, ':generateContent')) {
+            return str_replace(':generateContent', ':streamGenerateContent', $endpoint);
+        }
+
+        return $endpoint;
     }
 }

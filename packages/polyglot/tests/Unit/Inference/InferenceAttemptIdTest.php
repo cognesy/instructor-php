@@ -2,7 +2,7 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Exceptions\TimeoutException;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
@@ -20,7 +20,7 @@ it('uses a unique attempt id for each retry', function () {
         $attemptIds[] = $event->attemptId;
     });
 
-    $driver = new class implements CanHandleInference {
+    $driver = new class implements CanProcessInferenceRequest {
         private int $calls = 0;
 
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {

@@ -176,23 +176,17 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function withLLMProvider(LLMProvider $llm): static {
-        $clone = clone $this;
-        $clone->llm = $llm;
-        return $clone;
+        return $this->with(llm: $llm);
     }
 
     #[\Override]
     public function withLLMConfig(LLMConfig $config): static {
-        $provider = clone $this->llm;
-        $provider->withLLMConfig($config);
-        return $this->withLLMProvider($provider);
+        return $this->with(llm: $this->llm->withLLMConfig($config));
     }
 
     #[\Override]
     public function withEventHandler(CanHandleEvents $events): static {
-        $clone = clone $this;
-        $clone->events = $events;
-        return $clone;
+        return $this->with(events: $events);
     }
 
     #[\Override]
@@ -202,12 +196,38 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function withMessageCompiler(CanCompileMessages $compiler): static {
-        $clone = clone $this;
-        $clone->messageCompiler = $compiler;
-        return $clone;
+        return $this->with(messageCompiler: $compiler);
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
+
+    private function with(
+        ?LLMProvider $llm = null,
+        ?HttpClient $httpClient = null,
+        ?string $model = null,
+        ?array $options = null,
+        ?bool $finalViaInference = null,
+        ?string $finalModel = null,
+        ?array $finalOptions = null,
+        ?int $maxRetries = null,
+        ?OutputMode $mode = null,
+        ?CanCompileMessages $messageCompiler = null,
+        ?CanHandleEvents $events = null,
+    ): self {
+        return new self(
+            llm: $llm ?? $this->llm,
+            httpClient: $httpClient ?? $this->httpClient,
+            model: $model ?? $this->model,
+            options: $options ?? $this->options,
+            finalViaInference: $finalViaInference ?? $this->finalViaInference,
+            finalModel: $finalModel ?? $this->finalModel,
+            finalOptions: $finalOptions ?? $this->finalOptions,
+            maxRetries: $maxRetries ?? $this->maxRetries,
+            mode: $mode ?? $this->mode,
+            messageCompiler: $messageCompiler ?? $this->messageCompiler,
+            events: $events ?? $this->events,
+        );
+    }
 
     private function resolveInferenceResponse(AgentState $state, InferenceResponse $fallback): InferenceResponse {
         return $state->execution()?->currentStep()?->inferenceResponse() ?? $fallback;
@@ -394,14 +414,12 @@ final class ReActDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     }
 
     private function resolveLLMProvider(AgentState $state): LLMProvider {
-        $provider = clone $this->llm;
         $config = $state->llmConfig();
         if ($config === null) {
-            return $provider;
+            return $this->llm;
         }
 
-        $provider->withLLMConfig($config);
-        return $provider;
+        return $this->llm->withLLMConfig($config);
     }
 
     private function resolveModel(AgentState $state): ?string {

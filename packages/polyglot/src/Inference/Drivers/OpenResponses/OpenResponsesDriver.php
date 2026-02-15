@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenResponses;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
-use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -17,7 +17,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * @see https://www.openresponses.org/
  */
-class OpenResponsesDriver extends BaseInferenceDriver
+class OpenResponsesDriver extends BaseInferenceRequestDriver
 {
     public function __construct(
         LLMConfig $config,

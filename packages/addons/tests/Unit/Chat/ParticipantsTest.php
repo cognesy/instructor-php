@@ -11,7 +11,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 it('external participant uses provider to generate messages', function () {
     $provider = fn() => new Message(role: 'user', content: 'hello');
@@ -22,7 +22,7 @@ it('external participant uses provider to generate messages', function () {
 });
 
 it('llm participant uses provided inference driver', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(content: 'hi there!'),
     ]);
     $inference = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));

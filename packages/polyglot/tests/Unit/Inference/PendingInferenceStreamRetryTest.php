@@ -3,7 +3,7 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
@@ -30,7 +30,7 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
 
     $streamCallCount = 0;
 
-    $driver = new class($streamCallCount) implements CanHandleInference {
+    $driver = new class($streamCallCount) implements CanProcessInferenceRequest {
         private int $calls = 0;
         private int $streamCallsRef;
 
@@ -109,7 +109,7 @@ it('does not re-execute when response() is called after stream() and dispatches 
         $dispatchedEvents[] = 'InferenceCompleted:' . ($e->isSuccess ? 'success' : 'failure');
     });
 
-    $driver = new class($streamCallCount) implements CanHandleInference {
+    $driver = new class($streamCallCount) implements CanProcessInferenceRequest {
         public function __construct(private int &$streamCalls) {}
 
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {
@@ -167,7 +167,7 @@ it('creates a fresh stream for length recovery continuation', function () {
 
     $requestMessages = [];
 
-    $driver = new class($requestMessages) implements CanHandleInference {
+    $driver = new class($requestMessages) implements CanProcessInferenceRequest {
         private int $calls = 0;
 
         public function __construct(private array &$capturedMessages) {}
@@ -241,7 +241,7 @@ it('reports partial usage in failure event when stream throws after emitting chu
         $capturedFailure = $e;
     });
 
-    $driver = new class implements CanHandleInference {
+    $driver = new class implements CanProcessInferenceRequest {
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {
             throw new \LogicException('Should not be called in streaming mode');
         }
@@ -324,7 +324,7 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
 
     $streamCallCount = 0;
 
-    $driver = new class($streamCallCount) implements CanHandleInference {
+    $driver = new class($streamCallCount) implements CanProcessInferenceRequest {
         public function __construct(private int &$streamCalls) {}
 
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {
@@ -400,7 +400,7 @@ it('throws and dispatches failure events when stream-first response has a failed
         $capturedFailure = $e;
     });
 
-    $driver = new class implements CanHandleInference {
+    $driver = new class implements CanProcessInferenceRequest {
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {
             throw new \LogicException('Should not be called in streaming mode');
         }
@@ -462,7 +462,7 @@ it('throws and dispatches failure events when stream-first response has a failed
 it('re-throws on repeated response() calls after non-streaming failure', function () {
     $events = new EventDispatcher();
 
-    $driver = new class implements CanHandleInference {
+    $driver = new class implements CanProcessInferenceRequest {
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {
             return new InferenceResponse(content: 'truncated', finishReason: 'length');
         }
@@ -522,7 +522,7 @@ it('re-throws on repeated response() calls after non-streaming failure', functio
 it('re-throws on repeated response() calls after stream-first failure', function () {
     $events = new EventDispatcher();
 
-    $driver = new class implements CanHandleInference {
+    $driver = new class implements CanProcessInferenceRequest {
         public function makeResponseFor(InferenceRequest $request): InferenceResponse {
             throw new \LogicException('Should not be called in streaming mode');
         }

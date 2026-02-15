@@ -7,7 +7,7 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
@@ -24,7 +24,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 use Throwable;
 
-abstract class BaseInferenceDriver implements CanHandleInference
+abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
 {
     public function __construct(
         protected LLMConfig $config,

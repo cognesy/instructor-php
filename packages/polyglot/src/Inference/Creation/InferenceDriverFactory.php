@@ -6,7 +6,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\A21\A21Driver;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
 use Cognesy\Polyglot\Inference\Drivers\Azure\AzureDriver;
@@ -54,7 +54,7 @@ class InferenceDriverFactory
 
     /**
      * Registers driver under given name
-     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanHandleInference $driver
+     * @param string|callable(\Cognesy\Polyglot\Inference\Config\LLMConfig, \Cognesy\Http\HttpClient, \Psr\EventDispatcher\EventDispatcherInterface): \Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
         self::$drivers[$name] = match(true) {
@@ -66,7 +66,7 @@ class InferenceDriverFactory
     /**
      * Creates and returns an appropriate driver instance based on the given configuration.
      */
-    public function makeDriver(LLMConfig $config, HttpClient $httpClient): CanHandleInference {
+    public function makeDriver(LLMConfig $config, HttpClient $httpClient): CanProcessInferenceRequest {
         $driver = $config->driver;
         if (empty($driver)) {
             throw new InvalidArgumentException("Provider type not specified in the configuration.");
@@ -92,7 +92,7 @@ class InferenceDriverFactory
 
     /**
      * Returns factory to create LLM driver instance
-     * @return (callable(LLMConfig, HttpClient, EventDispatcherInterface): CanHandleInference)|null
+     * @return (callable(LLMConfig, HttpClient, EventDispatcherInterface): CanProcessInferenceRequest)|null
      */
     protected function getBundledDriver(string $name) : ?callable {
        return $this->bundledDrivers[$name] ?? null;

@@ -82,25 +82,12 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function withLLMProvider(LLMProvider $llm): static {
-        return new self(
-            llm: $llm,
-            httpClient: $this->httpClient,
-            toolChoice: $this->toolChoice,
-            responseFormat: $this->responseFormat,
-            model: $this->model,
-            options: $this->options,
-            mode: $this->mode,
-            messageCompiler: $this->messageCompiler,
-            retryPolicy: $this->retryPolicy,
-            events: $this->events,
-        );
+        return $this->with(llm: $llm);
     }
 
     #[\Override]
     public function withLLMConfig(LLMConfig $config): static {
-        $provider = clone $this->llm;
-        $provider->withLLMConfig($config);
-        return $this->withLLMProvider($provider);
+        return $this->with(llm: $this->llm->withLLMConfig($config));
     }
 
     #[\Override]
@@ -110,18 +97,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function withEventHandler(CanHandleEvents $events): static {
-        return new self(
-            llm: $this->llm,
-            httpClient: $this->httpClient,
-            toolChoice: $this->toolChoice,
-            responseFormat: $this->responseFormat,
-            model: $this->model,
-            options: $this->options,
-            mode: $this->mode,
-            messageCompiler: $this->messageCompiler,
-            retryPolicy: $this->retryPolicy,
-            events: $events,
-        );
+        return $this->with(events: $events);
     }
 
     #[\Override]
@@ -131,18 +107,7 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
 
     #[\Override]
     public function withMessageCompiler(CanCompileMessages $compiler): static {
-        return new self(
-            llm: $this->llm,
-            httpClient: $this->httpClient,
-            toolChoice: $this->toolChoice,
-            responseFormat: $this->responseFormat,
-            model: $this->model,
-            options: $this->options,
-            mode: $this->mode,
-            messageCompiler: $compiler,
-            retryPolicy: $this->retryPolicy,
-            events: $this->events,
-        );
+        return $this->with(messageCompiler: $compiler);
     }
 
     #[Override]
@@ -163,6 +128,32 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     }
 
     // INTERNAL /////////////////////////////////////////////////
+
+    private function with(
+        ?LLMProvider $llm = null,
+        ?HttpClient $httpClient = null,
+        string|array|null $toolChoice = null,
+        ?array $responseFormat = null,
+        ?string $model = null,
+        ?array $options = null,
+        ?OutputMode $mode = null,
+        ?CanCompileMessages $messageCompiler = null,
+        ?InferenceRetryPolicy $retryPolicy = null,
+        ?CanHandleEvents $events = null,
+    ): static {
+        return new static(
+            llm: $llm ?? $this->llm,
+            httpClient: $httpClient ?? $this->httpClient,
+            toolChoice: $toolChoice ?? $this->toolChoice,
+            responseFormat: $responseFormat ?? $this->responseFormat,
+            model: $model ?? $this->model,
+            options: $options ?? $this->options,
+            mode: $mode ?? $this->mode,
+            messageCompiler: $messageCompiler ?? $this->messageCompiler,
+            retryPolicy: $retryPolicy ?? $this->retryPolicy,
+            events: $events ?? $this->events,
+        );
+    }
 
     private function getToolCallResponse(AgentState $state, Tools $tools, Messages $messages) : InferenceResponse {
         $cache = $state->context()->toCachedContext($tools->toToolSchema());
@@ -278,14 +269,12 @@ class ToolCallingDriver implements CanUseTools, CanAcceptEventHandler, CanAccept
     }
 
     private function resolveLLMProvider(AgentState $state): LLMProvider {
-        $provider = clone $this->llm;
         $config = $state->llmConfig();
         if ($config === null) {
-            return $provider;
+            return $this->llm;
         }
 
-        $provider->withLLMConfig($config);
-        return $provider;
+        return $this->llm->withLLMConfig($config);
     }
 
     private function resolveModel(AgentState $state): ?string {

@@ -20,14 +20,14 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
-use Tests\Addons\Support\FakeInferenceDriver;
+use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function add_numbers(int $a, int $b): int { return $a + $b; }
 function subtract_numbers(int $a, int $b): int { return $a - $b; }
 
 it('executes a tool call and builds follow-up messages', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
@@ -56,7 +56,7 @@ it('executes a tool call and builds follow-up messages', function () {
 });
 
 it('iterates until no more tool calls and returns final response', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))
@@ -80,7 +80,7 @@ it('iterates until no more tool calls and returns final response', function () {
 });
 
 it('separates context and transcript messages between input and output collections', function () {
-    $driver = new FakeInferenceDriver([
+    $driver = new FakeInferenceRequestDriver([
         new InferenceResponse(
             content: '',
             toolCalls: new ToolCalls(new ToolCall('add_numbers', ['a' => 2, 'b' => 3]))

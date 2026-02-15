@@ -51,3 +51,40 @@ it('maps InferenceRequest to Gemini HttpRequest correctly (stream)', function ()
     expect($http->isStreamed())->toBeTrue();
 });
 
+it('uses configured endpoint template for non-stream requests', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://proxy.example.com',
+        apiKey: 'KEY',
+        endpoint: '/google/{model}:generateContent',
+        model: 'gemini-1.5-flash',
+        driver: 'gemini'
+    );
+    $adapter = new GeminiRequestAdapter(
+        $config,
+        new GeminiBodyFormat($config, new GeminiMessageFormat())
+    );
+
+    $req = new InferenceRequest(messages: Messages::fromString('Hello'), options: ['stream' => false]);
+    $http = $adapter->toHttpRequest($req);
+
+    expect($http->url())->toBe('https://proxy.example.com/google/gemini-1.5-flash:generateContent');
+});
+
+it('derives stream endpoint from configured Gemini endpoint template', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://proxy.example.com',
+        apiKey: 'KEY',
+        endpoint: '/google/{model}:generateContent',
+        model: 'gemini-1.5-flash',
+        driver: 'gemini'
+    );
+    $adapter = new GeminiRequestAdapter(
+        $config,
+        new GeminiBodyFormat($config, new GeminiMessageFormat())
+    );
+
+    $req = new InferenceRequest(messages: Messages::fromString('Hello'), options: ['stream' => true]);
+    $http = $adapter->toHttpRequest($req);
+
+    expect($http->url())->toBe('https://proxy.example.com/google/gemini-1.5-flash:streamGenerateContent?alt=sse');
+});

@@ -49,12 +49,12 @@
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-require_once __DIR__ . '/../Support/FakeInferenceDriver.php';
+require_once __DIR__ . '/../Support/FakeInferenceRequestDriver.php';
 
 final class MemoryProfileBench
 {
@@ -121,7 +121,7 @@ final class MemoryProfileBench
      */
     public function benchStream1KB(): void
     {
-        $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(1024)]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$this->makeStream(1024)]);
         $this->runStreamBench($driver, 1024);
     }
 
@@ -132,7 +132,7 @@ final class MemoryProfileBench
      */
     public function benchSync1KB(): void
     {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(1024))]);
+        $driver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $this->makeJson(1024))]);
         $this->runSyncBench($driver, 1024);
     }
 
@@ -147,7 +147,7 @@ final class MemoryProfileBench
      */
     public function benchStream10KB(): void
     {
-        $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(10240)]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$this->makeStream(10240)]);
         $this->runStreamBench($driver, 10240);
     }
 
@@ -158,7 +158,7 @@ final class MemoryProfileBench
      */
     public function benchSync10KB(): void
     {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(10240))]);
+        $driver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $this->makeJson(10240))]);
         $this->runSyncBench($driver, 10240);
     }
 
@@ -173,7 +173,7 @@ final class MemoryProfileBench
      */
     public function benchStream100KB(): void
     {
-        $driver = new FakeInferenceDriver(streamBatches: [$this->makeStream(102400)]);
+        $driver = new FakeInferenceRequestDriver(streamBatches: [$this->makeStream(102400)]);
         $this->runStreamBench($driver, 102400);
     }
 
@@ -184,7 +184,7 @@ final class MemoryProfileBench
      */
     public function benchSync100KB(): void
     {
-        $driver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $this->makeJson(102400))]);
+        $driver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $this->makeJson(102400))]);
         $this->runSyncBench($driver, 102400);
     }
 
@@ -192,7 +192,7 @@ final class MemoryProfileBench
     // Memory Measurement Helpers
     // ============================================================================
 
-    private function runStreamBench(FakeInferenceDriver $driver, int $payloadSize): void
+    private function runStreamBench(FakeInferenceRequestDriver $driver, int $payloadSize): void
     {
         // Force garbage collection to get clean baseline
         gc_collect_cycles();
@@ -227,7 +227,7 @@ final class MemoryProfileBench
         ]);
     }
 
-    private function runSyncBench(FakeInferenceDriver $driver, int $payloadSize): void
+    private function runSyncBench(FakeInferenceRequestDriver $driver, int $payloadSize): void
     {
         // Force garbage collection to get clean baseline
         gc_collect_cycles();

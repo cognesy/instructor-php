@@ -8,7 +8,7 @@ use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
-use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceRequestDriver;
 use Cognesy\Agents\Tests\Support\TestAgentLoop;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\MockTool;
@@ -39,7 +39,7 @@ function makeTestLoop(LLMProvider $llm, Tools $tools, int $maxIterations): TestA
 
 describe('Agent Loop', function () {
     it('completes a simple interaction', function () {
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: 'Hello! How can I help you?'),
         ]);
 
@@ -66,7 +66,7 @@ describe('Agent Loop', function () {
             'arguments' => json_encode(['arg' => 'val']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
@@ -97,7 +97,7 @@ describe('Agent Loop', function () {
             'arguments' => json_encode(['arg' => 'val']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
@@ -127,7 +127,7 @@ describe('Agent Loop', function () {
             'arguments' => json_encode(['arg' => 'val']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: '{"arg":"val"}', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
@@ -161,7 +161,7 @@ describe('Agent Loop', function () {
             'arguments' => json_encode(['arg' => 'val']),
         ]);
 
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: 'Calling tool', toolCalls: new ToolCalls($toolCall)),
             new InferenceResponse(content: 'Tool executed successfully.'),
         ]);
@@ -185,7 +185,7 @@ describe('Agent Loop', function () {
     });
 
     it('hydrates state llm config from driver when missing', function () {
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: 'Hydrated'),
         ]);
 
@@ -208,7 +208,7 @@ describe('Agent Loop', function () {
     });
 
     it('prefers state llm config over driver defaults', function () {
-        $driver = new FakeInferenceDriver([
+        $driver = new FakeInferenceRequestDriver([
             new InferenceResponse(content: 'Override'),
         ]);
 
