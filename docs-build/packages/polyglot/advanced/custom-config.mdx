@@ -73,7 +73,7 @@ return [
         // Additional connections...
     ],
 ];
-// @doctest id="85fd"
+// @doctest id="5d05"
 ```
 
 #### Embedding Configuration Structure
@@ -104,7 +104,7 @@ return [
         // Additional embedding connections...
     ],
 ];
-// @doctest id="4c0a"
+// @doctest id="71e8"
 ```
 
 ### Connection Parameters
@@ -172,7 +172,7 @@ GEMINI_API_KEY=your-key-here
 MISTRAL_API_KEY=your-key-here
 COHERE_API_KEY=your-key-here
 # etc.
-# @doctest id="7d99"
+# @doctest id="af75"
 ```
 
 Then load these environment variables using a package like `vlucas/phpdotenv`:
@@ -182,7 +182,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-// @doctest id="67da"
+// @doctest id="84a4"
 ```
 
 Or in frameworks like Laravel, environment variables are automatically loaded.
@@ -207,7 +207,7 @@ Different providers may support unique parameters and features. You can pass the
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference('openai');
+$inference = (new Inference())->using('openai');
 
 $response = $inference->with(
     messages: 'Generate a creative story.',
@@ -223,7 +223,7 @@ $response = $inference->with(
         ],
     ]
 )->get();
-// @doctest id="dd24"
+// @doctest id="d995"
 ```
 
 ### Anthropic-Specific Parameters
@@ -232,7 +232,7 @@ $response = $inference->with(
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference('anthropic');
+$inference = (new Inference())->using('anthropic');
 
 $response = $inference->with(
     messages: 'Generate a creative story.',
@@ -245,7 +245,7 @@ $response = $inference->with(
         'system' => 'You are a creative storyteller who specializes in magical realism.',
     ]
 )->get();
-// @doctest id="eb8b"
+// @doctest id="8902"
 ```
 
 
@@ -282,7 +282,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="7071"
+// @doctest id="a1d2"
 ```
 
 ### Runtime Configuration
@@ -313,7 +313,7 @@ $response = $inference->with(
 )->get();
 
 echo $response;
-// @doctest id="13ae"
+// @doctest id="410d"
 ```
 
 
@@ -362,7 +362,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="0262"
+// @doctest id="d6ed"
 ```
 
 
@@ -407,12 +407,12 @@ $answer = (new Inference)
         options: ['max_tokens' => 64]
     )
     ->toText();
-// @doctest id="88c9"
+// @doctest id="c844"
 ```
 
 An alternative way of providing driver definition is via class-string:
 
 ```php
 LLM::registerDriver('another-driver', AnotherDriver::class);
-// @doctest id="9949"
+// @doctest id="88b9"
 ```

@@ -2,8 +2,6 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
@@ -15,8 +13,6 @@ class InferenceProvider
     public function __construct(
         private CanCreateInference $inference,
         private CanMaterializeRequest $requestMaterializer,
-        private CanHandleEvents $events,
-        private ?HttpClient $httpClient = null,
     ) {}
 
     public function getInference(StructuredOutputExecution $execution): PendingInference {

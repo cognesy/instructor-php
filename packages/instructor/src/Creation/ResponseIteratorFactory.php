@@ -106,7 +106,6 @@ class ResponseIteratorFactory
         return new InferenceProvider(
             inference: $this->inference,
             requestMaterializer: new RequestMaterializer(),
-            events: $this->events,
         );
     }
 

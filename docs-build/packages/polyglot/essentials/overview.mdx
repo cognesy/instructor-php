@@ -26,7 +26,7 @@ $answer = (new Inference)->with(messages: 'What is the capital of France?')->get
 echo "Answer: $answer";
 
 // Output: Answer: The capital of France is Paris.
-// @doctest id="ff95"
+// @doctest id="588c"
 ```
 
 This static method uses the default connection specified in your configuration.
@@ -50,7 +50,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="93a4"
+// @doctest id="893c"
 ```
 
 
@@ -70,7 +70,7 @@ $answer = $inference->using('anthropic')
     )->get();
 
 echo "Answer (using Anthropic): $answer";
-// @doctest id="4207"
+// @doctest id="f81e"
 ```
 
 
@@ -95,7 +95,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Answer: $answer";
-// @doctest id="99c6"
+// @doctest id="b6ad"
 ```
 
 
@@ -119,7 +119,7 @@ $answer = $inference->with(
 )->get();
 
 echo "Poem: $answer";
-// @doctest id="98a7"
+// @doctest id="80c3"
 ```
 
 
@@ -145,7 +145,7 @@ $answer = (new Inference)
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
-// @doctest id="9c5c"
+// @doctest id="f574"
 ```
 
 
@@ -172,7 +172,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
 }
 echo "\n";
-// @doctest id="2b9d"
+// @doctest id="e9b1"
 ```
 
 
@@ -215,7 +215,7 @@ the client connection.
         'openrouter' => [ ... ],
         'together' => [ ... ],
     // ...
-// @doctest id="5600"
+// @doctest id="d051"
 ```
 To customize the available connections you can either modify existing entries or
 add your own.
@@ -234,7 +234,7 @@ $answer = (new Inference)
     )
     ->get();
 // ...
-// @doctest id="e154"
+// @doctest id="1197"
 ```
 
 You can change the location of the configuration files for Instructor to use via
@@ -280,9 +280,9 @@ $mistralResponse = $inference->using('mistral')
 echo "Mistral response: $mistralResponse\n\n";
 
 // You can create a new instance for each provider
-$openAI = new Inference('openai');
-$anthropic = new Inference('anthropic');
-$mistral = new Inference('mistral');
+$openAI = (new Inference())->using('openai');
+$anthropic = (new Inference())->using('anthropic');
+$mistral = (new Inference())->using('mistral');
 
 // And use them independently
 $responses = [
@@ -294,7 +294,7 @@ $responses = [
 foreach ($responses as $provider => $response) {
     echo "$provider response: $response\n";
 }
-// @doctest id="42b5"
+// @doctest id="eb7b"
 ```
 
 
@@ -308,7 +308,7 @@ Each provider offers multiple models with different capabilities, context length
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference('openai');
+$inference = (new Inference())->using('openai');
 
 // Use the default model (set in config)
 $defaultModelResponse = $inference->with(
@@ -330,5 +330,5 @@ $customResponse = $inference->with(
         'max_tokens' => 500,
     ]
 )->get();
-// @doctest id="8318"
+// @doctest id="efc9"
 ```

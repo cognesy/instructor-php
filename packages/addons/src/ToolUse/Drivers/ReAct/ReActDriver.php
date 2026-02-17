@@ -38,8 +38,6 @@ final class ReActDriver implements CanUseTools
     private bool $finalViaInference;
     private ?string $finalModel;
     private array $finalOptions;
-    private int $maxRetries;
-    private OutputMode $mode;
     private CanCreateInference $inference;
     private CanCreateStructuredOutput $structuredOutput;
 
@@ -51,8 +49,6 @@ final class ReActDriver implements CanUseTools
         bool $finalViaInference = false,
         ?string $finalModel = null,
         array $finalOptions = [],
-        int $maxRetries = 2,
-        OutputMode $mode = OutputMode::Json,
     ) {
         $this->inference = $inference;
         $this->structuredOutput = $structuredOutput;
@@ -61,8 +57,6 @@ final class ReActDriver implements CanUseTools
         $this->finalViaInference = $finalViaInference;
         $this->finalModel = $finalModel;
         $this->finalOptions = $finalOptions;
-        $this->maxRetries = $maxRetries;
-        $this->mode = $mode;
     }
 
     #[\Override]

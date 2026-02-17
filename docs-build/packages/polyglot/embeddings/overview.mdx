@@ -67,7 +67,7 @@ $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get
 // Get the vector values from the first result
 $vector = $result->first()->values();
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
-// @doctest id="576b"
+// @doctest id="de25"
 ```
 
 
@@ -78,7 +78,6 @@ Configure the underlying embeddings provider:
 ```php
 // Provider selection and configuration
 $embeddings->using('openai');                          // Use preset configuration
-$embeddings->withPreset('openai');                     // Alternative preset method
 $embeddings->withDsn('openai://model=text-embedding-3-large'); // Configure via DSN
 $embeddings->withConfig($customConfig);                // Explicit configuration
 $embeddings->withConfigProvider($configProvider);     // Custom config provider
@@ -90,7 +89,7 @@ $embeddings->withHttpDebugPreset('verbose');          // Debug configuration
 // Driver management
 $embeddings->withDriver($customDriver);               // Custom vectorization driver
 $embeddings->withProvider($customProvider);           // Custom provider instance
-// @doctest id="68e8"
+// @doctest id="57ef"
 ```
 
 
@@ -114,7 +113,7 @@ $embeddings->with(
     options: ['dimensions' => 1536],
     model: 'text-embedding-3-large'
 );
-// @doctest id="df06"
+// @doctest id="735c"
 ```
 
 
@@ -134,7 +133,7 @@ $values = $embeddings->first()->values();           // Array of floats
 // Advanced response handling
 $pending = $embeddings->create();                    // PendingEmbeddings for custom handling
 $response = $pending->get();                         // Execute and get response
-// @doctest id="9132"
+// @doctest id="2e8c"
 ```
 
 
@@ -160,7 +159,7 @@ $cohereVectors = (new Embeddings())
 
 echo "OpenAI dimensions: " . count($openaiVectors[0]->values()) . "\n";
 echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
-// @doctest id="0cd0"
+// @doctest id="f0c1"
 ```
 
 
@@ -191,7 +190,7 @@ $embeddings = (new Embeddings())
 
 $vector = $embeddings->first()->values();
 echo "Generated embedding with " . count($vector) . " dimensions\n";
-// @doctest id="6c7d"
+// @doctest id="a338"
 ```
 
 
@@ -207,5 +206,5 @@ Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
 Embeddings::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomEmbeddingsDriver($config, $httpClient);
 });
-// @doctest id="0757"
+// @doctest id="f5a5"
 ```

@@ -70,7 +70,6 @@ it('processes successful streaming attempt end-to-end', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
@@ -140,7 +139,6 @@ it('retries on validation failure when retries available', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
@@ -201,7 +199,6 @@ it('throws exception when max retries exceeded', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
@@ -257,7 +254,6 @@ it('hasNext returns false when execution is finalized', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $streamIterator = makeModularStreamIterator($events, $inferenceProvider);
@@ -312,7 +308,6 @@ it('clears attempt state between attempts', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $streamIterator = makeModularStreamIterator($events, $inferenceProvider);

@@ -25,7 +25,6 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
@@ -69,8 +68,6 @@ class ToolUseFactory
         bool $finalViaInference = false,
         ?string $finalModel = null,
         array $finalOptions = [],
-        int $maxRetries = 2,
-        OutputMode $mode = OutputMode::Json,
     ): ToolUse {
         $events = EventBusResolver::using($events);
         $tools = $tools ?? new Tools();
@@ -88,8 +85,6 @@ class ToolUseFactory
                 finalViaInference: $finalViaInference,
                 finalModel: $finalModel,
                 finalOptions: $finalOptions,
-                maxRetries: $maxRetries,
-                mode: $mode,
             ),
             events: $events,
         );

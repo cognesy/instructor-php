@@ -43,7 +43,6 @@ function makeModularUpdateGeneratorTestInfrastructure(FakeInferenceRequestDriver
     $inferenceProvider = new InferenceProvider(
         InferenceRuntime::fromProvider($llmProvider),
         new RequestMaterializer(),
-        $events
     );
 
     $deserializer = new ResponseDeserializer($events, [SymfonyDeserializer::class], $config);

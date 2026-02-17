@@ -44,7 +44,6 @@ it('makes single inference request and marks as exhausted', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $generator = new SyncUpdateGenerator(
@@ -90,7 +89,6 @@ it('returns single chunk with empty partials list', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $generator = new SyncUpdateGenerator(
@@ -126,7 +124,6 @@ it('normalizes content based on output mode', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $generator = new SyncUpdateGenerator(
@@ -164,7 +161,6 @@ it('does not call nextChunk when already exhausted', function () {
     $inferenceProvider = new InferenceProvider(
         inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
-        events: $events
     );
 
     $generator = new SyncUpdateGenerator(

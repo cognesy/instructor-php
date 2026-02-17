@@ -471,6 +471,7 @@ class StructuredOutput implements CanAcceptLLMConfig, CanCreateStructuredOutput
      *
      * @return PendingStructuredOutput<TResponse> A response object providing access to various results retrieval methods.
      */
+    #[\Override]
     public function create(?StructuredOutputRequest $request = null): PendingStructuredOutput {
         $request = $request ?? $this->request;
         if (!$request->hasRequestedSchema()) {
@@ -613,6 +614,7 @@ class StructuredOutput implements CanAcceptLLMConfig, CanCreateStructuredOutput
         return $copy;
     }
 
+    #[\Override]
     protected function invalidateRuntimeCache(): void {
         $this->runtimeCache = null;
         $this->runtimeCacheDirty = true;

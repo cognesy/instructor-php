@@ -32,7 +32,7 @@ $response = (new Inference())
     ->using('openai')
     ->withMessages('Explain quantum physics')
     ->get();
-// @doctest id="eb7f"
+// @doctest id="590c"
 ```
 
 
@@ -55,7 +55,7 @@ $inference->withHttpDebugPreset('verbose');          // Debug configuration
 
 // Driver management
 $inference->withDriver($customDriver);               // Custom inference driver
-// @doctest id="d272"
+// @doctest id="8c10"
 ```
 
 
@@ -85,7 +85,7 @@ $inference->withOptions(['temperature' => 0.5]);    // Additional options
 // Advanced features
 $inference->withStreaming(true);                     // Enable streaming
 $inference->withCachedContext($messages, $tools);   // Context caching
-// @doctest id="136d"
+// @doctest id="500d"
 ```
 
 
@@ -110,7 +110,29 @@ $pending = $inference->create();
 
 // Direct request execution
 $inference->withRequest($existingRequest);
-// @doctest id="ca3a"
+// @doctest id="202d"
+```
+
+## Runtime-First Usage (`CanCreateInference`)
+
+For constructor-injected creators, convert the facade to runtime and call `create()` with an explicit `InferenceRequest`:
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Inference;
+
+$creator = (new Inference())
+    ->using('openai')
+    ->toRuntime();
+
+$request = new InferenceRequest(
+    messages: 'What is the capital of France?',
+    model: 'gpt-4o-mini',
+);
+
+$response = $creator->create($request)->get();
+// @doctest id="e380"
 ```
 
 
@@ -129,7 +151,7 @@ $data = $inference->asJsonData();                    // Parsed array
 
 // Streaming
 $stream = $inference->stream();                      // InferenceStream object
-// @doctest id="a0a6"
+// @doctest id="67a9"
 ```
 
 
@@ -145,5 +167,5 @@ Inference::registerDriver('custom-provider', CustomDriver::class);
 Inference::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomDriver($config, $httpClient);
 });
-// @doctest id="0307"
+// @doctest id="58fa"
 ```
