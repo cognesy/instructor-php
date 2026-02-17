@@ -1,8 +1,11 @@
 
-# Instructor for PHP
+# What is this monorepo?
 
-Structured data extraction in PHP, powered by LLMs. Designed for simplicity, transparency, and control.
+This monorepo contains a set of dev-friendly, framework agnostic components offering 3 main capabilities:
 
+- **Instructor for PHP** - structured data extraction in PHP - powered by LLMs, designed for simplicity, transparency, and control; supports custom LLM output processors (not just JSON),
+- **Polyglot for PHP** - unified LLM API - write code once, deploy with any LLM provider: OpenAI chat completions API, OpenAI responses API, Anthropic, Gemini, Ollama, etc.; you can write own LLM drivers,
+- **Agent SDK for PHP** - lightweight but powerful agent, supports custom tools, lifecycle hooks, context management, custom stop / continuation criteria, subagents, observability via events, packaged capabilities, agent templates, and more.
 
 ## What is Instructor?
 
