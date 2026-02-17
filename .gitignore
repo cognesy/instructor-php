@@ -102,6 +102,7 @@ packages/*/.phpunit.result.cache
 packages/*/coverage/
 
 # Non-distributed files (temporary, experimental, to be archived / removed)
+/research/
 /archived/
 /experimental/
 /prompts/misc/
