@@ -95,7 +95,7 @@ final class LLMProvider implements CanResolveLLMConfig, HasExplicitInferenceDriv
     }
 
     #[\Override]
-    public function withLLMConfig(LLMConfig $config): self {
+    public function withLLMConfig(LLMConfig $config): static {
         return $this->with(explicitConfig: $config);
     }
 

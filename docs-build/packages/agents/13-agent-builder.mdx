@@ -27,7 +27,7 @@ $agent = AgentBuilder::base()
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="ba20"
+// @doctest id="5b38"
 ```
 
 ## Core API
@@ -39,7 +39,7 @@ $result = $agent->execute($state);
 ```php
 $builder->withCapability(CanProvideAgentCapability $capability): self;
 $builder->build(): AgentLoop;
-// @doctest id="f5d1"
+// @doctest id="f1d4"
 ```
 
 **`CanConfigureAgent`** (capability-facing):
@@ -59,7 +59,7 @@ $agent->withHooks(HookStack $hooks): self;
 
 $agent->deferredTools(): DeferredToolProviders;
 $agent->withDeferredTools(DeferredToolProviders $providers): self;
-// @doctest id="0eff"
+// @doctest id="cd6a"
 ```
 
 ## Writing a Capability
@@ -89,7 +89,7 @@ class UseRateLimiting implements CanProvideAgentCapability
         return $agent->withHooks($hooks);
     }
 }
-// @doctest id="20d5"
+// @doctest id="db71"
 ```
 
 Capabilities can configure any aspect of the agent: tools, hooks, driver, compiler, and deferred tool providers.
@@ -117,7 +117,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->tools()->merge(new Tools($myTool))
     );
 }
-// @doctest id="e87c"
+// @doctest id="af09"
 ```
 
 ### Adding Hooks
@@ -133,7 +133,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
     );
     return $agent->withHooks($hooks);
 }
-// @doctest id="db25"
+// @doctest id="fed0"
 ```
 
 ### Deferred Tools
@@ -156,7 +156,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->deferredTools()->withProvider($deferred)
     );
 }
-// @doctest id="3e32"
+// @doctest id="ae67"
 ```
 
 `UseSubagents` uses this pattern — the `SpawnSubagentTool` needs the parent's driver and event bus, which are only finalized at build time.
@@ -179,7 +179,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 
     return $agent;
 }
-// @doctest id="52d2"
+// @doctest id="bb5b"
 ```
 
 ### Capability Names
@@ -226,7 +226,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 $agent = AgentBuilder::base()
     ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->build();
-// @doctest id="8e8a"
+// @doctest id="6fe9"
 ```
 
 ### File system agent with guards
@@ -237,7 +237,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools(baseDir: '/home/user/workspace'))
     ->withCapability(new UseGuards(maxSteps: 15, maxExecutionTime: 60.0))
     ->build();
-// @doctest id="c8d0"
+// @doctest id="b500"
 ```
 
 ### Agent with custom hook
@@ -257,7 +257,7 @@ $agent = AgentBuilder::base()
         priority: 100,
     ))
     ->build();
-// @doctest id="1edd"
+// @doctest id="134c"
 ```
 
 ### Custom context compiler
@@ -273,7 +273,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitingCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="f2c4"
+// @doctest id="967b"
 ```
 
 ## Build Resolution Order
@@ -312,7 +312,7 @@ $agent = AgentBuilder::base($events)
 // Or attach a logger after building
 $logger = new AgentConsoleLogger(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
-// @doctest id="f865"
+// @doctest id="12ee"
 ```
 
 ## Immutability
@@ -327,7 +327,7 @@ $base = AgentBuilder::base()
 $bashAgent = $base->withCapability(new UseBash())->build();
 $fileAgent = $base->withCapability(new UseFileTools(baseDir: '.'))->build();
 // $base is unchanged
-// @doctest id="db81"
+// @doctest id="3dff"
 ```
 
 ## Builder Internals
@@ -347,7 +347,7 @@ AgentConfigurator (internal, implements CanConfigureAgent)
   → deferredTools: DeferredToolProviders
   → events: CanHandleEvents
   → toAgentLoop(): resolves driver → tools → interceptor → AgentLoop
-// @doctest id="4c48"
+// @doctest id="771a"
 ```
 
 Each `capability.configure(configurator)` call returns a new `AgentConfigurator` with the applied changes. When all capabilities are installed, `toAgentLoop()` runs the resolution pipeline and produces the final `AgentLoop`.

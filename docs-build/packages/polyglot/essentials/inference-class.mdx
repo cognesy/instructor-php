@@ -32,7 +32,7 @@ $response = (new Inference())
     ->using('openai')
     ->withMessages('Explain quantum physics')
     ->get();
-// @doctest id="979d"
+// @doctest id="7ad0"
 ```
 
 
@@ -55,7 +55,7 @@ $inference->withHttpDebugPreset('verbose');          // Debug configuration
 
 // Driver management
 $inference->withDriver($customDriver);               // Custom inference driver
-// @doctest id="adce"
+// @doctest id="2225"
 ```
 
 
@@ -85,7 +85,7 @@ $inference->withOptions(['temperature' => 0.5]);    // Additional options
 // Advanced features
 $inference->withStreaming(true);                     // Enable streaming
 $inference->withCachedContext($messages, $tools);   // Context caching
-// @doctest id="f9b0"
+// @doctest id="1cf9"
 ```
 
 
@@ -110,7 +110,7 @@ $pending = $inference->create();
 
 // Direct request execution
 $inference->withRequest($existingRequest);
-// @doctest id="7f16"
+// @doctest id="8dd5"
 ```
 
 ## Runtime-First Usage (`CanCreateInference`)
@@ -132,7 +132,7 @@ $request = new InferenceRequest(
 );
 
 $response = $creator->create($request)->get();
-// @doctest id="3de5"
+// @doctest id="9987"
 ```
 
 
@@ -151,7 +151,7 @@ $data = $inference->asJsonData();                    // Parsed array
 
 // Streaming
 $stream = $inference->stream();                      // InferenceStream object
-// @doctest id="95a8"
+// @doctest id="954b"
 ```
 
 
@@ -167,5 +167,5 @@ Inference::registerDriver('custom-provider', CustomDriver::class);
 Inference::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomDriver($config, $httpClient);
 });
-// @doctest id="33a7"
+// @doctest id="577d"
 ```
