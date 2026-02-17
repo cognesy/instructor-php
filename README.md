@@ -1,11 +1,18 @@
 
-# What is this monorepo?
+# About This Monorepo
 
 This monorepo contains a set of dev-friendly, framework agnostic components offering 3 main capabilities:
 
 - **Instructor for PHP** - structured data extraction in PHP - powered by LLMs, designed for simplicity, transparency, and control; supports custom LLM output processors (not just JSON),
 - **Polyglot for PHP** - unified LLM API - write code once, deploy with any LLM provider: OpenAI chat completions API, OpenAI responses API, Anthropic, Gemini, Ollama, etc.; you can write own LLM drivers,
 - **Agent SDK for PHP** - lightweight but powerful agent, supports custom tools, lifecycle hooks, context management, custom stop / continuation criteria, subagents, observability via events, packaged capabilities, agent templates, and more.
+
+## Read More
+
+- Official website https://instructorphp.com
+- Docs website (Mintlify) https://docs.instructorphp.com
+- Docs (Github Pages) https://cognesy.github.io/instructor-php/
+
 
 ## What is Instructor?
 
@@ -20,13 +27,6 @@ Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instru
 Here's a simple CLI demo app using Instructor to extract structured data from text:
 
 ![image](docs/images/extraction.gif)
-
-
-## Read More
-
-- Official website https://instructorphp.com
-- Docs website (Mintlify) https://docs.instructorphp.com
-- Docs (Github Pages) https://cognesy.github.io/instructor-php/
 
 
 ## How Instructor Enhances Your Workflow
