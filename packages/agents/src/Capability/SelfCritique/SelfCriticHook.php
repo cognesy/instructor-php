@@ -8,7 +8,8 @@ use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Hook\Contracts\HookInterface;
 use Cognesy\Agents\Hook\Data\HookContext;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Messages\Messages;
 
 final class SelfCriticHook implements HookInterface
@@ -60,9 +61,8 @@ When rejecting, be specific:
 PROMPT;
 
     public function __construct(
+        private CanCreateStructuredOutput $structuredOutput,
         private int $maxCriticIterations = 2,
-        private ?string $llmPreset = null,
-        private ?StructuredOutput $structuredOutput = null,
     ) {}
 
     #[\Override]
@@ -129,7 +129,7 @@ PROMPT;
             return $state;
         }
         $firstMessage = $state->messages()->first();
-        $task = $firstMessage?->toString() ?? '';
+        $task = $firstMessage->toString();
         return $state->withMetadata(self::ORIGINAL_TASK_KEY, $task);
     }
 
@@ -220,19 +220,14 @@ PROMPT;
     private function evaluateResponse(string $task, string $evidence, string $response): SelfCriticResult
     {
         $prompt = sprintf(self::CRITIC_PROMPT, $task, $evidence, $response);
+        $request = new StructuredOutputRequest(
+            messages: $prompt,
+            requestedSchema: SelfCriticResult::class,
+        );
 
         try {
-            $structured = ($this->structuredOutput ?? new StructuredOutput())
-                ->withMessages($prompt)
-                ->withResponseClass(SelfCriticResult::class)
-                ->withMaxRetries(2);
-
-            if ($this->llmPreset !== null) {
-                $structured = $structured->using($this->llmPreset);
-            }
-
             /** @var SelfCriticResult */
-            return $structured->get();
+            return $this->structuredOutput->create($request)->get();
         } catch (\Throwable) {
             return new SelfCriticResult(
                 approved: true,

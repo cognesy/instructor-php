@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Capability\StructuredOutput;
 
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 
 /**
  * Defines a schema with optional per-schema configuration.
@@ -56,9 +56,11 @@ final readonly class SchemaDefinition
         return new self(class: $class, description: $description);
     }
 
-    public function applyTo(StructuredOutput $instructor): void {
-        if ($this->prompt !== null) { $instructor->withPrompt($this->prompt); }
-        if ($this->examples !== null) { $instructor->withExamples($this->examples); }
-        if ($this->llmOptions !== null) { $instructor->withOptions($this->llmOptions); }
+    public function withRequest(StructuredOutputRequest $request): StructuredOutputRequest {
+        return $request->with(
+            prompt: $this->prompt,
+            examples: $this->examples,
+            options: $this->llmOptions,
+        );
     }
 }

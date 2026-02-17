@@ -11,6 +11,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceRequestDriver;
 
@@ -30,7 +31,11 @@ it('stops due to token usage limit being reached', function () {
     $toolUse = ToolUseFactory::default(
         tools: $tools,
         continuationCriteria: new ContinuationCriteria(new TokenUsageLimit(10, static fn(ToolUseState $state): int => $state->usage()->total())),
-        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            ),
+        )
     );
 
     // first step accumulates to 9 -> can continue; after second step accumulates to 11 -> stop

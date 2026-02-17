@@ -17,6 +17,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
@@ -44,7 +45,11 @@ it('executes a tool call and builds follow-up messages', function () {
         
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            ),
+        )
     );
 
     $newState = $toolUse->nextStep($state);
@@ -71,7 +76,11 @@ it('iterates until no more tool calls and returns final response', function () {
         
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            ),
+        )
     );
 
     $finalState = $toolUse->finalStep($state);
@@ -99,7 +108,11 @@ it('separates context and transcript messages between input and output collectio
 
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            ),
+        )
     );
 
     $intermediateState = $toolUse->nextStep($state);

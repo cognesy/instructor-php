@@ -10,6 +10,8 @@ use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\Testing\FakeAgentDriver;
 use Cognesy\Agents\Drivers\Testing\ScenarioStep;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 describe('StructuredOutput Capability', function () {
     it('executes structured output tool deterministically with validation failure', function () {
@@ -24,7 +26,10 @@ describe('StructuredOutput Capability', function () {
                     'schema' => 'demo',
                 ], executeTools: true),
             ])))
-            ->withCapability(new UseStructuredOutputs($schemas))
+            ->withCapability(new UseStructuredOutputs(
+                schemas: $schemas,
+                structuredOutput: StructuredOutputRuntime::fromProvider(LLMProvider::new()),
+            ))
             ->build();
 
         // Get first step from iterate()

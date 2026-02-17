@@ -22,6 +22,7 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class AttemptTestModel {
@@ -67,7 +68,7 @@ it('processes successful streaming attempt end-to-end', function () {
     $llmProvider = LLMProvider::new()->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(
-        llmProvider: $llmProvider,
+        inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
         events: $events
     );
@@ -137,7 +138,7 @@ it('retries on validation failure when retries available', function () {
     $llmProvider = LLMProvider::new()->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(
-        llmProvider: $llmProvider,
+        inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
         events: $events
     );
@@ -198,7 +199,7 @@ it('throws exception when max retries exceeded', function () {
     $llmProvider = LLMProvider::new()->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(
-        llmProvider: $llmProvider,
+        inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
         events: $events
     );
@@ -254,7 +255,7 @@ it('hasNext returns false when execution is finalized', function () {
     $llmProvider = LLMProvider::new()->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(
-        llmProvider: $llmProvider,
+        inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
         events: $events
     );
@@ -309,7 +310,7 @@ it('clears attempt state between attempts', function () {
     $llmProvider = LLMProvider::new()->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(
-        llmProvider: $llmProvider,
+        inference: InferenceRuntime::fromProvider($llmProvider),
         requestMaterializer: new RequestMaterializer(),
         events: $events
     );

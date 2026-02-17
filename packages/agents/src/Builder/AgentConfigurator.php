@@ -16,9 +16,10 @@ use Cognesy\Agents\Hook\Collections\RegisteredHooks;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
 use Cognesy\Agents\Tool\ToolExecutor;
-use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 /** @internal */
 final readonly class AgentConfigurator implements CanConfigureAgent
@@ -33,13 +34,23 @@ final readonly class AgentConfigurator implements CanConfigureAgent
     ) {}
 
     public static function base(?CanHandleEvents $parentEvents = null): self {
+        $events = new EventDispatcher('agent-builder', $parentEvents);
+        $llm = LLMProvider::new();
+
         return new self(
             tools: new Tools(),
             contextCompiler: new ConversationWithCurrentToolTrace(),
-            toolUseDriver: new ToolCallingDriver(),
+            toolUseDriver: new ToolCallingDriver(
+                llm: $llm,
+                events: $events,
+                inference: InferenceRuntime::fromProvider(
+                    provider: $llm,
+                    events: $events,
+                ),
+            ),
             hooks: new HookStack(new RegisteredHooks()),
             deferredTools: DeferredToolProviders::empty(),
-            events: new EventDispatcher('agent-builder', $parentEvents),
+            events: $events,
         );
     }
 
@@ -131,6 +142,13 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         return $this->with(deferredTools: $deferredTools);
     }
 
+    // EVENTS ////////////////////////////////////////////////////////
+
+    #[\Override]
+    public function events(): CanHandleEvents {
+        return $this->events;
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////
 
     private function with(
@@ -156,13 +174,8 @@ final readonly class AgentConfigurator implements CanConfigureAgent
     }
 
     private function normalizeDriver(CanUseTools $driver, CanCompileMessages $compiler): CanUseTools {
-        $driver = match (true) {
-            $driver instanceof CanAcceptMessageCompiler => $driver->withMessageCompiler($compiler),
-            default => $driver,
-        };
-
         return match (true) {
-            $driver instanceof CanAcceptEventHandler => $driver->withEventHandler($this->events),
+            $driver instanceof CanAcceptMessageCompiler => $driver->withMessageCompiler($compiler),
             default => $driver,
         };
     }

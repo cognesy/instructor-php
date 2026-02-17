@@ -7,6 +7,7 @@ use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 function add_numbers_smoke(int $a, int $b): int { return $a + $b; }
@@ -38,9 +39,12 @@ it('threads HttpClient through ToolUse -> Inference (OpenAI)', function () {
         })
         ->create();
 
+    $llm = LLMProvider::using('openai');
     $driver = new ToolCallingDriver(
-        llm: LLMProvider::using('openai'),
-        httpClient: $http,
+        inference: InferenceRuntime::fromProvider(
+            provider: $llm,
+            httpClient: $http,
+        ),
         model: 'gpt-4o-mini'
     );
 
@@ -58,4 +62,3 @@ it('threads HttpClient through ToolUse -> Inference (OpenAI)', function () {
     expect($state->currentStep()->hasToolCalls())->toBeTrue();
     expect(count($state->currentStep()->toolExecutions()->all()))->toBe(1);
 });
-

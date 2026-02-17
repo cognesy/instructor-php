@@ -356,10 +356,13 @@ $agent = AgentBuilder::base()
 ### Custom Driver
 ```php
 use Cognesy\Addons\Agent\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+$llm = LLMProvider::new()->withConnection('anthropic');
 $driver = new ToolCallingDriver(
-    llm: LLMProvider::new()->withConnection('anthropic'),
+    inference: InferenceRuntime::fromProvider($llm),
+    llm: $llm,
     model: 'claude-sonnet-4-20250514',
 );
 

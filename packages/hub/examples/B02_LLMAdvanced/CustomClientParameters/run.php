@@ -64,7 +64,7 @@ $config = new LLMConfig(
 
 $answer = (new Inference)
     ->withEventHandler($events)
-    ->withConfig($config)
+    ->withLLMConfig($config)
     ->withHttpClient($customClient)
     ->wiretap(fn(Event $e) => $e->print())
     ->with(

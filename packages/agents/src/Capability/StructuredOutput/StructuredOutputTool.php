@@ -4,8 +4,9 @@ namespace Cognesy\Agents\Capability\StructuredOutput;
 
 use Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas;
 use Cognesy\Agents\Tool\Tools\SimpleTool;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Maybe\Maybe;
-use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 use Cognesy\Utils\JsonSchema\ToolSchema;
 use Throwable;
@@ -29,6 +30,7 @@ final class StructuredOutputTool extends SimpleTool
 
     public function __construct(
         private CanManageSchemas $schemas,
+        private CanCreateStructuredOutput $structuredOutput,
         private StructuredOutputPolicy $policy = new StructuredOutputPolicy(),
     ) {
         parent::__construct(new StructuredOutputToolDescriptor($schemas));
@@ -39,7 +41,6 @@ final class StructuredOutputTool extends SimpleTool
         $input = $this->arg($args, 'input', 0, '');
         $schemaName = $this->arg($args, 'schema', 1, '');
         $storeAs = $this->arg($args, 'store_as', 2);
-        $maxRetries = $this->arg($args, 'max_retries', 3);
 
         // Validate input
         if ($input === '') {
@@ -59,7 +60,7 @@ final class StructuredOutputTool extends SimpleTool
         }
 
         try {
-            $data = $this->extract($input, $schemaName, $maxRetries);
+            $data = $this->extract($input, $schemaName);
 
             return StructuredOutputResult::success(
                 schema: $schemaName,
@@ -74,22 +75,15 @@ final class StructuredOutputTool extends SimpleTool
         }
     }
 
-    private function extract(string $input, string $schemaName, ?int $maxRetries): mixed {
+    private function extract(string $input, string $schemaName): mixed {
         $schema = $this->schemas->get($schemaName);
-        $instructor = new StructuredOutput();
-
-        $this->policy->applyTo($instructor);
-        $schema->applyTo($instructor);
-
-        $retries = $maxRetries ?? $schema->maxRetries ?? $this->policy->defaultMaxRetries;
         $responseModel = $this->policy->useMaybe ? Maybe::is($schema->class) : $schema->class;
-
-        $result = $instructor
-            ->withMaxRetries($retries)
-            ->withMessages($input)
-            ->withResponseModel($responseModel)
-            ->get();
-
+        $request = $this->policy->withRequest(new StructuredOutputRequest(
+            messages: $input,
+            requestedSchema: $responseModel,
+        ));
+        $request = $schema->withRequest($request);
+        $result = $this->structuredOutput->create($request)->get();
         return $this->unwrapResult($result, $schemaName);
     }
 
@@ -117,7 +111,6 @@ final class StructuredOutputTool extends SimpleTool
                     JsonSchema::string('input', 'The unstructured text to extract data from'),
                     JsonSchema::enum('schema', $this->schemas->names(), 'Name of the schema to extract into'),
                     JsonSchema::string('store_as', 'Optional: metadata key to store the extracted data for use by other tools'),
-                    JsonSchema::integer('max_retries', 'Optional: maximum retry attempts on validation failure (default: 3)'),
                 ])
                 ->withRequiredProperties(['input', 'schema'])
         )->toArray();

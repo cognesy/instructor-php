@@ -45,7 +45,7 @@ it('resolves active preset and records observation', function () {
         predictorPath: 'test.path'
     );
 
-    expect($out)->toBe('HELLO | Be concise.');
+    expect($out)->toBe('HELLO | BE CONCISE.');
 
     $records = iterator_to_array($examples->find($sig));
     expect(count($records))->toBe(1);
@@ -83,4 +83,3 @@ it('canary policy can select canary preset', function () {
     // Minimal assertion: still returns either active or null gracefully.
     expect(in_array($ver, ['v1', null, 'v2'], true))->toBeTrue();
 });
-

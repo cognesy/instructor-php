@@ -7,8 +7,9 @@ use Cognesy\Evals\Execution;
 use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\GradedCorrectnessAnalysis;
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Messages\Messages;
 
 /**
  * @implements CanGenerateObservations<Execution>
@@ -21,10 +22,8 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
         private string $name,
         private array $expected,
         private array $actual,
-        private ?StructuredOutput $structuredOutput = null,
-    ) {
-        $this->structuredOutput = $structuredOutput ?? new StructuredOutput();
-    }
+        private CanCreateStructuredOutput $structuredOutput,
+    ) {}
 
     #[\Override]
     public function accepts(mixed $subject): bool {
@@ -72,16 +71,14 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : GradedCorrectnessAnalysis {
-        return ($this->structuredOutput ?? new StructuredOutput())
-            ->withInput([
+        $request = new StructuredOutputRequest(
+            messages: Messages::fromInput([
                 'expected_result' => $this->expected,
                 'actual_result' => $this->actual,
-            ])
-            ->withResponseClass(GradedCorrectnessAnalysis::class)
-            ->withPrompt('Analyze the expected and actual results and determine how correct the actual result is.')
-            ->withToolName('correctness_grade')
-            ->withToolDescription('Respond with grade of correctness to indicate to what extent the actual result is correct.')
-            ->withOutputMode(OutputMode::Json)
-            ->get();
+            ]),
+            requestedSchema: GradedCorrectnessAnalysis::class,
+            prompt: 'Analyze the expected and actual results and determine how correct the actual result is.',
+        );
+        return $this->structuredOutput->create($request)->get();
     }
 }

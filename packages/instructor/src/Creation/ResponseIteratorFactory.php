@@ -104,7 +104,7 @@ class ResponseIteratorFactory
 
     private function makeInferenceProvider(): InferenceProvider {
         return new InferenceProvider(
-            llmProvider: $this->inference,
+            inference: $this->inference,
             requestMaterializer: new RequestMaterializer(),
             events: $this->events,
         );

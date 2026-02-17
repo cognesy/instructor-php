@@ -83,10 +83,22 @@ Notes:
 ## Quick Start (ReAct)
 
 ```php
-use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\ToolUse\Collections\Tools;use Cognesy\Addons\ToolUse\Data\ToolUseState;use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUseFactory;use Cognesy\Messages\Messages;use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Addons\StepByStep\Continuation\ContinuationCriteria;use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;use Cognesy\Addons\StepByStep\Continuation\Criteria\TokenUsageLimit;use Cognesy\Addons\ToolUse\Collections\Tools;use Cognesy\Addons\ToolUse\Data\ToolUseState;use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecision;use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;use Cognesy\Addons\ToolUse\Tools\FunctionTool;use Cognesy\Addons\ToolUse\ToolUseFactory;use Cognesy\Events\EventBusResolver;use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;use Cognesy\Instructor\StructuredOutputRuntime;use Cognesy\Messages\Messages;use Cognesy\Polyglot\Inference\Enums\OutputMode;use Cognesy\Polyglot\Inference\InferenceRuntime;use Cognesy\Polyglot\Inference\LLMProvider;
+
+$events = EventBusResolver::using(null);
+$inference = InferenceRuntime::fromProvider(LLMProvider::using('openai'), events: $events);
+$structuredOutput = new StructuredOutputRuntime(
+    inference: $inference,
+    events: $events,
+    config: (new StructuredOutputConfigBuilder())
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2)
+        ->create(),
+);
 
 $driver = new ReActDriver(
-    llm: LLMProvider::using('openai'),
+    inference: $inference,
+    structuredOutput: $structuredOutput,
     maxRetries: 2,
     finalViaInference: true
 );

@@ -16,7 +16,7 @@ it('creates driver from explicit config and resolves correct class', function ()
         driver: 'openai',
     );
 
-    $provider = LLMProvider::new()->withConfig($config);
+    $provider = LLMProvider::new()->withLLMConfig($config);
     $httpClient = (new HttpClientBuilder())->create();
     $factory = new InferenceDriverFactory(new EventDispatcher());
     $driver = $factory->makeDriver($provider->resolveConfig(), $httpClient);

@@ -7,13 +7,14 @@ use Cognesy\Addons\Chat\Contracts\CanChooseNextParticipant;
 use Cognesy\Addons\Chat\Contracts\CanParticipateInChat;
 use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Exceptions\NoParticipantsException;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Utils\Result\Result;
 
 final readonly class LLMBasedCoordinator implements CanChooseNextParticipant
 {
     public function __construct(
-        private ?StructuredOutput $structuredOutput = null,
+        private CanCreateStructuredOutput $structuredOutput,
         private string $instruction = 'Choose the next participant who should take turn in this conversation.',
     ) {}
 
@@ -38,11 +39,12 @@ final readonly class LLMBasedCoordinator implements CanChooseNextParticipant
         $messages = $state->messages();
         $prompt = "{$this->instruction}\nAvailable participants:\n{$availableParticipants}";
 
-        $result = Result::try(fn() => ($this->structuredOutput ?? new StructuredOutput())
-            ->withMessages($messages->toArray())
-            ->withPrompt($prompt)
-            ->withResponseModel(ParticipantChoice::class)
-            ->get());
+        $request = new StructuredOutputRequest(
+            messages: $messages,
+            requestedSchema: ParticipantChoice::class,
+            prompt: $prompt,
+        );
+        $result = Result::try(fn() => $this->structuredOutput->create($request)->get());
 
         $choice = $result->valueOr(null);
         if ($choice instanceof ParticipantChoice) {

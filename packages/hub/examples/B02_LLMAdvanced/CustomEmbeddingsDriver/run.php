@@ -14,6 +14,7 @@ require 'examples/boot.php';
 use Cognesy\Config\Env;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
 $documents = [
@@ -42,7 +43,7 @@ $provider = EmbeddingsProvider::new()
     ->withConfig($config);
 
 $bestMatches = EmbedUtils::findSimilar(
-    provider: $provider,
+    embeddings: EmbeddingsRuntime::fromProvider($provider),
     query: $query,
     documents: $documents,
     topK: 3

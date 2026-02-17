@@ -52,7 +52,7 @@ $user = $structuredOutput
         model: 'MiniMax-Text-01', // set your own value/source
         mode: OutputMode::MdJson,
     )
-    ->withDebugPreset('on')
+    ->withHttpDebugPreset('on')
     ->get();
 
 print("Completed response model:\n\n");

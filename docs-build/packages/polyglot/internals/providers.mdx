@@ -30,19 +30,19 @@ $provider = LLMProvider::dsn('openai://model=gpt-4&temperature=0.7');
 // Fluent configuration
 $provider = LLMProvider::new()
     ->withLLMPreset('openai')
-    ->withConfig($customConfig);
+    ->withLLMConfig($customConfig);
 
 // Create the final driver using a factory and injected HTTP client
 $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="993d"
+// @doctest id="a53e"
 ```
 
 Key methods:
 - `withLLMPreset(string $preset)`: Set configuration preset
-- `withConfig(LLMConfig $config)`: Set explicit configuration
+- `withLLMConfig(LLMConfig $config)`: Set explicit configuration
 - `withConfigOverrides(array $overrides)`: Override specific config values
 - `withDsn(string $dsn)`: Configure via DSN string
 - `withDriver(CanHandleInference $driver)`: Set explicit driver
@@ -72,7 +72,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="24c5"
+// @doctest id="456e"
 ```
 
 Key methods:
@@ -119,7 +119,7 @@ interface CanMapRequestBody {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="73ea"
+// @doctest id="b37d"
 ```
 
 
@@ -152,7 +152,7 @@ interface EmbedResponseAdapter {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="7527"
+// @doctest id="783c"
 ```
 
 
@@ -176,7 +176,7 @@ abstract class BaseInferenceDriver implements CanHandleInference {
     public function makeStreamResponsesFor(InferenceRequest $request): iterable { ... }
     public function capabilities(?string $model = null): DriverCapabilities { ... }
 }
-// @doctest id="2203"
+// @doctest id="1961"
 ```
 
 Provider-specific drivers (e.g. `OpenAIDriver`, `AnthropicDriver`) extend `BaseInferenceDriver` and wire up their own request/response translators in the constructor.
@@ -207,7 +207,7 @@ class InferenceDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="ad9e"
+// @doctest id="1e30"
 ```
 
 ### EmbeddingsDriverFactory
@@ -232,5 +232,5 @@ class EmbeddingsDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="d0a8"
+// @doctest id="b72c"
 ```

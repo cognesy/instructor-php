@@ -19,11 +19,16 @@ use Cognesy\Addons\ToolUse\Continuation\ToolCallPresenceCheck;
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Data\ToolUseState;
 use Cognesy\Addons\ToolUse\Data\ToolUseStep;
+use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class ToolUseFactory
 {
@@ -42,9 +47,52 @@ class ToolUseFactory
             toolExecutor: (new ToolExecutor($tools))->withEventHandler($events),
             processors: $processors ?? self::defaultProcessors(),
             continuationCriteria: $continuationCriteria ?? self::defaultContinuationCriteria(),
-            driver: $driver ?? new ToolCallingDriver(inference: new Inference()),
+            driver: $driver ?? new ToolCallingDriver(
+                inference: InferenceRuntime::fromProvider(
+                    provider: LLMProvider::new(),
+                    events: $events,
+                ),
+            ),
             events: $events,
         ));
+    }
+
+    public static function react(
+        CanCreateInference $inference,
+        CanCreateStructuredOutput $structuredOutput,
+        ?Tools $tools = null,
+        ?CanApplyProcessors $processors = null,
+        ?ContinuationCriteria $continuationCriteria = null,
+        ?CanHandleEvents $events = null,
+        string $model = '',
+        array $options = [],
+        bool $finalViaInference = false,
+        ?string $finalModel = null,
+        array $finalOptions = [],
+        int $maxRetries = 2,
+        OutputMode $mode = OutputMode::Json,
+    ): ToolUse {
+        $events = EventBusResolver::using($events);
+        $tools = $tools ?? new Tools();
+
+        return new ToolUse(
+            tools: $tools,
+            toolExecutor: (new ToolExecutor($tools))->withEventHandler($events),
+            processors: $processors ?? self::defaultProcessors(),
+            continuationCriteria: $continuationCriteria ?? self::defaultContinuationCriteria(),
+            driver: new ReActDriver(
+                inference: $inference,
+                structuredOutput: $structuredOutput,
+                model: $model,
+                options: $options,
+                finalViaInference: $finalViaInference,
+                finalModel: $finalModel,
+                finalOptions: $finalOptions,
+                maxRetries: $maxRetries,
+                mode: $mode,
+            ),
+            events: $events,
+        );
     }
 
     protected static function defaultProcessors(): CanApplyProcessors {

@@ -177,11 +177,6 @@ class InferenceFake
         return $this;
     }
 
-    public function withConfig($config): self
-    {
-        return $this;
-    }
-
     public function withLLMConfig(LLMConfig $config): self
     {
         return $this;
@@ -203,11 +198,6 @@ class InferenceFake
     }
 
     public function withHttpDebug(bool $enabled = true): self
-    {
-        return $this;
-    }
-
-    public function withDebugPreset(?string $preset): self
     {
         return $this;
     }

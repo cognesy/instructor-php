@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\Image;
 
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Messages\Utils\Image as ImageUtil;
 
 /**
@@ -47,7 +47,7 @@ class Image extends ImageUtil
             $content[] = ['type' => 'text', 'text' => $this->prompt];
         }
         $content[] = ['type' => 'image_url', 'image_url' => ['url' => $this->url ?: $this->base64bytes]];
-        
+
         return [
             'role' => 'user',
             'content' => $content,
@@ -59,36 +59,32 @@ class Image extends ImageUtil
      *
      * @param string|array|object $responseModel The response model.
      * @param string $prompt The prompt to extract data from the image.
-     * @param string $preset The connection string.
      * @param string $model The model to use.
      * @param string $system The system string.
      * @param array $examples Examples for the request.
-     * @param int $maxRetries The maximum number of retries.
      * @param array $options Additional options for the request.
-     * @param OutputMode $mode The mode to use.
+     * @param CanCreateStructuredOutput $structuredOutput Preconfigured creator.
      * @return mixed
      */
     public function toData(
         string|array|object $responseModel,
         string              $prompt,
-        string              $connection = '',
+        CanCreateStructuredOutput $structuredOutput,
         string              $model = '',
         string              $system = '',
         array               $examples = [],
-        int                 $maxRetries = 0,
         array               $options = [],
-        OutputMode          $mode = OutputMode::Tools,
     ) : mixed {
-        return (new StructuredOutput)->using($connection)->with(
+        $request = new StructuredOutputRequest(
             messages: $this->toMessages(),
-            responseModel: $responseModel,
+            requestedSchema: $responseModel,
             system: $system,
             prompt: $prompt,
             examples: $examples,
             model: $model,
-            maxRetries: $maxRetries,
             options: $options,
-            mode: $mode,
-        )->get();
+        );
+
+        return $structuredOutput->create($request)->get();
     }
 }

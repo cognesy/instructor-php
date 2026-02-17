@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Laravel\Support;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Laravel Config Provider
@@ -16,7 +16,7 @@ use Illuminate\Contracts\Foundation\Application;
 final class LaravelConfigProvider implements CanProvideConfig
 {
     public function __construct(
-        private readonly Application $app,
+        private readonly Container $app,
     ) {}
 
     /**
@@ -43,7 +43,7 @@ final class LaravelConfigProvider implements CanProvideConfig
         }
 
         // Direct config access
-        return $this->app['config']->get($path, $default);
+        return $this->config()->get($path, $default);
     }
 
     /**
@@ -64,7 +64,7 @@ final class LaravelConfigProvider implements CanProvideConfig
             return $this->hasHttpConfig($path);
         }
 
-        return $this->app['config']->has($path);
+        return $this->config()->has($path);
     }
 
     /**
@@ -83,7 +83,7 @@ final class LaravelConfigProvider implements CanProvideConfig
         }
 
         if ($path === 'llm.defaultPreset') {
-            return $this->app['config']->get('instructor.default', 'openai');
+            return $this->config()->get('instructor.default', 'openai');
         }
 
         return $default;
@@ -104,7 +104,7 @@ final class LaravelConfigProvider implements CanProvideConfig
         }
 
         if ($path === 'embed.defaultPreset') {
-            return $this->app['config']->get('instructor.embeddings.default', 'openai');
+            return $this->config()->get('instructor.embeddings.default', 'openai');
         }
 
         return $default;
@@ -133,7 +133,7 @@ final class LaravelConfigProvider implements CanProvideConfig
 
         if (str_starts_with($path, 'llm.presets.')) {
             $presetName = substr($path, strlen('llm.presets.'));
-            return $this->app['config']->has("instructor.connections.{$presetName}");
+            return $this->config()->has("instructor.connections.{$presetName}");
         }
 
         return false;
@@ -150,7 +150,7 @@ final class LaravelConfigProvider implements CanProvideConfig
 
         if (str_starts_with($path, 'embed.presets.')) {
             $presetName = substr($path, strlen('embed.presets.'));
-            return $this->app['config']->has("instructor.embeddings.connections.{$presetName}");
+            return $this->config()->has("instructor.embeddings.connections.{$presetName}");
         }
 
         return false;
@@ -169,7 +169,7 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function buildAllLLMPresets(): array
     {
-        $connections = $this->app['config']->get('instructor.connections', []);
+        $connections = $this->config()->get('instructor.connections', []);
         $presets = [];
 
         foreach ($connections as $name => $config) {
@@ -177,7 +177,7 @@ final class LaravelConfigProvider implements CanProvideConfig
         }
 
         return [
-            'defaultPreset' => $this->app['config']->get('instructor.default', 'openai'),
+            'defaultPreset' => $this->config()->get('instructor.default', 'openai'),
             'presets' => $presets,
         ];
     }
@@ -187,7 +187,7 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function buildLLMPreset(string $name): ?array
     {
-        $config = $this->app['config']->get("instructor.connections.{$name}");
+        $config = $this->config()->get("instructor.connections.{$name}");
 
         if ($config === null) {
             return null;
@@ -201,7 +201,7 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function buildAllEmbedPresets(): array
     {
-        $connections = $this->app['config']->get('instructor.embeddings.connections', []);
+        $connections = $this->config()->get('instructor.embeddings.connections', []);
         $presets = [];
 
         foreach ($connections as $name => $config) {
@@ -209,7 +209,7 @@ final class LaravelConfigProvider implements CanProvideConfig
         }
 
         return [
-            'defaultPreset' => $this->app['config']->get('instructor.embeddings.default', 'openai'),
+            'defaultPreset' => $this->config()->get('instructor.embeddings.default', 'openai'),
             'presets' => $presets,
         ];
     }
@@ -219,7 +219,7 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function buildEmbedPreset(string $name): ?array
     {
-        $config = $this->app['config']->get("instructor.embeddings.connections.{$name}");
+        $config = $this->config()->get("instructor.embeddings.connections.{$name}");
 
         if ($config === null) {
             return null;
@@ -233,7 +233,7 @@ final class LaravelConfigProvider implements CanProvideConfig
      */
     private function buildHttpPresets(): array
     {
-        $http = $this->app['config']->get('instructor.http', []);
+        $http = $this->config()->get('instructor.http', []);
 
         return [
             'defaultPreset' => 'default',
@@ -323,5 +323,9 @@ final class LaravelConfigProvider implements CanProvideConfig
             'perplexity' => 'https://api.perplexity.ai',
             default => '',
         };
+    }
+
+    private function config(): object {
+        return $this->app->make('config');
     }
 }

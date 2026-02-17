@@ -9,44 +9,45 @@ description: 'Explore the public API layer of Polyglot, including the Inference 
 The `Inference` class is the main entry point for LLM interactions. It encapsulates the complexities of different providers behind a unified interface.
 
 ```php
-namespace Cognesy\Polyglot\LLM;
+namespace Cognesy\Polyglot\Inference;
+
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class Inference {
-    // Create and manage the LLM instance
     public function __construct(
-        string $connection = '',
-        ?LLMConfig $config = null,
-        ?CanHandleHttpRequest $httpClient = null,
-        ?CanHandleInference $driver = null,
-        ?EventDispatcher $events = null
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanProvideConfig $configProvider = null
     ) { ... }
 
-    // Configure the instance
+    // Infrastructure/provider configuration
     public function using(string $preset): self { ... }
-    public function withConfig(LLMConfig $config): self { ... }
-    public function withHttpClient(CanHandleHttpRequest $httpClient): self { ... }
-    public function withDriver(CanHandleInference $driver): self { ... }
-    public function withDebugPreset(?string $preset): self { ... }
-    public function withCachedContext(...): self { ... }
+    public function withDsn(string $dsn): self { ... }
+    public function withLLMConfig(LLMConfig $config): self { ... }
+    public function withLLMConfigOverrides(array $overrides): self { ... }
+    public function withConfigProvider(CanProvideConfig $configProvider): self { ... }
+    public function withHttpClient(HttpClient $httpClient): self { ... }
+    public function withDriver(CanProcessInferenceRequest $driver): self { ... }
+    public function withHttpClientPreset(string $preset): self { ... }
+    public function withHttpDebugPreset(?string $preset): self { ... }
+    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): self { ... }
 
-    // Main method for creating inference requests
-    public function create(
-        string|array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = [],
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = OutputMode::Text
-    ): PendingInference { ... }
+    // Request building and execution
+    public function with(...): self { ... }
+    public function withRequest(InferenceRequest $request): self { ... }
+    public function create(?InferenceRequest $request = null): PendingInference { ... }
+    public function toRuntime(): InferenceRuntime { ... }
 
-    // Static convenience method for simple text generation
-    public static function text(
-        string|array $messages,
-        string $connection = '',
-        string $model = '',
-        array $options = []
-    ): string { ... }
+    // Convenience response accessors
+    public function get(): string { ... }
+    public function response(): InferenceResponse { ... }
+    public function stream(): InferenceStream { ... }
 }
 ```
 
@@ -62,26 +63,52 @@ Similarly, the `Embeddings` class provides a unified interface for generating em
 ```php
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;class Embeddings {
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Psr\EventDispatcher\EventDispatcherInterface;
+
+class Embeddings {
     public function __construct(
-        string $connection = '',
-        ?EmbeddingsConfig $config = null,
-        ?CanHandleHttpRequest $httpClient = null,
-        ?CanVectorize $driver = null,
-        ?EventDispatcher $events = null
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanProvideConfig $configProvider = null
     ) { ... }
 
-    // Configuration methods
+    // Infrastructure/provider configuration
     public function using(string $preset): self { ... }
+    public function withDsn(string $dsn): self { ... }
     public function withConfig(EmbeddingsConfig $config): self { ... }
-    public function withModel(string $model): self { ... }
-    public function withHttpClient(CanHandleHttpRequest $httpClient): self { ... }
-    public function withDriver(CanVectorize $driver): self { ... }
+    public function withConfigProvider(CanProvideConfig $configProvider): self { ... }
+    public function withHttpClient(HttpClient $httpClient): self { ... }
+    public function withDriver(CanHandleVectorization $driver): self { ... }
+    public function withHttpDebugPreset(?string $preset): self { ... }
 
-    // Main method for generating embeddings
-    public function create(string|array $input, array $options = []): EmbeddingsResponse { ... }
+    // Request building and execution
+    public function with(...): self { ... }
+    public function withRequest(EmbeddingsRequest $request): self { ... }
+    public function create(?EmbeddingsRequest $request = null): PendingEmbeddings { ... }
+    public function toRuntime(): EmbeddingsRuntime { ... }
 
-    // Utility methods for finding similar content
-    public function findSimilar(string $query, array $documents, int $topK = 5): array { ... }
+    // Convenience response accessors
+    public function get(): EmbeddingsResponse { ... }
+    public function first(): ?Vector { ... }
+    public function vectors(): array { ... }
 }
+```
+
+Similarity-search helper methods are provided by `EmbedUtils`, not by the `Embeddings` facade:
+
+```php
+use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
+
+$matches = EmbedUtils::findSimilar(
+    embeddings: (new Embeddings())->using('openai')->toRuntime(),
+    query: $query,
+    documents: $documents,
+    topK: 5,
+);
 ```

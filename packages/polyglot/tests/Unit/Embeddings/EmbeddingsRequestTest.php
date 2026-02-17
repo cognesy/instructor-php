@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsRetryPolicy;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 
 it('normalizes inputs and stores model and options', function () {
@@ -19,3 +20,13 @@ it('throws on empty inputs', function () {
     expect($act)->toThrow(InvalidArgumentException::class);
 });
 
+it('accepts retry policy via constructor named args', function () {
+    $retryPolicy = new EmbeddingsRetryPolicy(maxAttempts: 3);
+    $req = new EmbeddingsRequest(
+        input: ['hello'],
+        model: 'text-embedding-3-small',
+        retryPolicy: $retryPolicy,
+    );
+
+    expect($req->retryPolicy())->toBe($retryPolicy);
+});

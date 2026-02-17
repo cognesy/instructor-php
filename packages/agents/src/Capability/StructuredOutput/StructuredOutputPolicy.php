@@ -2,8 +2,10 @@
 
 namespace Cognesy\Agents\Capability\StructuredOutput;
 
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 final readonly class StructuredOutputPolicy
 {
@@ -42,10 +44,24 @@ final readonly class StructuredOutputPolicy
         return $this->with(model: $model);
     }
 
-    public function applyTo(StructuredOutput $instructor): void {
-        if ($this->llmPreset !== null) { $instructor->using($this->llmPreset); }
-        if ($this->model !== null) { $instructor->withModel($this->model); }
-        if ($this->outputMode !== null) { $instructor->withOutputMode($this->outputMode); }
-        if ($this->systemPrompt !== null) { $instructor->withSystem($this->systemPrompt); }
+    public function provider(): LLMProvider {
+        return match (true) {
+            $this->llmPreset !== null => LLMProvider::using($this->llmPreset),
+            default => LLMProvider::new(),
+        };
+    }
+
+    public function withRequest(StructuredOutputRequest $request): StructuredOutputRequest {
+        return $request->with(
+            system: $this->systemPrompt,
+            model: $this->model,
+        );
+    }
+
+    public function withConfigBuilder(StructuredOutputConfigBuilder $configBuilder): StructuredOutputConfigBuilder {
+        if ($this->outputMode === null) {
+            return $configBuilder;
+        }
+        return $configBuilder->withOutputMode($this->outputMode);
     }
 }

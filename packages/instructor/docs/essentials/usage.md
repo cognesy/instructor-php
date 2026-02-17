@@ -197,6 +197,28 @@ $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
 ```
 
+### Runtime-First Execution (`CanCreateStructuredOutput`)
+
+When you need constructor-injected creators (for agents, addons, or DI containers), use `toRuntime()` and execute via request objects:
+
+```php
+<?php
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\StructuredOutput;
+
+$creator = (new StructuredOutput())
+    ->using('openai')
+    ->toRuntime();
+
+$request = new StructuredOutputRequest(
+    messages: "His name is Jason, he is 28 years old.",
+    requestedSchema: Person::class,
+);
+
+$person = $creator->create($request)->get();
+?>
+```
+
 ### Response Types Explained
 
 - **`get()`**: Returns the parsed and validated structured result (e.g., `Person` object)

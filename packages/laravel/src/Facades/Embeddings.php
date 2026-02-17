@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withDsn(string $dsn)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withHttpDebugPreset(?string $preset)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings withHttpDebug(bool $enabled = true)
- * @method static \Cognesy\Polyglot\Embeddings\Embeddings withDebugPreset(?string $preset)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings wiretap(callable $callback)
  * @method static \Cognesy\Polyglot\Embeddings\Embeddings onEvent(string $eventClass, callable $callback)
  * @method static \Cognesy\Polyglot\Embeddings\PendingEmbeddings create()

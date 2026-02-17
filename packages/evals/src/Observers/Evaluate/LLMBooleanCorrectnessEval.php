@@ -7,8 +7,9 @@ use Cognesy\Evals\Execution;
 use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\BooleanCorrectnessAnalysis;
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Messages\Messages;
 
 /**
  * @implements CanGenerateObservations<Execution>
@@ -21,10 +22,8 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
         private string $name,
         private array $expected,
         private array $actual,
-        private ?StructuredOutput $structuredOutput = null,
-    ) {
-        $this->structuredOutput = $structuredOutput ?? new StructuredOutput();
-    }
+        private CanCreateStructuredOutput $structuredOutput,
+    ) {}
 
     #[\Override]
     public function accepts(mixed $subject): bool {
@@ -78,17 +77,15 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : BooleanCorrectnessAnalysis {
-        return ($this->structuredOutput ?? new StructuredOutput())
-            ->withInput([
+        $request = new StructuredOutputRequest(
+            messages: Messages::fromInput([
                 'expected_result' => $this->expected,
-                'actual_result' => $this->actual
-            ])
-            ->withResponseClass(BooleanCorrectnessAnalysis::class)
-            ->withPrompt('Analyze the expected and actual results and determine if the actual result is correct.')
-            ->withSystem('You are a correctness evaluator. You will be given an expected result and an actual result. Your task is to determine if the actual result is correct. Follow schema: <|json_schema|>')
-            ->withToolName('correctness_evaluation')
-            ->withToolDescription('Respond with true or false to indicate if the actual result is correct.')
-            ->withOutputMode(OutputMode::Json)
-            ->get();
+                'actual_result' => $this->actual,
+            ]),
+            requestedSchema: BooleanCorrectnessAnalysis::class,
+            system: 'You are a correctness evaluator. You will be given an expected result and an actual result. Your task is to determine if the actual result is correct. Follow schema: <|json_schema|>',
+            prompt: 'Analyze the expected and actual results and determine if the actual result is correct.',
+        );
+        return $this->structuredOutput->create($request)->get();
     }
 }

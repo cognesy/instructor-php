@@ -16,6 +16,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 describe('Agent with File Tools', function () {
@@ -27,7 +28,14 @@ describe('Agent with File Tools', function () {
             $events = new EventDispatcher();
             $interceptor = new PassThroughInterceptor();
             $llm = LLMProvider::new()->withDriver($driver);
-            $toolDriver = new ToolCallingDriver(llm: $llm, events: $events);
+            $toolDriver = new ToolCallingDriver(
+                inference: InferenceRuntime::fromProvider(
+                    provider: $llm,
+                    events: $events,
+                ),
+                llm: $llm,
+                events: $events,
+            );
             $toolExecutor = new ToolExecutor($tools, events: $events, interceptor: $interceptor);
 
             return new TestAgentLoop(

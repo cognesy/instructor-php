@@ -59,7 +59,7 @@ use Cognesy\Polyglot\Inference\Inference;
 // Enable debug mode
 $inference = new Inference()
     ->using('openai')
-    ->withDebugPreset('on');
+    ->withHttpDebugPreset('on');
 
 // Make a request
 $response = $inference->with(

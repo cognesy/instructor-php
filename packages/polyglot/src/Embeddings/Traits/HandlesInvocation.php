@@ -15,18 +15,24 @@ trait HandlesInvocation
 {
     /** @var EmbeddingsDriverFactory|null */
     private ?EmbeddingsDriverFactory $embeddingsFactory = null;
+    private ?int $embeddingsFactoryEventBusId = null;
 
     private function getEmbeddingsFactory(): EmbeddingsDriverFactory {
-        return $this->embeddingsFactory ??= new EmbeddingsDriverFactory($this->events);
+        $eventsId = spl_object_id($this->events);
+        if ($this->embeddingsFactory === null || $this->embeddingsFactoryEventBusId !== $eventsId) {
+            $this->embeddingsFactory = new EmbeddingsDriverFactory($this->events);
+            $this->embeddingsFactoryEventBusId = $eventsId;
+        }
+        return $this->embeddingsFactory;
     }
+
     public function withRequest(EmbeddingsRequest $request) : static {
-        $this->with(
-            input: $request->inputs(),
-            options: $request->options(),
-            model: $request->model()
-        );
-        $this->retryPolicy = $request->retryPolicy();
-        return $this;
+        $copy = clone $this;
+        $copy->inputs = $request->inputs();
+        $copy->options = $request->options();
+        $copy->model = $request->model();
+        $copy->retryPolicy = $request->retryPolicy();
+        return $copy;
     }
 
     /**
@@ -40,10 +46,11 @@ trait HandlesInvocation
         array $options = [],
         string $model = '',
     ) : static {
-        $this->inputs = $input;
-        $this->options = $options;
-        $this->model = $model;
-        return $this;
+        $copy = clone $this;
+        $copy->inputs = $input;
+        $copy->options = $options;
+        $copy->model = $model;
+        return $copy;
     }
 
     /**
@@ -57,6 +64,14 @@ trait HandlesInvocation
             model: $this->model,
             retryPolicy: $this->retryPolicy,
         );
+        return $this->toRuntime()->create($request);
+    }
+
+    public function toRuntime(): EmbeddingsRuntime {
+        if (!$this->runtimeCacheDirty && $this->runtimeCache !== null) {
+            return $this->runtimeCache;
+        }
+
         // EmbeddingsRequested will be emitted by the driver with normalized payload
 
         // Ensure HttpClient is available; build default if not provided
@@ -85,9 +100,11 @@ trait HandlesInvocation
             $driver = $this->getEmbeddingsFactory()->makeDriver($config, $client);
         }
 
-        return (new EmbeddingsRuntime(
+        $this->runtimeCache = new EmbeddingsRuntime(
             driver: $driver,
             events: $this->events,
-        ))->create($request);
+        );
+        $this->runtimeCacheDirty = false;
+        return $this->runtimeCache;
     }
 }

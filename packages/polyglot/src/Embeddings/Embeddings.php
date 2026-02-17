@@ -26,6 +26,8 @@ class Embeddings implements CanCreateEmbeddings
 
     protected EmbeddingsProvider $embeddingsProvider;
     protected ?CanResolveEmbeddingsConfig $embeddingsResolver = null;
+    protected ?EmbeddingsRuntime $runtimeCache = null;
+    protected bool $runtimeCacheDirty = true;
     /** @var HttpClient|null Facade-level HTTP client (optional) */
     protected ?HttpClient $httpClient = null;
     /** @var string|null Facade-level HTTP debug preset (optional) */
@@ -42,10 +44,22 @@ class Embeddings implements CanCreateEmbeddings
         );
     }
 
+    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
+        $copy = clone $this;
+        $copy->events = EventBusResolver::using($events);
+        $copy->invalidateRuntimeCache();
+        return $copy;
+    }
+
     /**
      * @param callable(Config\EmbeddingsConfig, HttpClient, EventDispatcherInterface): Contracts\CanHandleVectorization|string $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
         EmbeddingsDriverFactory::registerDriver($name, $driver);
+    }
+
+    protected function invalidateRuntimeCache(): void {
+        $this->runtimeCache = null;
+        $this->runtimeCacheDirty = true;
     }
 }

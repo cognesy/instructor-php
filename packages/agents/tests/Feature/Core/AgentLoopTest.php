@@ -18,13 +18,21 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 function makeTestLoop(LLMProvider $llm, Tools $tools, int $maxIterations): TestAgentLoop
 {
     $events = new EventDispatcher();
     $interceptor = new PassThroughInterceptor();
-    $driver = new ToolCallingDriver(llm: $llm, events: $events);
+    $driver = new ToolCallingDriver(
+        inference: InferenceRuntime::fromProvider(
+            provider: $llm,
+            events: $events,
+        ),
+        llm: $llm,
+        events: $events,
+    );
     $toolExecutor = new ToolExecutor($tools, events: $events, interceptor: $interceptor);
 
     return new TestAgentLoop(
@@ -195,7 +203,7 @@ describe('Agent Loop', function () {
         );
 
         $llm = LLMProvider::new()
-            ->withConfig($defaultConfig)
+            ->withLLMConfig($defaultConfig)
             ->withDriver($driver);
         $agent = makeTestLoop($llm, new Tools(), 1);
 
@@ -216,7 +224,7 @@ describe('Agent Loop', function () {
         $stateConfig = new LLMConfig(model: 'state-model');
 
         $llm = LLMProvider::new()
-            ->withConfig($driverConfig)
+            ->withLLMConfig($driverConfig)
             ->withDriver($driver);
         $agent = makeTestLoop($llm, new Tools(), 1);
 

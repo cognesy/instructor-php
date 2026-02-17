@@ -73,7 +73,7 @@ return [
         // Additional connections...
     ],
 ];
-// @doctest id="b577"
+// @doctest id="85fd"
 ```
 
 #### Embedding Configuration Structure
@@ -104,7 +104,7 @@ return [
         // Additional embedding connections...
     ],
 ];
-// @doctest id="e7de"
+// @doctest id="4c0a"
 ```
 
 ### Connection Parameters
@@ -172,7 +172,7 @@ GEMINI_API_KEY=your-key-here
 MISTRAL_API_KEY=your-key-here
 COHERE_API_KEY=your-key-here
 # etc.
-# @doctest id="a34d"
+# @doctest id="7d99"
 ```
 
 Then load these environment variables using a package like `vlucas/phpdotenv`:
@@ -182,7 +182,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-// @doctest id="eb05"
+// @doctest id="67da"
 ```
 
 Or in frameworks like Laravel, environment variables are automatically loaded.
@@ -223,7 +223,7 @@ $response = $inference->with(
         ],
     ]
 )->get();
-// @doctest id="2e32"
+// @doctest id="dd24"
 ```
 
 ### Anthropic-Specific Parameters
@@ -245,7 +245,7 @@ $response = $inference->with(
         'system' => 'You are a creative storyteller who specializes in magical realism.',
     ]
 )->get();
-// @doctest id="80c4"
+// @doctest id="eb8b"
 ```
 
 
@@ -282,7 +282,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="4343"
+// @doctest id="7071"
 ```
 
 ### Runtime Configuration
@@ -306,14 +306,14 @@ $customConfig = new LLMConfig(
 );
 
 // Use the custom configuration
-$inference = (new Inference)->withConfig($customConfig);
+$inference = (new Inference)->withLLMConfig($customConfig);
 
 $response = $inference->with(
     messages: 'What are the benefits of using custom configurations?'
 )->get();
 
 echo $response;
-// @doctest id="65a1"
+// @doctest id="13ae"
 ```
 
 
@@ -362,7 +362,7 @@ return [
         // Other connections...
     ],
 ];
-// @doctest id="55e3"
+// @doctest id="0262"
 ```
 
 
@@ -401,18 +401,18 @@ $config = new LLMConfig(
 
 // now we're calling inference using our configuration
 $answer = (new Inference)
-    ->withConfig($config)
+    ->withLLMConfig($config)
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )
     ->toText();
-// @doctest id="fda9"
+// @doctest id="88c9"
 ```
 
 An alternative way of providing driver definition is via class-string:
 
 ```php
 LLM::registerDriver('another-driver', AnotherDriver::class);
-// @doctest id="360f"
+// @doctest id="9949"
 ```

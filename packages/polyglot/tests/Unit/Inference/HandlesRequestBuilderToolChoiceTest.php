@@ -16,7 +16,7 @@ it('accepts array tool choice via HandlesRequestBuilder', function () {
         }
     };
 
-    $handler->withToolChoice(['type' => 'auto']);
+    $handler = $handler->withToolChoice(['type' => 'auto']);
     $request = $handler->requestBuilder()->create();
 
     expect($request->toolChoice())->toBe(['type' => 'auto']);

@@ -7,6 +7,7 @@ use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 function _inc_http(int $x): int { return $x + 1; }
@@ -34,9 +35,12 @@ it('executes two tool calls returned by HTTP mocked response', function () {
         })
         ->create();
 
+    $llm = LLMProvider::using('openai');
     $driver = new ToolCallingDriver(
-        llm: LLMProvider::using('openai'),
-        httpClient: $http,
+        inference: InferenceRuntime::fromProvider(
+            provider: $llm,
+            httpClient: $http,
+        ),
         model: 'gpt-4o-mini'
     );
 
@@ -56,4 +60,3 @@ it('executes two tool calls returned by HTTP mocked response', function () {
     $state = $toolUse->nextStep($state);
     expect(count($state->currentStep()->toolExecutions()->all()))->toBe(2);
 });
-

@@ -9,7 +9,7 @@
 
 **Provider Management (via HandlesLLMProvider trait):**
 - `withLLMProvider($provider)` - Set custom LLM provider
-- `withConfig($config)` - Set explicit LLM configuration
+- `withLLMConfig($config)` - Set explicit LLM configuration
 - `withConfigProvider($provider)` - Set configuration provider
 - `withDsn($dsn)` - Configure via DSN string
 - `using($preset)` - Use predefined configuration preset
@@ -17,7 +17,7 @@
 - `withHttpClientPreset($preset)` - Set HTTP client preset
 - `withLLMConfigOverrides($overrides)` - Override specific config values
 - `withDriver($driver)` - Set explicit inference driver
-- `withDebugPreset($preset)` - Set debug configuration
+- `withHttpDebugPreset($preset)` - Set debug configuration
 
 **Request Building (via HandlesRequestBuilder trait):**
 - `withMessages($messages)` - Set conversation messages (string or array)
@@ -57,7 +57,7 @@
 - `withDriver($driver)` - Set explicit vectorization driver
 - `withProvider($provider)` - Set embeddings provider
 - `withHttpClient($client)` - Set custom HTTP client
-- `withDebugPreset($preset)` - Set debug configuration
+- `withHttpDebugPreset($preset)` - Set debug configuration
 
 **Fluent Methods (via HandlesFluentMethods trait):**
 - `withInputs($input)` - Set input text/array for embedding
@@ -109,7 +109,7 @@
 - `using($preset)` - Use predefined configuration preset
 - `dsn($dsn)` - Configure via DSN string
 - `withLLMPreset($preset)` - Set LLM preset
-- `withConfig($config)` - Set explicit LLM configuration
+- `withLLMConfig($config)` - Set explicit LLM configuration
 - `withConfigOverrides($overrides)` - Override config values
 - `withConfigProvider($provider)` - Set config provider
 - `withDsn($dsn)` - Set DSN string

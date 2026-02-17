@@ -95,6 +95,7 @@ For testing the real `ToolCallingDriver` with scripted LLM responses:
 
 ```php
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $fakeDriver = new FakeInferenceDriver([
@@ -102,7 +103,10 @@ $fakeDriver = new FakeInferenceDriver([
 ]);
 
 $llm = LLMProvider::new()->withDriver($fakeDriver);
-$driver = new ToolCallingDriver(llm: $llm);
+$driver = new ToolCallingDriver(
+    inference: InferenceRuntime::fromProvider($llm),
+    llm: $llm,
+);
 ```
 
 This tests the full driver pipeline (message compilation, response parsing) without network calls.

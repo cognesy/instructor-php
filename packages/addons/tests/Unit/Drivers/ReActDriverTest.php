@@ -14,13 +14,36 @@ use Cognesy\Addons\ToolUse\Data\ToolUseStep;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceRequestDriver;
 
 
 function _react_add(int $a, int $b): int { return $a + $b; }
+
+function makeReActDriverForDriverTest(FakeInferenceRequestDriver $driver, bool $finalViaInference = false): ReActDriver {
+    $events = EventBusResolver::using(null);
+    $inference = InferenceRuntime::fromProvider(
+        provider: LLMProvider::new()->withDriver($driver),
+        events: $events,
+    );
+    $structuredOutput = new StructuredOutputRuntime(
+        inference: $inference,
+        events: $events,
+        config: (new StructuredOutputConfigBuilder())->create(),
+    );
+
+    return new ReActDriver(
+        inference: $inference,
+        structuredOutput: $structuredOutput,
+        finalViaInference: $finalViaInference,
+    );
+}
 
 it('runs a ReAct call then final answer', function () {
     $driver = new FakeInferenceRequestDriver([
@@ -39,7 +62,7 @@ it('runs a ReAct call then final answer', function () {
         ])),
     ]);
 
-    $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
+    $react = makeReActDriverForDriverTest($driver);
     $criteria = new ContinuationCriteria(
         new StepsLimit(2, fn(ToolUseState $s): int => $s->stepCount()),
         new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),
@@ -72,7 +95,7 @@ it('surfaces tool arg validation errors as observation', function () {
         ])),
     ]);
 
-    $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver));
+    $react = makeReActDriverForDriverTest($driver);
     $criteria = new ContinuationCriteria(
         new StepsLimit(2, fn(ToolUseState $s): int => $s->stepCount()),
         new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),
@@ -106,7 +129,7 @@ it('can finalize via Inference when configured', function () {
         new InferenceResponse(content: 'The final answer is 42'),
     ]);
 
-    $react = new ReActDriver(llm: LLMProvider::new()->withDriver($driver), finalViaInference: true);
+    $react = makeReActDriverForDriverTest($driver, finalViaInference: true);
     $criteria = new ContinuationCriteria(
         new StepsLimit(1, fn(ToolUseState $s): int => $s->stepCount()),
         new TokenUsageLimit(8192, fn(ToolUseState $s): int => $s->usage()->total()),

@@ -18,7 +18,7 @@ AgentLoop
   |
   |-- CanExecuteToolCalls (executor) # runs the actual tools
       |-- ToolExecutor              # default implementation
-// @doctest id="2a53"
+// @doctest id="0c4d"
 ```
 
 ## The Two Contracts
@@ -31,7 +31,7 @@ Sends state + tools to the LLM, gets back an updated state with tool call decisi
 interface CanUseTools {
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState;
 }
-// @doctest id="265b"
+// @doctest id="8d55"
 ```
 
 ### CanExecuteToolCalls (Executor)
@@ -42,7 +42,7 @@ Runs tool calls and returns execution results:
 interface CanExecuteToolCalls {
     public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }
-// @doctest id="3b6f"
+// @doctest id="a5a7"
 ```
 
 ## ToolCallingDriver
@@ -58,13 +58,16 @@ Uses the LLM's native function calling API.
 6. Return updated state with new `AgentStep`
 
 ```php
+$inference = InferenceRuntime::fromProvider($llm);
+
 $driver = new ToolCallingDriver(
+    inference: $inference,
     llm: $llm,
     model: 'gpt-4o',
     toolChoice: 'auto',          // 'auto', 'required', or specific tool
     mode: OutputMode::Tools,
 );
-// @doctest id="60b7"
+// @doctest id="d912"
 ```
 
 The LLM natively understands tools and returns structured `tool_calls` in its response.
@@ -81,14 +84,27 @@ Uses structured output to extract Thought/Action/Observation decisions.
 5. If `final_answer`: return the answer as the final response
 
 ```php
+$events = EventBusResolver::using(null);
+$inference = InferenceRuntime::fromProvider($llm, events: $events);
+$structuredOutput = new StructuredOutputRuntime(
+    inference: $inference,
+    events: $events,
+    config: (new StructuredOutputConfigBuilder())
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2)
+        ->create(),
+);
+
 $driver = new ReActDriver(
+    inference: $inference,
+    structuredOutput: $structuredOutput,
     llm: $llm,
     model: 'gpt-4o',
     mode: OutputMode::Json,
     maxRetries: 2,               // retries on extraction failure
     finalViaInference: false,    // optionally use separate LLM call for final answer
 );
-// @doctest id="6fef"
+// @doctest id="f293"
 ```
 
 The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, `args`, and `thought` fields.
@@ -116,7 +132,7 @@ $executor = new ToolExecutor(
 );
 
 $loop = AgentLoop::default()->withTools($tools)->withToolExecutor($executor);
-// @doctest id="0ccf"
+// @doctest id="67e4"
 ```
 
 ## When to Use Which Driver

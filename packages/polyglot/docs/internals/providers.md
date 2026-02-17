@@ -30,7 +30,7 @@ $provider = LLMProvider::dsn('openai://model=gpt-4&temperature=0.7');
 // Fluent configuration
 $provider = LLMProvider::new()
     ->withLLMPreset('openai')
-    ->withConfig($customConfig);
+    ->withLLMConfig($customConfig);
 
 // Create the final driver using a factory and injected HTTP client
 $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
@@ -41,7 +41,7 @@ $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($even
 
 Key methods:
 - `withLLMPreset(string $preset)`: Set configuration preset
-- `withConfig(LLMConfig $config)`: Set explicit configuration
+- `withLLMConfig(LLMConfig $config)`: Set explicit configuration
 - `withConfigOverrides(array $overrides)`: Override specific config values
 - `withDsn(string $dsn)`: Configure via DSN string
 - `withDriver(CanHandleInference $driver)`: Set explicit driver

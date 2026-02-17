@@ -2,7 +2,9 @@
 namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
@@ -10,7 +12,7 @@ use Cognesy\Polyglot\Inference\LLMProvider;
  * Handles self-inference for the class implementing this trait.
  *
  * This trait provides a static method `infer` that allows the class to perform inference
- * using the provided parameters. It utilizes the `StructuredOutput` class to handle the
+ * using the provided parameters. It utilizes runtime-first structured extraction to handle the
  * inference process.
  */
 trait HandlesSelfInference {
@@ -49,30 +51,29 @@ trait HandlesSelfInference {
         ?LLMProvider $llm = null,
         ?HttpClient $httpClient = null,
     ) : static {
-        $structured = (new StructuredOutput)
-            ->withLLMProvider($llm ?? LLMProvider::new())
-            //->wiretap(fn($e) => $e->print())
-            ->with(
-                messages: $messages,
-                responseModel: self::class,
-                system: $system,
-                prompt: $prompt,
-                examples: $examples,
-                model: $model,
-                maxRetries: $maxRetries,
-                options: $options,
-                toolName: $toolName,
-                toolDescription: $toolDescription,
-                retryPrompt: $retryPrompt,
-                mode: $mode,
-            );
-
-        if ($httpClient !== null) {
-            $structured = $structured->withHttpClient($httpClient);
+        $configBuilder = (new StructuredOutputConfigBuilder())
+            ->withMaxRetries($maxRetries)
+            ->withOutputMode($mode)
+            ->withRetryPrompt($retryPrompt);
+        if ($toolName !== null) {
+            $configBuilder = $configBuilder->withToolName($toolName);
         }
-
-        return $structured
-            ->create()
-            ->getInstanceOf(self::class);
+        if ($toolDescription !== null) {
+            $configBuilder = $configBuilder->withToolDescription($toolDescription);
+        }
+        $request = new StructuredOutputRequest(
+            messages: $messages,
+            requestedSchema: self::class,
+            system: $system,
+            prompt: $prompt,
+            examples: $examples,
+            model: $model,
+            options: $options,
+        );
+        return StructuredOutputRuntime::fromProvider(
+            provider: $llm ?? LLMProvider::new(),
+            httpClient: $httpClient,
+            structuredConfig: $configBuilder->create(),
+        )->create($request)->getInstanceOf(self::class);
     }
 }

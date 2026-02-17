@@ -22,10 +22,10 @@ class Inference {
 
     // Configure the instance
     public function using(string $preset): self { ... }
-    public function withConfig(LLMConfig $config): self { ... }
+    public function withLLMConfig(LLMConfig $config): self { ... }
     public function withHttpClient(CanHandleHttpRequest $httpClient): self { ... }
     public function withDriver(CanHandleInference $driver): self { ... }
-    public function withDebugPreset(?string $preset): self { ... }
+    public function withHttpDebugPreset(?string $preset): self { ... }
     public function withCachedContext(...): self { ... }
 
     // Main method for creating inference requests
@@ -47,7 +47,7 @@ class Inference {
         array $options = []
     ): string { ... }
 }
-// @doctest id="96f9"
+// @doctest id="3558"
 ```
 
 The `Inference` class follows a fluent interface pattern, allowing method chaining for configuration.
@@ -84,5 +84,5 @@ use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;class Embeddings {
     // Utility methods for finding similar content
     public function findSimilar(string $query, array $documents, int $topK = 5): array { ... }
 }
-// @doctest id="8f3b"
+// @doctest id="278a"
 ```

@@ -35,7 +35,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Throwable;
 
@@ -70,7 +70,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
             ),
             driver: new ToolCallingDriver(
                 llm: $llm,
-                inference: (new Inference())->withLLMProvider($llm),
+                inference: InferenceRuntime::fromProvider($llm, events: $events),
                 messageCompiler: new ConversationWithCurrentToolTrace(),
                 events: $events,
             ),

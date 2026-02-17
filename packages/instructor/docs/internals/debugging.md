@@ -15,7 +15,7 @@ The `StructuredOutput` class has a `withDebug()` method that can be used to debu
 
 ```php
 $result = (new StructuredOutput)
-    ->withDebugPreset('on')
+    ->withHttpDebugPreset('on')
     ->with(
         messages: "Jason is 25 years old",
         responseModel: User:class,
@@ -30,5 +30,4 @@ including:
  - response status, headers, and body.
 
 This is useful for debugging the request and response when you are not getting the expected results.
-
 

@@ -32,7 +32,7 @@ $response = (new Inference())
     ->using('openai')
     ->withMessages('Explain quantum physics')
     ->get();
-// @doctest id="a59b"
+// @doctest id="eb7f"
 ```
 
 
@@ -44,18 +44,18 @@ Configure the underlying LLM provider:
 // Provider selection and configuration
 $inference->using('openai');                           // Use preset configuration
 $inference->withDsn('openai://model=gpt-4');          // Configure via DSN
-$inference->withConfig($customConfig);                 // Explicit configuration
+$inference->withLLMConfig($customConfig);              // Explicit configuration
 $inference->withConfigProvider($configProvider);      // Custom config provider
 $inference->withLLMConfigOverrides(['temperature' => 0.7]);
 
 // HTTP client configuration
 $inference->withHttpClient($customHttpClient);        // Custom HTTP client
 $inference->withHttpClientPreset('debug');           // HTTP client preset
-$inference->withDebugPreset('verbose');              // Debug configuration
+$inference->withHttpDebugPreset('verbose');          // Debug configuration
 
 // Driver management
 $inference->withDriver($customDriver);               // Custom inference driver
-// @doctest id="53f3"
+// @doctest id="d272"
 ```
 
 
@@ -85,7 +85,7 @@ $inference->withOptions(['temperature' => 0.5]);    // Additional options
 // Advanced features
 $inference->withStreaming(true);                     // Enable streaming
 $inference->withCachedContext($messages, $tools);   // Context caching
-// @doctest id="5413"
+// @doctest id="136d"
 ```
 
 
@@ -110,7 +110,7 @@ $pending = $inference->create();
 
 // Direct request execution
 $inference->withRequest($existingRequest);
-// @doctest id="b041"
+// @doctest id="ca3a"
 ```
 
 
@@ -129,7 +129,7 @@ $data = $inference->asJsonData();                    // Parsed array
 
 // Streaming
 $stream = $inference->stream();                      // InferenceStream object
-// @doctest id="a041"
+// @doctest id="a0a6"
 ```
 
 
@@ -145,5 +145,5 @@ Inference::registerDriver('custom-provider', CustomDriver::class);
 Inference::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomDriver($config, $httpClient);
 });
-// @doctest id="2e02"
+// @doctest id="0307"
 ```

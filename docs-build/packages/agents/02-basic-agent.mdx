@@ -18,7 +18,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="231d"
+// @doctest id="ab9a"
 ```
 
 ## What Happens
@@ -50,7 +50,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "The weather in Paris is 72°F and sunny."
-// @doctest id="9c5d"
+// @doctest id="0747"
 ```
 
 ## Customizing the Loop
@@ -59,13 +59,29 @@ Use `with()` to swap components on the default loop:
 
 ```php
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 // Add tools
 $loop = AgentLoop::default()->withTool($myTool);
 
 // Swap driver
-$loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
-// @doctest id="bd6e"
+$events = EventBusResolver::using(null);
+$inference = InferenceRuntime::fromProvider(LLMProvider::new(), events: $events);
+$structuredOutput = new StructuredOutputRuntime(
+    inference: $inference,
+    events: $events,
+    config: (new StructuredOutputConfigBuilder())->create(),
+);
+$loop = AgentLoop::default()->withDriver(new ReActDriver(
+    inference: $inference,
+    structuredOutput: $structuredOutput,
+    model: 'gpt-4o',
+));
+// @doctest id="688b"
 ```
 
 ## System Prompt
@@ -74,7 +90,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(model: 'gpt-4o'));
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
-// @doctest id="d2a8"
+// @doctest id="015f"
 ```
 
 ## Using AgentBuilder
@@ -94,7 +110,7 @@ $agent = AgentBuilder::base()
     ->build();
 
 $result = $agent->execute($state);
-// @doctest id="c42e"
+// @doctest id="cd2e"
 ```
 
 See [AgentBuilder & Capabilities](13-agent-builder.md) for details.

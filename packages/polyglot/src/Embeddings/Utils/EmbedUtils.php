@@ -2,9 +2,9 @@
 
 namespace Cognesy\Polyglot\Embeddings\Utils;
 
+use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
-use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
 class EmbedUtils
 {
@@ -16,18 +16,17 @@ class EmbedUtils
      * @return array
      */
     public static function findSimilar(
-        EmbeddingsProvider $provider,
+        CanCreateEmbeddings $embeddings,
         string $query,
         array $documents,
         int $topK = 5
     ) : array {
         // generate embeddings for query and documents (in a single request)
-        $embeddings = (new Embeddings)
-            ->withProvider($provider)
-            ->withInputs(array_merge([$query], $documents))
-            ->get();
+        $response = $embeddings->create(new EmbeddingsRequest(
+            input: array_merge([$query], $documents),
+        ))->get();
 
-        [$queryVector, $docVectors] = $embeddings->split(1);
+        [$queryVector, $docVectors] = $response->split(1);
         $queryVector = $queryVector[0] ?? throw new \RuntimeException(
             'The query vector is empty. Please check the embeddings provider.'
         );

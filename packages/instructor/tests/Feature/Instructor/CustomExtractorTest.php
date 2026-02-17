@@ -147,8 +147,7 @@ it('withExtractor() overrides default extractor', function () use ($mockHttp) {
 });
 
 it('withExtractors() creates ResponseExtractor with custom extractors', function () {
-    $so = new StructuredOutput();
-    $so->withExtractors(DirectJsonExtractor::class);
+    $so = (new StructuredOutput())->withExtractors(DirectJsonExtractor::class);
 
     // Access via reflection to verify
     $reflection = new \ReflectionClass($so);

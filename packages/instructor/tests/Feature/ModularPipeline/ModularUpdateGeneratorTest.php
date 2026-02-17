@@ -19,6 +19,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 class TestGeneratorModel {
@@ -40,7 +41,7 @@ function makeModularUpdateGeneratorTestInfrastructure(FakeInferenceRequestDriver
         ->withDriver($driver);
 
     $inferenceProvider = new InferenceProvider(
-        $llmProvider,
+        InferenceRuntime::fromProvider($llmProvider),
         new RequestMaterializer(),
         $events
     );

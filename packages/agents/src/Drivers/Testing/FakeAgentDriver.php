@@ -14,12 +14,14 @@ use Cognesy\Agents\Enums\AgentStepType;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcceptMessageCompiler
+final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     /** @var list<ScenarioStep> */
     private array $steps;
@@ -103,6 +105,15 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcc
 
     #[\Override]
     public function withLLMProvider(LLMProvider $llm): static {
+        return $this->forSubagent();
+    }
+
+    #[\Override]
+    public function withLLMConfig(LLMConfig $config): static {
+        return $this->forSubagent();
+    }
+
+    private function forSubagent(): self {
         $childSteps = $this->childSteps ?? [ScenarioStep::final('ok')];
         return new self(
             steps: $childSteps,

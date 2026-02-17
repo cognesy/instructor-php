@@ -9,6 +9,7 @@ use Cognesy\Instructor\Data\StructuredOutputExecution;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 describe('RequestMaterializer', function () {
     function makeConfig(): StructuredOutputConfig {
@@ -64,6 +65,25 @@ describe('RequestMaterializer', function () {
             }
         }
         expect($hasPrompt)->toBeTrue();
+    });
+
+    it('prioritizes request prompt over config default prompt', function () {
+        $config = new StructuredOutputConfig(
+            outputMode: OutputMode::Json,
+            modePrompts: [OutputMode::Json->value => 'CFG_PROMPT'],
+        );
+        $materializer = new RequestMaterializer($config);
+        $request = makeRequest(messages: [['role' => 'user', 'content' => 'Input']], system: '', prompt: 'REQ_PROMPT');
+        $execution = makeExecution(request: $request, config: $config);
+
+        $out = $materializer->toMessages($execution);
+        $userContent = array_map(fn(array $message) => $message['content'] ?? null, array_values(array_filter(
+            $out,
+            fn(array $message) => ($message['role'] ?? '') === 'user'
+        )));
+
+        expect($userContent)->toContain('REQ_PROMPT');
+        expect($userContent)->not->toContain('CFG_PROMPT');
     });
 
     it('includes cached system with cache_control only when present', function () {

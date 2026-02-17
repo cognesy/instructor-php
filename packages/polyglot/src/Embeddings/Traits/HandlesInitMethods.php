@@ -11,52 +11,78 @@ use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
 trait HandlesInitMethods
 {
+    abstract protected function invalidateRuntimeCache(): void;
+
+    protected function cloneWithEmbeddingsProvider(): static {
+        $copy = clone $this;
+        $copy->embeddingsProvider = clone $this->embeddingsProvider;
+        return $copy;
+    }
+
     public function using(string $preset) : static {
-        $this->embeddingsProvider->withPreset($preset);
-        return $this;
+        $copy = $this->cloneWithEmbeddingsProvider();
+        $copy->embeddingsProvider->withPreset($preset);
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withDsn(string $dsn) : static {
-        $this->embeddingsProvider->withDsn($dsn);
-        return $this;
+        $copy = $this->cloneWithEmbeddingsProvider();
+        $copy->embeddingsProvider->withDsn($dsn);
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withConfig(EmbeddingsConfig $config) : static {
-        $this->embeddingsProvider->withConfig($config);
-        return $this;
+        $copy = $this->cloneWithEmbeddingsProvider();
+        $copy->embeddingsProvider->withConfig($config);
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider) : static {
-        $this->embeddingsProvider->withConfigProvider($configProvider);
-        return $this;
+        $copy = $this->cloneWithEmbeddingsProvider();
+        $copy->embeddingsProvider->withConfigProvider($configProvider);
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withDriver(CanHandleVectorization $driver) : static {
-        $this->embeddingsProvider->withDriver($driver);
-        return $this;
+        $copy = $this->cloneWithEmbeddingsProvider();
+        $copy->embeddingsProvider->withDriver($driver);
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withProvider(EmbeddingsProvider $provider) : static {
-        $this->embeddingsProvider = $provider;
-        return $this;
+        $copy = clone $this;
+        $copy->embeddingsProvider = $provider;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withEmbeddingsResolver(CanResolveEmbeddingsConfig $resolver) : static {
-        $this->embeddingsResolver = $resolver;
-        return $this;
+        $copy = clone $this;
+        $copy->embeddingsResolver = $resolver;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->httpClient = $httpClient;
-        return $this;
+        $copy = clone $this;
+        $copy->httpClient = $httpClient;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     /**
-     * Set HTTP debug preset explicitly (clearer than withDebugPreset()).
+     * Set HTTP debug preset explicitly.
      */
     public function withHttpDebugPreset(?string $preset) : static {
-        $this->httpDebugPreset = $preset;
-        return $this;
+        $copy = clone $this;
+        $copy->httpDebugPreset = $preset;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     /**
@@ -68,12 +94,5 @@ trait HandlesInitMethods
             false => 'off',
         };
         return $this->withHttpDebugPreset($preset);
-    }
-
-    /**
-     * Backward-compatible alias for HTTP debug presets.
-     */
-    public function withDebugPreset(?string $debug) : static {
-        return $this->withHttpDebugPreset($debug);
     }
 }

@@ -5,12 +5,17 @@ namespace Cognesy\Experimental\RLM\Drivers;
 use Cognesy\Experimental\RLM\Data\Policy;
 use Cognesy\Experimental\RLM\Data\Repl\ReplInventory;
 use Cognesy\Experimental\RLM\Protocol\RlmActionStructures;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\PendingStructuredOutput;
-use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Messages;
 
 final class StrictRlmDriver
 {
+    public function __construct(
+        private CanCreateStructuredOutput $structuredOutput,
+    ) {}
+
     /**
      * Extracts an RLM action via StructuredOutput and returns a pending request for later `get()/response()`.
      */
@@ -18,15 +23,13 @@ final class StrictRlmDriver
     {
         $system = RlmPrompt::buildSystemPrompt($inventory, $policy);
         $structure = RlmActionStructures::decision();
+        $request = new StructuredOutputRequest(
+            messages: $messages,
+            requestedSchema: $structure,
+            system: $system,
+            options: ['temperature' => 0.0],
+        );
 
-        return (new StructuredOutput())
-            ->using('openai')
-            ->withSystem($system)
-            ->withMessages($messages)
-            ->withResponseModel($structure)
-            ->withMaxRetries(2)
-            ->withOptions(['temperature' => 0.0])
-            ->create();
+        return $this->structuredOutput->create($request);
     }
 }
-

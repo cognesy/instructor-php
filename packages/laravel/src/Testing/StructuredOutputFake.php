@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Laravel\Testing;
 
 use Cognesy\Instructor\PendingStructuredOutput;
-use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -166,11 +165,6 @@ class StructuredOutputFake
     }
 
     public function withHttpDebug(bool $enabled = true): self
-    {
-        return $this;
-    }
-
-    public function withDebugPreset(?string $preset): self
     {
         return $this;
     }

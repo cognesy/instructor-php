@@ -18,6 +18,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceRequestDriver;
 
@@ -62,7 +63,9 @@ it('executes tool calls and returns chat step with tool results', function () {
     $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: new ToolCallingDriver(
-            llm: LLMProvider::new()->withDriver($driver)
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            )
         )
     );
 
@@ -114,7 +117,9 @@ it('handles multiple tool calls in sequence', function () {
     $toolUse = ToolUseFactory::default(
         tools: $tools,
         driver: new ToolCallingDriver(
-            llm: LLMProvider::new()->withDriver($driver)
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            )
         )
     );
 
@@ -149,7 +154,9 @@ it('prepends system prompt when provided', function () {
     $toolUse = ToolUseFactory::default(
         tools: new Tools(),
         driver: new ToolCallingDriver(
-            llm: LLMProvider::new()->withDriver($driver)
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            )
         )
     );
 
@@ -184,7 +191,9 @@ it('works without system prompt', function () {
     $toolUse = ToolUseFactory::default(
         tools: new Tools(),
         driver: new ToolCallingDriver(
-            llm: LLMProvider::new()->withDriver($driver)
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            )
         )
     );
 
@@ -229,7 +238,9 @@ it('dispatches tool use events', function () {
     $toolUse = ToolUseFactory::default(
         tools: new Tools(),
         driver: new ToolCallingDriver(
-            llm: LLMProvider::new()->withDriver($driver)
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            )
         )
     );
 

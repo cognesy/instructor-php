@@ -5,12 +5,13 @@ namespace Cognesy\Agents\Capability\SelfCritique;
 use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Builder\Contracts\CanConfigureAgent;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 
 class UseSelfCritique implements CanProvideAgentCapability
 {
     public function __construct(
+        private CanCreateStructuredOutput $structuredOutput,
         private int $maxIterations = 2,
-        private ?string $llmPreset = null,
     ) {}
 
     #[\Override]
@@ -23,7 +24,7 @@ class UseSelfCritique implements CanProvideAgentCapability
         $hooks = $agent->hooks()->with(
             hook: new SelfCriticHook(
                 maxCriticIterations: $this->maxIterations,
-                llmPreset: $this->llmPreset,
+                structuredOutput: $this->structuredOutput,
             ),
             triggerTypes: HookTriggers::afterStep(),
         );

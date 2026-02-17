@@ -3,7 +3,7 @@
 namespace Cognesy\Experimental\ModPredict\Core;
 
 use Cognesy\Experimental\ModPredict\Contracts\CanInitiateModuleCall;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Generator;
 use InvalidArgumentException;
 use ReflectionObject;
@@ -45,7 +45,7 @@ abstract class Module implements CanInitiateModuleCall
     }
 
     public function using(
-        StructuredOutput $structuredOutput = null,
+        ?CanCreateStructuredOutput $structuredOutput = null,
     ) : static {
         foreach($this->predictors() as $predictor) {
             $predictor->with(structuredOutput: $structuredOutput);

@@ -20,11 +20,11 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Enable HTTP debug middleware when creating the inference object
 $inference = (new Inference())
-    ->withHttpDebugPreset('on'); // legacy alias: withDebugPreset('on')
+    ->withHttpDebugPreset('on');
 
 // Make a request - debug output will show the request and response details
 $response = $inference->with(messages: 'What is the capital of France?')->get();
-// @doctest id="3451"
+// @doctest id="feeb"
 ```
 
 
@@ -47,7 +47,7 @@ $inference = (new Inference())
     ->onEvent(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
 
 $response = $inference->with(messages: 'What is the capital of France?')->get();
-// @doctest id="d676"
+// @doctest id="f89c"
 ```
 
 
@@ -84,7 +84,7 @@ $inference = new Inference(events: $events);
 $response = $inference->with(
     messages: 'What is the capital of France?'
 )->get();
-// @doctest id="27e8"
+// @doctest id="ce66"
 ```
 
 
@@ -135,5 +135,5 @@ $inference = new Inference(events: $events);
 $response = $inference->with(
     messages: 'What is artificial intelligence?'
 )->get();
-// @doctest id="dd9f"
+// @doctest id="f11b"
 ```

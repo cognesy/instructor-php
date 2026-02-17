@@ -19,7 +19,7 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\Inference\Inference;
 
 $response = (new Inference)
-    ->withDebugPreset('on') // Enable debug mode
+    ->withHttpDebugPreset('on') // Enable debug mode
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of Brasil']],
         options: ['max_tokens' => 128]

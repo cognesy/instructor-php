@@ -68,7 +68,7 @@ $structuredOutput = (new StructuredOutput)
     ->withDriver($driver)               // Set custom inference driver
     ->withHttpClient($client)           // Set custom HTTP client
     ->withHttpClientPreset($preset)     // Use HTTP client preset
-    ->withDebugPreset($preset)          // Enable debug preset
+    ->withHttpDebugPreset($preset)      // Enable debug preset
     ->withClientInstance($driverName, $instance) // Set client instance for specific driver
 ```
 

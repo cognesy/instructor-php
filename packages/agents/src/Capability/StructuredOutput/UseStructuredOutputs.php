@@ -7,6 +7,7 @@ use Cognesy\Agents\Builder\Contracts\CanProvideAgentCapability;
 use Cognesy\Agents\Capability\StructuredOutput\CanManageSchemas;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 
 /**
  * Adds structured output extraction capability to the agent.
@@ -39,6 +40,7 @@ class UseStructuredOutputs implements CanProvideAgentCapability
 {
     public function __construct(
         private CanManageSchemas $schemas,
+        private CanCreateStructuredOutput $structuredOutput,
         private ?StructuredOutputPolicy $policy = null,
     ) {}
 
@@ -52,7 +54,7 @@ class UseStructuredOutputs implements CanProvideAgentCapability
         $policy = $this->policy ?? new StructuredOutputPolicy();
 
         $agent = $agent->withTools($agent->tools()->merge(new Tools(
-            new StructuredOutputTool($this->schemas, $policy),
+            new StructuredOutputTool($this->schemas, $this->structuredOutput, $policy),
         )));
 
         // Handles store_as functionality

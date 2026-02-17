@@ -5,8 +5,11 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\StructuredOutputData;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\PendingStructuredOutput;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class RunStructuredOutputInference implements CanRunExecution
 {
@@ -25,26 +28,31 @@ class RunStructuredOutputInference implements CanRunExecution
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeInstructorResponse(Execution $execution) : PendingStructuredOutput {
-        return (new StructuredOutput)
-            ->using($execution->get('case.preset'))
-            ->with(
-                messages: $this->structuredOutputData->messages,
-                responseModel: $this->structuredOutputData->responseModel,
-                system: $this->structuredOutputData->system,
-                prompt: $this->structuredOutputData->prompt,
-                examples: $this->structuredOutputData->examples,
-                model: $this->structuredOutputData->model,
-                maxRetries: $this->structuredOutputData->maxRetries,
-                options: [
-                    'max_tokens' => $this->structuredOutputData->maxTokens,
-                    'temperature' => $this->structuredOutputData->temperature,
-                    'stream' => $execution->get('case.isStreamed'),
-                ],
-                toolName: $this->structuredOutputData->toolName,
-                toolDescription: $this->structuredOutputData->toolDescription,
-                retryPrompt: $this->structuredOutputData->retryPrompt,
-                mode: $execution->get('case.mode'),
-            )
+        $config = (new StructuredOutputConfigBuilder())
+            ->withMaxRetries($this->structuredOutputData->maxRetries)
+            ->withToolName($this->structuredOutputData->toolName)
+            ->withToolDescription($this->structuredOutputData->toolDescription)
+            ->withRetryPrompt($this->structuredOutputData->retryPrompt)
+            ->withOutputMode($execution->get('case.mode'))
             ->create();
+
+        $request = new StructuredOutputRequest(
+            messages: $this->structuredOutputData->messages,
+            requestedSchema: $this->structuredOutputData->responseModel,
+            system: $this->structuredOutputData->system,
+            prompt: $this->structuredOutputData->prompt,
+            examples: $this->structuredOutputData->examples,
+            model: $this->structuredOutputData->model,
+            options: [
+                'max_tokens' => $this->structuredOutputData->maxTokens,
+                'temperature' => $this->structuredOutputData->temperature,
+                'stream' => $execution->get('case.isStreamed'),
+            ],
+        );
+
+        return StructuredOutputRuntime::using(
+            preset: $execution->get('case.preset'),
+            structuredConfig: $config,
+        )->create($request);
     }
 }

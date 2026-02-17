@@ -77,14 +77,13 @@ Configure the underlying embeddings provider:
 ```php
 // Provider selection and configuration
 $embeddings->using('openai');                          // Use preset configuration
-$embeddings->withPreset('openai');                     // Alternative preset method
 $embeddings->withDsn('openai://model=text-embedding-3-large'); // Configure via DSN
 $embeddings->withConfig($customConfig);                // Explicit configuration
 $embeddings->withConfigProvider($configProvider);     // Custom config provider
 
 // HTTP and debugging
 $embeddings->withHttpClient($customHttpClient);       // Custom HTTP client
-$embeddings->withDebugPreset('verbose');              // Debug configuration
+$embeddings->withHttpDebugPreset('verbose');          // Debug configuration
 
 // Driver management
 $embeddings->withDriver($customDriver);               // Custom vectorization driver

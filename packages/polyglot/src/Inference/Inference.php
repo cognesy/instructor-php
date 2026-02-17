@@ -19,8 +19,8 @@ use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Pricing\StaticPricingResolver;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -41,6 +41,9 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
 
     /** @var InferenceDriverFactory|null */
     private ?InferenceDriverFactory $inferenceFactory = null;
+    private ?int $inferenceFactoryEventBusId = null;
+    private ?InferenceRuntime $runtimeCache = null;
+    private bool $runtimeCacheDirty = true;
 
     /**
      * Constructor for initializing dependencies and configurations.
@@ -54,6 +57,13 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
         $this->llmProvider = LLMProvider::new(
             $configProvider,
         );
+    }
+
+    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
+        $copy = clone $this;
+        $copy->events = EventBusResolver::using($events);
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     /**
@@ -98,7 +108,8 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
         ?array       $options = null,
         ?OutputMode  $mode = null,
     ) : static {
-        $this->requestBuilder->with(
+        $copy = $this->cloneWithRequestBuilder();
+        $copy->requestBuilder->with(
             messages: $messages,
             model: $model,
             tools: $tools,
@@ -107,17 +118,28 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
             options: $options,
             mode: $mode,
         );
-        return $this;
+        return $copy;
     }
 
     public function withRequest(InferenceRequest $request): static {
-        $this->requestBuilder->withRequest($request);
-        return $this;
+        $copy = $this->cloneWithRequestBuilder();
+        $copy->requestBuilder->withRequest($request);
+        return $copy;
     }
 
     public function create(?InferenceRequest $request = null): PendingInference {
         $request = $request ?? $this->requestBuilder->create();
-        return $this->makeRuntime()->create($request);
+        return $this->toRuntime()->create($request);
+    }
+
+    public function toRuntime(): InferenceRuntime {
+        if (!$this->runtimeCacheDirty && $this->runtimeCache !== null) {
+            return $this->runtimeCache;
+        }
+
+        $this->runtimeCache = $this->makeRuntime();
+        $this->runtimeCacheDirty = false;
+        return $this->runtimeCache;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////
@@ -128,17 +150,21 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
 
         $httpClient = $this->makeHttpClient();
         $inferenceDriver = $this->makeInferenceDriver($httpClient, $resolver, $config);
-        $pricing = $config->getPricing();
 
         return new InferenceRuntime(
             driver: $inferenceDriver,
             events: $this->events,
-            pricing: $pricing->hasAnyPricing() ? $pricing : null,
+            pricingResolver: new StaticPricingResolver($config->getPricing()),
         );
     }
 
     private function getInferenceFactory(): InferenceDriverFactory {
-        return $this->inferenceFactory ??= new InferenceDriverFactory($this->events);
+        $eventsId = spl_object_id($this->events);
+        if ($this->inferenceFactory === null || $this->inferenceFactoryEventBusId !== $eventsId) {
+            $this->inferenceFactory = new InferenceDriverFactory($this->events);
+            $this->inferenceFactoryEventBusId = $eventsId;
+        }
+        return $this->inferenceFactory;
     }
 
     private function makeInferenceDriver(
@@ -171,5 +197,10 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
             $builder = $builder->withDebugPreset($this->httpDebugPreset);
         }
         return $builder->create();
+    }
+
+    protected function invalidateRuntimeCache(): void {
+        $this->runtimeCache = null;
+        $this->runtimeCacheDirty = true;
     }
 }

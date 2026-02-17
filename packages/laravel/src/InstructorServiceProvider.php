@@ -17,12 +17,22 @@ use Cognesy\Instructor\Laravel\Events\InstructorEventBridge;
 use Cognesy\Instructor\Laravel\Support\LaravelConfigProvider;
 use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 use Cognesy\Instructor\Laravel\Testing\StructuredOutputFake;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Logging\Factories\LaravelLoggingFactory;
+use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Illuminate\Contracts\Events\Dispatcher as LaravelDispatcher;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -50,6 +60,7 @@ class InstructorServiceProvider extends ServiceProvider
         $this->registerInference();
         $this->registerEmbeddings();
         $this->registerStructuredOutput();
+        $this->registerRuntimeCreators();
         $this->registerFakes();
     }
 
@@ -70,7 +81,7 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerEventDispatcher(): void
     {
         // Register our Laravel event dispatcher adapter
-        $this->app->singleton(CanHandleEvents::class, function (Application $app) {
+        $this->app->singleton(CanHandleEvents::class, function (Container $app) {
             return new LaravelEventDispatcher(
                 $app->make(LaravelDispatcher::class)
             );
@@ -82,7 +93,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerConfigProvider(): void
     {
-        $this->app->singleton(CanProvideConfig::class, function (Application $app) {
+        $this->app->singleton(CanProvideConfig::class, function (Container $app) {
             return new LaravelConfigProvider($app);
         });
     }
@@ -92,8 +103,8 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerHttpClient(): void
     {
-        $this->app->singleton(HttpClient::class, function (Application $app) {
-            $config = $app['config']['instructor.http'];
+        $this->app->singleton(HttpClient::class, function (Container $app) {
+            $config = $this->configGet($app, 'instructor.http', []);
 
             $httpConfig = HttpClientConfig::fromArray([
                 'driver' => $config['driver'] ?? 'laravel',
@@ -116,7 +127,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerInference(): void
     {
-        $this->app->singleton(Inference::class, function (Application $app) {
+        $this->app->singleton(Inference::class, function (Container $app) {
             $inference = new Inference(
                 events: $app->make(CanHandleEvents::class),
                 configProvider: $app->make(CanProvideConfig::class),
@@ -126,13 +137,13 @@ class InstructorServiceProvider extends ServiceProvider
             $inference->withHttpClient($app->make(HttpClient::class));
 
             // Apply default connection
-            $default = $app['config']['instructor.default'];
+            $default = $this->configGet($app, 'instructor.default');
             if ($default) {
                 $inference->using($default);
             }
 
             // Apply logging if enabled
-            if ($app['config']['instructor.logging.enabled']) {
+            if ($this->configGet($app, 'instructor.logging.enabled', true)) {
                 $this->applyLogging($app, $inference);
             }
 
@@ -145,7 +156,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerEmbeddings(): void
     {
-        $this->app->singleton(Embeddings::class, function (Application $app) {
+        $this->app->singleton(Embeddings::class, function (Container $app) {
             $embeddings = new Embeddings(
                 events: $app->make(CanHandleEvents::class),
                 configProvider: $app->make(CanProvideConfig::class),
@@ -155,13 +166,13 @@ class InstructorServiceProvider extends ServiceProvider
             $embeddings->withHttpClient($app->make(HttpClient::class));
 
             // Apply default connection
-            $default = $app['config']['instructor.embeddings.default'];
+            $default = $this->configGet($app, 'instructor.embeddings.default');
             if ($default) {
                 $embeddings->using($default);
             }
 
             // Apply logging if enabled
-            if ($app['config']['instructor.logging.enabled']) {
+            if ($this->configGet($app, 'instructor.logging.enabled', true)) {
                 $this->applyLogging($app, $embeddings);
             }
 
@@ -174,7 +185,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function registerStructuredOutput(): void
     {
-        $this->app->bind(StructuredOutput::class, function (Application $app) {
+        $this->app->bind(StructuredOutput::class, function (Container $app) {
             $instructor = new StructuredOutput(
                 events: $app->make(CanHandleEvents::class),
                 configProvider: $app->make(CanProvideConfig::class),
@@ -184,19 +195,19 @@ class InstructorServiceProvider extends ServiceProvider
             $instructor->withHttpClient($app->make(HttpClient::class));
 
             // Apply default connection
-            $default = $app['config']['instructor.default'];
+            $default = $this->configGet($app, 'instructor.default');
             if ($default) {
                 $instructor->using($default);
             }
 
             // Apply extraction settings
-            $maxRetries = $app['config']['instructor.extraction.max_retries'];
+            $maxRetries = $this->configGet($app, 'instructor.extraction.max_retries');
             if ($maxRetries !== null) {
                 $instructor->withMaxRetries($maxRetries);
             }
 
             // Apply logging if enabled
-            if ($app['config']['instructor.logging.enabled']) {
+            if ($this->configGet($app, 'instructor.logging.enabled', true)) {
                 $this->applyLogging($app, $instructor);
             }
 
@@ -205,15 +216,75 @@ class InstructorServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register runtime-first creator contracts.
+     */
+    protected function registerRuntimeCreators(): void
+    {
+        $this->app->singleton(CanCreateInference::class, function (Container $app) {
+            $provider = LLMProvider::new(
+                configProvider: $app->make(CanProvideConfig::class),
+            );
+            $default = $this->configGet($app, 'instructor.default');
+            if ($default) {
+                $provider = $provider->withLLMPreset($default);
+            }
+            return InferenceRuntime::fromProvider(
+                provider: $provider,
+                events: $app->make(CanHandleEvents::class),
+                httpClient: $app->make(HttpClient::class),
+            );
+        });
+
+        $this->app->singleton(CanCreateEmbeddings::class, function (Container $app) {
+            $provider = EmbeddingsProvider::new(
+                configProvider: $app->make(CanProvideConfig::class),
+                events: $app->make(CanHandleEvents::class),
+            );
+            $default = $this->configGet($app, 'instructor.embeddings.default');
+            if ($default) {
+                $provider = $provider->withPreset($default);
+            }
+            return EmbeddingsRuntime::fromProvider(
+                provider: $provider,
+                events: $app->make(CanHandleEvents::class),
+                httpClient: $app->make(HttpClient::class),
+            );
+        });
+
+        $this->app->singleton(CanCreateStructuredOutput::class, function (Container $app) {
+            $provider = LLMProvider::new(
+                configProvider: $app->make(CanProvideConfig::class),
+            );
+            $default = $this->configGet($app, 'instructor.default');
+            if ($default) {
+                $provider = $provider->withLLMPreset($default);
+            }
+            $configBuilder = new StructuredOutputConfigBuilder(
+                configProvider: $app->make(CanProvideConfig::class),
+            );
+            $maxRetries = $this->configGet($app, 'instructor.extraction.max_retries');
+            if ($maxRetries !== null) {
+                $configBuilder = $configBuilder->withMaxRetries($maxRetries);
+            }
+            return StructuredOutputRuntime::fromProvider(
+                provider: $provider,
+                events: $app->make(CanHandleEvents::class),
+                httpClient: $app->make(HttpClient::class),
+                structuredConfig: $configBuilder->create(),
+            );
+        });
+    }
+
+    /**
      * Register testing fakes.
      */
     protected function registerFakes(): void
     {
-        $this->app->bind(StructuredOutputFake::class, function (Application $app) {
+        $this->app->bind(StructuredOutputFake::class, function (Container $app) {
             return new StructuredOutputFake();
         });
 
-        $this->app->bind(AgentCtrlFake::class, function (Application $app) {
+        $this->app->bind(AgentCtrlFake::class, function (Container $app) {
             return new AgentCtrlFake();
         });
     }
@@ -223,13 +294,17 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function publishConfiguration(): void
     {
+        if (!$this->app instanceof LaravelApplication) {
+            return;
+        }
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/instructor.php' => config_path('instructor.php'),
+                __DIR__ . '/../config/instructor.php' => $this->app->configPath('instructor.php'),
             ], 'instructor-config');
 
             $this->publishes([
-                __DIR__ . '/../resources/stubs' => base_path('stubs/instructor'),
+                __DIR__ . '/../resources/stubs' => $this->app->basePath('stubs/instructor'),
             ], 'instructor-stubs');
         }
     }
@@ -253,7 +328,7 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function configureLogging(): void
     {
-        if (!$this->app['config']['instructor.logging.enabled']) {
+        if (!$this->configGet($this->app, 'instructor.logging.enabled', true)) {
             return;
         }
 
@@ -265,14 +340,14 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function configureEventBridge(): void
     {
-        if (!$this->app['config']['instructor.events.dispatch_to_laravel']) {
+        if (!$this->configGet($this->app, 'instructor.events.dispatch_to_laravel', true)) {
             return;
         }
 
-        $this->app->singleton(InstructorEventBridge::class, function (Application $app) {
+        $this->app->singleton(InstructorEventBridge::class, function (Container $app) {
             return new InstructorEventBridge(
                 $app->make(LaravelDispatcher::class),
-                $app['config']['instructor.events.bridge_events'] ?? []
+                $this->configGet($app, 'instructor.events.bridge_events', [])
             );
         });
     }
@@ -280,14 +355,17 @@ class InstructorServiceProvider extends ServiceProvider
     /**
      * Apply logging to a service.
      */
-    protected function applyLogging(Application $app, object $service): void
+    protected function applyLogging(Container $app, object $service): void
     {
         if (!method_exists($service, 'wiretap')) {
             return;
         }
+        if (!$app instanceof LaravelApplication) {
+            return;
+        }
 
-        $preset = $app['config']['instructor.logging.preset'] ?? 'default';
-        $config = $app['config']['instructor.logging'] ?? [];
+        $preset = $this->configGet($app, 'instructor.logging.preset', 'default');
+        $config = $this->configGet($app, 'instructor.logging', []);
 
         $pipeline = match ($preset) {
             'production' => LaravelLoggingFactory::productionSetup($app),
@@ -296,6 +374,10 @@ class InstructorServiceProvider extends ServiceProvider
         };
 
         $service->wiretap($pipeline);
+    }
+
+    private function configGet(Container $app, string $path, mixed $default = null): mixed {
+        return $app->make('config')->get($path, $default);
     }
 
     /**
@@ -310,6 +392,9 @@ class InstructorServiceProvider extends ServiceProvider
             Inference::class,
             Embeddings::class,
             StructuredOutput::class,
+            CanCreateInference::class,
+            CanCreateEmbeddings::class,
+            CanCreateStructuredOutput::class,
             StructuredOutputFake::class,
             AgentCtrlFake::class,
             InstructorEventBridge::class,

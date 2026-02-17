@@ -12,6 +12,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Tests\Addons\Support\FakeInferenceRequestDriver;
 
@@ -40,7 +41,11 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
         
     $toolUse = ToolUseFactory::default(
         tools: $tools,
-        driver: new ToolCallingDriver(llm: LLMProvider::new()->withDriver($driver))
+        driver: new ToolCallingDriver(
+            inference: InferenceRuntime::fromProvider(
+                provider: LLMProvider::new()->withDriver($driver),
+            ),
+        )
     );
 
     $state = $toolUse->nextStep($state);
@@ -62,4 +67,3 @@ it('executes multiple tool calls and preserves follow-up order and usage', funct
     expect(($msgs[2]['_metadata']['tool_name']) ?? null)->toBe('_inc');
     expect(($msgs[4]['_metadata']['tool_name']) ?? null)->toBe('_dbl');
 });
-

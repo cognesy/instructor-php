@@ -14,79 +14,96 @@ trait HandlesLLMProvider
 {
     protected LLMProvider $llmProvider;
     protected ?CanResolveLLMConfig $llmResolver = null;
+    abstract protected function invalidateRuntimeCache(): void;
 
     public function withLLMProvider(LLMProvider $llm) : static {
-        $this->llmProvider = $llm;
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $llm;
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withLLMResolver(CanResolveLLMConfig $resolver) : static {
         // Allow custom config resolver injection alongside provider
-        $this->llmResolver = $resolver;
-        return $this;
+        $copy = clone $this;
+        $copy->llmResolver = $resolver;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withLLMConfig(LLMConfig $config) : static {
-        $this->llmProvider = $this->llmProvider->withLLMConfig($config);
-        $this->llmResolver = null;
-        return $this;
-    }
-
-    public function withConfig(LLMConfig $config) : static {
-        $this->llmProvider = $this->llmProvider->withLLMConfig($config);
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $copy->llmProvider->withLLMConfig($config);
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider) : static {
-        $this->llmProvider = $this->llmProvider->withConfigProvider($configProvider);
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $copy->llmProvider->withConfigProvider($configProvider);
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withDsn(string $dsn) : static {
-        $this->llmProvider = $this->llmProvider->withDsn($dsn);
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $copy->llmProvider->withDsn($dsn);
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function using(string $preset) : static {
-        $this->llmProvider = $this->llmProvider->withLLMPreset($preset);
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $copy->llmProvider->withLLMPreset($preset);
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->httpClient = $httpClient;
-        return $this;
+        $copy = clone $this;
+        $copy->httpClient = $httpClient;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withHttpClientPreset(string $string) : static {
+        $copy = clone $this;
         // Build a client using the HTTP config preset at the facade level
-        $builder = new HttpClientBuilder(events: $this->events);
-        $this->httpClient = $builder->withPreset($string)->create();
-        return $this;
+        $builder = new HttpClientBuilder(events: $copy->events);
+        $copy->httpClient = $builder->withPreset($string)->create();
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withLLMConfigOverrides(array $overrides) : static {
-        $this->llmProvider = $this->llmProvider->withConfigOverrides($overrides);
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $copy->llmProvider->withConfigOverrides($overrides);
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     public function withDriver(CanProcessInferenceRequest $driver) : static {
-        $this->llmProvider = $this->llmProvider->withDriver($driver);
-        $this->llmResolver = null;
-        return $this;
+        $copy = clone $this;
+        $copy->llmProvider = $copy->llmProvider->withDriver($driver);
+        $copy->llmResolver = null;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     /**
-     * Set HTTP debug preset explicitly (clearer than withDebugPreset()).
+     * Set HTTP debug preset explicitly.
      */
     public function withHttpDebugPreset(?string $preset) : static {
-        $this->httpDebugPreset = $preset;
-        return $this;
+        $copy = clone $this;
+        $copy->httpDebugPreset = $preset;
+        $copy->invalidateRuntimeCache();
+        return $copy;
     }
 
     /**
@@ -97,13 +114,6 @@ trait HandlesLLMProvider
             true => 'on',
             false => 'off',
         };
-        return $this->withHttpDebugPreset($preset);
-    }
-
-    /**
-     * Backward-compatible alias for HTTP debug presets.
-     */
-    public function withDebugPreset(?string $preset) : static {
         return $this->withHttpDebugPreset($preset);
     }
 }

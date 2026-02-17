@@ -1,8 +1,12 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Extras\Mixin;
 
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 trait HandlesInference {
@@ -21,22 +25,31 @@ trait HandlesInference {
         string       $retryPrompt = '',
         ?LLMProvider $llm = null,
     ) : mixed {
-        return (new StructuredOutput())
-            ->withLLMProvider($llm ?? LLMProvider::new())
-            ->with(
-                messages: $messages,
-                responseModel: $responseModel,
-                system: $system,
-                prompt: $prompt,
-                examples: $examples,
-                model: $model,
-                maxRetries: $maxRetries,
-                options: $options,
-                toolName: $toolName,
-                toolDescription: $toolDescription,
-                retryPrompt: $retryPrompt,
-                mode: $mode,
-            )
-            ->get();
+        $provider = $llm ?? LLMProvider::new();
+        $runtime = new StructuredOutputRuntime(
+            inference: InferenceRuntime::fromProvider($provider),
+            events: EventBusResolver::using(null),
+            config: (new StructuredOutputConfigBuilder())
+                ->with(
+                    outputMode: $mode,
+                    maxRetries: $maxRetries,
+                    retryPrompt: $retryPrompt,
+                    toolName: $toolName,
+                    toolDescription: $toolDescription,
+                )
+                ->create(),
+        );
+
+        $request = new StructuredOutputRequest(
+            messages: $messages,
+            requestedSchema: $responseModel,
+            system: $system,
+            prompt: $prompt,
+            examples: $examples,
+            model: $model,
+            options: $options,
+        );
+
+        return $runtime->create($request)->get();
     }
 }

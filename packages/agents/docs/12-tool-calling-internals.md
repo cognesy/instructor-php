@@ -55,7 +55,10 @@ Uses the LLM's native function calling API.
 6. Return updated state with new `AgentStep`
 
 ```php
+$inference = InferenceRuntime::fromProvider($llm);
+
 $driver = new ToolCallingDriver(
+    inference: $inference,
     llm: $llm,
     model: 'gpt-4o',
     toolChoice: 'auto',          // 'auto', 'required', or specific tool
@@ -77,7 +80,20 @@ Uses structured output to extract Thought/Action/Observation decisions.
 5. If `final_answer`: return the answer as the final response
 
 ```php
+$events = EventBusResolver::using(null);
+$inference = InferenceRuntime::fromProvider($llm, events: $events);
+$structuredOutput = new StructuredOutputRuntime(
+    inference: $inference,
+    events: $events,
+    config: (new StructuredOutputConfigBuilder())
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(2)
+        ->create(),
+);
+
 $driver = new ReActDriver(
+    inference: $inference,
+    structuredOutput: $structuredOutput,
     llm: $llm,
     model: 'gpt-4o',
     mode: OutputMode::Json,

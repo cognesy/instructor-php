@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Addons\Image\Image;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
@@ -81,4 +82,12 @@ it('reproduces the missing messages parameter issue', function () {
     
     // Messages should still be present
     expect($pending)->toBeInstanceOf(StructuredOutput::class);
+});
+
+it('requires runtime creator in toData signature', function () {
+    $method = new \ReflectionMethod(Image::class, 'toData');
+    $structuredOutput = $method->getParameters()[2];
+
+    expect((string) $structuredOutput->getType())->toBe(CanCreateStructuredOutput::class);
+    expect($structuredOutput->isOptional())->toBeFalse();
 });

@@ -15,6 +15,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 describe('Agent metadata-based trace isolation', function () {
@@ -34,7 +35,10 @@ describe('Agent metadata-based trace isolation', function () {
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
-            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
+            ->withCapability(new UseDriver(new ToolCallingDriver(
+                inference: InferenceRuntime::fromProvider($llm),
+                llm: $llm,
+            )))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('Use the tool'));
@@ -77,7 +81,10 @@ describe('Agent metadata-based trace isolation', function () {
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
-            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
+            ->withCapability(new UseDriver(new ToolCallingDriver(
+                inference: InferenceRuntime::fromProvider($llm),
+                llm: $llm,
+            )))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('What is the weather?'));
@@ -132,7 +139,10 @@ describe('Agent metadata-based trace isolation', function () {
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
-            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
+            ->withCapability(new UseDriver(new ToolCallingDriver(
+                inference: InferenceRuntime::fromProvider($llm),
+                llm: $llm,
+            )))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('Search twice'));
@@ -182,7 +192,10 @@ describe('Agent metadata-based trace isolation', function () {
         $llm = LLMProvider::new()->withDriver($driver);
         $agent = AgentBuilder::base()
             ->withCapability(new UseTools($tool))
-            ->withCapability(new UseDriver(new ToolCallingDriver(llm: $llm)))
+            ->withCapability(new UseDriver(new ToolCallingDriver(
+                inference: InferenceRuntime::fromProvider($llm),
+                llm: $llm,
+            )))
             ->build();
 
         $state = AgentState::empty()->withMessages(Messages::fromString('Hello agent'));

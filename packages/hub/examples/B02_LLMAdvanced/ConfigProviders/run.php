@@ -120,7 +120,7 @@ $inference = (new Inference(
 
 $answer = $inference
     ->using('deepseek') // Use 'deepseek' preset from CustomLLMConfigProvider
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     ->wiretap(fn(Event $e) => $e->print())
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withMaxTokens(256)

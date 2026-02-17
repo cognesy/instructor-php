@@ -7,6 +7,7 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Events\Contracts\CanHandleEvents;
 
 interface CanConfigureAgent
 {
@@ -34,4 +35,7 @@ interface CanConfigureAgent
     public function hooks(): HookStack;
 
     public function withHooks(HookStack $hooks): self;
+
+    // EVENTS ////////////////////////////////////////////////////////
+    public function events(): CanHandleEvents;
 }

@@ -2,7 +2,8 @@
 
 namespace Cognesy\Tell;
 
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -46,23 +47,17 @@ class TellCommand extends Command
     }
 
     protected function inferenceUsingDSN(string $dsn, string $prompt) : PendingInference {
-        return (new Inference)
-            ->withDsn($dsn)
-            ->with(
-                messages: $prompt,
-                options: ['stream' => true],
-            )
-            ->create();
+        return InferenceRuntime::fromDsn($dsn)->create(new InferenceRequest(
+            messages: $prompt,
+            options: ['stream' => true],
+        ));
     }
 
     protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : PendingInference {
-        return (new Inference)
-            ->using($preset)
-            ->with(
-                messages: $prompt,
-                model: $model,
-                options: ['stream' => true],
-            )
-            ->create();
+        return InferenceRuntime::using($preset)->create(new InferenceRequest(
+            messages: $prompt,
+            model: $model,
+            options: ['stream' => true],
+        ));
     }
 }

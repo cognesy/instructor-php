@@ -203,7 +203,7 @@ Different providers may support unique parameters and features. You can pass the
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference('openai');
+$inference = (new Inference())->using('openai');
 
 $response = $inference->with(
     messages: 'Generate a creative story.',
@@ -227,7 +227,7 @@ $response = $inference->with(
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference('anthropic');
+$inference = (new Inference())->using('anthropic');
 
 $response = $inference->with(
     messages: 'Generate a creative story.',
@@ -299,7 +299,7 @@ $customConfig = new LLMConfig(
 );
 
 // Use the custom configuration
-$inference = (new Inference)->withConfig($customConfig);
+$inference = (new Inference)->withLLMConfig($customConfig);
 
 $response = $inference->with(
     messages: 'What are the benefits of using custom configurations?'
@@ -392,7 +392,7 @@ $config = new LLMConfig(
 
 // now we're calling inference using our configuration
 $answer = (new Inference)
-    ->withConfig($config)
+    ->withLLMConfig($config)
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

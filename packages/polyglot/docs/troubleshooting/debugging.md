@@ -20,7 +20,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Enable HTTP debug middleware when creating the inference object
 $inference = (new Inference())
-    ->withHttpDebugPreset('on'); // legacy alias: withDebugPreset('on')
+    ->withHttpDebugPreset('on');
 
 // Make a request - debug output will show the request and response details
 $response = $inference->with(messages: 'What is the capital of France?')->get();

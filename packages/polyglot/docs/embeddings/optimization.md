@@ -138,7 +138,7 @@ class CachedEmbeddings {
 }
 
 // Usage
-$cachedEmbeddings = new CachedEmbeddings(new Embeddings('openai'));
+$cachedEmbeddings = new CachedEmbeddings((new Embeddings())->using('openai'));
 
 // First call will generate embeddings
 $vector1 = $cachedEmbeddings->create("This is a test");

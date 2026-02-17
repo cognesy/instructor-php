@@ -45,7 +45,7 @@ $presets = ['openai', 'anthropic', 'mistral'];
 foreach ($presets as $preset) {
     testApiKey($preset);
 }
-// @doctest id="2eff"
+// @doctest id="5d20"
 ```
 
 
@@ -60,13 +60,13 @@ use Cognesy\Polyglot\Inference\Inference;
 // Enable debug mode
 $inference = new Inference()
     ->using('openai')
-    ->withDebugPreset('on');
+    ->withHttpDebugPreset('on');
 
 // Make a request
 $response = $inference->with(
     messages: 'Test message with debug enabled'
 )->get();
-// @doctest id="1dcd"
+// @doctest id="0a48"
 ```
 
 
@@ -114,5 +114,5 @@ foreach ($presets as $preset) {
     verifyConfig($preset);
     echo "\n";
 }
-// @doctest id="4bbc"
+// @doctest id="b3ce"
 ```

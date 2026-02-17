@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Laravel\Console;
 
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Http\HttpClient;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -36,7 +43,11 @@ class InstructorTestCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(Inference $inference, StructuredOutput $instructor): int
+    public function handle(
+        CanProvideConfig $configProvider,
+        CanHandleEvents $events,
+        HttpClient $httpClient,
+    ): int
     {
         $this->components->info('Testing Instructor installation...');
         $this->newLine();
@@ -48,10 +59,10 @@ class InstructorTestCommand extends Command
 
         // Test the connection
         if ($this->option('inference')) {
-            return $this->testInference($inference, $preset);
+            return $this->testInference($preset, $configProvider, $events, $httpClient);
         }
 
-        return $this->testStructuredOutput($instructor, $preset);
+        return $this->testStructuredOutput($preset, $configProvider, $events, $httpClient);
     }
 
     /**
@@ -88,14 +99,21 @@ class InstructorTestCommand extends Command
     /**
      * Test raw inference.
      */
-    protected function testInference(Inference $inference, string $preset): int
-    {
-        $this->components->task('Testing raw inference', function () use ($inference, $preset) {
+    protected function testInference(
+        string $preset,
+        CanProvideConfig $configProvider,
+        CanHandleEvents $events,
+        HttpClient $httpClient,
+    ): int {
+        $this->components->task('Testing raw inference', function () use ($preset, $configProvider, $events, $httpClient) {
             try {
-                $response = $inference
-                    ->using($preset)
-                    ->with(messages: 'Reply with just the word "pong".')
-                    ->get();
+                $response = InferenceRuntime::fromProvider(
+                    provider: LLMProvider::new($configProvider)->withLLMPreset($preset),
+                    events: $events,
+                    httpClient: $httpClient,
+                )->create(new InferenceRequest(
+                    messages: 'Reply with just the word "pong".',
+                ))->get();
 
                 return str_contains(strtolower($response), 'pong');
             } catch (Throwable $e) {
@@ -114,25 +132,31 @@ class InstructorTestCommand extends Command
     /**
      * Test structured output.
      */
-    protected function testStructuredOutput(StructuredOutput $instructor, string $preset): int
-    {
-        $this->components->task('Testing structured output extraction', function () use ($instructor, $preset) {
+    protected function testStructuredOutput(
+        string $preset,
+        CanProvideConfig $configProvider,
+        CanHandleEvents $events,
+        HttpClient $httpClient,
+    ): int {
+        $this->components->task('Testing structured output extraction', function () use ($preset, $configProvider, $events, $httpClient) {
             try {
                 // Simple extraction test using array response model
-                $result = $instructor
-                    ->using($preset)
-                    ->with(
-                        messages: 'Extract the name and age: John Smith is 30 years old.',
-                        responseModel: [
-                            'type' => 'object',
-                            'properties' => [
-                                'name' => ['type' => 'string', 'description' => 'Person name'],
-                                'age' => ['type' => 'integer', 'description' => 'Person age'],
-                            ],
-                            'required' => ['name', 'age'],
+                $result = StructuredOutputRuntime::fromProvider(
+                    provider: LLMProvider::new($configProvider)->withLLMPreset($preset),
+                    events: $events,
+                    httpClient: $httpClient,
+                    structuredConfig: (new StructuredOutputConfigBuilder(configProvider: $configProvider))->create(),
+                )->create(new StructuredOutputRequest(
+                    messages: 'Extract the name and age: John Smith is 30 years old.',
+                    requestedSchema: [
+                        'type' => 'object',
+                        'properties' => [
+                            'name' => ['type' => 'string', 'description' => 'Person name'],
+                            'age' => ['type' => 'integer', 'description' => 'Person age'],
                         ],
-                    )
-                    ->get();
+                        'required' => ['name', 'age'],
+                    ],
+                ))->get();
 
                 // Verify we got a result
                 if (is_array($result)) {

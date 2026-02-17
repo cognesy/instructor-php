@@ -15,13 +15,13 @@ The `StructuredOutput` class has a `withDebug()` method that can be used to debu
 
 ```php
 $result = (new StructuredOutput)
-    ->withDebugPreset('on')
+    ->withHttpDebugPreset('on')
     ->with(
         messages: "Jason is 25 years old",
         responseModel: User:class,
     )
     ->get();
-// @doctest id="ff24"
+// @doctest id="9486"
 ```
 
 It displays detailed information about the request being sent to LLM API and response received from it,
@@ -31,5 +31,4 @@ including:
  - response status, headers, and body.
 
 This is useful for debugging the request and response when you are not getting the expected results.
-
 

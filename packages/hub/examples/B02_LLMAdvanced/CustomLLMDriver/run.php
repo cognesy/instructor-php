@@ -46,7 +46,7 @@ $config = new LLMConfig(
 );
 
 $answer = (new Inference)
-    ->withConfig($config)
+    ->withLLMConfig($config)
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->get();

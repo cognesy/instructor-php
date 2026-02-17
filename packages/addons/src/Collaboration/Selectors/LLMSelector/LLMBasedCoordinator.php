@@ -7,13 +7,14 @@ use Cognesy\Addons\Collaboration\Contracts\CanChooseNextCollaborator;
 use Cognesy\Addons\Collaboration\Contracts\CanCollaborate;
 use Cognesy\Addons\Collaboration\Data\CollaborationState;
 use Cognesy\Addons\Collaboration\Exceptions\NoCollaboratorException;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Utils\Result\Result;
 
 final readonly class LLMBasedCoordinator implements CanChooseNextCollaborator
 {
     public function __construct(
-        private ?StructuredOutput $structuredOutput = null,
+        private CanCreateStructuredOutput $structuredOutput,
         private string $instruction = 'Choose the next participant who should take turn in this conversation.',
     ) {}
 
@@ -38,11 +39,12 @@ final readonly class LLMBasedCoordinator implements CanChooseNextCollaborator
         $messages = $state->messages();
         $prompt = "{$this->instruction}\nAvailable participants:\n{$availableParticipants}";
 
-        $result = Result::try(fn() => ($this->structuredOutput ?? new StructuredOutput())
-            ->withMessages($messages->toArray())
-            ->withPrompt($prompt)
-            ->withResponseModel(CollaboratorChoice::class)
-            ->get());
+        $request = new StructuredOutputRequest(
+            messages: $messages,
+            requestedSchema: CollaboratorChoice::class,
+            prompt: $prompt,
+        );
+        $result = Result::try(fn() => $this->structuredOutput->create($request)->get());
 
         $choice = $result->valueOr(null);
         if ($choice instanceof CollaboratorChoice) {

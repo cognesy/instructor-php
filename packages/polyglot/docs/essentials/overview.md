@@ -271,9 +271,9 @@ $mistralResponse = $inference->using('mistral')
 echo "Mistral response: $mistralResponse\n\n";
 
 // You can create a new instance for each provider
-$openAI = new Inference('openai');
-$anthropic = new Inference('anthropic');
-$mistral = new Inference('mistral');
+$openAI = (new Inference())->using('openai');
+$anthropic = (new Inference())->using('anthropic');
+$mistral = (new Inference())->using('mistral');
 
 // And use them independently
 $responses = [
@@ -298,7 +298,7 @@ Each provider offers multiple models with different capabilities, context length
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference('openai');
+$inference = (new Inference())->using('openai');
 
 // Use the default model (set in config)
 $defaultModelResponse = $inference->with(

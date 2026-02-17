@@ -8,6 +8,11 @@ use Cognesy\Experimental\Signature\Attributes\ModuleSignature;
 use Cognesy\Experimental\Signature\Contracts\HasSignature;
 use Cognesy\Experimental\Signature\Signature;
 use Cognesy\Experimental\Signature\SignatureFactory;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Utils\AttributeUtils;
 use Cognesy\Utils\Arrays;
@@ -67,8 +72,16 @@ class Prediction extends Module implements HasSignature
         $this->outputName = $this->signature->outputNames()[0];
 
         // CREATE PREDICTOR
+        $inference = InferenceRuntime::fromProvider(LLMProvider::new());
+        $structuredOutput = new StructuredOutputRuntime(
+            inference: $inference,
+            events: EventBusResolver::using(null),
+            config: (new StructuredOutputConfigBuilder())->create(),
+        );
         $this->predictor = new Predictor(
             signature: $this->signature,
+            structuredOutput: $structuredOutput,
+            inference: $inference,
         );
     }
 

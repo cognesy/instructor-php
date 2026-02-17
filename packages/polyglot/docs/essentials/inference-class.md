@@ -43,14 +43,14 @@ Configure the underlying LLM provider:
 // Provider selection and configuration
 $inference->using('openai');                           // Use preset configuration
 $inference->withDsn('openai://model=gpt-4');          // Configure via DSN
-$inference->withConfig($customConfig);                 // Explicit configuration
+$inference->withLLMConfig($customConfig);              // Explicit configuration
 $inference->withConfigProvider($configProvider);      // Custom config provider
 $inference->withLLMConfigOverrides(['temperature' => 0.7]);
 
 // HTTP client configuration
 $inference->withHttpClient($customHttpClient);        // Custom HTTP client
 $inference->withHttpClientPreset('debug');           // HTTP client preset
-$inference->withDebugPreset('verbose');              // Debug configuration
+$inference->withHttpDebugPreset('verbose');          // Debug configuration
 
 // Driver management
 $inference->withDriver($customDriver);               // Custom inference driver
@@ -107,6 +107,27 @@ $pending = $inference->create();
 
 // Direct request execution
 $inference->withRequest($existingRequest);
+```
+
+## Runtime-First Usage (`CanCreateInference`)
+
+For constructor-injected creators, convert the facade to runtime and call `create()` with an explicit `InferenceRequest`:
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Inference;
+
+$creator = (new Inference())
+    ->using('openai')
+    ->toRuntime();
+
+$request = new InferenceRequest(
+    messages: 'What is the capital of France?',
+    model: 'gpt-4o-mini',
+);
+
+$response = $creator->create($request)->get();
 ```
 
 

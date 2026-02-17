@@ -53,7 +53,11 @@ class MyCompiler implements CanCompileMessages
 Inject it into the loop's driver:
 
 ```php
-$driver = new ToolCallingDriver(messageCompiler: new MyCompiler());
+$inference = InferenceRuntime::fromProvider(LLMProvider::new());
+$driver = new ToolCallingDriver(
+    inference: $inference,
+    messageCompiler: new MyCompiler(),
+);
 $loop = AgentLoop::default()->withDriver($driver);
 ```
 

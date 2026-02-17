@@ -151,11 +151,6 @@ class EmbeddingsFake
         return $this;
     }
 
-    public function withDebugPreset(?string $preset): self
-    {
-        return $this;
-    }
-
     public function wiretap(callable $callback): self
     {
         return $this;

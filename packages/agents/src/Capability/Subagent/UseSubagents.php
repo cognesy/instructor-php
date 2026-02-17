@@ -9,8 +9,6 @@ use Cognesy\Agents\Builder\Data\DeferredToolContext;
 use Cognesy\Agents\Capability\Skills\SkillLibrary;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
-use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
-use Cognesy\Polyglot\Inference\LLMProvider;
 
 final class UseSubagents implements CanProvideAgentCapability
 {
@@ -56,18 +54,11 @@ final class UseSubagents implements CanProvideAgentCapability
 
             #[\Override]
             public function provideTools(DeferredToolContext $context): Tools {
-                $driver = $context->toolUseDriver();
-                $llmProvider = match (true) {
-                    $driver instanceof CanAcceptLLMProvider => $driver->llmProvider(),
-                    default => LLMProvider::new(),
-                };
-
                 return new Tools(new SpawnSubagentTool(
                     parentTools: $context->tools(),
-                    parentDriver: $driver,
+                    parentDriver: $context->toolUseDriver(),
                     provider: $this->provider,
                     skillLibrary: $this->skillLibrary,
-                    parentLLMProvider: $llmProvider,
                     currentDepth: 0,
                     policy: $this->policy,
                     events: $context->events(),

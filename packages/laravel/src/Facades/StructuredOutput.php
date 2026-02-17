@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Cognesy\Instructor\StructuredOutput withHttpClient(\Cognesy\Http\HttpClient $httpClient)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpDebugPreset(?string $preset)
  * @method static \Cognesy\Instructor\StructuredOutput withHttpDebug(bool $enabled = true)
- * @method static \Cognesy\Instructor\StructuredOutput withDebugPreset(string $preset)
  * @method static \Cognesy\Instructor\StructuredOutput onPartialUpdate(callable $callback)
  * @method static \Cognesy\Instructor\StructuredOutput onSequenceUpdate(callable $callback)
  * @method static \Cognesy\Instructor\StructuredOutput wiretap(callable $callback)

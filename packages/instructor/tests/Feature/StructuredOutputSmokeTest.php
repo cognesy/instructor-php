@@ -1,14 +1,17 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
 
 // Simple DTOs
@@ -169,6 +172,7 @@ it('sequence: streaming yields updates with complete items', function () {
 
 // 5) Tools mode: sync and streaming
 class ToolUser { public int $age; }
+class RuntimeFactoryUser { public int $age; public string $name; }
 
 it('tools mode: sync uses tool call args as JSON', function () {
     $tool = new ToolCall('extract', ['age' => 25]);
@@ -204,4 +208,62 @@ it('tools mode: streaming assembles args from tool deltas', function () {
     foreach ($pending->stream()->partials() as $p) { $last = $p; }
     expect($last)->toBeInstanceOf(ToolUser::class);
     expect($last->age)->toBe(42);
+});
+
+it('supports structured output runtime static factories', function () {
+    $http = \Cognesy\Instructor\Tests\MockHttp::get([
+        '{"name":"FromConfig","age":41}',
+        '{"name":"FromResolver","age":42}',
+        '{"name":"FromProvider","age":43}',
+        '{"name":"FromDsn","age":44}',
+        '{"name":"FromUsing","age":45}',
+    ], provider: 'openai');
+
+    $provider = LLMProvider::using('openai');
+    $llmConfig = $provider->resolveConfig();
+    $structuredConfig = (new StructuredOutputConfig())->withOutputMode(OutputMode::Tools);
+    $request = new StructuredOutputRequest(
+        messages: 'extract',
+        requestedSchema: RuntimeFactoryUser::class,
+    );
+
+    $fromConfig = StructuredOutputRuntime::fromConfig(
+        config: $llmConfig,
+        httpClient: $http,
+        structuredConfig: $structuredConfig,
+    )->create($request)->get();
+    expect($fromConfig->name)->toBe('FromConfig');
+    expect($fromConfig->age)->toBe(41);
+
+    $fromResolver = StructuredOutputRuntime::fromResolver(
+        resolver: $provider,
+        httpClient: $http,
+        structuredConfig: $structuredConfig,
+    )->create($request)->get();
+    expect($fromResolver->name)->toBe('FromResolver');
+    expect($fromResolver->age)->toBe(42);
+
+    $fromProvider = StructuredOutputRuntime::fromProvider(
+        provider: $provider,
+        httpClient: $http,
+        structuredConfig: $structuredConfig,
+    )->create($request)->get();
+    expect($fromProvider->name)->toBe('FromProvider');
+    expect($fromProvider->age)->toBe(43);
+
+    $fromDsn = StructuredOutputRuntime::fromDsn(
+        dsn: 'preset=openai',
+        httpClient: $http,
+        structuredConfig: $structuredConfig,
+    )->create($request)->get();
+    expect($fromDsn->name)->toBe('FromDsn');
+    expect($fromDsn->age)->toBe(44);
+
+    $fromUsing = StructuredOutputRuntime::using(
+        preset: 'openai',
+        httpClient: $http,
+        structuredConfig: $structuredConfig,
+    )->create($request)->get();
+    expect($fromUsing->name)->toBe('FromUsing');
+    expect($fromUsing->age)->toBe(45);
 });

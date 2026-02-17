@@ -21,13 +21,12 @@ use Cognesy\Agents\Events\SubagentSpawning;
 use Cognesy\Agents\Template\Contracts\CanManageAgentDefinitions;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tool\Tools\ContextAwareTool;
-use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
+use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\JsonSchema\JsonSchema;
@@ -40,7 +39,6 @@ final class SpawnSubagentTool extends ContextAwareTool
     private CanUseTools $parentDriver;
     private CanManageAgentDefinitions $provider;
     private ?SkillLibrary $skillLibrary;
-    private ?LLMProvider $parentLLMProvider;
     private int $currentDepth;
     private SubagentPolicy $policy;
     private CanHandleEvents $events;
@@ -50,7 +48,6 @@ final class SpawnSubagentTool extends ContextAwareTool
         CanUseTools $parentDriver,
         CanManageAgentDefinitions $provider,
         ?SkillLibrary $skillLibrary = null,
-        ?LLMProvider $parentLLMProvider = null,
         int $currentDepth = 0,
         ?SubagentPolicy $policy = null,
         ?CanHandleEvents $events = null,
@@ -61,7 +58,6 @@ final class SpawnSubagentTool extends ContextAwareTool
         $this->parentDriver = $parentDriver;
         $this->provider = $provider;
         $this->skillLibrary = $skillLibrary;
-        $this->parentLLMProvider = $parentLLMProvider;
         $this->policy = $policy ?? SubagentPolicy::default();
         $this->currentDepth = $currentDepth;
         $this->events = EventBusResolver::using($events);
@@ -82,7 +78,6 @@ final class SpawnSubagentTool extends ContextAwareTool
         ?CanUseTools $parentDriver = null,
         ?CanManageAgentDefinitions $provider = null,
         ?SkillLibrary $skillLibrary = null,
-        ?LLMProvider $parentLLMProvider = null,
         ?int $currentDepth = null,
         ?SubagentPolicy $policy = null,
         ?CanHandleEvents $events = null,
@@ -94,7 +89,6 @@ final class SpawnSubagentTool extends ContextAwareTool
             parentDriver: $parentDriver ?? $this->parentDriver,
             provider: $provider ?? $this->provider,
             skillLibrary: $skillLibrary ?? $this->skillLibrary,
-            parentLLMProvider: $parentLLMProvider ?? $this->parentLLMProvider,
             currentDepth: $currentDepth ?? $this->currentDepth,
             policy: $policy ?? $this->policy,
             events: $events ?? $this->events,
@@ -176,7 +170,6 @@ final class SpawnSubagentTool extends ContextAwareTool
                 parentDriver: $this->parentDriver,
                 provider: $this->provider,
                 skillLibrary: $this->skillLibrary,
-                parentLLMProvider: $this->parentLLMProvider,
                 currentDepth: $this->currentDepth + 1,
                 policy: $this->policy,
                 events: $this->events,
@@ -188,13 +181,11 @@ final class SpawnSubagentTool extends ContextAwareTool
 
         $subagentDriver = $this->parentDriver;
 
-        if ($subagentDriver instanceof CanAcceptLLMProvider) {
-            $llmProvider = $this->resolveLLMProvider($spec, $this->parentLLMProvider);
-            $subagentDriver = $subagentDriver->withLLMProvider($llmProvider);
-        }
-
-        if ($subagentDriver instanceof CanAcceptEventHandler) {
-            $subagentDriver = $subagentDriver->withEventHandler($this->events);
+        if ($subagentDriver instanceof CanAcceptLLMConfig) {
+            $parentConfig = $this->agentState?->llmConfig();
+            $llmConfig = $this->resolveLLMConfig($spec, $parentConfig)
+                ?? LLMProvider::new()->resolveConfig();
+            $subagentDriver = $subagentDriver->withLLMConfig($llmConfig);
         }
 
         // Compute effective budget: parent's remaining capped by definition limits
@@ -341,12 +332,13 @@ final class SpawnSubagentTool extends ContextAwareTool
         return new Tools(...$filtered);
     }
 
-    private function resolveLLMProvider(AgentDefinition $spec, ?LLMProvider $parentProvider): LLMProvider {
+    private function resolveLLMConfig(AgentDefinition $spec, ?LLMConfig $parentConfig): ?LLMConfig {
         return match (true) {
-            $spec->llmConfig instanceof LLMConfig => LLMProvider::new()->withConfig($spec->llmConfig),
-            $spec->llmConfig === null => $parentProvider ?? LLMProvider::new(),
-            is_string($spec->llmConfig) => LLMProvider::using($spec->llmConfig),
-            default => LLMProvider::new(),
+            $spec->llmConfig instanceof LLMConfig => $spec->llmConfig,
+            $spec->llmConfig === null => $parentConfig,
+            is_string($spec->llmConfig) && $spec->llmConfig !== '' => LLMProvider::using($spec->llmConfig)->resolveConfig(),
+            is_string($spec->llmConfig) => $parentConfig,
+            default => $parentConfig,
         };
     }
 

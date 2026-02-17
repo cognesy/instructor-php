@@ -16,7 +16,7 @@ use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Tool\Contracts\CanManageTools;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use InvalidArgumentException;
 
@@ -42,7 +42,7 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
 
     private function withLLMConfig(AgentBuilder $builder, AgentDefinition $definition): AgentBuilder {
         $llm = match (true) {
-            $definition->llmConfig instanceof LLMConfig => LLMProvider::new()->withConfig($definition->llmConfig),
+            $definition->llmConfig instanceof LLMConfig => LLMProvider::new()->withLLMConfig($definition->llmConfig),
             is_string($definition->llmConfig) && $definition->llmConfig !== '' => LLMProvider::using($definition->llmConfig),
             default => null,
         };
@@ -54,7 +54,8 @@ final readonly class DefinitionLoopFactory implements CanInstantiateAgentLoop
         return $builder->withCapability(
             new UseDriver(new ToolCallingDriver(
                 llm: $llm,
-                inference: (new Inference())->withLLMProvider($llm),
+                events: $this->events,
+                inference: InferenceRuntime::fromProvider($llm, events: $this->events),
             ))
         );
     }

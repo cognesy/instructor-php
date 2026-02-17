@@ -5,9 +5,10 @@ namespace Cognesy\Experimental\Module\Core;
 use Cognesy\Experimental\Module\Config\PredictorConfig;
 use Cognesy\Experimental\Signature\Signature;
 use Cognesy\Experimental\Signature\SignatureFactory;
+use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Json\Json;
@@ -17,9 +18,9 @@ class Predictor
 {
     protected PredictorConfig $config;
 
-    protected StructuredOutput $structuredOutput;
+    protected CanCreateStructuredOutput $structuredOutput;
     protected StructuredOutputRequest $requestInfo;
-    protected Inference $inference;
+    protected CanCreateInference $inference;
     protected string $preset;
 
     protected ?Signature $signature;
@@ -30,20 +31,12 @@ class Predictor
         ?string $description = null,
         ?string $instructions = null,
         ?StructuredOutputRequest $request = null,
-        ?StructuredOutput $structuredOutput = null,
-        ?Inference $inference = null,
+        CanCreateStructuredOutput $structuredOutput,
+        CanCreateInference $inference,
         ?PredictorConfig $config = null,
     ) {
-        $this->structuredOutput = match(true) {
-            !is_null($structuredOutput) => $structuredOutput,
-            !isset($this->structuredOutput) => new StructuredOutput(),
-            default => $this->structuredOutput,
-        };
-        $this->inference = match(true) {
-            !is_null($inference) => $inference,
-            !isset($this->inference) => new Inference(),
-            default => $this->inference,
-        };
+        $this->inference = $inference;
+        $this->structuredOutput = $structuredOutput;
         $this->requestInfo = match(true) {
             !is_null($request) => $request,
             !isset($this->requestInfo) => new StructuredOutputRequest(),
@@ -63,11 +56,21 @@ class Predictor
 
     public static function fromSignature(
         string|Signature $signature,
-        string $description = ''
+        CanCreateStructuredOutput $structuredOutput,
+        CanCreateInference $inference,
+        string $description = '',
     ) : static {
-        $instance = new static;
-        $instance->with(signature: $instance->makeSignature($signature, $description));
-        return $instance;
+        $resolvedSignature = match (true) {
+            is_string($signature) => SignatureFactory::fromString($signature, $description),
+            $signature instanceof Signature => $signature,
+            default => throw new InvalidArgumentException('Invalid signature provided'),
+        };
+
+        return new static(
+            signature: $resolvedSignature,
+            structuredOutput: $structuredOutput,
+            inference: $inference,
+        );
     }
 
     public function predict(mixed ...$callArgs) : mixed {
@@ -98,9 +101,9 @@ class Predictor
 
     public function with(
         ?Signature $signature = null,
-        ?StructuredOutput $structuredOutput = null,
+        ?CanCreateStructuredOutput $structuredOutput = null,
         ?StructuredOutputRequest $request = null,
-        ?Inference $inference = null,
+        ?CanCreateInference $inference = null,
         ?string $instructions = null,
     ) : static {
         return new static(
@@ -128,7 +131,7 @@ class Predictor
     // INTERNAL ////////////////////////////////////////////////////////////
 
     protected function predictText(array $callArgs) : string {
-        $this->requestInfo->withPrompt(match(true) {
+        $prompt = match(true) {
             empty($this->requestInfo->prompt()) => Template::arrowpipe()
                 ->from($this->config->textOutputTemplate)
                 ->with(array_merge([
@@ -137,15 +140,20 @@ class Predictor
                 ]))
                 ->toText(),
             default => $this->requestInfo->prompt(),
-        });
-        return $this->inference->with(messages: $this->requestInfo->prompt())->get();
+        };
+        $request = new InferenceRequest(
+            messages: $prompt,
+            model: $this->requestInfo->model(),
+        );
+        return $this->inference->create($request)->get();
     }
 
     protected function predictStructure(array $callArgs) : mixed {
-        $this->requestInfo->withMessages(Json::encode($callArgs)); // TODO: make format configurable - JSON, YAML, XML
-        $this->requestInfo->withPrompt($this->instructions());
-        $this->requestInfo->withRequestedSchema(Signature::toStructure('prediction', $this->signature));
-        return $this->structuredOutput->withRequest($this->requestInfo)->get();
+        $request = $this->requestInfo
+            ->withMessages(Json::encode($callArgs)) // TODO: make format configurable - JSON, YAML, XML
+            ->withPrompt($this->instructions())
+            ->withRequestedSchema(Signature::toStructure('prediction', $this->signature));
+        return $this->structuredOutput->create($request)->get();
     }
 
     protected function signatureDiff(array $callArgs) : array {

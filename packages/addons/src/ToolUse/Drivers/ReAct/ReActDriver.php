@@ -16,11 +16,9 @@ use Cognesy\Addons\ToolUse\Drivers\ReAct\Data\ReActDecision;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\Utils\ReActFormatter;
 use Cognesy\Addons\ToolUse\Drivers\ReAct\Utils\ReActValidator;
 use Cognesy\Addons\ToolUse\Enums\ToolUseStepType;
-use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\PendingStructuredOutput;
-use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
@@ -30,15 +28,11 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 
 final class ReActDriver implements CanUseTools
 {
-    private LLMProvider $llm;
-    private ?HttpClient $httpClient = null;
     private string $model;
     private array $options;
     private bool $finalViaInference;
@@ -46,12 +40,12 @@ final class ReActDriver implements CanUseTools
     private array $finalOptions;
     private int $maxRetries;
     private OutputMode $mode;
-    private ?CanCreateInference $inference = null;
-    private ?CanCreateStructuredOutput $structuredOutput = null;
+    private CanCreateInference $inference;
+    private CanCreateStructuredOutput $structuredOutput;
 
     public function __construct(
-        ?LLMProvider $llm = null,
-        ?HttpClient $httpClient = null,
+        CanCreateInference $inference,
+        CanCreateStructuredOutput $structuredOutput,
         string $model = '',
         array $options = [],
         bool $finalViaInference = false,
@@ -59,11 +53,9 @@ final class ReActDriver implements CanUseTools
         array $finalOptions = [],
         int $maxRetries = 2,
         OutputMode $mode = OutputMode::Json,
-        ?CanCreateInference $inference = null,
-        ?CanCreateStructuredOutput $structuredOutput = null,
     ) {
-        $this->llm = $llm ?? LLMProvider::new();
-        $this->httpClient = $httpClient;
+        $this->inference = $inference;
+        $this->structuredOutput = $structuredOutput;
         $this->model = $model;
         $this->options = $options;
         $this->finalViaInference = $finalViaInference;
@@ -71,8 +63,6 @@ final class ReActDriver implements CanUseTools
         $this->finalOptions = $finalOptions;
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
-        $this->inference = $inference;
-        $this->structuredOutput = $structuredOutput;
     }
 
     #[\Override]
@@ -152,20 +142,7 @@ final class ReActDriver implements CanUseTools
             options: $this->options,
         );
 
-        if ($this->structuredOutput !== null) {
-            // Injected creator path expects outputMode/maxRetries to be preconfigured on creator runtime/facade.
-            return $this->structuredOutput->create($request);
-        }
-
-        $structured = (new StructuredOutput())
-            ->withOutputMode($this->mode)
-            ->withMaxRetries($this->maxRetries)
-            ->withLLMProvider($this->llm);
-        if ($this->httpClient !== null) {
-            $structured = $structured->withHttpClient($this->httpClient);
-        }
-
-        return $structured->create($request);
+        return $this->structuredOutput->create($request);
     }
 
     /** Builds a failure step when decision fails validation. */
@@ -262,14 +239,6 @@ final class ReActDriver implements CanUseTools
             mode: OutputMode::Text,
         );
 
-        if ($this->inference !== null) {
-            return $this->inference->create($request);
-        }
-
-        $inference = (new Inference)->withLLMProvider($this->llm);
-        if ($this->httpClient !== null) {
-            $inference = $inference->withHttpClient($this->httpClient);
-        }
-        return $inference->create($request);
+        return $this->inference->create($request);
     }
 }

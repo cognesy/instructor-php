@@ -14,11 +14,10 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\LLMProvider;
 
 final readonly class LLMParticipant implements CanParticipateInChat
 {
@@ -26,15 +25,14 @@ final readonly class LLMParticipant implements CanParticipateInChat
     private CanCompileMessages $compiler;
 
     public function __construct(
+        private CanCreateInference $inference,
         private string $name = 'assistant',
         private ?string $systemPrompt = null,
-        private ?Inference $inference = null,
-        private ?LLMProvider $llmProvider = null,
         ?CanCompileMessages $compiler = null,
         ?CanHandleEvents $events = null,
     ) {
         $this->compiler = $compiler ?? new SelectedSections(['summary', 'buffer', 'messages']);
-        $this->events = $events ?? EventBusResolver::using($events);
+        $this->events = EventBusResolver::using($events);
     }
 
     #[\Override]
@@ -44,18 +42,14 @@ final readonly class LLMParticipant implements CanParticipateInChat
 
     #[\Override]
     public function act(ChatState $state): ChatStep {
-        $inference = $this->inference ?? new Inference;
-        if ($this->llmProvider) {
-            $inference = $inference->withLLMProvider($this->llmProvider);
-        }
-
         $messages = $this->prepareMessages($state);
         $this->emitChatInferenceRequested($messages);
 
-        $response = $inference->with(
-            messages: $messages->toArray(),
+        $request = new InferenceRequest(
+            messages: $messages,
             mode: OutputMode::Text,
-        )->response();
+        );
+        $response = $this->inference->create($request)->response();
         $this->emitChatInferenceResponseReceived($response);
 
         $outputMessages = new Messages(new Message(
