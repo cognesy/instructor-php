@@ -2,8 +2,8 @@
 title: 'Basic Agent Usage'
 docname: 'agent_basic'
 order: 1
+id: '67ca'
 ---
-
 ## Overview
 
 The simplest use of an Agent - a straightforward Q&A without tools. The agent uses
@@ -13,7 +13,8 @@ a message, processing it through the LLM, and returning a response.
 Key concepts:
 - `AgentBuilder`: Constructs configured agent instances
 - `AgentState`: Immutable state container for messages and metadata
-- `Agent::execute()`: Executes the agent loop until completion
+- `AgentLoop::execute()`: Executes the agent loop until completion
+- `UseGuards`: Adds step/token/time safety limits
 - `AgentConsoleLogger`: Provides visibility into agent execution stages
 
 
@@ -23,7 +24,12 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\Support\AgentConsoleLogger;use Cognesy\Messages\Messages;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseLLMConfig;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Messages\Messages;
 
 // Create a console logger for visibility into agent execution
 $logger = new AgentConsoleLogger(
@@ -34,7 +40,8 @@ $logger = new AgentConsoleLogger(
 
 // Build a basic agent
 $agent = AgentBuilder::base()
-    ->withLlmPreset('anthropic')
+    ->withCapability(new UseLLMConfig(preset: 'anthropic'))
+    ->withCapability(new UseGuards(maxSteps: 3, maxTokens: 4096, maxExecutionTime: 30))
     ->build()
     ->wiretap($logger->wiretap());
 
@@ -49,10 +56,16 @@ echo "=== Agent Execution Log ===\n\n";
 $finalState = $agent->execute($state);
 
 echo "\n=== Result ===\n";
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+$response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert($finalState->status() === \Cognesy\Agents\Enums\ExecutionStatus::Completed);
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+assert($finalState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
 ```

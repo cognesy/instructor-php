@@ -2,16 +2,16 @@
 title: 'Agent with Bash Tool'
 docname: 'agent_loop_bash_tool'
 order: 3
+id: '06e7'
 ---
-
 ## Overview
 
-The `UseBash` capability gives the agent the ability to execute shell commands. This is
+Attaching `BashTool` directly to `AgentLoop` gives the agent the ability to execute shell commands. This is
 useful for system administration tasks, running scripts, or gathering system information.
 The agent decides which commands to run based on the task.
 
 Key concepts:
-- `UseBash`: Capability that adds bash command execution
+- `AgentLoop::withTool()`: Adds a tool directly to the loop
 - `BashTool`: Executes shell commands with configurable sandboxing
 - The agent autonomously decides which commands to run
 - `AgentConsoleLogger`: Shows tool arguments including executed commands
@@ -22,7 +22,10 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Capabilities\Bash\UseBash;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Capability\Bash\BashTool;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
 
 $logger = new AgentConsoleLogger(
     useColors: true,
@@ -30,11 +33,9 @@ $logger = new AgentConsoleLogger(
     showToolArgs: true,
 );
 
-// Build agent with bash capability
-$loop = AgentBuilder::base()
-    ->withCapability(new UseBash())
-    ->withMaxSteps(5)
-    ->build()
+// Build loop with BashTool directly
+$loop = AgentLoop::default()
+    ->withTool(BashTool::inDirectory(getcwd()))
     ->wiretap($logger->wiretap());
 
 $state = AgentState::empty()->withUserMessage(
@@ -45,9 +46,14 @@ echo "=== Agent Execution ===\n\n";
 $finalState = $loop->execute($state);
 
 echo "\n=== Result ===\n";
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+$response = $finalState->finalResponse()->toString() ?? 'No response';
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
+
+// Assertions
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+assert($finalState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
 ```

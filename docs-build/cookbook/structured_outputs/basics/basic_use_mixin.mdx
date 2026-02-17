@@ -1,8 +1,8 @@
 ---
 title: 'Basic use via mixin'
 docname: 'basic_use_mixin'
+id: '068c'
 ---
-
 ## Overview
 
 Instructor provides `HandlesSelfInference` trait that you can use to enable

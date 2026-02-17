@@ -1,8 +1,8 @@
 ---
 title: 'Debugging HTTP Calls'
 docname: 'http_debug'
+id: 'f26a'
 ---
-
 ## Overview
 
 Instructor PHP provides a way to debug HTTP calls made to LLM APIs via

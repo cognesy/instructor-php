@@ -1,8 +1,8 @@
 ---
 title: 'Prioritize Complex Examples'
 docname: 'complex_examples'
+id: '0906'
 ---
-
 ## Overview
 
 Choose more complex examples (longer reasoning or more steps) to improve model performance. When no examples exist, sample multiple responses, pick the most complex few, and aggregate answers. This is Complexity-Based Consistency.

@@ -2,8 +2,8 @@
 title: 'Agent Subagent Orchestration'
 docname: 'agent_subagents'
 order: 7
+id: '1961'
 ---
-
 ## Overview
 
 Subagents enable decomposition of complex tasks into isolated subtasks. The main agent
@@ -11,7 +11,7 @@ orchestrates multiple subagents, each with specialized roles and tools. This pat
 provides:
 
 - **Context isolation**: Each subagent has clean context without cross-contamination
-- **Parallel execution**: Multiple subagents can work simultaneously
+- **Isolated execution**: Each subagent runs independently with its own state
 - **Specialized capabilities**: Each subagent has specific tools for its role
 - **Scalability**: Handle many independent subtasks without context overflow
 - **Result aggregation**: Main agent synthesizes subagent outputs
@@ -28,7 +28,16 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinition;use Cognesy\Agents\AgentTemplate\Definitions\AgentDefinitionRegistry;use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Capabilities\File\UseFileTools;use Cognesy\Agents\Capabilities\Subagent\UseSubagents;use Cognesy\Agents\Collections\NameList;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\Support\AgentConsoleLogger;use Cognesy\Messages\Messages;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\File\UseFileTools;
+use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Collections\NameList;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Template\AgentDefinitionRegistry;
+use Cognesy\Agents\Template\Data\AgentDefinition;
+use Cognesy\Messages\Messages;
 
 // Create console logger - shows agent IDs for parent/child tracking
 $logger = new AgentConsoleLogger(
@@ -64,15 +73,16 @@ $registry->register(new AgentDefinition(
 $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools($workDir))
     ->withCapability(new UseSubagents(provider: $registry))
+    ->withCapability(new UseGuards(maxSteps: 10, maxTokens: 12288, maxExecutionTime: 90))
     ->build()
     ->wiretap($logger->wiretap());
 
-// Task requiring multiple isolated reviews
+// Task requiring multiple isolated reviews (small files to keep token usage low)
 $task = <<<TASK
-Review these three files and provide a summary:
-1. packages/agents/src/AgentBuilder/AgentBuilder.php
-2. packages/agents/src/Core/Data/AgentState.php
-3. packages/agents/src/Core/AgentLoop.php
+Review these three capability files and provide a summary:
+1. packages/agents/src/Capability/Core/UseTools.php
+2. packages/agents/src/Capability/File/UseFileTools.php
+3. packages/agents/src/Capability/SelfCritique/UseSelfCritique.php
 
 For each file, spawn a reviewer subagent. Then summarize the findings.
 TASK;
@@ -88,10 +98,15 @@ echo "Task: Review multiple files using subagents\n\n";
 $finalState = $agent->execute($state);
 
 echo "\n=== Result ===\n";
-$summary = $finalState->currentStep()?->outputMessages()->toString() ?? 'No summary';
+$summary = $finalState->finalResponse()->toString() ?: 'No summary';
 echo "Answer: {$summary}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
+assert($finalState->usage()->total() > 0, 'Expected token usage > 0');
 ?>
 ```

@@ -30,7 +30,7 @@ class GetWeather extends BaseTool
         return "Weather in {$city}: 22 {$unit}";
     }
 }
-// @doctest id="1625"
+// @doctest id="fe1e"
 ```
 
 ## Using FunctionTool
@@ -43,7 +43,7 @@ use Cognesy\Agents\Tool\Tools\FunctionTool;
 $tool = FunctionTool::fromCallable(function (string $query): string {
     return "Results for: {$query}";
 });
-// @doctest id="6d36"
+// @doctest id="8f4a"
 ```
 
 ## Accessing Agent State
@@ -59,7 +59,7 @@ class StatefulTool extends BaseTool
         return "Step {$stepCount}: processing {$input}";
     }
 }
-// @doctest id="1137"
+// @doctest id="9a40"
 ```
 
 ## The ToolInterface
@@ -73,7 +73,7 @@ interface ToolInterface
     public function toToolSchema(): array;
     public function descriptor(): CanDescribeTool;
 }
-// @doctest id="8844"
+// @doctest id="f6c9"
 ```
 
 - `use()` - execute the tool, returns `Result` (success or failure)
@@ -116,7 +116,7 @@ final readonly class MyToolDescriptor extends ToolDescriptor
         );
     }
 }
-// @doctest id="7c43"
+// @doctest id="2885"
 ```
 
 Then wire it into your tool:
@@ -144,7 +144,7 @@ class MyTool extends BaseTool
         return "Processed: {$input}";
     }
 }
-// @doctest id="baae"
+// @doctest id="737a"
 ```
 
 Most built-in tools use this pattern — `BashTool` has `BashToolDescriptor`, each file tool has its own descriptor, and so on. The `metadata()` and `instructions()` arrays power progressive disclosure: tool registries can show lightweight summaries via `metadata()`, while the LLM receives full specifications via `instructions()` when needed.
@@ -158,5 +158,5 @@ $tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
 
 // Or with custom logic
 $tool = new MockTool('my_tool', 'Does something', fn($x) => strtoupper($x));
-// @doctest id="1988"
+// @doctest id="584f"
 ```

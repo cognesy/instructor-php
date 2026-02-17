@@ -1,8 +1,8 @@
 ---
 title: 'Break Down Reasoning Into Multiple Steps'
 docname: 'break_down_reasoning'
+id: 'cc73'
 ---
-
 ## Overview
 
 Cumulative Reasoning separates reasoning into propose → verify → report for better logical inference.

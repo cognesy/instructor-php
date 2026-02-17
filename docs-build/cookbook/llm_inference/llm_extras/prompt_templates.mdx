@@ -1,8 +1,8 @@
 ---
 title: 'Prompt Templates'
 docname: 'prompt_templates'
+id: 'a60c'
 ---
-
 ## Overview
 
 `Template` class in Instructor PHP provides a way to define and use

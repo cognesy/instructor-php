@@ -1,8 +1,8 @@
 ---
 title: 'Use Distinct Example Subsets'
 docname: 'distinct_examples'
+id: '3eef'
 ---
-
 ## Overview
 
 Demonstration Ensembling (DENSE) runs multiple prompts, each with a different subset of examples, then aggregates the outputs.

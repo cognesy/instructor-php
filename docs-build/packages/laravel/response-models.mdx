@@ -18,7 +18,7 @@ php artisan make:response-model CompanyProfile --nested
 
 # With description
 php artisan make:response-model Invoice --description="Invoice extracted from PDF"
-# @doctest id="da7d"
+# @doctest id="80a8"
 ```
 
 ### Manual Creation
@@ -43,7 +43,7 @@ final class PersonData
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="4a4a"
+// @doctest id="f464"
 ```
 
 ## Property Types
@@ -60,7 +60,7 @@ final class BasicTypes
         public readonly bool $isActive,
     ) {}
 }
-// @doctest id="de54"
+// @doctest id="dc15"
 ```
 
 ### Nullable Properties
@@ -74,7 +74,7 @@ final class WithOptional
         public readonly ?int $maybeNumber = null,
     ) {}
 }
-// @doctest id="6664"
+// @doctest id="50fb"
 ```
 
 ### Arrays
@@ -90,7 +90,7 @@ final class WithArrays
         public readonly array $scores,
     ) {}
 }
-// @doctest id="4d5f"
+// @doctest id="ab27"
 ```
 
 ### Enums
@@ -110,7 +110,7 @@ final class Task
         public readonly Priority $priority,
     ) {}
 }
-// @doctest id="d6ac"
+// @doctest id="41b0"
 ```
 
 ### Nested Objects
@@ -132,7 +132,7 @@ final class Person
         public readonly Address $address,
     ) {}
 }
-// @doctest id="b710"
+// @doctest id="9efc"
 ```
 
 ### Collections
@@ -158,7 +158,7 @@ final class Order
         public readonly float $total,
     ) {}
 }
-// @doctest id="023d"
+// @doctest id="afbb"
 ```
 
 ## Property Descriptions
@@ -182,7 +182,7 @@ final class ProductReview
         public readonly ?array $concerns = null,
     ) {}
 }
-// @doctest id="cb7e"
+// @doctest id="a8ac"
 ```
 
 ## Using Response Models
@@ -201,7 +201,7 @@ $person = StructuredOutput::with(
 echo $person->name;  // "John Smith"
 echo $person->age;   // 30
 echo $person->email; // "john@example.com"
-// @doctest id="ace7"
+// @doctest id="b897"
 ```
 
 ### With Array Schema
@@ -223,7 +223,7 @@ $person = StructuredOutput::with(
 
 echo $person['name']; // "John"
 echo $person['age'];  // 30
-// @doctest id="d705"
+// @doctest id="6921"
 ```
 
 ### Extracting Collections
@@ -249,7 +249,7 @@ $products = StructuredOutput::with(
 foreach ($products as $product) {
     echo "{$product->name}: \${$product->price}\n";
 }
-// @doctest id="a961"
+// @doctest id="5f84"
 ```
 
 ## Validation
@@ -274,7 +274,7 @@ final class UserRegistration
         public readonly int $age,
     ) {}
 }
-// @doctest id="8fae"
+// @doctest id="20f4"
 ```
 
 ### Custom Validation
@@ -303,7 +303,7 @@ $user = StructuredOutput::with(
 )
 ->withValidators(AgeValidator::class)
 ->get();
-// @doctest id="4678"
+// @doctest id="9a16"
 ```
 
 ## Best Practices
@@ -316,7 +316,7 @@ public readonly string $customerEmailAddress;
 
 // Less clear
 public readonly string $email;
-// @doctest id="69af"
+// @doctest id="c55d"
 ```
 
 ### 2. Add Detailed Descriptions
@@ -329,7 +329,7 @@ public function __construct(
      */
     public readonly string $sku,
 ) {}
-// @doctest id="3a9b"
+// @doctest id="9b6a"
 ```
 
 ### 3. Use Appropriate Types
@@ -343,7 +343,7 @@ public readonly float $price;
 
 // Use enums for fixed options
 public readonly Status $status;
-// @doctest id="5869"
+// @doctest id="c8fb"
 ```
 
 ### 4. Make Optional Properties Nullable
@@ -354,7 +354,7 @@ public readonly string $name,
 
 // Optional
 public readonly ?string $nickname = null,
-// @doctest id="1ee2"
+// @doctest id="feb6"
 ```
 
 ### 5. Use Readonly Properties
@@ -365,7 +365,7 @@ public readonly string $name;
 
 // Mutable - avoid unless necessary
 public string $name;
-// @doctest id="a4fe"
+// @doctest id="cfa9"
 ```
 
 ## Generated Stubs
@@ -388,7 +388,7 @@ final class {{ class }}
         public readonly ?string $email = null,
     ) {}
 }
-// @doctest id="071f"
+// @doctest id="0458"
 ```
 
 ### Collection Stub (`--collection`)
@@ -409,7 +409,7 @@ final class {{ class }}Item
         public readonly ?string $description = null,
     ) {}
 }
-// @doctest id="4538"
+// @doctest id="a19a"
 ```
 
 ### Nested Stub (`--nested`)
@@ -440,5 +440,5 @@ final class {{ class }}Address
         public readonly string $country,
     ) {}
 }
-// @doctest id="8b6e"
+// @doctest id="a982"
 ```

@@ -1,8 +1,8 @@
 ---
 title: 'Embeddings utils'
 docname: 'embed_utils'
+id: '297f'
 ---
-
 ## Overview
 
 `EmbedUtils` class offers convenient methods to find top K vectors

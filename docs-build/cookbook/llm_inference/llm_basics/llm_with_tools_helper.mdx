@@ -1,13 +1,12 @@
 ---
 title: 'Generating JSON Schema from PHP classes'
-docname: 'json_schema_api'
+docname: 'llm_with_tools_helper'
+id: '012f'
 ---
-
 ## Overview
 
-Polyglot has a built-in support for dynamically constructing JSON Schema using
-`JsonSchema` class. It is useful when you want to shape the structures during
-runtime.
+Polyglot has a built-in support for dynamically constructing tool calling schema using
+`JsonSchema` class.
 
 ## Example
 
@@ -30,17 +29,25 @@ $schema = JsonSchema::object(
 
 $data = (new Inference)
     ->using('openai')
+    //->withDebugPreset('on')
     ->with(
         messages: [
-            ['role' => 'user', 'content' => 'What is capital of France? Respond with JSON data.']
+            ['role' => 'user', 'content' => 'What is capital of France? Respond with function call.']
         ],
-        responseFormat: $schema->toResponseFormat(
-            schemaName: 'city_data',
-            schemaDescription: 'City data',
-            strict: true,
-        ),
+        tools: [
+            $schema->toFunctionCall(
+               functionName: 'provide_data',
+               functionDescription: 'Provide city data'
+            )
+        ],
+        toolChoice: [
+            'type' => 'function',
+            'function' => [
+                'name' => 'provide_data'
+            ]
+        ],
         options: ['max_tokens' => 64],
-        mode: OutputMode::JsonSchema,
+        mode: OutputMode::Tools,
     )
     ->asJsonData();
 

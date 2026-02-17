@@ -1,13 +1,18 @@
 ---
 title: 'OpenCode CLI - Basic'
 docname: 'opencode_basic'
+id: 'd828'
 ---
-
 ## Overview
 
 This example demonstrates how to use the OpenCode CLI integration to execute
-simple prompts. The OpenCode component provides a PHP API for invoking the
-`opencode run` command in headless mode with JSON streaming output.
+simple prompts. The `AgentCtrl` facade provides a clean API for invoking the
+`opencode run` command with full event observability.
+
+Key concepts:
+- `AgentCtrl::openCode()`: Factory for OpenCode agent builder
+- `AgentCtrlConsoleLogger`: Shows execution lifecycle with color-coded labels
+- `AgentResponse`: Structured response with text, session info, usage stats, and cost
 
 ## Example
 
@@ -15,59 +20,66 @@ simple prompts. The OpenCode component provides a PHP API for invoking the
 <?php
 require 'examples/boot.php';
 
-use Cognesy\AgentCtrl\OpenCode\Application\Builder\OpenCodeCommandBuilder;
-use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
-use Cognesy\AgentCtrl\OpenCode\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
-use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
 
-// Step 1: Create a request with a simple prompt
-$request = new OpenCodeRequest(
-    prompt: 'What is the capital of France? Answer briefly.',
-    outputFormat: OutputFormat::Json,
+// Create a console logger for visibility into agent execution
+$logger = new AgentCtrlConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showPipeline: true,  // Show request/response pipeline details
 );
 
-print("Sending prompt to OpenCode CLI...\n");
-print("Prompt: {$request->prompt()}\n\n");
+echo "=== Agent Execution Log ===\n\n";
 
-// Step 2: Build the command specification
-$builder = new OpenCodeCommandBuilder();
-$spec = $builder->buildRun($request);
+$response = AgentCtrl::openCode()
+    ->wiretap($logger->wiretap())
+    ->execute('What is the capital of France? Answer briefly.');
 
-// Step 3: Execute the command using sandboxed executor
-$executor = SandboxCommandExecutor::forOpenCode();
-$execResult = $executor->execute($spec);
+echo "\n=== Result ===\n";
+if ($response->isSuccess()) {
+    echo "Answer: " . $response->text() . "\n";
 
-// Step 4: Parse the structured response
-$parser = new ResponseParser();
-$response = $parser->parse($execResult, OutputFormat::Json);
-
-// Step 5: Display results
-print("Answer: {$response->messageText()}\n\n");
-
-print("---\n");
-print("Session ID: {$response->sessionId()}\n");
-print("Exit code: {$response->exitCode()}\n");
-
-if ($response->usage()) {
-    print("Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n");
-}
-
-if ($response->cost()) {
-    print("Cost: \${$response->cost()}\n");
-}
-
-if ($execResult->exitCode() !== 0) {
-    print("Error: Command failed with exit code {$execResult->exitCode()}\n");
-    if ($execResult->stderr()) {
-        print("STDERR: " . $execResult->stderr() . "\n");
+    if ($response->sessionId) {
+        echo "Session ID: {$response->sessionId}\n";
     }
-    exit(1);
-}
-
-if ($response->messageText() === '') {
-    print("Error: No answer received from OpenCode\n");
-    exit(1);
+    if ($response->usage) {
+        echo "Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
+    }
+    if ($response->cost) {
+        echo "Cost: $" . number_format($response->cost, 4) . "\n";
+    }
+} else {
+    echo "Error: Command failed with exit code {$response->exitCode}\n";
 }
 ?>
 ```
+
+## Expected Output
+
+```
+=== Agent Execution Log ===
+
+14:32:15.123 [opencode] [EXEC] Execution started [prompt=What is the capital of France? Answer briefly.]
+14:32:15.124 [opencode] [REQT] Request built [type=OpenCodeRequest, duration=0ms]
+14:32:15.125 [opencode] [CMD ] Command spec created [args=5, duration=0ms]
+14:32:15.126 [opencode] [SBOX] Policy configured [driver=host, timeout=120s, network=on]
+14:32:15.127 [opencode] [SBOX] Ready [driver=host, setup=1ms]
+14:32:15.128 [opencode] [PROC] Process started [commands=5]
+14:32:16.234 [opencode] [RESP] Parsing started [format=json, size=289]
+14:32:16.235 [opencode] [RESP] Data extracted [events=2, tools=0, text=32 chars, duration=1ms]
+14:32:16.236 [opencode] [RESP] Parsing completed [duration=2ms, session=session-abc123]
+14:32:16.237 [opencode] [DONE] Execution completed [exit=0, tools=0, cost=$0.0008, tokens=62]
+
+=== Result ===
+Answer: The capital of France is Paris.
+Session ID: session-abc123
+Tokens: 38 in / 24 out
+Cost: $0.0008
+```
+
+## Key Points
+
+- **Simple execution**: One method call handles the entire interaction
+- **Full observability**: Console logger shows request building, sandbox, and response parsing
+- **Cost tracking**: OpenCode exposes cost information in the response

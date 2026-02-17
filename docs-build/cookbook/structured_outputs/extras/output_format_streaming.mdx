@@ -1,8 +1,8 @@
 ---
 title: 'Streaming with array output format'
 docname: 'output_format_streaming'
+id: 'a9a8'
 ---
-
 ## Overview
 
 When streaming responses, you often want real-time updates as objects (for

@@ -1,8 +1,8 @@
 ---
 title: 'Ditch Vanilla Chain Of Thought'
 docname: 'ditch_vanilla_cot'
+id: '7c80'
 ---
-
 ## Overview
 
 How can we improve the effectiveness of Zero-Shot Chain of Thought (CoT) prompts?

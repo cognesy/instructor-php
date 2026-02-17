@@ -1,8 +1,8 @@
 ---
 title: 'Examine The Context'
 docname: 'examine_context'
+id: '3247'
 ---
-
 ## Overview
 
 Encouraging the model to examine each source in context helps mitigate irrelevant information and improves reasoning quality. This is known as Thread of Thought.

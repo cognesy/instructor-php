@@ -1,8 +1,8 @@
 ---
 title: 'Generate Prompt Variations'
 docname: 'prompt_variations'
+id: 'b2ac'
 ---
-
 ## Overview
 
 Large Language Models are sensitive to prompt phrasing. Prompt Mining helps discover better templates that occur more frequently in the corpus or are clearer to the model.

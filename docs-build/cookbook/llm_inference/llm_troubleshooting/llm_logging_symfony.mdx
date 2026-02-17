@@ -2,8 +2,8 @@
 title: 'Inference Logging with Symfony'
 docname: 'llm_logging_symfony'
 path: ''
+id: '2d61'
 ---
-
 ## Overview
 
 Inference operation logging with Symfony-style context.

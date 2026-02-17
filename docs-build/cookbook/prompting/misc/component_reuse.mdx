@@ -1,8 +1,8 @@
 ---
 title: 'Reusing components'
 docname: 'component_reuse'
+id: '4733'
 ---
-
 ## Overview
 
 You can reuse the same component for different contexts within a model. In this

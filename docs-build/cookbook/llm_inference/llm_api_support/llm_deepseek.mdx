@@ -1,18 +1,19 @@
 ---
-title: 'Google Gemini'
-docname: 'google_gemini'
+title: 'DeepSeek'
+docname: 'llm_deepseek'
+id: 'e416'
 ---
-
 ## Overview
 
-Google offers Gemini models which perform well in benchmarks.
+Support for DeepSeek API which provides strong models at affordable price.
 
-Supported modes:
- - OutputMode::MdJson - fallback mode
- - OutputMode::Json - recommended
- - OutputMode::Tools - supported
+Mode compatibility:
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
 
-Here's how you can use Instructor with Gemini API.
+## Example
 
 ```php
 <?php
@@ -23,9 +24,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('gemini')
-    ->wiretap(fn($e) => $e->print()) // optional, for debugging
-    ->withDebugPreset('detailed')
+    ->using('deepseek') // see /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

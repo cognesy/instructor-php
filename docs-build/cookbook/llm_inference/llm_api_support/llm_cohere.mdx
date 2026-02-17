@@ -1,8 +1,8 @@
 ---
 title: 'Cohere'
-docname: 'cohere'
+docname: 'llm_cohere'
+id: '9331'
 ---
-
 ## Overview
 
 Instructor supports Cohere API - you can find the details on how to configure

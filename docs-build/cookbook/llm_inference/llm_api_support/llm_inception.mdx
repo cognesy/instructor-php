@@ -1,17 +1,17 @@
 ---
-title: 'MoonshotAI'
-docname: 'moonshotai'
+title: 'Inception'
+docname: 'llm_inception'
+id: 'f90e'
 ---
-
 ## Overview
 
-Support for MoonshotAI's API.
+Inception API provides OpenAI-compatible endpoints for chat completions.
 
 Mode compatibility:
-- OutputMode::MdJson (supported)
-- OutputMode::Tools (supported)
-- OutputMode::Json (supported)
-- OutputMode::JsonSchema (not supported)
+ - OutputMode::Tools (supported)
+ - OutputMode::Json (supported)
+ - OutputMode::JsonSchema (supported)
+ - OutputMode::MdJson (fallback)
 
 ## Example
 
@@ -24,7 +24,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('moonshot-kimi') // see /config/llm.php
+    ->using('inception') // see /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

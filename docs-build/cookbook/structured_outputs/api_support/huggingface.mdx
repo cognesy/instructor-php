@@ -1,8 +1,8 @@
 ---
 title: 'Hugging Face'
 docname: 'huggingface'
+id: 'da2a'
 ---
-
 ## Overview
 
 You can use Instructor to parse structured output from LLMs using Hugging Face API.

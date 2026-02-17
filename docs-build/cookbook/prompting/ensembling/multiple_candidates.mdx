@@ -1,8 +1,8 @@
 ---
 title: 'Generate Multiple Candidate Responses'
 docname: 'multiple_candidates'
+id: '42ae'
 ---
-
 ## Overview
 
 Generate multiple candidate responses and pick the most common answer (Self-Consistency).

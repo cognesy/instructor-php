@@ -1,19 +1,19 @@
 ---
 title: 'Agent Control Events & Monitoring'
 docname: 'agent_ctrl_events'
+id: '4074'
 ---
-
 ## Overview
 
-AgentCtrl provides a comprehensive event system for monitoring agent execution. This enables
-logging, telemetry, debugging, and custom integrations. You can either observe all events
-using a wiretap, or listen to specific event types for targeted monitoring.
+AgentCtrl provides a comprehensive event system for monitoring agent execution. Use the
+built-in `AgentCtrlConsoleLogger` for formatted output, or attach custom listeners for
+targeted monitoring. Events fire in real-time during execution.
 
 Key concepts:
+- `AgentCtrlConsoleLogger`: Built-in wiretap that formats events for console output
 - `wiretap()`: Observe ALL events with a single callback
 - `onEvent()`: Listen to specific event types (started, completed, text received, etc.)
 - Event types: `AgentExecutionStarted`, `AgentTextReceived`, `AgentToolUsed`, `AgentExecutionCompleted`, `AgentErrorOccurred`
-- Real-time monitoring: Events fire during streaming execution
 
 ## Example
 
@@ -22,45 +22,48 @@ Key concepts:
 require 'examples/boot.php';
 
 use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
 use Cognesy\AgentCtrl\Enum\AgentType;
-use Cognesy\AgentCtrl\Event\AgentEvent;
-use Cognesy\AgentCtrl\Event\AgentExecutionStarted;
-use Cognesy\AgentCtrl\Event\AgentTextReceived;
-use Cognesy\AgentCtrl\Event\AgentToolUsed;
 use Cognesy\AgentCtrl\Event\AgentExecutionCompleted;
+use Cognesy\AgentCtrl\Event\AgentToolUsed;
 
-$agent = AgentCtrl::make(AgentType::OpenCode);
+// 1. Built-in console logger: formatted, color-coded output
+$logger = new AgentCtrlConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showToolArgs: true,   // Show tool input args
+    showSandbox: false,   // Hide sandbox setup events
+    showPipeline: false,  // Hide request/response pipeline
+    showStreaming: false,  // Hide stream events
+);
 
-// Option 1: Wiretap observes ALL events
-$agent->wiretap(function(AgentEvent $event): void {
-    $timestamp = $event->createdAt->format('H:i:s.v');
-    echo "[{$timestamp}] EVENT: {$event->name()}\n";
+$agent = AgentCtrl::make(AgentType::OpenCode)
+    ->wiretap($logger->wiretap());
+
+// 2. Targeted listeners: subscribe to specific event types
+$agent->onEvent(AgentToolUsed::class, function (AgentToolUsed $event) {
+    echo "\n  >>> Tool used: {$event->tool}\n\n";
 });
 
-// Option 2: Listen to specific events
-$agent->onEvent(AgentExecutionStarted::class, function(AgentExecutionStarted $event): void {
-    echo "-> Agent {$event->agentType->value} starting\n";
+$agent->onEvent(AgentExecutionCompleted::class, function (AgentExecutionCompleted $event) {
+    echo "\n=== Execution Complete ===\n";
+    echo "  Tools: {$event->toolCallCount}\n";
+    if ($event->cost !== null) {
+        echo "  Cost: $" . number_format($event->cost, 4) . "\n";
+    }
+    $tokens = ($event->inputTokens ?? 0) + ($event->outputTokens ?? 0);
+    if ($tokens > 0) {
+        echo "  Tokens: {$tokens}\n";
+    }
 });
 
-$agent->onEvent(AgentTextReceived::class, function(AgentTextReceived $event): void {
-    $preview = strlen($event->text) > 50 ? substr($event->text, 0, 50) . '...' : $event->text;
-    echo "-> Text: \"{$preview}\"\n";
-});
-
-$agent->onEvent(AgentToolUsed::class, function(AgentToolUsed $event): void {
-    echo "-> Tool: {$event->tool}\n";
-});
-
-$agent->onEvent(AgentExecutionCompleted::class, function(AgentExecutionCompleted $event): void {
-    echo "-> Completed: {$event->toolCallCount} tool calls, cost: $" . number_format($event->cost, 4) . "\n";
-});
-
-// Execute with streaming to see events in real-time
+// Run the agent
+echo "=== Agent Execution Log ===\n\n";
 $response = $agent->executeStreaming('List files in current directory and explain what you see.');
 
+echo "\n=== Result ===\n";
 if ($response->isSuccess()) {
-    echo "\nFinal response:\n";
-    echo $response->text() . "\n";
+    echo "Answer: " . $response->text() . "\n";
 }
 ?>
 ```
@@ -68,28 +71,34 @@ if ($response->isSuccess()) {
 ## Expected Output
 
 ```
-[14:32:15.123] EVENT: AgentExecutionStarted
--> Agent opencode starting
-[14:32:15.456] EVENT: AgentTextReceived
--> Text: "I'll list the files in the current directory..."
-[14:32:16.234] EVENT: AgentToolUsed
--> Tool: bash
-[14:32:16.567] EVENT: AgentTextReceived
--> Text: "The directory contains: composer.json, src/, ..."
-[14:32:17.890] EVENT: AgentExecutionCompleted
--> Completed: 1 tool calls, cost: $0.0034
+=== Agent Execution Log ===
 
-Final response:
-The directory contains several PHP project files including composer.json for
+14:32:15.123 [opencode] [EXEC] Execution started [prompt=List files in current directory...]
+14:32:15.234 [opencode] [PROC] Process started [commands=1]
+14:32:15.456 [opencode] [TEXT] Text received [length=48]
+14:32:16.234 [opencode] [TOOL] bash {command=ls -la}
+
+  >>> Tool used: bash
+
+14:32:16.567 [opencode] [TEXT] Text received [length=156]
+14:32:17.890 [opencode] [DONE] Execution completed [exit=0, tools=1, cost=$0.0034, tokens=198]
+
+=== Execution Complete ===
+  Tools: 1
+  Cost: $0.0034
+  Tokens: 198
+
+=== Result ===
+Answer: The directory contains several PHP project files including composer.json for
 dependencies, a src/ directory with source code, and configuration files.
 ```
 
 ## Key Points
 
+- **Console logger**: `AgentCtrlConsoleLogger` provides clean, color-coded event output with configurable toggles
 - **Wiretap pattern**: Observe all events with `wiretap()` for comprehensive logging
 - **Targeted listening**: Use `onEvent()` for specific event types when you only care about certain events
+- **Composable**: Combine the console logger with targeted listeners
 - **Real-time monitoring**: Events fire as execution progresses, not after completion
 - **Rich metadata**: Events include timestamps, model info, token usage, costs, and tool details
-- **Error handling**: Listen to `AgentErrorOccurred` for exception handling
-- **Multiple listeners**: You can attach multiple callbacks to the same event type
 - **Use cases**: Logging, telemetry, progress bars, debugging, analytics

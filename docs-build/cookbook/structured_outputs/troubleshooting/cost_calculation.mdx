@@ -1,8 +1,8 @@
 ---
 title: 'Calculating request cost'
 docname: 'cost_calculation'
+id: '59c8'
 ---
-
 ## Overview
 
 When using LLM APIs, tracking costs is essential for budgeting and optimization.

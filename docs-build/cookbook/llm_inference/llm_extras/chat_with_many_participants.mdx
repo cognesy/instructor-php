@@ -1,8 +1,8 @@
 ---
 title: 'Multi-Participant AI Chat Panel Discussion'
 docname: 'chat_with_many_participants'
+id: '505c'
 ---
-
 ## Overview
 
 This example demonstrates a sophisticated multi-participant chat system featuring:

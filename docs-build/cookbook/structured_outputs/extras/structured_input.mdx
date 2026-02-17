@@ -1,8 +1,8 @@
 ---
 title: 'Using structured data as an input'
 docname: 'structured_input'
+id: 'f7a0'
 ---
-
 ## Overview
 
 Instructor offers a way to use structured data as an input. This is

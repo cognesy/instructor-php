@@ -1,8 +1,8 @@
 ---
 title: 'Modes'
 docname: 'modes'
+id: '1e8d'
 ---
-
 ## Overview
 
 Instructor supports several ways to extract data from the response:

@@ -38,7 +38,7 @@ use Cognesy\Http\Middleware\MiddlewareStack;class HttpClient implements CanHandl
     public function handle(HttpClientRequest $request): HttpResponse { ... }
     public function middleware(): MiddlewareStack { ... }
 }
-// @doctest id="4c1c"
+// @doctest id="a192"
 ```
 
 
@@ -76,7 +76,7 @@ interface HttpResponse {
     public function stream(int $chunkSize = 1): Generator;
     public function original(): mixed;
 }
-// @doctest id="4c9c"
+// @doctest id="793c"
 ```
 
 
@@ -139,5 +139,5 @@ class MiddlewareStack {
         CanHandleHttpRequest $handler
     ): HttpResponse { ... }
 }
-// @doctest id="52a2"
+// @doctest id="af7a"
 ```

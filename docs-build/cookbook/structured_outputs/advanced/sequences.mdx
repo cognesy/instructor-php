@@ -1,8 +1,8 @@
 ---
 title: 'Extracting sequences of objects'
 docname: 'sequences'
+id: 'afb7'
 ---
-
 ## Overview
 
 Sequences are a special type of response model that can be used to represent

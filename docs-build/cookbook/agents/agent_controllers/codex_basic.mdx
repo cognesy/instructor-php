@@ -1,13 +1,18 @@
 ---
 title: 'OpenAI Codex CLI - Basic'
 docname: 'codex_basic'
+id: 'daea'
 ---
-
 ## Overview
 
 This example demonstrates how to use the OpenAI Codex CLI integration to execute
-simple prompts. The OpenAICodex component provides a PHP API for invoking the
-`codex exec` command in headless mode with sandboxing support.
+simple prompts. The `AgentCtrl` facade provides a clean API for invoking the
+`codex exec` command with full event observability.
+
+Key concepts:
+- `AgentCtrl::codex()`: Factory for Codex agent builder
+- `withSandbox()`: Configure sandbox mode for file/network access
+- `AgentCtrlConsoleLogger`: Shows execution lifecycle with color-coded labels
 
 ## Example
 
@@ -15,71 +20,64 @@ simple prompts. The OpenAICodex component provides a PHP API for invoking the
 <?php
 require 'examples/boot.php';
 
-use Cognesy\AgentCtrl\OpenAICodex\Application\Builder\CodexCommandBuilder;
-use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
-use Cognesy\AgentCtrl\OpenAICodex\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ItemCompletedEvent;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\AgentMessage;
-use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 
-// Step 1: Create a request with a simple prompt
-$request = new CodexRequest(
-    prompt: 'What is the capital of France? Answer briefly.',
-    outputFormat: OutputFormat::Json,
-    sandboxMode: SandboxMode::ReadOnly,
+// Create a console logger for visibility into agent execution
+$logger = new AgentCtrlConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showPipeline: true,  // Show request/response pipeline details
 );
 
-print("Sending prompt to Codex CLI...\n");
-print("Prompt: {$request->prompt()}\n\n");
+echo "=== Agent Execution Log ===\n\n";
 
-// Step 2: Build the command specification
-$builder = new CodexCommandBuilder();
-$spec = $builder->buildExec($request);
+$response = AgentCtrl::codex()
+    ->wiretap($logger->wiretap())
+    ->withSandbox(SandboxMode::ReadOnly)
+    ->execute('What is the capital of France? Answer briefly.');
 
-// Step 3: Execute the command using sandboxed executor
-$executor = SandboxCommandExecutor::forCodex();
-$execResult = $executor->execute($spec);
+echo "\n=== Result ===\n";
+if ($response->isSuccess()) {
+    echo "Answer: " . $response->text() . "\n";
 
-// Step 4: Parse the structured response
-$parser = new ResponseParser();
-$response = $parser->parse($execResult, OutputFormat::Json);
-
-// Step 5: Extract the agent's answer from events
-$answer = null;
-foreach ($response->decoded()->all() as $object) {
-    $event = StreamEvent::fromArray($object->data());
-
-    // Look for completed items that are agent messages
-    if ($event instanceof ItemCompletedEvent && $event->item instanceof AgentMessage) {
-        $answer = $event->item->text;
+    if ($response->sessionId) {
+        echo "Thread ID: {$response->sessionId}\n";
     }
-}
-
-// Step 6: Display results
-print("Answer: {$answer}\n\n");
-
-print("---\n");
-print("Thread ID: {$response->threadId()}\n");
-print("Exit code: {$response->exitCode()}\n");
-
-if ($response->usage()) {
-    print("Tokens: {$response->usage()->inputTokens} in / {$response->usage()->outputTokens} out\n");
-}
-
-if ($execResult->exitCode() !== 0) {
-    print("Error: Command failed with exit code {$execResult->exitCode()}\n");
-    if ($execResult->stderr()) {
-        print("STDERR: " . $execResult->stderr() . "\n");
+    if ($response->usage) {
+        echo "Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
     }
-    exit(1);
-}
-
-if ($answer === null) {
-    print("Error: No answer received from Codex\n");
-    exit(1);
+} else {
+    echo "Error: Command failed with exit code {$response->exitCode}\n";
 }
 ?>
 ```
+
+## Expected Output
+
+```
+=== Agent Execution Log ===
+
+14:32:15.123 [codex] [EXEC] Execution started [prompt=What is the capital of France? Answer briefly.]
+14:32:15.124 [codex] [REQT] Request built [type=CodexRequest, duration=0ms]
+14:32:15.125 [codex] [CMD ] Command spec created [args=6, duration=0ms]
+14:32:15.126 [codex] [SBOX] Policy configured [driver=host, timeout=120s, network=on]
+14:32:15.127 [codex] [SBOX] Ready [driver=host, setup=1ms]
+14:32:15.128 [codex] [PROC] Process started [commands=6]
+14:32:16.234 [codex] [RESP] Parsing started [format=json, size=312]
+14:32:16.235 [codex] [RESP] Data extracted [events=2, tools=0, text=32 chars, duration=1ms]
+14:32:16.236 [codex] [RESP] Parsing completed [duration=2ms, session=thread-abc123]
+14:32:16.237 [codex] [DONE] Execution completed [exit=0, tools=0, tokens=62]
+
+=== Result ===
+Answer: The capital of France is Paris.
+Thread ID: thread-abc123
+Tokens: 38 in / 24 out
+```
+
+## Key Points
+
+- **Simple execution**: One method call handles the entire interaction
+- **Full observability**: Console logger shows request building, sandbox, and response parsing
+- **Sandbox control**: Use `withSandbox()` for file/network access control

@@ -1,8 +1,8 @@
 ---
 title: 'Cohere'
 docname: 'cohere'
+id: 'd290'
 ---
-
 ## Overview
 
 Instructor supports Cohere API - you can find the details on how to configure

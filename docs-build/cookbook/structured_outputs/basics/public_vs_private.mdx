@@ -1,8 +1,8 @@
 ---
 title: 'Private vs public object field'
 docname: 'public_vs_private'
+id: '8c1a'
 ---
-
 ## Overview
 
 Instructor only sets accessible fields of the object with the data provided by LLM.

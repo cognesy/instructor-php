@@ -1,8 +1,8 @@
 ---
 title: 'Automate Example Selection'
 docname: 'automate_selection'
+id: 'c5a2'
 ---
-
 ## Overview
 
 Few-shot CoT requires curated examples. We can automate selection by clustering candidate questions via embeddings, sampling per cluster, and filtering using a simple criterion (e.g., ≤ 5 reasoning steps).

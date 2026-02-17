@@ -1,17 +1,14 @@
 ---
-title: 'Inception'
-docname: 'inception'
+title: 'Azure OpenAI'
+docname: 'llm_azure_openai'
+id: '50a3'
 ---
-
 ## Overview
 
-Inception API provides OpenAI-compatible endpoints for chat completions.
+You can connect to Azure OpenAI instance using a dedicated client provided
+by Instructor. Please note it requires setting up your own model deployment
+using Azure OpenAI service console.
 
-Mode compatibility:
- - OutputMode::Tools (supported)
- - OutputMode::Json (supported)
- - OutputMode::JsonSchema (supported)
- - OutputMode::MdJson (fallback)
 
 ## Example
 
@@ -24,7 +21,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('inception') // see /config/llm.php
+    ->using('openai') // see /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

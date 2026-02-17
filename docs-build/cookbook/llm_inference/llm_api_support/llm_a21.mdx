@@ -1,17 +1,12 @@
 ---
-title: 'OpenAI'
-docname: 'openai'
+title: 'A21'
+docname: 'llm_a21'
+id: '1dd0'
 ---
-
 ## Overview
 
-This is the default client used by Instructor.
-
-Mode compatibility:
- - OutputMode::Tools (supported)
- - OutputMode::Json (supported)
- - OutputMode::JsonSchema (recommended for new models)
- - OutputMode::MdJson (fallback)
+Support for A21 Jamba - MAMBA architecture models, very strong at handling
+long context.
 
 ## Example
 
@@ -24,7 +19,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('openai') // see /config/llm.php
+    ->using('a21') // see /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

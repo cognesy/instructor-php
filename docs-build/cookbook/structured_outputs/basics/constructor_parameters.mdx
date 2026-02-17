@@ -1,8 +1,8 @@
 ---
 title: 'Specifying required and optional parameters via constructor'
 docname: 'constructor_parameters'
+id: '1bde'
 ---
-
 ## Overview
 
 Instructor can extract data from the LLM response and use it

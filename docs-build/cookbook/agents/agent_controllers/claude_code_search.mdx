@@ -1,17 +1,20 @@
 ---
 title: 'Claude Code CLI - Agentic Search'
 docname: 'claude_code_search'
+id: 'e4a3'
 ---
-
 ## Overview
 
 This example demonstrates the agentic capabilities of Claude Code CLI by having
-it search through the codebase to find and explain validation examples. This
-showcases how Claude CLI can autonomously explore files, understand code structure,
-and provide comprehensive explanations.
+it search through the codebase to find and explain validation examples. The
+`AgentCtrlConsoleLogger` provides full visibility into tool calls, streaming,
+and the agent's decision-making process.
 
-The agent searches the ./examples directory for response validation examples,
-reads the code, and explains how validation works.
+Key concepts:
+- `AgentCtrl::claudeCode()`: Factory for Claude Code agent builder
+- `withMaxTurns()`: Allow multiple turns for exploration
+- `onText()` / `onToolUse()`: Real-time streaming callbacks
+- `AgentCtrlConsoleLogger`: Shows execution lifecycle alongside streaming output
 
 ## Example
 
@@ -19,31 +22,36 @@ reads the code, and explains how validation works.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
-use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
-use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ErrorEvent;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\MessageEvent;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ResultEvent;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\TextContent;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ToolUseContent;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
-use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
-use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
-use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
-use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
+use Cognesy\AgentCtrl\AgentCtrl;
+use Cognesy\AgentCtrl\Broadcasting\AgentCtrlConsoleLogger;
 
-// Ensure we're running from monorepo root
-$projectRoot = dirname(__DIR__, 3);
-if (!file_exists($projectRoot . '/examples')) {
-    die("Error: Must run from project root. Current dir: " . getcwd() . "\n");
-}
-chdir($projectRoot);
-print("Working directory: " . getcwd() . "\n\n");
+// Console logger for execution lifecycle visibility
+$logger = new AgentCtrlConsoleLogger(
+    useColors: true,
+    showTimestamps: true,
+    showToolArgs: true,   // Show tool input args
+    showSandbox: true,    // Show sandbox setup
+);
 
-// Step 1: Define an agentic search task
-$searchPrompt = <<<'PROMPT'
+$toolCalls = [];
+
+echo "=== Agent Execution Log ===\n\n";
+
+$response = AgentCtrl::claudeCode()
+    ->wiretap($logger->wiretap())
+    ->withMaxTurns(10)
+    ->onText(function (string $text) {
+        echo $text;
+    })
+    ->onToolUse(function (string $tool, array $input, ?string $output) use (&$toolCalls) {
+        $target = $input['pattern'] ?? $input['file_path'] ?? $input['command'] ?? '';
+        if (strlen($target) > 50) {
+            $target = '...' . substr($target, -47);
+        }
+        $toolCalls[] = $tool;
+        echo "\n  >> [{$tool}] {$target}\n";
+    })
+    ->executeStreaming(<<<'PROMPT'
 Complete this task in steps:
 1. Use Glob or find command to locate PHP files with "validation" in the filename under ./examples
 2. Read the contents of relevant PHP file
@@ -54,146 +62,58 @@ Complete this task in steps:
    - What happens when validation fails
 
 Provide your final explanation as a clear, structured response.
-PROMPT;
+PROMPT);
 
-$request = new ClaudeRequest(
-    prompt: $searchPrompt,
-    outputFormat: OutputFormat::StreamJson,
-    permissionMode: PermissionMode::BypassPermissions,  // Allow agent to freely read files
-    includePartialMessages: true,
-    maxTurns: 10,  // Allow multiple turns for exploration and explanation
-    verbose: true,
-);
+echo "\n=== Result ===\n";
+echo "Tools used: " . implode(' > ', $toolCalls) . "\n";
+echo "Total tool calls: " . count($toolCalls) . "\n";
+echo "Exit code: {$response->exitCode}\n";
 
-print("Initiating agentic search...\n");
-print("Task: Find and explain response validation example\n");
-print(str_repeat('=', 80) . "\n\n");
-
-// Step 2: Build command with Host driver for direct filesystem access
-$builder = new ClaudeCommandBuilder();
-$spec = $builder->buildHeadless($request);
-
-// Step 3: Use Host driver with policy that allows filesystem access
-$policy = ExecutionPolicy::custom(
-    timeoutSeconds: 120,
-    networkEnabled: false,  // No network needed for local file search
-    stdoutLimitBytes: 10 * 1024 * 1024,
-    stderrLimitBytes: 2 * 1024 * 1024,
-    baseDir: $projectRoot,
-    inheritEnv: true,
-);
-
-$executor = new SandboxCommandExecutor(
-    policy: $policy,
-    driver: SandboxDriver::Host,  // Direct filesystem access
-);
-
-print("Executing Claude Code CLI agent...\n");
-print(str_repeat('-', 80) . "\n");
-
-// Step 4: Execute with real-time streaming callback
-$fullResponse = '';
-$toolCalls = [];
-$errors = [];
-$lineBuffer = '';
-
-$streamingCallback = function(string $type, string $chunk) use (&$fullResponse, &$toolCalls, &$errors, &$lineBuffer): void {
-    // Buffer incoming chunks and process complete JSON lines
-    $lineBuffer .= $chunk;
-    $lines = explode("\n", $lineBuffer);
-
-    // Keep the last incomplete line in the buffer
-    $lineBuffer = array_pop($lines);
-
-    foreach ($lines as $line) {
-        $trimmed = trim($line);
-        if ($trimmed === '') {
-            continue;
-        }
-
-        // Parse JSON line into typed DTO
-        $data = json_decode($trimmed, true);
-        if (!is_array($data)) {
-            continue;
-        }
-
-        $event = StreamEvent::fromArray($data);
-
-        // Handle different event types with proper type safety
-        if ($event instanceof MessageEvent) {
-            foreach ($event->message->textContent() as $textContent) {
-                print("\n📝 Agent: {$textContent->text}\n");
-                flush();
-                $fullResponse .= $textContent->text;
-            }
-
-            foreach ($event->message->toolUses() as $toolUse) {
-                print("\n🔧 Tool Call: {$toolUse->name}\n");
-                print("   ID: {$toolUse->id}\n");
-                flush();
-
-                $toolCalls[] = $toolUse;
-            }
-        }
-
-        if ($event instanceof ResultEvent) {
-            print("\n🎯 Result: {$event->result}\n");
-            flush();
-        }
-
-        if ($event instanceof ErrorEvent) {
-            print("\n❌ Error: {$event->error}\n");
-            flush();
-            $errors[] = $event->error;
-        }
-    }
-};
-
-// Execute with streaming
-$execResult = $executor->executeStreaming($spec, $streamingCallback);
-
-// Process any remaining buffered line
-if (!empty($lineBuffer)) {
-    $trimmed = trim($lineBuffer);
-    if ($trimmed !== '') {
-        $data = json_decode($trimmed, true);
-        if (is_array($data)) {
-            $event = StreamEvent::fromArray($data);
-            // Process final event if needed
-        }
-    }
+if ($response->usage) {
+    echo "Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
+}
+if ($response->cost) {
+    echo "Cost: $" . number_format($response->cost, 4) . "\n";
 }
 
-$eventCount = count($toolCalls) + count($errors);
-$toolCount = count($toolCalls);
-
-print("\n" . str_repeat('=', 80) . "\n");
-
-// Summary
-print("\n📊 Execution Summary:\n");
-print("   Tool calls: {$toolCount}\n");
-print("   Errors: " . count($errors) . "\n");
-print("   Exit code: {$execResult->exitCode()}\n");
-
-if (!empty($toolCalls)) {
-    print("\n🔧 Tools used:\n");
-    $toolsByName = [];
-    foreach ($toolCalls as $tool) {
-        $toolsByName[$tool->name] = ($toolsByName[$tool->name] ?? 0) + 1;
-    }
-    foreach ($toolsByName as $toolName => $count) {
-        print("   - {$toolName}: {$count} time(s)\n");
-    }
-}
-
-if ($execResult->exitCode() === 0) {
-    print("\n✓ Agent search completed successfully\n");
-} else {
-    print("\n✗ Agent search failed with exit code: {$execResult->exitCode()}\n");
-    if ($execResult->stderr()) {
-        print("STDERR: " . substr($execResult->stderr(), 0, 500) . "\n");
-    }
+if (!$response->isSuccess()) {
+    echo "Error: Agent search failed with exit code {$response->exitCode}\n";
     exit(1);
 }
 ?>
 ```
+
+## Expected Output
+
+```
+=== Agent Execution Log ===
+
+14:32:15.123 [claude-code] [EXEC] Execution started [prompt=Complete this task in steps:...]
+14:32:15.234 [claude-code] [SBOX] Policy configured [driver=host, timeout=120s, network=on]
+14:32:15.235 [claude-code] [SBOX] Ready [driver=host, setup=1ms]
+14:32:15.236 [claude-code] [PROC] Process started [commands=12]
+I'll search for PHP files with "validation" in the filename under ./examples.
+14:32:16.456 [claude-code] [TOOL] Glob {pattern=./examples/**/*validation*.php}
+
+  >> [Glob] ./examples/**/*validation*.php
+
+Found a validation example. Let me read it.
+14:32:17.234 [claude-code] [TOOL] Read {file_path=./examples/A01_Basics/Validation/run.php}
+
+  >> [Read] ./examples/A01_Basics/Validation/run.php
+
+The validation example demonstrates...
+14:32:19.890 [claude-code] [DONE] Execution completed [exit=0, tools=2]
+
+=== Result ===
+Tools used: Glob > Read
+Total tool calls: 2
+Exit code: 0
+```
+
+## Key Points
+
+- **Agentic search**: Agent autonomously explores files and synthesizes answers
+- **Full visibility**: Console logger shows every tool call alongside streaming output
+- **Sandbox awareness**: Enable `showSandbox` to see sandbox initialization details
+- **Multi-turn**: `withMaxTurns(10)` allows the agent to explore iteratively

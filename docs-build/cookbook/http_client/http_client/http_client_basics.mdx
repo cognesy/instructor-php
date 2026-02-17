@@ -1,8 +1,8 @@
 ---
 title: 'HTTP Client – Basics'
 docname: 'http_client_basics'
+id: 'c41a'
 ---
-
 ## Overview
 
 Demonstrates basic HTTP client usage: building a client, sending a request, and reading

@@ -1,17 +1,11 @@
 ---
-title: 'xAI / Grok'
-docname: 'xai'
+title: 'Meta'
+docname: 'llm_meta'
+id: '2dca'
 ---
-
 ## Overview
 
-Support for xAI's API, which offers access to X.com's Grok model.
-
-Mode compatibility:
-- OutputMode::Tools (supported)
-- OutputMode::Json (supported)
-- OutputMode::JsonSchema (supported)
-- OutputMode::MdJson (fallback)
+Instructor supports Meta LLM inference API. You can find the details on how to configure
 
 ## Example
 
@@ -24,7 +18,8 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->using('xai') // see /config/llm.php
+    ->using('meta') // see /config/llm.php
+    ->withDebugPreset('on')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

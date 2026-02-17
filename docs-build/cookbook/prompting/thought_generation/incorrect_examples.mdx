@@ -1,8 +1,8 @@
 ---
 title: 'Include Incorrect Examples'
 docname: 'incorrect_examples'
+id: '0dca'
 ---
-
 ## Overview
 
 Including examples of incorrect reasoning alongside correct ones helps the model learn what to avoid. This is Contrastive Chain-of-Thought.

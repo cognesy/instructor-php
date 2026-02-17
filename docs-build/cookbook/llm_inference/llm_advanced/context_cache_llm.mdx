@@ -1,8 +1,8 @@
 ---
 title: 'Context caching (text inference)'
 docname: 'context_cache_llm'
+id: '7d51'
 ---
-
 ## Overview
 
 Instructor offers a simplified way to work with LLM providers' APIs supporting caching

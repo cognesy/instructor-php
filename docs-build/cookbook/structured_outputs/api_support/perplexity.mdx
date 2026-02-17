@@ -1,8 +1,8 @@
 ---
 title: 'Perplexity'
 docname: 'perplexity'
+id: 'bfc0'
 ---
-
 ## Overview
 
 You can use Instructor with Perplexity API. Perplexity is an API that provides access

@@ -1,8 +1,8 @@
 ---
 title: 'Clarify Ambiguous Information'
 docname: 'clarify_ambiguity'
+id: 'a2cc'
 ---
-
 ## Overview
 
 How can we identify and clarify ambiguous information in the prompt?

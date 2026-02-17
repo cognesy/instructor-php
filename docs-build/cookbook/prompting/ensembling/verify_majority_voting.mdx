@@ -1,8 +1,8 @@
 ---
 title: 'Verify Responses over Majority Voting'
 docname: 'verify_majority_voting'
+id: '1cc3'
 ---
-
 ## Overview
 
 Diverse verifier scoring aggregates quality over unique answers, improving over majority vote.

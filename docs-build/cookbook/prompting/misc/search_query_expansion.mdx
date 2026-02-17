@@ -1,8 +1,8 @@
 ---
 title: 'Expanding search queries'
 docname: 'search_query_expansion'
+id: '0fa6'
 ---
-
 ## Overview
 
 In this example, we will demonstrate how to leverage the enums and typed arrays

@@ -1,8 +1,8 @@
 ---
 title: 'SambaNova'
 docname: 'sambanova'
+id: '0546'
 ---
-
 ## Overview
 
 Support for SambaNova's API, which provide fast inference endpoints for Llama and Qwen LLMs.

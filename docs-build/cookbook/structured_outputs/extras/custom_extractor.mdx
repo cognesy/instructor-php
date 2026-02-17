@@ -1,8 +1,8 @@
 ---
 title: 'Custom Content Extractors'
 docname: 'custom_extractor'
+id: '4005'
 ---
-
 ## Overview
 
 Instructor uses a pluggable extraction system to parse structured content from LLM responses.

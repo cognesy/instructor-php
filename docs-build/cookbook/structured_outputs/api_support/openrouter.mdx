@@ -1,8 +1,8 @@
 ---
 title: 'OpenRouter'
 docname: 'openrouter'
+id: '0b8d'
 ---
-
 ## Overview
 
 You can use Instructor with OpenRouter API. OpenRouter provides easy, unified access

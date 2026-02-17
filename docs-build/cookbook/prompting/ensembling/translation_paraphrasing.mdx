@@ -1,8 +1,8 @@
 ---
 title: 'Use Translation for Paraphrasing'
 docname: 'translation_paraphrasing'
+id: 'fe3b'
 ---
-
 ## Overview
 
 Back-translation can produce diverse paraphrases: translate to another language and back to English, encouraging varied phrasing.

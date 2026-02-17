@@ -1,8 +1,8 @@
 ---
 title: 'Simulate a Perspective'
 docname: 'simulate_perspective'
+id: 'dea8'
 ---
-
 ## Overview
 
 How can we encourage the model to focus on relevant information?

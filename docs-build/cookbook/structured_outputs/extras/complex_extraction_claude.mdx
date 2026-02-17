@@ -1,8 +1,8 @@
 ---
 title: 'Extraction of complex objects (Anthropic)'
 docname: 'complex_extraction_claude'
+id: '522c'
 ---
-
 ## Overview
 
 This is an example of extraction of a very complex structure from

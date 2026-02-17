@@ -1,8 +1,8 @@
 ---
 title: 'Translating UI text fields'
 docname: 'translate_ui_fields'
+id: '8cdb'
 ---
-
 ## Overview
 
 You can use Instructor to translate text fields in your UI. We can instruct the model to

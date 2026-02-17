@@ -1,8 +1,8 @@
 ---
 title: 'Ask Model to Repeat the Query'
 docname: 'repeat_query'
+id: '35e5'
 ---
-
 ## Overview
 
 How can we enhance a model's understanding of a query?

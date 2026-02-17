@@ -1,8 +1,8 @@
 ---
 title: 'Restating instructions'
 docname: 'restate_instructions'
+id: '70df'
 ---
-
 ## Overview
 
 Make Instructor restate long or complex instructions and rules to improve inference

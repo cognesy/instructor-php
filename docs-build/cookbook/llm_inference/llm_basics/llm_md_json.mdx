@@ -1,8 +1,8 @@
 ---
 title: 'Working directly with LLMs and JSON - MdJSON mode'
 docname: 'llm_md_json'
+id: 'b490'
 ---
-
 ## Overview
 
 While working with `Inference` class, you can also generate JSON output

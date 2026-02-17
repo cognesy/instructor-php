@@ -1,8 +1,8 @@
 ---
 title: 'Modifying Settings Path'
 docname: 'settings'
+id: 'cf65'
 ---
-
 ## Overview
 
 This example demonstrates how to modify the settings path for the Instructor library.

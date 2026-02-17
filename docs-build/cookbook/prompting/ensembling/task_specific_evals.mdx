@@ -1,8 +1,8 @@
 ---
 title: 'Use Task Specific Evaluation Metrics'
 docname: 'task_specific_evals'
+id: '0866'
 ---
-
 ## Overview
 Universal Self Prompting is a two stage process similar to Consistency Based Self Adaptive Prompting (COSP). Here is a breakdown of the two stages.
 

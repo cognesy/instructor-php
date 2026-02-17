@@ -1,8 +1,8 @@
 ---
 title: 'Embeddings'
 docname: 'embeddings'
+id: '4bca'
 ---
-
 ## Overview
 
 `Embeddings` class offers access to embeddings APIs which allows to generate

@@ -1,8 +1,8 @@
 ---
 title: 'HTTP Middleware (Hooks + Conditional Decoration)'
 docname: 'http_middleware_hooks'
+id: 'b6fd'
 ---
-
 ## Overview
 
 Demonstrates BaseMiddleware hooks and conditional response decoration. Shows how to attach

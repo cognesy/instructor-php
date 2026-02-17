@@ -1,8 +1,8 @@
 ---
 title: 'HTTP Middleware (Stream)'
 docname: 'http_middleware_stream'
+id: '67c3'
 ---
-
 ## Overview
 
 Demonstrates streaming HTTP middleware that prefixes each chunk with a label. Uses

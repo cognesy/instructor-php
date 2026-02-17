@@ -1,8 +1,8 @@
 ---
 title: 'Ask LLM to rewrite instructions'
 docname: 'rewrite_instructions'
+id: '57bd'
 ---
-
 ## Overview
 
 Asking LLM to rewrite the instructions and rules is another way to improve

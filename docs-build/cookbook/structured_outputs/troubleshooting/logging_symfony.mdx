@@ -2,8 +2,8 @@
 title: 'Symfony Logging Integration'
 docname: 'logging_symfony'
 path: ''
+id: '7ab5'
 ---
-
 ## Overview
 
 Symfony integration with Instructor's functional logging pipeline.

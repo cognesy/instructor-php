@@ -1,8 +1,8 @@
 ---
 title: 'Customize configuration providers of LLM driver'
-docname: 'config_providers'
+docname: 'llm_config_providers'
+id: '7fa3'
 ---
-
 ## Overview
 
 You can provide your own LLM configuration instance to `Inference` object. This is useful

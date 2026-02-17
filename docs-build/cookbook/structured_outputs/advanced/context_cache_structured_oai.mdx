@@ -1,8 +1,8 @@
 ---
 title: 'Context caching (structured output, OpenAI)'
 docname: 'context_cache_structured_oai'
+id: '4054'
 ---
-
 ## Overview
 
 Instructor offers a simplified way to work with LLM providers' APIs supporting caching,

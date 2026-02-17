@@ -1,8 +1,8 @@
 ---
 title: 'Inference and tool use'
 docname: 'tool_use'
+id: '37aa'
 ---
-
 ## Overview
 
 `ToolUse` class automates the process of using tools by LLM, i.e.:

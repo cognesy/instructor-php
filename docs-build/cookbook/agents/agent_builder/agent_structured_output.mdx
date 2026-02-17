@@ -2,8 +2,8 @@
 title: 'Agent with Structured Output Extraction'
 docname: 'agent_structured_output'
 order: 3
+id: '9b0f'
 ---
-
 ## Overview
 
 Demonstrates how agents can extract structured data from unstructured text using
@@ -26,7 +26,19 @@ Key concepts:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Builder\AgentBuilder;use Cognesy\Agents\Capabilities\Metadata\UseMetadataTools;use Cognesy\Agents\Capabilities\StructuredOutput\SchemaDefinition;use Cognesy\Agents\Capabilities\StructuredOutput\StructuredOutputPolicy;use Cognesy\Agents\Capabilities\StructuredOutput\UseStructuredOutputs;use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Events\Support\AgentConsoleLogger;use Cognesy\Agents\Tool\Tools\BaseTool;use Cognesy\Messages\Messages;use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Agents\Builder\AgentBuilder;
+use Cognesy\Agents\Capability\Core\UseGuards;
+use Cognesy\Agents\Capability\Core\UseTools;
+use Cognesy\Agents\Capability\Metadata\UseMetadataTools;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaDefinition;
+use Cognesy\Agents\Capability\StructuredOutput\StructuredOutputPolicy;
+use Cognesy\Agents\Capability\StructuredOutput\UseStructuredOutputs;
+use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
+use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Messages\Messages;
+use Symfony\Component\Validator\Constraints as Assert;
 
 // =============================================================================
 // 1. Define the Lead schema (what we want to extract)
@@ -152,8 +164,8 @@ $agent = AgentBuilder::base()
         ),
     ))
     ->withCapability(new UseMetadataTools())
-    ->withTools(new Tools(new CreateLeadTool()))
-    ->withMaxSteps(10)
+    ->withCapability(new UseTools(new CreateLeadTool()))
+    ->withCapability(new UseGuards(maxSteps: 10, maxTokens: 12288, maxExecutionTime: 90))
     ->build()
     ->wiretap($logger->wiretap());
 
@@ -210,23 +222,34 @@ echo "\n=== Result ===\n";
 
 // Get the extracted lead from metadata
 $extractedLead = $finalState->metadata()->get('current_lead');
+$fields = match(true) {
+    is_object($extractedLead) => get_object_vars($extractedLead),
+    is_array($extractedLead) => $extractedLead,
+    default => [],
+};
 
 if ($extractedLead !== null) {
     echo "Extracted Lead (from metadata):\n";
-    if (is_object($extractedLead)) {
-        foreach (get_object_vars($extractedLead) as $key => $value) {
-            if ($value !== null && $value !== '') {
-                echo "  {$key}: {$value}\n";
-            }
+    foreach ($fields as $key => $value) {
+        if ($value !== null && $value !== '') {
+            echo "  {$key}: {$value}\n";
         }
     }
     echo "\n";
 }
 
-$response = $finalState->currentStep()?->outputMessages()->toString() ?? 'No response';
+$response = $finalState->finalResponse()->toString() ?: 'No response';
 echo "Answer: {$response}\n";
 echo "Steps: {$finalState->stepCount()}\n";
 echo "Tokens: {$finalState->usage()->total()}\n";
 echo "Status: {$finalState->status()->value}\n";
+
+// Assertions
+assert($extractedLead !== null, 'Expected extracted lead in metadata');
+assert(!empty($fields), 'Expected non-empty lead fields');
+assert(!empty($fields['name'] ?? null), 'Expected lead to have a name');
+assert(!empty($fields['email'] ?? null), 'Expected lead to have an email');
+assert(!empty($finalState->finalResponse()->toString()), 'Expected non-empty response');
+assert($finalState->stepCount() >= 1, 'Expected at least 1 step');
 ?>
 ```

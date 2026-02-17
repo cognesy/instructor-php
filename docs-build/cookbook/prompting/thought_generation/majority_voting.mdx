@@ -1,8 +1,8 @@
 ---
 title: 'Use Majority Voting'
 docname: 'majority_voting'
+id: 'abf5'
 ---
-
 ## Overview
 
 Uncertainty-Routed Chain-of-Thought generates multiple chains (e.g., 8 or 32), then takes the majority answer if its proportion exceeds a threshold; otherwise, fall back to a single response.

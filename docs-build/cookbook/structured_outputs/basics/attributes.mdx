@@ -1,8 +1,8 @@
 ---
 title: 'Using attributes'
 docname: 'attributes'
+id: '4f7a'
 ---
-
 ## Overview
 
 Instructor supports `Description` and `Instructions` attributes to provide more

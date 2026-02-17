@@ -1,8 +1,8 @@
 ---
 title: 'Custom prompts'
 docname: 'custom_prompts'
+id: '2b77'
 ---
-
 ## Overview
 
 In case you want to take control over the prompts sent by Instructor

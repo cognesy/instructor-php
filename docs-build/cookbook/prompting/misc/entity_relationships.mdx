@@ -1,8 +1,8 @@
 ---
 title: 'Entity relationship extraction'
 docname: 'entity_relationships'
+id: '43ce'
 ---
-
 ## Overview
 
 In cases where relationships exist between entities, it's vital to define them

@@ -1,8 +1,8 @@
 ---
 title: 'Image processing - car damage detection'
 docname: 'image_car_damage'
+id: 'ab3d'
 ---
-
 ## Overview
 
 This is an example of how to extract structured data from an image using

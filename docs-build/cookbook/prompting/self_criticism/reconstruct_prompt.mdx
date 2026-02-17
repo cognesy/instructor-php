@@ -1,8 +1,8 @@
 ---
 title: 'Reconstruct Prompt from Reasoning Steps'
 docname: 'reconstruct_prompt'
+id: '931d'
 ---
-
 ## Overview
 
 Reverse Chain-of-Thought (RCoT) reconstructs a likely prompt from reasoning steps, compares condition lists, and refines the answer with targeted feedback.

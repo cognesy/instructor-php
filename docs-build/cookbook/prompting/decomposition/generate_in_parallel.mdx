@@ -1,8 +1,8 @@
 ---
 title: 'Generate in Parallel'
 docname: 'generate_in_parallel'
+id: '69fe'
 ---
-
 ## Overview
 
 How can we decrease the latency of an LLM pipeline?

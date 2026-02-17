@@ -1,8 +1,8 @@
 ---
 title: 'Fireworks.ai'
 docname: 'fireworks'
+id: '9592'
 ---
-
 ## Overview
 
 Please note that the larger Mistral models support OutputMode::Json, which is much more

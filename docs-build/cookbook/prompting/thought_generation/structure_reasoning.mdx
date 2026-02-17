@@ -1,8 +1,8 @@
 ---
 title: 'Structure The Reasoning'
 docname: 'structure_reasoning'
+id: '5023'
 ---
-
 ## Overview
 
 By getting language models to output their reasoning as a structured table, we can improve their reasoning capabilities and the quality of their outputs. This is known as Tabular Chain Of Thought (Tab-CoT).

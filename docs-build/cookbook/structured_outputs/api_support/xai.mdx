@@ -1,8 +1,8 @@
 ---
 title: 'xAI / Grok'
 docname: 'xai'
+id: '8778'
 ---
-
 ## Overview
 
 Support for xAI's API, which offers access to X.com's Grok model.

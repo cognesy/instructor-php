@@ -1,8 +1,8 @@
 ---
 title: 'Azure OpenAI'
 docname: 'azure_openai'
+id: 'f972'
 ---
-
 ## Overview
 
 You can connect to Azure OpenAI instance using a dedicated client provided

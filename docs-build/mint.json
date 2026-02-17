@@ -331,16 +331,19 @@
             "pages": [
                 "packages/agents/01-introduction",
                 "packages/agents/02-basic-agent",
-                "packages/agents/03-tools",
-                "packages/agents/04-basic-concepts",
-                "packages/agents/05-controlling-the-loop",
+                "packages/agents/03-basic-concepts",
+                "packages/agents/04-controlling-the-loop",
+                "packages/agents/05-tools",
                 "packages/agents/06-building-tools",
                 "packages/agents/07-context-and-compilers",
                 "packages/agents/08-hooks",
                 "packages/agents/09-stop-conditions",
                 "packages/agents/10-testing",
                 "packages/agents/11-state-internals",
-                "packages/agents/12-tool-calling-internals"
+                "packages/agents/12-tool-calling-internals",
+                "packages/agents/13-agent-builder",
+                "packages/agents/14-agent-templates",
+                "packages/agents/15-subagents"
             ]
         },
         {
@@ -476,7 +479,7 @@
                 "cookbook/structured_outputs/extras/image_to_data",
                 "cookbook/structured_outputs/extras/image_to_data_anthropic",
                 "cookbook/structured_outputs/extras/image_to_data_gemini",
-                "cookbook/structured_outputs/extras/schema",
+                "cookbook/structured_outputs/extras/json_schema",
                 "cookbook/structured_outputs/extras/streaming_structured_openai_responses",
                 "cookbook/structured_outputs/extras/output_format_array",
                 "cookbook/structured_outputs/extras/output_format_instance_of",
@@ -497,17 +500,17 @@
                 "cookbook/llm_inference/llm_basics/llm_json_schema",
                 "cookbook/llm_inference/llm_basics/llm_md_json",
                 "cookbook/llm_inference/llm_basics/llm_tools",
-                "cookbook/llm_inference/llm_basics/json_schema_api",
-                "cookbook/llm_inference/llm_basics/json_schema_api"
+                "cookbook/llm_inference/llm_basics/llm_with_schema_helper",
+                "cookbook/llm_inference/llm_basics/llm_with_tools_helper"
             ]
         },
         {
             "group": "LLM Inference and Embeddings \\ LLM Advanced",
             "pages": [
-                "cookbook/llm_inference/llm_advanced/config_providers",
+                "cookbook/llm_inference/llm_advanced/llm_config_providers",
                 "cookbook/llm_inference/llm_advanced/context_cache_llm",
                 "cookbook/llm_inference/llm_advanced/context_cache_llm_oai",
-                "cookbook/llm_inference/llm_advanced/custom_config",
+                "cookbook/llm_inference/llm_advanced/llm_custom_config",
                 "cookbook/llm_inference/llm_advanced/custom_embeddings_config",
                 "cookbook/llm_inference/llm_advanced/custom_llm_driver",
                 "cookbook/llm_inference/llm_advanced/custom_llm_via_dsn",
@@ -531,29 +534,29 @@
         {
             "group": "LLM Inference and Embeddings \\ LLM API Support",
             "pages": [
-                "cookbook/llm_inference/llm_api_support/a21",
-                "cookbook/llm_inference/llm_api_support/anthropic",
-                "cookbook/llm_inference/llm_api_support/azure_openai",
-                "cookbook/llm_inference/llm_api_support/cerebras",
-                "cookbook/llm_inference/llm_api_support/cohere",
-                "cookbook/llm_inference/llm_api_support/deepseek",
-                "cookbook/llm_inference/llm_api_support/fireworks",
-                "cookbook/llm_inference/llm_api_support/google_gemini",
-                "cookbook/llm_inference/llm_api_support/google_gemini_oai",
-                "cookbook/llm_inference/llm_api_support/groq",
-                "cookbook/llm_inference/llm_api_support/inception",
-                "cookbook/llm_inference/llm_api_support/meta",
-                "cookbook/llm_inference/llm_api_support/minimaxi",
-                "cookbook/llm_inference/llm_api_support/mistralai",
-                "cookbook/llm_inference/llm_api_support/moonshotai",
-                "cookbook/llm_inference/llm_api_support/ollama",
-                "cookbook/llm_inference/llm_api_support/openai",
-                "cookbook/llm_inference/llm_api_support/openai-responses",
-                "cookbook/llm_inference/llm_api_support/openrouter",
-                "cookbook/llm_inference/llm_api_support/perplexity",
-                "cookbook/llm_inference/llm_api_support/sambanova",
-                "cookbook/llm_inference/llm_api_support/togetherai",
-                "cookbook/llm_inference/llm_api_support/xai"
+                "cookbook/llm_inference/llm_api_support/llm_a21",
+                "cookbook/llm_inference/llm_api_support/llm_anthropic",
+                "cookbook/llm_inference/llm_api_support/llm_azure_openai",
+                "cookbook/llm_inference/llm_api_support/llm_cerebras",
+                "cookbook/llm_inference/llm_api_support/llm_cohere",
+                "cookbook/llm_inference/llm_api_support/llm_deepseek",
+                "cookbook/llm_inference/llm_api_support/llm_fireworks",
+                "cookbook/llm_inference/llm_api_support/llm_google_gemini",
+                "cookbook/llm_inference/llm_api_support/llm_google_gemini_oai",
+                "cookbook/llm_inference/llm_api_support/llm_groq",
+                "cookbook/llm_inference/llm_api_support/llm_inception",
+                "cookbook/llm_inference/llm_api_support/llm_meta",
+                "cookbook/llm_inference/llm_api_support/llm_minimaxi",
+                "cookbook/llm_inference/llm_api_support/llm_mistralai",
+                "cookbook/llm_inference/llm_api_support/llm_moonshotai",
+                "cookbook/llm_inference/llm_api_support/llm_ollama",
+                "cookbook/llm_inference/llm_api_support/llm_openai",
+                "cookbook/llm_inference/llm_api_support/llm_openai-responses",
+                "cookbook/llm_inference/llm_api_support/llm_openrouter",
+                "cookbook/llm_inference/llm_api_support/llm_perplexity",
+                "cookbook/llm_inference/llm_api_support/llm_sambanova",
+                "cookbook/llm_inference/llm_api_support/llm_togetherai",
+                "cookbook/llm_inference/llm_api_support/llm_xai"
             ]
         },
         {
@@ -582,7 +585,7 @@
             ]
         },
         {
-            "group": "Agents and Agent Controllers \\ Agents",
+            "group": "Agents and Agent Controllers \\ Agent Loop",
             "pages": [
                 "cookbook/agents/agents/agent_loop_execute",
                 "cookbook/agents/agents/agent_loop_iterate",
@@ -591,7 +594,35 @@
                 "cookbook/agents/agents/agent_loop_hooks",
                 "cookbook/agents/agents/agent_loop_context_compiler",
                 "cookbook/agents/agents/agent_loop_stop_conditions",
-                "cookbook/agents/agents/agent_loop_events"
+                "cookbook/agents/agents/agent_loop_events",
+                "cookbook/agents/agents/agent_loop_multi_execution"
+            ]
+        },
+        {
+            "group": "Agents and Agent Controllers \\ Agent Builder",
+            "pages": [
+                "cookbook/agents/agent_builder/agent_basic",
+                "cookbook/agents/agent_builder/agent_file_system",
+                "cookbook/agents/agent_builder/agent_structured_output",
+                "cookbook/agents/agent_builder/agent_hooks",
+                "cookbook/agents/agent_builder/agent_self_critique",
+                "cookbook/agents/agent_builder/agent_search",
+                "cookbook/agents/agent_builder/agent_subagents"
+            ]
+        },
+        {
+            "group": "Agents and Agent Controllers \\ Agent Controllers",
+            "pages": [
+                "cookbook/agents/agent_controllers/agent_ctrl_basic",
+                "cookbook/agents/agent_controllers/agent_ctrl_events",
+                "cookbook/agents/agent_controllers/agent_ctrl_streaming",
+                "cookbook/agents/agent_controllers/agent_ctrl_switching",
+                "cookbook/agents/agent_controllers/claude_code_basic",
+                "cookbook/agents/agent_controllers/claude_code_search",
+                "cookbook/agents/agent_controllers/codex_basic",
+                "cookbook/agents/agent_controllers/codex_streaming",
+                "cookbook/agents/agent_controllers/opencode_basic",
+                "cookbook/agents/agent_controllers/opencode_streaming"
             ]
         },
         {
@@ -687,33 +718,6 @@
                 "cookbook/prompting/misc/summary_with_keywords",
                 "cookbook/prompting/misc/component_reuse",
                 "cookbook/prompting/misc/component_reuse_cot"
-            ]
-        },
-        {
-            "group": "Cookbook \\ Agents \\ Agent Builder",
-            "pages": [
-                "cookbook/agents/agent_builder/agent_basic",
-                "cookbook/agents/agent_builder/agent_file_system",
-                "cookbook/agents/agent_builder/agent_structured_output",
-                "cookbook/agents/agent_builder/agent_hooks",
-                "cookbook/agents/agent_builder/agent_self_critique",
-                "cookbook/agents/agent_builder/agent_search",
-                "cookbook/agents/agent_builder/agent_subagents"
-            ]
-        },
-        {
-            "group": "Cookbook \\ Agents \\ Agent Controllers",
-            "pages": [
-                "cookbook/agents/agent_controllers/agent_ctrl_basic",
-                "cookbook/agents/agent_controllers/agent_ctrl_events",
-                "cookbook/agents/agent_controllers/agent_ctrl_streaming",
-                "cookbook/agents/agent_controllers/agent_ctrl_switching",
-                "cookbook/agents/agent_controllers/claude_code_basic",
-                "cookbook/agents/agent_controllers/claude_code_search",
-                "cookbook/agents/agent_controllers/codex_basic",
-                "cookbook/agents/agent_controllers/codex_streaming",
-                "cookbook/agents/agent_controllers/opencode_basic",
-                "cookbook/agents/agent_controllers/opencode_streaming"
             ]
         }
     ],

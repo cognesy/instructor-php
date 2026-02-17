@@ -1,8 +1,8 @@
 ---
 title: 'Streaming (Inference, OpenAI Responses)'
 docname: 'streaming_inference_openai_responses'
+id: '983e'
 ---
-
 ## Overview
 
 A minimal streaming example using the `openai-responses` preset from

@@ -1,14 +1,17 @@
 ---
-title: 'Azure OpenAI'
-docname: 'azure_openai'
+title: 'OpenAI'
+docname: 'llm_openai'
+id: '2e9b'
 ---
-
 ## Overview
 
-You can connect to Azure OpenAI instance using a dedicated client provided
-by Instructor. Please note it requires setting up your own model deployment
-using Azure OpenAI service console.
+This is the default client used by Instructor.
 
+Mode compatibility:
+ - OutputMode::Tools (supported)
+ - OutputMode::Json (supported)
+ - OutputMode::JsonSchema (recommended for new models)
+ - OutputMode::MdJson (fallback)
 
 ## Example
 
