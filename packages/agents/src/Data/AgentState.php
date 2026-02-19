@@ -50,6 +50,7 @@ final readonly class AgentState
     private AgentContext $context;
     private AgentBudget $budget;
     private ?LLMConfig $llmConfig;
+    private int $executionCount;
 
     // Execution data - transient across executions
     private ?ExecutionState $execution;
@@ -62,6 +63,7 @@ final readonly class AgentState
         ?AgentContext      $context = null,
         ?AgentBudget       $budget = null,
         ?LLMConfig         $llmConfig = null,
+        int                $executionCount = 0,
         ?ExecutionState    $execution = null,
     ) {
         $now = new DateTimeImmutable();
@@ -74,6 +76,7 @@ final readonly class AgentState
         $this->context = $context ?? new AgentContext();
         $this->budget = $budget ?? AgentBudget::unlimited();
         $this->llmConfig = $llmConfig;
+        $this->executionCount = $executionCount;
 
         // Execution data (null = between executions)
         $this->execution = $execution;
@@ -106,6 +109,7 @@ final readonly class AgentState
             $this->execution === null => $this->with(execution: ExecutionState::fresh()->completed()),
             $this->execution->isFailed() => $this->with(execution: $this->execution->completed(ExecutionStatus::Failed)),
             $this->execution->hasErrors() => $this->with(execution: $this->execution->completed(ExecutionStatus::Failed)),
+            $this->wasForceStopped() => $this->with(execution: $this->execution->completed(ExecutionStatus::Stopped)),
             default => $this->with(execution: $this->execution->completed()),
         };
     }
@@ -123,6 +127,7 @@ final readonly class AgentState
             context: $this->context,
             budget: $this->budget,
             llmConfig: $this->llmConfig,
+            executionCount: $this->executionCount,
             execution: null,
         );
     }
@@ -137,6 +142,7 @@ final readonly class AgentState
         ?AgentContext      $context = null,
         ?AgentBudget       $budget = null,
         ?LLMConfig         $llmConfig = null,
+        ?int               $executionCount = null,
         ?ExecutionState    $execution = null,
     ): self {
         return new self(
@@ -147,6 +153,7 @@ final readonly class AgentState
             context: $context ?? $this->context,
             budget: $budget ?? $this->budget,
             llmConfig: $llmConfig ?? $this->llmConfig,
+            executionCount: $executionCount ?? $this->executionCount,
             execution: $execution ?? $this->execution,
         );
     }
@@ -228,6 +235,10 @@ final readonly class AgentState
         return $this->llmConfig;
     }
 
+    public function executionCount(): int {
+        return $this->executionCount;
+    }
+
     public function withBudget(AgentBudget $budget): self {
         return $this->with(budget: $budget);
     }
@@ -241,6 +252,7 @@ final readonly class AgentState
             context: $this->context,
             budget: $this->budget,
             llmConfig: $llmConfig,
+            executionCount: $this->executionCount,
             execution: $this->execution,
         );
     }
@@ -271,6 +283,11 @@ final readonly class AgentState
             $this->execution->isFailed() => true,
             default => false,
         };
+    }
+
+    private function wasForceStopped(): bool {
+        $primarySignal = $this->execution?->continuation()->stopSignals()->first();
+        return $primarySignal !== null && $primarySignal->reason->wasForceStopped();
     }
 
     public function currentStep(): ?AgentStep {
@@ -431,6 +448,7 @@ final readonly class AgentState
     {
         return [
             'status' => $this->status(),
+            'executionCount' => $this->executionCount,
             'hasExecution' => $this->execution !== null,
             'executionId' => $this->execution?->executionId(),
             'steps' => $this->stepCount(),
@@ -452,6 +470,7 @@ final readonly class AgentState
             'context' => $this->context->toArray(),
             'budget' => $this->budget->toArray(),
             'llmConfig' => $this->llmConfig?->toArray(),
+            'executionCount' => $this->executionCount,
             'execution' => $this->execution?->toArray(),
         ];
     }
@@ -480,6 +499,7 @@ final readonly class AgentState
             context: AgentContext::fromArray($data['context'] ?? []),
             budget: $budget,
             llmConfig: $llmConfig,
+            executionCount: $data['executionCount'] ?? 0,
             execution: $execution,
         );
     }

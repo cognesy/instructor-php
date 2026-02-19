@@ -33,4 +33,11 @@ enum StopReason: string
     public function compare(self $other): int {
         return $this->priority() <=> $other->priority();
     }
+
+    public function wasForceStopped(): bool {
+        return match ($this) {
+            self::Completed, self::FinishReasonReceived => false,
+            default => true,
+        };
+    }
 }

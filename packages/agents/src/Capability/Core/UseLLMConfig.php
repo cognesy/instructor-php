@@ -13,6 +13,7 @@ final readonly class UseLLMConfig implements CanProvideAgentCapability
 {
     public function __construct(
         private ?string $preset = null,
+        private ?string $model = null,
         private int $maxRetries = 1,
     ) {}
 
@@ -27,6 +28,10 @@ final readonly class UseLLMConfig implements CanProvideAgentCapability
             null => LLMProvider::new(),
             default => LLMProvider::using($this->preset),
         };
+
+        if ($this->model !== null) {
+            $llm = $llm->withModel($this->model);
+        }
 
         $retryPolicy = match (true) {
             $this->maxRetries > 1 => new InferenceRetryPolicy(maxAttempts: $this->maxRetries),

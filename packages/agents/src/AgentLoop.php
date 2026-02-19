@@ -130,6 +130,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     protected function onBeforeExecution(AgentState $state): AgentState {
         $state = $this->ensureNextExecution($state);
+        $state = $state->with(executionCount: $state->executionCount() + 1);
         $this->emitExecutionStarted($state, count($this->tools->names()));
         $state = $this->interceptor->intercept(HookContext::beforeExecution($state))->state();
         return $state;
@@ -191,7 +192,7 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function ensureNextExecution(AgentState $state): AgentState {
         return match ($state->status()) {
-            ExecutionStatus::Completed, ExecutionStatus::Failed => $state->forNextExecution(),
+            ExecutionStatus::Completed, ExecutionStatus::Stopped, ExecutionStatus::Failed => $state->forNextExecution(),
             default => $state,
         };
     }

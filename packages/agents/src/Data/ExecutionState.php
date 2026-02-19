@@ -127,6 +127,14 @@ final readonly class ExecutionState
         return $this->executionId;
     }
 
+    public function startedAt(): ?DateTimeImmutable {
+        return $this->startedAt;
+    }
+
+    public function completedAt(): ?DateTimeImmutable {
+        return $this->completedAt;
+    }
+
     public function status() : ExecutionStatus {
         return $this->status;
     }

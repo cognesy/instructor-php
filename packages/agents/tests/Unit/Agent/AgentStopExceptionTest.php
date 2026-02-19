@@ -53,7 +53,7 @@ describe('AgentStopException', function () {
         }
 
         expect($finalState)->not->toBeNull();
-        expect($finalState->status())->toBe(ExecutionStatus::Completed);
+        expect($finalState->status())->toBe(ExecutionStatus::Stopped);
         // The step from AgentStopException is not recorded on state by the loop;
         // handleStopException only extracts the stop signal, not the step.
         expect($finalState->stepCount())->toBe(0);
