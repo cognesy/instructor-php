@@ -215,6 +215,7 @@ $request = new StructuredOutputRequest(
     requestedSchema: Person::class,
 );
 
+$requestId = $request->id()->toString(); // StructuredOutputRequestId at boundary
 $person = $creator->create($request)->get();
 ?>
 ```

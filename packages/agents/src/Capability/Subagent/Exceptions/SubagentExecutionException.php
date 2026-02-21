@@ -27,7 +27,7 @@ final class SubagentExecutionException extends AgentException
 
         return new self(
             subagentName: $name,
-            subagentId: $state->agentId(),
+            subagentId: $state->agentId()->toString(),
             status: $state->status(),
             usage: $state->usage(),
             steps: $state->stepCount(),

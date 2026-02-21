@@ -2,14 +2,12 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
 class InferenceAttempt
 {
-    public readonly string $id;
+    public readonly InferenceAttemptId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
@@ -27,11 +25,11 @@ class InferenceAttempt
         ?bool $isFinalized = null,
         ?array $errors = null,
         //
-        ?string $id = null, // for deserialization
+        ?InferenceAttemptId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
         ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? InferenceAttemptId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
@@ -184,7 +182,7 @@ class InferenceAttempt
 
     public function toArray(): array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'response' => $this->response?->toArray(),
@@ -198,7 +196,7 @@ class InferenceAttempt
             response: InferenceResponse::fromArray($data['response'] ?? []),
             isFinalized: $data['isFinalized'] ?? null,
             errors: $data['errors'] ?? [],
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new InferenceAttemptId($data['id']) : null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );

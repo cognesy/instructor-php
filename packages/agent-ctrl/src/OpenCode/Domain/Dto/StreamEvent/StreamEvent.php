@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
+
 /**
  * Base class for OpenCode stream events
  *
@@ -14,10 +16,16 @@ namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
  */
 abstract readonly class StreamEvent
 {
+    public ?OpenCodeSessionId $sessionIdValue;
+
     public function __construct(
         public int $timestamp,
         public string $sessionId,
-    ) {}
+    ) {
+        $this->sessionIdValue = $sessionId !== ''
+            ? OpenCodeSessionId::fromString($sessionId)
+            : null;
+    }
 
     /**
      * Get the event type identifier

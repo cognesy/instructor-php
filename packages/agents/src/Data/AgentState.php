@@ -18,7 +18,6 @@ use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Metadata;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
@@ -43,21 +42,23 @@ use Throwable;
 final readonly class AgentState
 {
     // Session data
-    private string $agentId;
-    private ?string $parentAgentId;
+    private AgentId $agentId;
+    private ?AgentId $parentAgentId;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
-    private AgentContext $context;
-    private AgentBudget $budget;
     private ?LLMConfig $llmConfig;
-    private int $executionCount;
+    private AgentBudget $budget;
+    private int $executionCount; // allows agent to recognize e.g. first execution
+
+    // Context data - messages, system prompt, etc
+    private AgentContext $context;
 
     // Execution data - transient across executions
     private ?ExecutionState $execution;
 
     public function __construct(
-        ?string            $agentId = null,
-        ?string            $parentAgentId = null,
+        ?AgentId           $agentId = null,
+        ?AgentId           $parentAgentId = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
         ?AgentContext      $context = null,
@@ -69,7 +70,7 @@ final readonly class AgentState
         $now = new DateTimeImmutable();
 
         // Session data
-        $this->agentId = $agentId ?? Uuid::uuid4();
+        $this->agentId = $agentId ?? AgentId::generate();
         $this->parentAgentId = $parentAgentId;
         $this->createdAt = $createdAt ?? $now;
         $this->updatedAt = $updatedAt ?? $this->createdAt;
@@ -135,8 +136,8 @@ final readonly class AgentState
     // MUTATORS ////////////////////////////////////////////////
 
     public function with(
-        ?string            $agentId = null,
-        ?string            $parentAgentId = null,
+        ?AgentId           $agentId = null,
+        ?AgentId           $parentAgentId = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
         ?AgentContext      $context = null,
@@ -207,11 +208,11 @@ final readonly class AgentState
 
     // ACCESSORS ////////////////////////////////////
 
-    public function agentId(): string {
+    public function agentId(): AgentId {
         return $this->agentId;
     }
 
-    public function parentAgentId(): ?string {
+    public function parentAgentId(): ?AgentId {
         return $this->parentAgentId;
     }
 
@@ -450,7 +451,7 @@ final readonly class AgentState
             'status' => $this->status(),
             'executionCount' => $this->executionCount,
             'hasExecution' => $this->execution !== null,
-            'executionId' => $this->execution?->executionId(),
+            'executionId' => $this->execution?->executionId()->toString(),
             'steps' => $this->stepCount(),
             'continuation' => $this->executionContinuation()?->explain() ?? '-',
             'hasErrors' => $this->hasErrors() ?? false,
@@ -463,8 +464,8 @@ final readonly class AgentState
 
     public function toArray(): array {
         return [
-            'agentId' => $this->agentId,
-            'parentAgentId' => $this->parentAgentId,
+            'agentId' => $this->agentId->value,
+            'parentAgentId' => $this->parentAgentId?->value,
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'context' => $this->context->toArray(),
@@ -492,8 +493,8 @@ final readonly class AgentState
         };
 
         return new self(
-            agentId: $data['agentId'] ?? null,
-            parentAgentId: $data['parentAgentId'] ?? null,
+            agentId: isset($data['agentId']) ? new AgentId($data['agentId']) : null,
+            parentAgentId: isset($data['parentAgentId']) ? new AgentId($data['parentAgentId']) : null,
             createdAt: self::parseDateFrom($data, 'createdAt'),
             updatedAt: self::parseDateFrom($data, 'updatedAt'),
             context: AgentContext::fromArray($data['context'] ?? []),
@@ -529,13 +530,13 @@ final readonly class AgentState
     }
 
     private function tagMessages(Messages $messages, AgentStep $step, ExecutionState $execution): Messages {
-        $executionId = $execution->executionId();
+        $executionId = $execution->executionId()->toString();
         $isTrace = $step->stepType() !== AgentStepType::FinalResponse;
         $tagged = Messages::empty();
         foreach ($messages->each() as $msg) {
             $msg = $msg->withMetadata('step_id', $step->id())
                 ->withMetadata('execution_id', $executionId)
-                ->withMetadata('agent_id', $this->agentId);
+                ->withMetadata('agent_id', $this->agentId->value);
             if ($isTrace) {
                 $msg = $msg->withMetadata('is_trace', true);
             }

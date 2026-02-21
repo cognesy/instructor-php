@@ -13,6 +13,7 @@ use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentExecutionException;
 use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentNotFoundException;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\AgentId;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
@@ -118,14 +119,14 @@ final class SpawnSubagentTool extends ContextAwareTool
         }
 
         // Extract correlation IDs for tracing
-        $parentAgentId = $this->agentState?->agentId() ?? 'unknown';
-        $parentExecutionId = $this->agentState?->execution()?->executionId();
+        $parentAgentId = $this->agentState?->agentId() ?? new AgentId('00000000-0000-4000-8000-000000000000');
+        $parentExecutionId = $this->agentState?->execution()?->executionId()->toString();
         $parentStepNumber = $this->agentState?->stepCount();
         $toolCallId = $this->toolCall?->id();
 
         $spawnStartedAt = new DateTimeImmutable();
         $this->emitSubagentSpawning(
-            parentAgentId: $parentAgentId,
+            parentAgentId: $parentAgentId->toString(),
             subagentName: $subagentName,
             prompt: $prompt,
             depth: $this->currentDepth,
@@ -140,8 +141,8 @@ final class SpawnSubagentTool extends ContextAwareTool
         $finalState = $subagentLoop->execute($initialState);
 
         $this->emitSubagentCompleted(
-            parentAgentId: $parentAgentId,
-            subagentId: $finalState->agentId(),
+            parentAgentId: $parentAgentId->toString(),
+            subagentId: $finalState->agentId()->toString(),
             subagentName: $subagentName,
             status: $finalState->status() ?? ExecutionStatus::Pending,
             steps: $finalState->stepCount(),
@@ -222,7 +223,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         ));
     }
 
-    private function createInitialState(string $prompt, AgentDefinition $spec, string $parentAgentId): AgentState {
+    private function createInitialState(string $prompt, AgentDefinition $spec, AgentId $parentAgentId): AgentState {
         $messages = Messages::fromArray([
             ['role' => 'system', 'content' => $spec->systemPrompt],
         ]);

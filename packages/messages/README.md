@@ -35,12 +35,21 @@ Use `headList()` / `tailList()` when you need MessageList for partitions.
 use Cognesy\Messages\Content;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\MessageSessionId;
 use Cognesy\Messages\Utils\Image;
+use Cognesy\Messages\MessageStore\Storage\InMemoryStorage;
 
 $message = new Message('user', Content::text('Describe this image:'));
 $message = $message->addContentPart(ContentPart::image(Image::fromUrl('https://example.com/cat.jpg', 'image/jpeg')));
 
+$messageId = $message->id(); // MessageId value object
+$messageIdString = $messageId->toString(); // boundary serialization
+
 $payload = $message->toArray();
+
+$storage = new InMemoryStorage();
+$sessionId = $storage->createSession(MessageSessionId::generate());
+$storage->append($sessionId, 'messages', $message);
 ```
 
 ## Migration notes (2026-01-05)

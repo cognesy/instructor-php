@@ -10,12 +10,11 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 final readonly class StructuredOutputExecution
 {
-    private string $id;
+    private StructuredOutputExecutionId $id;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
     private int $step;
@@ -39,12 +38,12 @@ final readonly class StructuredOutputExecution
         ?bool $isFinalized = null,
         ?StructuredOutputAttemptState $attemptState = null,
         //
-        ?string $id = null,
+        ?StructuredOutputExecutionId $id = null,
         ?int $step = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
     ) {
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? StructuredOutputExecutionId::generate();
         $this->step = $step ?? 1;
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
@@ -63,6 +62,10 @@ final readonly class StructuredOutputExecution
 
     public function request(): StructuredOutputRequest {
         return $this->request;
+    }
+
+    public function id(): StructuredOutputExecutionId {
+        return $this->id;
     }
 
     public function responseModel(): ?ResponseModel {
@@ -329,7 +332,7 @@ final readonly class StructuredOutputExecution
 
     public function toArray(): array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'step' => $this->step,

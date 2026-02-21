@@ -24,6 +24,7 @@ class InferenceRequest {
     public function __construct(...) { ... }
 
     // Getters
+    public function id(): InferenceRequestId { ... }
     public function messages(): array { ... }
     public function model(): string { ... }
     public function isStreamed(): bool { ... }
@@ -50,6 +51,13 @@ class InferenceRequest {
     public function withCacheApplied(): self { ... }
 }
 ```
+
+Internally, request identity is represented by `InferenceRequestId` and can be converted to string at boundaries via `->id()->toString()`.
+Attempt identity in execution state is represented by `InferenceAttemptId` and is serialized as string in event payloads and arrays.
+Execution identity is represented by `InferenceExecutionId` and converted to string when emitted in events and serialized output.
+Response identity is represented by `InferenceResponseId` and serialized as string at boundaries.
+Partial streaming chunk identity is represented by `PartialInferenceResponseId` and serialized as string at boundaries.
+External tool-call identity is represented by `ToolCallId`; OpenResponses stream item identity uses `OpenResponseItemId` internally and converts to string at stream/transport boundaries.
 
 
 

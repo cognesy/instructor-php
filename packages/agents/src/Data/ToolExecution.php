@@ -8,14 +8,13 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Throwable;
 
 final readonly class ToolExecution
 {
-    private string $id;
+    private ToolExecutionId $id;
     private DateTimeImmutable $startedAt;
     private DateTimeImmutable $completedAt;
     private ToolCall $toolCall;
@@ -26,13 +25,13 @@ final readonly class ToolExecution
         Result $result,
         DateTimeImmutable $startedAt,
         DateTimeImmutable $completedAt,
-        ?string $id = null,
+        ?ToolExecutionId $id = null,
     ) {
         $this->toolCall = $toolCall;
         $this->result = $result;
         $this->startedAt = $startedAt;
         $this->completedAt = $completedAt;
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? ToolExecutionId::generate();
     }
 
     // CONSTRUCTORS ////////////////////////////////////////////
@@ -55,7 +54,7 @@ final readonly class ToolExecution
         return $this->toolCall;
     }
 
-    public function id(): string {
+    public function id(): ToolExecutionId {
         return $this->id;
     }
 
@@ -121,7 +120,7 @@ final readonly class ToolExecution
         $failure = $this->result->isFailure() ? $this->result : null;
 
         return [
-            'id' => $this->id,
+            'id' => $this->id->value,
             'tool_call' => [
                 'id' => $this->toolCall->id(),
                 'name' => $this->toolCall->name(),
@@ -140,7 +139,7 @@ final readonly class ToolExecution
             result: self::makeResult($data),
             startedAt: self::parseDate($data['startedAt'] ?? null),
             completedAt: self::parseDate($data['completedAt'] ?? $data['endedAt'] ?? null),
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new ToolExecutionId($data['id']) : null,
         );
     }
 

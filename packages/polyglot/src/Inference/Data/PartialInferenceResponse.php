@@ -5,12 +5,11 @@ namespace Cognesy\Polyglot\Inference\Data;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Utils\Json\Json;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 class PartialInferenceResponse
 {
-    public readonly string $id;
+    public readonly PartialInferenceResponseId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
@@ -23,6 +22,7 @@ class PartialInferenceResponse
     public readonly string $contentDelta;
     public readonly string $reasoningContentDelta;
     public readonly string $toolId;
+    private ?ToolCallId $toolIdValue;
     public readonly string $toolName;
     public readonly string $toolArgs;
 
@@ -42,7 +42,7 @@ class PartialInferenceResponse
     public function __construct(
         ?string $contentDelta = null,
         ?string $reasoningContentDelta = null,
-        ?string $toolId = null,
+        ToolCallId|string|null $toolId = null,
         ?string $toolName = null,
         ?string $toolArgs = null,
         ?string $finishReason = null,
@@ -50,13 +50,18 @@ class PartialInferenceResponse
         bool $usageIsCumulative = false,
         ?HttpResponse $responseData = null,
         //
-        ?string $id = null, // for deserialization
+        ?PartialInferenceResponseId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
         ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
         $this->contentDelta = $contentDelta ?? '';
         $this->reasoningContentDelta = $reasoningContentDelta ?? '';
-        $this->toolId = $toolId ?? '';
+        $this->toolIdValue = match (true) {
+            $toolId instanceof ToolCallId => $toolId,
+            is_string($toolId) && $toolId !== '' => ToolCallId::fromString($toolId),
+            default => null,
+        };
+        $this->toolId = $this->toolIdValue?->toString() ?? '';
         $this->toolName = $toolName ?? '';
         $this->toolArgs = $toolArgs ?? '';
         $this->finishReason = $finishReason ?? '';
@@ -66,7 +71,7 @@ class PartialInferenceResponse
         $this->content = '';
         $this->reasoningContent = '';
         //
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? PartialInferenceResponseId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
     }
@@ -99,6 +104,10 @@ class PartialInferenceResponse
 
     public function toolName(): string {
         return $this->toolName ?? '';
+    }
+
+    public function toolIdValue(): ?ToolCallId {
+        return $this->toolIdValue;
     }
 
     public function toolArgs(): string {
@@ -137,7 +146,7 @@ class PartialInferenceResponse
     public function with(
         ?string $contentDelta = null,
         ?string $reasoningContentDelta = null,
-        ?string $toolId = null,
+        ToolCallId|string|null $toolId = null,
         ?string $toolName = null,
         ?string $toolArgs = null,
         ?string $finishReason = null,
@@ -352,7 +361,7 @@ class PartialInferenceResponse
             'usage' => $this->usage?->toArray(),
             'usage_is_cumulative' => $this->usageIsCumulative,
             'response_data' => $this->responseData?->toArray(),
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'created_at' => $this->createdAt->format(DATE_ATOM),
             'updated_at' => $this->updatedAt->format(DATE_ATOM),
         ];
@@ -369,7 +378,7 @@ class PartialInferenceResponse
             usage: isset($data['usage']) && is_array($data['usage']) ? Usage::fromArray($data['usage']) : null,
             usageIsCumulative: (bool) ($data['usage_is_cumulative'] ?? false),
             responseData: HttpResponse::fromArray($data['response_data'] ?? []),
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new PartialInferenceResponseId($data['id']) : null,
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null
         );

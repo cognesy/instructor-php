@@ -27,11 +27,11 @@ class ToolExecutionFormatter
         $messages = Messages::empty();
         $messages = $messages->appendMessage(
             $this->toolInvocationMessage($toolExecution->toolCall())
-                ->withMetadata('tool_execution_id', $toolExecution->id())
+                ->withMetadata('tool_execution_id', $toolExecution->id()->toString())
         );
         $messages = $messages->appendMessage(
             $this->toolExecutionResultMessage($toolExecution->toolCall(), $toolExecution->result())
-                ->withMetadata('tool_execution_id', $toolExecution->id())
+                ->withMetadata('tool_execution_id', $toolExecution->id()->toString())
         );
         return $messages;
     }

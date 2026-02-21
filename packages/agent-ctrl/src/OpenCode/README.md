@@ -65,6 +65,10 @@ if ($response->usage()) {
 if ($response->cost()) {
     echo "Cost: $" . $response->cost() . "\n";
 }
+
+// Optional typed IDs for domain code:
+// $response->sessionIdValue(); // OpenCodeSessionId|null
+// $response->messageIdValue(); // OpenCodeMessageId|null
 ```
 
 ## Streaming Output
@@ -120,6 +124,8 @@ When using JSON output format, these events are streamed:
 ```php
 $event->sessionId;   // Session identifier
 $event->messageId;   // Message identifier
+$event->sessionIdValue; // OpenCodeSessionId|null
+$event->messageIdValue; // OpenCodeMessageId|null
 $event->snapshot;    // Git snapshot hash
 ```
 
@@ -134,6 +140,7 @@ $event->endTime;     // Timestamp when text generation ended
 ```php
 $event->tool;        // Tool name (read, bash, glob, etc.)
 $event->callId;      // Unique call identifier
+$event->callIdValue; // OpenCodeCallId|null
 $event->status;      // "completed" or "error"
 $event->input;       // Tool input arguments (array)
 $event->output;      // Tool output/result

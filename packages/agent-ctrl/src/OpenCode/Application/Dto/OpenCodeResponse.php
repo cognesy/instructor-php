@@ -3,7 +3,9 @@
 namespace Cognesy\AgentCtrl\OpenCode\Application\Dto;
 
 use Cognesy\AgentCtrl\Common\Collection\DecodedObjectCollection;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
 use Cognesy\Sandbox\Data\ExecResult;
 
 /**
@@ -11,15 +13,29 @@ use Cognesy\Sandbox\Data\ExecResult;
  */
 final readonly class OpenCodeResponse
 {
+    private ?OpenCodeSessionId $sessionId;
+    private ?OpenCodeMessageId $messageId;
+
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
-        private ?string $sessionId = null,
-        private ?string $messageId = null,
+        OpenCodeSessionId|string|null $sessionId = null,
+        OpenCodeMessageId|string|null $messageId = null,
         private string $messageText = '',
         private ?TokenUsage $usage = null,
         private ?float $cost = null,
-    ) {}
+    ) {
+        $this->sessionId = match (true) {
+            $sessionId instanceof OpenCodeSessionId => $sessionId,
+            is_string($sessionId) && $sessionId !== '' => OpenCodeSessionId::fromString($sessionId),
+            default => null,
+        };
+        $this->messageId = match (true) {
+            $messageId instanceof OpenCodeMessageId => $messageId,
+            is_string($messageId) && $messageId !== '' => OpenCodeMessageId::fromString($messageId),
+            default => null,
+        };
+    }
 
     /**
      * Get the exit code from CLI execution
@@ -66,6 +82,11 @@ final readonly class OpenCodeResponse
      */
     public function sessionId(): ?string
     {
+        return $this->sessionId?->toString();
+    }
+
+    public function sessionIdValue(): ?OpenCodeSessionId
+    {
         return $this->sessionId;
     }
 
@@ -73,6 +94,11 @@ final readonly class OpenCodeResponse
      * Get message identifier
      */
     public function messageId(): ?string
+    {
+        return $this->messageId?->toString();
+    }
+
+    public function messageIdValue(): ?OpenCodeMessageId
     {
         return $this->messageId;
     }

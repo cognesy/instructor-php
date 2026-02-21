@@ -2,6 +2,10 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeCallId;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
+
 /**
  * Event emitted when a tool is invoked (includes result)
  *
@@ -9,6 +13,10 @@ namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
  */
 final readonly class ToolUseEvent extends StreamEvent
 {
+    public ?OpenCodeMessageId $messageIdValue;
+    public ?OpenCodePartId $partIdValue;
+    public ?OpenCodeCallId $callIdValue;
+
     public function __construct(
         int $timestamp,
         string $sessionId,
@@ -24,6 +32,15 @@ final readonly class ToolUseEvent extends StreamEvent
         public ?int $endTime = null,
     ) {
         parent::__construct($timestamp, $sessionId);
+        $this->messageIdValue = $messageId !== ''
+            ? OpenCodeMessageId::fromString($messageId)
+            : null;
+        $this->partIdValue = $partId !== ''
+            ? OpenCodePartId::fromString($partId)
+            : null;
+        $this->callIdValue = $callId !== ''
+            ? OpenCodeCallId::fromString($callId)
+            : null;
     }
 
     #[\Override]

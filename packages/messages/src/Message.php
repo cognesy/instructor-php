@@ -7,7 +7,6 @@ use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Support\MessageInput;
 use Cognesy\Messages\Utils\Image;
 use Cognesy\Utils\Metadata;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 /**
@@ -35,22 +34,22 @@ final readonly class Message
 {
     public const DEFAULT_ROLE = 'user';
 
-    public string $id;
+    public MessageId $id;
     public DateTimeImmutable $createdAt;
 
     protected string $role;
     protected string $name;
     protected Content $content;
     protected Metadata $metadata;
-    protected ?string $parentId;
+    protected ?MessageId $parentId;
 
     /**
      * @param string|MessageRole|null $role
      * @param string|array|Content|null $content
      * @param string $name
      * @param Metadata|array<string,mixed> $metadata
-     * @param string|null $parentId Parent message ID for branching support (Pi-Mono style)
-     * @param string|null $id For deserialization - if null, generates new UUID
+     * @param MessageId|null $parentId Parent message ID for branching support (Pi-Mono style)
+     * @param MessageId|null $id For deserialization - if null, generates new UUID
      * @param DateTimeImmutable|null $createdAt For deserialization - if null, uses current time
      */
     public function __construct(
@@ -58,12 +57,12 @@ final readonly class Message
         string|array|Content|null $content = null,
         string $name = '',
         Metadata|array $metadata = [],
-        ?string $parentId = null,
+        ?MessageId $parentId = null,
         // Identity fields - for deserialization
-        ?string $id = null,
+        ?MessageId $id = null,
         ?DateTimeImmutable $createdAt = null,
     ) {
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? MessageId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
 
         $this->role = match (true) {
@@ -209,8 +208,12 @@ final readonly class Message
         return $this->metadata;
     }
 
-    public function parentId(): ?string {
+    public function parentId(): ?MessageId {
         return $this->parentId;
+    }
+
+    public function id(): MessageId {
+        return $this->id;
     }
 
     public function withMetadata(string $key, mixed $value): self {
@@ -271,7 +274,7 @@ final readonly class Message
         );
     }
 
-    public function withParentId(?string $parentId): self {
+    public function withParentId(?MessageId $parentId): self {
         return new self(
             role: $this->role,
             content: $this->content,
@@ -301,9 +304,9 @@ final readonly class Message
 
     public function toArray(): array {
         return array_filter([
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
-            'parentId' => $this->parentId,
+            'parentId' => $this->parentId?->toString(),
             'role' => $this->role,
             'name' => $this->name,
             'content' => match (true) {

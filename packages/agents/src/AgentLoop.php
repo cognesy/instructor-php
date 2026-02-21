@@ -306,8 +306,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function emitExecutionStarted(AgentState $state, int $availableTools): void {
         $this->events->dispatch(new AgentExecutionStarted(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             messageCount: $state->messages()->count(),
             availableTools: $availableTools,
         ));
@@ -315,8 +315,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function emitStepStarted(AgentState $state): void {
         $this->events->dispatch(new AgentStepStarted(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount() + 1,
             messageCount: $state->messages()->count(),
             availableTools: 0,
@@ -328,8 +328,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         $durationMs = ($state->currentStepDuration() ?? 0.0) * 1000;
 
         $this->events->dispatch(new AgentStepCompleted(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount(),
             hasToolCalls: $state->currentStep()?->hasToolCalls() ?? false,
             errorCount: $state->currentStep()?->errors()?->count() ?? 0,
@@ -342,8 +342,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
         if ($usage->total() > 0) {
             $this->events->dispatch(new TokenUsageReported(
-                agentId: $state->agentId(),
-                parentAgentId: $state->parentAgentId(),
+                agentId: $state->agentId()->toString(),
+                parentAgentId: $state->parentAgentId()?->toString(),
                 operation: 'step',
                 usage: $usage,
                 context: [
@@ -357,8 +357,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
     private function emitExecutionStopped(AgentState $state): void {
         $signal = $state->executionContinuation()?->stopSignals()->first();
         $this->events->dispatch(new AgentExecutionStopped(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stopReason: $signal?->reason ?? StopReason::Unknown,
             stopMessage: $signal?->message ?? '',
             source: $signal?->source,
@@ -368,8 +368,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function emitExecutionFinished(AgentState $state): void {
         $this->events->dispatch(new AgentExecutionCompleted(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             status: $state->status(),
             totalSteps: $state->stepCount(),
             totalUsage: $state->usage(),
@@ -379,8 +379,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function emitExecutionFailed(AgentState $state, Throwable $exception): void {
         $this->events->dispatch(new AgentExecutionFailed(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             exception: $exception,
             status: $state->status(),
             stepsCompleted: $state->stepCount(),
@@ -391,8 +391,8 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     private function emitContinuationEvaluated(AgentState $state): void {
         $this->events->dispatch(new ContinuationEvaluated(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount(),
             executionState: $state->execution(),
         ));

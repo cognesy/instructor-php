@@ -2,6 +2,7 @@
 
 namespace Cognesy\Messages\MessageStore\Data;
 
+use Cognesy\Messages\MessageSessionId;
 use DateTimeImmutable;
 
 /**
@@ -10,7 +11,7 @@ use DateTimeImmutable;
 final readonly class StoreMessagesResult
 {
     public function __construct(
-        public string $sessionId,
+        public MessageSessionId $sessionId,
         public bool $success,
         public DateTimeImmutable $startedAt,
         public DateTimeImmutable $finishedAt,
@@ -21,7 +22,7 @@ final readonly class StoreMessagesResult
     ) {}
 
     public static function success(
-        string $sessionId,
+        MessageSessionId $sessionId,
         DateTimeImmutable $startedAt,
         DateTimeImmutable $finishedAt,
         int $sectionsStored,
@@ -40,7 +41,7 @@ final readonly class StoreMessagesResult
     }
 
     public static function failure(
-        string $sessionId,
+        MessageSessionId $sessionId,
         DateTimeImmutable $startedAt,
         string $errorMessage,
     ): self {
@@ -72,7 +73,7 @@ final readonly class StoreMessagesResult
 
     public function toArray(): array {
         return [
-            'sessionId' => $this->sessionId,
+            'sessionId' => $this->sessionId->toString(),
             'success' => $this->success,
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
             'finishedAt' => $this->finishedAt->format(DateTimeImmutable::ATOM),

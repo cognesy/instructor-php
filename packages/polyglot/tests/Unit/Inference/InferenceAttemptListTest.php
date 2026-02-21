@@ -2,6 +2,7 @@
 
 use Cognesy\Polyglot\Inference\Collections\InferenceAttemptList;
 use Cognesy\Polyglot\Inference\Data\InferenceAttempt;
+use Cognesy\Polyglot\Inference\Data\InferenceAttemptId;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 
@@ -27,8 +28,9 @@ it('rehydrates from array and preserves usage', function () {
     $rehydrated = InferenceAttemptList::fromArray($original->toArray());
 
     expect($rehydrated->count())->toBe(2)
+        ->and($rehydrated->first()->id)->toBeInstanceOf(InferenceAttemptId::class)
+        ->and($rehydrated->first()->id->toString())->toBe($a1->id->toString())
         ->and($rehydrated->usage()->input())->toBe(7)
         ->and($rehydrated->usage()->output())->toBe(8)
         ->and($rehydrated->usage()->total())->toBe(15);
 });
-

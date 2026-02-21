@@ -3,7 +3,9 @@
 namespace Cognesy\Messages\MessageStore\Storage;
 
 use Cognesy\Messages\Message;
+use Cognesy\Messages\MessageId;
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageSessionId;
 use Cognesy\Messages\MessageStore\Contracts\CanStoreMessages;
 use Cognesy\Messages\MessageStore\Data\StoreMessagesResult;
 use Cognesy\Messages\MessageStore\MessageStore;
@@ -26,7 +28,7 @@ class JsonlStorage implements CanStoreMessages
 {
     private const VERSION = 1;
 
-    /** @var array<string, array{file: string, leafId: ?string, index: array<string, array>, labels: array<string, string>}> */
+    /** @var array<string, array{file: string, leafId: ?MessageId, index: array<string, array>, labels: array<string, string>}> */
     private array $sessions = [];
 
     public function __construct(
@@ -40,20 +42,21 @@ class JsonlStorage implements CanStoreMessages
     // SESSION OPERATIONS ////////////////////////////////////
 
     #[\Override]
-    public function createSession(?string $sessionId = null): string {
-        $id = $sessionId ?? Uuid::uuid4();
+    public function createSession(?MessageSessionId $sessionId = null): MessageSessionId {
+        $id = $sessionId ?? MessageSessionId::generate();
+        $sessionKey = $id->toString();
         $file = $this->sessionFile($id);
 
         // Write session header
         $header = [
             'type' => 'session',
             'version' => self::VERSION,
-            'id' => $id,
+            'id' => $sessionKey,
             'createdAt' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
         ];
         file_put_contents($file, json_encode($header) . "\n");
 
-        $this->sessions[$id] = [
+        $this->sessions[$sessionKey] = [
             'file' => $file,
             'leafId' => null,
             'index' => [],
@@ -64,17 +67,18 @@ class JsonlStorage implements CanStoreMessages
     }
 
     #[\Override]
-    public function hasSession(string $sessionId): bool {
+    public function hasSession(MessageSessionId $sessionId): bool {
         return file_exists($this->sessionFile($sessionId));
     }
 
     #[\Override]
-    public function load(string $sessionId): MessageStore {
+    public function load(MessageSessionId $sessionId): MessageStore {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
         // Group messages by section
         $sectionMessages = [];
-        foreach ($this->sessions[$sessionId]['index'] as $entry) {
+        foreach ($this->sessions[$sessionKey]['index'] as $entry) {
             if ($entry['type'] !== 'message') {
                 continue;
             }
@@ -96,8 +100,9 @@ class JsonlStorage implements CanStoreMessages
     }
 
     #[\Override]
-    public function save(string $sessionId, MessageStore $store): StoreMessagesResult {
+    public function save(MessageSessionId $sessionId, MessageStore $store): StoreMessagesResult {
         $startedAt = new DateTimeImmutable();
+        $sessionKey = $sessionId->toString();
 
         try {
             // For JSONL, we rebuild the file from scratch
@@ -105,15 +110,15 @@ class JsonlStorage implements CanStoreMessages
             $file = $this->sessionFile($sessionId);
 
             // Track existing messages for newMessages count
-            $existingIds = isset($this->sessions[$sessionId])
-                ? array_keys($this->sessions[$sessionId]['index'])
+            $existingIds = isset($this->sessions[$sessionKey])
+                ? array_keys($this->sessions[$sessionKey]['index'])
                 : [];
 
             // Write header
             $header = [
                 'type' => 'session',
                 'version' => self::VERSION,
-                'id' => $sessionId,
+                'id' => $sessionKey,
                 'createdAt' => $startedAt->format(DateTimeImmutable::ATOM),
             ];
             file_put_contents($file, json_encode($header) . "\n");
@@ -127,27 +132,28 @@ class JsonlStorage implements CanStoreMessages
             foreach ($store->sections()->all() as $section) {
                 $sectionsStored++;
                 foreach ($section->messages()->all() as $message) {
+                    $messageId = $message->id()->toString();
                     $entry = [
                         'type' => 'message',
-                        'id' => $message->id,
-                        'parentId' => $message->parentId(),
+                        'id' => $messageId,
+                        'parentId' => $message->parentId()?->toString(),
                         'section' => $section->name(),
                         'timestamp' => $message->createdAt->format(DateTimeImmutable::ATOM),
                         'data' => $message->toArray(),
                     ];
                     file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND);
-                    $leafId = $message->id;
+                    $leafId = $messageId;
                     $messagesStored++;
 
-                    if (!in_array($message->id, $existingIds, true)) {
+                    if (!in_array($messageId, $existingIds, true)) {
                         $newMessages++;
                     }
                 }
             }
 
             // Write labels
-            if (isset($this->sessions[$sessionId])) {
-                foreach ($this->sessions[$sessionId]['labels'] as $messageId => $label) {
+            if (isset($this->sessions[$sessionKey])) {
+                foreach ($this->sessions[$sessionKey]['labels'] as $messageId => $label) {
                     $entry = [
                         'type' => 'label',
                         'id' => Uuid::uuid4(),
@@ -181,52 +187,54 @@ class JsonlStorage implements CanStoreMessages
     }
 
     #[\Override]
-    public function delete(string $sessionId): void {
+    public function delete(MessageSessionId $sessionId): void {
         $file = $this->sessionFile($sessionId);
         if (file_exists($file)) {
             unlink($file);
         }
-        unset($this->sessions[$sessionId]);
+        unset($this->sessions[$sessionId->toString()]);
     }
 
     // MESSAGE OPERATIONS ////////////////////////////////////
 
     #[\Override]
-    public function append(string $sessionId, string $section, Message $message): Message {
+    public function append(MessageSessionId $sessionId, string $section, Message $message): Message {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
         // Set parentId to current leaf if not set
-        $leafId = $this->sessions[$sessionId]['leafId'];
+        $leafId = $this->sessions[$sessionKey]['leafId'];
         if ($leafId !== null && $message->parentId() === null) {
             $message = $message->withParentId($leafId);
         }
 
         // Create entry
+        $messageId = $message->id()->toString();
         $entry = [
             'type' => 'message',
-            'id' => $message->id,
-            'parentId' => $message->parentId(),
+            'id' => $messageId,
+            'parentId' => $message->parentId()?->toString(),
             'section' => $section,
             'timestamp' => $message->createdAt->format(DateTimeImmutable::ATOM),
             'data' => $message->toArray(),
         ];
 
         // Append to file
-        $file = $this->sessions[$sessionId]['file'];
+        $file = $this->sessions[$sessionKey]['file'];
         file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND);
 
         // Update index
-        $this->sessions[$sessionId]['index'][$message->id] = $entry;
-        $this->sessions[$sessionId]['leafId'] = $message->id;
+        $this->sessions[$sessionKey]['index'][$messageId] = $entry;
+        $this->sessions[$sessionKey]['leafId'] = $message->id();
 
         return $message;
     }
 
     #[\Override]
-    public function get(string $sessionId, string $messageId): ?Message {
+    public function get(MessageSessionId $sessionId, MessageId $messageId): ?Message {
         $this->ensureLoaded($sessionId);
-
-        $entry = $this->sessions[$sessionId]['index'][$messageId] ?? null;
+        $sessionKey = $sessionId->toString();
+        $entry = $this->sessions[$sessionKey]['index'][$messageId->toString()] ?? null;
         if ($entry === null || $entry['type'] !== 'message') {
             return null;
         }
@@ -235,11 +243,12 @@ class JsonlStorage implements CanStoreMessages
     }
 
     #[\Override]
-    public function getSection(string $sessionId, string $section, ?int $limit = null): Messages {
+    public function getSection(MessageSessionId $sessionId, string $section, ?int $limit = null): Messages {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
         $messages = [];
-        foreach ($this->sessions[$sessionId]['index'] as $entry) {
+        foreach ($this->sessions[$sessionKey]['index'] as $entry) {
             if ($entry['type'] !== 'message') {
                 continue;
             }
@@ -259,27 +268,30 @@ class JsonlStorage implements CanStoreMessages
     // BRANCHING OPERATIONS //////////////////////////////////
 
     #[\Override]
-    public function getLeafId(string $sessionId): ?string {
+    public function getLeafId(MessageSessionId $sessionId): ?MessageId {
         $this->ensureLoaded($sessionId);
-        return $this->sessions[$sessionId]['leafId'];
+        return $this->sessions[$sessionId->toString()]['leafId'];
     }
 
     #[\Override]
-    public function navigateTo(string $sessionId, string $messageId): void {
+    public function navigateTo(MessageSessionId $sessionId, MessageId $messageId): void {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
-        if (!isset($this->sessions[$sessionId]['index'][$messageId])) {
+        $key = $messageId->toString();
+        if (!isset($this->sessions[$sessionKey]['index'][$key])) {
             throw new RuntimeException("Message not found: {$messageId}");
         }
 
-        $this->sessions[$sessionId]['leafId'] = $messageId;
+        $this->sessions[$sessionKey]['leafId'] = $messageId;
     }
 
     #[\Override]
-    public function getPath(string $sessionId, ?string $toMessageId = null): Messages {
+    public function getPath(MessageSessionId $sessionId, ?MessageId $toMessageId = null): Messages {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
-        $targetId = $toMessageId ?? $this->sessions[$sessionId]['leafId'];
+        $targetId = $toMessageId ?? $this->sessions[$sessionKey]['leafId'];
         if ($targetId === null) {
             return Messages::empty();
         }
@@ -289,19 +301,19 @@ class JsonlStorage implements CanStoreMessages
         $currentId = $targetId;
 
         while ($currentId !== null) {
-            $entry = $this->sessions[$sessionId]['index'][$currentId] ?? null;
+            $entry = $this->sessions[$sessionKey]['index'][$currentId->toString()] ?? null;
             if ($entry === null || $entry['type'] !== 'message') {
                 break;
             }
             array_unshift($path, Message::fromArray($entry['data']));
-            $currentId = $entry['parentId'];
+            $currentId = isset($entry['parentId']) ? new MessageId($entry['parentId']) : null;
         }
 
         return new Messages(...$path);
     }
 
     #[\Override]
-    public function fork(string $sessionId, string $fromMessageId): string {
+    public function fork(MessageSessionId $sessionId, MessageId $fromMessageId): MessageSessionId {
         $this->ensureLoaded($sessionId);
 
         // Get path to fork point
@@ -321,57 +333,60 @@ class JsonlStorage implements CanStoreMessages
     // LABELS (CHECKPOINTS) //////////////////////////////////
 
     #[\Override]
-    public function addLabel(string $sessionId, string $messageId, string $label): void {
+    public function addLabel(MessageSessionId $sessionId, MessageId $messageId, string $label): void {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
-        if (!isset($this->sessions[$sessionId]['index'][$messageId])) {
+        $messageIdString = $messageId->toString();
+        if (!isset($this->sessions[$sessionKey]['index'][$messageIdString])) {
             throw new RuntimeException("Message not found: {$messageId}");
         }
 
-        $this->sessions[$sessionId]['labels'][$messageId] = $label;
+        $this->sessions[$sessionKey]['labels'][$messageIdString] = $label;
 
         // Append label entry to file
         $entry = [
             'type' => 'label',
             'id' => Uuid::uuid4(),
-            'parentId' => $this->sessions[$sessionId]['leafId'],
-            'targetId' => $messageId,
+            'parentId' => $this->sessions[$sessionKey]['leafId']?->toString(),
+            'targetId' => $messageIdString,
             'label' => $label,
             'timestamp' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
         ];
-        file_put_contents($this->sessions[$sessionId]['file'], json_encode($entry) . "\n", FILE_APPEND);
+        file_put_contents($this->sessions[$sessionKey]['file'], json_encode($entry) . "\n", FILE_APPEND);
     }
 
     #[\Override]
-    public function getLabels(string $sessionId): array {
+    public function getLabels(MessageSessionId $sessionId): array {
         $this->ensureLoaded($sessionId);
-        return $this->sessions[$sessionId]['labels'];
+        return $this->sessions[$sessionId->toString()]['labels'];
     }
 
     // HELPERS ///////////////////////////////////////////////
 
-    private function sessionFile(string $sessionId): string {
+    private function sessionFile(MessageSessionId $sessionId): string {
         // Sanitize session ID for filename
-        $safe = preg_replace('/[^a-zA-Z0-9_-]/', '_', $sessionId);
+        $safe = preg_replace('/[^a-zA-Z0-9_-]/', '_', $sessionId->toString());
         return "{$this->basePath}/{$safe}.jsonl";
     }
 
-    private function ensureLoaded(string $sessionId): void {
-        if (isset($this->sessions[$sessionId])) {
+    private function ensureLoaded(MessageSessionId $sessionId): void {
+        if (isset($this->sessions[$sessionId->toString()])) {
             return;
         }
 
         $this->loadSession($sessionId);
     }
 
-    private function loadSession(string $sessionId): void {
+    private function loadSession(MessageSessionId $sessionId): void {
         $file = $this->sessionFile($sessionId);
+        $sessionKey = $sessionId->toString();
 
         if (!file_exists($file)) {
             throw new RuntimeException("Session not found: {$sessionId}");
         }
 
-        $this->sessions[$sessionId] = [
+        $this->sessions[$sessionKey] = [
             'file' => $file,
             'leafId' => null,
             'index' => [],
@@ -404,8 +419,8 @@ class JsonlStorage implements CanStoreMessages
 
             // Index messages
             if ($entry['type'] === 'message') {
-                $this->sessions[$sessionId]['index'][$entry['id']] = $entry;
-                $this->sessions[$sessionId]['leafId'] = $entry['id'];
+                $this->sessions[$sessionKey]['index'][$entry['id']] = $entry;
+                $this->sessions[$sessionKey]['leafId'] = new MessageId($entry['id']);
             }
 
             // Track labels
@@ -413,10 +428,10 @@ class JsonlStorage implements CanStoreMessages
                 $targetId = $entry['targetId'] ?? null;
                 $label = $entry['label'] ?? null;
                 if ($targetId !== null && $label !== null) {
-                    $this->sessions[$sessionId]['labels'][$targetId] = $label;
+                    $this->sessions[$sessionKey]['labels'][$targetId] = $label;
                 } elseif ($targetId !== null && $label === null) {
                     // Label removal
-                    unset($this->sessions[$sessionId]['labels'][$targetId]);
+                    unset($this->sessions[$sessionKey]['labels'][$targetId]);
                 }
             }
         }

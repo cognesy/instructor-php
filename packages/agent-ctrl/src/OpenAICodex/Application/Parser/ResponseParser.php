@@ -59,7 +59,7 @@ final class ResponseParser
             $event = StreamEvent::fromArray($decoded);
 
             if ($event instanceof ThreadStartedEvent) {
-                $threadId = $event->threadId;
+                $threadId = $event->threadIdValue;
             }
 
             if ($event instanceof TurnCompletedEvent && $event->usage !== null) {

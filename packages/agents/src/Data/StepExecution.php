@@ -21,7 +21,7 @@ use DateTimeImmutable;
  */
 final readonly class StepExecution
 {
-    private string $id;
+    private AgentStepId $id;
     private AgentStep $step;
     private ExecutionContinuation $continuation;
     private DateTimeImmutable $startedAt;
@@ -32,9 +32,9 @@ final readonly class StepExecution
         ExecutionContinuation $continuation,
         DateTimeImmutable     $startedAt,
         DateTimeImmutable     $completedAt,
-        string                $id = '',
+        ?AgentStepId          $id = null,
     ) {
-        $this->id = $id !== '' ? $id : $step->id();
+        $this->id = $id ?? $step->stepId();
         $this->step = $step;
         $this->continuation = $continuation;
         $this->startedAt = $startedAt;
@@ -56,7 +56,7 @@ final readonly class StepExecution
 
     // ACCESSORS ///////////////////////////////////////////////
 
-    public function id(): string {
+    public function id(): AgentStepId {
         return $this->id;
     }
 
@@ -90,7 +90,7 @@ final readonly class StepExecution
 
     public function toArray(): array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->value,
             'step' => $this->step->toArray(),
             'continuation' => $this->continuation->toArray(),
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
@@ -105,7 +105,7 @@ final readonly class StepExecution
             continuation: ExecutionContinuation::fromArray($data['continuation'] ?? []),
             startedAt: new DateTimeImmutable($data['startedAt'] ?? 'now'),
             completedAt: new DateTimeImmutable($data['completedAt'] ?? 'now'),
-            id: $data['id'] ?? '',
+            id: isset($data['id']) ? new AgentStepId($data['id']) : null,
         );
     }
 }

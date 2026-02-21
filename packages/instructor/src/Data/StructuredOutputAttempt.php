@@ -6,12 +6,11 @@ use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 readonly final class StructuredOutputAttempt
 {
-    public string $id;
+    public StructuredOutputAttemptId $id;
     public DateTimeImmutable $createdAt;
     public DateTimeImmutable $updatedAt;
 
@@ -26,7 +25,7 @@ readonly final class StructuredOutputAttempt
         ?array $errors = [],
         mixed $output = null,
         //
-        ?string $id = null,
+        ?StructuredOutputAttemptId $id = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
     ) {
@@ -35,7 +34,7 @@ readonly final class StructuredOutputAttempt
         $this->errors = $errors;
         $this->output = $output;
         //
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? StructuredOutputAttemptId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
     }
@@ -48,7 +47,7 @@ readonly final class StructuredOutputAttempt
         ?array $errors = null,
         mixed $output = null,
         //
-        ?string $id = null,
+        ?StructuredOutputAttemptId $id = null,
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
     ): self {
@@ -90,6 +89,10 @@ readonly final class StructuredOutputAttempt
         return $this->output;
     }
 
+    public function id(): StructuredOutputAttemptId {
+        return $this->id;
+    }
+
     public function hasErrors(): bool {
         return count($this->errors) > 0;
     }
@@ -106,7 +109,7 @@ readonly final class StructuredOutputAttempt
             'isFinalized' => $this->isFinalized,
             'errors' => $this->errors,
             'output' => $this->output,
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
         ];
@@ -118,7 +121,7 @@ readonly final class StructuredOutputAttempt
             isFinalized: $data['isFinalized'] ?? false,
             errors: $data['errors'] ?? [],
             output: $data['output'] ?? null,
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new StructuredOutputAttemptId($data['id']) : null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );

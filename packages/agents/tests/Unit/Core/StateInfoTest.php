@@ -65,7 +65,7 @@ it('preserves execution state on round-trip serialization', function () {
     $restored = AgentState::fromArray($state->toArray());
 
     expect($restored->execution())->not->toBeNull()
-        ->and($restored->execution()->executionId())->toBe($state->execution()->executionId());
+        ->and($restored->execution()->executionId()->toString())->toBe($state->execution()->executionId()->toString());
 });
 
 it('preserves stepCount unchanged after round-trip without current step', function () {
@@ -94,7 +94,7 @@ it('handles null completedAt in execution state round-trip', function () {
 
 it('handles malformed datetime strings gracefully', function () {
     $data = [
-        'executionId' => 'test-id',
+        'executionId' => '00000000-0000-4000-8000-000000000001',
         'status' => 'pending',
         'startedAt' => 'not-a-valid-date',
         'completedAt' => 'also-invalid',
@@ -105,14 +105,14 @@ it('handles malformed datetime strings gracefully', function () {
     $execution = \Cognesy\Agents\Data\ExecutionState::fromArray($data);
     $array = $execution->toArray();
 
-    expect($execution->executionId())->toBe('test-id')
+    expect($execution->executionId()->toString())->toBe('00000000-0000-4000-8000-000000000001')
         ->and($array['startedAt'])->toBeString()
         ->and($array['completedAt'])->toBeNull();
 });
 
 it('handles empty string datetime values gracefully', function () {
     $data = [
-        'executionId' => 'test-id',
+        'executionId' => '00000000-0000-4000-8000-000000000001',
         'status' => 'pending',
         'startedAt' => '',
         'completedAt' => '',

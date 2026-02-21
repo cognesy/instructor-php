@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\OpenAICodex\Domain\ValueObject\CodexThreadId;
+
 /**
  * Event emitted when a new thread is started
  *
@@ -9,9 +11,15 @@ namespace Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent;
  */
 final readonly class ThreadStartedEvent extends StreamEvent
 {
+    public ?CodexThreadId $threadIdValue;
+
     public function __construct(
         public string $threadId,
-    ) {}
+    ) {
+        $this->threadIdValue = $threadId !== ''
+            ? CodexThreadId::fromString($threadId)
+            : null;
+    }
 
     public function type(): string
     {

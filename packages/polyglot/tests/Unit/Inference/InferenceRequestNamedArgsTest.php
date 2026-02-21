@@ -2,6 +2,7 @@
 
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Data\InferenceRequestId;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 
 it('accepts retry and cache policies via constructor named args', function () {
@@ -21,4 +22,10 @@ it('uses default retry and cache policies when constructor args are omitted', fu
 
     expect($request->retryPolicy())->toBeNull();
     expect($request->responseCachePolicy())->toBe(ResponseCachePolicy::Memory);
+});
+
+it('uses typed request id', function () {
+    $request = new InferenceRequest(messages: 'Hello');
+
+    expect($request->id())->toBeInstanceOf(InferenceRequestId::class);
 });

@@ -3,6 +3,8 @@
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
 
 /**
  * Event emitted when a step/turn finishes
@@ -11,6 +13,9 @@ use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
  */
 final readonly class StepFinishEvent extends StreamEvent
 {
+    public ?OpenCodeMessageId $messageIdValue;
+    public ?OpenCodePartId $partIdValue;
+
     public function __construct(
         int $timestamp,
         string $sessionId,
@@ -22,6 +27,12 @@ final readonly class StepFinishEvent extends StreamEvent
         public ?TokenUsage $tokens = null,
     ) {
         parent::__construct($timestamp, $sessionId);
+        $this->messageIdValue = $messageId !== ''
+            ? OpenCodeMessageId::fromString($messageId)
+            : null;
+        $this->partIdValue = $partId !== ''
+            ? OpenCodePartId::fromString($partId)
+            : null;
     }
 
     #[\Override]

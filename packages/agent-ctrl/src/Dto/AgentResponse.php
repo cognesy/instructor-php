@@ -3,12 +3,16 @@
 namespace Cognesy\AgentCtrl\Dto;
 
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 
 /**
  * Common response format for all CLI-based code agents.
  */
 final readonly class AgentResponse
 {
+    public ?string $sessionId;
+    public ?AgentSessionId $sessionIdValue;
+
     /**
      * @param AgentType $agentType The agent type that produced this response
      * @param string $text The main text content from the agent
@@ -23,12 +27,19 @@ final readonly class AgentResponse
         public AgentType $agentType,
         public string $text,
         public int $exitCode,
-        public ?string $sessionId = null,
+        AgentSessionId|string|null $sessionId = null,
         public ?TokenUsage $usage = null,
         public ?float $cost = null,
         public array $toolCalls = [],
         public mixed $rawResponse = null,
-    ) {}
+    ) {
+        $this->sessionIdValue = match (true) {
+            $sessionId instanceof AgentSessionId => $sessionId,
+            is_string($sessionId) && $sessionId !== '' => AgentSessionId::fromString($sessionId),
+            default => null,
+        };
+        $this->sessionId = $this->sessionIdValue?->toString();
+    }
 
     public function isSuccess(): bool
     {

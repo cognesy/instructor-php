@@ -2,17 +2,19 @@
 
 namespace Cognesy\Agents\Capability\ExecutionHistory;
 
+use Cognesy\Agents\Data\AgentId;
+
 /**
  * Contract for storing and retrieving execution summaries by agent ID.
  */
 interface ExecutionStore
 {
-    public function record(string $agentId, ExecutionSummary $summary): void;
+    public function record(AgentId $agentId, ExecutionSummary $summary): void;
 
     /** @return ExecutionSummary[] */
-    public function all(string $agentId): array;
+    public function all(AgentId $agentId): array;
 
-    public function last(string $agentId): ?ExecutionSummary;
+    public function last(AgentId $agentId): ?ExecutionSummary;
 
-    public function count(string $agentId): int;
+    public function count(AgentId $agentId): int;
 }

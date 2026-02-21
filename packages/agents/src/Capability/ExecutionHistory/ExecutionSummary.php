@@ -2,6 +2,7 @@
 
 namespace Cognesy\Agents\Capability\ExecutionHistory;
 
+use Cognesy\Agents\Data\ExecutionId;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -13,7 +14,7 @@ use DateTimeImmutable;
 final readonly class ExecutionSummary
 {
     public function __construct(
-        public string $executionId,
+        public ExecutionId $executionId,
         public int $executionNumber,
         public ExecutionStatus $status,
         public int $stepCount,
@@ -45,7 +46,7 @@ final readonly class ExecutionSummary
         };
 
         return new self(
-            executionId: $execution?->executionId() ?? '',
+            executionId: $execution?->executionId() ?? ExecutionId::generate(),
             executionNumber: $state->executionCount(),
             status: $status,
             stepCount: $state->stepCount(),
@@ -62,7 +63,7 @@ final readonly class ExecutionSummary
     public function toArray(): array
     {
         return [
-            'executionId' => $this->executionId,
+            'executionId' => $this->executionId->toString(),
             'executionNumber' => $this->executionNumber,
             'status' => $this->status->value,
             'stepCount' => $this->stepCount,

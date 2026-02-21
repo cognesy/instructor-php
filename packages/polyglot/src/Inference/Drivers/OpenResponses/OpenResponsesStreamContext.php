@@ -10,9 +10,9 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenResponses;
  */
 final class OpenResponsesStreamContext
 {
-    public string $currentItemId = '';
+    public ?OpenResponseItemId $currentItemId = null;
     public string $currentItemType = '';
-    /** @var array<string, string> */
+    /** @var array<string, \Cognesy\Polyglot\Inference\Data\ToolCallId> */
     public array $itemToCallId = [];
     /** @var array<string, string> */
     public array $itemToName = [];

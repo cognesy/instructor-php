@@ -204,7 +204,7 @@ class InferenceStream
         $startedAt = $this->startedAt ?? $now;
 
         $this->events->dispatch(new StreamFirstChunkReceived(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             requestStartedAt: $startedAt,
             model: $this->execution->request()->model(),
             initialContent: $partialResponse->contentDelta,

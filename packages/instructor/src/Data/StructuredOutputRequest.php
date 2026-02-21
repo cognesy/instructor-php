@@ -6,13 +6,12 @@ use Cognesy\Instructor\Enums\OutputFormatType;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use ReflectionClass;
 
 class StructuredOutputRequest
 {
-    public readonly string $id;
+    public readonly StructuredOutputRequestId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
@@ -39,11 +38,11 @@ class StructuredOutputRequest
         ?CachedContext $cachedContext = null,
         ?OutputFormat  $outputFormat = null,
 
-        ?string $id = null, // for deserialization
+        ?StructuredOutputRequestId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
         ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? StructuredOutputRequestId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
@@ -104,6 +103,10 @@ class StructuredOutputRequest
 
     public function outputFormat() : ?OutputFormat {
         return $this->outputFormat;
+    }
+
+    public function id() : StructuredOutputRequestId {
+        return $this->id;
     }
 
     public function hasRequestedSchema() : bool {
@@ -184,7 +187,7 @@ class StructuredOutputRequest
 
     public function toArray() : array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
             'messages' => $this->messages->toArray(),
@@ -209,6 +212,12 @@ class StructuredOutputRequest
             is_array($rawOutputFormat) => self::outputFormatFromArray($rawOutputFormat),
             default => null,
         };
+        $rawCachedContext = $data['cachedContext'] ?? null;
+        $cachedContext = match (true) {
+            $rawCachedContext instanceof CachedContext => $rawCachedContext,
+            is_array($rawCachedContext) => CachedContext::fromArray($rawCachedContext),
+            default => null,
+        };
         return new self(
             messages: $data['messages'] ?? null,
             requestedSchema: $data['requestedSchema'] ?? null,
@@ -217,9 +226,9 @@ class StructuredOutputRequest
             examples: $data['examples'] ?? null,
             model: $data['model'] ?? null,
             options: $data['options'] ?? null,
-            cachedContext: $data['cachedContext'] ?? null,
+            cachedContext: $cachedContext,
             outputFormat: $outputFormat,
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new StructuredOutputRequestId($data['id']) : null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );

@@ -7,7 +7,9 @@ use Cognesy\Agents\Capability\ExecutionHistory\ArrayExecutionStore;
 use Cognesy\Agents\Capability\ExecutionHistory\ExecutionHistoryHook;
 use Cognesy\Agents\Capability\ExecutionHistory\ExecutionSummary;
 use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Data\AgentId;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Data\ExecutionId;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
@@ -208,15 +210,16 @@ describe('Execution History', function () {
         $summary = $store->last($state->agentId());
         expect($summary->stepCount)->toBe(3);
         expect($summary->status)->toBe(ExecutionStatus::Completed);
-        expect($summary->executionId)->not->toBeEmpty();
+        expect($summary->executionId)->toBeInstanceOf(ExecutionId::class);
         expect($summary->duration)->toBeGreaterThanOrEqual(0.0);
     });
 
     it('returns null for unknown agent', function () {
         $store = new ArrayExecutionStore();
-        expect($store->last('unknown-agent'))->toBeNull();
-        expect($store->count('unknown-agent'))->toBe(0);
-        expect($store->all('unknown-agent'))->toBe([]);
+        $unknown = AgentId::generate();
+        expect($store->last($unknown))->toBeNull();
+        expect($store->count($unknown))->toBe(0);
+        expect($store->all($unknown))->toBe([]);
     });
 
     it('summary serializes to array', function () {

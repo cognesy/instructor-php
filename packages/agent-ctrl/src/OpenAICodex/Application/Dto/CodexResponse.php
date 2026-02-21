@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\OpenAICodex\Application\Dto;
 
 use Cognesy\AgentCtrl\Common\Collection\DecodedObjectCollection;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Value\UsageStats;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\ValueObject\CodexThreadId;
 use Cognesy\Sandbox\Data\ExecResult;
 
 /**
@@ -11,12 +12,20 @@ use Cognesy\Sandbox\Data\ExecResult;
  */
 final readonly class CodexResponse
 {
+    private ?CodexThreadId $threadId;
+
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
-        private ?string $threadId = null,
+        CodexThreadId|string|null $threadId = null,
         private ?UsageStats $usage = null,
-    ) {}
+    ) {
+        $this->threadId = match (true) {
+            $threadId instanceof CodexThreadId => $threadId,
+            is_string($threadId) && $threadId !== '' => CodexThreadId::fromString($threadId),
+            default => null,
+        };
+    }
 
     public function result(): ExecResult {
         return $this->result;
@@ -27,6 +36,10 @@ final readonly class CodexResponse
     }
 
     public function threadId(): ?string {
+        return $this->threadId?->toString();
+    }
+
+    public function threadIdValue(): ?CodexThreadId {
         return $this->threadId;
     }
 

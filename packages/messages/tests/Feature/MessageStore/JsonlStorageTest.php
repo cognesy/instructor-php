@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Messages\Message;
+use Cognesy\Messages\MessageSessionId;
 use Cognesy\Messages\MessageStore\Storage\JsonlStorage;
 
 beforeEach(function () {
@@ -20,27 +21,27 @@ afterEach(function () {
 
 describe('session operations', function () {
     test('creates a session file', function () {
-        $sessionId = $this->storage->createSession('test-session');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c1'));
 
-        expect($sessionId)->toBe('test-session');
+        expect($sessionId->toString())->toBe('00000000-0000-4000-8000-0000000000c1');
         expect($this->storage->hasSession($sessionId))->toBeTrue();
-        expect(file_exists($this->tempDir . '/test-session.jsonl'))->toBeTrue();
+        expect(file_exists($this->tempDir . '/' . $sessionId->toString() . '.jsonl'))->toBeTrue();
     });
 
     test('session file contains header', function () {
-        $sessionId = $this->storage->createSession('test-session');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c2'));
 
-        $content = file_get_contents($this->tempDir . '/test-session.jsonl');
+        $content = file_get_contents($this->tempDir . '/' . $sessionId->toString() . '.jsonl');
         $header = json_decode(explode("\n", $content)[0], true);
 
         expect($header['type'])->toBe('session');
-        expect($header['id'])->toBe('test-session');
+        expect($header['id'])->toBe($sessionId->toString());
         expect($header)->toHaveKey('createdAt');
     });
 
     test('deletes session file', function () {
-        $sessionId = $this->storage->createSession('to-delete');
-        $file = $this->tempDir . '/to-delete.jsonl';
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c3'));
+        $file = $this->tempDir . '/' . $sessionId->toString() . '.jsonl';
 
         expect(file_exists($file))->toBeTrue();
 
@@ -59,12 +60,12 @@ describe('message persistence', function () {
         $this->storage->append($sessionId, 'messages', new Message('assistant', 'Hi there'));
 
         // Verify file contents
-        $lines = file($this->tempDir . '/' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $sessionId) . '.jsonl');
+        $lines = file($this->tempDir . '/' . $sessionId->toString() . '.jsonl');
         expect(count($lines))->toBe(3); // 1 header + 2 messages
     });
 
     test('persisted messages can be reloaded', function () {
-        $sessionId = $this->storage->createSession('reload-test');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c4'));
 
         $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
@@ -80,16 +81,16 @@ describe('message persistence', function () {
     });
 
     test('maintains parentId chain across reload', function () {
-        $sessionId = $this->storage->createSession('parent-test');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c5'));
 
         $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
         // Reload
         $newStorage = new JsonlStorage($this->tempDir);
-        $reloaded = $newStorage->get($sessionId, $msg2->id);
+        $reloaded = $newStorage->get($sessionId, $msg2->id());
 
-        expect($reloaded->parentId())->toBe($msg1->id);
+        expect($reloaded->parentId()?->toString())->toBe($msg1->id()->toString());
     });
 });
 
@@ -100,10 +101,10 @@ describe('branching with JSONL', function () {
         $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
-        $this->storage->navigateTo($sessionId, $msg1->id);
+        $this->storage->navigateTo($sessionId, $msg1->id());
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Branch'));
 
-        expect($msg3->parentId())->toBe($msg1->id);
+        expect($msg3->parentId()?->toString())->toBe($msg1->id()->toString());
     });
 
     test('getPath follows parentId chain', function () {
@@ -113,25 +114,25 @@ describe('branching with JSONL', function () {
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
         // Create a branch
-        $this->storage->navigateTo($sessionId, $msg1->id);
+        $this->storage->navigateTo($sessionId, $msg1->id());
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Branch'));
 
         // Path to branch should not include msg2
-        $path = $this->storage->getPath($sessionId, $msg3->id);
+        $path = $this->storage->getPath($sessionId, $msg3->id());
 
         expect($path->count())->toBe(2);
-        expect($path->first()->id)->toBe($msg1->id);
-        expect($path->last()->id)->toBe($msg3->id);
+        expect($path->first()->id()->toString())->toBe($msg1->id()->toString());
+        expect($path->last()->id()->toString())->toBe($msg3->id()->toString());
     });
 
     test('fork creates new session file', function () {
-        $sessionId = $this->storage->createSession('original');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c6'));
 
         $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Third'));
 
-        $forkedId = $this->storage->fork($sessionId, $msg2->id);
+        $forkedId = $this->storage->fork($sessionId, $msg2->id());
 
         expect($this->storage->hasSession($forkedId))->toBeTrue();
 
@@ -142,28 +143,28 @@ describe('branching with JSONL', function () {
 
 describe('labels in JSONL', function () {
     test('labels are persisted to file', function () {
-        $sessionId = $this->storage->createSession('label-test');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c7'));
         $msg = $this->storage->append($sessionId, 'messages', new Message('user', 'Important'));
 
-        $this->storage->addLabel($sessionId, $msg->id, 'checkpoint');
+        $this->storage->addLabel($sessionId, $msg->id(), 'checkpoint');
 
         // Reload and check
         $newStorage = new JsonlStorage($this->tempDir);
         $labels = $newStorage->getLabels($sessionId);
 
-        expect($labels)->toHaveKey($msg->id);
-        expect($labels[$msg->id])->toBe('checkpoint');
+        expect($labels)->toHaveKey($msg->id()->toString());
+        expect($labels[$msg->id()->toString()])->toBe('checkpoint');
     });
 });
 
 describe('JSONL file format', function () {
     test('each entry is valid JSON on its own line', function () {
-        $sessionId = $this->storage->createSession('format-test');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c8'));
 
         $this->storage->append($sessionId, 'messages', new Message('user', 'Hello'));
         $this->storage->append($sessionId, 'messages', new Message('assistant', 'Hi'));
 
-        $file = $this->tempDir . '/format-test.jsonl';
+        $file = $this->tempDir . '/' . $sessionId->toString() . '.jsonl';
         $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         foreach ($lines as $line) {
@@ -174,11 +175,11 @@ describe('JSONL file format', function () {
     });
 
     test('message entries have required fields', function () {
-        $sessionId = $this->storage->createSession('fields-test');
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000c9'));
 
         $this->storage->append($sessionId, 'messages', new Message('user', 'Test'));
 
-        $file = $this->tempDir . '/fields-test.jsonl';
+        $file = $this->tempDir . '/' . $sessionId->toString() . '.jsonl';
         $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         // Second line is the message

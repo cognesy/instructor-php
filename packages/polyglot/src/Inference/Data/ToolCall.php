@@ -9,28 +9,32 @@ use Cognesy\Utils\Json\Json;
  */
 final readonly class ToolCall
 {
-    private string $id;
+    private ?ToolCallId $id;
     private string $name;
     private array $arguments;
 
     public function __construct(
         string $name,
         array $args = [],
-        string $id = ''
+        ToolCallId|string|null $id = null
     ) {
-        $this->id = $id;
+        $this->id = match (true) {
+            $id instanceof ToolCallId => $id,
+            is_string($id) && $id !== '' => new ToolCallId($id),
+            default => null,
+        };
         $this->name = $name;
         $this->arguments = $args;
     }
 
     public static function none() : self {
-        return new self(name: '(no-tool)', args: [], id: '');
+        return new self(name: '(no-tool)', args: []);
     }
 
     // MUTATORS ////////////////////////////////////////////////////
 
     public function with(
-        ?string $id = null,
+        ToolCallId|string|null $id = null,
         ?string $name = null,
         ?array $args = null,
     ) : self {
@@ -41,7 +45,7 @@ final readonly class ToolCall
         );
     }
 
-    public function withId(string $id) : self {
+    public function withId(ToolCallId|string $id) : self {
         return $this->with(id: $id);
     }
 
@@ -59,6 +63,10 @@ final readonly class ToolCall
     // ACCESSORS ///////////////////////////////////////////////////
 
     public function id() : string {
+        return $this->id?->toString() ?? '';
+    }
+
+    public function idValue() : ?ToolCallId {
         return $this->id;
     }
 
@@ -92,13 +100,13 @@ final readonly class ToolCall
         return [
             'name' => $this->name,
             'arguments' => $this->arguments,
-            'id' => $this->id,
+            'id' => $this->id(),
         ];
     }
 
     public function toToolCallArray() : array {
         return [
-            'id' => $this->id,
+            'id' => $this->id(),
             'type' => 'function',
             'function' => [
                 'name' => $this->name,

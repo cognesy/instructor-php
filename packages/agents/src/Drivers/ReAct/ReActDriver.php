@@ -426,8 +426,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
 
     private function emitInferenceRequestStarted(AgentState $state, int $messageCount, ?string $model): void {
         $this->events->dispatch(new InferenceRequestStarted(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount() + 1,
             messageCount: $messageCount,
             model: $model,
@@ -436,8 +436,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
 
     private function emitInferenceResponseReceived(AgentState $state, ?InferenceResponse $response, DateTimeImmutable $requestStartedAt): void {
         $this->events->dispatch(new InferenceResponseReceived(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount() + 1,
             usage: $response?->usage(),
             finishReason: $response?->finishReason()?->value,
@@ -447,8 +447,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
 
     private function emitDecisionExtractionFailed(AgentState $state, string $errorMessage, string $errorType, int $attemptNumber, int $maxAttempts): void {
         $this->events->dispatch(new DecisionExtractionFailed(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount() + 1,
             errorMessage: $errorMessage,
             errorType: $errorType,
@@ -459,8 +459,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
 
     private function emitValidationFailed(AgentState $state, string $validationType, array $errors): void {
         $this->events->dispatch(new ValidationFailed(
-            agentId: $state->agentId(),
-            parentAgentId: $state->parentAgentId(),
+            agentId: $state->agentId()->toString(),
+            parentAgentId: $state->parentAgentId()?->toString(),
             stepNumber: $state->stepCount() + 1,
             validationType: $validationType,
             errors: $errors,

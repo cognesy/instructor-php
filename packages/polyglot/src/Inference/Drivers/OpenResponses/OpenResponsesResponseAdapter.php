@@ -9,6 +9,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Polyglot\Inference\Data\ToolCallId;
 
 /**
  * Translates OpenResponses API responses to InferenceResponse objects.
@@ -223,7 +224,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         }
 
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === '') {
+        if ($itemId === null) {
             return;
         }
         $ctx->currentItemId = $itemId;
@@ -240,7 +241,8 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             return;
         }
 
-        $ctx->currentItemId = $itemId;
+        $itemIdValue = OpenResponseItemId::fromString((string) $itemId);
+        $ctx->currentItemId = $itemIdValue;
         $ctx->currentItemType = $item['type'] ?? '';
 
         if ($ctx->currentItemType !== 'function_call') {
@@ -249,8 +251,9 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
         $callId = $item['call_id'] ?? $itemId;
         $name = $item['name'] ?? '';
-        $ctx->itemToCallId[$itemId] = $callId;
-        $ctx->itemToName[$itemId] = $name;
+        $itemKey = $itemIdValue->toString();
+        $ctx->itemToCallId[$itemKey] = ToolCallId::fromString((string) $callId);
+        $ctx->itemToName[$itemKey] = (string) $name;
     }
 
     protected function extractStreamContentDelta(OpenResponsesStreamContext $ctx, array $data, string $eventType): string {
@@ -284,8 +287,8 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 'function_call' => $data['item']['call_id'] ?? $data['item']['id'] ?? '',
                 default => '',
             },
-            'response.function_call_arguments.delta' => $this->resolveCallId($ctx, $data),
-            'response.function_call_arguments.done' => $this->resolveCallId($ctx, $data),
+            'response.function_call_arguments.delta' => $this->resolveCallId($ctx, $data)?->toString() ?? '',
+            'response.function_call_arguments.done' => $this->resolveCallId($ctx, $data)?->toString() ?? '',
             default => '',
         };
     }
@@ -327,28 +330,29 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         };
     }
 
-    protected function resolveItemId(OpenResponsesStreamContext $ctx, array $data): string {
+    protected function resolveItemId(OpenResponsesStreamContext $ctx, array $data): ?OpenResponseItemId {
         if (isset($data['item_id']) && $data['item_id'] !== '') {
-            return (string) $data['item_id'];
+            return OpenResponseItemId::fromString((string) $data['item_id']);
         }
         if (isset($data['item']['id']) && $data['item']['id'] !== '') {
-            return (string) $data['item']['id'];
+            return OpenResponseItemId::fromString((string) $data['item']['id']);
         }
         return $ctx->currentItemId;
     }
 
-    protected function resolveCallId(OpenResponsesStreamContext $ctx, array $data): string {
+    protected function resolveCallId(OpenResponsesStreamContext $ctx, array $data): ?ToolCallId {
         if (isset($data['call_id']) && $data['call_id'] !== '') {
-            return (string) $data['call_id'];
+            return ToolCallId::fromString((string) $data['call_id']);
         }
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === '') {
-            return '';
+        if ($itemId === null) {
+            return null;
         }
-        if (isset($ctx->itemToCallId[$itemId]) && $ctx->itemToCallId[$itemId] !== '') {
-            return $ctx->itemToCallId[$itemId];
+        $itemKey = $itemId->toString();
+        if (isset($ctx->itemToCallId[$itemKey])) {
+            return $ctx->itemToCallId[$itemKey];
         }
-        return $itemId;
+        return ToolCallId::fromString($itemKey);
     }
 
     protected function resolveToolName(OpenResponsesStreamContext $ctx, array $data): string {
@@ -356,26 +360,26 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             return (string) $data['name'];
         }
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === '') {
+        if ($itemId === null) {
             return '';
         }
-        return $ctx->itemToName[$itemId] ?? '';
+        return $ctx->itemToName[$itemId->toString()] ?? '';
     }
 
     protected function markOutputTextSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId !== '') {
-            $ctx->seenOutputTextItems[$itemId] = true;
+        if ($itemId !== null) {
+            $ctx->seenOutputTextItems[$itemId->toString()] = true;
         }
         return $delta;
     }
 
     protected function hasSeenOutputText(OpenResponsesStreamContext $ctx, array $data): bool {
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === '') {
+        if ($itemId === null) {
             return false;
         }
-        return $ctx->seenOutputTextItems[$itemId] ?? false;
+        return $ctx->seenOutputTextItems[$itemId->toString()] ?? false;
     }
 
     protected function maybeEmitDoneText(OpenResponsesStreamContext $ctx, array $data): string {
@@ -387,18 +391,18 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
     protected function markReasoningSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId !== '') {
-            $ctx->seenReasoningItems[$itemId] = true;
+        if ($itemId !== null) {
+            $ctx->seenReasoningItems[$itemId->toString()] = true;
         }
         return $delta;
     }
 
     protected function hasSeenReasoning(OpenResponsesStreamContext $ctx, array $data): bool {
         $itemId = $this->resolveItemId($ctx, $data);
-        if ($itemId === '') {
+        if ($itemId === null) {
             return false;
         }
-        return $ctx->seenReasoningItems[$itemId] ?? false;
+        return $ctx->seenReasoningItems[$itemId->toString()] ?? false;
     }
 
     protected function maybeEmitDoneReasoning(OpenResponsesStreamContext $ctx, array $data): string {
@@ -410,8 +414,9 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
     protected function markToolArgsSeen(OpenResponsesStreamContext $ctx, array $data, string $delta): string {
         $callId = $this->resolveCallId($ctx, $data);
-        if ($callId !== '') {
-            $ctx->toolArgsAccumulated[$callId] = ($ctx->toolArgsAccumulated[$callId] ?? '') . $delta;
+        if ($callId !== null) {
+            $callKey = $callId->toString();
+            $ctx->toolArgsAccumulated[$callKey] = ($ctx->toolArgsAccumulated[$callKey] ?? '') . $delta;
         }
         return $delta;
     }
@@ -420,12 +425,13 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         $callId = $this->resolveCallId($ctx, $data);
         $fullArgs = (string) ($arguments ?? ($data['arguments'] ?? ''));
 
-        if ($callId === '' || $fullArgs === '') {
+        if ($callId === null || $fullArgs === '') {
             return $fullArgs;
         }
 
-        $existing = $ctx->toolArgsAccumulated[$callId] ?? '';
-        $ctx->toolArgsAccumulated[$callId] = $fullArgs;
+        $callKey = $callId->toString();
+        $existing = $ctx->toolArgsAccumulated[$callKey] ?? '';
+        $ctx->toolArgsAccumulated[$callKey] = $fullArgs;
 
         if ($existing === '') {
             return $fullArgs;

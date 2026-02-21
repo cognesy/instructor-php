@@ -56,7 +56,7 @@ final readonly class AgentDefinition
             'skills' => $this->skills?->toArray(),
             'budget' => $this->budget?->toArray(),
             'capabilities' => $this->capabilities->toArray(),
-            'metadata' => $this->metadata,
+            'metadata' => $this->metadata?->toArray(),
         ];
     }
 

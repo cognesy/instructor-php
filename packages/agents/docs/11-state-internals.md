@@ -9,8 +9,8 @@ description: 'Deep dive into AgentState structure, execution tracking, and messa
 
 ```
 AgentState (readonly)
-  |-- agentId: string              # UUID, auto-generated
-  |-- parentAgentId: ?string       # set for subagents
+  |-- agentId: AgentId             # typed UUID value object, auto-generated
+  |-- parentAgentId: ?AgentId      # set for subagents
   |-- createdAt: DateTimeImmutable
   |-- updatedAt: DateTimeImmutable  # bumped on every mutation
   |-- context: AgentContext
@@ -25,7 +25,7 @@ AgentState (readonly)
   |   |-- maxCost: ?float
   |   |-- deadline: ?DateTimeImmutable
   |-- execution: ?ExecutionState    # null between executions
-      |-- executionId: string
+      |-- executionId: ExecutionId
       |-- status: ExecutionStatus   # Pending|InProgress|Completed|Failed
       |-- startedAt / completedAt
       |-- stepExecutions: StepExecutions  # completed steps
@@ -34,10 +34,11 @@ AgentState (readonly)
       |   |-- isContinuationRequested: bool
       |-- currentStepStartedAt
       |-- currentStep: ?AgentStep   # in-progress step
+          |-- id: AgentStepId
           |-- inputMessages
           |-- outputMessages
           |-- inferenceResponse
-          |-- toolExecutions: ToolExecutions
+          |-- toolExecutions: ToolExecutions (items have ToolExecutionId)
           |-- errors: ErrorList
 ```
 
@@ -45,8 +46,8 @@ AgentState (readonly)
 
 ```php
 // Identity
-$state->agentId();
-$state->parentAgentId();
+$state->agentId()->toString();
+$state->parentAgentId()?->toString();
 
 // Timing
 $state->createdAt();
@@ -63,6 +64,7 @@ $state->budget()->isExhausted();
 
 // Execution
 $state->status();                    // ExecutionStatus enum
+$state->execution()?->executionId()->toString();
 $state->stepCount();
 $state->steps();                     // AgentSteps collection
 $state->lastStep();

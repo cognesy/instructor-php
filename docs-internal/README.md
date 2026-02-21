@@ -35,6 +35,7 @@ Documentation for the bd/bv issue tracking and graph analysis system.
 Developer-specific documentation and guides:
 
 - **[SCRIPTS.md](development/SCRIPTS.md)** - Overview of utility scripts in `./scripts/`
+- **[ID_MODEL.md](development/ID_MODEL.md)** - Typed ID taxonomy: owned UUID IDs vs external opaque IDs vs reference keys
 
 ### testing/ - Testing Documentation
 

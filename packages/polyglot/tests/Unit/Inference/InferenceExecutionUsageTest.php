@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
+use Cognesy\Polyglot\Inference\Data\InferenceExecutionId;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -38,4 +39,13 @@ it('includes current attempt usage until finalized', function () {
     expect($usageDuring->input())->toBe(1 + 2 + 1)
         ->and($usageDuring->output())->toBe(1 + 3 + 2)
         ->and($usageDuring->total())->toBe(2 + 8);
+});
+
+it('uses typed execution id and serializes it to string', function () {
+    $exec = InferenceExecution::fromRequest(new InferenceRequest());
+    $array = $exec->toArray();
+
+    expect($exec->id)->toBeInstanceOf(InferenceExecutionId::class)
+        ->and($array['id'])->toBeString()
+        ->and($array['id'])->toBe($exec->id->toString());
 });

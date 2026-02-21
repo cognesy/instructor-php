@@ -11,6 +11,8 @@ namespace Cognesy\Utils;
  * TODO: implement drivers for different UUID providers (e.g. ramsey/uuid, webpatser/uuid, etc.)
  */
 class Uuid {
+    private const VALID_UUID_PATTERN = '/\A[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/i';
+
     /**
      * Generates a random UUID (version 4) string.
      *
@@ -25,6 +27,16 @@ class Uuid {
             throw new \InvalidArgumentException('Length must be a positive integer.');
         }
         return bin2hex(random_bytes($length));
+    }
+
+    public static function isValid(string $value): bool {
+        return preg_match(self::VALID_UUID_PATTERN, $value) === 1;
+    }
+
+    public static function assertValid(string $value): void {
+        if (!self::isValid($value)) {
+            throw new \InvalidArgumentException("Invalid UUID: {$value}");
+        }
     }
 
     /**

@@ -6,7 +6,6 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
@@ -17,7 +16,7 @@ use InvalidArgumentException;
  */
 class InferenceRequest
 {
-    public readonly string $id;
+    public readonly InferenceRequestId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
@@ -46,11 +45,11 @@ class InferenceRequest
         ?ResponseCachePolicy       $responseCachePolicy = null,
         ?InferenceRetryPolicy      $retryPolicy = null,
         //
-        ?string                    $id = null, // for deserialization
+        ?InferenceRequestId        $id = null, // for deserialization
         ?DateTimeImmutable         $createdAt = null, // for deserialization
         ?DateTimeImmutable         $updatedAt = null, // for deserialization
     ) {
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? InferenceRequestId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
 
@@ -165,6 +164,10 @@ class InferenceRequest
      */
     public function responseFormat() : ResponseFormat {
         return $this->responseFormat;
+    }
+
+    public function id() : InferenceRequestId {
+        return $this->id;
     }
 
     // IS/HAS METHODS //////////////////////////////////////

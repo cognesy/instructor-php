@@ -2,11 +2,17 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodePartId;
+
 /**
  * Event emitted when text content is generated
  */
 final readonly class TextEvent extends StreamEvent
 {
+    public ?OpenCodeMessageId $messageIdValue;
+    public ?OpenCodePartId $partIdValue;
+
     public function __construct(
         int $timestamp,
         string $sessionId,
@@ -17,6 +23,12 @@ final readonly class TextEvent extends StreamEvent
         public ?int $endTime = null,
     ) {
         parent::__construct($timestamp, $sessionId);
+        $this->messageIdValue = $messageId !== ''
+            ? OpenCodeMessageId::fromString($messageId)
+            : null;
+        $this->partIdValue = $partId !== ''
+            ? OpenCodePartId::fromString($partId)
+            : null;
     }
 
     #[\Override]

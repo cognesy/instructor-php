@@ -279,7 +279,7 @@ class PendingInference
         }
         $this->startedAt = new DateTimeImmutable();
         $this->events->dispatch(new InferenceStarted(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             request: $this->execution->request(),
             isStreamed: $this->isStreamed(),
         ));
@@ -293,7 +293,7 @@ class PendingInference
         $attemptId = $this->currentAttemptId();
 
         $this->events->dispatch(new InferenceAttemptStarted(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             attemptId: $attemptId,
             attemptNumber: $this->attemptNumber,
             model: $this->execution->request()->model(),
@@ -304,7 +304,7 @@ class PendingInference
         $attemptId = $this->currentAttemptId();
 
         $this->events->dispatch(new InferenceAttemptSucceeded(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             attemptId: $attemptId,
             attemptNumber: $this->attemptNumber,
             finishReason: $response->finishReason(),
@@ -313,7 +313,7 @@ class PendingInference
         ));
 
         $this->events->dispatch(new InferenceUsageReported(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             usage: $response->usage(),
             model: $this->execution->request()->model(),
             isFinal: true,
@@ -332,7 +332,7 @@ class PendingInference
         $statusCode = $error instanceof HttpRequestException ? $error->getStatusCode() : null;
 
         $this->events->dispatch(InferenceAttemptFailed::fromThrowable(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             attemptId: $attemptId,
             attemptNumber: $this->attemptNumber,
             error: $error,
@@ -371,7 +371,7 @@ class PendingInference
         $finishReason = $response?->finishReason() ?? InferenceFinishReason::Error;
 
         $this->events->dispatch(new InferenceCompleted(
-            executionId: $this->execution->id,
+            executionId: $this->execution->id->toString(),
             isSuccess: $isSuccess,
             finishReason: $finishReason,
             usage: $usage,
@@ -386,6 +386,6 @@ class PendingInference
         if ($currentAttempt === null) {
             throw new \LogicException('Attempt not started before event dispatch.');
         }
-        return $currentAttempt->id;
+        return $currentAttempt->id->toString();
     }
 }

@@ -7,7 +7,6 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 /**
@@ -18,7 +17,7 @@ final readonly class InferenceResponse
     private const THINK_START_TAG = '<think>';
     private const THINK_END_TAG = '</think>';
 
-    public string $id;
+    public InferenceResponseId $id;
     public DateTimeImmutable $createdAt;
     public DateTimeImmutable $updatedAt;
 
@@ -44,11 +43,11 @@ final readonly class InferenceResponse
         bool $isPartial = false,
         mixed $value = null, // processed / transformed value
         //
-        ?string $id = null, // for deserialization
+        ?InferenceResponseId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
         ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? InferenceResponseId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
         $this->value = $value;
@@ -225,7 +224,7 @@ final readonly class InferenceResponse
             'responseData' => $this->responseData->toArray(), // raw response data
             'isPartial' => $this->isPartial,
             //
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
         ];
@@ -241,7 +240,7 @@ final readonly class InferenceResponse
             responseData: HttpResponse::fromArray($data['responseData'] ?? []),
             isPartial: $data['isPartial'] ?? false,
             //
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new InferenceResponseId($data['id']) : null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );

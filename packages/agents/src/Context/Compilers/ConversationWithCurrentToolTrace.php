@@ -13,7 +13,7 @@ final class ConversationWithCurrentToolTrace implements CanCompileMessages
     public function compile(AgentState $state): Messages
     {
         $allMessages = $state->store()->toMessages();
-        $currentExecutionId = $state->execution()?->executionId();
+        $currentExecutionId = $state->execution()?->executionId()->toString();
 
         return $allMessages->filter(function (Message $msg) use ($currentExecutionId) {
             // Non-trace messages are conversation messages — always include

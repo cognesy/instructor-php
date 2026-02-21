@@ -3,16 +3,14 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Polyglot\Inference\Collections\InferenceAttemptList;
-use Cognesy\Polyglot\Inference\Creation\InferenceResponseFactory;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
 class InferenceExecution
 {
-    public readonly string $id;
+    public readonly InferenceExecutionId $id;
     public readonly DateTimeImmutable $createdAt;
     public readonly DateTimeImmutable $updatedAt;
 
@@ -28,7 +26,7 @@ class InferenceExecution
         ?InferenceAttempt $currentAttempt = null,
         ?bool $isFinalized = null,
         //
-        ?string $id = null, // for deserialization
+        ?InferenceExecutionId $id = null, // for deserialization
         ?DateTimeImmutable $createdAt = null, // for deserialization
         ?DateTimeImmutable $updatedAt = null, // for deserialization
     ) {
@@ -37,7 +35,7 @@ class InferenceExecution
         $this->currentAttempt = $currentAttempt ?? $this->attempts->last();
         $this->isFinalized = $isFinalized ?? false;
         //
-        $this->id = $id ?? Uuid::uuid4();
+        $this->id = $id ?? InferenceExecutionId::generate();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->updatedAt = $updatedAt ?? $this->createdAt;
     }
@@ -92,7 +90,7 @@ class InferenceExecution
         }
         // Check if current attempt is already counted in attempts list
         $isInAttempts = $this->attempts->count() > 0
-            && $this->attempts->last()?->id === $current->id;
+            && $this->attempts->last()?->id->equals($current->id);
         if ($isInAttempts) {
             // Already counted via attempts->usage()
             return $attemptsUsage;
@@ -303,7 +301,7 @@ class InferenceExecution
             'currentAttempt' => $this->currentAttempt?->toArray(),
             'isFinalized' => $this->isFinalized,
             //
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
         ];
@@ -316,7 +314,7 @@ class InferenceExecution
             currentAttempt: InferenceAttempt::fromArray($data['currentAttempt'] ?? []),
             isFinalized: $data['isFinalized'] ?? false,
             //
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new InferenceExecutionId($data['id']) : null,
             createdAt: isset($data['createdAt']) ? new DateTimeImmutable($data['createdAt']) : null,
             updatedAt: isset($data['updatedAt']) ? new DateTimeImmutable($data['updatedAt']) : null,
         );

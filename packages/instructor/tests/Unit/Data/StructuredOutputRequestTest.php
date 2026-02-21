@@ -2,6 +2,7 @@
 
 use Cognesy\Instructor\Data\OutputFormat;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Data\StructuredOutputRequestId;
 use Cognesy\Messages\Messages;
 
 it('accepts constructor named args for structured output request fields', function () {
@@ -17,10 +18,12 @@ it('accepts constructor named args for structured output request fields', functi
     );
 
     expect($request->messages()->toArray()[0]['content'])->toBe('Extract data');
+    expect($request->id())->toBeInstanceOf(StructuredOutputRequestId::class);
     expect($request->requestedSchema())->toBe(['type' => 'object']);
     expect($request->system())->toBe('You are strict.');
     expect($request->prompt())->toBe('Return only JSON.');
     expect($request->model())->toBe('gpt-4o-mini');
     expect($request->options())->toBe(['temperature' => 0.1]);
     expect($request->outputFormat()?->isArray())->toBeTrue();
+    expect($request->toArray()['id'])->toBe($request->id()->toString());
 });

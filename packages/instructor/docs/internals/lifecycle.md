@@ -11,3 +11,5 @@ As Instructor for PHP processes your request, it goes through several stages:
 7. In case response contained unserializable data - create feedback message for LLM and request regeneration of the response.
 8. Execute validations defined by developer on the deserialized data - if any of them fail, create feedback message for LLM and requests regeneration of the response.
 9. Repeat the steps 4-8, unless specified limit of retries has been reached or response passes validation.
+
+Internally, request, execution, and attempt identities are tracked as typed value objects (`StructuredOutputRequestId`, `StructuredOutputExecutionId`, `StructuredOutputAttemptId`) and serialized as strings at boundaries.

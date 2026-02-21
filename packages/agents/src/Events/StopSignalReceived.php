@@ -12,7 +12,7 @@ class StopSignalReceived extends Event
      * @param \Cognesy\Agents\Continuation\StopReason $reason
      * @param string $message
      * @param mixed[] $context
-     * @param \class-string|string|null $source
+     * @param class-string|string|null $source
      */
     public function __construct(
         public readonly StopReason $reason,

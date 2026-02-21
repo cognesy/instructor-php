@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Tests\Unit\Agent;
 
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Data\AgentStepId;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Exceptions\AgentException;
 use Cognesy\Messages\Messages;
@@ -22,7 +23,7 @@ it('appends a user message to the default section', function () {
 });
 
 it('resets execution state for continuation', function () {
-    $stepId = 'step-1';
+    $stepId = new AgentStepId('00000000-0000-4000-8000-000000000001');
     $step = new AgentStep(
         inferenceResponse: new InferenceResponse(usage: new Usage(1, 2, 0, 0, 0)),
         id: $stepId,
@@ -47,7 +48,7 @@ it('resets execution state for continuation', function () {
 
 it('records a step result and sets currentStep', function () {
     $state = AgentState::empty();
-    $stepId = 'step-1';
+    $stepId = new AgentStepId('00000000-0000-4000-8000-000000000001');
     $step = new AgentStep(id: $stepId);
     $next = $state->withCurrentStep($step)->withExecutionCompleted();
 
@@ -59,7 +60,7 @@ it('records a step result and sets currentStep', function () {
 it('fails with an error and records a failure step', function () {
     $state = AgentState::empty()
         ->withMessages(Messages::fromString('hi'))
-        ->withCurrentStep(new AgentStep(id: 'step-1'));
+        ->withCurrentStep(new AgentStep(id: new AgentStepId('00000000-0000-4000-8000-000000000001')));
     $error = AgentException::fromError(new \RuntimeException('boom'));
 
     $failed = $state->withFailure($error);

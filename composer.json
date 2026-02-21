@@ -73,7 +73,9 @@
         "dead-code-debug": "@php ./vendor/bin/phpstan analyse -c phpstan-unused.neon --no-progress --error-format=table -vvv",
         "unused-deps": "@php ./vendor/bin/composer-unused",
         "setup": "bin/instructor-setup",
-        "make-package": "scripts/make-package"
+        "make-package": "scripts/make-package",
+        "pint": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/",
+        "pint:test": "@php ./vendor/bin/pint --config packages/agents/pint.json packages/agents/src/ --test"
     },
     "bin": [
         "bin/instructor-setup",
@@ -187,6 +189,7 @@
         "illuminate/http": "^11.0",
         "illuminate/support": "^11.47",
         "jetbrains/phpstorm-attributes": "^1.2",
+        "laravel/pint": "^1.27",
         "league/commonmark": "^2.7",
         "league/html-to-markdown": "^5.1",
         "maglnet/composer-require-checker": "^4.16",

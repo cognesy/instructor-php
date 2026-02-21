@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Messages\Message;
+use Cognesy\Messages\MessageId;
+use Cognesy\Messages\MessageSessionId;
 use Cognesy\Messages\MessageStore\Storage\InMemoryStorage;
 
 beforeEach(function () {
@@ -11,15 +13,16 @@ describe('session operations', function () {
     test('creates a session with auto-generated ID', function () {
         $sessionId = $this->storage->createSession();
 
-        expect($sessionId)->toBeString();
+        expect($sessionId)->toBeInstanceOf(MessageSessionId::class);
         expect($this->storage->hasSession($sessionId))->toBeTrue();
     });
 
     test('creates a session with provided ID', function () {
-        $sessionId = $this->storage->createSession('my-session');
+        $provided = new MessageSessionId('00000000-0000-4000-8000-0000000000aa');
+        $sessionId = $this->storage->createSession($provided);
 
-        expect($sessionId)->toBe('my-session');
-        expect($this->storage->hasSession('my-session'))->toBeTrue();
+        expect($sessionId->toString())->toBe('00000000-0000-4000-8000-0000000000aa');
+        expect($this->storage->hasSession($provided))->toBeTrue();
     });
 
     test('loads empty session as empty MessageStore', function () {
@@ -38,7 +41,7 @@ describe('session operations', function () {
     });
 
     test('throws when loading non-existent session', function () {
-        $this->storage->load('non-existent');
+        $this->storage->load(new MessageSessionId('00000000-0000-4000-8000-0000000000bb'));
     })->throws(RuntimeException::class);
 });
 
@@ -49,8 +52,8 @@ describe('message operations', function () {
 
         $stored = $this->storage->append($sessionId, 'messages', $message);
 
-        expect($stored->id)->toBe($message->id);
-        expect($this->storage->get($sessionId, $message->id))->not->toBeNull();
+        expect($stored->id()->toString())->toBe($message->id()->toString());
+        expect($this->storage->get($sessionId, $message->id()))->not->toBeNull();
     });
 
     test('sets parentId on appended messages', function () {
@@ -60,7 +63,7 @@ describe('message operations', function () {
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
         expect($msg1->parentId())->toBeNull();
-        expect($msg2->parentId())->toBe($msg1->id);
+        expect($msg2->parentId()?->toString())->toBe($msg1->id()->toString());
     });
 
     test('gets messages from a section', function () {
@@ -90,7 +93,7 @@ describe('message operations', function () {
         $original = new Message('user', 'Find me');
         $this->storage->append($sessionId, 'messages', $original);
 
-        $found = $this->storage->get($sessionId, $original->id);
+        $found = $this->storage->get($sessionId, $original->id());
 
         expect($found)->not->toBeNull();
         expect($found->toString())->toBe('Find me');
@@ -99,7 +102,7 @@ describe('message operations', function () {
     test('returns null for non-existent message ID', function () {
         $sessionId = $this->storage->createSession();
 
-        expect($this->storage->get($sessionId, 'non-existent'))->toBeNull();
+        expect($this->storage->get($sessionId, new MessageId('00000000-0000-4000-8000-000000000001')))->toBeNull();
     });
 });
 
@@ -109,7 +112,7 @@ describe('branching operations', function () {
         expect($this->storage->getLeafId($sessionId))->toBeNull();
 
         $msg = $this->storage->append($sessionId, 'messages', new Message('user', 'Hello'));
-        expect($this->storage->getLeafId($sessionId))->toBe($msg->id);
+        expect($this->storage->getLeafId($sessionId)?->toString())->toBe($msg->id()->toString());
     });
 
     test('navigates to a different message', function () {
@@ -118,10 +121,10 @@ describe('branching operations', function () {
         $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
-        expect($this->storage->getLeafId($sessionId))->toBe($msg2->id);
+        expect($this->storage->getLeafId($sessionId)?->toString())->toBe($msg2->id()->toString());
 
-        $this->storage->navigateTo($sessionId, $msg1->id);
-        expect($this->storage->getLeafId($sessionId))->toBe($msg1->id);
+        $this->storage->navigateTo($sessionId, $msg1->id());
+        expect($this->storage->getLeafId($sessionId)?->toString())->toBe($msg1->id()->toString());
     });
 
     test('new messages attach to navigated position', function () {
@@ -131,12 +134,12 @@ describe('branching operations', function () {
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
         // Navigate back to first message
-        $this->storage->navigateTo($sessionId, $msg1->id);
+        $this->storage->navigateTo($sessionId, $msg1->id());
 
         // New message should branch from first
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Branch'));
 
-        expect($msg3->parentId())->toBe($msg1->id);
+        expect($msg3->parentId()?->toString())->toBe($msg1->id()->toString());
     });
 
     test('gets path from root to message', function () {
@@ -146,11 +149,11 @@ describe('branching operations', function () {
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Third'));
 
-        $path = $this->storage->getPath($sessionId, $msg3->id);
+        $path = $this->storage->getPath($sessionId, $msg3->id());
 
         expect($path->count())->toBe(3);
-        expect($path->first()->id)->toBe($msg1->id);
-        expect($path->last()->id)->toBe($msg3->id);
+        expect($path->first()->id()->toString())->toBe($msg1->id()->toString());
+        expect($path->last()->id()->toString())->toBe($msg3->id()->toString());
     });
 
     test('gets path to current leaf by default', function () {
@@ -172,7 +175,7 @@ describe('branching operations', function () {
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Third'));
 
         // Fork from second message
-        $forkedId = $this->storage->fork($sessionId, $msg2->id);
+        $forkedId = $this->storage->fork($sessionId, $msg2->id());
 
         expect($this->storage->hasSession($forkedId))->toBeTrue();
 
@@ -186,16 +189,16 @@ describe('label operations', function () {
         $sessionId = $this->storage->createSession();
         $msg = $this->storage->append($sessionId, 'messages', new Message('user', 'Important'));
 
-        $this->storage->addLabel($sessionId, $msg->id, 'checkpoint-1');
+        $this->storage->addLabel($sessionId, $msg->id(), 'checkpoint-1');
 
         $labels = $this->storage->getLabels($sessionId);
-        expect($labels)->toHaveKey($msg->id);
-        expect($labels[$msg->id])->toBe('checkpoint-1');
+        expect($labels)->toHaveKey($msg->id()->toString());
+        expect($labels[$msg->id()->toString()])->toBe('checkpoint-1');
     });
 
     test('throws when labeling non-existent message', function () {
         $sessionId = $this->storage->createSession();
-        $this->storage->addLabel($sessionId, 'non-existent', 'label');
+        $this->storage->addLabel($sessionId, new MessageId('00000000-0000-4000-8000-000000000002'), 'label');
     })->throws(RuntimeException::class);
 });
 
@@ -230,7 +233,7 @@ describe('save and load roundtrip', function () {
         $result = $store->toStorage($this->storage, $sessionId);
 
         expect($result->isSuccess())->toBeTrue();
-        expect($result->sessionId)->toBe($sessionId);
+        expect($result->sessionId->toString())->toBe($sessionId->toString());
         expect($result->sectionsStored)->toBe(2);
         expect($result->messagesStored)->toBe(3);
         expect($result->newMessages)->toBe(2); // assistant + buffered

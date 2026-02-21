@@ -3,6 +3,7 @@
 namespace Cognesy\Messages\MessageStore;
 
 use Cognesy\Messages\Messages;
+use Cognesy\Messages\MessageSessionId;
 use Cognesy\Messages\MessageStore\Collections\Sections;
 use Cognesy\Messages\MessageStore\Operators\ParameterOperator;
 use Cognesy\Messages\MessageStore\Operators\SectionOperator;
@@ -174,7 +175,7 @@ final readonly class MessageStore
      */
     public static function fromStorage(
         Contracts\CanStoreMessages $storage,
-        string $sessionId,
+        MessageSessionId $sessionId,
     ): self {
         return $storage->load($sessionId);
     }
@@ -184,7 +185,7 @@ final readonly class MessageStore
      */
     public function toStorage(
         Contracts\CanStoreMessages $storage,
-        string $sessionId,
+        MessageSessionId $sessionId,
     ): Data\StoreMessagesResult {
         return $storage->save($sessionId, $this);
     }

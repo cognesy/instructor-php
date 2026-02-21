@@ -8,6 +8,7 @@ use Cognesy\Messages\ContentParts;
 use Cognesy\Messages\Contracts\CanProvideMessage;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
+use Cognesy\Messages\MessageId;
 use Cognesy\Messages\Messages;
 use Cognesy\Messages\Support\ContentInput;
 use Cognesy\Utils\TextRepresentation;
@@ -66,9 +67,9 @@ final class MessageInput
             content: $content,
             name: $message['name'] ?? '',
             metadata: $message['_metadata'] ?? $message['metadata'] ?? [],
-            parentId: $message['parentId'] ?? null,
+            parentId: isset($message['parentId']) ? new MessageId((string)$message['parentId']) : null,
             // Identity fields for deserialization
-            id: $message['id'] ?? null,
+            id: isset($message['id']) ? new MessageId((string)$message['id']) : null,
             createdAt: isset($message['createdAt']) ? new DateTimeImmutable($message['createdAt']) : null,
         );
     }

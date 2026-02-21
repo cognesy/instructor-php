@@ -63,7 +63,7 @@ final readonly class CachedContext
 
     public function toArray() : array {
         return [
-            'messages' => $this->messages,
+            'messages' => $this->messages->toArray(),
             'system' => $this->system,
             'prompt' => $this->prompt,
             'examples' => $this->examples->toArray(),
@@ -75,8 +75,16 @@ final readonly class CachedContext
             return new CachedContext();
         }
 
+        $messages = $data['messages'] ?? [];
+        $messagesData = match (true) {
+            $messages instanceof Messages => $messages->toArray(),
+            is_array($messages) => $messages,
+            is_string($messages) => $messages,
+            default => [],
+        };
+
         return new CachedContext(
-            messages: $data['messages'] ?? '',
+            messages: $messagesData,
             system: $data['system'] ?? '',
             prompt: $data['prompt'] ?? '',
             examples: $data['examples'] ?? [],

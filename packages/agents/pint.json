@@ -1,0 +1,82 @@
+{
+    "preset": "per",
+    "rules": {
+        "blank_line_after_opening_tag": false,
+        "declare_strict_types": false,
+        "braces_position": {
+            "classes_opening_brace": "next_line_unless_newline_at_signature_end",
+            "functions_opening_brace": "same_line",
+            "control_structures_opening_brace": "same_line"
+        },
+        "method_argument_space": {
+            "on_multiline": "ensure_fully_multiline",
+            "after_heredoc": true
+        },
+        "trailing_comma_in_multiline": {
+            "elements": ["arguments", "arrays", "match", "parameters"]
+        },
+        "return_type_declaration": {
+            "space_before": "none"
+        },
+        "function_declaration": {
+            "closure_fn_spacing": "one"
+        },
+        "single_line_empty_body": true,
+        "no_extra_blank_lines": {
+            "tokens": [
+                "extra",
+                "use",
+                "use_trait"
+            ]
+        },
+        "blank_line_before_statement": false,
+        "class_attributes_separation": {
+            "elements": {
+                "method": "one",
+                "property": "none",
+                "const": "none"
+            }
+        },
+        "ordered_imports": {
+            "sort_algorithm": "alpha",
+            "imports_order": ["class", "function", "const"]
+        },
+        "no_unused_imports": true,
+        "fully_qualified_strict_types": true,
+        "global_namespace_import": {
+            "import_classes": true,
+            "import_functions": false,
+            "import_constants": false
+        },
+        "concat_space": {
+            "spacing": "one"
+        },
+        "binary_operator_spaces": {
+            "default": "single_space"
+        },
+        "array_syntax": {
+            "syntax": "short"
+        },
+        "list_syntax": {
+            "syntax": "short"
+        },
+        "strict_param": true,
+        "single_quote": true,
+        "no_trailing_comma_in_singleline": true,
+        "cast_spaces": {
+            "space": "single"
+        },
+        "type_declaration_spaces": true,
+        "nullable_type_declaration_for_default_null_value": true,
+        "not_operator_with_successor_space": false,
+        "unary_operator_spaces": true,
+        "visibility_required": {
+            "elements": ["property", "method", "const"]
+        },
+        "class_definition": {
+            "single_line": false
+        },
+        "no_blank_lines_after_class_opening": true,
+        "no_blank_lines_after_phpdoc": true
+    }
+}

@@ -52,6 +52,9 @@ $response = $parser->parse($result, OutputFormat::Json);
 echo "Thread ID: " . $response->threadId() . "\n";
 echo "Exit code: " . $response->exitCode() . "\n";
 
+// Optional typed ID for domain code:
+// $response->threadIdValue(); // CodexThreadId|null
+
 if ($response->usage()) {
     echo "Input tokens: " . $response->usage()->inputTokens . "\n";
     echo "Output tokens: " . $response->usage()->outputTokens . "\n";

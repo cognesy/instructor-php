@@ -8,7 +8,6 @@ use Cognesy\Agents\Continuation\ExecutionContinuation;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use Throwable;
 
@@ -18,10 +17,11 @@ use Throwable;
 final readonly class ExecutionState
 {
     public function __construct(
-        private string                $executionId,
+        private ExecutionId           $executionId,
         private ExecutionStatus       $status,
         private ?DateTimeImmutable    $startedAt,
         private ?DateTimeImmutable    $completedAt,
+        // list of completed steps
         private ?StepExecutions       $stepExecutions,
         // transient state for the current step
         private ExecutionContinuation $continuation,
@@ -33,7 +33,7 @@ final readonly class ExecutionState
 
     public static function fresh(): self {
         return new self(
-            executionId: Uuid::uuid4(),
+            executionId: ExecutionId::generate(),
             status: ExecutionStatus::InProgress,
             startedAt: new DateTimeImmutable(),
             completedAt: null,
@@ -123,7 +123,7 @@ final readonly class ExecutionState
 
     // ACCESSORS ////////////////////////////////////////////
 
-    public function executionId() : string {
+    public function executionId() : ExecutionId {
         return $this->executionId;
     }
 
@@ -219,7 +219,7 @@ final readonly class ExecutionState
     // IMMUTABLE MUTATORS ///////////////////////////////////
 
     public function with(
-        ?string                $executionId = null,
+        ?ExecutionId           $executionId = null,
         ?ExecutionStatus       $status = null,
         ?DateTimeImmutable     $startedAt = null,
         ?DateTimeImmutable     $completedAt = null,
@@ -259,7 +259,7 @@ final readonly class ExecutionState
 
     public function toArray(): array {
         return [
-            'executionId' => $this->executionId,
+            'executionId' => $this->executionId->value,
             'status' => $this->status->value,
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
             'completedAt' => $this->completedAt?->format(DateTimeImmutable::ATOM),
@@ -284,7 +284,7 @@ final readonly class ExecutionState
         };
 
         return new self(
-            executionId: $data['executionId'] ?? Uuid::uuid4(),
+            executionId: isset($data['executionId']) ? new ExecutionId($data['executionId']) : ExecutionId::generate(),
             status: $status,
             startedAt: self::makeDateTime('startedAt', $data, new DateTimeImmutable()),
             completedAt: self::makeDateTime('completedAt', $data, null),

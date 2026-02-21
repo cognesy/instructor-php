@@ -10,7 +10,6 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Utils\Uuid;
 use Throwable;
 
 /**
@@ -20,7 +19,7 @@ use Throwable;
  */
 final readonly class AgentStep
 {
-    private string $id;
+    private AgentStepId $id;
     private Messages $inputMessages;
     private InferenceResponse $inferenceResponse;
     private ToolExecutions $toolExecutions;
@@ -33,10 +32,9 @@ final readonly class AgentStep
         ?InferenceResponse $inferenceResponse = null,
         ?ToolExecutions $toolExecutions = null,
         ?ErrorList $errors = null,
-        ?string $id = null,
+        ?AgentStepId $id = null,
     ) {
-        $providedId = $id ?? '';
-        $this->id = $providedId !== '' ? $providedId : Uuid::uuid4();
+        $this->id = $id ?? AgentStepId::generate();
         $this->inputMessages = $inputMessages ?? Messages::empty();
         $this->outputMessages = $outputMessages ?? Messages::empty();
         $this->toolExecutions = $toolExecutions ?? new ToolExecutions();
@@ -87,6 +85,10 @@ final readonly class AgentStep
     }
 
     public function id(): string {
+        return $this->id->toString();
+    }
+
+    public function stepId(): AgentStepId {
         return $this->id;
     }
 
@@ -159,7 +161,7 @@ final readonly class AgentStep
 
     public function toArray(): array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->value,
             'inputMessages' => $this->inputMessages->toArray(),
             'outputMessages' => $this->outputMessages->toArray(),
             'toolExecutions' => $this->toolExecutions->toArray(),
@@ -188,7 +190,7 @@ final readonly class AgentStep
                 ? ToolExecutions::fromArray($data['toolExecutions'])
                 : null,
             errors: ErrorList::fromArray($data['errors'] ?? []),
-            id: $data['id'] ?? null,
+            id: isset($data['id']) ? new AgentStepId($data['id']) : null,
         );
     }
 

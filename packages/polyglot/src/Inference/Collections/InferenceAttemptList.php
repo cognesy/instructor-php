@@ -77,7 +77,7 @@ class InferenceAttemptList
         $items = $this->attempts->all();
         $updated = false;
         foreach ($items as $index => $existing) {
-            if ($existing->id === $attempt->id) {
+            if ($existing->id->equals($attempt->id)) {
                 $items[$index] = $attempt;
                 $updated = true;
                 break;
@@ -85,7 +85,7 @@ class InferenceAttemptList
         }
         if (!$updated) {
             throw new InvalidArgumentException(
-                "Cannot update attempt: no attempt found with ID '{$attempt->id}'"
+                "Cannot update attempt: no attempt found with ID '{$attempt->id->toString()}'"
             );
         }
         return new self(ArrayList::fromArray($items));
