@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\UnknownEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\Sandbox\Data\ExecResult;
 
@@ -15,6 +16,8 @@ it('parses json output into decoded objects', function () {
     expect($response->decoded()->count())->toBe(2);
     $first = $response->decoded()->all()[0]->data();
     expect($first['text'])->toBe('hi');
+    expect($response->events()->count())->toBe(2);
+    expect($response->events()->all()[0])->toBeInstanceOf(UnknownEvent::class);
 });
 
 it('parses stream-json output line by line', function () {
@@ -26,6 +29,8 @@ it('parses stream-json output line by line', function () {
     expect($response->decoded()->count())->toBe(2);
     $last = $response->decoded()->all()[1]->data();
     expect($last['event'])->toBe('final');
+    expect($response->events()->count())->toBe(2);
+    expect($response->events()->all()[1])->toBeInstanceOf(UnknownEvent::class);
 });
 
 it('returns empty collection on invalid json', function () {
@@ -34,4 +39,5 @@ it('returns empty collection on invalid json', function () {
     $response = (new ResponseParser())->parse($result, OutputFormat::Json);
 
     expect($response->decoded()->isEmpty())->toBeTrue();
+    expect($response->events()->isEmpty())->toBeTrue();
 });

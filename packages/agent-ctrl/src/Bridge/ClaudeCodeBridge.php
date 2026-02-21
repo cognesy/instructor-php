@@ -182,9 +182,8 @@ final class ClaudeCodeBridge implements AgentBridge
 
         if ($collectedText === '' && $handler === null) {
             $extractStart = microtime(true);
-            foreach ($response->decoded()->all() as $event) {
+            foreach ($response->events()->all() as $streamEvent) {
                 $eventCount++;
-                $streamEvent = StreamEvent::fromArray($event->data());
                 if ($streamEvent instanceof MessageEvent) {
                     foreach ($streamEvent->message->textContent() as $textContent) {
                         $collectedText .= $textContent->text;

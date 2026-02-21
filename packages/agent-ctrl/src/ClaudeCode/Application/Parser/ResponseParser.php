@@ -3,6 +3,8 @@
 namespace Cognesy\AgentCtrl\ClaudeCode\Application\Parser;
 
 use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeResponse;
+use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeEventCollection;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\Common\Collection\DecodedObjectCollection;
 use Cognesy\AgentCtrl\Common\Value\DecodedObject;
@@ -24,12 +26,18 @@ final class ResponseParser
             return new ClaudeResponse($result, DecodedObjectCollection::empty());
         }
         $items = [];
+        $events = [];
         foreach ($this->normalizeToList($decoded) as $entry) {
             if (is_array($entry)) {
                 $items[] = new DecodedObject($entry);
+                $events[] = StreamEvent::fromArray($entry);
             }
         }
-        return new ClaudeResponse($result, DecodedObjectCollection::of($items));
+        return new ClaudeResponse(
+            result: $result,
+            decoded: DecodedObjectCollection::of($items),
+            events: ClaudeEventCollection::of($events),
+        );
     }
 
     private function fromStreamJson(ExecResult $result) : ClaudeResponse {
@@ -38,6 +46,7 @@ final class ResponseParser
             return new ClaudeResponse($result, DecodedObjectCollection::empty());
         }
         $items = [];
+        $events = [];
         foreach ($lines as $line) {
             $trimmed = trim($line);
             if ($trimmed === '') {
@@ -46,9 +55,14 @@ final class ResponseParser
             $decoded = json_decode($trimmed, true);
             if (is_array($decoded)) {
                 $items[] = new DecodedObject($decoded);
+                $events[] = StreamEvent::fromArray($decoded);
             }
         }
-        return new ClaudeResponse($result, DecodedObjectCollection::of($items));
+        return new ClaudeResponse(
+            result: $result,
+            decoded: DecodedObjectCollection::of($items),
+            events: ClaudeEventCollection::of($events),
+        );
     }
 
     /**
