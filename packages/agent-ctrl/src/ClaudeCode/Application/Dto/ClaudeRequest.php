@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\ClaudeCode\Application\Dto;
 
+use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeRequestBuilder;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\InputFormat;
@@ -9,6 +10,10 @@ use Cognesy\AgentCtrl\Common\Value\PathList;
 
 final readonly class ClaudeRequest
 {
+    public static function builder() : ClaudeRequestBuilder {
+        return ClaudeRequestBuilder::new();
+    }
+
     public function __construct(
         private string $prompt,
         private OutputFormat $outputFormat = OutputFormat::Text,

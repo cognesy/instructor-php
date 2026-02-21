@@ -236,19 +236,19 @@ final class ClaudeCodeBridge implements AgentBridge
 
     private function buildRequest(string $prompt): ClaudeRequest
     {
-        return new ClaudeRequest(
-            prompt: $prompt,
-            outputFormat: OutputFormat::StreamJson,
-            permissionMode: $this->permissionMode,
-            maxTurns: $this->maxTurns,
-            model: $this->model,
-            systemPrompt: $this->systemPrompt,
-            appendSystemPrompt: $this->appendSystemPrompt,
-            additionalDirs: $this->additionalDirs,
-            includePartialMessages: $this->includePartialMessages,
-            verbose: $this->verbose,
-            resumeSessionId: $this->resumeSessionId,
-            continueMostRecent: $this->continueMostRecent,
-        );
+        return ClaudeRequest::builder()
+            ->withPrompt($prompt)
+            ->withOutputFormat(OutputFormat::StreamJson)
+            ->withPermissionMode($this->permissionMode)
+            ->withMaxTurns($this->maxTurns)
+            ->withModel($this->model)
+            ->withSystemPrompt($this->systemPrompt)
+            ->withAppendSystemPrompt($this->appendSystemPrompt)
+            ->withAdditionalDirs($this->additionalDirs)
+            ->withIncludePartialMessages($this->includePartialMessages)
+            ->withVerbose($this->verbose)
+            ->withResumeSessionId($this->resumeSessionId)
+            ->withContinueMostRecent($this->continueMostRecent)
+            ->build();
     }
 }

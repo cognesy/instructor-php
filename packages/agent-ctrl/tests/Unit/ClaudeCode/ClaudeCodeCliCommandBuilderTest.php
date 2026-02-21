@@ -42,16 +42,23 @@ it('builds default headless argv', function () {
 });
 
 it('builds headless argv with options', function () {
+    $systemPromptFile = tempnam(sys_get_temp_dir(), 'claude-system-');
+    file_put_contents($systemPromptFile, 'system');
+    $dirA = sys_get_temp_dir() . '/claude-dir-a-' . uniqid('', true);
+    $dirB = sys_get_temp_dir() . '/claude-dir-b-' . uniqid('', true);
+    mkdir($dirA);
+    mkdir($dirB);
+
     $request = new ClaudeRequest(
         prompt: 'run tests',
         outputFormat: OutputFormat::Json,
         permissionMode: PermissionMode::Plan,
         maxTurns: 3,
         model: 'claude-sonnet-4-5-20250929',
-        systemPromptFile: '/tmp/system.txt',
+        systemPromptFile: $systemPromptFile,
         appendSystemPrompt: 'extra',
         agentsJson: '{"reviewer":{"description":"Review","prompt":"Review code"}}',
-        additionalDirs: PathList::of(['../shared', '/tmp/data']),
+        additionalDirs: PathList::of([$dirA, $dirB]),
     );
 
     $spec = (new ClaudeCommandBuilder())->buildHeadless($request);
@@ -71,16 +78,20 @@ it('builds headless argv with options', function () {
         '--model',
         'claude-sonnet-4-5-20250929',
         '--system-prompt-file',
-        '/tmp/system.txt',
+        $systemPromptFile,
         '--append-system-prompt',
         'extra',
         '--agents',
         '{"reviewer":{"description":"Review","prompt":"Review code"}}',
         '--add-dir',
-        '../shared',
+        $dirA,
         '--add-dir',
-        '/tmp/data',
+        $dirB,
     ]);
+
+    unlink($systemPromptFile);
+    rmdir($dirA);
+    rmdir($dirB);
 });
 
 it('builds with streaming flags, verbose, and permissions tooling', function () {
@@ -178,6 +189,62 @@ it('validates conflicting options', function () {
         continueMostRecent: true,
         resumeSessionId: 'abc',
     )))->toThrow(InvalidArgumentException::class);
+});
+
+it('validates advanced option formats and paths', function () {
+    $builder = new ClaudeCommandBuilder();
+    $missingFile = sys_get_temp_dir() . '/missing-prompt-' . uniqid('', true) . '.txt';
+    $missingDir = sys_get_temp_dir() . '/missing-dir-' . uniqid('', true);
+
+    expect(fn () => $builder->buildHeadless(new ClaudeRequest(
+        prompt: 'x',
+        outputFormat: OutputFormat::Text,
+        systemPromptFile: $missingFile,
+    )))->toThrow(InvalidArgumentException::class, 'systemPromptFile does not exist');
+
+    expect(fn () => $builder->buildHeadless(new ClaudeRequest(
+        prompt: 'x',
+        outputFormat: OutputFormat::Text,
+        agentsJson: '{"bad":',
+    )))->toThrow(InvalidArgumentException::class, 'agentsJson must be valid JSON');
+
+    expect(fn () => $builder->buildHeadless(new ClaudeRequest(
+        prompt: 'x',
+        outputFormat: OutputFormat::Text,
+        additionalDirs: PathList::of([$missingDir]),
+    )))->toThrow(InvalidArgumentException::class, 'additionalDirs entry is not an existing directory');
+
+    expect(fn () => $builder->buildHeadless(new ClaudeRequest(
+        prompt: 'x',
+        outputFormat: OutputFormat::Text,
+        model: 'bad model',
+    )))->toThrow(InvalidArgumentException::class, 'model contains unsupported characters');
+
+    expect(fn () => $builder->buildHeadless(new ClaudeRequest(
+        prompt: 'x',
+        outputFormat: OutputFormat::Text,
+        resumeSessionId: 'bad session',
+    )))->toThrow(InvalidArgumentException::class, 'resumeSessionId contains unsupported characters');
+});
+
+it('builds request with ClaudeRequestBuilder', function () {
+    $request = ClaudeRequest::builder()
+        ->withPrompt('builder prompt')
+        ->withOutputFormat(OutputFormat::StreamJson)
+        ->withPermissionMode(PermissionMode::Plan)
+        ->withMaxTurns(2)
+        ->withModel('claude-sonnet-4-5-20250929')
+        ->withIncludePartialMessages(true)
+        ->withContinueMostRecent(true)
+        ->build();
+
+    expect($request->prompt())->toBe('builder prompt');
+    expect($request->outputFormat())->toBe(OutputFormat::StreamJson);
+    expect($request->permissionMode())->toBe(PermissionMode::Plan);
+    expect($request->maxTurns())->toBe(2);
+    expect($request->model())->toBe('claude-sonnet-4-5-20250929');
+    expect($request->includePartialMessages())->toBeTrue();
+    expect($request->continueMostRecent())->toBeTrue();
 });
 
 it('builds argv without stdbuf when disabled', function () {

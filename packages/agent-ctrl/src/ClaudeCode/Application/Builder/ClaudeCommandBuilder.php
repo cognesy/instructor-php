@@ -173,15 +173,68 @@ final class ClaudeCommandBuilder
         if ($request->systemPrompt() !== null && $request->systemPromptFile() !== null) {
             throw new \InvalidArgumentException('systemPrompt and systemPromptFile cannot be used together');
         }
+        $this->validateSystemPromptFile($request->systemPromptFile());
         if ($request->continueMostRecent() && $request->resumeSessionId() !== null) {
             throw new \InvalidArgumentException('Cannot set both continueMostRecent and resumeSessionId');
         }
+        $this->validateSessionId($request->resumeSessionId());
+        $this->validateModel($request->model());
+        $this->validateAgentsJson($request->agentsJson());
+        $this->validateAdditionalDirs($request->additionalDirs()->toArray());
         if ($request->includePartialMessages() && $request->outputFormat() !== OutputFormat::StreamJson) {
             throw new \InvalidArgumentException('--include-partial-messages requires output format stream-json');
         }
         if ($request->inputFormat() === InputFormat::StreamJson && $request->outputFormat() !== OutputFormat::StreamJson) {
             throw new \InvalidArgumentException('stream-json input requires output format stream-json');
         }
+    }
+
+    private function validateSystemPromptFile(?string $path) : void {
+        if ($path === null || trim($path) === '') {
+            return;
+        }
+        if (!is_file($path)) {
+            throw new \InvalidArgumentException("systemPromptFile does not exist or is not a file: {$path}");
+        }
+    }
+
+    private function validateAgentsJson(?string $agentsJson) : void {
+        if ($agentsJson === null || trim($agentsJson) === '') {
+            return;
+        }
+        json_decode($agentsJson, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \InvalidArgumentException('agentsJson must be valid JSON');
+        }
+    }
+
+    private function validateAdditionalDirs(array $dirs) : void {
+        foreach ($dirs as $dir) {
+            if (is_dir($dir)) {
+                continue;
+            }
+            throw new \InvalidArgumentException("additionalDirs entry is not an existing directory: {$dir}");
+        }
+    }
+
+    private function validateModel(?string $model) : void {
+        if ($model === null || trim($model) === '') {
+            return;
+        }
+        if (preg_match('/^[A-Za-z0-9._:\\/-]+$/', $model) === 1) {
+            return;
+        }
+        throw new \InvalidArgumentException("model contains unsupported characters: {$model}");
+    }
+
+    private function validateSessionId(?string $sessionId) : void {
+        if ($sessionId === null || trim($sessionId) === '') {
+            return;
+        }
+        if (preg_match('/^[A-Za-z0-9._:\\/-]+$/', $sessionId) === 1) {
+            return;
+        }
+        throw new \InvalidArgumentException("resumeSessionId contains unsupported characters: {$sessionId}");
     }
 
     /**
