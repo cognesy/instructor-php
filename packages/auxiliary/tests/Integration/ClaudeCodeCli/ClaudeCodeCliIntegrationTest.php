@@ -25,7 +25,7 @@ it('builds, executes stub, and parses structured output', function () {
     $executor = new class implements CommandExecutor {
         public array $capturedArgv = [];
 
-        public function execute(\Cognesy\AgentCtrl\Common\Value\CommandSpec $command): ExecResult {
+        public function execute(\Cognesy\Sandbox\Value\CommandSpec $command): ExecResult {
             $this->capturedArgv = $command->argv()->toArray();
             $payload = '{"type":"result","result":"ok","session_id":"abc","total_cost_usd":0.001}';
             return new ExecResult($payload, '', 0, 0.01);

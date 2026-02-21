@@ -125,7 +125,7 @@ class AgentCtrl extends Facade
 
         // Apply sandbox driver if configured
         if ($sandbox = $config['sandbox'] ?? config('instructor.agents.sandbox')) {
-            $sandboxDriver = \Cognesy\AgentCtrl\Common\Enum\SandboxDriver::from($sandbox);
+            $sandboxDriver = \Cognesy\Sandbox\Enums\SandboxDriver::from($sandbox);
             $builder->withSandboxDriver($sandboxDriver);
         }
 

@@ -3,8 +3,8 @@
 namespace Cognesy\AgentCtrl\Common\Execution;
 
 use Cognesy\AgentCtrl\Common\Contract\CommandExecutor;
-use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
-use Cognesy\AgentCtrl\Common\Value\CommandSpec;
+use Cognesy\Sandbox\Enums\SandboxDriver;
+use Cognesy\Sandbox\Value\CommandSpec;
 use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\Event\ExecutionAttempted;
 use Cognesy\AgentCtrl\Event\ProcessExecutionCompleted;

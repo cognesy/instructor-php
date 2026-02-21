@@ -2,8 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Application\Builder;
 
-use Cognesy\AgentCtrl\Common\Value\Argv;
-use Cognesy\AgentCtrl\Common\Value\CommandSpec;
+use Cognesy\Sandbox\Value\Argv;
+use Cognesy\Sandbox\Value\CommandSpec;
 use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\Sandbox\Utils\ProcUtils;

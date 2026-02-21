@@ -2,7 +2,7 @@
 
 namespace Cognesy\AgentCtrl\Contract;
 
-use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
+use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
 
 /**

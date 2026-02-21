@@ -2,8 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenAICodex\Application\Builder;
 
-use Cognesy\AgentCtrl\Common\Value\Argv;
-use Cognesy\AgentCtrl\Common\Value\CommandSpec;
+use Cognesy\Sandbox\Value\Argv;
+use Cognesy\Sandbox\Value\CommandSpec;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;

@@ -6,8 +6,8 @@ use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\InputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
-use Cognesy\AgentCtrl\Common\Value\Argv;
-use Cognesy\AgentCtrl\Common\Value\CommandSpec;
+use Cognesy\Sandbox\Value\Argv;
+use Cognesy\Sandbox\Value\CommandSpec;
 use Cognesy\Sandbox\Utils\ProcUtils;
 
 final class ClaudeCommandBuilder

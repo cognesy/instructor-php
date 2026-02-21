@@ -2,7 +2,7 @@
 
 namespace Cognesy\AgentCtrl\Builder;
 
-use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
+use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\AgentBridgeBuilder;
 use Cognesy\AgentCtrl\Contract\StreamHandler;

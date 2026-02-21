@@ -31,7 +31,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ToolUseContent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
-use Cognesy\AgentCtrl\Common\Enum\SandboxDriver;
+use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Common\Execution\ExecutionPolicy;
 
 // Ensure we're running from monorepo root
