@@ -536,7 +536,7 @@ final readonly class AgentState
         $isTrace = $step->stepType() !== AgentStepType::FinalResponse;
         $tagged = Messages::empty();
         foreach ($messages->each() as $msg) {
-            $msg = $msg->withMetadata('step_id', $step->id())
+            $msg = $msg->withMetadata('step_id', $step->id()->toString())
                 ->withMetadata('execution_id', $executionId)
                 ->withMetadata('agent_id', $this->agentId->value);
             if ($isTrace) {

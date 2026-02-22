@@ -20,6 +20,10 @@ class InferenceAdapter
     private ?Closure $wiretap = null;
 
     public function withDebugPreset(?string $preset) : self {
+        return $this->withHttpDebugPreset($preset);
+    }
+
+    public function withHttpDebugPreset(?string $preset) : self {
         $this->debugPreset = $preset;
         return $this;
     }
@@ -143,7 +147,7 @@ class InferenceAdapter
         }
 
         $httpClient = (new HttpClientBuilder(events: $events))
-            ->withDebugPreset($this->debugPreset)
+            ->withHttpDebugPreset($this->debugPreset)
             ->create();
 
         return InferenceRuntime::using(

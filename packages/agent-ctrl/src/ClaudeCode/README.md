@@ -301,7 +301,7 @@ $request1 = new ClaudeRequest(
 
 $result1 = $executor->execute($builder->buildHeadless($request1));
 $response1 = (new ResponseParser())->parse($result1, OutputFormat::Json);
-$sessionId = $response1->sessionId(); // Extract session ID
+$sessionId = $response1->sessionId(); // AgentSessionId|null (typed)
 
 // Continue session
 $request2 = new ClaudeRequest(
@@ -737,7 +737,7 @@ $result1 = $executor->execute($spec1);
 $response1 = (new ResponseParser())->parse($result1, OutputFormat::Json);
 $sessionId = $response1->sessionId();
 
-// Subsequent requests use session ID
+// Subsequent requests use typed session ID
 $request2 = new ClaudeRequest(
     prompt: 'Continue from previous',
     resumeSessionId: $sessionId,  // Maintains context

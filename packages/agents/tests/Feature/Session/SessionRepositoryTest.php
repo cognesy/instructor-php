@@ -32,8 +32,8 @@ it('creates and loads a session', function () {
     $created = $repo->create($session);
     expect($created->version())->toBe(1);
 
-    $loaded = $repo->load(new SessionId($session->sessionId()));
-    expect($loaded->sessionId())->toBe($session->sessionId());
+    $loaded = $repo->load($session->sessionId());
+    expect($loaded->sessionId()->value)->toBe($session->sessionId()->value);
     expect($loaded->version())->toBe(1);
 });
 

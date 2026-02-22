@@ -10,7 +10,7 @@ use DateTimeImmutable;
 it('creates fresh info with defaults', function () {
     $info = AgentSessionInfo::fresh(new SessionId('s1'), 'test-agent', 'Test Agent');
 
-    expect($info->sessionId())->toBe('s1');
+    expect($info->sessionId()->value)->toBe('s1');
     expect($info->parentId())->toBeNull();
     expect($info->status())->toBe(SessionStatus::Active);
     expect($info->version())->toBe(0);
@@ -23,9 +23,8 @@ it('creates fresh info with defaults', function () {
 it('creates fresh info with parent id', function () {
     $info = AgentSessionInfo::fresh(new SessionId('s2'), 'agent', 'Agent', new SessionId('parent-1'));
 
-    expect($info->parentId())->toBe('parent-1');
-    expect($info->parentIdValue())->toBeInstanceOf(SessionId::class);
-    expect($info->parentIdValue()?->toString())->toBe('parent-1');
+    expect($info->parentId())->toBeInstanceOf(SessionId::class);
+    expect($info->parentId()?->value)->toBe('parent-1');
 });
 
 it('with(status:) returns new instance', function () {
@@ -41,8 +40,7 @@ it('withParentId returns new instance', function () {
     $info = AgentSessionInfo::fresh(new SessionId('s1'), 'agent', 'Agent');
     $withParent = $info->withParentId(new SessionId('p1'));
 
-    expect($withParent->parentId())->toBe('p1');
-    expect($withParent->parentIdValue())->toBeInstanceOf(SessionId::class);
+    expect($withParent->parentId()?->value)->toBe('p1');
     expect($info->parentId())->toBeNull();
 });
 
@@ -50,8 +48,8 @@ it('round-trips through toArray/fromArray', function () {
     $info = AgentSessionInfo::fresh(new SessionId('s1'), 'test-agent', 'Test Agent', new SessionId('parent-1'));
     $restored = AgentSessionInfo::fromArray($info->toArray());
 
-    expect($restored->sessionId())->toBe($info->sessionId());
-    expect($restored->parentId())->toBe($info->parentId());
+    expect($restored->sessionId()->value)->toBe($info->sessionId()->value);
+    expect($restored->parentId()?->value)->toBe($info->parentId()?->value);
     expect($restored->status())->toBe($info->status());
     expect($restored->version())->toBe($info->version());
     expect($restored->agentName())->toBe($info->agentName());

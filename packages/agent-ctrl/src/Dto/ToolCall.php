@@ -9,8 +9,7 @@ use Cognesy\AgentCtrl\ValueObject\AgentToolCallId;
  */
 final readonly class ToolCall
 {
-    public ?string $callId;
-    public ?AgentToolCallId $callIdValue;
+    private ?AgentToolCallId $callId;
 
     public function __construct(
         public string $tool,
@@ -19,12 +18,16 @@ final readonly class ToolCall
         AgentToolCallId|string|null $callId = null,
         public bool $isError = false,
     ) {
-        $this->callIdValue = match (true) {
+        $this->callId = match (true) {
             $callId instanceof AgentToolCallId => $callId,
             is_string($callId) && $callId !== '' => AgentToolCallId::fromString($callId),
             default => null,
         };
-        $this->callId = $this->callIdValue?->toString();
+    }
+
+    public function callId(): ?AgentToolCallId
+    {
+        return $this->callId;
     }
 
     public function isCompleted(): bool

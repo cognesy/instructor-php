@@ -12,9 +12,9 @@ use Cognesy\Evals\Observers\Aggregate\ExperimentFailureRate;
 use Cognesy\Evals\Observers\Aggregate\ExperimentLatency;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
+use Cognesy\Evals\ValueObject\ExperimentId;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Utils\Data\DataMap;
-use Cognesy\Utils\Uuid;
 use DateTime;
 use Exception;
 use Generator;
@@ -37,7 +37,7 @@ class Experiment {
     private array $processors = [];
     private array $postprocessors = [];
 
-    readonly private string $id;
+    readonly private ExperimentId $id;
     private ?DateTime $startedAt = null;
     private float $timeElapsed = 0.0;
     private DataMap $data;
@@ -58,7 +58,7 @@ class Experiment {
         ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->id = Uuid::uuid4();
+        $this->id = ExperimentId::generate();
         $this->display = new Display();
         $this->data = new DataMap();
 
@@ -104,9 +104,9 @@ class Experiment {
 
     public function toArray() : array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'data' => $this->data->toArray(),
-            'executions' => array_map(fn($e) => $e->id(), $this->executions),
+            'executions' => array_map(fn($e) => $e->id()->toString(), $this->executions),
         ];
     }
 
@@ -119,7 +119,7 @@ class Experiment {
         } catch(Exception $e) {
             $exception = $execution->exception();
             if ($exception !== null) {
-                $this->exceptions[$execution->id()] = $exception;
+                $this->exceptions[$execution->id()->toString()] = $exception;
             }
         }
         $this->executions[] = $execution;

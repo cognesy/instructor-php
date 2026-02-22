@@ -40,7 +40,7 @@ Inference::registerDriver(
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(
     apiUrl          : 'https://api.openai.com/v1',
-    apiKey          : Env::get('OPENAI_API_KEY'),
+    apiKey          : (string) Env::get('OPENAI_API_KEY', ''),
     endpoint        : '/chat/completions', model: 'gpt-4o-mini', maxTokens: 128,
     driver          : 'custom-driver',
 );

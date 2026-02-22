@@ -209,7 +209,7 @@ final readonly class Prediction implements CanCarryState
     /**
      * Get model ID used for prediction
      */
-    public function modelId(): ?string {
+    public function modelId(): ?ModelId {
         return $this->tags()->first(ModelTag::class)?->modelId;
     }
 
@@ -237,8 +237,12 @@ final readonly class Prediction implements CanCarryState
     /**
      * Add model information to prediction
      */
-    public function withModel(string $modelId): self {
-        return $this->addTags(new ModelTag($modelId));
+    public function withModel(ModelId|string $modelId): self {
+        $id = match (true) {
+            $modelId instanceof ModelId => $modelId,
+            default => ModelId::from($modelId),
+        };
+        return $this->addTags(new ModelTag($id));
     }
 
     // PREDICTION ANALYSIS HELPERS

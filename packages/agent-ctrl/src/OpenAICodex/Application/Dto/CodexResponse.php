@@ -35,11 +35,7 @@ final readonly class CodexResponse
         return $this->decoded;
     }
 
-    public function threadId(): ?string {
-        return $this->threadId?->toString();
-    }
-
-    public function threadIdValue(): ?CodexThreadId {
+    public function threadId(): ?CodexThreadId {
         return $this->threadId;
     }
 

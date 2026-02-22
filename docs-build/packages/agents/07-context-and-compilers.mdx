@@ -18,7 +18,7 @@ $state = AgentState::empty()
 $state->context()->systemPrompt();
 $state->context()->messages();
 $state->context()->metadata();
-// @doctest id="bfbd"
+// @doctest id="4c0f"
 ```
 
 ## Message Compilers
@@ -30,7 +30,7 @@ interface CanCompileMessages
 {
     public function compile(AgentState $state): Messages;
 }
-// @doctest id="8ed6"
+// @doctest id="3418"
 ```
 
 The default compiler assembles messages from the agent's context. You can replace it to control exactly what the LLM sees.
@@ -50,7 +50,7 @@ class MyCompiler implements CanCompileMessages
         return $state->messages();
     }
 }
-// @doctest id="8619"
+// @doctest id="0030"
 ```
 
 Inject it into the loop's driver:
@@ -62,7 +62,7 @@ $driver = new ToolCallingDriver(
     messageCompiler: new MyCompiler(),
 );
 $loop = AgentLoop::default()->withDriver($driver);
-// @doctest id="8ab8"
+// @doctest id="f390"
 ```
 
 Or via `AgentBuilder`:
@@ -74,7 +74,7 @@ use Cognesy\Agents\Capability\Core\UseContextCompiler;
 $agent = AgentBuilder::base()
     ->withCapability(new UseContextCompiler(new MyCompiler()))
     ->build();
-// @doctest id="2ce4"
+// @doctest id="6852"
 ```
 
 ## Use Cases
@@ -105,8 +105,8 @@ class TokenLimitCompiler implements CanCompileMessages
         $tokens = 0;
 
         // Walk backwards, keeping recent messages first
-        foreach (array_reverse($messages->toArray()) as $message) {
-            $estimate = (int) ceil(strlen($message->content()) / 4);
+        foreach (array_reverse($messages->all()) as $message) {
+            $estimate = (int) ceil(strlen($message->content()->toString()) / 4);
             if ($tokens + $estimate > $this->maxTokens) {
                 break;
             }
@@ -114,10 +114,10 @@ class TokenLimitCompiler implements CanCompileMessages
             array_unshift($kept, $message);
         }
 
-        return Messages::fromArray($kept);
+        return new Messages(...$kept);
     }
 }
-// @doctest id="c483"
+// @doctest id="5c58"
 ```
 
 Use as a decorator via `UseContextCompilerDecorator`:
@@ -130,7 +130,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="9875"
+// @doctest id="ebce"
 ```
 
 The decorator pattern wraps the default compiler, so you get standard message assembly plus your custom logic on top.

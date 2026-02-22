@@ -67,7 +67,7 @@ $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get
 // Get the vector values from the first result
 $vector = $result->first()->values();
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
-// @doctest id="2ff7"
+// @doctest id="141c"
 ```
 
 
@@ -89,7 +89,7 @@ $embeddings->withHttpDebugPreset('verbose');          // Debug configuration
 // Driver management
 $embeddings->withDriver($customDriver);               // Custom vectorization driver
 $embeddings->withProvider($customProvider);           // Custom provider instance
-// @doctest id="9deb"
+// @doctest id="f7d5"
 ```
 
 
@@ -113,7 +113,7 @@ $embeddings->with(
     options: ['dimensions' => 1536],
     model: 'text-embedding-3-large'
 );
-// @doctest id="2ca8"
+// @doctest id="d98c"
 ```
 
 
@@ -133,7 +133,7 @@ $values = $embeddings->first()->values();           // Array of floats
 // Advanced response handling
 $pending = $embeddings->create();                    // PendingEmbeddings for custom handling
 $response = $pending->get();                         // Execute and get response
-// @doctest id="00d4"
+// @doctest id="11da"
 ```
 
 
@@ -159,7 +159,7 @@ $cohereVectors = (new Embeddings())
 
 echo "OpenAI dimensions: " . count($openaiVectors[0]->values()) . "\n";
 echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
-// @doctest id="0d2b"
+// @doctest id="0bd7"
 ```
 
 
@@ -175,7 +175,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 // Create custom configuration
 $config = new EmbeddingsConfig(
     apiUrl: 'https://api.openai.com/v1',
-    apiKey: getenv('OPENAI_API_KEY'),
+    apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-large',
     dimensions: 3072,
@@ -190,7 +190,7 @@ $embeddings = (new Embeddings())
 
 $vector = $embeddings->first()->values();
 echo "Generated embedding with " . count($vector) . " dimensions\n";
-// @doctest id="d72f"
+// @doctest id="9f76"
 ```
 
 
@@ -206,5 +206,5 @@ Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
 Embeddings::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomEmbeddingsDriver($config, $httpClient);
 });
-// @doctest id="2f8f"
+// @doctest id="f8c2"
 ```

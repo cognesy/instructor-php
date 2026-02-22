@@ -65,7 +65,9 @@ $agent = AgentBuilder::base()
 For direct `AgentLoop` usage, compose hooks with `HookStack`:
 
 ```php
-use Cognesy\Agents\Hook\Collections\HookTriggers;use Cognesy\Agents\Hook\Collections\RegisteredHooks;use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Collections\RegisteredHooks;
+use Cognesy\Agents\Hook\HookStack;
 
 $stack = new HookStack(new RegisteredHooks());
 $stack = $stack->with(
@@ -142,7 +144,10 @@ $agent = AgentBuilder::base()
 ### Manual registration
 
 ```php
-use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;use Cognesy\Agents\Hook\Hooks\StepsLimitHook;use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;
+use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
+use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
 
 // Stop after 10 steps
 $stepsGuard = new StepsLimitHook(
@@ -157,9 +162,9 @@ $tokenGuard = new TokenUsageLimitHook(maxTotalTokens: 5000);
 $timeGuard = new ExecutionTimeLimitHook(maxSeconds: 30.0);
 
 $stack = $stack
-    ->with($stepsGuard, HookTriggers::beforeStep(), priority: 100)
-    ->with($tokenGuard, HookTriggers::beforeStep(), priority: 100)
-    ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 100);
+    ->with($stepsGuard, HookTriggers::beforeStep(), priority: 200)
+    ->with($tokenGuard, HookTriggers::beforeStep(), priority: 200)
+    ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 200);
 ```
 
 ## Hook Priority

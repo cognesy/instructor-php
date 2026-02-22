@@ -172,7 +172,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
         }
 
         return ToolCalls::fromArray(array_map(fn($tc) => [
-            'id' => $tc->id(),
+            'id' => (string) ($tc->id() ?? ''),
             'name' => $tc->name(),
             'arguments' => $tc->argsAsJson(),
         ], $toolCalls));
@@ -241,8 +241,8 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             return;
         }
 
-        $itemIdValue = OpenResponseItemId::fromString((string) $itemId);
-        $ctx->currentItemId = $itemIdValue;
+        $itemResponseId = OpenResponseItemId::fromString((string) $itemId);
+        $ctx->currentItemId = $itemResponseId;
         $ctx->currentItemType = $item['type'] ?? '';
 
         if ($ctx->currentItemType !== 'function_call') {
@@ -251,7 +251,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
 
         $callId = $item['call_id'] ?? $itemId;
         $name = $item['name'] ?? '';
-        $itemKey = $itemIdValue->toString();
+        $itemKey = $itemResponseId->toString();
         $ctx->itemToCallId[$itemKey] = ToolCallId::fromString((string) $callId);
         $ctx->itemToName[$itemKey] = (string) $name;
     }
@@ -287,8 +287,8 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 'function_call' => $data['item']['call_id'] ?? $data['item']['id'] ?? '',
                 default => '',
             },
-            'response.function_call_arguments.delta' => $this->resolveCallId($ctx, $data)?->toString() ?? '',
-            'response.function_call_arguments.done' => $this->resolveCallId($ctx, $data)?->toString() ?? '',
+            'response.function_call_arguments.delta' => (string) ($this->resolveCallId($ctx, $data) ?? ''),
+            'response.function_call_arguments.done' => (string) ($this->resolveCallId($ctx, $data) ?? ''),
             default => '',
         };
     }

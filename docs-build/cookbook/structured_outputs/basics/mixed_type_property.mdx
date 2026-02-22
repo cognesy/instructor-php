@@ -27,7 +27,7 @@ $text = <<<TEXT
 
 
 $user = (new StructuredOutput)
-    ->withDebugPreset('on')
+    ->withHttpDebugPreset('on')
     ->withMessages($text)
     ->withResponseClass(UserWithMixedTypeProperty::class)
     ->get();

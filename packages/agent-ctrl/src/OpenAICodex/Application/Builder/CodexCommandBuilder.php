@@ -62,8 +62,8 @@ final class CodexCommandBuilder
         }
 
         $sessionId = $request->resumeSessionId();
-        if ($sessionId !== null && $sessionId !== '') {
-            return $argv->with($sessionId);
+        if ($sessionId !== null) {
+            return $argv->with($sessionId->toString());
         }
 
         return $argv;

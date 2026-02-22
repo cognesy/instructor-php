@@ -8,7 +8,7 @@ use DateTimeImmutable;
 final readonly class StateInfo
 {
     public function __construct(
-        private string $id,
+        private StateId $id,
         private DateTimeImmutable $startedAt,
         private DateTimeImmutable $updatedAt,
         private float $cumulativeExecutionSeconds = 0.0,
@@ -16,10 +16,10 @@ final readonly class StateInfo
 
     public static function new(): self {
         $now = new DateTimeImmutable();
-        return new self(Uuid::uuid4(), $now, $now);
+        return new self(StateId::from(Uuid::uuid4()), $now, $now);
     }
 
-    public function id(): string {
+    public function id(): StateId {
         return $this->id;
     }
 
@@ -55,7 +55,7 @@ final readonly class StateInfo
 
     public function toArray(): array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'startedAt' => $this->startedAt->format(DateTimeImmutable::ATOM),
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'cumulativeExecutionSeconds' => $this->cumulativeExecutionSeconds,
@@ -64,7 +64,7 @@ final readonly class StateInfo
 
     public static function fromArray(array $data): self {
         return new self(
-            $data['id'] ?? Uuid::uuid4(),
+            StateId::from($data['id'] ?? Uuid::uuid4()),
             new DateTimeImmutable($data['startedAt'] ?? 'now'),
             new DateTimeImmutable($data['updatedAt'] ?? 'now'),
             (float) ($data['cumulativeExecutionSeconds'] ?? 0.0),

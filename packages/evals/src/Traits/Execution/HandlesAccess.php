@@ -5,6 +5,7 @@ namespace Cognesy\Evals\Traits\Execution;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observation\SelectObservations;
+use Cognesy\Evals\ValueObject\ExecutionId;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Data\DataMap;
 use DateTime;
@@ -12,7 +13,7 @@ use Exception;
 
 trait HandlesAccess
 {
-    public function id() : string {
+    public function id() : ExecutionId {
         return $this->id;
     }
 

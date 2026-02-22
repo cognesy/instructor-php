@@ -10,7 +10,8 @@ The simplest agent uses `AgentLoop` to send a message and get a response.
 ## Hello World
 
 ```php
-use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
 
 $loop = AgentLoop::default();
 $state = AgentState::empty()->withUserMessage('What is 2+2?');
@@ -53,21 +54,23 @@ echo $result->finalResponse()->toString();
 
 ## Customizing the Loop
 
-Use `with()` to swap components on the default loop:
+Add a tool to a default loop:
+
+```php
+$loop = AgentLoop::default()->withTool($myTool);
+```
+
+Swap the driver to use ReAct reasoning:
 
 ```php
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-// Add tools
-$loop = AgentLoop::default()->withTool($myTool);
-
-// Swap driver
-$events = EventBusResolver::using(null);
+$events = new EventDispatcher();
 $inference = InferenceRuntime::fromProvider(LLMProvider::new(), events: $events);
 $structuredOutput = new StructuredOutputRuntime(
     inference: $inference,
@@ -109,3 +112,7 @@ $result = $agent->execute($state);
 ```
 
 See [AgentBuilder & Capabilities](13-agent-builder.md) for details.
+
+When agent configuration should come from files, see [Agent Templates](14-agent-templates.md).
+
+When you need persisted, resumable agent state across requests/processes, see [Session Runtime](16-session-runtime.md).

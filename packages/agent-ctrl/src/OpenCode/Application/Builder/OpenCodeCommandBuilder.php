@@ -100,10 +100,10 @@ final class OpenCodeCommandBuilder
         }
 
         $sessionId = $request->sessionId();
-        if ($sessionId !== null && $sessionId !== '') {
+        if ($sessionId !== null) {
             return $argv
                 ->with('--session')
-                ->with($sessionId);
+                ->with($sessionId->toString());
         }
 
         return $argv;

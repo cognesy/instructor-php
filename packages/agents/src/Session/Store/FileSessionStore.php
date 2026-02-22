@@ -25,8 +25,8 @@ final class FileSessionStore implements CanStoreSessions
     #[\Override]
     public function create(AgentSession $session): AgentSession
     {
-        $id = $session->sessionId();
-        $sessionId = SessionId::from($id);
+        $sessionId = $session->sessionId();
+        $id = $sessionId->value;
         $filePath = $this->filePath($sessionId);
         $lockPath = $this->lockPath($sessionId);
 
@@ -48,8 +48,8 @@ final class FileSessionStore implements CanStoreSessions
     #[\Override]
     public function save(AgentSession $session): AgentSession
     {
-        $id = $session->sessionId();
-        $sessionId = SessionId::from($id);
+        $sessionId = $session->sessionId();
+        $id = $sessionId->value;
         $filePath = $this->filePath($sessionId);
         $lockPath = $this->lockPath($sessionId);
 

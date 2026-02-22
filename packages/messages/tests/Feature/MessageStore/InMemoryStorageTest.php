@@ -63,7 +63,7 @@ describe('message operations', function () {
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
         expect($msg1->parentId())->toBeNull();
-        expect($msg2->parentId()?->toString())->toBe($msg1->id()->toString());
+        expect((string) ($msg2->parentId() ?? ''))->toBe($msg1->id()->toString());
     });
 
     test('gets messages from a section', function () {
@@ -112,7 +112,7 @@ describe('branching operations', function () {
         expect($this->storage->getLeafId($sessionId))->toBeNull();
 
         $msg = $this->storage->append($sessionId, 'messages', new Message('user', 'Hello'));
-        expect($this->storage->getLeafId($sessionId)?->toString())->toBe($msg->id()->toString());
+        expect((string) ($this->storage->getLeafId($sessionId) ?? ''))->toBe($msg->id()->toString());
     });
 
     test('navigates to a different message', function () {
@@ -121,10 +121,10 @@ describe('branching operations', function () {
         $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
         $msg2 = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
 
-        expect($this->storage->getLeafId($sessionId)?->toString())->toBe($msg2->id()->toString());
+        expect((string) ($this->storage->getLeafId($sessionId) ?? ''))->toBe($msg2->id()->toString());
 
         $this->storage->navigateTo($sessionId, $msg1->id());
-        expect($this->storage->getLeafId($sessionId)?->toString())->toBe($msg1->id()->toString());
+        expect((string) ($this->storage->getLeafId($sessionId) ?? ''))->toBe($msg1->id()->toString());
     });
 
     test('new messages attach to navigated position', function () {
@@ -139,7 +139,7 @@ describe('branching operations', function () {
         // New message should branch from first
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Branch'));
 
-        expect($msg3->parentId()?->toString())->toBe($msg1->id()->toString());
+        expect((string) ($msg3->parentId() ?? ''))->toBe($msg1->id()->toString());
     });
 
     test('gets path from root to message', function () {

@@ -22,7 +22,7 @@ class PartialInferenceResponse
     public readonly string $contentDelta;
     public readonly string $reasoningContentDelta;
     public readonly string $toolId;
-    private ?ToolCallId $toolIdValue;
+    private ?ToolCallId $toolCallId;
     public readonly string $toolName;
     public readonly string $toolArgs;
 
@@ -56,12 +56,12 @@ class PartialInferenceResponse
     ) {
         $this->contentDelta = $contentDelta ?? '';
         $this->reasoningContentDelta = $reasoningContentDelta ?? '';
-        $this->toolIdValue = match (true) {
+        $this->toolCallId = match (true) {
             $toolId instanceof ToolCallId => $toolId,
             is_string($toolId) && $toolId !== '' => ToolCallId::fromString($toolId),
             default => null,
         };
-        $this->toolId = $this->toolIdValue?->toString() ?? '';
+        $this->toolId = (string) ($this->toolCallId ?? '');
         $this->toolName = $toolName ?? '';
         $this->toolArgs = $toolArgs ?? '';
         $this->finishReason = $finishReason ?? '';
@@ -106,8 +106,8 @@ class PartialInferenceResponse
         return $this->toolName ?? '';
     }
 
-    public function toolIdValue(): ?ToolCallId {
-        return $this->toolIdValue;
+    public function toolId(): ?ToolCallId {
+        return $this->toolCallId;
     }
 
     public function toolArgs(): string {

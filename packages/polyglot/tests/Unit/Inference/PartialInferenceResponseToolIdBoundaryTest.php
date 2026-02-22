@@ -14,7 +14,7 @@ it('round-trips tool call id through partial response array boundary', function 
     $restored = PartialInferenceResponse::fromArray($serialized);
 
     expect($serialized['tool_id'])->toBe('call_123')
-        ->and($restored->toolId)->toBe('call_123')
-        ->and($restored->toolIdValue())->toBeInstanceOf(ToolCallId::class)
-        ->and($restored->toolIdValue()?->toString())->toBe('call_123');
+        ->and((string) ($restored->toolId() ?? ''))->toBe('call_123')
+        ->and($restored->toolId())->toBeInstanceOf(ToolCallId::class)
+        ->and((string) ($restored->toolId() ?? ''))->toBe('call_123');
 });

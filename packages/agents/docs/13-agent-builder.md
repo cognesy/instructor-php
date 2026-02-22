@@ -1,5 +1,5 @@
 ---
-title: 'AgentBuilder & Capability'
+title: 'AgentBuilder & Capabilities'
 description: 'Compose agents from modular capabilities using AgentBuilder'
 ---
 
@@ -29,6 +29,8 @@ $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
 ```
 
+`AgentBuilder` is about **composition at construction time**. It does not manage persistence or multi-request lifecycle. For that, use session runtime (see [Session Runtime](16-session-runtime.md)).
+
 ## Core API
 
 `AgentBuilder` exposes two interfaces:
@@ -37,7 +39,7 @@ $result = $agent->execute($state);
 
 ```php
 $builder->withCapability(CanProvideAgentCapability $capability): self;
-$builder->build(): AgentLoop;
+$builder->build(): CanControlAgentLoop;
 ```
 
 **`CanConfigureAgent`** (capability-facing):
@@ -56,7 +58,9 @@ $agent->hooks(): HookStack;
 $agent->withHooks(HookStack $hooks): self;
 
 $agent->deferredTools(): DeferredToolProviders;
-$agent->withDeferredTools(DeferredToolProviders $providers): self;
+$agent->withDeferredTools(DeferredToolProviders $deferredTools): self;
+
+$agent->events(): CanHandleEvents;
 ```
 
 ## Writing a Capability
@@ -187,12 +191,13 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | `UseGuards` | Step, token, time, and finish-reason guards |
 | `UseLLMConfig` | LLM provider preset and retry policy |
 | `UseContextConfig` | System prompt and response format |
+| `UseReActConfig` | ReAct-style driver with structured output |
 | `UseDriver` | Custom driver implementation |
+| `UseDriverDecorator` | Wrap the existing driver |
 | `UseTools` | Individual tool instances |
 | `UseHook` | Single hook with trigger and priority |
 | `UseContextCompiler` | Custom message compiler |
 | `UseContextCompilerDecorator` | Wrap the existing compiler |
-| `UseDriverDecorator` | Wrap the existing driver |
 | `UseToolFactory` | Deferred tool creation (runs at `build()` time) |
 
 ### Domain Capabilities
@@ -209,6 +214,8 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | `UseTaskPlanning` | Task planning tool |
 | `UseMetadataTools` | Metadata read/write tools |
 | `UseToolRegistry` | Dynamic tool registration |
+| `UseExecutionHistory` | Records execution summaries after each `execute()` call |
+| `UseExecutionRetrospective` | Execution checkpointing and rewind tool + hook |
 
 ## Capability Examples
 
@@ -341,3 +348,4 @@ Each `capability.configure(configurator)` call returns a new `AgentConfigurator`
 
 - [Agent Templates](14-agent-templates.md) — define agents as data files and reference capabilities by name
 - [Subagents](15-subagents.md) — task delegation via `UseSubagents`
+- [Session Runtime](16-session-runtime.md) — persist and resume agent sessions across calls

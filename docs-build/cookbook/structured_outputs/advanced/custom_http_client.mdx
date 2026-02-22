@@ -33,7 +33,7 @@ $yourSymfonyEventDispatcher = new SymfonyEventDispatcher(new EventDispatcher());
 
 $user = (new StructuredOutput(events: $yourSymfonyEventDispatcher))
     ->using('openai')
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     //->wiretap(fn($e) => $e->print())
     ->withLLMConfigOverrides(['apiUrl' => 'https://api.openai.com/v1'])
     ->withClientInstance(

@@ -10,14 +10,13 @@ use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
  */
 final readonly class AgentResponse
 {
-    public ?string $sessionId;
-    public ?AgentSessionId $sessionIdValue;
+    private ?AgentSessionId $sessionId;
 
     /**
      * @param AgentType $agentType The agent type that produced this response
      * @param string $text The main text content from the agent
      * @param int $exitCode Process exit code (0 = success)
-     * @param string|null $sessionId Session identifier for resume capability
+     * @param AgentSessionId|string|null $sessionId Session identifier for resume capability
      * @param TokenUsage|null $usage Token usage statistics
      * @param float|null $cost Cost in USD
      * @param list<ToolCall> $toolCalls Tool calls made during execution
@@ -33,12 +32,16 @@ final readonly class AgentResponse
         public array $toolCalls = [],
         public mixed $rawResponse = null,
     ) {
-        $this->sessionIdValue = match (true) {
+        $this->sessionId = match (true) {
             $sessionId instanceof AgentSessionId => $sessionId,
             is_string($sessionId) && $sessionId !== '' => AgentSessionId::fromString($sessionId),
             default => null,
         };
-        $this->sessionId = $this->sessionIdValue?->toString();
+    }
+
+    public function sessionId(): ?AgentSessionId
+    {
+        return $this->sessionId;
     }
 
     public function isSuccess(): bool

@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\Event;
 
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Enum\AgentType;
+use Cognesy\AgentCtrl\ValueObject\AgentToolCallId;
 use Psr\Log\LogLevel;
 
 /**
@@ -12,19 +13,26 @@ use Psr\Log\LogLevel;
 final class AgentToolUsed extends AgentEvent
 {
     public string $logLevel = LogLevel::DEBUG;
+    private ?AgentToolCallId $callId;
 
     public function __construct(
         AgentType $agentType,
         public readonly string $tool,
         public readonly array $input,
         public readonly ?string $output = null,
-        public readonly ?string $callId = null,
+        AgentToolCallId|string|null $callId = null,
     ) {
+        $this->callId = match (true) {
+            $callId instanceof AgentToolCallId => $callId,
+            is_string($callId) && $callId !== '' => AgentToolCallId::fromString($callId),
+            default => null,
+        };
+
         parent::__construct($agentType, [
             'tool' => $tool,
             'input' => $input,
             'output' => $output,
-            'callId' => $callId,
+            'callId' => $this->callId !== null ? (string) $this->callId : null,
         ]);
     }
 
@@ -35,8 +43,13 @@ final class AgentToolUsed extends AgentEvent
             tool: $toolCall->tool,
             input: $toolCall->input,
             output: $toolCall->output,
-            callId: $toolCall->callId,
+            callId: $toolCall->callId(),
         );
+    }
+
+    public function callId(): ?AgentToolCallId
+    {
+        return $this->callId;
     }
 
     #[\Override]

@@ -33,7 +33,7 @@ class User {
 
 $structuredOutput = (new StructuredOutput)
     ->using('openai')
-    ->withDebugPreset('on');
+    ->withHttpDebugPreset('on');
     //->wiretap(fn($e) => $e->print());
 
 echo "\n### CASE 1.1 - Debugging sync request\n\n";
@@ -80,7 +80,7 @@ $structuredOutput = (new StructuredOutput)
 echo "\n### CASE 2 - Debugging with HTTP exception\n\n";
 try {
     $user = $structuredOutput
-        ->withDebugPreset('on')
+        ->withHttpDebugPreset('on')
         ->with(
             messages: "Jason is 25 years old.",
             responseModel: User::class,

@@ -4,6 +4,7 @@ namespace Cognesy\Agents\Tests\Feature\Session;
 
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\SessionFactory;
+use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionStatus;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
@@ -19,7 +20,8 @@ it('creates session with correct header from definition', function () {
 
     $session = $factory->create($definition);
 
-    expect($session->sessionId())->toBeString()->not->toBeEmpty();
+    expect($session->sessionId())->toBeInstanceOf(SessionId::class);
+    expect($session->sessionId()->value)->not->toBeEmpty();
     expect($session->status())->toBe(SessionStatus::Active);
     expect($session->version())->toBe(0);
     expect($session->info()->agentName())->toBe('test-agent');

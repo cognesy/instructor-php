@@ -88,25 +88,3 @@ $tool = new MockTool('calculator', 'Math operations', fn(string $expr) => eval("
 ```
 
 Combine with `FakeAgentDriver` to test the full loop without any real LLM or tool calls, or with `ScenarioStep::toolCall(..., executeTools: true)` to actually execute the mock tool during the scenario.
-
-## FakeInferenceDriver
-
-For testing the real `ToolCallingDriver` with scripted LLM responses:
-
-```php
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\InferenceRuntime;
-use Cognesy\Polyglot\Inference\LLMProvider;
-
-$fakeDriver = new FakeInferenceDriver([
-    new InferenceResponse(content: 'Hello!'),
-]);
-
-$llm = LLMProvider::new()->withDriver($fakeDriver);
-$driver = new ToolCallingDriver(
-    inference: InferenceRuntime::fromProvider($llm),
-    llm: $llm,
-);
-```
-
-This tests the full driver pipeline (message compilation, response parsing) without network calls.

@@ -29,7 +29,7 @@ it('create and load round-trip', function () {
 
     $loaded = $store->load(new SessionId('s1'));
     expect($loaded)->not->toBeNull();
-    expect($loaded->sessionId())->toBe('s1');
+    expect($loaded->sessionId()->value)->toBe('s1');
 });
 
 it('save increments version', function () {

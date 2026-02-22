@@ -24,11 +24,11 @@ AgentLoop
 
 ### CanUseTools (Driver)
 
-Sends state + tools to the LLM, gets back an updated state with tool call decisions:
+Sends state to the LLM (with tools injected via `withToolRuntime()`), gets back an updated state with tool call decisions:
 
 ```php
 interface CanUseTools {
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState;
+    public function useTools(AgentState $state): AgentState;
 }
 ```
 
@@ -55,7 +55,9 @@ Uses the LLM's native function calling API.
 6. Return updated state with new `AgentStep`
 
 ```php
-$inference = InferenceRuntime::fromProvider($llm);
+$llm = LLMProvider::new();
+$events = new EventDispatcher('agent');
+$inference = InferenceRuntime::fromProvider($llm, events: $events);
 
 $driver = new ToolCallingDriver(
     inference: $inference,
@@ -80,7 +82,8 @@ Uses structured output to extract Thought/Action/Observation decisions.
 5. If `final_answer`: return the answer as the final response
 
 ```php
-$events = EventBusResolver::using(null);
+$llm = LLMProvider::new();
+$events = new EventDispatcher('agent');
 $inference = InferenceRuntime::fromProvider($llm, events: $events);
 $structuredOutput = new StructuredOutputRuntime(
     inference: $inference,
@@ -108,12 +111,13 @@ The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, 
 
 The default `CanExecuteToolCalls` implementation. For each tool call:
 
-1. **BeforeToolUse hook** - can modify the call or block it
-2. **Prepare tool** - inject `AgentState` if tool implements `CanAccessAgentState`
-3. **Validate args** - check required parameters
-4. **Execute** - call `$tool->use(...$args)`
-5. **AfterToolUse hook** - can modify the result
-6. **Emit events** - `ToolCallStarted`, `ToolCallCompleted`
+1. **beforeToolUse intercept** - interceptor can modify the call or block it
+2. **Emit event** - `ToolCallStarted`
+3. **Prepare tool** - inject `AgentState` if tool implements `CanAccessAgentState`, inject `ToolCall` if it implements `CanAccessToolCall`
+4. **Validate args** - check required parameters
+5. **Execute** - call `$tool->use(...$args)`
+6. **Emit event** - `ToolCallCompleted`
+7. **afterToolUse intercept** - interceptor can modify the result
 
 The `ToolExecutor` is created automatically by `AgentLoop::default()`. To customize it:
 

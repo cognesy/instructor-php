@@ -17,13 +17,13 @@ The loop stops when:
 // ExecutionState::shouldStop()
 public function shouldStop(): bool {
     return match(true) {
-        $this->continuation->shouldStop() => true,       // stop signal present
-        $this->continuation->isContinuationRequested() => false, // override
+        $this->continuation->shouldStop() => true,       // stop signal present AND no continuation override
+        $this->continuation->isContinuationRequested() => false, // continuation override active
         $this->hasToolCalls() => false,                  // more tools to run
         default => true,                                 // no tools = done
     };
 }
-// @doctest id="65f8"
+// @doctest id="bc16"
 ```
 
 ## StopSignal
@@ -31,7 +31,8 @@ public function shouldStop(): bool {
 A signal requesting the loop to stop, with a reason and context:
 
 ```php
-use Cognesy\Agents\Continuation\StopReason;use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 
 $signal = new StopSignal(
     reason: StopReason::StepsLimitReached,
@@ -39,7 +40,7 @@ $signal = new StopSignal(
     context: ['currentSteps' => 10, 'maxSteps' => 10],
     source: MyGuard::class,
 );
-// @doctest id="a716"
+// @doctest id="d359"
 ```
 
 ## StopReason
@@ -54,15 +55,18 @@ ErrorForbade        - Error prevented continuation
 StopRequested       - Explicit stop via AgentStopException
 FinishReasonReceived - LLM finish reason matched
 UserRequested       - User-initiated stop
-// @doctest id="f43f"
+Unknown             - Unclassified stop reason
+// @doctest id="8e82"
 ```
 
 ## AgentStopException
 
-Throw from a tool to immediately stop the loop:
+Throw from a tool to immediately stop the loop. The loop catches this exception and converts it to a `StopSignal` with reason `StopRequested` via `StopSignal::fromStopException()`:
 
 ```php
 use Cognesy\Agents\Continuation\AgentStopException;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 
 class StopTool extends BaseTool
 {
@@ -70,13 +74,13 @@ class StopTool extends BaseTool
     {
         throw new AgentStopException(
             signal: new StopSignal(
-                reason: StopReason::UserRequested,
+                reason: StopReason::StopRequested,
                 message: 'Task complete',
             ),
         );
     }
 }
-// @doctest id="c330"
+// @doctest id="379a"
 ```
 
 ## ExecutionContinuation
@@ -97,7 +101,7 @@ $state = $context->state()->withStopSignal(new StopSignal(
     message: 'Limit reached',
 ));
 return $context->withState($state);
-// @doctest id="2934"
+// @doctest id="76cf"
 ```
 
 The loop checks `shouldStop()` after each step and breaks if true.

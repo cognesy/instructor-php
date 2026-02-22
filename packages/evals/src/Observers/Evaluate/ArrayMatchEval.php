@@ -74,7 +74,7 @@ class ArrayMatchEval implements CanGenerateObservations
             key: $this->metricNames['precision'] ?? 'execution.precision',
             value: $precision,
             metadata: [
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
                 'unit' => 'percentage',
                 'truePositives' => $analysis['true_positives'],
                 'falsePositives' => $analysis['false_positives'],
@@ -89,7 +89,7 @@ class ArrayMatchEval implements CanGenerateObservations
             key: $this->metricNames['recall'] ?? 'execution.recall',
             value: $recall,
             metadata: [
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
                 'unit' => 'percentage',
                 'truePositives' => $analysis['true_positives'],
                 'falseNegatives' => $analysis['false_negatives'],
@@ -102,9 +102,9 @@ class ArrayMatchEval implements CanGenerateObservations
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
         $feedback = $this->makeFeedback($differences);
         return array_map(
-            callback: fn(Observation $observation) => $observation->withMetadata(['executionId' => $execution->id()]),
+            callback: fn(Observation $observation) => $observation->withMetadata(['executionId' => $execution->id()->toString()]),
             array: $feedback->toObservations([
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
                 'key' => $this->metricNames['field_feedback'] ?? 'execution.field_feedback',
             ])
         );

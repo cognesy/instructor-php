@@ -34,7 +34,7 @@ class AggregateExperimentObserver implements CanObserveExperiment
             key: $this->name,
             value: $this->calculate($experiment),
             metadata: array_filter(array_merge([
-                'experimentId' => $experiment->id(),
+                'experimentId' => $experiment->id()->toString(),
                 'aggregatedKey' => $this->observationKey,
                 'aggregationMethod' => $this->method->value,
             ], $this->params)),

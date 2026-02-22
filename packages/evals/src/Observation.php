@@ -2,13 +2,13 @@
 
 namespace Cognesy\Evals;
 
+use Cognesy\Evals\ValueObject\ObservationId;
 use Cognesy\Utils\Data\ImmutableDataMap;
-use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 
 readonly class Observation
 {
-    private string $id;
+    private ObservationId $id;
     private DateTimeImmutable $timestamp;
     private string $type;
     private string $key;
@@ -16,7 +16,7 @@ readonly class Observation
     private ImmutableDataMap $metadata;
 
     private function __construct(
-        string $id,
+        ObservationId $id,
         DateTimeImmutable $timestamp,
         string $type,
         string $key,
@@ -38,7 +38,7 @@ readonly class Observation
         array  $metadata = []
     ) : self {
         return new self(
-            id: Uuid::uuid4(),
+            id: ObservationId::generate(),
             timestamp: new DateTimeImmutable(),
             type: $type,
             key: $key,
@@ -48,19 +48,20 @@ readonly class Observation
     }
 
     public static function fromArray(array $data) : self {
+        $id = (string) ($data['id'] ?? '');
         return new self(
-            id: $data['id'],
-            timestamp: new DateTimeImmutable($data['timestamp']),
-            type: $data['type'],
-            key: $data['name'],
-            value: $data['value'],
-            metadata: $data['metadata']
+            id: $id !== '' ? ObservationId::fromString($id) : ObservationId::generate(),
+            timestamp: new DateTimeImmutable((string) ($data['timestamp'] ?? 'now')),
+            type: (string) ($data['type'] ?? ''),
+            key: (string) ($data['name'] ?? ''),
+            value: $data['value'] ?? null,
+            metadata: is_array($data['metadata'] ?? null) ? $data['metadata'] : [],
         );
     }
 
     public function toArray() : array {
         return [
-            'id' => $this->id,
+            'id' => $this->id->toString(),
             'timestamp' => $this->timestamp->format('Y-m-d H:i:s.u'),
             'type' => $this->type,
             'name' => $this->key,
@@ -88,7 +89,7 @@ readonly class Observation
         return $this->metadata->get($key, $default);
     }
 
-    public function id() : string {
+    public function id() : ObservationId {
         return $this->id;
     }
 

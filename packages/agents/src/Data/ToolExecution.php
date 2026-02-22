@@ -122,7 +122,7 @@ final readonly class ToolExecution
         return [
             'id' => $this->id->value,
             'tool_call' => [
-                'id' => $this->toolCall->id(),
+                'id' => (string) ($this->toolCall->id() ?? ''),
                 'name' => $this->toolCall->name(),
                 'arguments' => $this->toolCall->args(),
             ],

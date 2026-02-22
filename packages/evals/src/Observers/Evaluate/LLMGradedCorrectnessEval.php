@@ -44,7 +44,7 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
         $observations = [];
         foreach ($feedback->items() as $item) {
             $observations[] = $item->toObservation([
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
             ]);
         }
         return $observations;
@@ -57,7 +57,7 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
             key: $this->name,
             value: $response->correctness->toFloat(),
             metadata: [
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
                 'grade' => $response->correctness->value,
             ],
         );

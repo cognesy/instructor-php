@@ -2,6 +2,7 @@
 
 namespace Cognesy\Addons\StepByStep\State\Traits;
 
+use Cognesy\Addons\StepByStep\State\StateId;
 use Cognesy\Addons\StepByStep\State\StateInfo;
 use DateTimeImmutable;
 
@@ -17,7 +18,7 @@ trait HandlesStateInfo
         return $this->with(stateInfo: $stateInfo);
     }
 
-    public function id(): string {
+    public function id(): StateId {
         return $this->stateInfo->id();
     }
 

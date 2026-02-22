@@ -12,28 +12,29 @@ Tools let the agent take actions. The LLM decides which tool to call and with wh
 Pass tools to the `Tools` collection:
 
 ```php
-use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 $calculator = MockTool::returning('calculator', 'Performs math', '42');
 $tools = new Tools($calculator);
-// @doctest id="318c"
+// @doctest id="ed38"
 ```
 
 ## Using FunctionTool
 
-Wrap any callable as a tool. Parameter schema is auto-generated from the function signature:
+Wrap any callable as a tool. The tool name and parameter schema are auto-generated from the function signature. Use a named function so the tool gets a meaningful name:
 
 ```php
 use Cognesy\Agents\Tool\Tools\FunctionTool;
 
-$tool = FunctionTool::fromCallable(
-    function (string $city): string {
-        return "Weather in {$city}: 72F, sunny";
-    }
-);
+function get_weather(string $city): string {
+    return "Weather in {$city}: 72F, sunny";
+}
+
+$tool = FunctionTool::fromCallable(get_weather(...));
 
 $tools = new Tools($tool);
-// @doctest id="aed6"
+// @doctest id="75e0"
 ```
 
 ## Multiple Tools
@@ -44,20 +45,19 @@ Pass multiple tools to `Tools` and the LLM chooses which to call:
 use Cognesy\Agents\Tool\Tools\FunctionTool;
 use Cognesy\Agents\Collections\Tools;
 
-$weather = FunctionTool::fromCallable(
-    function (string $city): string {
-        return "Weather in {$city}: 72F, sunny";
-    }
-);
+function get_weather(string $city): string {
+    return "Weather in {$city}: 72F, sunny";
+}
 
-$calculator = FunctionTool::fromCallable(
-    function (string $expression): string {
-        return (string) eval("return {$expression};");
-    }
-);
+function calculate(string $expression): string {
+    return (string) eval("return {$expression};");
+}
 
-$tools = new Tools($weather, $calculator);
-// @doctest id="24af"
+$tools = new Tools(
+    FunctionTool::fromCallable(get_weather(...)),
+    FunctionTool::fromCallable(calculate(...)),
+);
+// @doctest id="481d"
 ```
 
 ## Agent with Tools
@@ -71,7 +71,7 @@ $loop = AgentLoop::default()->withTools($tools);
 $state = AgentState::empty()->withUserMessage('What is the weather in Paris?');
 $result = $loop->execute($state);
 // LLM calls the weather tool, gets result, then responds
-// @doctest id="c8a5"
+// @doctest id="7fa7"
 ```
 
 ## Tool Contracts
@@ -88,7 +88,7 @@ interface ToolInterface {
     public function toToolSchema(): array;           // JSON schema sent to LLM
     public function descriptor(): CanDescribeTool;   // metadata accessor
 }
-// @doctest id="84ad"
+// @doctest id="65cf"
 ```
 
 ### CanDescribeTool
@@ -102,7 +102,7 @@ interface CanDescribeTool {
     public function metadata(): array;       // summary for browsing/discovery
     public function instructions(): array;   // full specification with parameters
 }
-// @doctest id="c372"
+// @doctest id="698b"
 ```
 
 `metadata()` returns lightweight info (name, summary, namespace) for tool listings. `instructions()` returns the complete specification including parameters and return type.
@@ -127,7 +127,7 @@ class WeatherTool extends BaseTool
         return "Weather in {$city}: 72F, sunny";
     }
 }
-// @doctest id="e0b0"
+// @doctest id="fabe"
 ```
 
 See [Building Tools](06-building-tools.md) for the full guide on creating custom tools.

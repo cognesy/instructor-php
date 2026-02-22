@@ -40,7 +40,7 @@ class User {
 // See: /config/llm.php to check or change LLM client connection configuration details
 $structuredOutput = (new StructuredOutput)
     ->using('gemini');
-    //->withDebugPreset('detailed')
+    //->withHttpDebugPreset('detailed')
     //->wiretap(fn($e) => $e->printDebug());
 
 $user = $structuredOutput

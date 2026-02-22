@@ -29,7 +29,7 @@ it('empty returns empty list', function () {
 it('first returns first item', function () {
     $list = new SessionInfoList(makeInfo('s1'), makeInfo('s2'));
 
-    expect($list->first()->sessionId())->toBe('s1');
+    expect($list->first()->sessionId()->value)->toBe('s1');
 });
 
 it('all returns all items', function () {
@@ -46,11 +46,11 @@ it('filterByStatus filters correctly', function () {
 
     $active = $list->filterByStatus(SessionStatus::Active);
     expect($active->count())->toBe(1);
-    expect($active->first()->sessionId())->toBe('s1');
+    expect($active->first()->sessionId()->value)->toBe('s1');
 
     $susp = $list->filterByStatus(SessionStatus::Suspended);
     expect($susp->count())->toBe(1);
-    expect($susp->first()->sessionId())->toBe('s2');
+    expect($susp->first()->sessionId()->value)->toBe('s2');
 });
 
 it('filterByAgentName filters correctly', function () {
@@ -65,7 +65,7 @@ it('is iterable', function () {
     $list = new SessionInfoList(makeInfo('s1'), makeInfo('s2'));
     $ids = [];
     foreach ($list as $info) {
-        $ids[] = $info->sessionId();
+        $ids[] = $info->sessionId()->value;
     }
 
     expect($ids)->toBe(['s1', 's2']);
@@ -82,5 +82,5 @@ it('round-trips through toArray/fromArray', function () {
     $restored = SessionInfoList::fromArray($list->toArray());
 
     expect($restored->count())->toBe(2);
-    expect($restored->first()->sessionId())->toBe('s1');
+    expect($restored->first()->sessionId()->value)->toBe('s1');
 });

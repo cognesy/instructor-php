@@ -129,7 +129,7 @@ final class OpenCodeBridge implements AgentBridge
                         tool: $event->tool,
                         input: $event->input,
                         output: $event->output,
-                        callId: $event->callId,
+                        callId: $event->callId(),
                         isError: !$event->isCompleted(),
                     );
                     $toolCalls[] = $toolCall;
@@ -183,7 +183,7 @@ final class OpenCodeBridge implements AgentBridge
                         tool: $streamEvent->tool,
                         input: $streamEvent->input,
                         output: $streamEvent->output,
-                        callId: $streamEvent->callId,
+                        callId: $streamEvent->callId(),
                         isError: !$streamEvent->isCompleted(),
                     );
                     $toolUseCount++;

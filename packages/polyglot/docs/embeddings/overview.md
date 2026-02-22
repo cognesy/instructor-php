@@ -170,7 +170,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 // Create custom configuration
 $config = new EmbeddingsConfig(
     apiUrl: 'https://api.openai.com/v1',
-    apiKey: getenv('OPENAI_API_KEY'),
+    apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-large',
     dimensions: 3072,

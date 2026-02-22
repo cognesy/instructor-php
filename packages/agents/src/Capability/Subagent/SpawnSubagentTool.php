@@ -122,7 +122,7 @@ final class SpawnSubagentTool extends ContextAwareTool
         $parentAgentId = $this->agentState?->agentId() ?? new AgentId('00000000-0000-4000-8000-000000000000');
         $parentExecutionId = $this->agentState?->execution()?->executionId()->toString();
         $parentStepNumber = $this->agentState?->stepCount();
-        $toolCallId = $this->toolCall?->id();
+        $toolCallId = $this->toolCall?->id() !== null ? (string) $this->toolCall?->id() : null;
 
         $spawnStartedAt = new DateTimeImmutable();
         $this->emitSubagentSpawning(

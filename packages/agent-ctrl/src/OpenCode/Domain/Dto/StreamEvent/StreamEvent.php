@@ -16,21 +16,28 @@ use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
  */
 abstract readonly class StreamEvent
 {
-    public ?OpenCodeSessionId $sessionIdValue;
+    private ?OpenCodeSessionId $sessionId;
 
     public function __construct(
         public int $timestamp,
-        public string $sessionId,
+        OpenCodeSessionId|string|null $sessionId,
     ) {
-        $this->sessionIdValue = $sessionId !== ''
-            ? OpenCodeSessionId::fromString($sessionId)
-            : null;
+        $this->sessionId = match (true) {
+            $sessionId instanceof OpenCodeSessionId => $sessionId,
+            is_string($sessionId) && $sessionId !== '' => OpenCodeSessionId::fromString($sessionId),
+            default => null,
+        };
     }
 
     /**
      * Get the event type identifier
      */
     abstract public function type(): string;
+
+    public function sessionId(): ?OpenCodeSessionId
+    {
+        return $this->sessionId;
+    }
 
     /**
      * Factory method to create appropriate event from raw data

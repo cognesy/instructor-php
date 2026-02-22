@@ -3,13 +3,14 @@
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Value;
 
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * Value object representing an OpenCode model identifier
  *
  * OpenCode uses provider/model format (e.g., "anthropic/claude-sonnet-4-5")
  */
-final readonly class ModelId
+final readonly class ModelId implements Stringable
 {
     public function __construct(
         public string $provider,

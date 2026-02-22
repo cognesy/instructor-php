@@ -25,8 +25,12 @@ class RunInference implements CanRunExecution
     }
 
     public function withDebugPreset(?string $preset) : self {
+        return $this->withHttpDebugPreset($preset);
+    }
+
+    public function withHttpDebugPreset(?string $preset) : self {
         if ($preset !== null) {
-            $this->inferenceAdapter->withDebugPreset($preset);
+            $this->inferenceAdapter->withHttpDebugPreset($preset);
         }
         return $this;
     }

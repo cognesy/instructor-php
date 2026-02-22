@@ -10,7 +10,6 @@ use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\TextEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
-use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeMessageId;
 use Cognesy\Sandbox\Data\ExecResult;
 
 /**
@@ -61,8 +60,8 @@ final class ResponseParser
             $event = StreamEvent::fromArray($decoded);
 
             // Extract sessionID from first event
-            if ($sessionId === null && $event->sessionIdValue !== null) {
-                $sessionId = $event->sessionIdValue;
+            if ($sessionId === null && $event->sessionId() !== null) {
+                $sessionId = $event->sessionId();
             }
 
             // Accumulate text content
@@ -72,8 +71,9 @@ final class ResponseParser
 
             // Extract usage and cost from step_finish events
             if ($event instanceof StepFinishEvent) {
-                if ($event->messageId !== '') {
-                    $messageId = OpenCodeMessageId::fromString($event->messageId);
+                $eventMessageId = $event->messageId();
+                if ($eventMessageId !== null) {
+                    $messageId = $eventMessageId;
                 }
                 $totalCost += $event->cost;
 

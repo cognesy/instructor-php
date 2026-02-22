@@ -34,7 +34,7 @@ class DurationObserver implements CanGenerateObservations
             key: 'experiment.timeElapsed',
             value: $experiment->timeElapsed(),
             metadata: [
-                'experimentId' => $experiment->id(),
+                'experimentId' => $experiment->id()->toString(),
                 'unit' => 'seconds',
                 'format' => '%.2f',
                 'aggregationMethod' => 'sum',
@@ -48,7 +48,7 @@ class DurationObserver implements CanGenerateObservations
             key: 'execution.timeElapsed',
             value: $execution->timeElapsed(),
             metadata: [
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
                 'unit' => 'seconds',
                 'format' => '%.2f',
                 'aggregationMethod' => 'sum',

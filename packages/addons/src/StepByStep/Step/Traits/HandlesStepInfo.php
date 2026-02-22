@@ -2,6 +2,7 @@
 
 namespace Cognesy\Addons\StepByStep\Step\Traits;
 
+use Cognesy\Addons\StepByStep\Step\StepId;
 use Cognesy\Addons\StepByStep\Step\StepInfo;
 use DateTimeImmutable;
 
@@ -13,7 +14,7 @@ trait HandlesStepInfo
         return $this->stepInfo;
     }
 
-    public function id(): string {
+    public function id(): StepId {
         return $this->stepInfo->id();
     }
 

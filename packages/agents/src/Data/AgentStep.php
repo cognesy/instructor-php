@@ -84,12 +84,12 @@ final readonly class AgentStep
         return $this->errors->toMessagesString();
     }
 
-    public function id(): string {
-        return $this->id->toString();
+    public function id(): AgentStepId {
+        return $this->id;
     }
 
     public function stepId(): AgentStepId {
-        return $this->id;
+        return $this->id();
     }
 
     public function stepType(): AgentStepType {

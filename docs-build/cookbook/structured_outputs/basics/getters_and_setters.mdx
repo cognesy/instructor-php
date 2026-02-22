@@ -74,7 +74,7 @@ $text = <<<TEXT
 
 $user = (new StructuredOutput)
     ->using('openai')
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     ->withMessages($text)
     ->withResponseClass(UserWithSetter::class)
     ->withMaxRetries(2)

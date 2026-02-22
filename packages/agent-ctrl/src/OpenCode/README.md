@@ -53,7 +53,7 @@ $parser = new ResponseParser();
 $response = $parser->parse($result, OutputFormat::Json);
 
 // 5. Use response
-echo "Session ID: " . $response->sessionId() . "\n";
+echo "Session ID: " . (string) ($response->sessionId() ?? '') . "\n"; // Convert only at boundary
 echo "Exit code: " . $response->exitCode() . "\n";
 echo "Answer: " . $response->messageText() . "\n";
 
@@ -66,9 +66,9 @@ if ($response->cost()) {
     echo "Cost: $" . $response->cost() . "\n";
 }
 
-// Optional typed IDs for domain code:
-// $response->sessionIdValue(); // OpenCodeSessionId|null
-// $response->messageIdValue(); // OpenCodeMessageId|null
+// Typed IDs for domain code (preferred):
+// $response->sessionId(); // OpenCodeSessionId|null
+// $response->messageId(); // OpenCodeMessageId|null
 ```
 
 ## Streaming Output
@@ -101,7 +101,7 @@ $executor->executeStreaming($spec, function (string $type, string $chunk) {
 | `agent` | string | Named agent to use |
 | `files` | array | File paths to attach (repeatable) |
 | `continueSession` | bool | Continue the last session |
-| `sessionId` | string | Resume specific session by ID |
+| `sessionId` | OpenCodeSessionId\|string | Resume specific session by ID |
 | `share` | bool | Share the session after completion |
 | `title` | string | Session title |
 | `attachUrl` | string | Attach to running server (e.g., `http://localhost:4096`) |
@@ -122,10 +122,10 @@ When using JSON output format, these events are streamed:
 
 #### StepStartEvent
 ```php
-$event->sessionId;   // Session identifier
-$event->messageId;   // Message identifier
-$event->sessionIdValue; // OpenCodeSessionId|null
-$event->messageIdValue; // OpenCodeMessageId|null
+(string) ($event->sessionId() ?? ''); // Convert typed ID when needed
+(string) ($event->messageId() ?? ''); // Convert typed ID when needed
+$event->sessionId();       // OpenCodeSessionId|null
+$event->messageId();       // OpenCodeMessageId|null
 $event->snapshot;    // Git snapshot hash
 ```
 
@@ -139,8 +139,8 @@ $event->endTime;     // Timestamp when text generation ended
 #### ToolUseEvent
 ```php
 $event->tool;        // Tool name (read, bash, glob, etc.)
-$event->callId;      // Unique call identifier
-$event->callIdValue; // OpenCodeCallId|null
+(string) ($event->callId() ?? ''); // Convert typed ID when needed
+$event->callId();       // OpenCodeCallId|null
 $event->status;      // "completed" or "error"
 $event->input;       // Tool input arguments (array)
 $event->output;      // Tool output/result

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Experimental\NewModule\Tags;
 
+use Cognesy\Experimental\NewModule\ModelId;
 use Cognesy\Utils\TagMap\Contracts\TagInterface;
 
 /**
@@ -10,10 +11,6 @@ use Cognesy\Utils\TagMap\Contracts\TagInterface;
 final readonly class ModelTag implements TagInterface
 {
     public function __construct(
-        public string $modelId
-    ) {
-        if (empty($modelId)) {
-            throw new \InvalidArgumentException('Model ID cannot be empty');
-        }
-    }
+        public ModelId $modelId
+    ) {}
 }

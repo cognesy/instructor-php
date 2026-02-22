@@ -24,7 +24,7 @@ $yourLaravelClientInstance = new Factory();
 
 $user = (new StructuredOutput())
     ->using('openai')
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     //->wiretap(fn($e) => $e->print())
     ->withLLMConfigOverrides(['apiUrl' => 'https://api.openai.com/v1'])
     ->withClientInstance(

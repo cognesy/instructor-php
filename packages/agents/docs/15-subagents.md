@@ -29,6 +29,7 @@ use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\Subagent\UseSubagents;
+use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;

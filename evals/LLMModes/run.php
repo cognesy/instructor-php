@@ -63,7 +63,7 @@ $stream = [
 ];
 
 $executor = (new RunInference($data));
-//    ->withDebugPreset('on')
+//    ->withHttpDebugPreset('on')
 //    ->wiretap(fn($e) => $e->printLog());
 
 $experiment = new Experiment(

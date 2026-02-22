@@ -80,12 +80,7 @@ final readonly class OpenCodeResponse
     /**
      * Get session identifier
      */
-    public function sessionId(): ?string
-    {
-        return $this->sessionId?->toString();
-    }
-
-    public function sessionIdValue(): ?OpenCodeSessionId
+    public function sessionId(): ?OpenCodeSessionId
     {
         return $this->sessionId;
     }
@@ -93,12 +88,7 @@ final readonly class OpenCodeResponse
     /**
      * Get message identifier
      */
-    public function messageId(): ?string
-    {
-        return $this->messageId?->toString();
-    }
-
-    public function messageIdValue(): ?OpenCodeMessageId
+    public function messageId(): ?OpenCodeMessageId
     {
         return $this->messageId;
     }

@@ -40,15 +40,11 @@ final readonly class AgentSessionInfo
 
     // ACCESSORS ///////////////////////////////////////////////////
 
-    public function sessionId(): string {
-        return $this->sessionId->value;
+    public function sessionId(): SessionId {
+        return $this->sessionId;
     }
 
-    public function parentId(): ?string {
-        return $this->parentId?->toString();
-    }
-
-    public function parentIdValue(): ?SessionId {
+    public function parentId(): ?SessionId {
         return $this->parentId;
     }
 

@@ -172,7 +172,7 @@ $client = HttpClient::using('guzzle');
 // Or create with debug enabled
 $client = (new HttpClientBuilder())
     ->withPreset('guzzle')
-    ->withDebugPreset('on')
+    ->withHttpDebugPreset('on')
     ->create();
 ```
 

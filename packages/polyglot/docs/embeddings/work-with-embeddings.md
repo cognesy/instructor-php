@@ -206,7 +206,7 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;use Cognesy\Polyglot\Emb
 // Create custom configuration with a specific model
 $config = new EmbeddingsConfig(
     apiUrl: 'https://api.openai.com/v1',
-    apiKey: getenv('OPENAI_API_KEY'),
+    apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
     model: 'text-embedding-3-large',  // Use the larger model
     dimensions: 3072,                 // Specify expected dimensions

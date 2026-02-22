@@ -60,7 +60,7 @@ class ToolExecutionFormatter
                 default => var_export($value, true),
             },
             metadata: [
-                'tool_call_id' => $toolCall->id(),
+                'tool_call_id' => (string) ($toolCall->id() ?? ''),
                 'tool_name' => $toolCall->name(),
                 'result' => $value
             ]
@@ -72,11 +72,10 @@ class ToolExecutionFormatter
             role: 'tool',
             content: "Error in tool call: " . $result->errorMessage(),
             metadata: [
-                'tool_call_id' => $toolCall->id(),
+                'tool_call_id' => (string) ($toolCall->id() ?? ''),
                 'tool_name' => $toolCall->name(),
                 'result' => $result->error()
             ]
         );
     }
 }
-

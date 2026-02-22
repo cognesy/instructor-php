@@ -5,6 +5,7 @@ namespace Cognesy\AgentCtrl\OpenAICodex\Application\Dto;
 use Cognesy\AgentCtrl\Common\Value\PathList;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\ValueObject\CodexThreadId;
 
 /**
  * Request configuration for Codex CLI execution
@@ -14,6 +15,8 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
  */
 final readonly class CodexRequest
 {
+    private ?CodexThreadId $resumeSessionId;
+
     /**
      * @param string $prompt The prompt/query to send to Codex
      * @param OutputFormat $outputFormat Output format (Text or Json for JSONL streaming)
@@ -28,7 +31,7 @@ final readonly class CodexRequest
      * @param bool $fullAuto Shortcut: workspace-write + on-failure approvals
      * @param bool $dangerouslyBypass Skip all approvals and sandbox (DANGEROUS)
      * @param bool $skipGitRepoCheck Allow running outside git repository
-     * @param string|null $resumeSessionId Resume specific session by ID
+     * @param CodexThreadId|string|null $resumeSessionId Resume specific session by ID
      * @param bool $resumeLast Resume most recent session
      * @param array<string, string>|null $configOverrides Inline config overrides
      * @param string $colorMode Color output mode (always/never/auto)
@@ -47,11 +50,17 @@ final readonly class CodexRequest
         private bool $fullAuto = false,
         private bool $dangerouslyBypass = false,
         private bool $skipGitRepoCheck = false,
-        private ?string $resumeSessionId = null,
+        CodexThreadId|string|null $resumeSessionId = null,
         private bool $resumeLast = false,
         private ?array $configOverrides = null,
         private string $colorMode = 'never',
-    ) {}
+    ) {
+        $this->resumeSessionId = match (true) {
+            $resumeSessionId instanceof CodexThreadId => $resumeSessionId,
+            is_string($resumeSessionId) && $resumeSessionId !== '' => CodexThreadId::fromString($resumeSessionId),
+            default => null,
+        };
+    }
 
     public function prompt(): string {
         return $this->prompt;
@@ -108,7 +117,7 @@ final readonly class CodexRequest
         return $this->skipGitRepoCheck;
     }
 
-    public function resumeSessionId(): ?string {
+    public function resumeSessionId(): ?CodexThreadId {
         return $this->resumeSessionId;
     }
 
@@ -128,6 +137,6 @@ final readonly class CodexRequest
     }
 
     public function isResume(): bool {
-        return $this->resumeLast || ($this->resumeSessionId !== null && $this->resumeSessionId !== '');
+        return $this->resumeLast || $this->resumeSessionId !== null;
     }
 }

@@ -80,7 +80,7 @@ trait HandlesInvocation
         } else {
             $builder = new HttpClientBuilder(events: $this->events);
             if ($this->httpDebugPreset !== null) {
-                $builder = $builder->withDebugPreset($this->httpDebugPreset);
+                $builder = $builder->withHttpDebugPreset($this->httpDebugPreset);
             }
             $client = $builder->create();
         }

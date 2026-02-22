@@ -551,7 +551,7 @@ class StructuredOutput implements CanAcceptLLMConfig, CanCreateStructuredOutput
         }
         $builder = new HttpClientBuilder(events: $this->events);
         if ($this->httpDebugPreset !== null) {
-            $builder = $builder->withDebugPreset($this->httpDebugPreset);
+            $builder = $builder->withHttpDebugPreset($this->httpDebugPreset);
         }
         return $builder->create();
     }

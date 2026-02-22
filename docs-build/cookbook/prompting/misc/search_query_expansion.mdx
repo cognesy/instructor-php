@@ -75,7 +75,7 @@ The `responseModel` parameter specifies `Search::class` as the model to use for 
 <?php
 function segment(string $data) : Search {
     return (new StructuredOutput)
-        //->withDebugPreset('on')
+        //->withHttpDebugPreset('on')
         ->withMessages("Consider the data below: '\n$data' and segment it into multiple search queries")
         ->withResponseClass(Search::class)
         ->get();

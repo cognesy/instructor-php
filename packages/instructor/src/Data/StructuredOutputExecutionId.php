@@ -3,8 +3,9 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Utils\Uuid;
+use Stringable;
 
-final readonly class StructuredOutputExecutionId
+final readonly class StructuredOutputExecutionId implements Stringable
 {
     public function __construct(
         public string $value,

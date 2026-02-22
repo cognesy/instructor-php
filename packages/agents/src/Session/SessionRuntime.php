@@ -37,7 +37,7 @@ final readonly class SessionRuntime implements CanRunSessionRuntime
             $this->emitSave($saved);
             return $saved;
         } catch (Throwable $error) {
-            $this->emitSaveFailed($nextSession->sessionId(), $error);
+            $this->emitSaveFailed($nextSession->sessionId()->value, $error);
             throw $error;
         }
     }
@@ -68,7 +68,7 @@ final readonly class SessionRuntime implements CanRunSessionRuntime
 
     private function emitLoad(AgentSession $session): void {
         $this->events->dispatch(new SessionLoaded(
-            sessionId: $session->sessionId(),
+            sessionId: $session->sessionId()->value,
             version: $session->version(),
             status: $session->status()->value,
         ));
@@ -76,7 +76,7 @@ final readonly class SessionRuntime implements CanRunSessionRuntime
 
     private function emitExecute(AgentSession $before, AgentSession $after, CanExecuteSessionAction $action): void {
         $this->events->dispatch(new SessionActionExecuted(
-            sessionId: $after->sessionId(),
+            sessionId: $after->sessionId()->value,
             action: $action::class,
             beforeVersion: $before->version(),
             afterVersion: $after->version(),
@@ -87,7 +87,7 @@ final readonly class SessionRuntime implements CanRunSessionRuntime
 
     private function emitSave(AgentSession $session): void {
         $this->events->dispatch(new SessionSaved(
-            sessionId: $session->sessionId(),
+            sessionId: $session->sessionId()->value,
             version: $session->version(),
             status: $session->status()->value,
         ));

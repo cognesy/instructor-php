@@ -19,11 +19,13 @@ Immutable value object holding everything about an agent's session and execution
 
 **Session data** (persists across executions):
 - `agentId` - unique identifier
-- `context` - messages, system prompt, metadata
+- `context` - messages, system prompt, metadata, response format
 - `budget` - resource limits (steps, tokens, time)
 
 **Execution data** (transient, null between executions):
 - `execution` - current `ExecutionState` with steps, status, continuation signals
+
+`AgentState` is runtime state for a single agent loop. Persisted multi-request session concerns live in `AgentSession` / `SessionRuntime` (see [Session Runtime](16-session-runtime.md)).
 
 ```php
 $state = AgentState::empty()
@@ -34,7 +36,7 @@ $state = AgentState::empty()
 
 ## AgentContext
 
-Holds the conversation data: messages, system prompt, metadata, and response format. The driver's `CanCompileMessages` compiler transforms the context into the final `Messages` sent to the LLM.
+Holds the conversation data: messages, system prompt, metadata, and response format. The driver's `CanCompileMessages` compiler transforms the agent state into the final `Messages` sent to the LLM.
 
 ```php
 $state = AgentState::empty()

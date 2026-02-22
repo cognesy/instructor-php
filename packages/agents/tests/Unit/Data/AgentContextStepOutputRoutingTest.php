@@ -42,7 +42,7 @@ describe('AgentState::withCurrentStep metadata tagging', function () {
         $toolMsg = $allMessages->last();
         expect($toolMsg->toString())->toBe('tool result')
             ->and($toolMsg->metadata()->get('is_trace'))->toBeTrue()
-            ->and($toolMsg->metadata()->get('step_id'))->toBe($step->id())
+            ->and($toolMsg->metadata()->get('step_id'))->toBe($step->id()->toString())
             ->and($toolMsg->metadata()->get('agent_id'))->not->toBeEmpty()
             ->and($toolMsg->metadata()->get('execution_id'))->not->toBeEmpty();
     });
@@ -70,7 +70,7 @@ describe('AgentState::withCurrentStep metadata tagging', function () {
         // Final response has execution metadata but NOT is_trace
         $finalMsg = $main->last();
         expect($finalMsg->metadata()->get('is_trace'))->toBeNull()
-            ->and($finalMsg->metadata()->get('step_id'))->toBe($step->id())
+            ->and($finalMsg->metadata()->get('step_id'))->toBe($step->id()->toString())
             ->and($finalMsg->metadata()->get('execution_id'))->not->toBeEmpty();
     });
 

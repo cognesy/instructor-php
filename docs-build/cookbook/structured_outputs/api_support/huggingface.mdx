@@ -37,7 +37,7 @@ class User {
 // See: /config/llm.php to check or change LLM client connection configuration details
 $structuredOutput = (new StructuredOutput)
     ->using('huggingface');
-    //->withDebugPreset('on');
+    //->withHttpDebugPreset('on');
 
 $user = $structuredOutput
     ->with(

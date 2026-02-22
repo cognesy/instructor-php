@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
+
 /**
  * Fallback event for unrecognized event types
  */
@@ -9,7 +11,7 @@ final readonly class UnknownEvent extends StreamEvent
 {
     public function __construct(
         int $timestamp,
-        string $sessionId,
+        OpenCodeSessionId|string|null $sessionId,
         public string $rawType,
         public array $rawData,
     ) {

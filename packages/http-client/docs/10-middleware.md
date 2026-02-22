@@ -237,7 +237,7 @@ use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 $client->withMiddleware(new DebugMiddleware());
 
 // Or use the convenience method
-$client->withDebugPreset('on');
+$client->withHttpDebugPreset('on');
 ```
 
 The debug middleware logs:

@@ -11,19 +11,26 @@ use Cognesy\AgentCtrl\OpenAICodex\Domain\ValueObject\CodexThreadId;
  */
 final readonly class ThreadStartedEvent extends StreamEvent
 {
-    public ?CodexThreadId $threadIdValue;
+    private ?CodexThreadId $threadId;
 
     public function __construct(
-        public string $threadId,
+        CodexThreadId|string|null $threadId,
     ) {
-        $this->threadIdValue = $threadId !== ''
-            ? CodexThreadId::fromString($threadId)
-            : null;
+        $this->threadId = match (true) {
+            $threadId instanceof CodexThreadId => $threadId,
+            is_string($threadId) && $threadId !== '' => CodexThreadId::fromString($threadId),
+            default => null,
+        };
     }
 
     public function type(): string
     {
         return 'thread.started';
+    }
+
+    public function threadId(): ?CodexThreadId
+    {
+        return $this->threadId;
     }
 
     /**
@@ -32,7 +39,7 @@ final readonly class ThreadStartedEvent extends StreamEvent
     public static function fromArray(array $data): self
     {
         return new self(
-            threadId: (string)($data['thread_id'] ?? ''),
+            threadId: (string) ($data['thread_id'] ?? ''),
         );
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent;
 
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
+
 /**
  * Event emitted when an error occurs
  */
@@ -9,7 +11,7 @@ final readonly class ErrorEvent extends StreamEvent
 {
     public function __construct(
         int $timestamp,
-        string $sessionId,
+        OpenCodeSessionId|string|null $sessionId,
         public string $message,
         public ?string $code = null,
         public array $rawData = [],

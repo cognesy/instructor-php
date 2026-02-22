@@ -98,7 +98,7 @@ if ($response->hasToolCalls()) {
                         '_metadata' => [
                             'tool_calls' => [
                                 [
-                                    'id' => $call->id(),
+                                    'id' => $call->id()?->toString() ?? '',
                                     'function' => [
                                         'name' => $call->name(),
                                         'arguments' => $call->argsAsJson(),
@@ -111,7 +111,7 @@ if ($response->hasToolCalls()) {
                         'role' => 'tool',
                         'content' => json_encode($weatherData),
                         '_metadata' => [
-                            'tool_call_id' => $call->id(),
+                            'tool_call_id' => $call->id()?->toString() ?? '',
                             'tool_name' => $call->name(),
                         ],
                     ],
@@ -136,7 +136,7 @@ function simulateWeatherApi(string $location, string $unit): array {
         'humidity' => 65,
     ];
 }
-// @doctest id="2e37"
+// @doctest id="9323"
 ```
 
 ## Controlling Tool Usage
@@ -178,7 +178,7 @@ $noToolResponse = $inference->with(
     toolChoice: 'none',
     mode: OutputMode::Tools
 )->response();
-// @doctest id="90cf"
+// @doctest id="10ea"
 ```
 
 
@@ -250,7 +250,7 @@ if (!empty($toolName) && !empty($toolArgs)) {
         echo "Error parsing tool arguments: " . $e->getMessage() . "\n";
     }
 }
-// @doctest id="fb9a"
+// @doctest id="7801"
 ```
 
 

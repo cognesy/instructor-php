@@ -62,7 +62,7 @@ class TokenUsageObserver implements CanGenerateObservations
             'execution.tokens.cache' => $execution->usage()->cache(),
         ];
         foreach ($observations as $key => $value) {
-            yield $this->makeObservation('executionId', $execution->id(), $key, $value);
+            yield $this->makeObservation('executionId', $execution->id()->toString(), $key, $value);
         }
     }
 
@@ -80,7 +80,7 @@ class TokenUsageObserver implements CanGenerateObservations
             'experiment.tokens.cache' => $experiment->usage()->cache(),
         ];
         foreach ($observations as $key => $value) {
-            yield $this->makeObservation('experimentId', $experiment->id(), $key, $value);
+            yield $this->makeObservation('experimentId', $experiment->id()->toString(), $key, $value);
         }
     }
 

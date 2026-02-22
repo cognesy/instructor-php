@@ -28,7 +28,7 @@ final readonly class AgentSession
         return $this->state;
     }
 
-    public function sessionId(): string {
+    public function sessionId(): SessionId {
         return $this->header->sessionId();
     }
 

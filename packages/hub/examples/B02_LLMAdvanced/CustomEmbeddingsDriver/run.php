@@ -31,7 +31,7 @@ $query = "technology news";
 
 $config = new EmbeddingsConfig(
     apiUrl    : 'https://api.cohere.ai/v1',
-    apiKey    : Env::get('COHERE_API_KEY', ''),
+    apiKey    : (string) Env::get('COHERE_API_KEY', ''),
     endpoint  : '/embed',
     model     : 'embed-multilingual-v3.0',
     dimensions: 1024,

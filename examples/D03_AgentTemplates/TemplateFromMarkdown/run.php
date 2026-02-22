@@ -6,7 +6,9 @@ id: 'b2e4'
 ---
 ## Overview
 
-Load `AgentDefinition` from markdown frontmatter and execute it.
+Load `AgentDefinition` from a markdown file and execute it. The agent definition
+declares a tool allow-list in its frontmatter; tools are resolved from a `ToolRegistry`
+passed to `DefinitionLoopFactory`.
 
 ## Example
 
@@ -20,19 +22,69 @@ use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Template\AgentDefinitionLoader;
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
+use Cognesy\Agents\Tool\ToolRegistry;
+use Cognesy\Agents\Tool\Tools\BaseTool;
+use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\ToolSchema;
 
-$logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true, showContinuation: true);
+class CalculatorTool extends BaseTool
+{
+    public function __construct()
+    {
+        parent::__construct(
+            name: 'calculator',
+            description: 'Performs basic arithmetic on two numbers.',
+        );
+    }
+
+    public function __invoke(mixed ...$args): string
+    {
+        $a  = (float)  $this->arg($args, 'a', 0, 0);
+        $b  = (float)  $this->arg($args, 'b', 1, 0);
+        $op = (string) $this->arg($args, 'operation', 2, 'add');
+
+        return (string) match ($op) {
+            'add'      => $a + $b,
+            'subtract' => $a - $b,
+            'multiply' => $a * $b,
+            'divide'   => $b !== 0.0 ? $a / $b : 'Error: division by zero',
+            default    => "Error: unknown operation '{$op}'",
+        };
+    }
+
+    #[\Override]
+    public function toToolSchema(): array
+    {
+        return ToolSchema::make(
+            name: $this->name(),
+            description: $this->description(),
+            parameters: JsonSchema::object('parameters')
+                ->withProperties([
+                    JsonSchema::number('a', 'First operand'),
+                    JsonSchema::number('b', 'Second operand'),
+                    JsonSchema::string('operation', 'Operation: add, subtract, multiply, or divide'),
+                ])
+                ->withRequiredProperties(['a', 'b', 'operation'])
+        )->toArray();
+    }
+}
+
+$logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true, showContinuation: true, showToolArgs: true);
 
 $definition = (new AgentDefinitionLoader())
     ->loadFile('examples/D03_AgentTemplates/TemplateFromMarkdown/agent.md');
 
 $capabilities = new AgentCapabilityRegistry();
 
-$loop = (new DefinitionLoopFactory($capabilities))
+$tools = new ToolRegistry();
+$tools->register(new CalculatorTool());
+
+$loop = (new DefinitionLoopFactory($capabilities, $tools))
     ->instantiateAgentLoop($definition)
     ->wiretap($logger->wiretap());
 
-$seed = AgentState::empty()->withUserMessage('Name one famous landmark in Paris.');
+$question = 'What is 1337 multiplied by 42?';
+$seed = AgentState::empty()->withUserMessage($question);
 $state = (new DefinitionStateFactory())->instantiateAgentState($definition, $seed);
 
 echo "=== Agent Execution Log ===\n\n";
@@ -40,6 +92,7 @@ $final = $loop->execute($state);
 
 echo "\n=== Result ===\n";
 echo "Template: {$definition->name}\n";
+echo "Question: {$question}\n";
 echo 'Answer: ' . ($final->finalResponse()->toString() ?: 'No response') . "\n";
 echo 'Status: ' . $final->status()->value . "\n";
 

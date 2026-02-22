@@ -12,7 +12,8 @@ Tools let the agent take actions. The LLM decides which tool to call and with wh
 Pass tools to the `Tools` collection:
 
 ```php
-use Cognesy\Agents\Collections\Tools;use Cognesy\Agents\Tool\Tools\MockTool;
+use Cognesy\Agents\Collections\Tools;
+use Cognesy\Agents\Tool\Tools\MockTool;
 
 $calculator = MockTool::returning('calculator', 'Performs math', '42');
 $tools = new Tools($calculator);
@@ -20,16 +21,16 @@ $tools = new Tools($calculator);
 
 ## Using FunctionTool
 
-Wrap any callable as a tool. Parameter schema is auto-generated from the function signature:
+Wrap any callable as a tool. The tool name and parameter schema are auto-generated from the function signature. Use a named function so the tool gets a meaningful name:
 
 ```php
 use Cognesy\Agents\Tool\Tools\FunctionTool;
 
-$tool = FunctionTool::fromCallable(
-    function (string $city): string {
-        return "Weather in {$city}: 72F, sunny";
-    }
-);
+function get_weather(string $city): string {
+    return "Weather in {$city}: 72F, sunny";
+}
+
+$tool = FunctionTool::fromCallable(get_weather(...));
 
 $tools = new Tools($tool);
 ```
@@ -42,19 +43,18 @@ Pass multiple tools to `Tools` and the LLM chooses which to call:
 use Cognesy\Agents\Tool\Tools\FunctionTool;
 use Cognesy\Agents\Collections\Tools;
 
-$weather = FunctionTool::fromCallable(
-    function (string $city): string {
-        return "Weather in {$city}: 72F, sunny";
-    }
-);
+function get_weather(string $city): string {
+    return "Weather in {$city}: 72F, sunny";
+}
 
-$calculator = FunctionTool::fromCallable(
-    function (string $expression): string {
-        return (string) eval("return {$expression};");
-    }
-);
+function calculate(string $expression): string {
+    return (string) eval("return {$expression};");
+}
 
-$tools = new Tools($weather, $calculator);
+$tools = new Tools(
+    FunctionTool::fromCallable(get_weather(...)),
+    FunctionTool::fromCallable(calculate(...)),
+);
 ```
 
 ## Agent with Tools

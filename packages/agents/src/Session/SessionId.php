@@ -3,8 +3,9 @@
 namespace Cognesy\Agents\Session;
 
 use Cognesy\Utils\Uuid;
+use Stringable;
 
-final readonly class SessionId
+final readonly class SessionId implements Stringable
 {
     private const PATTERN = '/\A[a-zA-Z0-9][a-zA-Z0-9_\-]*\z/';
 

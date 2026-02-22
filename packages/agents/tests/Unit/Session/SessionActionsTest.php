@@ -102,8 +102,8 @@ it('fork session action returns new forked session with parent id', function () 
 
     $forked = (new ForkSession(SessionId::from('forked-session')))->executeOn($session);
 
-    expect($forked->sessionId())->toBe('forked-session');
-    expect($forked->info()->parentId())->toBe('parent-session');
+    expect($forked->sessionId()->value)->toBe('forked-session');
+    expect($forked->info()->parentId()?->value)->toBe('parent-session');
     expect($forked->status())->toBe(SessionStatus::Active);
 });
 

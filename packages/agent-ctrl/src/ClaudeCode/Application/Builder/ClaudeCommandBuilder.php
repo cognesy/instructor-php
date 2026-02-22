@@ -9,6 +9,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\Sandbox\Value\Argv;
 use Cognesy\Sandbox\Value\CommandSpec;
 use Cognesy\Sandbox\Utils\ProcUtils;
+use Stringable;
 
 final class ClaudeCommandBuilder
 {
@@ -154,14 +155,16 @@ final class ClaudeCommandBuilder
         return $argv->with('--dangerously-skip-permissions');
     }
 
-    private function appendSessionFlags(Argv $argv, bool $continueMostRecent, ?string $resumeSessionId) : Argv {
+    private function appendSessionFlags(Argv $argv, bool $continueMostRecent, string|Stringable|null $resumeSessionId) : Argv {
+        $resumeValue = $resumeSessionId !== null ? (string) $resumeSessionId : null;
+
         if ($continueMostRecent) {
             return $argv->with('--continue');
         }
-        if ($resumeSessionId !== null && trim($resumeSessionId) !== '') {
+        if ($resumeValue !== null && trim($resumeValue) !== '') {
             return $argv
                 ->with('--resume')
-                ->with($resumeSessionId);
+                ->with($resumeValue);
         }
         return $argv;
     }
@@ -227,14 +230,16 @@ final class ClaudeCommandBuilder
         throw new \InvalidArgumentException("model contains unsupported characters: {$model}");
     }
 
-    private function validateSessionId(?string $sessionId) : void {
-        if ($sessionId === null || trim($sessionId) === '') {
+    private function validateSessionId(string|Stringable|null $sessionId) : void {
+        $sessionValue = $sessionId !== null ? (string) $sessionId : null;
+
+        if ($sessionValue === null || trim($sessionValue) === '') {
             return;
         }
-        if (preg_match('/^[A-Za-z0-9._:\\/-]+$/', $sessionId) === 1) {
+        if (preg_match('/^[A-Za-z0-9._:\\/-]+$/', $sessionValue) === 1) {
             return;
         }
-        throw new \InvalidArgumentException("resumeSessionId contains unsupported characters: {$sessionId}");
+        throw new \InvalidArgumentException("resumeSessionId contains unsupported characters: {$sessionValue}");
     }
 
     /**

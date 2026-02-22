@@ -4,12 +4,15 @@ namespace Cognesy\AgentCtrl\OpenCode\Application\Dto;
 
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\ModelId;
+use Cognesy\AgentCtrl\OpenCode\Domain\ValueObject\OpenCodeSessionId;
 
 /**
  * Request configuration for OpenCode CLI run command
  */
 final readonly class OpenCodeRequest
 {
+    private ?OpenCodeSessionId $sessionId;
+
     /**
      * @param string $prompt The message/prompt to send
      * @param OutputFormat $outputFormat Output format (default or json)
@@ -17,7 +20,7 @@ final readonly class OpenCodeRequest
      * @param string|null $agent Named agent to use
      * @param list<string>|null $files File paths to attach
      * @param bool $continueSession Continue the last session
-     * @param string|null $sessionId Specific session ID to continue
+     * @param OpenCodeSessionId|string|null $sessionId Specific session ID to continue
      * @param bool $share Share the session after completion
      * @param string|null $title Session title
      * @param string|null $attachUrl Attach to running server URL
@@ -31,13 +34,19 @@ final readonly class OpenCodeRequest
         private ?string $agent = null,
         private ?array $files = null,
         private bool $continueSession = false,
-        private ?string $sessionId = null,
+        OpenCodeSessionId|string|null $sessionId = null,
         private bool $share = false,
         private ?string $title = null,
         private ?string $attachUrl = null,
         private ?int $port = null,
         private ?string $command = null,
-    ) {}
+    ) {
+        $this->sessionId = match (true) {
+            $sessionId instanceof OpenCodeSessionId => $sessionId,
+            is_string($sessionId) && $sessionId !== '' => OpenCodeSessionId::fromString($sessionId),
+            default => null,
+        };
+    }
 
     public function prompt(): string
     {
@@ -85,7 +94,7 @@ final readonly class OpenCodeRequest
         return $this->continueSession;
     }
 
-    public function sessionId(): ?string
+    public function sessionId(): ?OpenCodeSessionId
     {
         return $this->sessionId;
     }
@@ -120,6 +129,6 @@ final readonly class OpenCodeRequest
      */
     public function isResume(): bool
     {
-        return $this->continueSession || ($this->sessionId !== null && $this->sessionId !== '');
+        return $this->continueSession || $this->sessionId !== null;
     }
 }

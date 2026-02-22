@@ -15,7 +15,7 @@ final readonly class ForkSession implements CanExecuteSessionAction
 
     #[\Override]
     public function executeOn(AgentSession $session): AgentSession {
-        $parentId = SessionId::from($session->sessionId());
+        $parentId = $session->sessionId();
         $forkedId = $this->forkedSessionId ?? SessionId::generate();
 
         return new AgentSession(

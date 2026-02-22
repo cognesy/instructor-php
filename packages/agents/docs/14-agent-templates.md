@@ -133,9 +133,9 @@ use Cognesy\Agents\Template\Data\AgentDefinition;
 
 class TomlDefinitionParser implements CanParseAgentDefinition
 {
-    public function parse(string $content): AgentDefinition
+    public function parse(mixed $data): AgentDefinition
     {
-        $data = toml_parse($content);
+        $data = toml_parse($data);
         return AgentDefinition::fromArray($data);
     }
 }
@@ -159,7 +159,7 @@ Creates an `AgentState` from a definition:
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
-$state = $factory->create($definition);
+$state = $factory->instantiateAgentState($definition);
 // AgentState with systemPrompt, budget, and metadata from definition
 ```
 
@@ -170,12 +170,28 @@ Creates an `AgentLoop` from a definition using `AgentBuilder` and a capability r
 ```php
 use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
+use Cognesy\Agents\Capability\Bash\UseBash;
 
 $capabilities = new AgentCapabilityRegistry();
 // register capabilities that definitions can reference by name
+$capabilities->register('use_bash', new UseBash());
 
 $factory = new DefinitionLoopFactory($capabilities);
-$loop = $factory->create($definition);
+$loop = $factory->instantiateAgentLoop($definition);
+```
+
+If definitions reference named tools (`tools` / `toolsDeny`), provide a tool registry to `DefinitionLoopFactory`:
+
+```php
+use Cognesy\Agents\Tool\ToolRegistry;
+
+$tools = new ToolRegistry();
+$tools->register($searchTool); // name is derived from the tool's descriptor
+
+$factory = new DefinitionLoopFactory(
+    capabilities: $capabilities,
+    tools: $tools,
+);
 ```
 
 ## Using with Subagents
@@ -192,6 +208,17 @@ $agent = AgentBuilder::base()
 ```
 
 When the agent spawns a subagent by name, the registry provides the definition, and the factory creates the corresponding loop and state.
+
+## Runtime Boundary
+
+Templates are stateless configuration. They answer:
+- which system prompt / budget / model to use
+- which capabilities and tools should be installed
+
+Templates do not persist run state. To persist and resume executions over time, combine templates with sessions:
+1. Load/resolve `AgentDefinition`.
+2. Create initial `AgentSession` with `SessionFactory`.
+3. Execute actions through `SessionRuntime` (e.g. `SendMessage`).
 
 ## Serialization
 

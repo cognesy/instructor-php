@@ -10,7 +10,8 @@ The simplest agent uses `AgentLoop` to send a message and get a response.
 ## Hello World
 
 ```php
-use Cognesy\Agents\AgentLoop;use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\AgentLoop;
+use Cognesy\Agents\Data\AgentState;
 
 $loop = AgentLoop::default();
 $state = AgentState::empty()->withUserMessage('What is 2+2?');
@@ -18,7 +19,7 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "2 + 2 equals 4."
-// @doctest id="1d3f"
+// @doctest id="84f9"
 ```
 
 ## What Happens
@@ -50,26 +51,29 @@ $result = $loop->execute($state);
 
 echo $result->finalResponse()->toString();
 // "The weather in Paris is 72°F and sunny."
-// @doctest id="b442"
+// @doctest id="775c"
 ```
 
 ## Customizing the Loop
 
-Use `with()` to swap components on the default loop:
+Add a tool to a default loop:
+
+```php
+$loop = AgentLoop::default()->withTool($myTool);
+// @doctest id="93aa"
+```
+
+Swap the driver to use ReAct reasoning:
 
 ```php
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
-use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-// Add tools
-$loop = AgentLoop::default()->withTool($myTool);
-
-// Swap driver
-$events = EventBusResolver::using(null);
+$events = new EventDispatcher();
 $inference = InferenceRuntime::fromProvider(LLMProvider::new(), events: $events);
 $structuredOutput = new StructuredOutputRuntime(
     inference: $inference,
@@ -81,7 +85,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(
     structuredOutput: $structuredOutput,
     model: 'gpt-4o',
 ));
-// @doctest id="8d2a"
+// @doctest id="7d26"
 ```
 
 ## System Prompt
@@ -90,7 +94,7 @@ $loop = AgentLoop::default()->withDriver(new ReActDriver(
 $state = AgentState::empty()
     ->withSystemPrompt('You are a helpful assistant.')
     ->withUserMessage('Hello!');
-// @doctest id="87f7"
+// @doctest id="e94d"
 ```
 
 ## Using AgentBuilder
@@ -110,7 +114,11 @@ $agent = AgentBuilder::base()
     ->build();
 
 $result = $agent->execute($state);
-// @doctest id="6842"
+// @doctest id="676e"
 ```
 
 See [AgentBuilder & Capabilities](13-agent-builder.md) for details.
+
+When agent configuration should come from files, see [Agent Templates](14-agent-templates.md).
+
+When you need persisted, resumable agent state across requests/processes, see [Session Runtime](16-session-runtime.md).

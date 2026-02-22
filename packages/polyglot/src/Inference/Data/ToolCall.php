@@ -62,11 +62,7 @@ final readonly class ToolCall
 
     // ACCESSORS ///////////////////////////////////////////////////
 
-    public function id() : string {
-        return $this->id?->toString() ?? '';
-    }
-
-    public function idValue() : ?ToolCallId {
+    public function id() : ?ToolCallId {
         return $this->id;
     }
 
@@ -100,13 +96,13 @@ final readonly class ToolCall
         return [
             'name' => $this->name,
             'arguments' => $this->arguments,
-            'id' => $this->id(),
+            'id' => (string) ($this->id() ?? ''),
         ];
     }
 
     public function toToolCallArray() : array {
         return [
-            'id' => $this->id(),
+            'id' => (string) ($this->id() ?? ''),
             'type' => 'function',
             'function' => [
                 'name' => $this->name,

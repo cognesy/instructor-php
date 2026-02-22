@@ -90,7 +90,7 @@ describe('message persistence', function () {
         $newStorage = new JsonlStorage($this->tempDir);
         $reloaded = $newStorage->get($sessionId, $msg2->id());
 
-        expect($reloaded->parentId()?->toString())->toBe($msg1->id()->toString());
+        expect((string) ($reloaded->parentId() ?? ''))->toBe($msg1->id()->toString());
     });
 });
 
@@ -104,7 +104,7 @@ describe('branching with JSONL', function () {
         $this->storage->navigateTo($sessionId, $msg1->id());
         $msg3 = $this->storage->append($sessionId, 'messages', new Message('user', 'Branch'));
 
-        expect($msg3->parentId()?->toString())->toBe($msg1->id()->toString());
+        expect((string) ($msg3->parentId() ?? ''))->toBe($msg1->id()->toString());
     });
 
     test('getPath follows parentId chain', function () {

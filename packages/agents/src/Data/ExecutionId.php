@@ -3,8 +3,9 @@
 namespace Cognesy\Agents\Data;
 
 use Cognesy\Utils\Uuid;
+use Stringable;
 
-final readonly class ExecutionId
+final readonly class ExecutionId implements Stringable
 {
     public function __construct(
         public string $value,

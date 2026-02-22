@@ -5,13 +5,14 @@ namespace Cognesy\Evals\Traits\Experiment;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observation\SelectObservations;
+use Cognesy\Evals\ValueObject\ExperimentId;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Data\DataMap;
 use DateTime;
 
 trait HandlesAccess
 {
-    public function id() : string {
+    public function id() : ExperimentId {
         return $this->id;
     }
 

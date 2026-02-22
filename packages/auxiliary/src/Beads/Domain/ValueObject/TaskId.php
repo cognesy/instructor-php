@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cognesy\Auxiliary\Beads\Domain\ValueObject;
 
 use InvalidArgumentException;
+use Stringable;
 
 /**
  * Task Identifier Value Object
@@ -14,7 +15,7 @@ use InvalidArgumentException;
  *
  * @psalm-immutable
  */
-final readonly class TaskId
+final readonly class TaskId implements Stringable
 {
     /**
      * @param  string  $value  The task ID in format: {project}-{hash}

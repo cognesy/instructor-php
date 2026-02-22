@@ -24,7 +24,7 @@ function makeSession(
 it('assembles immutable aggregate', function () {
     $session = makeSession();
 
-    expect($session->sessionId())->toBe('s1');
+    expect($session->sessionId()->value)->toBe('s1');
     expect($session->status())->toBe(SessionStatus::Active);
     expect($session->version())->toBe(0);
     expect($session->definition()->name)->toBe('agent');
@@ -91,7 +91,7 @@ it('withParentId updates parent', function () {
     $session = makeSession();
     $withParent = $session->withParentId(new SessionId('parent-1'));
 
-    expect($withParent->info()->parentId())->toBe('parent-1');
+    expect($withParent->info()->parentId()?->value)->toBe('parent-1');
     expect($session->info()->parentId())->toBeNull();
 });
 
@@ -108,7 +108,7 @@ it('round-trips through toArray/fromArray', function () {
     $data = $session->toArray();
     $restored = AgentSession::fromArray($data);
 
-    expect($restored->sessionId())->toBe($session->sessionId());
+    expect($restored->sessionId()->value)->toBe($session->sessionId()->value);
     expect($restored->status())->toBe($session->status());
     expect($restored->version())->toBe($session->version());
     expect($restored->definition()->name)->toBe($session->definition()->name);

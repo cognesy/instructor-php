@@ -27,7 +27,7 @@ $schema = JsonSchema::object(
 );
 
 $user = (new StructuredOutput)
-    ->withDebugPreset('on')
+    ->withHttpDebugPreset('on')
     ->withMessages("Jason is 25 years old and works as an engineer")
     ->withResponseJsonSchema($schema)
     ->withDeserializers()

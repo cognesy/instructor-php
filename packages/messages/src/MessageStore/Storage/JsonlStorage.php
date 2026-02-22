@@ -136,7 +136,7 @@ class JsonlStorage implements CanStoreMessages
                     $entry = [
                         'type' => 'message',
                         'id' => $messageId,
-                        'parentId' => $message->parentId()?->toString(),
+                        'parentId' => $message->parentId() !== null ? (string) $message->parentId() : null,
                         'section' => $section->name(),
                         'timestamp' => $message->createdAt->format(DateTimeImmutable::ATOM),
                         'data' => $message->toArray(),
@@ -213,7 +213,7 @@ class JsonlStorage implements CanStoreMessages
         $entry = [
             'type' => 'message',
             'id' => $messageId,
-            'parentId' => $message->parentId()?->toString(),
+            'parentId' => $message->parentId() !== null ? (string) $message->parentId() : null,
             'section' => $section,
             'timestamp' => $message->createdAt->format(DateTimeImmutable::ATOM),
             'data' => $message->toArray(),
@@ -348,7 +348,7 @@ class JsonlStorage implements CanStoreMessages
         $entry = [
             'type' => 'label',
             'id' => Uuid::uuid4(),
-            'parentId' => $this->sessions[$sessionKey]['leafId']?->toString(),
+            'parentId' => $this->sessions[$sessionKey]['leafId'] !== null ? (string) $this->sessions[$sessionKey]['leafId'] : null,
             'targetId' => $messageIdString,
             'label' => $label,
             'timestamp' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),

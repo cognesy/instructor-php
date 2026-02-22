@@ -3,8 +3,9 @@
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Utils\Uuid;
+use Stringable;
 
-final readonly class InferenceRequestId
+final readonly class InferenceRequestId implements Stringable
 {
     public function __construct(
         public string $value,

@@ -306,7 +306,7 @@ final readonly class Message
         return array_filter([
             'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
-            'parentId' => $this->parentId?->toString(),
+            'parentId' => $this->parentId !== null ? (string) $this->parentId : null,
             'role' => $this->role,
             'name' => $this->name,
             'content' => match (true) {

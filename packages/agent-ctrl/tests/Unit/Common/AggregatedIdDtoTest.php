@@ -14,9 +14,9 @@ it('hydrates aggregated tool call id as opaque value object', function () {
         callId: 'call_123',
     );
 
-    expect($toolCall->callId)->toBe('call_123')
-        ->and($toolCall->callIdValue)->toBeInstanceOf(AgentToolCallId::class)
-        ->and($toolCall->callIdValue?->toString())->toBe('call_123');
+    expect((string) ($toolCall->callId() ?? ''))->toBe('call_123')
+        ->and($toolCall->callId())->toBeInstanceOf(AgentToolCallId::class)
+        ->and((string) ($toolCall->callId() ?? ''))->toBe('call_123');
 });
 
 it('hydrates aggregated response session id as opaque value object', function () {
@@ -27,7 +27,7 @@ it('hydrates aggregated response session id as opaque value object', function ()
         sessionId: 'session_abc',
     );
 
-    expect($response->sessionId)->toBe('session_abc')
-        ->and($response->sessionIdValue)->toBeInstanceOf(AgentSessionId::class)
-        ->and($response->sessionIdValue?->toString())->toBe('session_abc');
+    expect((string) ($response->sessionId() ?? ''))->toBe('session_abc')
+        ->and($response->sessionId())->toBeInstanceOf(AgentSessionId::class)
+        ->and((string) ($response->sessionId() ?? ''))->toBe('session_abc');
 });

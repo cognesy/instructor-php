@@ -7,6 +7,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\InputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
 use Cognesy\AgentCtrl\Common\Value\PathList;
+use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 
 final class ClaudeRequestBuilder
 {
@@ -25,7 +26,7 @@ final class ClaudeRequestBuilder
     private bool $verbose = false;
     private ?string $permissionPromptTool = null;
     private bool $dangerouslySkipPermissions = false;
-    private ?string $resumeSessionId = null;
+    private ?AgentSessionId $resumeSessionId = null;
     private bool $continueMostRecent = false;
     private ?string $stdin = null;
 
@@ -108,8 +109,12 @@ final class ClaudeRequestBuilder
         return $this;
     }
 
-    public function withResumeSessionId(?string $resumeSessionId) : self {
-        $this->resumeSessionId = $resumeSessionId;
+    public function withResumeSessionId(AgentSessionId|string|null $resumeSessionId) : self {
+        $this->resumeSessionId = match (true) {
+            $resumeSessionId instanceof AgentSessionId => $resumeSessionId,
+            is_string($resumeSessionId) && $resumeSessionId !== '' => AgentSessionId::fromString($resumeSessionId),
+            default => null,
+        };
         return $this;
     }
 

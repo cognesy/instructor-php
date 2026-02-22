@@ -20,7 +20,7 @@ use Cognesy\Utils\Str;
 
 // EXAMPLE 1: regular API, allows to customize inference options
 $response = (new Inference)
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     //->wiretap(fn($e) => $e->print())
     ->using('deepseek-r')
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France. Answer with just a name.']])
@@ -38,7 +38,7 @@ assert($response->reasoningContent() !== '');
 
 // EXAMPLE 2: streaming response
 $stream = (new Inference)
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     //->wiretap(fn($e) => $e->print())
     ->using('deepseek-r') // optional, default is set in /config/llm.php
     ->with(

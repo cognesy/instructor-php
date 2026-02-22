@@ -290,7 +290,7 @@ use Cognesy\Polyglot\Inference\Inference;
 // Create a custom configuration
 $customConfig = new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
-    apiKey: getenv('OPENAI_API_KEY'),
+    apiKey: (string) getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
     model: 'gpt-4-turbo',
     maxTokens: 2048,
@@ -382,7 +382,7 @@ LLM::registerDriver(
 // in configuration we use newly defined provider type - 'custom-driver'
 $config = new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
-    apiKey: Env::get('OPENAI_API_KEY'),
+    apiKey: (string) Env::get('OPENAI_API_KEY', ''),
     endpoint: '/chat/completions',
     model: 'gpt-4o-mini',
     maxTokens: 128,

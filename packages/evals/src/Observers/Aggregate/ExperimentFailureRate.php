@@ -21,7 +21,7 @@ class ExperimentFailureRate implements CanObserveExperiment
             key: 'experiment.failureRate',
             value: $this->metrics($experiment)->failureRate,
             metadata: [
-                'experimentId' => $experiment->id(),
+                'experimentId' => $experiment->id()->toString(),
                 'unit' => 'fraction',
                 'format' => '%.2f',
                 'failed' => $this->metrics($experiment)->failed,

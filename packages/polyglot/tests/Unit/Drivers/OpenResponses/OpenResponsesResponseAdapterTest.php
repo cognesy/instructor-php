@@ -107,7 +107,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
 
         $toolCall = $toolCalls->first();
         $this->assertEquals('get_weather', $toolCall->name());
-        $this->assertEquals('call_abc', $toolCall->id());
+        $this->assertEquals('call_abc', $toolCall->id()?->toString());
         $this->assertEquals('NYC', $toolCall->args()['location']);
     }
 
@@ -415,7 +415,7 @@ class OpenResponsesResponseAdapterTest extends TestCase
         $toolCalls = $last->toolCalls();
         $this->assertTrue($toolCalls->hasAny());
         $toolCall = $toolCalls->first();
-        $this->assertEquals('call_1', $toolCall->id());
+        $this->assertEquals('call_1', $toolCall->id()?->toString());
         $this->assertEquals('get_weather', $toolCall->name());
         $this->assertEquals('Paris', $toolCall->args()['city']);
     }

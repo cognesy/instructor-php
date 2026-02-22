@@ -100,8 +100,8 @@ class TokenLimitCompiler implements CanCompileMessages
         $tokens = 0;
 
         // Walk backwards, keeping recent messages first
-        foreach (array_reverse($messages->toArray()) as $message) {
-            $estimate = (int) ceil(strlen($message->content()) / 4);
+        foreach (array_reverse($messages->all()) as $message) {
+            $estimate = (int) ceil(strlen($message->content()->toString()) / 4);
             if ($tokens + $estimate > $this->maxTokens) {
                 break;
             }
@@ -109,7 +109,7 @@ class TokenLimitCompiler implements CanCompileMessages
             array_unshift($kept, $message);
         }
 
-        return Messages::fromArray($kept);
+        return new Messages(...$kept);
     }
 }
 ```

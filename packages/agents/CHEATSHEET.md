@@ -14,7 +14,7 @@ Root namespace: `Cognesy\Agents`
 **AgentLoop lifecycle hooks** (called internally via `CanInterceptAgentLifecycle`):
 `onBeforeExecution` → `onBeforeStep` → `handleToolUse` → `onAfterStep` → `shouldStop` → `onStop` → `onAfterExecution` → `onError`
 
-**AgentLoop public API**: `execute()`, `iterate()`, `wiretap()`, `onEvent()`, `tools()`, `driver()`, `withTool()`, `withTools()`, `withDriver()`, `withInterceptor()`, `with()`
+**AgentLoop public API**: `execute()`, `iterate()`, `wiretap()`, `onEvent()`, `tools()`, `driver()`, `toolExecutor()`, `eventHandler()`, `interceptor()`, `withTool()`, `withTools()`, `withDriver()`, `withToolExecutor()`, `withInterceptor()`, `withEventHandler()`, `with()`
 
 ---
 
@@ -22,11 +22,11 @@ Root namespace: `Cognesy\Agents`
 
 | Class | Role |
 |---|---|
-| `AgentState` | Immutable session+execution state. Session: `agentId`, `parentAgentId`, `createdAt`, `updatedAt`, `context: AgentContext`, `budget: AgentBudget`. Execution: `?ExecutionState`. Key methods: `withCurrentStep()`, `withStopSignal()`, `withFailure()`, `finalResponse()`, `currentResponse()`, `debug()`. `forNextExecution()` resets execution while preserving session — called automatically by `AgentLoop` for terminal states. Serializable via `toArray()`/`fromArray()`. |
+| `AgentState` | Immutable session+execution state. Named constructor: `empty()`. Key setup mutators: `withUserMessage()`, `withSystemPrompt()`, `withBudget()`, `withLLMConfig()`, `withMetadata()`. Key output accessors: `finalResponse()`, `currentResponse()`, `usage()`, `stepCount()`, `errors()`, `shouldStop()`. `forNextExecution()` resets execution while preserving session — called automatically by `AgentLoop` for terminal states. Serializable via `toArray()`/`fromArray()`. |
 | `ExecutionState` | Per-execution transient data: `executionId`, `status`, steps, continuation, timing. `fresh()` factory creates new UUID. |
 | `AgentStep` | Single step result: `id`, `stepType: AgentStepType`, `outputMessages`, `toolExecutions`, `errors`, `usage`, `finishReason`. |
 | `StepExecution` | Wraps `AgentStep` with timing (`startedAt`, `completedAt`, `duration`) and continuation state. |
-| `ToolExecution` | Records one tool call result: `toolCall`, `result`, `wasBlocked`, `error`. |
+| `ToolExecution` | Records one tool call result. Wraps `ToolCall` + `Result` + timing (`startedAt`, `completedAt`). `wasBlocked()`, `hasError()`, `error()`, `errorMessage()`, `value()` are computed from `Result`. `blocked()` static factory for hook-blocked calls. |
 | `AgentBudget` | Resource limits: `?maxSteps`, `?maxTokens`, `?maxSeconds`, `?maxCost`, `?deadline`. `unlimited()`, `remaining()`, `cappedBy()`, `isExhausted()`. |
 
 ---
@@ -99,11 +99,31 @@ Root namespace: `Cognesy\Agents`
 
 ### Implementations (`\Tool\Tools`)
 
+Class hierarchy:
+```
+SimpleTool               – base; implements ToolInterface + CanDescribeTool; manual schema; HasArgs ($this->arg())
+├── ReflectiveSchemaTool – adds HasReflectiveSchema (auto-schema from typed __invoke())
+│   └── FunctionTool     – wraps any callable; fromCallable() factory
+└── StateAwareTool       – adds HasAgentState ($this->agentState)
+    ├── BaseTool         – agent state + manual toToolSchema()  ← use for most custom tools
+    └── ContextAwareTool – manual schema + agent state + HasToolCall ($this->toolCall)
+```
+
 | Class | Role |
 |---|---|
-| `BaseTool` | Abstract base. Implements `ToolInterface + CanDescribeTool + CanAccessAgentState`. Schema auto-generated from `__invoke()` signature via `StructureFactory`. |
-| `FunctionTool` | Wraps a `Closure`. `fromCallable(callable)` factory. |
-| `MockTool` | For testing. |
+| `SimpleTool` | Lowest-level abstract. Manual `toToolSchema()` required. Provides `$this->arg(args, name, pos, default)` via `HasArgs`. Built-in tools (`BashTool`, `ReadFileTool`, etc.) extend this. |
+| `ReflectiveSchemaTool` | Adds `HasReflectiveSchema`: `toToolSchema()` auto-generated from typed `__invoke()` params via `StructureFactory`. |
+| `StateAwareTool` | Extends `SimpleTool`. Adds `$this->agentState` via `HasAgentState`. Manual schema still required. |
+| `BaseTool` | Extends `StateAwareTool` + `HasReflectiveSchema`. Agent state + `toToolSchema()` required (PHP prevents typed `__invoke()` override). Use `mixed ...$args` + `$this->arg()`. **Recommended starting point.** |
+| `ContextAwareTool` | Extends `StateAwareTool` + `CanAccessToolCall`. Adds `$this->toolCall` (raw `ToolCall` with ID and unparsed args). Requires manual `toToolSchema()`. Use when you need the raw tool call context. |
+| `FunctionTool` | Extends `ReflectiveSchemaTool`. Wraps any `callable`. `fromCallable(callable)` factory. Schema inferred from function signature. |
+| `MockTool` | For testing. `MockTool::returning(name, desc, result)` or `new MockTool(name, desc, fn)`. |
+
+### Descriptors (`\Tool`)
+
+| Class | Role |
+|---|---|
+| `ToolDescriptor` | Readonly data class implementing `CanDescribeTool`. Holds `name`, `description`, `metadata[]`, `instructions[]`. Used by `SimpleTool` constructor and externalized descriptors. |
 
 ### Execution
 
@@ -118,7 +138,7 @@ Root namespace: `Cognesy\Agents`
 
 | Interface / Class | Role |
 |---|---|
-| `CanUseTools` | Interface: `useTools(AgentState, Tools, CanExecuteToolCalls): AgentState` |
+| `CanUseTools` | Interface: `useTools(AgentState $state): AgentState` |
 | `ToolCallingDriver` | Default driver. Sends inference request with tool schemas, processes response, delegates tool execution. Uses `CanCompileMessages` to build context. |
 | `ToolExecutionFormatter` | Formats tool execution results as messages. |
 | `ReActDriver` | Alternative driver using ReAct (Reason+Act) prompting pattern. |
@@ -285,6 +305,77 @@ Capabilities implement `CanProvideAgentCapability` and configure the agent via `
 | `JsonDefinitionParser` | JSON |
 | `YamlDefinitionParser` | YAML |
 | `CanParseAgentDefinition` | Interface: `parse(string): AgentDefinition` |
+
+---
+
+## Q. Sessions (`\Session`)
+
+Persisted, multi-turn agent sessions with optimistic concurrency.
+
+### Core Types
+
+| Class / Interface | Role |
+|---|---|
+| `AgentSession` | Immutable aggregate: `AgentSessionInfo` + `AgentDefinition` + `AgentState` + `version`. Key accessors: `sessionId(): SessionId`, `status()`, `version()`, `info()`, `definition()`, `state()`. Mutators: `withState()`, `suspended()`, `resumed()`, `completed()`, `failed()`, `deleted()`, `withParentId()`. Serializable. |
+| `AgentSessionInfo` | Session metadata. Key accessors: `sessionId(): SessionId`, `parentId(): ?SessionId`, `status(): SessionStatus`, `version(): int`, `agentName()`, `agentLabel()`, `createdAt()`, `updatedAt()`. |
+| `SessionId` | Typed identifier. `SessionId::from(string)`, `SessionId::generate()`. Public `$value` property. `__toString()` supported. |
+| `SessionStatus` | Enum: `Active`, `Suspended`, `Completed`, `Failed`, `Deleted`. |
+| `SessionInfoList` | Collection of `AgentSessionInfo`. |
+| `SessionFactory` | Creates new `AgentSession` from `AgentDefinition`. Constructor: `(DefinitionStateFactory)`. `create(AgentDefinition): AgentSession`. |
+| `SessionRepository` | Load/create/save sessions. `load(SessionId)`, `create(AgentSession)`, `save(AgentSession)`, `exists(SessionId): bool`, `delete(SessionId): void`, `listHeaders(): SessionInfoList`. Optimistic versioning: `save()` requires version to match stored; returns session with incremented version. |
+| `SessionRuntime` | Application service. `execute(SessionId, CanExecuteSessionAction): AgentSession`, `getSession()`, `getSessionInfo()`, `listSessions()`. Emits session events. |
+
+### Contracts
+
+| Interface | Role |
+|---|---|
+| `CanRunSessionRuntime` | `execute()`, `getSession()`, `getSessionInfo()`, `listSessions()` |
+| `CanStoreSessions` | Persistence contract: `load(SessionId)`, `create(AgentSession)`, `save(AgentSession)`, `exists(SessionId)`, `delete(SessionId)`, `listHeaders()` |
+| `CanExecuteSessionAction` | `executeOn(AgentSession): AgentSession` |
+
+### Stores (`\Session\Store`)
+
+| Store | Notes |
+|---|---|
+| `InMemorySessionStore` | For testing / single-process use |
+| `FileSessionStore` | JSON files on disk; throws `InvalidSessionFileException` on corrupt data |
+
+### Built-in Actions (`\Session\Actions`)
+
+| Action | Purpose |
+|---|---|
+| `SendMessage(string, DefinitionLoopFactory)` | Run one agent turn with a new user message |
+| `ForkSession(SessionId)` | Clone session into a new branch |
+| `ResumeSession` | Set status to `Active` |
+| `SuspendSession` | Set status to `Suspended` |
+| `ClearSession` | Reset state, keep definition |
+| `ChangeModel(string)` | Swap LLM config |
+| `ChangeBudget(AgentBudget)` | Update resource limits |
+| `ChangeSystemPrompt(string)` | Replace system prompt |
+| `WriteMetadata(array)` | Merge metadata into session state |
+| `UpdateTask(...)` | Update task in session state |
+
+### Session Events (`\Session\Events`)
+
+`SessionLoaded`, `SessionActionExecuted`, `SessionSaved`, `SessionLoadFailed`, `SessionSaveFailed`
+
+### Exceptions (`\Session\Exceptions`)
+
+`SessionNotFoundException`, `SessionConflictException`, `InvalidSessionFileException`
+
+### Minimal setup
+
+```php
+$factory = new SessionFactory(new DefinitionStateFactory());
+$repo    = new SessionRepository(new InMemorySessionStore());
+$runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime'));
+
+// create
+$session = $repo->create($factory->create($definition));
+
+// execute
+$updated = $runtime->execute($session->sessionId(), new SendMessage('Hello', $loopFactory));
+```
 
 ---
 

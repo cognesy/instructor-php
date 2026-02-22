@@ -17,8 +17,8 @@ The loop stops when:
 // ExecutionState::shouldStop()
 public function shouldStop(): bool {
     return match(true) {
-        $this->continuation->shouldStop() => true,       // stop signal present
-        $this->continuation->isContinuationRequested() => false, // override
+        $this->continuation->shouldStop() => true,       // stop signal present AND no continuation override
+        $this->continuation->isContinuationRequested() => false, // continuation override active
         $this->hasToolCalls() => false,                  // more tools to run
         default => true,                                 // no tools = done
     };
@@ -30,7 +30,8 @@ public function shouldStop(): bool {
 A signal requesting the loop to stop, with a reason and context:
 
 ```php
-use Cognesy\Agents\Continuation\StopReason;use Cognesy\Agents\Continuation\StopSignal;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 
 $signal = new StopSignal(
     reason: StopReason::StepsLimitReached,
@@ -52,14 +53,17 @@ ErrorForbade        - Error prevented continuation
 StopRequested       - Explicit stop via AgentStopException
 FinishReasonReceived - LLM finish reason matched
 UserRequested       - User-initiated stop
+Unknown             - Unclassified stop reason
 ```
 
 ## AgentStopException
 
-Throw from a tool to immediately stop the loop:
+Throw from a tool to immediately stop the loop. The loop catches this exception and converts it to a `StopSignal` with reason `StopRequested` via `StopSignal::fromStopException()`:
 
 ```php
 use Cognesy\Agents\Continuation\AgentStopException;
+use Cognesy\Agents\Continuation\StopReason;
+use Cognesy\Agents\Continuation\StopSignal;
 
 class StopTool extends BaseTool
 {
@@ -67,7 +71,7 @@ class StopTool extends BaseTool
     {
         throw new AgentStopException(
             signal: new StopSignal(
-                reason: StopReason::UserRequested,
+                reason: StopReason::StopRequested,
                 message: 'Task complete',
             ),
         );

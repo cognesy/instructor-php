@@ -206,13 +206,13 @@ You can enable debug mode to see detailed information about requests and respons
 
 ```php
 // Enable debug mode
-$client->withDebugPreset('on');
+$client->withHttpDebugPreset('on');
 
 // Make a request
 $response = $client->withRequest($request)->get();
 
 // Disable debug mode when done
-$client->withDebugPreset('off');
+$client->withHttpDebugPreset('off');
 ```
 
 When debug mode is enabled, detailed information about requests and responses is output to the console or log.
@@ -250,7 +250,7 @@ function configureClientForRequest(HttpClient $client, HttpRequest $request): Ht
 
     // Enable debug for development environment
     if (getenv('APP_ENV') === 'development') {
-        $client->withDebugPreset('on');
+        $client->withHttpDebugPreset('on');
     }
 
     return $client;

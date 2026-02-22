@@ -50,7 +50,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
         $observations = [];
         foreach ($feedback->items() as $item) {
             $observations[] = $item->toObservation([
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
             ]);
         }
         return $observations;
@@ -63,7 +63,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
             key: $this->name,
             value: $response->isCorrect,
             metadata: [
-                'executionId' => $execution->id(),
+                'executionId' => $execution->id()->toString(),
                 'unit' => 'boolean',
             ],
         );

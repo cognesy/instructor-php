@@ -18,7 +18,7 @@ class UserWithMixedTypeProperty
 {
     public string $name;
     #[Description('Any extra information about the user')]
-    public mixed $extraInfo;
+    public mixed $extraInfo = null;
 }
 
 $text = <<<TEXT
@@ -35,6 +35,6 @@ $user = (new StructuredOutput)
 dump($user);
 
 assert($user->name === "Jason");
-assert($user->extraInfo !== ''); // not empty, but can be any type
+assert($user->extraInfo === null || $user->extraInfo !== ''); // optional mixed field
 ?>
 ```

@@ -11,9 +11,9 @@ use Cognesy\Evals\Events\ExecutionProcessed;
 use Cognesy\Evals\Observation\MakeObservations;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
+use Cognesy\Evals\ValueObject\ExecutionId;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\Data\DataMap;
-use Cognesy\Utils\Uuid;
 use DateTime;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -35,7 +35,7 @@ class Execution
     private array $processors = [];
     private array $postprocessors = [];
 
-    private string $id;
+    private ExecutionId $id;
     private ?DateTime $startedAt = null;
     private float $timeElapsed = 0.0;
     private Usage $usage;
@@ -52,7 +52,7 @@ class Execution
         EventDispatcherInterface $events,
     ) {
         $this->events = $events;
-        $this->id = Uuid::uuid4();
+        $this->id = ExecutionId::generate();
         $this->data = new DataMap();
         $this->data->set('case', $case);
         $this->usage = Usage::none();
@@ -85,7 +85,7 @@ class Execution
 
     public function toArray() : array {
         return [
-            'id' => $this->id(),
+            'id' => $this->id()->toString(),
             'startedAt' => $this->startedAt(),
             'status' => $this->status(),
             'data' => $this->data(),

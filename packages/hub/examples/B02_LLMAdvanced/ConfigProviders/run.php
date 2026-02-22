@@ -64,7 +64,7 @@ $configData = [
         'presets' => [
             'deepseek' => [
                 'apiUrl' => 'https://api.deepseek.com',
-                'apiKey' => Env::get('DEEPSEEK_API_KEY'),
+                'apiKey' => (string) Env::get('DEEPSEEK_API_KEY', ''),
                 'endpoint' => '/chat/completions',
                 'model' => 'deepseek-chat',
                 'maxTokens' => 128,
@@ -72,7 +72,7 @@ $configData = [
             ],
             'openai' => [
                 'apiUrl' => 'https://api.openai.com',
-                'apiKey' => Env::get('OPENAI_API_KEY'),
+                'apiKey' => (string) Env::get('OPENAI_API_KEY', ''),
                 'endpoint' => '/v1/chat/completions',
                 'model' => 'gpt-4',
                 'maxTokens' => 256,

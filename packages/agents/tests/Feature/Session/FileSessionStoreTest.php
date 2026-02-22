@@ -45,7 +45,7 @@ it('create and load round-trip via filesystem', function () {
 
         $loaded = $store->load(new SessionId('fs1'));
         expect($loaded)->not->toBeNull();
-        expect($loaded->sessionId())->toBe('fs1');
+        expect($loaded->sessionId()->value)->toBe('fs1');
         expect($loaded->version())->toBe(1);
     } finally {
         cleanupDir($dir);
@@ -199,7 +199,7 @@ it('save overwrites malformed structure when version matches', function () {
 
         $loaded = $store->load(new SessionId('malformed'));
         expect($loaded)->not->toBeNull();
-        expect($loaded->sessionId())->toBe('malformed');
+        expect($loaded->sessionId()->value)->toBe('malformed');
     } finally {
         cleanupDir($dir);
     }

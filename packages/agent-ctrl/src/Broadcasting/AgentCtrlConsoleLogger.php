@@ -369,7 +369,9 @@ final class AgentCtrlConsoleLogger
             return;
         }
 
-        $sessionInfo = $event->sessionId ? sprintf(', session=%s', $event->sessionId) : '';
+        $sessionInfo = $event->sessionId() !== null
+            ? sprintf(', session=%s', $event->sessionId())
+            : '';
 
         $this->log('RESP', 'dark', sprintf(
             'Parsing completed [duration=%.0fms%s]',

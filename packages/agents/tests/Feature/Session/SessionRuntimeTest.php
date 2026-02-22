@@ -68,7 +68,7 @@ it('getSession returns session without mutating version', function () {
 
     $loaded = $runtime->getSession(SessionId::from('rt2'));
 
-    expect($loaded->sessionId())->toBe('rt2');
+    expect($loaded->sessionId()->value)->toBe('rt2');
     expect($loaded->version())->toBe($created->version());
 });
 
@@ -78,7 +78,7 @@ it('getSessionInfo returns header without mutating version', function () {
 
     $info = $runtime->getSessionInfo(SessionId::from('rt3'));
 
-    expect($info->sessionId())->toBe('rt3');
+    expect($info->sessionId()->value)->toBe('rt3');
     expect($info->version())->toBe($created->version());
 });
 

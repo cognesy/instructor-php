@@ -3,8 +3,9 @@
 namespace Cognesy\Messages;
 
 use Cognesy\Utils\Uuid;
+use Stringable;
 
-final readonly class MessageId
+final readonly class MessageId implements Stringable
 {
     public function __construct(
         public string $value,

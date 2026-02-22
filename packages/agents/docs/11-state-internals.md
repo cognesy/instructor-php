@@ -13,6 +13,8 @@ AgentState (readonly)
   |-- parentAgentId: ?AgentId      # set for subagents
   |-- createdAt: DateTimeImmutable
   |-- updatedAt: DateTimeImmutable  # bumped on every mutation
+  |-- executionCount: int           # increments across executions
+  |-- llmConfig: ?LLMConfig         # optional override for LLM config
   |-- context: AgentContext
   |   |-- store: MessageStore
   |   |-- metadata: Metadata
@@ -26,7 +28,7 @@ AgentState (readonly)
   |   |-- deadline: ?DateTimeImmutable
   |-- execution: ?ExecutionState    # null between executions
       |-- executionId: ExecutionId
-      |-- status: ExecutionStatus   # Pending|InProgress|Completed|Failed
+      |-- status: ExecutionStatus   # Pending|InProgress|Completed|Stopped|Failed
       |-- startedAt / completedAt
       |-- stepExecutions: StepExecutions  # completed steps
       |-- continuation: ExecutionContinuation
@@ -47,7 +49,7 @@ AgentState (readonly)
 ```php
 // Identity
 $state->agentId()->toString();
-$state->parentAgentId()?->toString();
+$state->parentAgentId() !== null ? (string) $state->parentAgentId() : null;
 
 // Timing
 $state->createdAt();

@@ -19,7 +19,7 @@ final class InMemorySessionStore implements CanStoreSessions
     #[\Override]
     public function create(AgentSession $session): AgentSession
     {
-        $id = $session->sessionId();
+        $id = $session->sessionId()->value;
         $stored = $this->payloads[$id] ?? null;
 
         if ($stored !== null) {
@@ -38,7 +38,7 @@ final class InMemorySessionStore implements CanStoreSessions
     #[\Override]
     public function save(AgentSession $session): AgentSession
     {
-        $id = $session->sessionId();
+        $id = $session->sessionId()->value;
         $stored = $this->payloads[$id] ?? null;
 
         if ($stored === null) {

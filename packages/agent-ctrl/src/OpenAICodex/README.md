@@ -49,11 +49,11 @@ $parser = new ResponseParser();
 $response = $parser->parse($result, OutputFormat::Json);
 
 // 5. Use response
-echo "Thread ID: " . $response->threadId() . "\n";
+echo "Thread ID: " . (string) ($response->threadId() ?? '') . "\n"; // Convert only at boundary
 echo "Exit code: " . $response->exitCode() . "\n";
 
-// Optional typed ID for domain code:
-// $response->threadIdValue(); // CodexThreadId|null
+// Typed ID for domain code (preferred):
+// $response->threadId(); // CodexThreadId|null
 
 if ($response->usage()) {
     echo "Input tokens: " . $response->usage()->inputTokens . "\n";
@@ -89,7 +89,7 @@ $executor->executeStreaming($spec, function (string $type, string $chunk) {
 | `fullAuto` | bool | Shortcut for workspace-write + on-failure approvals |
 | `dangerouslyBypass` | bool | Skip all approvals and sandbox (DANGEROUS) |
 | `skipGitRepoCheck` | bool | Allow running outside git repository |
-| `resumeSessionId` | string | Resume specific session by ID |
+| `resumeSessionId` | CodexThreadId\|string | Resume specific session by ID |
 | `resumeLast` | bool | Resume most recent session |
 | `configOverrides` | array | Inline config overrides (key=value pairs) |
 

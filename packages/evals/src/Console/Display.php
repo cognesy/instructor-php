@@ -18,7 +18,7 @@ class Display
     }
 
     public function header(Experiment $experiment) : void {
-        $id = $experiment->id();
+        $id = $experiment->id()->toString();
         $title = ' EXPERIMENT (' . Str::limit(
             text: $id,
             limit: 4,
@@ -55,7 +55,7 @@ class Display
     }
 
     public function displayExecution(Execution $execution) : void {
-        $id = Str::limit(text: $execution->id(), limit: 4, cutMarker: '', align: STR_PAD_LEFT);
+        $id = Str::limit(text: $execution->id()->toString(), limit: 4, cutMarker: '', align: STR_PAD_LEFT);
         $preset = $execution->get('case.preset');
         $mode = $execution->get('case.mode')->value;
         $streamed = $execution->get('case.isStreamed');
@@ -160,7 +160,7 @@ class Display
         ], $this->terminalWidth);
 
         foreach ($experiment->observations() as $observation) {
-            $id = Str::limit(text: $observation->id(), limit: 4, cutMarker: '', align: STR_PAD_LEFT);
+            $id = Str::limit(text: $observation->id()->toString(), limit: 4, cutMarker: '', align: STR_PAD_LEFT);
             $value = $observation->value();
             $unit = $observation->metadata()->get('unit', '-');
             $format = $observation->metadata()->get('format', '%s');

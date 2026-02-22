@@ -37,7 +37,7 @@ class LogStepsHook implements HookInterface
         return $context;
     }
 }
-// @doctest id="1cad"
+// @doctest id="4eae"
 ```
 
 ## Registering Hooks
@@ -59,7 +59,7 @@ $agent = AgentBuilder::base()
         name: 'log_steps',
     ))
     ->build();
-// @doctest id="0b4e"
+// @doctest id="ab5f"
 ```
 
 ### Via HookStack (manual)
@@ -67,7 +67,9 @@ $agent = AgentBuilder::base()
 For direct `AgentLoop` usage, compose hooks with `HookStack`:
 
 ```php
-use Cognesy\Agents\Hook\Collections\HookTriggers;use Cognesy\Agents\Hook\Collections\RegisteredHooks;use Cognesy\Agents\Hook\HookStack;
+use Cognesy\Agents\Hook\Collections\HookTriggers;
+use Cognesy\Agents\Hook\Collections\RegisteredHooks;
+use Cognesy\Agents\Hook\HookStack;
 
 $stack = new HookStack(new RegisteredHooks());
 $stack = $stack->with(
@@ -78,7 +80,7 @@ $stack = $stack->with(
 );
 
 $loop = AgentLoop::default()->withInterceptor($stack);
-// @doctest id="c4b3"
+// @doctest id="3cdf"
 ```
 
 ## CallableHook
@@ -94,7 +96,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
 });
 
 $stack = $stack->with($hook, HookTriggers::afterStep());
-// @doctest id="50fa"
+// @doctest id="1fc9"
 ```
 
 ## Blocking Tool Execution
@@ -114,7 +116,7 @@ class BlockDangerousTools implements HookInterface
 }
 
 $stack = $stack->with(new BlockDangerousTools(), HookTriggers::beforeToolUse());
-// @doctest id="8671"
+// @doctest id="f84c"
 ```
 
 ## Modifying State
@@ -126,7 +128,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
     $state = $ctx->state()->withMetadata('custom_key', 'value');
     return $ctx->withState($state);
 });
-// @doctest id="25a2"
+// @doctest id="93df"
 ```
 
 ## Built-in Guard Hooks
@@ -143,13 +145,16 @@ $agent = AgentBuilder::base()
         maxExecutionTime: 30.0,
     ))
     ->build();
-// @doctest id="b2ea"
+// @doctest id="a381"
 ```
 
 ### Manual registration
 
 ```php
-use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;use Cognesy\Agents\Hook\Hooks\StepsLimitHook;use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
+use Cognesy\Agents\Hook\Enums\HookTrigger;
+use Cognesy\Agents\Hook\Hooks\ExecutionTimeLimitHook;
+use Cognesy\Agents\Hook\Hooks\StepsLimitHook;
+use Cognesy\Agents\Hook\Hooks\TokenUsageLimitHook;
 
 // Stop after 10 steps
 $stepsGuard = new StepsLimitHook(
@@ -164,10 +169,10 @@ $tokenGuard = new TokenUsageLimitHook(maxTotalTokens: 5000);
 $timeGuard = new ExecutionTimeLimitHook(maxSeconds: 30.0);
 
 $stack = $stack
-    ->with($stepsGuard, HookTriggers::beforeStep(), priority: 100)
-    ->with($tokenGuard, HookTriggers::beforeStep(), priority: 100)
-    ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 100);
-// @doctest id="ca4b"
+    ->with($stepsGuard, HookTriggers::beforeStep(), priority: 200)
+    ->with($tokenGuard, HookTriggers::beforeStep(), priority: 200)
+    ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 200);
+// @doctest id="0072"
 ```
 
 ## Hook Priority

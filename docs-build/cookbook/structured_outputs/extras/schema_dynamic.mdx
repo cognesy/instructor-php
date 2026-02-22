@@ -34,7 +34,7 @@ $city = Structure::define('city', [
 
 $data = (new StructuredOutput)
     ->using('openai')
-    //->withDebugPreset('on')
+    //->withHttpDebugPreset('on')
     ->intoArray()
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France? \
         Respond with JSON data.']])

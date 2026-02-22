@@ -139,7 +139,7 @@ if ($response->hasToolCalls()) {
                 '_metadata' => [
                     'tool_calls' => [
                         [
-                            'id' => $call->id(),
+                            'id' => $call->id()?->toString() ?? '',
                             'function' => [
                                 'name' => $call->name(),
                                 'arguments' => $call->argsAsJson(),
@@ -152,7 +152,7 @@ if ($response->hasToolCalls()) {
                 'role' => 'tool',
                 'content' => json_encode($result),
                 '_metadata' => [
-                    'tool_call_id' => $call->id(),
+                    'tool_call_id' => $call->id()?->toString() ?? '',
                     'tool_name' => $call->name(),
                 ],
             ],

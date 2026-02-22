@@ -2,7 +2,9 @@
 
 namespace Cognesy\Utils\Identifier;
 
-abstract readonly class OpaqueExternalId
+use Stringable;
+
+abstract readonly class OpaqueExternalId implements Stringable
 {
     public function __construct(
         public string $value,

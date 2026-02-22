@@ -1,5 +1,5 @@
 ---
-title: 'AgentBuilder & Capability'
+title: 'AgentBuilder & Capabilities'
 description: 'Compose agents from modular capabilities using AgentBuilder'
 ---
 
@@ -27,8 +27,10 @@ $agent = AgentBuilder::base()
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="4701"
+// @doctest id="983d"
 ```
+
+`AgentBuilder` is about **composition at construction time**. It does not manage persistence or multi-request lifecycle. For that, use session runtime (see [Session Runtime](16-session-runtime.md)).
 
 ## Core API
 
@@ -38,8 +40,8 @@ $result = $agent->execute($state);
 
 ```php
 $builder->withCapability(CanProvideAgentCapability $capability): self;
-$builder->build(): AgentLoop;
-// @doctest id="022c"
+$builder->build(): CanControlAgentLoop;
+// @doctest id="8a4a"
 ```
 
 **`CanConfigureAgent`** (capability-facing):
@@ -58,8 +60,10 @@ $agent->hooks(): HookStack;
 $agent->withHooks(HookStack $hooks): self;
 
 $agent->deferredTools(): DeferredToolProviders;
-$agent->withDeferredTools(DeferredToolProviders $providers): self;
-// @doctest id="64bb"
+$agent->withDeferredTools(DeferredToolProviders $deferredTools): self;
+
+$agent->events(): CanHandleEvents;
+// @doctest id="3cba"
 ```
 
 ## Writing a Capability
@@ -89,7 +93,7 @@ class UseRateLimiting implements CanProvideAgentCapability
         return $agent->withHooks($hooks);
     }
 }
-// @doctest id="312f"
+// @doctest id="c123"
 ```
 
 Capabilities can configure any aspect of the agent: tools, hooks, driver, compiler, and deferred tool providers.
@@ -117,7 +121,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->tools()->merge(new Tools($myTool))
     );
 }
-// @doctest id="57bd"
+// @doctest id="d299"
 ```
 
 ### Adding Hooks
@@ -133,7 +137,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
     );
     return $agent->withHooks($hooks);
 }
-// @doctest id="f15b"
+// @doctest id="e463"
 ```
 
 ### Deferred Tools
@@ -156,7 +160,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->deferredTools()->withProvider($deferred)
     );
 }
-// @doctest id="d7bc"
+// @doctest id="f959"
 ```
 
 `UseSubagents` uses this pattern — the `SpawnSubagentTool` needs the parent's driver and event bus, which are only finalized at build time.
@@ -179,7 +183,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 
     return $agent;
 }
-// @doctest id="680b"
+// @doctest id="579e"
 ```
 
 ### Capability Names
@@ -195,12 +199,13 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | `UseGuards` | Step, token, time, and finish-reason guards |
 | `UseLLMConfig` | LLM provider preset and retry policy |
 | `UseContextConfig` | System prompt and response format |
+| `UseReActConfig` | ReAct-style driver with structured output |
 | `UseDriver` | Custom driver implementation |
+| `UseDriverDecorator` | Wrap the existing driver |
 | `UseTools` | Individual tool instances |
 | `UseHook` | Single hook with trigger and priority |
 | `UseContextCompiler` | Custom message compiler |
 | `UseContextCompilerDecorator` | Wrap the existing compiler |
-| `UseDriverDecorator` | Wrap the existing driver |
 | `UseToolFactory` | Deferred tool creation (runs at `build()` time) |
 
 ### Domain Capabilities
@@ -217,6 +222,8 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | `UseTaskPlanning` | Task planning tool |
 | `UseMetadataTools` | Metadata read/write tools |
 | `UseToolRegistry` | Dynamic tool registration |
+| `UseExecutionHistory` | Records execution summaries after each `execute()` call |
+| `UseExecutionRetrospective` | Execution checkpointing and rewind tool + hook |
 
 ## Capability Examples
 
@@ -226,7 +233,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 $agent = AgentBuilder::base()
     ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->build();
-// @doctest id="f4a3"
+// @doctest id="cfc0"
 ```
 
 ### File system agent with guards
@@ -237,7 +244,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools(baseDir: '/home/user/workspace'))
     ->withCapability(new UseGuards(maxSteps: 15, maxExecutionTime: 60.0))
     ->build();
-// @doctest id="07c2"
+// @doctest id="2109"
 ```
 
 ### Agent with custom hook
@@ -257,7 +264,7 @@ $agent = AgentBuilder::base()
         priority: 100,
     ))
     ->build();
-// @doctest id="b06e"
+// @doctest id="3abc"
 ```
 
 ### Custom context compiler
@@ -273,7 +280,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitingCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="a550"
+// @doctest id="09fd"
 ```
 
 ## Build Resolution Order
@@ -312,7 +319,7 @@ $agent = AgentBuilder::base($events)
 // Or attach a logger after building
 $logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
-// @doctest id="2486"
+// @doctest id="e7f2"
 ```
 
 ## Immutability
@@ -327,7 +334,7 @@ $base = AgentBuilder::base()
 $bashAgent = $base->withCapability(new UseBash())->build();
 $fileAgent = $base->withCapability(new UseFileTools(baseDir: '.'))->build();
 // $base is unchanged
-// @doctest id="e633"
+// @doctest id="981a"
 ```
 
 ## Builder Internals
@@ -347,7 +354,7 @@ AgentConfigurator (internal, implements CanConfigureAgent)
   → deferredTools: DeferredToolProviders
   → events: CanHandleEvents
   → toAgentLoop(): resolves driver → tools → interceptor → AgentLoop
-// @doctest id="c007"
+// @doctest id="b65b"
 ```
 
 Each `capability.configure(configurator)` call returns a new `AgentConfigurator` with the applied changes. When all capabilities are installed, `toAgentLoop()` runs the resolution pipeline and produces the final `AgentLoop`.
@@ -356,3 +363,4 @@ Each `capability.configure(configurator)` call returns a new `AgentConfigurator`
 
 - [Agent Templates](14-agent-templates.md) — define agents as data files and reference capabilities by name
 - [Subagents](15-subagents.md) — task delegation via `UseSubagents`
+- [Session Runtime](16-session-runtime.md) — persist and resume agent sessions across calls

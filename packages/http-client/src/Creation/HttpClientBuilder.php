@@ -63,6 +63,10 @@ final class HttpClientBuilder
     }
 
     public function withDebugPreset(?string $preset): self {
+        return $this->withHttpDebugPreset($preset);
+    }
+
+    public function withHttpDebugPreset(?string $preset): self {
         $this->debugPreset = $preset;
         return $this;
     }

@@ -28,7 +28,7 @@ class UserDetail
 Settings::setPath(__DIR__ . '/config');
 
 $user = (new StructuredOutput)
-    ->withDebugPreset('on') // we reconfigured local debug settings to dump only request URL
+    ->withHttpDebugPreset('on') // we reconfigured local debug settings to dump only request URL
     ->withMessages('Jason is 25 years old.')
     ->withResponseClass(UserDetail::class)
     ->get();

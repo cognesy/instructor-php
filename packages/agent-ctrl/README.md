@@ -131,7 +131,8 @@ All agents return `AgentResponse`:
 $response->agentType;   // AgentType enum
 $response->text;        // Response text
 $response->exitCode;    // Process exit code
-$response->sessionId;   // Session ID (if available)
+$response->sessionId(); // AgentSessionId|null
+(string) ($response->sessionId() ?? ''); // Convert typed ID to string only if needed
 $response->usage;       // TokenUsage (input/output tokens)
 $response->cost;        // Cost in USD (if available)
 $response->toolCalls;   // Array of ToolCall objects
