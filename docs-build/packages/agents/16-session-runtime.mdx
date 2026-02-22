@@ -38,7 +38,7 @@ interface CanRunSessionRuntime
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo;
     public function listSessions(): SessionInfoList;
 }
-// @doctest id="be9a"
+// @doctest id="e986"
 ```
 
 Read methods (`getSession`, `getSessionInfo`, `listSessions`) do not mutate persisted version.
@@ -69,7 +69,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 $factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime'));
-// @doctest id="be10"
+// @doctest id="42b3"
 ```
 
 ## Typical Flow
@@ -88,7 +88,7 @@ $updated = $runtime->execute($session->sessionId(), new SendMessage('Hello', $lo
 
 // 3) use returned persisted version for next call
 $nextVersion = $updated->version();
-// @doctest id="977f"
+// @doctest id="f477"
 ```
 
 ## Built-in Actions

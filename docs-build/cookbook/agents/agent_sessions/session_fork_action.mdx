@@ -54,7 +54,7 @@ $parent = $repo->create($factory->create(new AgentDefinition(
     systemPrompt: 'You are a travel planner. Answer in one short sentence.',
     llmConfig: 'openai',
 )));
-$parentId = SessionId::from($parent->sessionId());
+$parentId = $parent->sessionId();
 echo "=== Agent Execution Log ===\n\n";
 echo "[runtime] Seed parent session {$parentId->toString()}\n";
 $parentWithContext = $runtime->execute(
@@ -79,7 +79,7 @@ $forkBranch = $runtime->execute(
 echo "\n=== Result ===\n";
 echo 'Parent session: ' . $parentId->toString() . "\n";
 echo 'Forked session: ' . $storedFork->sessionId() . "\n";
-echo 'Fork parent ID: ' . ($storedFork->info()->parentId() ?? 'none') . "\n";
+echo 'Fork parent ID: ' . ($storedFork->info()->parentId()?->value ?? 'none') . "\n";
 echo "\nParent branch last response:\n";
 echo ($parentBranch->state()->finalResponse()->toString() ?: 'No response') . "\n";
 echo "\nFork branch last response:\n";
@@ -89,8 +89,8 @@ echo $parentBranch->state()->messages()->toString() . "\n";
 echo "\nFork transcript:\n";
 echo $forkBranch->state()->messages()->toString() . "\n";
 
-assert($storedFork->sessionId() === 'forked-session-demo');
-assert($storedFork->info()->parentId() === $parentId->toString());
+assert($storedFork->sessionId()->value === 'forked-session-demo');
+assert($storedFork->info()->parentId()?->value === $parentId->value);
 assert($parentBranch->state()->messages()->count() >= 4);
 assert($forkBranch->state()->messages()->count() >= 4);
 ?>

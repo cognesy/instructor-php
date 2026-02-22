@@ -43,6 +43,9 @@ class CustomConfigProvider implements CanProvideConfig
     }
 }
 
+$deepseekApiKey = (string) Env::get('DEEPSEEK_API_KEY', '');
+$openAiApiKey = (string) Env::get('OPENAI_API_KEY', '');
+
 $configData = [
     'http' => [
         'defaultPreset' => 'symfony',
@@ -83,7 +86,7 @@ $configData = [
         'presets' => [
             'deepseek' => [
                 'apiUrl' => 'https://api.deepseek.com',
-                'apiKey' => (string) Env::get('DEEPSEEK_API_KEY', ''),
+                'apiKey' => $deepseekApiKey,
                 'endpoint' => '/chat/completions',
                 'model' => 'deepseek-chat',
                 'maxTokens' => 128,
@@ -91,7 +94,7 @@ $configData = [
             ],
             'openai' => [
                 'apiUrl' => 'https://api.openai.com',
-                'apiKey' => (string) Env::get('OPENAI_API_KEY', ''),
+                'apiKey' => $openAiApiKey,
                 'endpoint' => '/v1/chat/completions',
                 'model' => 'gpt-4',
                 'maxTokens' => 256,
@@ -152,6 +155,12 @@ $structuredOutput = (new StructuredOutput(
     ))
     ->withHttpClient($customClient);
 
+$provider = match (true) {
+    $deepseekApiKey !== '' => 'deepseek',
+    $openAiApiKey !== '' => 'openai',
+    default => throw new RuntimeException('Set DEEPSEEK_API_KEY or OPENAI_API_KEY in your environment to run this example.'),
+};
+
 // Call with custom model and execution mode
 
 class User {
@@ -160,7 +169,7 @@ class User {
 }
 
 $user = $structuredOutput
-    ->using('deepseek') // Use 'deepseek' preset defined in our config provider
+    ->using($provider) // prefer deepseek, fallback to openai
     ->wiretap(fn($e) => $e->print())
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)

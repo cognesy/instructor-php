@@ -23,7 +23,7 @@ public function shouldStop(): bool {
         default => true,                                 // no tools = done
     };
 }
-// @doctest id="bc16"
+// @doctest id="5a60"
 ```
 
 ## StopSignal
@@ -40,7 +40,7 @@ $signal = new StopSignal(
     context: ['currentSteps' => 10, 'maxSteps' => 10],
     source: MyGuard::class,
 );
-// @doctest id="d359"
+// @doctest id="4c57"
 ```
 
 ## StopReason
@@ -56,7 +56,7 @@ StopRequested       - Explicit stop via AgentStopException
 FinishReasonReceived - LLM finish reason matched
 UserRequested       - User-initiated stop
 Unknown             - Unclassified stop reason
-// @doctest id="8e82"
+// @doctest id="6c13"
 ```
 
 ## AgentStopException
@@ -80,7 +80,7 @@ class StopTool extends BaseTool
         );
     }
 }
-// @doctest id="379a"
+// @doctest id="7f06"
 ```
 
 ## ExecutionContinuation
@@ -101,7 +101,7 @@ $state = $context->state()->withStopSignal(new StopSignal(
     message: 'Limit reached',
 ));
 return $context->withState($state);
-// @doctest id="76cf"
+// @doctest id="38b4"
 ```
 
 The loop checks `shouldStop()` after each step and breaks if true.
