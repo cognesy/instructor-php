@@ -1,0 +1,4 @@
+order:
+  - prompting
+  - classification
+  - search

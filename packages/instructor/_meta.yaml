@@ -1,0 +1,18 @@
+# Navigation order for Instructor documentation
+# Files and directories are listed in display order
+# Items not listed here will appear after these, sorted by defaults
+
+order:
+  - introduction
+  - quickstart
+  - setup
+  # Directories (navigation groups)
+  - concepts
+  - essentials
+  - advanced
+  - techniques
+  - internals
+  - misc
+  # Files at end
+  - upgrade
+  - cli_tools
