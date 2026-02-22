@@ -14,7 +14,7 @@ Key concepts:
 - `AgentLoop::default()`: Creates a minimal agent loop with sensible defaults
 - `AgentState::empty()`: Creates an empty immutable state container
 - `execute()`: Runs the full loop and returns the final state
-- `AgentConsoleLogger`: Attach via `wiretap()` to see execution lifecycle events
+- `AgentEventConsoleObserver`: Attach via `wiretap()` to see execution lifecycle events
 - `finalResponse()`: Access the agent's final text output
 
 ## Example
@@ -25,11 +25,11 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 
-// AgentConsoleLogger shows execution lifecycle events on the console
-$logger = new AgentConsoleLogger(
+// AgentEventConsoleObserver shows execution lifecycle events on the console
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

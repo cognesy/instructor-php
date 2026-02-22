@@ -54,7 +54,7 @@ final readonly class AgentSession
     }
 
     // Explicit session lifecycle transitions (all cross-run).
-    // Terminal states (completed/failed) are set by SessionRuntime (Phase 2) based on policy.
+    // Terminal states (completed/failed/deleted) are set by SessionRuntime (Phase 2) based on policy.
 
     public function suspended(): self {
         return $this->withStatus(SessionStatus::Suspended);
@@ -72,7 +72,11 @@ final readonly class AgentSession
         return $this->withStatus(SessionStatus::Failed);
     }
 
-    public function withParentId(SessionId|string|null $parentId): self {
+    public function deleted(): self {
+        return $this->withStatus(SessionStatus::Deleted);
+    }
+
+    public function withParentId(?SessionId $parentId): self {
         return new self(
             header: $this->header->withParentId($parentId),
             definition: $this->definition,

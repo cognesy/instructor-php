@@ -23,6 +23,7 @@ class InferenceRequest {
     public function __construct(...) { ... }
 
     // Getters
+    public function id(): InferenceRequestId { ... }
     public function messages(): array { ... }
     public function model(): string { ... }
     public function isStreamed(): bool { ... }
@@ -48,8 +49,15 @@ class InferenceRequest {
     public function toArray(): array { ... }
     public function withCacheApplied(): self { ... }
 }
-// @doctest id="fb3e"
+// @doctest id="899d"
 ```
+
+Internally, request identity is represented by `InferenceRequestId` and can be converted to string at boundaries via `->id()->toString()`.
+Attempt identity in execution state is represented by `InferenceAttemptId` and is serialized as string in event payloads and arrays.
+Execution identity is represented by `InferenceExecutionId` and converted to string when emitted in events and serialized output.
+Response identity is represented by `InferenceResponseId` and serialized as string at boundaries.
+Partial streaming chunk identity is represented by `PartialInferenceResponseId` and serialized as string at boundaries.
+External tool-call identity is represented by `ToolCallId`; OpenResponses stream item identity uses `OpenResponseItemId` internally and converts to string at stream/transport boundaries.
 
 
 
@@ -74,7 +82,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
     public function stream(): InferenceStream { ... }
     public function response(): InferenceResponse { ... }
 }
-// @doctest id="1166"
+// @doctest id="0b75"
 ```
 
 For streaming responses, the `InferenceStream` class provides methods to process the stream:
@@ -95,7 +103,7 @@ class InferenceStream {
     public function final(): ?InferenceResponse { ... }
     public function onPartialResponse(callable $callback): self { ... }
 }
-// @doctest id="6410"
+// @doctest id="b486"
 ```
 
 
@@ -122,5 +130,5 @@ class EmbeddingsResponse {
     public function totalTokens(): int { ... }
     public function split(int $index): array { ... }
 }
-// @doctest id="a0d1"
+// @doctest id="a299"
 ```

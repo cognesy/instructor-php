@@ -15,7 +15,7 @@ Key concepts:
 - `AgentState`: Immutable state container for messages and metadata
 - `AgentLoop::execute()`: Executes the agent loop until completion
 - `UseGuards`: Adds step/token/time safety limits
-- `AgentConsoleLogger`: Provides visibility into agent execution stages
+- `AgentEventConsoleObserver`: Provides visibility into agent execution stages
 
 
 ## Example
@@ -28,11 +28,11 @@ use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseLLMConfig;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 
 // Create a console logger for visibility into agent execution
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

@@ -102,13 +102,23 @@ groups:
         include:
           - source: root
             path: D02_AgentBuilder
+      - id: agent_templates
+        title: Agent Templates
+        include:
+          - source: root
+            path: D03_AgentTemplates
+      - id: agent_sessions
+        title: Agent Sessions
+        include:
+          - source: root
+            path: D04_AgentSessions
       - id: agent_controllers
         title: Agent Controllers
         include:
           - source: agent-ctrl
             path: '*'
           - source: root
-            path: D03_AgentCtrl
+            path: D10_AgentCtrl
   - id: prompting
     title: Prompting
     subgroups:

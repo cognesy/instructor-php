@@ -172,8 +172,10 @@ class MarkSnippetsRecursively extends Command
     private function processFiles(array $files, string $sourceDir, string $targetDir, SymfonyStyle $io): array
     {
         $ok = 0; $failed = 0; $snippets = 0;
+        // Ensure we use real paths for consistent path calculation
+        $realSourceDir = realpath($sourceDir);
         foreach ($files as $filePath) {
-            $relativePath = Path::makeRelative($filePath, $sourceDir);
+            $relativePath = Path::makeRelative($filePath, $realSourceDir);
             try {
                 $content = $this->docRepository->readFile($filePath);
                 $markdown = MarkdownFile::fromString($content, $filePath);

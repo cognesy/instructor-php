@@ -21,7 +21,7 @@ it('creates fresh info with defaults', function () {
 });
 
 it('creates fresh info with parent id', function () {
-    $info = AgentSessionInfo::fresh(new SessionId('s2'), 'agent', 'Agent', 'parent-1');
+    $info = AgentSessionInfo::fresh(new SessionId('s2'), 'agent', 'Agent', new SessionId('parent-1'));
 
     expect($info->parentId())->toBe('parent-1');
     expect($info->parentIdValue())->toBeInstanceOf(SessionId::class);
@@ -39,7 +39,7 @@ it('with(status:) returns new instance', function () {
 
 it('withParentId returns new instance', function () {
     $info = AgentSessionInfo::fresh(new SessionId('s1'), 'agent', 'Agent');
-    $withParent = $info->withParentId('p1');
+    $withParent = $info->withParentId(new SessionId('p1'));
 
     expect($withParent->parentId())->toBe('p1');
     expect($withParent->parentIdValue())->toBeInstanceOf(SessionId::class);
@@ -47,7 +47,7 @@ it('withParentId returns new instance', function () {
 });
 
 it('round-trips through toArray/fromArray', function () {
-    $info = AgentSessionInfo::fresh(new SessionId('s1'), 'test-agent', 'Test Agent', 'parent-1');
+    $info = AgentSessionInfo::fresh(new SessionId('s1'), 'test-agent', 'Test Agent', new SessionId('parent-1'));
     $restored = AgentSessionInfo::fromArray($info->toArray());
 
     expect($restored->sessionId())->toBe($info->sessionId());

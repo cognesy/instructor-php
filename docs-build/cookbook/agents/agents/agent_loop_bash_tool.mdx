@@ -14,7 +14,7 @@ Key concepts:
 - `AgentLoop::withTool()`: Adds a tool directly to the loop
 - `BashTool`: Executes shell commands with configurable sandboxing
 - The agent autonomously decides which commands to run
-- `AgentConsoleLogger`: Shows tool arguments including executed commands
+- `AgentEventConsoleObserver`: Shows tool arguments including executed commands
 
 ## Example
 
@@ -25,9 +25,9 @@ require 'examples/boot.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showToolArgs: true,

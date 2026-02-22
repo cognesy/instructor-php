@@ -10,14 +10,14 @@ The agent emits events throughout its lifecycle. Events are read-only observatio
 they cannot modify agent behavior (use hooks for that).
 
 Two ways to observe events:
-- `wiretap(callable)`: Receives **every** event — `AgentConsoleLogger` uses this internally
+- `wiretap(callable)`: Receives **every** event — `AgentEventConsoleObserver` uses this internally
 - `onEvent(EventClass, callable)`: Subscribes to a **specific** event type for custom logic
 
 Both can be used together. The logger provides general visibility while `onEvent()` lets
 you collect metrics, trigger side effects, or react to specific events.
 
 Key concepts:
-- `AgentConsoleLogger`: Built-in wiretap that formats all events for console output
+- `AgentEventConsoleObserver`: Built-in wiretap that formats all events for console output
 - `onEvent()`: Targeted listener for a single event class
 - Events include: `AgentStepCompleted`, `ToolCallStarted`, `ToolCallCompleted`,
   `InferenceResponseReceived`, `AgentExecutionCompleted`, `ContinuationEvaluated`, and more
@@ -33,10 +33,10 @@ use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\AgentExecutionCompleted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 
-// AgentConsoleLogger uses wiretap() internally to show all lifecycle events
-$logger = new AgentConsoleLogger(
+// AgentEventConsoleObserver uses wiretap() internally to show all lifecycle events
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

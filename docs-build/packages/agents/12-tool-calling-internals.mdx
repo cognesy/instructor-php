@@ -18,7 +18,7 @@ AgentLoop
   |
   |-- CanExecuteToolCalls (executor) # runs the actual tools
       |-- ToolExecutor              # default implementation
-// @doctest id="87b3"
+// @doctest id="e6dd"
 ```
 
 ## The Two Contracts
@@ -31,7 +31,7 @@ Sends state + tools to the LLM, gets back an updated state with tool call decisi
 interface CanUseTools {
     public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState;
 }
-// @doctest id="58e3"
+// @doctest id="cdf4"
 ```
 
 ### CanExecuteToolCalls (Executor)
@@ -42,7 +42,7 @@ Runs tool calls and returns execution results:
 interface CanExecuteToolCalls {
     public function executeTools(ToolCalls $toolCalls, AgentState $state): ToolExecutions;
 }
-// @doctest id="a0d0"
+// @doctest id="7123"
 ```
 
 ## ToolCallingDriver
@@ -67,7 +67,7 @@ $driver = new ToolCallingDriver(
     toolChoice: 'auto',          // 'auto', 'required', or specific tool
     mode: OutputMode::Tools,
 );
-// @doctest id="0131"
+// @doctest id="f981"
 ```
 
 The LLM natively understands tools and returns structured `tool_calls` in its response.
@@ -104,7 +104,7 @@ $driver = new ReActDriver(
     maxRetries: 2,               // retries on extraction failure
     finalViaInference: false,    // optionally use separate LLM call for final answer
 );
-// @doctest id="5344"
+// @doctest id="eb60"
 ```
 
 The LLM doesn't need native tool support - it outputs JSON with `type`, `tool`, `args`, and `thought` fields.
@@ -132,7 +132,7 @@ $executor = new ToolExecutor(
 );
 
 $loop = AgentLoop::default()->withTools($tools)->withToolExecutor($executor);
-// @doctest id="7aa5"
+// @doctest id="0b11"
 ```
 
 ## When to Use Which Driver

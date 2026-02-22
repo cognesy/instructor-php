@@ -28,7 +28,7 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Cognesy\Utils\JsonSchema\JsonSchema;
@@ -89,8 +89,8 @@ class SystemInfoTool extends BaseTool
     }
 }
 
-// AgentConsoleLogger shows execution lifecycle events on the console
-$logger = new AgentConsoleLogger(
+// AgentEventConsoleObserver shows execution lifecycle events on the console
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

@@ -18,7 +18,7 @@ Key concepts:
 - `UseStructuredOutputs`: Capability for LLM-powered data extraction
 - `SchemaRegistry`: Pre-registered extraction schemas
 - `structured_output`: Tool to extract data into schema
-- `AgentConsoleLogger`: Provides visibility into agent execution stages
+- `AgentEventConsoleObserver`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -35,7 +35,7 @@ use Cognesy\Agents\Capability\StructuredOutput\StructuredOutputPolicy;
 use Cognesy\Agents\Capability\StructuredOutput\UseStructuredOutputs;
 use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -137,7 +137,7 @@ class CreateLeadTool extends BaseTool
 // =============================================================================
 
 // Create console logger for execution visibility
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

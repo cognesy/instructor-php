@@ -15,7 +15,7 @@ Key concepts:
 - `HookContext`: Provides access to tool call and agent state
 - `HookTriggers`: Defines when the hook fires (e.g., `beforeToolUse()`)
 - `UseHook`: Registers a hook capability with explicit trigger/priority
-- `AgentConsoleLogger`: Provides visibility into agent execution stages
+- `AgentEventConsoleObserver`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -28,13 +28,13 @@ use Cognesy\Agents\Capability\Bash\UseBash;
 use Cognesy\Agents\Capability\Core\UseGuards;
 use Cognesy\Agents\Capability\Core\UseHook;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Hooks\CallableHook;
 
 // Create console logger for execution visibility
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

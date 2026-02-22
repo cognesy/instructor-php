@@ -10,13 +10,13 @@ id: '9ff0'
 control over the execution. This is useful for streaming progress, implementing custom
 stop logic, or inspecting intermediate states between LLM calls.
 
-You can combine `iterate()` with `AgentConsoleLogger` to get detailed event output
+You can combine `iterate()` with `AgentEventConsoleObserver` to get detailed event output
 (tool calls, inference, continuation decisions) alongside your own step-by-step logic.
 The logger hooks into the event system and prints as events fire during iteration.
 
 Key concepts:
 - `iterate()`: Returns an iterable that yields `AgentState` after each step
-- `AgentConsoleLogger`: Attach via `wiretap()` for detailed execution logging
+- `AgentEventConsoleObserver`: Attach via `wiretap()` for detailed execution logging
 - Step-by-step inspection of tool calls, token usage, and agent decisions
 - Early termination by breaking out of the loop
 
@@ -29,13 +29,13 @@ require 'examples/boot.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\File\ReadFileTool;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 
 $workDir = dirname(__DIR__, 3);
 
-// AgentConsoleLogger provides detailed event output during iteration
-$logger = new AgentConsoleLogger(
+// AgentEventConsoleObserver provides detailed event output during iteration
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

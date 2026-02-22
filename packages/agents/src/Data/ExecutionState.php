@@ -45,16 +45,7 @@ final readonly class ExecutionState
     }
 
     public function withCurrentStepCompleted(?ExecutionStatus $status = null) : self {
-        $stepExecutions = match(true) {
-            ($this->currentStep === null) => $this->stepExecutions,
-            default => $this->stepExecutions->withStepExecution(
-                StepExecution::create(
-                    step: $this->ensureCurrentStep(),
-                    continuation: $this->continuation->withContinuationRequested(false),
-                    startedAt: $this->currentStepStartedAt ?? new DateTimeImmutable(),
-                ),
-            ),
-        };
+        $stepExecutions = $this->recordedStepExecutions();
         return new self(
             executionId: $this->executionId,
             status: $status ?? ExecutionStatus::InProgress,
@@ -76,16 +67,7 @@ final readonly class ExecutionState
     }
 
     public function completed(?ExecutionStatus $status = null): self {
-        $stepExecutions = match(true) {
-            ($this->currentStep === null) => $this->stepExecutions,
-            default => $this->stepExecutions->withStepExecution(
-                StepExecution::create(
-                    step: $this->ensureCurrentStep(),
-                    continuation: $this->continuation->withContinuationRequested(false),
-                    startedAt: $this->currentStepStartedAt ?? new DateTimeImmutable(),
-                ),
-            ),
-        };
+        $stepExecutions = $this->recordedStepExecutions();
         return new self(
             executionId: $this->executionId,
             status: $status ?? ExecutionStatus::Completed,
@@ -99,16 +81,7 @@ final readonly class ExecutionState
     }
 
     public function failed(Throwable $error): self {
-        $stepExecutions = match(true) {
-            ($this->currentStep === null) => $this->stepExecutions,
-            default => $this->stepExecutions->withStepExecution(
-                StepExecution::create(
-                    step: $this->ensureCurrentStep()->withError($error),
-                    continuation: $this->continuation->withContinuationRequested(false),
-                    startedAt: $this->currentStepStartedAt ?? new DateTimeImmutable(),
-                )
-            ),
-        };
+        $stepExecutions = $this->recordedStepExecutions($error);
         return new self(
             executionId: $this->executionId,
             status: ExecutionStatus::Failed,
@@ -169,6 +142,9 @@ final readonly class ExecutionState
     }
 
     public function stepCount(): int {
+        // Keep step count bound to execution state/history (not message context):
+        // retrospective rewinds can truncate messages, but step limits must still
+        // advance monotonically to prevent infinite rewind/redo loops.
         return match(true) {
             $this->currentStep !== null => $this->stepExecutions->count() + 1,
             default => $this->stepExecutions->count(),
@@ -299,6 +275,22 @@ final readonly class ExecutionState
 
     private function ensureCurrentStep(): AgentStep {
         return $this->currentStep ?? AgentStep::empty();
+    }
+
+    private function recordedStepExecutions(?Throwable $error = null): ?StepExecutions {
+        return match (true) {
+            ($this->currentStep === null) => $this->stepExecutions,
+            default => $this->stepExecutions->withStepExecution(
+                StepExecution::create(
+                    step: match (true) {
+                        $error === null => $this->ensureCurrentStep(),
+                        default => $this->ensureCurrentStep()->withError($error),
+                    },
+                    continuation: $this->continuation->withContinuationRequested(false),
+                    startedAt: $this->currentStepStartedAt ?? new DateTimeImmutable(),
+                ),
+            ),
+        };
     }
 
     private static function makeDateTime(string $key, array $data, ?DateTimeImmutable $default = null): ?DateTimeImmutable {

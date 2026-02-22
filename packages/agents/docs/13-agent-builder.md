@@ -298,7 +298,7 @@ $agent = AgentBuilder::base($events)
     ->build();
 
 // Or attach a logger after building
-$logger = new AgentConsoleLogger(useColors: true, showTimestamps: true);
+$logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
 ```
 

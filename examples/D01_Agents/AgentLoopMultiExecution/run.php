@@ -28,11 +28,11 @@ require 'examples/boot.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\File\ReadFileTool;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 
 $workDir = dirname(__DIR__, 3);
 
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

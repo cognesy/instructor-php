@@ -23,12 +23,12 @@ final readonly class AgentSessionInfo
         SessionId $sessionId,
         string $agentName,
         string $agentLabel,
-        SessionId|string|null $parentId = null,
+        ?SessionId $parentId = null,
     ): self {
         $now = new DateTimeImmutable();
         return new self(
             sessionId: $sessionId,
-            parentId: self::resolveParentId($parentId),
+            parentId: $parentId,
             status: SessionStatus::Active,
             version: 0,
             agentName: $agentName,
@@ -95,10 +95,10 @@ final readonly class AgentSessionInfo
         );
     }
 
-    public function withParentId(SessionId|string|null $parentId): self {
+    public function withParentId(?SessionId $parentId): self {
         return new self(
             sessionId: $this->sessionId,
-            parentId: self::resolveParentId($parentId),
+            parentId: $parentId,
             status: $this->status,
             version: $this->version,
             agentName: $this->agentName,
@@ -124,9 +124,16 @@ final readonly class AgentSessionInfo
     }
 
     public static function fromArray(array $data): self {
+        $parentId = match (true) {
+            !isset($data['parentId']) => null,
+            !is_string($data['parentId']) => null,
+            $data['parentId'] === '' => null,
+            default => SessionId::from($data['parentId']),
+        };
+
         return new self(
-            sessionId: new SessionId($data['sessionId']),
-            parentId: self::resolveParentId($data['parentId'] ?? null),
+            sessionId: SessionId::from($data['sessionId']),
+            parentId: $parentId,
             status: SessionStatus::from($data['status']),
             version: $data['version'],
             agentName: $data['agentName'],
@@ -134,13 +141,5 @@ final readonly class AgentSessionInfo
             createdAt: new DateTimeImmutable($data['createdAt']),
             updatedAt: new DateTimeImmutable($data['updatedAt']),
         );
-    }
-
-    private static function resolveParentId(SessionId|string|null $parentId): ?SessionId {
-        return match (true) {
-            $parentId instanceof SessionId => $parentId,
-            is_string($parentId) && $parentId !== '' => new SessionId($parentId),
-            default => null,
-        };
     }
 }

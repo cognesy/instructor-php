@@ -11,9 +11,18 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 
 class StructuredOutputExecutionBuilder
 {
+    private ?ResponseModelFactory $responseModelFactory;
+    private ?int $factoryConfigId;
+    private bool $usesInjectedFactory;
+
     public function __construct(
         private readonly CanHandleEvents $events,
-    ) {}
+        ?ResponseModelFactory $responseModelFactory = null,
+    ) {
+        $this->responseModelFactory = $responseModelFactory;
+        $this->factoryConfigId = null;
+        $this->usesInjectedFactory = $responseModelFactory !== null;
+    }
 
     public function createWith(
         StructuredOutputRequest $request,
@@ -24,8 +33,7 @@ class StructuredOutputExecutionBuilder
             config: $config,
             responseModel: $this->makeResponseModel(
                 requestedSchema: $request->requestedSchema(),
-                config: $config,
-                events: $this->events,
+                factory: $this->responseModelFactoryFor($config),
                 outputFormat: $request->outputFormat(),
             ),
         );
@@ -33,16 +41,26 @@ class StructuredOutputExecutionBuilder
 
     private function makeResponseModel(
         string|array|object $requestedSchema,
-        StructuredOutputConfig $config,
-        CanHandleEvents $events,
+        ResponseModelFactory $factory,
         ?OutputFormat $outputFormat = null,
     ): ResponseModel {
-        $schemaRenderer = new StructuredOutputSchemaRenderer($config);
-        $responseModelFactory = new ResponseModelFactory(
-            schemaRenderer: $schemaRenderer,
+        return $factory->fromAny($requestedSchema, $outputFormat);
+    }
+
+    private function responseModelFactoryFor(StructuredOutputConfig $config) : ResponseModelFactory {
+        if ($this->usesInjectedFactory && $this->responseModelFactory !== null) {
+            return $this->responseModelFactory;
+        }
+        $configId = spl_object_id($config);
+        if ($this->factoryConfigId === $configId && $this->responseModelFactory !== null) {
+            return $this->responseModelFactory;
+        }
+        $this->responseModelFactory = new ResponseModelFactory(
+            schemaRenderer: new StructuredOutputSchemaRenderer($config),
             config: $config,
-            events: $events,
+            events: $this->events,
         );
-        return $responseModelFactory->fromAny($requestedSchema, $outputFormat);
+        $this->factoryConfigId = $configId;
+        return $this->responseModelFactory;
     }
 }

@@ -4,11 +4,12 @@ namespace Cognesy\Agents\Session\Store;
 
 use Cognesy\Agents\Session\AgentSession;
 use Cognesy\Agents\Session\AgentSessionInfo;
-use Cognesy\Agents\Session\SaveResult;
 use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanStoreSessions;
 use Cognesy\Agents\Session\Exceptions\InvalidSessionFileException;
+use Cognesy\Agents\Session\Exceptions\SessionConflictException;
+use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
 use DateTimeImmutable;
 
 final class FileSessionStore implements CanStoreSessions
@@ -22,33 +23,50 @@ final class FileSessionStore implements CanStoreSessions
     }
 
     #[\Override]
-    public function save(AgentSession $session): SaveResult
+    public function create(AgentSession $session): AgentSession
     {
         $id = $session->sessionId();
-        $sessionId = new SessionId($id);
+        $sessionId = SessionId::from($id);
         $filePath = $this->filePath($sessionId);
         $lockPath = $this->lockPath($sessionId);
 
-        return $this->withLock($lockPath, function () use ($session, $id, $filePath): SaveResult {
+        return $this->withLock($lockPath, function () use ($session, $id, $filePath): AgentSession {
+            if (file_exists($filePath)) {
+                throw new SessionConflictException("Session already exists: '{$id}'");
+            }
+
+            if ($session->version() !== 0) {
+                throw new SessionConflictException("Cannot create session '{$id}' with non-zero version {$session->version()}");
+            }
+
+            $persisted = AgentSession::reconstitute($session, 1, new DateTimeImmutable());
+            $this->atomicWrite($filePath, $persisted);
+            return $persisted;
+        });
+    }
+
+    #[\Override]
+    public function save(AgentSession $session): AgentSession
+    {
+        $id = $session->sessionId();
+        $sessionId = SessionId::from($id);
+        $filePath = $this->filePath($sessionId);
+        $lockPath = $this->lockPath($sessionId);
+
+        return $this->withLock($lockPath, function () use ($session, $id, $filePath): AgentSession {
             if (!file_exists($filePath)) {
-                if ($session->version() !== 0) {
-                    return SaveResult::conflict("Version conflict for session '{$id}'");
-                }
-                $persisted = AgentSession::reconstitute($session, 1, new DateTimeImmutable());
-                $this->atomicWrite($filePath, $persisted);
-                return SaveResult::ok($persisted);
+                throw new SessionNotFoundException("Session not found: '{$id}'");
             }
 
             $storedData = $this->readFile($filePath);
             $storedVersion = $storedData['header']['version'] ?? 0;
-
             if ($storedVersion !== $session->version()) {
-                return SaveResult::conflict("Version conflict for session '{$id}'");
+                throw new SessionConflictException("Version conflict for session '{$id}'");
             }
 
             $persisted = AgentSession::reconstitute($session, $storedVersion + 1, new DateTimeImmutable());
             $this->atomicWrite($filePath, $persisted);
-            return SaveResult::ok($persisted);
+            return $persisted;
         });
     }
 
@@ -157,12 +175,8 @@ final class FileSessionStore implements CanStoreSessions
         }
     }
 
-    /**
-     * @template T
-     * @param callable(): T $callback
-     * @return T
-     */
-    private function withLock(string $lockPath, callable $callback): mixed {
+    /** @param callable(): AgentSession $callback */
+    private function withLock(string $lockPath, callable $callback): AgentSession {
         $lockHandle = fopen($lockPath, 'c');
         if ($lockHandle === false) {
             throw new InvalidSessionFileException($lockPath, 'Failed to open lock file');

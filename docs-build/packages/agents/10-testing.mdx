@@ -19,7 +19,7 @@ $driver = FakeAgentDriver::fromSteps(
     ScenarioStep::toolCall('search', ['query' => 'php'], 'Results found'),
     ScenarioStep::final('Based on the search, here is the answer.'),
 );
-// @doctest id="83ba"
+// @doctest id="1387"
 ```
 
 ### ScenarioStep Types
@@ -34,7 +34,7 @@ ScenarioStep::toolCall(                      // Tool call with execution
     response: '',
     executeTools: true,                      // actually run the tool
 );
-// @doctest id="3dbe"
+// @doctest id="ea52"
 ```
 
 ### Full Test Example
@@ -60,7 +60,7 @@ it('executes tools and produces final response', function () {
     expect($result->stepCount())->toBe(2);
     expect($result->finalResponse()->toString())->toContain('PHP');
 });
-// @doctest id="b063"
+// @doctest id="65e4"
 ```
 
 ## Using iterate() for Step-Level Testing
@@ -74,7 +74,7 @@ foreach ($loop->iterate($state) as $stepState) {
 expect($steps)->toHaveCount(2);
 expect($steps[0]->lastStepType())->toBe(AgentStepType::ToolExecution);
 expect($steps[1]->lastStepType())->toBe(AgentStepType::FinalResponse);
-// @doctest id="83a0"
+// @doctest id="37aa"
 ```
 
 ## MockTool
@@ -89,7 +89,7 @@ $tool = MockTool::returning('search', 'Search the web', 'result text');
 
 // Custom logic
 $tool = new MockTool('calculator', 'Math operations', fn(string $expr) => eval("return {$expr};"));
-// @doctest id="a83c"
+// @doctest id="9a64"
 ```
 
 Combine with `FakeAgentDriver` to test the full loop without any real LLM or tool calls, or with `ScenarioStep::toolCall(..., executeTools: true)` to actually execute the mock tool during the scenario.
@@ -112,7 +112,7 @@ $driver = new ToolCallingDriver(
     inference: InferenceRuntime::fromProvider($llm),
     llm: $llm,
 );
-// @doctest id="8fe1"
+// @doctest id="a8b4"
 ```
 
 This tests the full driver pipeline (message compilation, response parsing) without network calls.

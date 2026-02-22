@@ -36,11 +36,11 @@ use Cognesy\Agents\Context\CanAcceptMessageCompiler;
 use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
         useColors: true,
         showTimestamps: true,
         showContinuation: true,

@@ -20,7 +20,7 @@ Key concepts:
 - `SearchFilesTool`: Search for files by filename/path pattern
 - `ReadFileTool`: Read file contents
 - `UseSubagents`: Spawn specialized subagents for subtasks
-- `AgentConsoleLogger`: Provides visibility into agent execution stages
+- `AgentEventConsoleObserver`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -37,13 +37,13 @@ use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Messages\Messages;
 
 // Create console logger for execution visibility
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

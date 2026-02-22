@@ -5,10 +5,11 @@ namespace Cognesy\Agents\Tests\Feature\Session;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\AgentSession;
 use Cognesy\Agents\Session\AgentSessionInfo;
+use Cognesy\Agents\Session\Exceptions\InvalidSessionFileException;
+use Cognesy\Agents\Session\Exceptions\SessionConflictException;
+use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
 use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionInfoList;
-use Cognesy\Agents\Session\SessionStatus;
-use Cognesy\Agents\Session\Exceptions\InvalidSessionFileException;
 use Cognesy\Agents\Session\Store\FileSessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 
@@ -34,14 +35,13 @@ function cleanupDir(string $dir): void {
     rmdir($dir);
 }
 
-it('save and load round-trip via filesystem', function () {
+it('create and load round-trip via filesystem', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
-        $session = makeFileSession();
+        $created = $store->create(makeFileSession());
 
-        $result = $store->save($session);
-        expect($result->isOk())->toBeTrue();
+        expect($created->version())->toBe(1);
 
         $loaded = $store->load(new SessionId('fs1'));
         expect($loaded)->not->toBeNull();
@@ -56,7 +56,7 @@ it('atomic writes create json files', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
-        $store->save(makeFileSession());
+        $store->create(makeFileSession());
 
         expect(file_exists($dir . '/fs1.json'))->toBeTrue();
         $contents = file_get_contents($dir . '/fs1.json');
@@ -68,20 +68,19 @@ it('atomic writes create json files', function () {
     }
 });
 
-it('optimistic lock via version compare', function () {
+it('save enforces optimistic version lock', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
         $session = makeFileSession();
-        $store->save($session);
+        $created = $store->create($session);
+        expect($created->version())->toBe(1);
 
-        // Try saving stale session (version 0, stored is 1)
-        $result = $store->save($session);
-        expect($result->isConflict())->toBeTrue();
+        $store->save($session);
     } finally {
         cleanupDir($dir);
     }
-});
+})->throws(SessionConflictException::class);
 
 it('load throws InvalidSessionFileException on corrupt file', function () {
     $dir = makeTempDir();
@@ -120,8 +119,8 @@ it('listHeaders returns SessionInfoList', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
-        $store->save(makeFileSession('a1'));
-        $store->save(makeFileSession('a2'));
+        $store->create(makeFileSession('a1'));
+        $store->create(makeFileSession('a2'));
 
         $list = $store->listHeaders();
         expect($list)->toBeInstanceOf(SessionInfoList::class);
@@ -135,7 +134,7 @@ it('listHeaders throws on first invalid file', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
-        $store->save(makeFileSession('good'));
+        $store->create(makeFileSession('good'));
         file_put_contents($dir . '/corrupt.json', 'invalid');
 
         $store->listHeaders();
@@ -152,7 +151,7 @@ it('delete removes session file', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
-        $store->save(makeFileSession('del1'));
+        $store->create(makeFileSession('del1'));
 
         expect($store->exists(new SessionId('del1')))->toBeTrue();
         $store->delete(new SessionId('del1'));
@@ -189,20 +188,15 @@ it('save throws on corrupt JSON in existing file', function () {
     $this->fail('Expected InvalidSessionFileException');
 });
 
-it('save throws on malformed structure in existing file', function () {
+it('save overwrites malformed structure when version matches', function () {
     $dir = makeTempDir();
     try {
         file_put_contents($dir . '/malformed.json', json_encode(['foo' => 'bar']));
         $store = new FileSessionStore($dir);
 
-        // File exists with valid JSON but no header — readFile succeeds,
-        // stored version falls back to 0. Fresh session (version=0) matches,
-        // so save overwrites the corrupt file and succeeds.
-        $result = $store->save(makeFileSession('malformed'));
-        expect($result->isOk())->toBeTrue();
-        expect($result->session->version())->toBe(1);
+        $saved = $store->save(makeFileSession('malformed'));
+        expect($saved->version())->toBe(1);
 
-        // Verify the file is now valid
         $loaded = $store->load(new SessionId('malformed'));
         expect($loaded)->not->toBeNull();
         expect($loaded->sessionId())->toBe('malformed');
@@ -211,19 +205,24 @@ it('save throws on malformed structure in existing file', function () {
     }
 });
 
-it('version conflict returns SaveResult not exception', function () {
+it('create throws conflict when session already exists', function () {
     $dir = makeTempDir();
     try {
         $store = new FileSessionStore($dir);
-        $session = makeFileSession();
-        $store->save($session);
+        $store->create(makeFileSession('fs1'));
 
-        // Stale save (version 0, stored is 1) returns conflict status — not an exception
-        $result = $store->save($session);
-        expect($result->isConflict())->toBeTrue();
-        expect($result->message)->toContain('Version conflict');
-        expect($result->session)->toBeNull();
+        $store->create(makeFileSession('fs1'));
     } finally {
         cleanupDir($dir);
     }
-});
+})->throws(SessionConflictException::class);
+
+it('save throws not found for missing session', function () {
+    $dir = makeTempDir();
+    try {
+        $store = new FileSessionStore($dir);
+        $store->save(makeFileSession('missing'));
+    } finally {
+        cleanupDir($dir);
+    }
+})->throws(SessionNotFoundException::class);

@@ -28,7 +28,7 @@ Key concepts:
 - `UseExecutionRetrospective`: Capability that adds checkpoint markers, rewind logic, and system prompt instructions
 - `RetrospectivePolicy`: Configuration (maxRewinds, systemPromptInstructions)
 - `onRewind`: User callback invoked on every rewind with the result and agent state
-- `AgentConsoleLogger`: Shows checkpoint injection, tool calls, and step progression
+- `AgentEventConsoleObserver`: Shows checkpoint injection, tool calls, and step progression
 
 ## Example
 
@@ -45,14 +45,14 @@ use Cognesy\Agents\Capability\Retrospective\ExecutionRetrospectiveResult;
 use Cognesy\Agents\Capability\Retrospective\RetrospectivePolicy;
 use Cognesy\Agents\Capability\Retrospective\UseExecutionRetrospective;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 
 // Track rewinds for observability
 $rewindLog = [];
 
 // Create console logger for execution visibility
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

@@ -19,7 +19,7 @@ This significantly improves accuracy by:
 Key concepts:
 - `UseSelfCritique`: Capability that adds self-evaluation after each response
 - `maxIterations`: Maximum number of critique-revision cycles (default: 2)
-- `AgentConsoleLogger`: Provides visibility into continuation decisions showing SelfCritic evaluations
+- `AgentEventConsoleObserver`: Provides visibility into continuation decisions showing SelfCritic evaluations
 
 ## Example
 
@@ -35,11 +35,11 @@ use Cognesy\Agents\Capability\File\SearchFilesTool;
 use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\SelfCritique\UseSelfCritique;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 
 // Create console logger - showContinuation reveals self-critique decisions
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,  // Shows SelfCritic criterion in evaluation

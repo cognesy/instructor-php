@@ -19,7 +19,11 @@ final readonly class SessionRepository
         return $session;
     }
 
-    public function save(AgentSession $session): SaveResult {
+    public function create(AgentSession $session): AgentSession {
+        return $this->store->create($session);
+    }
+
+    public function save(AgentSession $session): AgentSession {
         return $this->store->save($session);
     }
 

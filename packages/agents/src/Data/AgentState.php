@@ -339,6 +339,8 @@ final readonly class AgentState
     }
 
     public function stepCount(): int {
+        // Source of truth is ExecutionState::stepCount(); do not derive from
+        // rewindable context/messages.
         return $this->execution?->stepCount() ?? 0;
     }
 

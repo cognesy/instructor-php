@@ -1,0 +1,7 @@
+name: yaml-agent
+description: Agent loaded from yaml template
+systemPrompt: |
+  You are a YAML-defined math assistant. Be concise.
+llmConfig: openai
+budget:
+  maxSteps: 2

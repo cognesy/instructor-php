@@ -142,3 +142,7 @@ The boundary between `\Core` and `\Hook` is **whether the behavior is optional**
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
+
+## Git Ownership
+
+- Leave all git operations to the human user unless explicitly requested.

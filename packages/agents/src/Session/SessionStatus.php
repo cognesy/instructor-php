@@ -8,4 +8,5 @@ enum SessionStatus: string
     case Suspended = 'suspended';
     case Completed = 'completed';
     case Failed = 'failed';
+    case Deleted = 'deleted';
 }

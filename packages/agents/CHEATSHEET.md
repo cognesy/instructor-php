@@ -196,7 +196,7 @@ Root namespace: `Cognesy\Agents`
 | `DecisionExtractionFailed` | ReAct decision parsing failed |
 | `ValidationFailed` | Validation error |
 
-`AgentEvent` — base class. `AgentConsoleLogger` (`\Events\Support`) — convenience listener for console output.
+`AgentEvent` — base class. `AgentEventConsoleObserver` (`\Events\Support`) — convenience listener for console output.
 
 ---
 

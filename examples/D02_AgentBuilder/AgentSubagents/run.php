@@ -20,7 +20,7 @@ Key concepts:
 - `UseSubagents`: Capability that enables subagent spawning
 - `AgentDefinitionRegistry`: Registry of available subagent definitions
 - `AgentDefinition`: Defines subagent role, tools, and behavior
-- `AgentConsoleLogger`: Shows parent/child agent IDs for tracking orchestration
+- `AgentEventConsoleObserver`: Shows parent/child agent IDs for tracking orchestration
 
 ## Example
 
@@ -34,13 +34,13 @@ use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\Subagent\UseSubagents;
 use Cognesy\Agents\Collections\NameList;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Messages\Messages;
 
 // Create console logger - shows agent IDs for parent/child tracking
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

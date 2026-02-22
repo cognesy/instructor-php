@@ -19,6 +19,10 @@ final readonly class SessionId
 
     // CONSTRUCTORS ////////////////////////////////////////////////
 
+    public static function from(string $value): self {
+        return new self($value);
+    }
+
     public static function generate(): self {
         return new self(Uuid::uuid4());
     }

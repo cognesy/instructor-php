@@ -5,6 +5,8 @@ namespace Cognesy\Agents\Tests\Feature\Session;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Session\AgentSession;
 use Cognesy\Agents\Session\AgentSessionInfo;
+use Cognesy\Agents\Session\Exceptions\SessionConflictException;
+use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
 use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionInfoList;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
@@ -18,49 +20,42 @@ function makeStoreSession(string $id = 's1'): AgentSession {
     );
 }
 
-it('save and load round-trip', function () {
+it('create and load round-trip', function () {
     $store = new InMemorySessionStore();
     $session = makeStoreSession();
 
-    $result = $store->save($session);
-    expect($result->isOk())->toBeTrue();
+    $created = $store->create($session);
+    expect($created->version())->toBe(1);
 
     $loaded = $store->load(new SessionId('s1'));
     expect($loaded)->not->toBeNull();
     expect($loaded->sessionId())->toBe('s1');
 });
 
-it('save increments version on first save', function () {
+it('save increments version', function () {
     $store = new InMemorySessionStore();
-    $session = makeStoreSession();
+    $created = $store->create(makeStoreSession());
+    $saved = $store->save($created);
 
-    $result = $store->save($session);
-
-    expect($result->session->version())->toBe(1);
+    expect($saved->version())->toBe(2);
 });
 
-it('save increments version on subsequent save', function () {
+it('save throws conflict on stale version', function () {
     $store = new InMemorySessionStore();
     $session = makeStoreSession();
+    $store->create($session);
 
-    $result1 = $store->save($session);
-    $result2 = $store->save($result1->session);
-
-    expect($result2->session->version())->toBe(2);
-});
-
-it('save returns conflict on stale version', function () {
-    $store = new InMemorySessionStore();
-    $session = makeStoreSession();
     $store->save($session);
+})->throws(SessionConflictException::class);
 
-    // Try saving original again (version 0, but stored is now 1)
-    $result = $store->save($session);
+it('create throws conflict for duplicate session id', function () {
+    $store = new InMemorySessionStore();
+    $store->create(makeStoreSession('s1'));
 
-    expect($result->isConflict())->toBeTrue();
-});
+    $store->create(makeStoreSession('s1'));
+})->throws(SessionConflictException::class);
 
-it('save returns conflict for new session with non-zero version', function () {
+it('create throws conflict for new session with non-zero version', function () {
     $store = new InMemorySessionStore();
     $info = new AgentSessionInfo(
         sessionId: new SessionId('s1'),
@@ -78,15 +73,19 @@ it('save returns conflict for new session with non-zero version', function () {
         state: AgentState::empty(),
     );
 
-    $result = $store->save($session);
-    expect($result->isConflict())->toBeTrue();
-});
+    $store->create($session);
+})->throws(SessionConflictException::class);
 
-it('save updates updatedAt', function () {
+it('save throws not found when session is missing', function () {
+    $store = new InMemorySessionStore();
+    $store->save(makeStoreSession('missing'));
+})->throws(SessionNotFoundException::class);
+
+it('create updates updatedAt', function () {
     $store = new InMemorySessionStore();
     $session = makeStoreSession();
 
-    $result = $store->save($session);
+    $store->create($session);
     $loaded = $store->load(new SessionId('s1'));
 
     expect($loaded->info()->updatedAt()->getTimestamp())
@@ -95,8 +94,8 @@ it('save updates updatedAt', function () {
 
 it('listHeaders returns SessionInfoList of stored sessions', function () {
     $store = new InMemorySessionStore();
-    $store->save(makeStoreSession('s1'));
-    $store->save(makeStoreSession('s2'));
+    $store->create(makeStoreSession('s1'));
+    $store->create(makeStoreSession('s2'));
 
     $list = $store->listHeaders();
 
@@ -106,7 +105,7 @@ it('listHeaders returns SessionInfoList of stored sessions', function () {
 
 it('delete removes session', function () {
     $store = new InMemorySessionStore();
-    $store->save(makeStoreSession('s1'));
+    $store->create(makeStoreSession('s1'));
 
     $store->delete(new SessionId('s1'));
 
@@ -119,6 +118,6 @@ it('exists reflects stored state', function () {
 
     expect($store->exists(new SessionId('s1')))->toBeFalse();
 
-    $store->save(makeStoreSession('s1'));
+    $store->create(makeStoreSession('s1'));
     expect($store->exists(new SessionId('s1')))->toBeTrue();
 });

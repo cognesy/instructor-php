@@ -16,7 +16,7 @@ Key concepts:
 - `UseTools`: Adds extra tools explicitly when needed (`list_dir`, `search_files`)
 - Working directory: Root path for all file operations (security boundary)
 - Available tools: `read_file`, `write_file`, `edit_file`, `list_dir`, `search_files`
-- `AgentConsoleLogger`: Provides visibility into agent execution stages
+- `AgentEventConsoleObserver`: Provides visibility into agent execution stages
 
 ## Example
 
@@ -31,11 +31,11 @@ use Cognesy\Agents\Capability\File\ListDirTool;
 use Cognesy\Agents\Capability\File\SearchFilesTool;
 use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Messages\Messages;
 
 // Create console logger for execution visibility
-$logger = new AgentConsoleLogger(
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

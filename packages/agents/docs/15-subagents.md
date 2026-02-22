@@ -337,12 +337,12 @@ $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
 });
 ```
 
-Use `AgentConsoleLogger` to see parent/child agent IDs in console output:
+Use `AgentEventConsoleObserver` to see parent/child agent IDs in console output:
 
 ```php
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 
-$logger = new AgentConsoleLogger(useColors: true, showTimestamps: true);
+$logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
 ```
 

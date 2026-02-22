@@ -121,26 +121,9 @@ extra_css:
   - stylesheets/nav.css
 nav:
   -
-    Main:
-      -
-        Overview: index.md
-      -
-        'Getting Started': getting-started.md
-      -
-        Features: features.md
-      -
-        Packages: packages.md
-      -
-        'Use Cases': use-cases.md
-      -
-        'Why Instructor': why-instructor.md
-      -
-        'Release Notes':
-          - { Overview: release-notes/versions.md }
+    Main: {  }
   -
     Packages:
-      -
-        Overview: packages/index.md
       -
         Instructor:
           - { Introduction: packages/instructor/introduction.md }
@@ -183,6 +166,7 @@ nav:
           - { 'Agent Builder': packages/agents/13-agent-builder.md }
           - { 'Agent Templates': packages/agents/14-agent-templates.md }
           - { Subagents: packages/agents/15-subagents.md }
+          - { 'Session Runtime': packages/agents/16-session-runtime.md }
       -
         'HTTP Client':
           - { Overview: packages/http/1-overview.md }
@@ -210,10 +194,6 @@ nav:
           - { Troubleshooting: packages/laravel/troubleshooting.md }
   -
     Cookbook:
-      -
-        Introduction: cookbook/introduction.md
-      -
-        Contributing: cookbook/contributing.md
       -
         'Test Group':
           - { 'Test Example': cookbook/basics/TestGroup/.md }

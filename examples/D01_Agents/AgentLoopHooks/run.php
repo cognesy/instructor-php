@@ -28,15 +28,15 @@ require 'examples/boot.php';
 use Cognesy\Agents\AgentLoop;
 use Cognesy\Agents\Capability\Bash\BashTool;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Events\Support\AgentConsoleLogger;
+use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Collections\RegisteredHooks;
 use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\HookStack;
 use Cognesy\Agents\Hook\Hooks\CallableHook;
 
-// AgentConsoleLogger shows execution lifecycle alongside hook output
-$logger = new AgentConsoleLogger(
+// AgentEventConsoleObserver shows execution lifecycle alongside hook output
+$logger = new AgentEventConsoleObserver(
     useColors: true,
     showTimestamps: true,
     showContinuation: true,

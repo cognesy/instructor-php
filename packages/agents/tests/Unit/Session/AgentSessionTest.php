@@ -80,9 +80,16 @@ it('failed transitions to Failed', function () {
     expect($failed->status())->toBe(SessionStatus::Failed);
 });
 
+it('deleted transitions to Deleted', function () {
+    $session = makeSession();
+    $deleted = $session->deleted();
+
+    expect($deleted->status())->toBe(SessionStatus::Deleted);
+});
+
 it('withParentId updates parent', function () {
     $session = makeSession();
-    $withParent = $session->withParentId('parent-1');
+    $withParent = $session->withParentId(new SessionId('parent-1'));
 
     expect($withParent->info()->parentId())->toBe('parent-1');
     expect($session->info()->parentId())->toBeNull();
