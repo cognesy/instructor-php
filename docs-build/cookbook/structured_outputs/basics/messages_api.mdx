@@ -39,6 +39,9 @@ $messages = Messages::empty()
 
 $messages->appendMessage(Message::asUser('Make it insurance related.'));
 
+$lastMessageId = $messages->last()->id()->toString();
+print("Last message ID: {$lastMessageId}\n");
+
 print("Extracting structured data using LLM...\n\n");
 $code = (new StructuredOutput)
     ->using('openai')

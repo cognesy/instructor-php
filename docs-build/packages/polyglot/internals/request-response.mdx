@@ -49,7 +49,7 @@ class InferenceRequest {
     public function toArray(): array { ... }
     public function withCacheApplied(): self { ... }
 }
-// @doctest id="899d"
+// @doctest id="0124"
 ```
 
 Internally, request identity is represented by `InferenceRequestId` and can be converted to string at boundaries via `->id()->toString()`.
@@ -82,7 +82,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
     public function stream(): InferenceStream { ... }
     public function response(): InferenceResponse { ... }
 }
-// @doctest id="0b75"
+// @doctest id="1c1f"
 ```
 
 For streaming responses, the `InferenceStream` class provides methods to process the stream:
@@ -103,7 +103,7 @@ class InferenceStream {
     public function final(): ?InferenceResponse { ... }
     public function onPartialResponse(callable $callback): self { ... }
 }
-// @doctest id="b486"
+// @doctest id="b2a7"
 ```
 
 
@@ -130,5 +130,5 @@ class EmbeddingsResponse {
     public function totalTokens(): int { ... }
     public function split(int $index): array { ... }
 }
-// @doctest id="a299"
+// @doctest id="4976"
 ```

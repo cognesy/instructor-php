@@ -26,7 +26,7 @@ $definition = new AgentDefinition(
     toolsDeny: new NameList(['file.write']),           // optional tool deny-list
     capabilities: new NameList(['use_bash']),          // capability names to install
 );
-// @doctest id="b9a7"
+// @doctest id="04d9"
 ```
 
 All fields except `name`, `description`, and `systemPrompt` are optional.
@@ -53,7 +53,7 @@ capabilities:
 
 You are a research assistant. Find and summarize information accurately.
 Use available tools to search and verify your findings.
-// @doctest id="55b1"
+// @doctest id="47c6"
 ```
 
 The body after the frontmatter becomes the `systemPrompt`.
@@ -67,7 +67,7 @@ systemPrompt: |
   You are a research assistant. Find and summarize information.
 budget:
   maxSteps: 10
-# @doctest id="29f7"
+# @doctest id="04f2"
 ```
 
 ### JSON
@@ -79,7 +79,7 @@ budget:
   "systemPrompt": "You are a research assistant.",
   "budget": { "maxSteps": 10 }
 }
-// @doctest id="1eda"
+// @doctest id="7b72"
 ```
 
 ## Loading Definitions
@@ -93,7 +93,7 @@ use Cognesy\Agents\Template\AgentDefinitionLoader;
 
 $loader = new AgentDefinitionLoader();
 $definition = $loader->loadFile('/path/to/researcher.md');
-// @doctest id="df44"
+// @doctest id="396a"
 ```
 
 Supported extensions: `.md`, `.json`, `.yaml`, `.yml`.
@@ -124,7 +124,7 @@ $registry->get('researcher');    // AgentDefinition (throws if not found)
 $registry->has('researcher');    // bool
 $registry->names();              // ['researcher', 'writer', ...]
 $registry->count();              // int
-// @doctest id="402c"
+// @doctest id="8f11"
 ```
 
 Loading errors are collected silently — check `$registry->errors()` for any files that failed to parse.
@@ -151,7 +151,7 @@ $loader = new AgentDefinitionLoader([
     'toml' => new TomlDefinitionParser(),
     'md' => new MarkdownDefinitionParser(),   // keep defaults
 ]);
-// @doctest id="5a34"
+// @doctest id="aaad"
 ```
 
 ## Instantiation Factories
@@ -168,7 +168,7 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 $factory = new DefinitionStateFactory();
 $state = $factory->create($definition);
 // AgentState with systemPrompt, budget, and metadata from definition
-// @doctest id="301d"
+// @doctest id="6898"
 ```
 
 ### DefinitionLoopFactory
@@ -184,7 +184,7 @@ $capabilities = new AgentCapabilityRegistry();
 
 $factory = new DefinitionLoopFactory($capabilities);
 $loop = $factory->create($definition);
-// @doctest id="9bb3"
+// @doctest id="f2d6"
 ```
 
 ## Using with Subagents
@@ -198,7 +198,7 @@ $registry->loadFromDirectory('/agents/');
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-// @doctest id="546e"
+// @doctest id="6153"
 ```
 
 When the agent spawns a subagent by name, the registry provides the definition, and the factory creates the corresponding loop and state.
@@ -210,5 +210,5 @@ When the agent spawns a subagent by name, the registry provides the definition, 
 ```php
 $data = $definition->toArray();
 $restored = AgentDefinition::fromArray($data);
-// @doctest id="eef0"
+// @doctest id="0ed2"
 ```

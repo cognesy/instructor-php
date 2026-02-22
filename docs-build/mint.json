@@ -343,7 +343,8 @@
                 "packages/agents/12-tool-calling-internals",
                 "packages/agents/13-agent-builder",
                 "packages/agents/14-agent-templates",
-                "packages/agents/15-subagents"
+                "packages/agents/15-subagents",
+                "packages/agents/16-session-runtime"
             ]
         },
         {
@@ -607,7 +608,29 @@
                 "cookbook/agents/agent_builder/agent_hooks",
                 "cookbook/agents/agent_builder/agent_self_critique",
                 "cookbook/agents/agent_builder/agent_search",
-                "cookbook/agents/agent_builder/agent_subagents"
+                "cookbook/agents/agent_builder/agent_subagents",
+                "cookbook/agents/agent_builder/agent_retrospective"
+            ]
+        },
+        {
+            "group": "Agents and Agent Controllers \\ Agent Templates",
+            "pages": [
+                "cookbook/agents/agent_templates/template_from_definition",
+                "cookbook/agents/agent_templates/template_from_markdown",
+                "cookbook/agents/agent_templates/template_from_yaml",
+                "cookbook/agents/agent_templates/template_with_tools_and_capabilities",
+                "cookbook/agents/agent_templates/template_override_seed_state"
+            ]
+        },
+        {
+            "group": "Agents and Agent Controllers \\ Agent Sessions",
+            "pages": [
+                "cookbook/agents/agent_sessions/session_create_and_persist",
+                "cookbook/agents/agent_sessions/session_runtime_execute_action",
+                "cookbook/agents/agent_sessions/session_runtime_read_apis",
+                "cookbook/agents/agent_sessions/session_send_message_action",
+                "cookbook/agents/agent_sessions/session_fork_action",
+                "cookbook/agents/agent_sessions/session_conflict_handling"
             ]
         },
         {

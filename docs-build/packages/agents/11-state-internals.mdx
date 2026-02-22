@@ -40,7 +40,7 @@ AgentState (readonly)
           |-- inferenceResponse
           |-- toolExecutions: ToolExecutions (items have ToolExecutionId)
           |-- errors: ErrorList
-// @doctest id="82f1"
+// @doctest id="6216"
 ```
 
 ## Key Accessors
@@ -78,7 +78,7 @@ $state->hasErrors();
 // Final output
 $state->hasFinalResponse();
 $state->finalResponse()->toString();
-// @doctest id="d9d5"
+// @doctest id="1f00"
 ```
 
 ## AgentBudget
@@ -95,7 +95,7 @@ $remaining = $budget->remaining(stepsUsed: 5, tokensUsed: 3000);
 // Cap by another budget:
 $capped = $budget->cappedBy(new AgentBudget(maxSteps: 10));
 // maxSteps: 10 (takes minimum)
-// @doctest id="c56e"
+// @doctest id="661c"
 ```
 
 ## Serialization
@@ -105,5 +105,5 @@ All state objects support `toArray()` / `fromArray()` for persistence:
 ```php
 $data = $state->toArray();
 $restored = AgentState::fromArray($data);
-// @doctest id="a4e4"
+// @doctest id="e895"
 ```

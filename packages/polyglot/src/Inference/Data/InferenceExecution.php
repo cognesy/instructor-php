@@ -89,8 +89,9 @@ class InferenceExecution
             return $attemptsUsage;
         }
         // Check if current attempt is already counted in attempts list
-        $isInAttempts = $this->attempts->count() > 0
-            && $this->attempts->last()?->id->equals($current->id);
+        $lastAttempt = $this->attempts->last();
+        $isInAttempts = $lastAttempt !== null
+            && $lastAttempt->id->equals($current->id);
         if ($isInAttempts) {
             // Already counted via attempts->usage()
             return $attemptsUsage;

@@ -17,7 +17,10 @@ final class ConsoleEventPrinter
         $this->renderColors = $useColors && $this->supportsColors();
     }
 
-    public function wiretap(CanFormatConsoleEvent $formatter): callable {
+    /**
+     * @return \Closure(object): void
+     */
+    public function wiretap(CanFormatConsoleEvent $formatter): \Closure {
         return function (object $event) use ($formatter): void {
             $this->printIfAny($formatter->format($event));
         };

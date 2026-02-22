@@ -174,6 +174,9 @@ class MarkSnippetsRecursively extends Command
         $ok = 0; $failed = 0; $snippets = 0;
         // Ensure we use real paths for consistent path calculation
         $realSourceDir = realpath($sourceDir);
+        if ($realSourceDir === false) {
+            throw new InvalidArgumentException("Source directory does not exist: {$sourceDir}");
+        }
         foreach ($files as $filePath) {
             $relativePath = Path::makeRelative($filePath, $realSourceDir);
             try {
