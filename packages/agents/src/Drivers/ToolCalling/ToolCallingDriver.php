@@ -9,7 +9,10 @@ use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
@@ -40,7 +43,7 @@ use Override;
  * generating a response based on input messages, selecting and invoking tools,
  * handling tool execution results, and crafting follow-up messages.
  */
-class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMessageCompiler
+class ToolCallingDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -55,6 +58,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
     private ToolExecutionFormatter $formatter;
     private CanHandleEvents $events;
     private CanCreateInference $inference;
+    private Tools $tools;
+    private CanExecuteToolCalls $executor;
 
     public function __construct(
         CanCreateInference $inference,
@@ -68,6 +73,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanHandleEvents $events = null,
+        ?Tools $tools = null,
+        ?CanExecuteToolCalls $executor = null,
     ) {
         $this->inference = $inference;
         $this->llm = $llm ?? LLMProvider::new();
@@ -81,6 +88,12 @@ class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         $this->retryPolicy = $retryPolicy;
         $this->formatter = new ToolExecutionFormatter();
         $this->events = EventBusResolver::using($events);
+        $this->tools = $tools ?? new Tools();
+        $this->executor = $executor ?? new ToolExecutor(
+            tools: $this->tools,
+            events: $this->events,
+            interceptor: new PassThroughInterceptor(),
+        );
     }
 
     #[\Override]
@@ -106,13 +119,18 @@ class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         return $this->with(messageCompiler: $compiler);
     }
 
+    #[\Override]
+    public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
+        return $this->with(tools: $tools, executor: $executor);
+    }
+
     #[Override]
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor) : AgentState {
+    public function useTools(AgentState $state) : AgentState {
         $state = $this->ensureStateLLMConfig($state);
         $context = $this->messageCompiler->compile($state);
-        $response = $this->getToolCallResponse($state, $tools, $context);
+        $response = $this->getToolCallResponse($state, $this->tools, $context);
         $toolCalls = $response->toolCalls();
-        $executions = $executor->executeTools($toolCalls, $state);
+        $executions = $this->executor->executeTools($toolCalls, $state);
         $messages = $this->formatter->makeExecutionMessages($executions);
         $step = $this->buildStepFromResponse(
             response: $response,
@@ -136,6 +154,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         ?CanCompileMessages $messageCompiler = null,
         ?InferenceRetryPolicy $retryPolicy = null,
         ?CanCreateInference $inference = null,
+        ?Tools $tools = null,
+        ?CanExecuteToolCalls $executor = null,
     ): static {
         return new static(
             inference: $inference ?? $this->inference,
@@ -149,6 +169,8 @@ class ToolCallingDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
             messageCompiler: $messageCompiler ?? $this->messageCompiler,
             retryPolicy: $retryPolicy ?? $this->retryPolicy,
             events: $this->events,
+            tools: $tools ?? $this->tools,
+            executor: $executor ?? $this->executor,
         );
     }
 

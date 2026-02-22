@@ -13,7 +13,6 @@ use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Events\ContinuationEvaluated;
-use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Messages\Messages;
 
 describe('AgentStopException', function () {
@@ -27,7 +26,7 @@ describe('AgentStopException', function () {
         $driver = new class($signal) implements CanUseTools {
             public function __construct(private StopSignal $signal) {}
 
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
+            public function useTools(AgentState $state): AgentState {
                 $step = new AgentStep(inputMessages: $state->messages());
                 throw new AgentStopException($this->signal, $step, source: 'TestStop');
             }

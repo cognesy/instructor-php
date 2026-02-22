@@ -20,7 +20,6 @@ use Cognesy\Agents\Hook\Data\HookContext;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Interception\CanInterceptAgentLifecycle;
 use Cognesy\Agents\Interception\PassThroughInterceptor;
-use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -110,7 +109,7 @@ describe('AgentLoop flow', function () {
         $interceptor = new ThrowingInterceptor(HookTrigger::BeforeStep);
 
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 return $state;
             }
@@ -140,7 +139,7 @@ describe('AgentLoop flow', function () {
         $interceptor = new InjectStepInterceptor($step);
 
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 throw new RuntimeException('driver boom');
             }
@@ -170,7 +169,7 @@ describe('AgentLoop flow', function () {
         $interceptor = new InjectStepInterceptor($step);
 
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 $toolCall = ToolCall::fromArray([
                     'id' => 'call_blocked',
@@ -208,7 +207,7 @@ describe('AgentLoop flow', function () {
         $interceptor = new InjectStepInterceptor($step);
 
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 return $state;
             }
@@ -243,7 +242,7 @@ describe('AgentLoop flow', function () {
         $interceptor = new PassThroughInterceptor();
 
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 return $state;
             }
@@ -279,7 +278,7 @@ describe('AgentLoop flow', function () {
         $newInterceptor = new BlockingBeforeToolUseInterceptor();
 
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 return $state;
             }
@@ -315,7 +314,7 @@ describe('AgentLoop flow', function () {
 
         // Driver that returns immediately (no tool calls) — simulates LLM finish=stop
         $driver = new class implements CanUseTools {
-            public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState
+            public function useTools(AgentState $state): AgentState
             {
                 return $state;
             }

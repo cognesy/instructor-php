@@ -8,6 +8,7 @@ use Cognesy\Agents\Continuation\AgentStopException;
 use Cognesy\Agents\Continuation\StopReason;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
@@ -92,13 +93,14 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     #[\Override]
     public function iterate(AgentState $state): iterable {
+        $driver = $this->bindToolRuntime($this->driver);
         $state = $this->onBeforeExecution($state);
         while (true) {
             $stepStarted = false;
             try {
                 $state = $this->onBeforeStep($state);
                 $stepStarted = true;
-                $state = $this->handleToolUse($state);
+                $state = $this->handleToolUse($state, $driver);
             } catch (AgentStopException $stop) {
                 $state = $this->handleStopException($state, $stop);
             } catch (Throwable $error) {
@@ -170,9 +172,9 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
 
     // INTERNAL ///////////////////////////////////////////
 
-    private function handleToolUse(AgentState $state) : AgentState {
+    private function handleToolUse(AgentState $state, CanUseTools $driver) : AgentState {
         try {
-            $state = $this->useTools($state);
+            $state = $this->useTools($state, $driver);
         } catch (ToolExecutionBlockedException $block) {
             $state = $this->handleToolBlockException($state, $block);
         }
@@ -206,13 +208,19 @@ readonly class AgentLoop implements CanControlAgentLoop, CanAcceptEventHandler
         return $shouldStop;
     }
 
-    private function useTools(AgentState $state): AgentState {
-        $state = $this->driver->useTools(
-            state: $state,
-            tools: $this->tools,
-            executor: $this->toolExecutor
-        );
+    private function useTools(AgentState $state, CanUseTools $driver): AgentState {
+        $state = $driver->useTools(state: $state);
         return $state;
+    }
+
+    private function bindToolRuntime(CanUseTools $driver): CanUseTools {
+        return match (true) {
+            $driver instanceof CanAcceptToolRuntime => $driver->withToolRuntime(
+                tools: $this->tools,
+                executor: $this->toolExecutor,
+            ),
+            default => $driver,
+        };
     }
 
     // EVENT DELEGATION ///////////////////////////////////

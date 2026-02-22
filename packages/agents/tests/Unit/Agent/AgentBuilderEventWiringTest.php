@@ -6,12 +6,10 @@ use Cognesy\Agents\Builder\AgentBuilder;
 use Cognesy\Agents\Capability\Core\UseDriver;
 use Cognesy\Agents\Capability\Core\UseLLMConfig;
 use Cognesy\Agents\Capability\Core\UseReActConfig;
-use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ReAct\ReActDriver;
-use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanAcceptEventHandler;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -41,7 +39,7 @@ final class EventAwareDriver implements CanUseTools, CanAcceptEventHandler
     }
 
     #[\Override]
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
+    public function useTools(AgentState $state): AgentState {
         return $state->withCurrentStep(new AgentStep(
             inputMessages: Messages::empty(),
             outputMessages: Messages::fromString('ok', 'assistant'),

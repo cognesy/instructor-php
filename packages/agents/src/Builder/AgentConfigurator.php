@@ -10,6 +10,7 @@ use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Context\CanAcceptMessageCompiler;
 use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
+use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Agents\Hook\Collections\RegisteredHooks;
@@ -62,7 +63,7 @@ final readonly class AgentConfigurator implements CanConfigureAgent
     }
 
     public function toAgentLoop(): AgentLoop {
-        $driver = $this->resolveDriver();
+        $driver = $this->normalizeDriver($this->toolUseDriver, $this->contextCompiler);
         $tools = $this->resolveTools($driver);
         $interceptor = $this->resolveInterceptor();
 
@@ -72,6 +73,7 @@ final readonly class AgentConfigurator implements CanConfigureAgent
             interceptor: $interceptor,
             throwOnToolFailure: false,
         );
+        $driver = $this->bindToolRuntime($driver, $tools, $executor);
 
         return new AgentLoop(
             tools: $tools,
@@ -169,13 +171,20 @@ final readonly class AgentConfigurator implements CanConfigureAgent
         );
     }
 
-    private function resolveDriver(): CanUseTools {
-        return $this->normalizeDriver($this->toolUseDriver, $this->contextCompiler);
-    }
-
     private function normalizeDriver(CanUseTools $driver, CanCompileMessages $compiler): CanUseTools {
         return match (true) {
             $driver instanceof CanAcceptMessageCompiler => $driver->withMessageCompiler($compiler),
+            default => $driver,
+        };
+    }
+
+    private function bindToolRuntime(
+        CanUseTools $driver,
+        Tools $tools,
+        ToolExecutor $executor,
+    ) : CanUseTools {
+        return match (true) {
+            $driver instanceof CanAcceptToolRuntime => $driver->withToolRuntime($tools, $executor),
             default => $driver,
         };
     }

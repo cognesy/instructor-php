@@ -10,6 +10,7 @@ use Cognesy\Agents\Context\Compilers\ConversationWithCurrentToolTrace;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Data\ToolExecution;
+use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeReActPrompt;
 use Cognesy\Agents\Drivers\ReAct\Actions\MakeToolCalls;
@@ -22,6 +23,8 @@ use Cognesy\Agents\Events\InferenceRequestStarted;
 use Cognesy\Agents\Events\InferenceResponseReceived;
 use Cognesy\Agents\Events\ValidationFailed;
 use Cognesy\Agents\Exceptions\AgentException;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
@@ -51,7 +54,7 @@ use Cognesy\Polyglot\Inference\PendingInference;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 
-final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMessageCompiler
+final class ReActDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
     private LLMProvider $llm;
     private ?HttpClient $httpClient = null;
@@ -66,6 +69,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
     private CanHandleEvents $events;
     private CanCreateInference $inference;
     private CanCreateStructuredOutput $structuredOutput;
+    private Tools $tools;
+    private CanExecuteToolCalls $executor;
 
     public function __construct(
         CanCreateInference $inference,
@@ -81,6 +86,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         OutputMode $mode = OutputMode::Json,
         ?CanCompileMessages $messageCompiler = null,
         ?CanHandleEvents $events = null,
+        ?Tools $tools = null,
+        ?CanExecuteToolCalls $executor = null,
     ) {
         $this->inference = $inference;
         $this->structuredOutput = $structuredOutput;
@@ -95,13 +102,19 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         $this->mode = $mode;
         $this->messageCompiler = $messageCompiler ?? new ConversationWithCurrentToolTrace();
         $this->events = EventBusResolver::using($events);
+        $this->tools = $tools ?? new Tools();
+        $this->executor = $executor ?? new ToolExecutor(
+            tools: $this->tools,
+            events: $this->events,
+            interceptor: new PassThroughInterceptor(),
+        );
     }
 
     #[\Override]
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
+    public function useTools(AgentState $state): AgentState {
         $state = $this->ensureStateLLMConfig($state);
         $messages = $this->messageCompiler->compile($state);
-        $system = $this->buildSystemPrompt($tools);
+        $system = $this->buildSystemPrompt($this->tools);
         $cachedContext = $this->structuredCachedContext($state);
 
         $requestStartedAt = new DateTimeImmutable();
@@ -131,7 +144,7 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         $this->emitInferenceResponseReceived($state, $inferenceResponse, $requestStartedAt);
 
         $validator = new ReActValidator();
-        $validation = $validator->validateBasicDecision($decision, $tools->names());
+        $validation = $validator->validateBasicDecision($decision, $this->tools->names());
         if ($validation->isInvalid()) {
             $this->emitValidationFailed(
                 state: $state,
@@ -142,7 +155,7 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
             return $state->withCurrentStep($step)->withFailure(new AgentException($validation->getErrorMessage()));
         }
 
-        $toolCalls = (new MakeToolCalls($tools, $validator))($decision);
+        $toolCalls = (new MakeToolCalls($this->tools, $validator))($decision);
 
         $usage = $inferenceResponse->usage();
 
@@ -157,7 +170,7 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
             return $state->withCurrentStep($step);
         }
 
-        $executions = $executor->executeTools($toolCalls, $state);
+        $executions = $this->executor->executeTools($toolCalls, $state);
 
         $outputMessages = $this->makeFollowUps($decision, $executions);
         $responseWithCalls = $this->withToolCalls($inferenceResponse, $toolCalls);
@@ -209,6 +222,11 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         return $this->with(messageCompiler: $compiler);
     }
 
+    #[\Override]
+    public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
+        return $this->with(tools: $tools, executor: $executor);
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////////
 
     private function with(
@@ -224,6 +242,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
         ?CanCompileMessages $messageCompiler = null,
         ?CanCreateInference $inference = null,
         ?CanCreateStructuredOutput $structuredOutput = null,
+        ?Tools $tools = null,
+        ?CanExecuteToolCalls $executor = null,
     ): self {
         return new self(
             inference: $inference ?? $this->inference,
@@ -239,6 +259,8 @@ final class ReActDriver implements CanUseTools, CanAcceptLLMConfig, CanAcceptMes
             mode: $mode ?? $this->mode,
             messageCompiler: $messageCompiler ?? $this->messageCompiler,
             events: $this->events,
+            tools: $tools ?? $this->tools,
+            executor: $executor ?? $this->executor,
         );
     }
 

@@ -9,9 +9,13 @@ use Cognesy\Agents\Context\CanCompileMessages;
 use Cognesy\Agents\Context\Compilers\SelectedSections;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
+use Cognesy\Agents\Drivers\CanAcceptToolRuntime;
 use Cognesy\Agents\Drivers\CanUseTools;
 use Cognesy\Agents\Enums\AgentStepType;
+use Cognesy\Agents\Interception\PassThroughInterceptor;
+use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Contracts\CanExecuteToolCalls;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -21,17 +25,20 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
-final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
+final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {
+    private const CURSOR_METADATA_KEY = 'driver.fake.cursor';
+
     /** @var list<ScenarioStep> */
     private array $steps;
-    private int $index;
     private string $defaultResponse;
     private Usage $defaultUsage;
     private AgentStepType $defaultStepType;
     /** @var list<ScenarioStep>|null */
     private ?array $childSteps;
     private CanCompileMessages $messageCompiler;
+    private Tools $tools;
+    private CanExecuteToolCalls $executor;
 
     /**
      * @param list<ScenarioStep> $steps
@@ -42,17 +49,23 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcc
         string $defaultResponse = 'ok',
         ?Usage $defaultUsage = null,
         ?AgentStepType $defaultStepType = null,
-        int $startIndex = 0,
         ?array $childSteps = null,
         ?CanCompileMessages $messageCompiler = null,
+        ?Tools $tools = null,
+        ?CanExecuteToolCalls $executor = null,
     ) {
         $this->steps = $steps;
-        $this->index = $startIndex;
         $this->defaultResponse = $defaultResponse;
         $this->defaultUsage = $defaultUsage ?? new Usage(0, 0);
         $this->defaultStepType = $defaultStepType ?? AgentStepType::FinalResponse;
         $this->childSteps = $childSteps;
         $this->messageCompiler = $messageCompiler ?? SelectedSections::default();
+        $this->tools = $tools ?? new Tools();
+        $this->executor = $executor ?? new ToolExecutor(
+            tools: $this->tools,
+            events: new EventDispatcher('fake-agent-driver'),
+            interceptor: new PassThroughInterceptor(),
+        );
     }
 
     public static function fromSteps(ScenarioStep ...$steps): self {
@@ -77,9 +90,10 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcc
             defaultResponse: $this->defaultResponse,
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,
-            startIndex: 0,
             childSteps: $this->childSteps,
             messageCompiler: $this->messageCompiler,
+            tools: $this->tools,
+            executor: $this->executor,
         );
     }
 
@@ -92,9 +106,10 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcc
             defaultResponse: $this->defaultResponse,
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,
-            startIndex: $this->index,
             childSteps: $steps,
             messageCompiler: $this->messageCompiler,
+            tools: $this->tools,
+            executor: $this->executor,
         );
     }
 
@@ -120,8 +135,9 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcc
             defaultResponse: $childSteps[array_key_last($childSteps)]->response ?? 'ok',
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,
-            startIndex: 0,
             messageCompiler: $this->messageCompiler,
+            tools: $this->tools,
+            executor: $this->executor,
         );
     }
 
@@ -137,32 +153,52 @@ final class FakeAgentDriver implements CanUseTools, CanAcceptLLMProvider, CanAcc
             defaultResponse: $this->defaultResponse,
             defaultUsage: $this->defaultUsage,
             defaultStepType: $this->defaultStepType,
-            startIndex: $this->index,
             childSteps: $this->childSteps,
             messageCompiler: $compiler,
+            tools: $this->tools,
+            executor: $this->executor,
         );
     }
 
     #[\Override]
-    public function useTools(AgentState $state, Tools $tools, CanExecuteToolCalls $executor): AgentState {
-        $step = $this->resolveStep();
-        $step = match (true) {
-            $step instanceof ScenarioStep => $this->makeToolUseStep($step, $state, $executor),
-            default => $this->defaultStep($state),
-        };
-        return $state->withCurrentStep($step);
+    public function withToolRuntime(Tools $tools, CanExecuteToolCalls $executor): static {
+        return new self(
+            steps: $this->steps,
+            defaultResponse: $this->defaultResponse,
+            defaultUsage: $this->defaultUsage,
+            defaultStepType: $this->defaultStepType,
+            childSteps: $this->childSteps,
+            messageCompiler: $this->messageCompiler,
+            tools: $tools,
+            executor: $executor,
+        );
     }
 
-    private function resolveStep(): ?ScenarioStep {
+    #[\Override]
+    public function useTools(AgentState $state): AgentState {
+        [$step, $nextCursor] = $this->resolveStep($state);
+        $step = match (true) {
+            $step instanceof ScenarioStep => $this->makeToolUseStep($step, $state, $this->executor),
+            default => $this->defaultStep($state),
+        };
+        return $state
+            ->withMetadata(self::CURSOR_METADATA_KEY, $nextCursor)
+            ->withCurrentStep($step);
+    }
+
+    /**
+     * @return array{0: ScenarioStep|null, 1: int}
+     */
+    private function resolveStep(AgentState $state): array {
+        $cursor = (int) $state->metadata()->get(self::CURSOR_METADATA_KEY, 0);
         if ($this->steps === []) {
-            return null;
+            return [null, $cursor];
         }
-        if ($this->index >= count($this->steps)) {
-            return $this->steps[array_key_last($this->steps)];
+        $lastIndex = count($this->steps) - 1;
+        if ($cursor > $lastIndex) {
+            return [$this->steps[$lastIndex], $cursor];
         }
-        $step = $this->steps[$this->index];
-        $this->index++;
-        return $step;
+        return [$this->steps[$cursor], $cursor + 1];
     }
 
     private function makeToolUseStep(ScenarioStep $step, AgentState $state, CanExecuteToolCalls $executor): AgentStep {
