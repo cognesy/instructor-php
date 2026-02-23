@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Session\Contracts;
 
-use Cognesy\Agents\Session\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSession;
 
 interface CanExecuteSessionAction
 {

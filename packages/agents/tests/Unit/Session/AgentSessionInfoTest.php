@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Tests\Unit\Session;
 
-use Cognesy\Agents\Session\AgentSessionInfo;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionStatus;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 use DateTimeImmutable;
 
 it('creates fresh info with defaults', function () {

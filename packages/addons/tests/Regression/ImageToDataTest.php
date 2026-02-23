@@ -2,6 +2,8 @@
 
 use Cognesy\Addons\Image\Image;
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
@@ -84,10 +86,45 @@ it('reproduces the missing messages parameter issue', function () {
     expect($pending)->toBeInstanceOf(StructuredOutput::class);
 });
 
-it('requires runtime creator in toData signature', function () {
-    $method = new \ReflectionMethod(Image::class, 'toData');
-    $structuredOutput = $method->getParameters()[2];
+it('accepts legacy connection parameter when runtime is omitted', function () {
+    $mockImageData = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
 
-    expect((string) $structuredOutput->getType())->toBe(CanCreateStructuredOutput::class);
-    expect($structuredOutput->isOptional())->toBeFalse();
+    $image = new class($mockImageData, 'image/jpeg') extends Image {
+        public ?string $capturedConnection = null;
+        public ?StructuredOutputRequest $capturedRequest = null;
+
+        protected function makeLegacyStructuredOutputRuntime(string $connection): CanCreateStructuredOutput {
+            $this->capturedConnection = $connection;
+            return new class($this) implements CanCreateStructuredOutput {
+                public function __construct(private object $owner) {}
+
+                public function create(StructuredOutputRequest $request): PendingStructuredOutput {
+                    $this->owner->capturedRequest = $request;
+                    throw new \RuntimeException('Legacy runtime captured');
+                }
+            };
+        }
+    };
+
+    expect(fn() => $image->toData(
+        responseModel: \stdClass::class,
+        prompt: 'Identify and assess damage',
+        connection: 'openai',
+        model: 'gpt-4o-mini',
+    ))->toThrow(\RuntimeException::class, 'Legacy runtime captured');
+
+    expect($image->capturedConnection)->toBe('openai');
+    expect($image->capturedRequest)->toBeInstanceOf(StructuredOutputRequest::class);
+    expect($image->capturedRequest?->model())->toBe('gpt-4o-mini');
+    expect($image->capturedRequest?->prompt())->toBe('Identify and assess damage');
+});
+
+it('throws clear error when runtime and connection are both missing', function () {
+    $mockImageData = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
+    $image = new Image($mockImageData, 'image/jpeg');
+
+    expect(fn() => $image->toData(
+        responseModel: \stdClass::class,
+        prompt: 'Identify and assess damage',
+    ))->toThrow(\InvalidArgumentException::class, 'structuredOutput');
 });

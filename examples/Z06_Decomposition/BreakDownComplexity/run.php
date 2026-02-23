@@ -96,13 +96,28 @@ class DecomposedTaskSolver {
         
         foreach ($plan->plan as $action) {
             match ($action->type) {
-                ActionType::Split => $current = (new Split($action->parameter))->execute($current),
-                ActionType::StrPos => $current = (new StrPos($action->parameter))->execute($current),
-                ActionType::Merge => $current = (new Merge($action->parameter))->execute($current),
+                ActionType::Split => $current = (new Split((string) $action->parameter))->execute($this->normalizeString($current)),
+                ActionType::StrPos => $current = (new StrPos((int) $action->parameter))->execute($this->normalizeStringArray($current)),
+                ActionType::Merge => $current = (new Merge((string) $action->parameter))->execute($this->normalizeStringArray($current)),
             };
         }
-        
-        return $current;
+
+        return $this->normalizeString($current);
+    }
+
+    private function normalizeString(mixed $value): string {
+        return match (true) {
+            is_string($value) => $value,
+            is_array($value) => implode('', array_map(static fn(mixed $item): string => (string) $item, $value)),
+            default => (string) $value,
+        };
+    }
+
+    private function normalizeStringArray(mixed $value): array {
+        return match (true) {
+            is_array($value) => array_map(static fn(mixed $item): string => (string) $item, $value),
+            default => [$this->normalizeString($value)],
+        };
     }
 }
 

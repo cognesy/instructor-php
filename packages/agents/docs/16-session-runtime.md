@@ -28,7 +28,7 @@ Those belong to adapters/infrastructure.
 ## Runtime Contract
 
 ```php
-use Cognesy\Agents\Session\Contracts\CanRunSessionRuntime;
+use Cognesy\Agents\Session\Contracts\CanManageAgentSessions;
 
 interface CanRunSessionRuntime
 {
@@ -72,9 +72,7 @@ $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime'));
 ## Typical Flow
 
 ```php
-use Cognesy\Agents\Session\Actions\SendMessage;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
+use Cognesy\Agents\Session\Actions\SendMessage;use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 
 // 1) create and persist session
 $session = $repo->create($factory->create($definition));

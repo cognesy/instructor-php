@@ -27,6 +27,8 @@ Here's the image we're going to extract data from.
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Str;
 
@@ -68,7 +70,9 @@ $assessment = Image::fromFile(__DIR__ . '/car-damage.jpg')
     ->toData(
         responseModel: DamageAssessment::class,
         prompt: 'Identify and assess each car damage location and severity separately.',
-        connection: 'openai',
+        structuredOutput: StructuredOutputRuntime::fromProvider(
+            provider: LLMProvider::using('openai'),
+        ),
         model: 'gpt-4o-mini',
         options: ['max_tokens' => 4096]
     );

@@ -32,7 +32,7 @@ $definition = new AgentDefinition(
 
 $session = $factory->create($definition, AgentState::empty()->withUserMessage('hello'));
 $created = $repo->create($session);
-$loaded = $repo->load(\Cognesy\Agents\Session\SessionId::from($created->sessionId()));
+$loaded = $repo->load(\Cognesy\Agents\Session\Data\SessionId::from($created->sessionId()));
 
 $updated = $repo->save($created->withState($created->state()->withMetadata('phase', 'saved')));
 

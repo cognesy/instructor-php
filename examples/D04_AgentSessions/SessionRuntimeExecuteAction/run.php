@@ -16,8 +16,8 @@ require 'examples/boot.php';
 
 use Cognesy\Agents\Session\Actions\ResumeSession;
 use Cognesy\Agents\Session\Actions\SuspendSession;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\SessionFactory;
-use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;

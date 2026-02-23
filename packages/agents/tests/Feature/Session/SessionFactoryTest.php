@@ -3,9 +3,9 @@
 namespace Cognesy\Agents\Tests\Feature\Session;
 
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 use Cognesy\Agents\Session\SessionFactory;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionStatus;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 

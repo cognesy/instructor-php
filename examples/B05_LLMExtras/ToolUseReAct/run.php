@@ -22,14 +22,21 @@ use Cognesy\Addons\ToolUse\Drivers\ReAct\ContinuationCriteria\StopOnFinalDecisio
 use Cognesy\Addons\ToolUse\Drivers\ReAct\ReActDriver;
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUseFactory;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 function add_numbers(int $a, int $b) : int { return $a + $b; }
 function subtract_numbers(int $a, int $b) : int { return $a - $b; }
 
 $driver = new ReActDriver(
-    llm: LLMProvider::using('openai'),
+    inference: InferenceRuntime::fromProvider(
+        provider: LLMProvider::using('openai'),
+    ),
+    structuredOutput: StructuredOutputRuntime::fromProvider(
+        provider: LLMProvider::using('openai'),
+    ),
     finalViaInference: true,
 );
 

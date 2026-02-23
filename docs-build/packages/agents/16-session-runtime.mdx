@@ -29,7 +29,7 @@ Those belong to adapters/infrastructure.
 ## Runtime Contract
 
 ```php
-use Cognesy\Agents\Session\Contracts\CanRunSessionRuntime;
+use Cognesy\Agents\Session\Contracts\CanManageAgentSessions;
 
 interface CanRunSessionRuntime
 {
@@ -38,7 +38,7 @@ interface CanRunSessionRuntime
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo;
     public function listSessions(): SessionInfoList;
 }
-// @doctest id="e986"
+// @doctest id="951f"
 ```
 
 Read methods (`getSession`, `getSessionInfo`, `listSessions`) do not mutate persisted version.
@@ -69,15 +69,13 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 $factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime'));
-// @doctest id="42b3"
+// @doctest id="3d25"
 ```
 
 ## Typical Flow
 
 ```php
-use Cognesy\Agents\Session\Actions\SendMessage;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
+use Cognesy\Agents\Session\Actions\SendMessage;use Cognesy\Agents\Template\Factory\DefinitionLoopFactory;
 
 // 1) create and persist session
 $session = $repo->create($factory->create($definition));
@@ -88,7 +86,7 @@ $updated = $runtime->execute($session->sessionId(), new SendMessage('Hello', $lo
 
 // 3) use returned persisted version for next call
 $nextVersion = $updated->version();
-// @doctest id="f477"
+// @doctest id="26ec"
 ```
 
 ## Built-in Actions

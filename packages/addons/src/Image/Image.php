@@ -4,6 +4,7 @@ namespace Cognesy\Addons\Image;
 
 use Cognesy\Instructor\Contracts\CanCreateStructuredOutput;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Utils\Image as ImageUtil;
 
 /**
@@ -69,12 +70,15 @@ class Image extends ImageUtil
     public function toData(
         string|array|object $responseModel,
         string              $prompt,
-        CanCreateStructuredOutput $structuredOutput,
+        CanCreateStructuredOutput|string|null $structuredOutput = null,
         string              $model = '',
         string              $system = '',
         array               $examples = [],
         array               $options = [],
+        mixed               ...$legacyOptions,
     ) : mixed {
+        $runtime = $this->resolveStructuredOutputRuntime($structuredOutput, $legacyOptions);
+
         $request = new StructuredOutputRequest(
             messages: $this->toMessages(),
             requestedSchema: $responseModel,
@@ -85,6 +89,24 @@ class Image extends ImageUtil
             options: $options,
         );
 
-        return $structuredOutput->create($request)->get();
+        return $runtime->create($request)->get();
+    }
+
+    protected function makeLegacyStructuredOutputRuntime(string $connection): CanCreateStructuredOutput {
+        return StructuredOutputRuntime::using($connection);
+    }
+
+    private function resolveStructuredOutputRuntime(
+        CanCreateStructuredOutput|string|null $structuredOutput,
+        array $legacyOptions,
+    ) : CanCreateStructuredOutput {
+        return match (true) {
+            $structuredOutput instanceof CanCreateStructuredOutput => $structuredOutput,
+            is_string($structuredOutput) && $structuredOutput !== '' => $this->makeLegacyStructuredOutputRuntime($structuredOutput),
+            isset($legacyOptions['connection']) && is_string($legacyOptions['connection']) && $legacyOptions['connection'] !== '' => $this->makeLegacyStructuredOutputRuntime($legacyOptions['connection']),
+            default => throw new \InvalidArgumentException(
+                'Image::toData() requires `structuredOutput` runtime (or legacy `connection` preset).',
+            ),
+        };
     }
 }

@@ -22,6 +22,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 
 class Answer {
     public string $answer;
@@ -47,8 +48,11 @@ class KNNExampleSelector {
     }
 
     public function embed(array $texts): array {
-        $result = $this->embeddings->create($texts)->first()->embedding;
-        return $result;
+        $response = $this->embeddings->create(
+            new EmbeddingsRequest(input: $texts),
+        )->get();
+        $vector = $response->first();
+        return $vector?->values() ?? [];
     }
 
     public function embedAll(array $texts): array {

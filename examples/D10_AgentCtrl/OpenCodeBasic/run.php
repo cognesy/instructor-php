@@ -40,14 +40,14 @@ echo "\n=== Result ===\n";
 if ($response->isSuccess()) {
     echo "Answer: " . $response->text() . "\n";
 
-    if ($response->sessionId) {
-        echo "Session ID: {$response->sessionId}\n";
+    if ($response->sessionId()) {
+        echo "Session ID: {$response->sessionId()}\n";
     }
-    if ($response->usage) {
-        echo "Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
+    if ($response->usage()) {
+        echo "Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
     }
-    if ($response->cost) {
-        echo "Cost: $" . number_format($response->cost, 4) . "\n";
+    if ($response->cost()) {
+        echo "Cost: $" . number_format($response->cost(), 4) . "\n";
     }
 } else {
     echo "Error: Command failed with exit code {$response->exitCode}\n";

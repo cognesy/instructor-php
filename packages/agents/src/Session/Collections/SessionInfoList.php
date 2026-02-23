@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Session;
+namespace Cognesy\Agents\Session\Collections;
 
 use ArrayIterator;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 use Countable;
 use IteratorAggregate;
 use Traversable;

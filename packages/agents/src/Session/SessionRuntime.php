@@ -2,17 +2,21 @@
 
 namespace Cognesy\Agents\Session;
 
+use Cognesy\Agents\Session\Collections\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
-use Cognesy\Agents\Session\Contracts\CanRunSessionRuntime;
+use Cognesy\Agents\Session\Contracts\CanManageAgentSessions;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Events\SessionActionExecuted;
-use Cognesy\Agents\Session\Events\SessionLoadFailed;
 use Cognesy\Agents\Session\Events\SessionLoaded;
-use Cognesy\Agents\Session\Events\SessionSaveFailed;
+use Cognesy\Agents\Session\Events\SessionLoadFailed;
 use Cognesy\Agents\Session\Events\SessionSaved;
+use Cognesy\Agents\Session\Events\SessionSaveFailed;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Throwable;
 
-final readonly class SessionRuntime implements CanRunSessionRuntime
+final readonly class SessionRuntime implements CanManageAgentSessions
 {
     public function __construct(
         private SessionRepository $sessions,

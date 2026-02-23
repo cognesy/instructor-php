@@ -54,11 +54,11 @@ foreach ($agents as $agentId => $agentName) {
             echo "  ✓ Response ({$elapsed}ms):\n";
             echo "    " . wordwrap($response->text(), 60, "\n    ") . "\n";
 
-            if ($response->usage) {
-                echo "    Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
+            if ($response->usage()) {
+                echo "    Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
             }
-            if ($response->cost) {
-                echo "    Cost: $" . number_format($response->cost, 4) . "\n";
+            if ($response->cost()) {
+                echo "    Cost: $" . number_format($response->cost(), 4) . "\n";
             }
         } else {
             echo "  ✗ Failed (exit code: {$response->exitCode})\n";

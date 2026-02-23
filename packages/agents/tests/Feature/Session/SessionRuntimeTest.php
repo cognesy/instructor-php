@@ -2,19 +2,19 @@
 
 namespace Cognesy\Agents\Tests\Feature\Session;
 
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\AgentSessionInfo;
+use Cognesy\Agents\Session\Collections\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Contracts\CanStoreSessions;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Events\SessionActionExecuted;
-use Cognesy\Agents\Session\Events\SessionLoadFailed;
 use Cognesy\Agents\Session\Events\SessionLoaded;
-use Cognesy\Agents\Session\Events\SessionSaveFailed;
+use Cognesy\Agents\Session\Events\SessionLoadFailed;
 use Cognesy\Agents\Session\Events\SessionSaved;
+use Cognesy\Agents\Session\Events\SessionSaveFailed;
 use Cognesy\Agents\Session\Exceptions\SessionConflictException;
 use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionInfoList;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;

@@ -47,11 +47,11 @@ echo "\n\nEXECUTION SUMMARY:\n";
 echo "  Tools used: " . implode(' → ', $toolCalls) . "\n";
 echo "  Total tool calls: " . count($toolCalls) . "\n";
 
-if ($response->usage) {
-    echo "  Tokens: {$response->usage->input} in / {$response->usage->output} out\n";
+if ($response->usage()) {
+    echo "  Tokens: {$response->usage()->input} in / {$response->usage()->output} out\n";
 }
-if ($response->cost) {
-    echo "  Cost: $" . number_format($response->cost, 4) . "\n";
+if ($response->cost()) {
+    echo "  Cost: $" . number_format($response->cost(), 4) . "\n";
 }
 ?>
 ```

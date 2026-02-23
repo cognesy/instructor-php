@@ -125,11 +125,13 @@ final class OpenCodeBridge implements AgentBridge
                 }
 
                 if ($event instanceof ToolUseEvent) {
+                    $callId = $event->callId();
+                    $normalizedCallId = $callId !== null ? (string) $callId : null;
                     $toolCall = new ToolCall(
                         tool: $event->tool,
                         input: $event->input,
                         output: $event->output,
-                        callId: $event->callId(),
+                        callId: $normalizedCallId,
                         isError: !$event->isCompleted(),
                     );
                     $toolCalls[] = $toolCall;
@@ -179,11 +181,13 @@ final class OpenCodeBridge implements AgentBridge
                 $eventCount++;
                 $streamEvent = StreamEvent::fromArray($event->data());
                 if ($streamEvent instanceof ToolUseEvent) {
+                    $callId = $streamEvent->callId();
+                    $normalizedCallId = $callId !== null ? (string) $callId : null;
                     $toolCalls[] = new ToolCall(
                         tool: $streamEvent->tool,
                         input: $streamEvent->input,
                         output: $streamEvent->output,
-                        callId: $streamEvent->callId(),
+                        callId: $normalizedCallId,
                         isError: !$streamEvent->isCompleted(),
                     );
                     $toolUseCount++;
@@ -208,9 +212,12 @@ final class OpenCodeBridge implements AgentBridge
             ));
         }
 
+        $sessionId = $response->sessionId();
+        $normalizedSessionId = $sessionId !== null ? (string) $sessionId : null;
+
         // Emit response parsing completion
         $responseDuration = (microtime(true) - $responseStart) * 1000;
-        $this->dispatch(new ResponseParsingCompleted(AgentType::OpenCode, $responseDuration, $response->sessionId()));
+        $this->dispatch(new ResponseParsingCompleted(AgentType::OpenCode, $responseDuration, $normalizedSessionId));
 
         // Convert usage if available
         $usage = $response->usage() !== null
@@ -221,7 +228,7 @@ final class OpenCodeBridge implements AgentBridge
             agentType: AgentType::OpenCode,
             text: $collectedText,
             exitCode: $response->exitCode(),
-            sessionId: $response->sessionId(),
+            sessionId: $normalizedSessionId,
             usage: $usage,
             cost: $response->cost(),
             toolCalls: $toolCalls,

@@ -2,10 +2,10 @@
 
 namespace Cognesy\Agents\Tests\Unit\Session;
 
-use Cognesy\Agents\Session\AgentSessionInfo;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionInfoList;
-use Cognesy\Agents\Session\SessionStatus;
+use Cognesy\Agents\Session\Collections\SessionInfoList;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 
 function makeInfo(string $id, string $name = 'agent', SessionStatus $status = SessionStatus::Active): AgentSessionInfo {
     return AgentSessionInfo::fresh(new SessionId($id), $name, $name)->with(status: $status);

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Agents\Session\Actions;
 
-use Cognesy\Agents\Session\AgentSession;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
+use Cognesy\Agents\Session\Data\AgentSession;
 
 final readonly class ChangeSystemPrompt implements CanExecuteSessionAction
 {

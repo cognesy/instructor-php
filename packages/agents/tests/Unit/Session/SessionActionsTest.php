@@ -15,13 +15,12 @@ use Cognesy\Agents\Session\Actions\SendMessage;
 use Cognesy\Agents\Session\Actions\SuspendSession;
 use Cognesy\Agents\Session\Actions\UpdateTask;
 use Cognesy\Agents\Session\Actions\WriteMetadata;
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\AgentSessionInfo;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionStatus;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentLoop;
 use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 
 function makeActionSession(string $id = 'a1'): AgentSession {

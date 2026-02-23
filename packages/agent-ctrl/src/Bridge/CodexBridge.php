@@ -248,9 +248,12 @@ final class CodexBridge implements AgentBridge
             ));
         }
 
+        $threadId = $response->threadId();
+        $normalizedSessionId = $threadId !== null ? (string) $threadId : null;
+
         // Emit response parsing completion
         $responseDuration = (microtime(true) - $responseStart) * 1000;
-        $this->dispatch(new ResponseParsingCompleted(AgentType::Codex, $responseDuration, $response->threadId()));
+        $this->dispatch(new ResponseParsingCompleted(AgentType::Codex, $responseDuration, $normalizedSessionId));
 
         // Convert usage if available
         $usage = $response->usage() !== null
@@ -261,7 +264,7 @@ final class CodexBridge implements AgentBridge
             agentType: AgentType::Codex,
             text: $collectedText,
             exitCode: $response->exitCode(),
-            sessionId: $response->threadId(),
+            sessionId: $normalizedSessionId,
             usage: $usage,
             cost: null, // Codex doesn't expose cost
             toolCalls: $toolCalls,

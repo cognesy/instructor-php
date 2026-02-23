@@ -8,6 +8,7 @@ use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
 use Cognesy\Utils\Str;
 use Exception;
+use Throwable;
 
 class Display
 {
@@ -80,13 +81,14 @@ class Display
         Console::println('');
         Console::println(' EXCEPTIONS ', [Color::BG_MAGENTA, Color::WHITE, Color::BOLD]);
         foreach($exceptions as $key => $exception) {
-            $exLine = str_replace("\n", '\n', $exception);
+            $message = $this->normalizeExceptionMessage($exception);
+            $exLine = str_replace("\n", '\n', $message);
             Console::printColumns([
                 [30, $key, STR_PAD_RIGHT, [Color::DARK_YELLOW]],
                 [100, $exLine, STR_PAD_RIGHT, [Color::WHITE]]
             ], $this->terminalWidth);
             Console::println('');
-            Console::println($exception->getMessage(), [Color::GRAY]);
+            Console::println($message, [Color::GRAY]);
 //            if (Debug::isEnabled()) {
 //                Console::println($exception->getTraceAsString(), [Color::DARK_GRAY]);
 //            }
@@ -122,7 +124,7 @@ class Display
         echo Console::columns($columns, $this->terminalWidth);
     }
 
-    private function displayException(Exception $exception) : void {
+    private function displayException(Throwable $exception) : void {
         echo Console::columns([
             [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
             [10, '', STR_PAD_LEFT, [Color::CYAN]],
@@ -142,10 +144,19 @@ class Display
             . ' t/s';
     }
 
-    private function exceptionToText(Exception $e, int $maxLen) : string {
+    private function exceptionToText(Throwable $e, int $maxLen) : string {
         return ' '
             . substr(str_replace("\n", '\n', $e->getMessage()), 0, $maxLen)
             . '...';
+    }
+
+    private function normalizeExceptionMessage(mixed $exception) : string {
+        return match (true) {
+            $exception instanceof Throwable => $exception->getMessage(),
+            is_string($exception) => $exception,
+            is_scalar($exception) => (string) $exception,
+            default => get_debug_type($exception),
+        };
     }
 
     private function displayObservations(Experiment $experiment)

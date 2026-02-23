@@ -2,7 +2,10 @@
 
 namespace Cognesy\Agents\Session;
 
+use Cognesy\Agents\Session\Collections\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanStoreSessions;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
 
 final readonly class SessionRepository

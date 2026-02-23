@@ -14,9 +14,9 @@ Conflicts are explicit exceptions. This example simulates stale write conflict.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Exceptions\SessionConflictException;
 use Cognesy\Agents\Session\SessionFactory;
-use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;

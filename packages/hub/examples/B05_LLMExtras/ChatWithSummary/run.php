@@ -30,6 +30,7 @@ use Cognesy\Addons\StepByStep\StateProcessing\Processors\SummarizeBuffer;
 use Cognesy\Addons\StepByStep\StateProcessing\StateProcessors;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 $events = new EventDispatcher();
@@ -57,7 +58,9 @@ $student = new ScriptedParticipant(
 
 $expert = new LLMParticipant(
     name: 'expert',
-    llmProvider: LLMProvider::using('openai'),
+    inference: InferenceRuntime::fromProvider(
+        provider: LLMProvider::using('openai'),
+    ),
     systemPrompt: 'You are a helpful assistant explaining Challenger Sale. Be very brief (one sentence), pragmatic and focused on practical bizdev problems.'
 );
 
@@ -84,7 +87,11 @@ $chat = ChatFactory::default(
             maxSummaryTokens: 512,
             bufferSection: 'buffer',
             summarySection: 'summary',
-            summarizer: new SummarizeMessages(llm: LLMProvider::using('openai')),
+            summarizer: new SummarizeMessages(
+                inference: InferenceRuntime::fromProvider(
+                    provider: LLMProvider::using('openai'),
+                ),
+            ),
             events: $events,
         ),
     ),

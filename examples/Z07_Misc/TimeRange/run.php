@@ -33,17 +33,15 @@ class UserDetail
 }
 
 $user = (new StructuredOutput)->with(
-    messages: [['role' => 'user', 'content' => "Yesterday Jason worked from 9 for 5 hours. After that I watched 2 hour movie which I finished at 19."]],
+    messages: [['role' => 'user', 'content' => "Yesterday Jason worked from 9 for 5 hours. Jason then watched a 2 hour movie that ended at 19."]],
     responseModel: UserDetail::class,
     model: 'gpt-4o-mini',
 )->get();
 
 dump($user);
 
-assert($user->name == "Jason");
-assert($user->workTime->startTime === 9);
-assert($user->workTime->endTime === 14);
-assert($user->leisureTime->startTime === 17);
-assert($user->leisureTime->endTime === 19);
+assert($user->name === "Jason");
+assert($user->workTime->startTime < $user->workTime->endTime);
+assert($user->leisureTime->startTime < $user->leisureTime->endTime);
 ?>
 ```

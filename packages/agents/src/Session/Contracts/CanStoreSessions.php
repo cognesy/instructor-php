@@ -2,9 +2,9 @@
 
 namespace Cognesy\Agents\Session\Contracts;
 
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionInfoList;
+use Cognesy\Agents\Session\Collections\SessionInfoList;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\SessionId;
 
 interface CanStoreSessions
 {

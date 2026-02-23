@@ -36,8 +36,10 @@ use Cognesy\Agents\Capability\StructuredOutput\UseStructuredOutputs;
 use Cognesy\Agents\Capability\StructuredOutput\SchemaRegistry;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Agents\Tool\Tools\BaseTool;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 // =============================================================================
@@ -158,6 +160,9 @@ $schemas = new SchemaRegistry([
 $agent = AgentBuilder::base()
     ->withCapability(new UseStructuredOutputs(
         schemas: $schemas,
+        structuredOutput: StructuredOutputRuntime::fromProvider(
+            provider: LLMProvider::using('openai'),
+        ),
         policy: new StructuredOutputPolicy(
             llmPreset: 'openai',
             defaultMaxRetries: 3,

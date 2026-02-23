@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Session;
+namespace Cognesy\Agents\Session\Data;
 
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use DateTimeImmutable;
 

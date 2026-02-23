@@ -15,7 +15,6 @@ Use runtime read APIs: `getSession`, `getSessionInfo`, and `listSessions`.
 require 'examples/boot.php';
 
 use Cognesy\Agents\Session\SessionFactory;
-use Cognesy\Agents\Session\SessionId;
 use Cognesy\Agents\Session\SessionRepository;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
@@ -30,7 +29,7 @@ $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime-exampl
 $one = $repo->create($factory->create(new AgentDefinition('agent-one', 'first', 'You are one.')));
 $two = $repo->create($factory->create(new AgentDefinition('agent-two', 'second', 'You are two.')));
 
-$sessionId = SessionId::from($one->sessionId());
+$sessionId = $one->sessionId();
 $session = $runtime->getSession($sessionId);
 $info = $runtime->getSessionInfo($sessionId);
 $list = $runtime->listSessions();
@@ -40,8 +39,8 @@ echo 'Loaded session: ' . $session->sessionId() . "\n";
 echo 'Session info status: ' . $info->status()->value . "\n";
 echo 'List count: ' . $list->count() . "\n";
 
-assert($session->sessionId() === $one->sessionId());
-assert($info->sessionId() === $one->sessionId());
+assert($session->sessionId()->equals($one->sessionId()));
+assert($info->sessionId()->equals($one->sessionId()));
 assert($list->count() === 2);
 ?>
 ```

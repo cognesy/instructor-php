@@ -3,6 +3,9 @@
 namespace Cognesy\Agents\Session;
 
 use Cognesy\Agents\Data\AgentState;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Template\Contracts\CanInstantiateAgentState;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 

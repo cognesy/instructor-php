@@ -3,8 +3,8 @@
 namespace Cognesy\Agents\Session\Actions;
 
 use Cognesy\Agents\Data\AgentBudget;
-use Cognesy\Agents\Session\AgentSession;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
+use Cognesy\Agents\Session\Data\AgentSession;
 
 final readonly class ChangeBudget implements CanExecuteSessionAction
 {

@@ -3,10 +3,10 @@
 namespace Cognesy\Agents\Tests\Unit\Session;
 
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\AgentSessionInfo;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionStatus;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Agents\Session\Enums\SessionStatus;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 
 function makeSession(

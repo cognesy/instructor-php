@@ -17,7 +17,7 @@ use Cognesy\Instructor\StructuredOutput;
 
 class MultihopExpert { public string $chain_of_thought; public string $answer; }
 class FactualExpert { public string $answer; }
-class ModelScore { public float $score; }
+class ModelScore { public float|int $score; }
 
 class MoRE {
     public function factual(string $query, array $evidences) : FactualExpert {
@@ -57,8 +57,8 @@ $more = new MoRE();
 $factual = $more->factual($query, $evidences);
 $multihop = $more->multihop($query);
 
-$fScore = $more->score($query, $factual->answer)->score ?? 0.0;
-$mScore = $more->score($query, $multihop->answer)->score ?? 0.0;
+$fScore = (float) ($more->score($query, $factual->answer)->score ?? 0.0);
+$mScore = (float) ($more->score($query, $multihop->answer)->score ?? 0.0);
 
 $answer = '';
 if (max($fScore, $mScore) < $threshold) {

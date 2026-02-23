@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Session;
+namespace Cognesy\Agents\Session\Data;
 
 use Cognesy\Utils\Uuid;
 use Stringable;

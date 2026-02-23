@@ -36,7 +36,9 @@ use Cognesy\Agents\Capability\File\UseFileTools;
 use Cognesy\Agents\Capability\SelfCritique\UseSelfCritique;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Messages\Messages;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 // Create console logger - showContinuation reveals self-critique decisions
 $logger = new AgentEventConsoleObserver(
@@ -57,6 +59,9 @@ $agent = AgentBuilder::base()
         SearchFilesTool::inDirectory($workDir),
     ))
     ->withCapability(new UseSelfCritique(
+        structuredOutput: StructuredOutputRuntime::fromProvider(
+            provider: LLMProvider::using('openai'),
+        ),
         maxIterations: 2,  // Allow up to 2 critique iterations
     ))
     ->withCapability(new UseGuards(maxSteps: 12, maxTokens: 12288, maxExecutionTime: 90))

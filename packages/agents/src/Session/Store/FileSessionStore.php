@@ -2,11 +2,11 @@
 
 namespace Cognesy\Agents\Session\Store;
 
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\AgentSessionInfo;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionInfoList;
+use Cognesy\Agents\Session\Collections\SessionInfoList;
 use Cognesy\Agents\Session\Contracts\CanStoreSessions;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Exceptions\InvalidSessionFileException;
 use Cognesy\Agents\Session\Exceptions\SessionConflictException;
 use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;

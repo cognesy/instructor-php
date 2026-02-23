@@ -14,12 +14,7 @@ Create a session from `AgentDefinition`, persist it, then load and save updated 
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Session\SessionFactory;
-use Cognesy\Agents\Session\SessionRepository;
-use Cognesy\Agents\Session\Store\InMemorySessionStore;
-use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
+use Cognesy\Agents\Data\AgentState;use Cognesy\Agents\Session\SessionFactory;use Cognesy\Agents\Session\SessionRepository;use Cognesy\Agents\Session\Store\InMemorySessionStore;use Cognesy\Agents\Template\Data\AgentDefinition;use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
@@ -32,7 +27,7 @@ $definition = new AgentDefinition(
 
 $session = $factory->create($definition, AgentState::empty()->withUserMessage('hello'));
 $created = $repo->create($session);
-$loaded = $repo->load(\Cognesy\Agents\Session\SessionId::from($created->sessionId()));
+$loaded = $repo->load(\Cognesy\Agents\Session\Data\SessionId::from($created->sessionId()));
 
 $updated = $repo->save($created->withState($created->state()->withMetadata('phase', 'saved')));
 

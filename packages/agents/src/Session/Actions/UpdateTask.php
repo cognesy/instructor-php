@@ -4,8 +4,8 @@ namespace Cognesy\Agents\Session\Actions;
 
 use Cognesy\Agents\Capability\Tasks\TaskList;
 use Cognesy\Agents\Capability\Tasks\TodoWriteTool;
-use Cognesy\Agents\Session\AgentSession;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
+use Cognesy\Agents\Session\Data\AgentSession;
 
 final readonly class UpdateTask implements CanExecuteSessionAction
 {

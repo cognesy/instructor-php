@@ -10,6 +10,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\A21\A21Driver;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
 use Cognesy\Polyglot\Inference\Drivers\Azure\AzureDriver;
+use Cognesy\Polyglot\Inference\Drivers\Bedrock\BedrockOpenAIDriver;
 use Cognesy\Polyglot\Inference\Drivers\Cerebras\CerebrasDriver;
 use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2Driver;
 use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekDriver;
@@ -104,6 +105,7 @@ class InferenceDriverFactory
             'a21' => fn($config, $httpClient, $events) => new A21Driver($config, $httpClient, $events),
             'anthropic' => fn($config, $httpClient, $events) => new AnthropicDriver($config, $httpClient, $events),
             'azure' => fn($config, $httpClient, $events) => new AzureDriver($config, $httpClient, $events),
+            'bedrock-openai' => fn($config, $httpClient, $events) => new BedrockOpenAIDriver($config, $httpClient, $events),
             'cerebras' => fn($config, $httpClient, $events) => new CerebrasDriver($config, $httpClient, $events),
             'cohere' => fn($config, $httpClient, $events) => new CohereV2Driver($config, $httpClient, $events),
             'deepseek' => fn($config, $httpClient, $events) => new DeepseekDriver($config, $httpClient, $events),

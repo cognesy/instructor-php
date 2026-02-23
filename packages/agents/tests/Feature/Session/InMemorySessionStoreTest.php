@@ -3,12 +3,12 @@
 namespace Cognesy\Agents\Tests\Feature\Session;
 
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\AgentSessionInfo;
+use Cognesy\Agents\Session\Collections\SessionInfoList;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
 use Cognesy\Agents\Session\Exceptions\SessionConflictException;
 use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
-use Cognesy\Agents\Session\SessionId;
-use Cognesy\Agents\Session\SessionInfoList;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 
@@ -60,7 +60,7 @@ it('create throws conflict for new session with non-zero version', function () {
     $info = new AgentSessionInfo(
         sessionId: new SessionId('s1'),
         parentId: null,
-        status: \Cognesy\Agents\Session\SessionStatus::Active,
+        status: \Cognesy\Agents\Session\Enums\SessionStatus::Active,
         version: 5,
         agentName: 'agent',
         agentLabel: 'Agent',

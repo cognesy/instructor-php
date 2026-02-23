@@ -2,10 +2,10 @@
 
 namespace Cognesy\Agents\Session\Actions;
 
-use Cognesy\Agents\Session\AgentSession;
-use Cognesy\Agents\Session\AgentSessionInfo;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
-use Cognesy\Agents\Session\SessionId;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Data\AgentSessionInfo;
+use Cognesy\Agents\Session\Data\SessionId;
 
 final readonly class ForkSession implements CanExecuteSessionAction
 {

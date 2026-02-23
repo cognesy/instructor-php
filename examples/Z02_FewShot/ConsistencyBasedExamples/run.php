@@ -23,7 +23,7 @@ use Cognesy\Instructor\StructuredOutput;
 class ResponseWithConfidence {
     public string $content;
     /** Confidence score between 0 and 1 */
-    public float $confidence;
+    public float|int $confidence;
 }
 
 class COSPSelector {
@@ -45,7 +45,7 @@ class COSPSelector {
     }
 
     public function calculateMetrics(array $responses): array {
-        $confidences = array_map(fn($r) => $r->confidence, $responses);
+        $confidences = array_map(fn($r) => (float) $r->confidence, $responses);
         $entropyScore = $this->entropy($confidences);
 
         $uniqueResponses = count(array_unique(array_map(fn($r) => $r->content, $responses)));
