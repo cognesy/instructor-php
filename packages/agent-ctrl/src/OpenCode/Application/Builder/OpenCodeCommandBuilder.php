@@ -4,9 +4,10 @@ namespace Cognesy\AgentCtrl\OpenCode\Application\Builder;
 
 use Cognesy\Sandbox\Value\Argv;
 use Cognesy\Sandbox\Value\CommandSpec;
+use Cognesy\AgentCtrl\Common\Builder\BuildsCliArgv;
+use Cognesy\AgentCtrl\Common\Validation\CliArgumentValidator;
 use Cognesy\AgentCtrl\OpenCode\Application\Dto\OpenCodeRequest;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
-use Cognesy\Sandbox\Utils\ProcUtils;
 use InvalidArgumentException;
 
 /**
@@ -14,6 +15,8 @@ use InvalidArgumentException;
  */
 final class OpenCodeCommandBuilder
 {
+    use BuildsCliArgv;
+
     /**
      * Build command spec for headless execution via `opencode run`
      */
@@ -168,6 +171,13 @@ final class OpenCodeCommandBuilder
             throw new InvalidArgumentException('Prompt must not be empty');
         }
 
+        CliArgumentValidator::validateModel($request->modelString());
+        CliArgumentValidator::validateExistingFiles($request->files(), 'files');
+
+        $sessionId = $request->sessionId();
+        $sessionValue = $sessionId !== null ? $sessionId->toString() : null;
+        CliArgumentValidator::validateSessionId($sessionValue, 'sessionId');
+
         if ($request->continueSession() && $request->sessionId() !== null) {
             throw new InvalidArgumentException(
                 'Cannot set both continueSession and sessionId'
@@ -175,40 +185,4 @@ final class OpenCodeCommandBuilder
         }
     }
 
-    /**
-     * @param list<string> $command
-     */
-    private function baseArgv(array $command): Argv
-    {
-        $prefix = $this->stdbufPrefix();
-        return match (true) {
-            $prefix === null => Argv::of($command),
-            default => Argv::of(array_merge($prefix, $command)),
-        };
-    }
-
-    /**
-     * @return list<string>|null
-     */
-    private function stdbufPrefix(): ?array
-    {
-        $override = getenv('COGNESY_STDBUF');
-        return match (true) {
-            $override === '0' => null,
-            $override === '1' => ['stdbuf', '-o0'],
-            $this->isWindows() => null,
-            $this->isStdbufAvailable() => ['stdbuf', '-o0'],
-            default => null,
-        };
-    }
-
-    private function isStdbufAvailable(): bool
-    {
-        return ProcUtils::findOnPath('stdbuf', ProcUtils::defaultBinPaths()) !== null;
-    }
-
-    private function isWindows(): bool
-    {
-        return str_starts_with(strtoupper(PHP_OS), 'WIN');
-    }
 }

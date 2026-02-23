@@ -11,12 +11,20 @@ use Cognesy\AgentCtrl\OpenCode\Domain\Dto\StreamEvent\TextEvent;
 use Cognesy\AgentCtrl\OpenCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenCode\Domain\Value\TokenUsage;
 use Cognesy\Sandbox\Data\ExecResult;
+use Cognesy\Utils\Json\JsonParsingException;
+use JsonException;
 
 /**
  * Parses OpenCode CLI output into structured response
  */
 final class ResponseParser
 {
+    private const MAX_PARSE_FAILURE_SAMPLES = 3;
+
+    public function __construct(
+        private bool $failFast = true,
+    ) {}
+
     /**
      * Parse execution result into structured response
      */
@@ -34,8 +42,21 @@ final class ResponseParser
     private function fromJsonLines(ExecResult $result): OpenCodeResponse
     {
         $lines = preg_split('/\r\n|\r|\n/', $result->stdout());
+        $parseFailures = 0;
+        $parseFailureSamples = [];
         if (!is_array($lines)) {
-            return new OpenCodeResponse($result, DecodedObjectCollection::empty());
+            $this->onParseError(
+                'Failed to parse OpenCode JSONL response: unable to split output into lines',
+                $result->stdout(),
+                $parseFailures,
+                $parseFailureSamples,
+            );
+            return new OpenCodeResponse(
+                result: $result,
+                decoded: DecodedObjectCollection::empty(),
+                parseFailures: $parseFailures,
+                parseFailureSamples: $parseFailureSamples,
+            );
         }
 
         $items = [];
@@ -45,14 +66,19 @@ final class ResponseParser
         $totalCost = 0.0;
         $finalUsage = null;
 
-        foreach ($lines as $line) {
+        foreach ($lines as $lineIndex => $line) {
             $trimmed = trim($line);
             if ($trimmed === '') {
                 continue;
             }
 
-            $decoded = json_decode($trimmed, true);
-            if (!is_array($decoded)) {
+            $decoded = $this->decodeJsonLine(
+                payload: $trimmed,
+                lineNumber: $lineIndex + 1,
+                parseFailures: $parseFailures,
+                parseFailureSamples: $parseFailureSamples,
+            );
+            if ($decoded === null) {
                 continue;
             }
 
@@ -92,7 +118,41 @@ final class ResponseParser
             messageText: $messageText,
             usage: $finalUsage,
             cost: $totalCost > 0 ? $totalCost : null,
+            parseFailures: $parseFailures,
+            parseFailureSamples: $parseFailureSamples,
         );
+    }
+
+    /**
+     * @param list<string> $parseFailureSamples
+     */
+    private function decodeJsonLine(
+        string $payload,
+        int $lineNumber,
+        int &$parseFailures,
+        array &$parseFailureSamples,
+    ): ?array {
+        try {
+            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            $this->onParseError(
+                context: "Failed to parse OpenCode JSONL line {$lineNumber}: {$exception->getMessage()}",
+                payload: $payload,
+                parseFailures: $parseFailures,
+                parseFailureSamples: $parseFailureSamples,
+            );
+            return null;
+        }
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+        $this->onParseError(
+            context: "Failed to parse OpenCode JSONL line {$lineNumber}: expected JSON object or array",
+            payload: $payload,
+            parseFailures: $parseFailures,
+            parseFailureSamples: $parseFailureSamples,
+        );
+        return null;
     }
 
     /**
@@ -133,9 +193,43 @@ final class ResponseParser
     public function parseEvents(DecodedObjectCollection $decoded): array
     {
         $events = [];
-        foreach ($decoded->toArray() as $object) {
+        foreach ($decoded->all() as $object) {
             $events[] = StreamEvent::fromArray($object->data());
         }
         return $events;
+    }
+
+    /**
+     * @param list<string> $parseFailureSamples
+     */
+    private function onParseError(
+        string $context,
+        mixed $payload,
+        int &$parseFailures,
+        array &$parseFailureSamples,
+    ): void {
+        $parseFailures++;
+        if (count($parseFailureSamples) < self::MAX_PARSE_FAILURE_SAMPLES) {
+            $parseFailureSamples[] = $this->normalizeMalformedPayload($payload);
+        }
+        if (!$this->failFast) {
+            return;
+        }
+        throw new JsonParsingException(
+            message: $context,
+            json: $this->normalizeMalformedPayload($payload),
+        );
+    }
+
+    private function normalizeMalformedPayload(mixed $payload): string
+    {
+        if (is_string($payload)) {
+            return mb_substr(trim($payload), 0, 200);
+        }
+        $encoded = json_encode($payload);
+        if (!is_string($encoded)) {
+            return '<unserializable>';
+        }
+        return mb_substr(trim($encoded), 0, 200);
     }
 }

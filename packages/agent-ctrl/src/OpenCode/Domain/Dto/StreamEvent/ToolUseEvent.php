@@ -92,7 +92,6 @@ final readonly class ToolUseEvent extends StreamEvent
         $part = $data['part'] ?? [];
         $state = $part['state'] ?? [];
         $time = $state['time'] ?? [];
-        $metadata = $state['metadata'] ?? [];
 
         return new self(
             timestamp: $data['timestamp'] ?? 0,
@@ -103,10 +102,28 @@ final readonly class ToolUseEvent extends StreamEvent
             tool: $part['tool'] ?? '',
             status: $state['status'] ?? 'unknown',
             input: $state['input'] ?? [],
-            output: $state['output'] ?? '',
+            output: self::normalizeOutput($state['output'] ?? ''),
             title: $state['title'] ?? null,
             startTime: $time['start'] ?? null,
             endTime: $time['end'] ?? null,
         );
+    }
+
+    private static function normalizeOutput(mixed $output): string
+    {
+        return match (true) {
+            is_string($output) => $output,
+            is_int($output), is_float($output) => (string)$output,
+            is_bool($output) => $output ? 'true' : 'false',
+            is_null($output) => '',
+            is_array($output), is_object($output) => self::encodeOutput($output),
+            default => '',
+        };
+    }
+
+    private static function encodeOutput(mixed $output): string
+    {
+        $encoded = json_encode($output);
+        return is_string($encoded) ? $encoded : '';
     }
 }

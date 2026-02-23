@@ -2,12 +2,14 @@
 
 namespace Cognesy\AgentCtrl\Builder;
 
+use Closure;
 use Cognesy\Sandbox\Enums\SandboxDriver;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\AgentBridgeBuilder;
 use Cognesy\AgentCtrl\Contract\StreamHandler;
 use Cognesy\AgentCtrl\Dto\CallbackStreamHandler;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
+use Cognesy\AgentCtrl\Dto\StreamError;
 use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\Event\AgentErrorOccurred;
 use Cognesy\AgentCtrl\Event\AgentExecutionCompleted;
@@ -31,16 +33,18 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
     protected int $timeout = 120;
     protected ?string $workingDirectory = null;
     protected SandboxDriver $sandboxDriver = SandboxDriver::Host;
-    protected int $maxRetries = 0;
 
-    /** @var callable(string): void|null */
-    protected $onTextCallback = null;
+    /** @var (Closure(string): void)|null */
+    protected ?Closure $onTextCallback = null;
 
-    /** @var callable(string, array, ?string): void|null */
-    protected $onToolUseCallback = null;
+    /** @var (Closure(string, array, ?string): void)|null */
+    protected ?Closure $onToolUseCallback = null;
 
-    /** @var callable(AgentResponse): void|null */
-    protected $onCompleteCallback = null;
+    /** @var (Closure(AgentResponse): void)|null */
+    protected ?Closure $onCompleteCallback = null;
+
+    /** @var (Closure(string, ?string): void)|null */
+    protected ?Closure $onErrorCallback = null;
 
     public function __construct()
     {
@@ -77,30 +81,31 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
         return $this;
     }
 
-    public function withMaxRetries(int $retries): static
-    {
-        $this->maxRetries = max(0, $retries);
-        return $this;
-    }
-
     #[\Override]
     public function onText(callable $handler): static
     {
-        $this->onTextCallback = $handler;
+        $this->onTextCallback = Closure::fromCallable($handler);
         return $this;
     }
 
     #[\Override]
     public function onToolUse(callable $handler): static
     {
-        $this->onToolUseCallback = $handler;
+        $this->onToolUseCallback = Closure::fromCallable($handler);
         return $this;
     }
 
     #[\Override]
     public function onComplete(callable $handler): static
     {
-        $this->onCompleteCallback = $handler;
+        $this->onCompleteCallback = Closure::fromCallable($handler);
+        return $this;
+    }
+
+    #[\Override]
+    public function onError(callable $handler): static
+    {
+        $this->onErrorCallback = Closure::fromCallable($handler);
         return $this;
     }
 
@@ -175,6 +180,15 @@ abstract class AbstractBridgeBuilder implements AgentBridgeBuilder
                 }
             },
             onComplete: $this->onCompleteCallback,
+            onError: function(StreamError $error): void {
+                $this->dispatch(new AgentErrorOccurred(
+                    agentType: $this->agentType(),
+                    error: $error->message,
+                ));
+                if ($this->onErrorCallback !== null) {
+                    ($this->onErrorCallback)($error->message, $error->code);
+                }
+            },
         );
     }
 }

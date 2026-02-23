@@ -2,12 +2,12 @@
 
 namespace Cognesy\Agents\Data;
 
-use Cognesy\Agents\Collections\ErrorList;
 use Cognesy\Agents\Collections\StepExecutions;
 use Cognesy\Agents\Continuation\ExecutionContinuation;
 use Cognesy\Agents\Continuation\StopSignal;
 use Cognesy\Agents\Enums\ExecutionStatus;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Exceptions\ErrorList;
 use DateTimeImmutable;
 use Throwable;
 

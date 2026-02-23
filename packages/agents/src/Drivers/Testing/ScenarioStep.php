@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
-use Cognesy\Agents\Collections\ErrorList;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Enums\AgentStepType;
@@ -10,6 +9,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Exceptions\ErrorList;
 
 final readonly class ScenarioStep
 {

@@ -18,20 +18,26 @@ final class CallbackStreamHandler implements StreamHandler
 
     /** @var (Closure(AgentResponse): void)|null */
     private ?Closure $completeHandler;
+    /** @var (Closure(StreamError): void)|null */
+    private ?Closure $errorHandler;
+    private bool $completionDelivered = false;
 
     /**
      * @param (Closure(string): void)|null $onText
      * @param (Closure(ToolCall): void)|null $onToolUse
      * @param (Closure(AgentResponse): void)|null $onComplete
+     * @param (Closure(StreamError): void)|null $onError
      */
     public function __construct(
         ?Closure $onText = null,
         ?Closure $onToolUse = null,
         ?Closure $onComplete = null,
+        ?Closure $onError = null,
     ) {
         $this->textHandler = $onText;
         $this->toolUseHandler = $onToolUse;
         $this->completeHandler = $onComplete;
+        $this->errorHandler = $onError;
     }
 
     #[\Override]
@@ -53,8 +59,21 @@ final class CallbackStreamHandler implements StreamHandler
     #[\Override]
     public function onComplete(AgentResponse $response): void
     {
-        if ($this->completeHandler !== null) {
-            ($this->completeHandler)($response);
+        if ($this->completeHandler === null) {
+            return;
+        }
+        if ($this->completionDelivered) {
+            return;
+        }
+        $this->completionDelivered = true;
+        ($this->completeHandler)($response);
+    }
+
+    #[\Override]
+    public function onError(StreamError $error): void
+    {
+        if ($this->errorHandler !== null) {
+            ($this->errorHandler)($error);
         }
     }
 
@@ -75,6 +94,11 @@ final class CallbackStreamHandler implements StreamHandler
 
     public function hasAnyHandler(): bool
     {
-        return $this->hasTextHandler() || $this->hasToolUseHandler() || $this->hasCompleteHandler();
+        return $this->hasTextHandler() || $this->hasToolUseHandler() || $this->hasCompleteHandler() || $this->hasErrorHandler();
+    }
+
+    public function hasErrorHandler(): bool
+    {
+        return $this->errorHandler !== null;
     }
 }

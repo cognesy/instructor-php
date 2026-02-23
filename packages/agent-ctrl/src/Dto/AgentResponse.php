@@ -11,6 +11,8 @@ use Cognesy\AgentCtrl\ValueObject\AgentSessionId;
 final readonly class AgentResponse
 {
     private ?AgentSessionId $sessionId;
+    /** @var list<string> */
+    private array $parseFailureSamples;
 
     /**
      * @param AgentType $agentType The agent type that produced this response
@@ -21,6 +23,8 @@ final readonly class AgentResponse
      * @param float|null $cost Cost in USD
      * @param list<ToolCall> $toolCalls Tool calls made during execution
      * @param mixed $rawResponse The original bridge-specific response
+     * @param int $parseFailures Number of malformed JSON payloads skipped during parsing
+     * @param list<string> $parseFailureSamples Sample malformed payload lines
      */
     public function __construct(
         public AgentType $agentType,
@@ -31,12 +35,15 @@ final readonly class AgentResponse
         public ?float $cost = null,
         public array $toolCalls = [],
         public mixed $rawResponse = null,
+        public int $parseFailures = 0,
+        array $parseFailureSamples = [],
     ) {
         $this->sessionId = match (true) {
             $sessionId instanceof AgentSessionId => $sessionId,
             is_string($sessionId) && $sessionId !== '' => AgentSessionId::fromString($sessionId),
             default => null,
         };
+        $this->parseFailureSamples = array_values($parseFailureSamples);
     }
 
     public function sessionId(): ?AgentSessionId
@@ -62,5 +69,18 @@ final readonly class AgentResponse
     public function cost(): ?float
     {
         return $this->cost;
+    }
+
+    public function parseFailures(): int
+    {
+        return $this->parseFailures;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function parseFailureSamples(): array
+    {
+        return $this->parseFailureSamples;
     }
 }

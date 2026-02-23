@@ -1,15 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Agents\Collections;
+namespace Cognesy\Utils\Exceptions;
 
-use Cognesy\Agents\Exceptions\ToolExecutionException;
-use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Throwable;
 
 /**
- * Immutable collection of step or tool execution errors.
+ * Immutable collection of execution errors.
  */
-final readonly class ErrorList
+readonly class ErrorList
 {
     /** @var list<Throwable> */
     private array $items;
@@ -18,12 +16,12 @@ final readonly class ErrorList
         $this->items = $items;
     }
 
-    public static function empty(): self {
-        return new self();
+    public static function empty(): static {
+        return new static();
     }
 
-    public static function with(Throwable ...$errors): self {
-        return new self(...$errors);
+    public static function with(Throwable ...$errors): static {
+        return new static(...$errors);
     }
 
     // ACCESSORS ////////////////////////////////////////////
@@ -62,12 +60,12 @@ final readonly class ErrorList
 
     // MUTATORS /////////////////////////////////////////////
 
-    public function withAppendedExceptions(Throwable ...$errors): self {
-        return new self(...[...$this->items, ...$errors]);
+    public function withAppendedExceptions(Throwable ...$errors): static {
+        return new static(...[...$this->items, ...$errors]);
     }
 
-    public function withMergedErrorList(ErrorList $errors) : self {
-        return new self(...[...$this->items, ...$errors->items]);
+    public function withMergedErrorList(ErrorList $errors) : static {
+        return new static(...[...$this->items, ...$errors->items]);
     }
 
     public function toMessagesString(): string {
@@ -83,7 +81,7 @@ final readonly class ErrorList
     /**
      * @param array<int, mixed> $errors
      */
-    public static function fromArray(array $errors): self {
+    public static function fromArray(array $errors): static {
         $items = [];
         foreach ($errors as $error) {
             $normalized = self::normalize($error);
@@ -92,7 +90,7 @@ final readonly class ErrorList
             }
             $items[] = $normalized;
         }
-        return new self(...$items);
+        return new static(...$items);
     }
 
     private static function normalize(mixed $error): ?Throwable {
@@ -104,14 +102,14 @@ final readonly class ErrorList
         }
         $message = match (true) {
             isset($error['message']) && is_string($error['message']) => $error['message'],
-            default => 'Unknown tool-use error',
+            default => 'Unknown execution error',
         };
         $class = match (true) {
             isset($error['class']) && is_string($error['class']) => $error['class'],
-            default => ToolExecutionException::class,
+            default => DeserializedException::class,
         };
         if (!is_a($class, Throwable::class, true)) {
-            return new ToolExecutionException($message, ToolCall::none());
+            return new DeserializedException($message);
         }
         return self::instantiate($class, $message);
     }

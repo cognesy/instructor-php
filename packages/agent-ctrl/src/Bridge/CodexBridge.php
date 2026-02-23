@@ -2,12 +2,13 @@
 
 namespace Cognesy\AgentCtrl\Bridge;
 
-use Cognesy\Sandbox\Enums\SandboxDriver;
+use Cognesy\AgentCtrl\Common\Execution\JsonLinesBuffer;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 use Cognesy\AgentCtrl\Common\Value\PathList;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\StreamHandler;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
+use Cognesy\AgentCtrl\Dto\StreamError;
 use Cognesy\AgentCtrl\Dto\TokenUsage;
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Enum\AgentType;
@@ -25,12 +26,22 @@ use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Parser\ResponseParser;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\AgentMessage;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\CommandExecution;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\FileChange;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\Item;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\McpToolCall;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\PlanUpdate;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\Reasoning;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\UnknownItem;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\Item\WebSearch;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ItemCompletedEvent;
+use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\ErrorEvent as CodexErrorEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Sandbox\Enums\SandboxDriver;
+use Cognesy\Utils\Json\JsonParsingException;
+use JsonException;
 
 /**
  * Bridge implementation for OpenAI Codex CLI.
@@ -54,11 +65,11 @@ final class CodexBridge implements AgentBridge
         private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private int $maxRetries = 0,
         private ?CanHandleEvents $events = null,
+        private bool $failFast = true,
     ) {
         $this->commandBuilder = new CodexCommandBuilder();
-        $this->responseParser = new ResponseParser();
+        $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
@@ -87,7 +98,7 @@ final class CodexBridge implements AgentBridge
         $commandDuration = (microtime(true) - $commandStart) * 1000;
         $this->dispatch(new CommandSpecCreated(AgentType::Codex, count($spec->argv()->toArray()), $commandDuration));
 
-        $executor = SandboxCommandExecutor::forCodex($this->sandboxDriver, $this->maxRetries, $this->timeout, $this->events);
+        $executor = SandboxCommandExecutor::forCodex($this->sandboxDriver, $this->timeout, $this->events);
 
         // Emit process execution start
         $this->dispatch(new ProcessExecutionStarted(AgentType::Codex, count($spec->argv()->toArray())));
@@ -96,13 +107,14 @@ final class CodexBridge implements AgentBridge
         $toolCalls = [];
         $chunkCount = 0;
         $totalBytesProcessed = 0;
+        $jsonLinesBuffer = $handler !== null ? new JsonLinesBuffer() : null;
 
         $streamStart = $handler !== null ? microtime(true) : null;
         if ($handler !== null && $streamStart !== null) {
             $this->dispatch(new StreamProcessingStarted(AgentType::Codex));
         }
 
-        $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, &$collectedText, &$toolCalls, &$chunkCount, &$totalBytesProcessed): void {
+        $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$chunkCount, &$totalBytesProcessed): void {
             if ($type !== 'out') {
                 return;
             }
@@ -112,52 +124,8 @@ final class CodexBridge implements AgentBridge
             $chunkCount++;
             $totalBytesProcessed += $chunkSize;
 
-            $lines = preg_split('/\r\n|\r|\n/', $chunk);
-            foreach ($lines as $line) {
-                $trimmed = trim($line);
-                if ($trimmed === '') {
-                    continue;
-                }
-
-                $decoded = json_decode($trimmed, true);
-                if (!is_array($decoded)) {
-                    continue;
-                }
-
-                $event = StreamEvent::fromArray($decoded);
-
-                if ($event instanceof ItemCompletedEvent) {
-                    $item = $event->item;
-
-                    if ($item instanceof AgentMessage) {
-                        $collectedText .= $item->text;
-                        $handler->onText($item->text);
-                    }
-
-                    if ($item instanceof McpToolCall) {
-                        $toolCall = new ToolCall(
-                            tool: $item->tool,
-                            input: $item->arguments ?? [],
-                            output: $item->result !== null ? json_encode($item->result) : null,
-                            callId: $item->id,
-                            isError: $item->hasError(),
-                        );
-                        $toolCalls[] = $toolCall;
-                        $handler->onToolUse($toolCall);
-                    }
-
-                    if ($item instanceof CommandExecution) {
-                        $toolCall = new ToolCall(
-                            tool: 'bash',
-                            input: ['command' => $item->command],
-                            output: $item->output,
-                            callId: $item->id,
-                            isError: $item->exitCode !== 0,
-                        );
-                        $toolCalls[] = $toolCall;
-                        $handler->onToolUse($toolCall);
-                    }
-                }
+            foreach ($jsonLinesBuffer->consume($chunk) as $line) {
+                $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls);
             }
 
             $chunkDuration = (microtime(true) - $chunkStart) * 1000;
@@ -171,6 +139,12 @@ final class CodexBridge implements AgentBridge
         } : null;
 
         $execResult = $executor->executeStreaming($spec, $streamCallback);
+
+        if ($handler !== null && $jsonLinesBuffer !== null) {
+            foreach ($jsonLinesBuffer->flush() as $line) {
+                $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls);
+            }
+        }
 
         // Emit stream processing completion if streaming was used
         if ($handler !== null && $streamStart !== null) {
@@ -188,65 +162,37 @@ final class CodexBridge implements AgentBridge
         $this->dispatch(new ResponseParsingStarted(AgentType::Codex, strlen($execResult->stdout()), 'json'));
         $response = $this->responseParser->parse($execResult, OutputFormat::Json);
 
-        // Extract text and tools from decoded events if not streaming
+        // Always extract from parsed response to avoid stream callback data loss.
+        $extractStart = microtime(true);
+        $collectedText = $response->messageText();
+        $textLength = strlen($collectedText);
+        $toolCalls = [];
         $eventCount = 0;
-        $textLength = 0;
-        $toolUseCount = count($toolCalls);
+        $toolUseCount = 0;
 
-        if ($collectedText === '' && $handler === null) {
-            $extractStart = microtime(true);
-            foreach ($response->decoded()->all() as $event) {
-                $eventCount++;
-                $streamEvent = StreamEvent::fromArray($event->data());
-                if ($streamEvent instanceof ItemCompletedEvent) {
-                    $item = $streamEvent->item;
-
-                    if ($item instanceof AgentMessage) {
-                        $collectedText .= $item->text;
-                        $textLength += strlen($item->text);
-                    }
-
-                    if ($item instanceof McpToolCall) {
-                        $toolCalls[] = new ToolCall(
-                            tool: $item->tool,
-                            input: $item->arguments ?? [],
-                            output: $item->result !== null ? json_encode($item->result) : null,
-                            callId: $item->id,
-                            isError: $item->hasError(),
-                        );
-                        $toolUseCount++;
-                    }
-
-                    if ($item instanceof CommandExecution) {
-                        $toolCalls[] = new ToolCall(
-                            tool: 'bash',
-                            input: ['command' => $item->command],
-                            output: $item->output,
-                            callId: $item->id,
-                            isError: $item->exitCode !== 0,
-                        );
-                        $toolUseCount++;
-                    }
-                }
+        foreach ($response->decoded()->all() as $event) {
+            $eventCount++;
+            $streamEvent = StreamEvent::fromArray($event->data());
+            if (!$streamEvent instanceof ItemCompletedEvent) {
+                continue;
             }
-            $extractDuration = (microtime(true) - $extractStart) * 1000;
-            $this->dispatch(new ResponseDataExtracted(
-                AgentType::Codex,
-                $eventCount,
-                $toolUseCount,
-                $textLength,
-                $extractDuration
-            ));
-        } else {
-            $textLength = strlen($collectedText);
-            $this->dispatch(new ResponseDataExtracted(
-                AgentType::Codex,
-                $chunkCount,
-                $toolUseCount,
-                $textLength,
-                0
-            ));
+
+            $item = $streamEvent->item;
+            $toolCall = $this->toolCallFromCodexItem($item);
+            if ($toolCall !== null) {
+                $toolCalls[] = $toolCall;
+                $toolUseCount++;
+            }
         }
+
+        $extractDuration = (microtime(true) - $extractStart) * 1000;
+        $this->dispatch(new ResponseDataExtracted(
+            AgentType::Codex,
+            $eventCount,
+            $toolUseCount,
+            $textLength,
+            $extractDuration
+        ));
 
         $threadId = $response->threadId();
         $normalizedSessionId = $threadId !== null ? (string) $threadId : null;
@@ -269,6 +215,8 @@ final class CodexBridge implements AgentBridge
             cost: null, // Codex doesn't expose cost
             toolCalls: $toolCalls,
             rawResponse: $response,
+            parseFailures: $response->parseFailures(),
+            parseFailureSamples: $response->parseFailureSamples(),
         );
     }
 
@@ -288,5 +236,156 @@ final class CodexBridge implements AgentBridge
             resumeSessionId: $this->resumeSessionId,
             resumeLast: $this->resumeLast,
         );
+    }
+
+    /**
+     * @param list<ToolCall> $toolCalls
+     */
+    private function handleStreamJsonLine(
+        string $line,
+        StreamHandler $handler,
+        string &$collectedText,
+        array &$toolCalls,
+    ): void {
+        $decoded = $this->decodeStreamJsonLine($line, 'Codex stream JSON line');
+        if ($decoded === null) {
+            return;
+        }
+
+        $event = StreamEvent::fromArray($decoded);
+        if ($event instanceof CodexErrorEvent) {
+            $handler->onError(new StreamError($event->message, $event->code));
+            return;
+        }
+        if (!$event instanceof ItemCompletedEvent) {
+            return;
+        }
+
+        $item = $event->item;
+        if ($item instanceof AgentMessage) {
+            $collectedText .= $item->text;
+            $handler->onText($item->text);
+        }
+
+        $toolCall = $this->toolCallFromCodexItem($item);
+        if ($toolCall === null) {
+            return;
+        }
+        $toolCalls[] = $toolCall;
+        $handler->onToolUse($toolCall);
+    }
+
+    private function toolCallFromCodexItem(Item $item): ?ToolCall
+    {
+        return match (true) {
+            $item instanceof McpToolCall => new ToolCall(
+                tool: $item->tool,
+                input: $item->arguments ?? [],
+                output: $this->encodeJsonOrNull($item->result),
+                callId: $item->id,
+                isError: $item->hasError() || $this->isItemStatusError($item->status),
+            ),
+            $item instanceof CommandExecution => new ToolCall(
+                tool: 'bash',
+                input: ['command' => $item->command],
+                output: $item->output,
+                callId: $item->id,
+                isError: $item->exitCode !== 0 || $this->isItemStatusError($item->status),
+            ),
+            $item instanceof FileChange => new ToolCall(
+                tool: 'file_change',
+                input: [
+                    'path' => $item->path,
+                    'action' => $item->action,
+                ],
+                output: $item->diff ?? $item->content,
+                callId: $item->id,
+                isError: $this->isItemStatusError($item->status),
+            ),
+            $item instanceof WebSearch => new ToolCall(
+                tool: 'web_search',
+                input: ['query' => $item->query],
+                output: $this->encodeJsonOrNull($item->results),
+                callId: $item->id,
+                isError: $this->isItemStatusError($item->status),
+            ),
+            $item instanceof PlanUpdate => new ToolCall(
+                tool: 'plan_update',
+                input: [],
+                output: $item->plan,
+                callId: $item->id,
+                isError: $this->isItemStatusError($item->status),
+            ),
+            $item instanceof Reasoning => new ToolCall(
+                tool: 'reasoning',
+                input: [],
+                output: $item->text,
+                callId: $item->id,
+                isError: $this->isItemStatusError($item->status),
+            ),
+            $item instanceof UnknownItem => new ToolCall(
+                tool: $item->itemType(),
+                input: [],
+                output: $this->encodeJsonOrNull($item->rawData),
+                callId: $item->id,
+                isError: $this->isItemStatusError($item->status),
+            ),
+            default => null,
+        };
+    }
+
+    private function isItemStatusError(string $status): bool
+    {
+        return match (strtolower($status)) {
+            'error', 'failed', 'cancelled', 'canceled' => true,
+            default => false,
+        };
+    }
+
+    private function encodeJsonOrNull(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $encoded = json_encode($value);
+        return is_string($encoded) ? $encoded : null;
+    }
+
+    private function decodeStreamJsonLine(string $line, string $context): ?array
+    {
+        try {
+            $decoded = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            if (!$this->failFast) {
+                return null;
+            }
+            throw new JsonParsingException(
+                message: "{$context}: {$exception->getMessage()}",
+                json: $this->normalizeMalformedPayload($line),
+            );
+        }
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+        if (!$this->failFast) {
+            return null;
+        }
+        throw new JsonParsingException(
+            message: "{$context}: expected JSON object or array",
+            json: $this->normalizeMalformedPayload($line),
+        );
+    }
+
+    private function normalizeMalformedPayload(mixed $payload): string
+    {
+        if (is_string($payload)) {
+            return mb_substr(trim($payload), 0, 200);
+        }
+        $encoded = json_encode($payload);
+        if (!is_string($encoded)) {
+            return '<unserializable>';
+        }
+        return mb_substr(trim($encoded), 0, 200);
     }
 }

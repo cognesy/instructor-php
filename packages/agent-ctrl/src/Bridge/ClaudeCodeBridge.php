@@ -5,17 +5,19 @@ namespace Cognesy\AgentCtrl\Bridge;
 use Cognesy\AgentCtrl\ClaudeCode\Application\Builder\ClaudeCommandBuilder;
 use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
 use Cognesy\AgentCtrl\ClaudeCode\Application\Parser\ResponseParser;
+use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\ErrorEvent as ClaudeErrorEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\MessageEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
-use Cognesy\Sandbox\Enums\SandboxDriver;
+use Cognesy\AgentCtrl\Common\Execution\JsonLinesBuffer;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 use Cognesy\AgentCtrl\Common\Value\PathList;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\StreamHandler;
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
+use Cognesy\AgentCtrl\Dto\StreamError;
 use Cognesy\AgentCtrl\Enum\AgentType;
 use Cognesy\AgentCtrl\Event\CommandSpecCreated;
 use Cognesy\AgentCtrl\Event\ProcessExecutionStarted;
@@ -27,6 +29,9 @@ use Cognesy\AgentCtrl\Event\StreamChunkProcessed;
 use Cognesy\AgentCtrl\Event\StreamProcessingCompleted;
 use Cognesy\AgentCtrl\Event\StreamProcessingStarted;
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Sandbox\Enums\SandboxDriver;
+use Cognesy\Utils\Json\JsonParsingException;
+use JsonException;
 
 /**
  * Bridge implementation for Claude Code CLI.
@@ -47,13 +52,14 @@ final class ClaudeCodeBridge implements AgentBridge
         private ?string $resumeSessionId = null,
         private bool $continueMostRecent = false,
         private ?PathList $additionalDirs = null,
+        private ?string $workingDirectory = null,
         private SandboxDriver $sandboxDriver = SandboxDriver::Host,
         private int $timeout = 120,
-        private int $maxRetries = 0,
         private ?CanHandleEvents $events = null,
+        private bool $failFast = true,
     ) {
         $this->commandBuilder = new ClaudeCommandBuilder();
-        $this->responseParser = new ResponseParser();
+        $this->responseParser = new ResponseParser($this->failFast);
     }
 
     private function dispatch(object $event): void
@@ -70,135 +76,131 @@ final class ClaudeCodeBridge implements AgentBridge
     #[\Override]
     public function executeStreaming(string $prompt, ?StreamHandler $handler): AgentResponse
     {
-        // Build request with timing
-        $requestStart = microtime(true);
-        $request = $this->buildRequest($prompt);
-        $requestDuration = (microtime(true) - $requestStart) * 1000;
-        $this->dispatch(new RequestBuilt(AgentType::ClaudeCode, 'ClaudeRequest', $requestDuration));
+        $previousDirectory = $this->switchToWorkingDirectory();
 
-        // Build command spec with timing
-        $commandStart = microtime(true);
-        $spec = $this->commandBuilder->buildHeadless($request);
-        $commandDuration = (microtime(true) - $commandStart) * 1000;
-        $this->dispatch(new CommandSpecCreated(AgentType::ClaudeCode, count($spec->argv()->toArray()), $commandDuration));
+        try {
+            // Build request with timing
+            $requestStart = microtime(true);
+            $request = $this->buildRequest($prompt);
+            $requestDuration = (microtime(true) - $requestStart) * 1000;
+            $this->dispatch(new RequestBuilt(AgentType::ClaudeCode, 'ClaudeRequest', $requestDuration));
 
-        $executor = SandboxCommandExecutor::forClaudeCode($this->sandboxDriver, $this->maxRetries, $this->timeout, $this->events);
+            // Build command spec with timing
+            $commandStart = microtime(true);
+            $spec = $this->commandBuilder->buildHeadless($request);
+            $commandDuration = (microtime(true) - $commandStart) * 1000;
+            $this->dispatch(new CommandSpecCreated(AgentType::ClaudeCode, count($spec->argv()->toArray()), $commandDuration));
 
-        // Emit process execution start
-        $this->dispatch(new ProcessExecutionStarted(AgentType::ClaudeCode, count($spec->argv()->toArray())));
+            $executor = SandboxCommandExecutor::forClaudeCode($this->sandboxDriver, $this->timeout, $this->events);
 
-        $collectedText = '';
-        $toolCalls = [];
-        $sessionId = null;
-        $chunkCount = 0;
-        $totalBytesProcessed = 0;
+            // Emit process execution start
+            $this->dispatch(new ProcessExecutionStarted(AgentType::ClaudeCode, count($spec->argv()->toArray())));
 
-        $streamStart = $handler !== null ? microtime(true) : null;
-        if ($handler !== null && $streamStart !== null) {
-            $this->dispatch(new StreamProcessingStarted(AgentType::ClaudeCode));
-        }
+            $collectedText = '';
+            $toolCalls = [];
+            $sessionId = null;
+            $chunkCount = 0;
+            $totalBytesProcessed = 0;
+            $jsonLinesBuffer = $handler !== null ? new JsonLinesBuffer() : null;
 
-        $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, &$collectedText, &$toolCalls, &$sessionId, &$chunkCount, &$totalBytesProcessed): void {
-            if ($type !== 'out') {
-                return;
+            $streamStart = $handler !== null ? microtime(true) : null;
+            if ($handler !== null && $streamStart !== null) {
+                $this->dispatch(new StreamProcessingStarted(AgentType::ClaudeCode));
             }
 
-            $chunkStart = microtime(true);
-            $chunkSize = strlen($chunk);
-            $chunkCount++;
-            $totalBytesProcessed += $chunkSize;
-
-            $lines = preg_split('/\r\n|\r|\n/', $chunk);
-            foreach ($lines as $line) {
-                $trimmed = trim($line);
-                if ($trimmed === '') {
-                    continue;
+            $streamCallback = $handler !== null ? function (string $type, string $chunk) use ($handler, $jsonLinesBuffer, &$collectedText, &$toolCalls, &$sessionId, &$chunkCount, &$totalBytesProcessed): void {
+                if ($type !== 'out') {
+                    return;
                 }
 
-                $decoded = json_decode($trimmed, true);
-                if (!is_array($decoded)) {
-                    continue;
+                $chunkStart = microtime(true);
+                $chunkSize = strlen($chunk);
+                $chunkCount++;
+                $totalBytesProcessed += $chunkSize;
+
+                foreach ($jsonLinesBuffer->consume($chunk) as $line) {
+                    $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls, $sessionId);
                 }
 
-                $event = StreamEvent::fromArray($decoded);
+                $chunkDuration = (microtime(true) - $chunkStart) * 1000;
+                $this->dispatch(new StreamChunkProcessed(
+                    AgentType::ClaudeCode,
+                    $chunkCount,
+                    $chunkSize,
+                    'json-lines',
+                    $chunkDuration
+                ));
+            } : null;
 
-                if ($event instanceof MessageEvent) {
-                    // Handle text content
-                    foreach ($event->message->textContent() as $textContent) {
-                        $collectedText .= $textContent->text;
-                        $handler->onText($textContent->text);
-                    }
+            $execResult = $executor->executeStreaming($spec, $streamCallback);
 
-                    // Handle tool uses
-                    foreach ($event->message->toolUses() as $toolUse) {
-                        $toolCall = new ToolCall(
-                            tool: $toolUse->name,
-                            input: $toolUse->input,
-                            callId: $toolUse->id,
-                        );
-                        $toolCalls[] = $toolCall;
-                        $handler->onToolUse($toolCall);
-                    }
-                }
-
-                // Try to extract session ID from result events
-                if (isset($decoded['session_id'])) {
-                    $sessionId = $decoded['session_id'];
+            if ($handler !== null && $jsonLinesBuffer !== null) {
+                foreach ($jsonLinesBuffer->flush() as $line) {
+                    $this->handleStreamJsonLine($line, $handler, $collectedText, $toolCalls, $sessionId);
                 }
             }
 
-            $chunkDuration = (microtime(true) - $chunkStart) * 1000;
-            $this->dispatch(new StreamChunkProcessed(
-                AgentType::ClaudeCode,
-                $chunkCount,
-                $chunkSize,
-                'json-lines',
-                $chunkDuration
-            ));
-        } : null;
+            // Emit stream processing completion if streaming was used
+            if ($handler !== null && $streamStart !== null) {
+                $streamDuration = (microtime(true) - $streamStart) * 1000;
+                $this->dispatch(new StreamProcessingCompleted(
+                    AgentType::ClaudeCode,
+                    $chunkCount,
+                    $streamDuration,
+                    $totalBytesProcessed
+                ));
+            }
 
-        $execResult = $executor->executeStreaming($spec, $streamCallback);
+            // Parse response for non-streaming or to extract final data
+            $responseStart = microtime(true);
+            $this->dispatch(new ResponseParsingStarted(AgentType::ClaudeCode, strlen($execResult->stdout()), 'stream-json'));
+            $response = $this->responseParser->parse($execResult, OutputFormat::StreamJson);
 
-        // Emit stream processing completion if streaming was used
-        if ($handler !== null && $streamStart !== null) {
-            $streamDuration = (microtime(true) - $streamStart) * 1000;
-            $this->dispatch(new StreamProcessingCompleted(
-                AgentType::ClaudeCode,
-                $chunkCount,
-                $streamDuration,
-                $totalBytesProcessed
-            ));
-        }
-
-        // Parse response for non-streaming or to extract final data
-        $responseStart = microtime(true);
-        $this->dispatch(new ResponseParsingStarted(AgentType::ClaudeCode, strlen($execResult->stdout()), 'stream-json'));
-        $response = $this->responseParser->parse($execResult, OutputFormat::StreamJson);
-
-        // Extract text from decoded events if not collected via streaming
-        $eventCount = 0;
-        $textLength = 0;
-        $toolUseCount = count($toolCalls);
-
-        if ($collectedText === '' && $handler === null) {
+            // Always extract from parsed response to avoid stream callback data loss.
             $extractStart = microtime(true);
-            foreach ($response->events()->all() as $streamEvent) {
+            $collectedText = $response->messageText();
+            $textLength = strlen($collectedText);
+            $toolCalls = [];
+            $eventCount = 0;
+            $toolUseCount = 0;
+            $sessionIdFromResponse = null;
+
+            foreach ($response->decoded()->all() as $event) {
                 $eventCount++;
-                if ($streamEvent instanceof MessageEvent) {
-                    foreach ($streamEvent->message->textContent() as $textContent) {
-                        $collectedText .= $textContent->text;
-                        $textLength += strlen($textContent->text);
-                    }
-                    foreach ($streamEvent->message->toolUses() as $toolUse) {
-                        $toolCalls[] = new ToolCall(
-                            tool: $toolUse->name,
-                            input: $toolUse->input,
-                            callId: $toolUse->id,
-                        );
-                        $toolUseCount++;
-                    }
+                $data = $event->data();
+
+                $sessionCandidate = $event->getNonEmptyString('session_id');
+                if ($sessionCandidate !== null) {
+                    $sessionIdFromResponse = $sessionCandidate;
+                }
+
+                $streamEvent = StreamEvent::fromArray($data);
+                if (!$streamEvent instanceof MessageEvent) {
+                    continue;
+                }
+
+                foreach ($streamEvent->message->toolUses() as $toolUse) {
+                    $toolCalls[] = new ToolCall(
+                        tool: $toolUse->name,
+                        input: $toolUse->input,
+                        callId: $toolUse->id,
+                    );
+                    $toolUseCount++;
+                }
+
+                foreach ($streamEvent->message->toolResults() as $toolResult) {
+                    $toolCalls[] = new ToolCall(
+                        tool: 'tool_result',
+                        input: ['tool_use_id' => $toolResult->toolUseId],
+                        output: $toolResult->content,
+                        callId: $toolResult->toolUseId,
+                        isError: $toolResult->isError,
+                    );
+                    $toolUseCount++;
                 }
             }
+
+            $sessionId = $sessionIdFromResponse ?? $sessionId;
             $extractDuration = (microtime(true) - $extractStart) * 1000;
             $this->dispatch(new ResponseDataExtracted(
                 AgentType::ClaudeCode,
@@ -207,31 +209,26 @@ final class ClaudeCodeBridge implements AgentBridge
                 $textLength,
                 $extractDuration
             ));
-        } else {
-            $textLength = strlen($collectedText);
-            $this->dispatch(new ResponseDataExtracted(
-                AgentType::ClaudeCode,
-                $chunkCount,
-                $toolUseCount,
-                $textLength,
-                0 // No extraction time since it was done during streaming
-            ));
+
+            // Emit response parsing completion
+            $responseDuration = (microtime(true) - $responseStart) * 1000;
+            $this->dispatch(new ResponseParsingCompleted(AgentType::ClaudeCode, $responseDuration, $sessionId));
+
+            return new AgentResponse(
+                agentType: AgentType::ClaudeCode,
+                text: $collectedText,
+                exitCode: $execResult->exitCode(),
+                sessionId: $sessionId,
+                usage: null, // ClaudeCode doesn't expose token usage
+                cost: null,  // ClaudeCode doesn't expose cost
+                toolCalls: $toolCalls,
+                rawResponse: $response,
+                parseFailures: $response->parseFailures(),
+                parseFailureSamples: $response->parseFailureSamples(),
+            );
+        } finally {
+            $this->restoreWorkingDirectory($previousDirectory);
         }
-
-        // Emit response parsing completion
-        $responseDuration = (microtime(true) - $responseStart) * 1000;
-        $this->dispatch(new ResponseParsingCompleted(AgentType::ClaudeCode, $responseDuration, $sessionId));
-
-        return new AgentResponse(
-            agentType: AgentType::ClaudeCode,
-            text: $collectedText,
-            exitCode: $execResult->exitCode(),
-            sessionId: $sessionId,
-            usage: null, // ClaudeCode doesn't expose token usage
-            cost: null,  // ClaudeCode doesn't expose cost
-            toolCalls: $toolCalls,
-            rawResponse: $response,
-        );
     }
 
     private function buildRequest(string $prompt): ClaudeRequest
@@ -250,5 +247,127 @@ final class ClaudeCodeBridge implements AgentBridge
             ->withResumeSessionId($this->resumeSessionId)
             ->withContinueMostRecent($this->continueMostRecent)
             ->build();
+    }
+
+    /**
+     * @param list<ToolCall> $toolCalls
+     */
+    private function handleStreamJsonLine(
+        string $line,
+        StreamHandler $handler,
+        string &$collectedText,
+        array &$toolCalls,
+        ?string &$sessionId,
+    ): void {
+        $decoded = $this->decodeStreamJsonLine($line, 'Claude stream JSON line');
+        if ($decoded === null) {
+            return;
+        }
+
+        $event = StreamEvent::fromArray($decoded);
+        if ($event instanceof ClaudeErrorEvent) {
+            $handler->onError(new StreamError($event->error));
+            return;
+        }
+
+        if ($event instanceof MessageEvent) {
+            foreach ($event->message->textContent() as $textContent) {
+                $collectedText .= $textContent->text;
+                $handler->onText($textContent->text);
+            }
+
+            foreach ($event->message->toolUses() as $toolUse) {
+                $toolCall = new ToolCall(
+                    tool: $toolUse->name,
+                    input: $toolUse->input,
+                    callId: $toolUse->id,
+                );
+                $toolCalls[] = $toolCall;
+                $handler->onToolUse($toolCall);
+            }
+
+            foreach ($event->message->toolResults() as $toolResult) {
+                $toolCall = new ToolCall(
+                    tool: 'tool_result',
+                    input: ['tool_use_id' => $toolResult->toolUseId],
+                    output: $toolResult->content,
+                    callId: $toolResult->toolUseId,
+                    isError: $toolResult->isError,
+                );
+                $toolCalls[] = $toolCall;
+                $handler->onToolUse($toolCall);
+            }
+        }
+
+        $sessionCandidate = $decoded['session_id'] ?? null;
+        if (!is_string($sessionCandidate) || $sessionCandidate === '') {
+            return;
+        }
+        $sessionId = $sessionCandidate;
+    }
+
+    private function decodeStreamJsonLine(string $line, string $context): ?array
+    {
+        try {
+            $decoded = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            if (!$this->failFast) {
+                return null;
+            }
+            throw new JsonParsingException(
+                message: "{$context}: {$exception->getMessage()}",
+                json: $this->normalizeMalformedPayload($line),
+            );
+        }
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+        if (!$this->failFast) {
+            return null;
+        }
+        throw new JsonParsingException(
+            message: "{$context}: expected JSON object or array",
+            json: $this->normalizeMalformedPayload($line),
+        );
+    }
+
+    private function normalizeMalformedPayload(mixed $payload): string
+    {
+        if (is_string($payload)) {
+            return mb_substr(trim($payload), 0, 200);
+        }
+        $encoded = json_encode($payload);
+        if (!is_string($encoded)) {
+            return '<unserializable>';
+        }
+        return mb_substr(trim($encoded), 0, 200);
+    }
+
+    private function switchToWorkingDirectory(): ?string
+    {
+        $workingDirectory = $this->workingDirectory;
+        if ($workingDirectory === null || $workingDirectory === '') {
+            return null;
+        }
+        if (!is_dir($workingDirectory)) {
+            throw new \InvalidArgumentException("Working directory does not exist: {$workingDirectory}");
+        }
+
+        $currentDirectory = getcwd();
+        if ($currentDirectory === false) {
+            throw new \RuntimeException('Unable to resolve current working directory');
+        }
+        if (chdir($workingDirectory)) {
+            return $currentDirectory;
+        }
+        throw new \RuntimeException("Unable to change working directory to: {$workingDirectory}");
+    }
+
+    private function restoreWorkingDirectory(?string $directory): void
+    {
+        if ($directory === null) {
+            return;
+        }
+        chdir($directory);
     }
 }

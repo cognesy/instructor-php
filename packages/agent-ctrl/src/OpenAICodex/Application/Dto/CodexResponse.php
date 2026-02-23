@@ -13,18 +13,24 @@ use Cognesy\Sandbox\Data\ExecResult;
 final readonly class CodexResponse
 {
     private ?CodexThreadId $threadId;
+    /** @var list<string> */
+    private array $parseFailureSamples;
 
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
         CodexThreadId|string|null $threadId = null,
         private ?UsageStats $usage = null,
+        private string $messageText = '',
+        private int $parseFailures = 0,
+        array $parseFailureSamples = [],
     ) {
         $this->threadId = match (true) {
             $threadId instanceof CodexThreadId => $threadId,
             is_string($threadId) && $threadId !== '' => CodexThreadId::fromString($threadId),
             default => null,
         };
+        $this->parseFailureSamples = array_values($parseFailureSamples);
     }
 
     public function result(): ExecResult {
@@ -57,5 +63,20 @@ final readonly class CodexResponse
 
     public function stderr(): string {
         return $this->result->stderr();
+    }
+
+    public function messageText(): string {
+        return $this->messageText;
+    }
+
+    public function parseFailures(): int {
+        return $this->parseFailures;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function parseFailureSamples(): array {
+        return $this->parseFailureSamples;
     }
 }

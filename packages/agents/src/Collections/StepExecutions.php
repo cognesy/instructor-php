@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Collections;
 use Cognesy\Agents\Data\AgentStep;
 use Cognesy\Agents\Data\StepExecution;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Exceptions\ErrorList;
 
 final readonly class StepExecutions
 {

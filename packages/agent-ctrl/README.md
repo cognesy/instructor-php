@@ -87,6 +87,11 @@ $response = AgentCtrl::make($agentType)
 | `onText(callable)` | Set text event callback |
 | `onToolUse(callable)` | Set tool use callback |
 | `onComplete(callable)` | Set completion callback |
+| `onError(callable)` | Set streamed error event callback |
+
+Notes:
+- Command execution is single-attempt (no automatic retries/backoff).
+- `inDirectory(string)` is supported by all three bridges.
 
 ### Claude Code Specific
 
@@ -137,11 +142,28 @@ $response->usage;       // TokenUsage (input/output tokens)
 $response->cost;        // Cost in USD (if available)
 $response->toolCalls;   // Array of ToolCall objects
 $response->rawResponse; // Original bridge response
+$response->parseFailures();       // Number of malformed JSON payloads
+$response->parseFailureSamples(); // Sample malformed payloads (up to 3)
 
 $response->isSuccess(); // true if exitCode === 0
 $response->text();      // Alias for $response->text
 $response->usage();     // Alias for $response->usage
 $response->cost();      // Alias for $response->cost
+```
+
+## JSON Parsing Behavior
+
+- Default behavior is fail-fast: malformed JSON/JSONL raises `Cognesy\Utils\Json\JsonParsingException`.
+- For tolerant parsing, instantiate a concrete bridge with `failFast: false` (advanced usage).
+- In tolerant mode, malformed payloads are skipped and exposed via `parseFailures()` / `parseFailureSamples()`.
+
+```php
+use Cognesy\AgentCtrl\Bridge\OpenCodeBridge;
+
+$bridge = new OpenCodeBridge(failFast: false);
+$response = $bridge->execute('Analyze this repository');
+
+echo $response->parseFailures();
 ```
 
 ## Architecture

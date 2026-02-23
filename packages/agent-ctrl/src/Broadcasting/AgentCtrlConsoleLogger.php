@@ -2,6 +2,7 @@
 
 namespace Cognesy\AgentCtrl\Broadcasting;
 
+use Closure;
 use Cognesy\AgentCtrl\Event\AgentErrorOccurred;
 use Cognesy\AgentCtrl\Event\AgentExecutionCompleted;
 use Cognesy\AgentCtrl\Event\AgentExecutionStarted;
@@ -31,7 +32,7 @@ use DateTimeImmutable;
  * - Execution start/end
  * - Tool usage
  * - Text output
- * - Process execution and retries
+ * - Process execution
  * - Sandbox setup
  * - Stream processing
  * - Request/response pipeline
@@ -77,8 +78,10 @@ final class AgentCtrlConsoleLogger
 
     /**
      * Returns a wiretap callable for use with AbstractBridgeBuilder::wiretap()
+     *
+     * @return Closure(Event): void
      */
-    public function wiretap(): callable
+    public function wiretap(): Closure
     {
         return function (Event $event): void {
             match (true) {
@@ -227,14 +230,11 @@ final class AgentCtrlConsoleLogger
         ];
 
         if ($hasError) {
-            $details[] = sprintf('error=%s', $this->truncate($event->error, 80));
+            $error = $event->error ?? '';
+            $details[] = sprintf('error=%s', $this->truncate($error, 80));
         }
 
-        if ($event->willRetry) {
-            $details[] = 'will_retry';
-        }
-
-        $this->log('RTRY', $color, sprintf(
+        $this->log('EXEC', $color, sprintf(
             'Execution attempted [%s]',
             implode(', ', $details),
         ), $event->agentType->value);

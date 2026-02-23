@@ -3,7 +3,6 @@
 namespace Cognesy\Agents\Data;
 
 use Cognesy\Agents\Collections\AgentSteps;
-use Cognesy\Agents\Collections\ErrorList;
 use Cognesy\Agents\Collections\StepExecutions;
 use Cognesy\Agents\Collections\ToolExecutions;
 use Cognesy\Agents\Context\AgentContext;
@@ -17,6 +16,7 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Utils\Exceptions\ErrorList;
 use Cognesy\Utils\Metadata;
 use DateTimeImmutable;
 use Throwable;

@@ -4,16 +4,19 @@ namespace Cognesy\AgentCtrl\OpenAICodex\Application\Builder;
 
 use Cognesy\Sandbox\Value\Argv;
 use Cognesy\Sandbox\Value\CommandSpec;
+use Cognesy\AgentCtrl\Common\Builder\BuildsCliArgv;
+use Cognesy\AgentCtrl\Common\Validation\CliArgumentValidator;
 use Cognesy\AgentCtrl\OpenAICodex\Application\Dto\CodexRequest;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\OpenAICodex\Domain\Enum\SandboxMode;
-use Cognesy\Sandbox\Utils\ProcUtils;
 
 /**
  * Builds command line arguments for Codex CLI exec command
  */
 final class CodexCommandBuilder
 {
+    use BuildsCliArgv;
+
     /**
      * Build command spec for headless execution via `codex exec`
      */
@@ -235,48 +238,19 @@ final class CodexCommandBuilder
         return $current;
     }
 
-    /**
-     * @param list<string> $command
-     */
-    private function baseArgv(array $command): Argv
-    {
-        $prefix = $this->stdbufPrefix();
-        return match (true) {
-            $prefix === null => Argv::of($command),
-            default => Argv::of(array_merge($prefix, $command)),
-        };
-    }
-
-    /**
-     * @return list<string>|null
-     */
-    private function stdbufPrefix(): ?array
-    {
-        $override = getenv('COGNESY_STDBUF');
-        return match (true) {
-            $override === '0' => null,
-            $override === '1' => ['stdbuf', '-o0'],
-            $this->isWindows() => null,
-            $this->isStdbufAvailable() => ['stdbuf', '-o0'],
-            default => null,
-        };
-    }
-
-    private function isStdbufAvailable(): bool
-    {
-        return ProcUtils::findOnPath('stdbuf', ProcUtils::defaultBinPaths()) !== null;
-    }
-
-    private function isWindows(): bool
-    {
-        return str_starts_with(strtoupper(PHP_OS), 'WIN');
-    }
-
     private function validate(CodexRequest $request): void
     {
         if (trim($request->prompt()) === '') {
             throw new \InvalidArgumentException('Prompt must not be empty');
         }
+
+        CliArgumentValidator::validateModel($request->model());
+        CliArgumentValidator::validateExistingFiles($request->images(), 'images', $request->workingDirectory());
+        CliArgumentValidator::validateExistingFile($request->outputSchemaFile(), 'outputSchemaFile', $request->workingDirectory());
+
+        $sessionId = $request->resumeSessionId();
+        $sessionValue = $sessionId !== null ? $sessionId->toString() : null;
+        CliArgumentValidator::validateSessionId($sessionValue, 'resumeSessionId');
 
         if ($request->resumeLast() && $request->resumeSessionId() !== null) {
             throw new \InvalidArgumentException('Cannot set both resumeLast and resumeSessionId');

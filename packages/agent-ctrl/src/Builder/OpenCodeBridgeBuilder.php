@@ -92,9 +92,9 @@ final class OpenCodeBridgeBuilder extends AbstractBridgeBuilder
             sessionId: $this->sessionId,
             share: $this->share,
             title: $this->title,
+            workingDirectory: $this->workingDirectory,
             sandboxDriver: $this->sandboxDriver,
             timeout: $this->timeout,
-            maxRetries: $this->maxRetries,
             events: $this->events,
         );
     }

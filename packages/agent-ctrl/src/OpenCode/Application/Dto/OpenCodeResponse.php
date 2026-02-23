@@ -15,6 +15,8 @@ final readonly class OpenCodeResponse
 {
     private ?OpenCodeSessionId $sessionId;
     private ?OpenCodeMessageId $messageId;
+    /** @var list<string> */
+    private array $parseFailureSamples;
 
     public function __construct(
         private ExecResult $result,
@@ -24,6 +26,8 @@ final readonly class OpenCodeResponse
         private string $messageText = '',
         private ?TokenUsage $usage = null,
         private ?float $cost = null,
+        private int $parseFailures = 0,
+        array $parseFailureSamples = [],
     ) {
         $this->sessionId = match (true) {
             $sessionId instanceof OpenCodeSessionId => $sessionId,
@@ -35,6 +39,7 @@ final readonly class OpenCodeResponse
             is_string($messageId) && $messageId !== '' => OpenCodeMessageId::fromString($messageId),
             default => null,
         };
+        $this->parseFailureSamples = array_values($parseFailureSamples);
     }
 
     /**
@@ -123,5 +128,18 @@ final readonly class OpenCodeResponse
     public function isSuccess(): bool
     {
         return $this->result->exitCode() === 0;
+    }
+
+    public function parseFailures(): int
+    {
+        return $this->parseFailures;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function parseFailureSamples(): array
+    {
+        return $this->parseFailureSamples;
     }
 }

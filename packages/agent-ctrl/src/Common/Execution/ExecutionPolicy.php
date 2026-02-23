@@ -10,6 +10,8 @@ use Cognesy\Sandbox\Config\ExecutionPolicy as SandboxPolicy;
  */
 final readonly class ExecutionPolicy
 {
+    public const DEFAULT_TIMEOUT_SECONDS = 120;
+
     public function __construct(private SandboxPolicy $policy) {}
 
     /**
@@ -27,7 +29,7 @@ final readonly class ExecutionPolicy
             : $baseDir;
 
         $policy = SandboxPolicy::in($baseDir)
-            ->withTimeout(60)
+            ->withTimeout(self::DEFAULT_TIMEOUT_SECONDS)
             ->withNetwork(true)
             ->withOutputCaps(5 * 1024 * 1024, 1 * 1024 * 1024)
             ->withReadablePaths($baseDir)
@@ -81,11 +83,19 @@ final readonly class ExecutionPolicy
             ->withReadablePaths($baseDir)
             ->withWritablePaths($writablePaths);
 
-        if ($inheritEnv === true) {
-            $policy = $policy->inheritEnvironment();
+        if ($inheritEnv !== null) {
+            $policy = $policy->inheritEnvironment($inheritEnv);
         }
 
         return new self($policy);
+    }
+
+    public function withTimeout(int $timeoutSeconds): self {
+        return new self($this->policy->withTimeout($timeoutSeconds));
+    }
+
+    public function timeoutSeconds(): int {
+        return $this->policy->timeoutSeconds();
     }
 
     public function toSandboxPolicy() : SandboxPolicy {

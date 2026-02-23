@@ -2,7 +2,6 @@
 
 namespace Cognesy\Agents\Drivers\Testing;
 
-use Cognesy\Agents\Collections\ErrorList;
 use Cognesy\Agents\Collections\Tools;
 use Cognesy\Agents\Context\CanAcceptMessageCompiler;
 use Cognesy\Agents\Context\CanCompileMessages;
@@ -24,6 +23,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMProvider;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Utils\Exceptions\ErrorList;
 
 final class FakeAgentDriver implements CanUseTools, CanAcceptToolRuntime, CanAcceptLLMProvider, CanAcceptLLMConfig, CanAcceptMessageCompiler
 {

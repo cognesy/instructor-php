@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\Contract;
 
 use Cognesy\AgentCtrl\Dto\ToolCall;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
+use Cognesy\AgentCtrl\Dto\StreamError;
 
 /**
  * Contract for handling streaming events from an agent.
@@ -24,4 +25,9 @@ interface StreamHandler
      * Called when the agent completes its response.
      */
     public function onComplete(AgentResponse $response): void;
+
+    /**
+     * Called when the agent emits a stream error event.
+     */
+    public function onError(StreamError $error): void;
 }

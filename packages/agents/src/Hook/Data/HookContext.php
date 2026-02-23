@@ -2,12 +2,12 @@
 
 namespace Cognesy\Agents\Hook\Data;
 
-use Cognesy\Agents\Collections\ErrorList;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Agents\Exceptions\ToolExecutionBlockedException;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Utils\Exceptions\ErrorList;
 use DateTimeImmutable;
 use Throwable;
 

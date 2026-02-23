@@ -6,13 +6,16 @@ use Cognesy\AgentCtrl\ClaudeCode\Application\Dto\ClaudeRequest;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\InputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\AgentCtrl\Common\Builder\BuildsCliArgv;
+use Cognesy\AgentCtrl\Common\Validation\CliArgumentValidator;
 use Cognesy\Sandbox\Value\Argv;
 use Cognesy\Sandbox\Value\CommandSpec;
-use Cognesy\Sandbox\Utils\ProcUtils;
 use Stringable;
 
 final class ClaudeCommandBuilder
 {
+    use BuildsCliArgv;
+
     public function buildHeadless(ClaudeRequest $request) : CommandSpec {
         $this->validate($request);
 
@@ -221,57 +224,12 @@ final class ClaudeCommandBuilder
     }
 
     private function validateModel(?string $model) : void {
-        if ($model === null || trim($model) === '') {
-            return;
-        }
-        if (preg_match('/^[A-Za-z0-9._:\\/-]+$/', $model) === 1) {
-            return;
-        }
-        throw new \InvalidArgumentException("model contains unsupported characters: {$model}");
+        CliArgumentValidator::validateModel($model);
     }
 
     private function validateSessionId(string|Stringable|null $sessionId) : void {
         $sessionValue = $sessionId !== null ? (string) $sessionId : null;
-
-        if ($sessionValue === null || trim($sessionValue) === '') {
-            return;
-        }
-        if (preg_match('/^[A-Za-z0-9._:\\/-]+$/', $sessionValue) === 1) {
-            return;
-        }
-        throw new \InvalidArgumentException("resumeSessionId contains unsupported characters: {$sessionValue}");
+        CliArgumentValidator::validateSessionId($sessionValue, 'resumeSessionId');
     }
 
-    /**
-     * @param list<string> $command
-     */
-    private function baseArgv(array $command) : Argv {
-        $prefix = $this->stdbufPrefix();
-        return match (true) {
-            $prefix === null => Argv::of($command),
-            default => Argv::of(array_merge($prefix, $command)),
-        };
-    }
-
-    /**
-     * @return list<string>|null
-     */
-    private function stdbufPrefix() : ?array {
-        $override = getenv('COGNESY_STDBUF');
-        return match (true) {
-            $override === '0' => null,
-            $override === '1' => ['stdbuf', '-o0'],
-            $this->isWindows() => null,
-            $this->isStdbufAvailable() => ['stdbuf', '-o0'],
-            default => null,
-        };
-    }
-
-    private function isStdbufAvailable() : bool {
-        return ProcUtils::findOnPath('stdbuf', ProcUtils::defaultBinPaths()) !== null;
-    }
-
-    private function isWindows() : bool {
-        return str_starts_with(strtoupper(PHP_OS), 'WIN');
-    }
 }

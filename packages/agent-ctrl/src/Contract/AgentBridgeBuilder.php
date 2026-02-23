@@ -55,6 +55,13 @@ interface AgentBridgeBuilder
      */
     public function onComplete(callable $handler): static;
 
+    /**
+     * Set callback for streamed error events.
+     *
+     * @param callable(string $message, ?string $code): void $handler
+     */
+    public function onError(callable $handler): static;
+
     // Execution
 
     /**

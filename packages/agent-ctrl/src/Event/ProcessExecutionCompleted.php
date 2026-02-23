@@ -6,7 +6,7 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 use Psr\Log\LogLevel;
 
 /**
- * Emitted when process execution completes (after all retries).
+ * Emitted when process execution completes.
  */
 final class ProcessExecutionCompleted extends AgentEvent
 {

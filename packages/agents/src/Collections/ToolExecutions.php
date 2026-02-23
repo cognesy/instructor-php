@@ -5,6 +5,7 @@ namespace Cognesy\Agents\Collections;
 use Cognesy\Agents\Data\ToolExecution;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
+use Cognesy\Utils\Exceptions\ErrorList;
 
 final readonly class ToolExecutions
 {

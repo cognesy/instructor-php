@@ -18,22 +18,19 @@ use Cognesy\Sandbox\Sandbox;
 use Throwable;
 
 /**
- * Executes CLI commands inside instructor-php Sandbox with optional retries and streaming support.
+ * Executes CLI commands inside instructor-php Sandbox with streaming support.
  * Generic executor that works with any CLI-based code agent.
  */
 final class SandboxCommandExecutor implements CommandExecutor
 {
     private CanExecuteCommand $sandbox;
     private ExecutionPolicy $policy;
-    private int $maxRetries;
-    private SandboxDriver $driver;
     private AgentType $agentType;
 
     public function __construct(
         ExecutionPolicy $policy,
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0,
-        int $timeout = 120,
+        int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         private ?CanHandleEvents $events = null,
         AgentType $agentType = AgentType::ClaudeCode,
     ) {
@@ -42,15 +39,15 @@ final class SandboxCommandExecutor implements CommandExecutor
 
         // Configure policy with timing
         $policyStart = microtime(true);
-        $this->policy = $timeout !== 120
+        $this->policy = $timeout !== ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS
             ? $this->withTimeout($policy, $timeout)
             : $policy;
-        $this->driver = $driver;
+        $effectiveTimeout = $this->policy->timeoutSeconds();
         $policyDuration = (microtime(true) - $policyStart) * 1000;
         $this->dispatch(new SandboxPolicyConfigured(
             $this->agentType,
             $driver->value,
-            $timeout,
+            $effectiveTimeout,
             true, // networkEnabled - could be extracted from policy
             $policyDuration
         ));
@@ -60,8 +57,6 @@ final class SandboxCommandExecutor implements CommandExecutor
         $this->sandbox = $this->makeSandbox($this->policy, $driver);
         $initDuration = (microtime(true) - $initStart) * 1000;
         $this->dispatch(new SandboxInitialized($this->agentType, $driver->value, $initDuration));
-
-        $this->maxRetries = max(0, $maxRetries);
 
         // Emit ready event
         $totalSetupDuration = (microtime(true) - $setupStart) * 1000;
@@ -74,10 +69,16 @@ final class SandboxCommandExecutor implements CommandExecutor
     }
 
     /**
-     * Create default executor (Host sandbox, no retries).
+     * Create default executor (Host sandbox).
      */
     public static function default(?CanHandleEvents $events = null, AgentType $agentType = AgentType::ClaudeCode): self {
-        return new self(ExecutionPolicy::default(), SandboxDriver::Host, 0, 120, $events, $agentType);
+        return new self(
+            ExecutionPolicy::default(),
+            SandboxDriver::Host,
+            ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
+            $events,
+            $agentType,
+        );
     }
 
     /**
@@ -85,11 +86,10 @@ final class SandboxCommandExecutor implements CommandExecutor
      */
     public static function forClaudeCode(
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0,
-        int $timeout = 120,
+        int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forClaudeCode(), $driver, $maxRetries, $timeout, $events, AgentType::ClaudeCode);
+        return new self(ExecutionPolicy::forClaudeCode(), $driver, $timeout, $events, AgentType::ClaudeCode);
     }
 
     /**
@@ -97,11 +97,10 @@ final class SandboxCommandExecutor implements CommandExecutor
      */
     public static function forCodex(
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0,
-        int $timeout = 120,
+        int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forCodex(), $driver, $maxRetries, $timeout, $events, AgentType::Codex);
+        return new self(ExecutionPolicy::forCodex(), $driver, $timeout, $events, AgentType::Codex);
     }
 
     /**
@@ -109,25 +108,17 @@ final class SandboxCommandExecutor implements CommandExecutor
      */
     public static function forOpenCode(
         SandboxDriver $driver = SandboxDriver::Host,
-        int $maxRetries = 0,
-        int $timeout = 120,
+        int $timeout = ExecutionPolicy::DEFAULT_TIMEOUT_SECONDS,
         ?CanHandleEvents $events = null,
     ): self {
-        return new self(ExecutionPolicy::forOpenCode(), $driver, $maxRetries, $timeout, $events, AgentType::OpenCode);
+        return new self(ExecutionPolicy::forOpenCode(), $driver, $timeout, $events, AgentType::OpenCode);
     }
 
     /**
      * Apply custom timeout to an existing policy.
      */
     private function withTimeout(ExecutionPolicy $policy, int $timeout): ExecutionPolicy {
-        $baseDir = getcwd() ?: '/tmp';
-        return ExecutionPolicy::custom(
-            timeoutSeconds: $timeout,
-            networkEnabled: true,
-            stdoutLimitBytes: 5 * 1024 * 1024,
-            stderrLimitBytes: 1 * 1024 * 1024,
-            baseDir: $baseDir,
-        );
+        return $policy->withTimeout($timeout);
     }
 
     #[\Override]
@@ -141,60 +132,43 @@ final class SandboxCommandExecutor implements CommandExecutor
      * @param callable(string $type, string $chunk): void|null $onOutput
      */
     public function executeStreaming(CommandSpec $command, ?callable $onOutput) : ExecResult {
-        $attempt = 0;
-        $lastError = null;
         $executionStart = microtime(true);
+        $attemptStart = microtime(true);
+        $attempt = 1;
 
-        while ($attempt <= $this->maxRetries) {
-            $attemptStart = microtime(true);
-            $attempt++;
+        try {
+            $result = $this->sandbox->execute(
+                $command->argv()->toArray(),
+                $command->stdin(),
+                $onOutput
+            );
 
-            try {
-                $result = $this->sandbox->execute(
-                    $command->argv()->toArray(),
-                    $command->stdin(),
-                    $onOutput
-                );
+            $attemptDuration = (microtime(true) - $attemptStart) * 1000;
+            $this->dispatch(new ExecutionAttempted(
+                $this->agentType,
+                $attempt,
+                $attemptDuration
+            ));
 
-                $attemptDuration = (microtime(true) - $attemptStart) * 1000;
-                $this->dispatch(new ExecutionAttempted(
-                    $this->agentType,
-                    $attempt,
-                    false, // willRetry = false (success)
-                    $attemptDuration
-                ));
+            $totalDuration = (microtime(true) - $executionStart) * 1000;
+            $this->dispatch(new ProcessExecutionCompleted(
+                $this->agentType,
+                $attempt,
+                $totalDuration,
+                $attempt
+            ));
 
-                $totalDuration = (microtime(true) - $executionStart) * 1000;
-                $this->dispatch(new ProcessExecutionCompleted(
-                    $this->agentType,
-                    $attempt,
-                    $totalDuration,
-                    $attempt // successAttempt
-                ));
-
-                return $result;
-            } catch (Throwable $error) {
-                $lastError = $error;
-                $attemptDuration = (microtime(true) - $attemptStart) * 1000;
-                $willRetry = $attempt <= $this->maxRetries;
-
-                $this->dispatch(new ExecutionAttempted(
-                    $this->agentType,
-                    $attempt,
-                    $willRetry,
-                    $attemptDuration,
-                    $error->getMessage()
-                ));
-
-                if ($attempt > $this->maxRetries) {
-                    break;
-                }
-                $this->backoff($attempt);
-            }
+            return $result;
+        } catch (Throwable $error) {
+            $attemptDuration = (microtime(true) - $attemptStart) * 1000;
+            $this->dispatch(new ExecutionAttempted(
+                $this->agentType,
+                $attempt,
+                $attemptDuration,
+                $error->getMessage()
+            ));
+            throw $error;
         }
-
-        /** @var Throwable $lastError */
-        throw $lastError;
     }
 
     #[\Override]
@@ -213,9 +187,4 @@ final class SandboxCommandExecutor implements CommandExecutor
         };
     }
 
-    private function backoff(int $attempt) : void {
-        $exponent = 2 ** ($attempt - 1);
-        $delayMs = 100 * $exponent;
-        usleep($delayMs * 1000);
-    }
 }

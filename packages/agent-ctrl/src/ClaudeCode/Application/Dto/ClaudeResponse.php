@@ -8,13 +8,19 @@ use Cognesy\Sandbox\Data\ExecResult;
 final readonly class ClaudeResponse
 {
     private ClaudeEventCollection $events;
+    /** @var list<string> */
+    private array $parseFailureSamples;
 
     public function __construct(
         private ExecResult $result,
         private DecodedObjectCollection $decoded,
         ?ClaudeEventCollection $events = null,
+        private string $messageText = '',
+        private int $parseFailures = 0,
+        array $parseFailureSamples = [],
     ) {
         $this->events = $events ?? ClaudeEventCollection::empty();
+        $this->parseFailureSamples = array_values($parseFailureSamples);
     }
 
     public function result() : ExecResult {
@@ -27,5 +33,20 @@ final readonly class ClaudeResponse
 
     public function events() : ClaudeEventCollection {
         return $this->events;
+    }
+
+    public function messageText() : string {
+        return $this->messageText;
+    }
+
+    public function parseFailures() : int {
+        return $this->parseFailures;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function parseFailureSamples() : array {
+        return $this->parseFailureSamples;
     }
 }

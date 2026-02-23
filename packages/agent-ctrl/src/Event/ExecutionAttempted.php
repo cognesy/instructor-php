@@ -6,7 +6,7 @@ use Cognesy\AgentCtrl\Enum\AgentType;
 use Psr\Log\LogLevel;
 
 /**
- * Emitted for each execution attempt (including retries).
+ * Emitted for each process execution attempt.
  */
 final class ExecutionAttempted extends AgentEvent
 {
@@ -15,13 +15,11 @@ final class ExecutionAttempted extends AgentEvent
     public function __construct(
         AgentType $agentType,
         public readonly int $attemptNumber,
-        public readonly bool $willRetry,
         public readonly float $executionDurationMs,
         public readonly ?string $error = null,
     ) {
         parent::__construct($agentType, [
             'attemptNumber' => $attemptNumber,
-            'willRetry' => $willRetry,
             'executionDurationMs' => round($executionDurationMs, 2),
             'error' => $error,
         ]);
@@ -31,15 +29,13 @@ final class ExecutionAttempted extends AgentEvent
     public function __toString(): string
     {
         $status = $this->error ? 'failed' : 'succeeded';
-        $retryInfo = $this->willRetry ? ' (will retry)' : '';
 
         return sprintf(
-            'Agent %s execution attempt %d %s in %.2fms%s',
+            'Agent %s execution attempt %d %s in %.2fms',
             $this->agentType->value,
             $this->attemptNumber,
             $status,
             $this->executionDurationMs,
-            $retryInfo
         );
     }
 }
