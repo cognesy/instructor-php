@@ -34,17 +34,19 @@ final class FirejailSandbox implements CanExecuteCommand
             throw new \RuntimeException('Firejail binary not found');
         }
         $workDir = Workdir::create($this->policy);
-        $cmd = $this->buildCommand($workDir, $argv);
-        $env = EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars());
-        $result = $this->makeProcRunner()->run(
-            argv: $this->buildLaunch($cmd),
-            cwd: getcwd() ?: $workDir,
-            env: $env,
-            stdin: $stdin,
-            onOutput: $onOutput,
-        );
-        Workdir::remove($workDir);
-        return $result;
+        try {
+            $cmd = $this->buildCommand($workDir, $argv);
+            $env = EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars());
+            return $this->makeProcRunner()->run(
+                argv: $this->buildLaunch($cmd),
+                cwd: getcwd() ?: $workDir,
+                env: $env,
+                stdin: $stdin,
+                onOutput: $onOutput,
+            );
+        } finally {
+            Workdir::remove($workDir);
+        }
     }
 
     private function makeProcRunner(): CanRunProcess {
@@ -59,11 +61,13 @@ final class FirejailSandbox implements CanExecuteCommand
         );
     }
 
-    /** @return list<string> */
+    /**
+     * @param list<string> $innerArgv
+     * @return list<string>
+     */
     private function buildCommand(string $workDir, array $innerArgv): array {
         $cmd = [
             $this->firejailBin,
-            '--noprofile',  // Minimal configuration to debug stdin EBADF
         ];
         if (!$this->policy->networkEnabled()) {
             $cmd[] = '--net=none';
@@ -104,7 +108,10 @@ final class FirejailSandbox implements CanExecuteCommand
         return $cmd;
     }
 
-    /** @param list<string> $cmd */
+    /**
+     * @param list<string> $cmd
+     * @return list<string>
+     */
     private function buildLaunch(array $cmd): array {
         $setsid = ProcUtils::findSetSidPath();
         return $setsid ? array_merge([$setsid, '--'], $cmd) : $cmd;
@@ -119,4 +126,3 @@ final class FirejailSandbox implements CanExecuteCommand
         return ProcUtils::findOnPath('firejail', $extra);
     }
 }
-

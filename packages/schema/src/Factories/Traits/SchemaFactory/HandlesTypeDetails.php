@@ -15,6 +15,9 @@ use Cognesy\Schema\Reflection\ClassInfo;
 
 trait HandlesTypeDetails
 {
+    /** @var array<class-string, bool> */
+    private array $inlineObjectExpansionStack = [];
+
     /**
      * Makes schema for top level item (depending on the type)
      *
@@ -115,15 +118,12 @@ trait HandlesTypeDetails
         if ($this->useObjectReferences) {
             return new ObjectRefSchema($type, $name, $description);
         }
-        // if references are turned off, just generate the object schema
-        $classInfo = ClassInfo::fromString($type->class() ?? throw new \Exception('Object type must have a class'));
-        return new ObjectSchema(
-            $type,
-            $name,
-            $description,
-            $this->getPropertySchemas($classInfo),
-            $classInfo->getRequiredProperties(),
-        );
+        $className = $type->class() ?? throw new \Exception('Object type must have a class');
+        if ($this->hasInlineObjectCycle($className)) {
+            // Cycle guard for inline mode: stop recursive expansion on repeated class.
+            return new ObjectSchema($type, $name, $description, [], []);
+        }
+        return $this->makeInlineObjectSchema($type, $name, $description, $className);
     }
 
     /**
@@ -144,5 +144,30 @@ trait HandlesTypeDetails
             $type->isMixed() => new MixedSchema($type, $name, $description),
             default => throw new \Exception('Unknown type: ' . $type->toString()),
         };
+    }
+
+    private function makeInlineObjectSchema(
+        TypeDetails $type,
+        string $name,
+        string $description,
+        string $className,
+    ): ObjectSchema {
+        $this->inlineObjectExpansionStack[$className] = true;
+        try {
+            $classInfo = ClassInfo::fromString($className);
+            return new ObjectSchema(
+                $type,
+                $name,
+                $description,
+                $this->getPropertySchemas($classInfo),
+                $classInfo->getRequiredProperties(),
+            );
+        } finally {
+            unset($this->inlineObjectExpansionStack[$className]);
+        }
+    }
+
+    private function hasInlineObjectCycle(string $className): bool {
+        return isset($this->inlineObjectExpansionStack[$className]);
     }
 }

@@ -190,15 +190,19 @@ class ClassInfo {
         $properties = $this->reflectionClass->getProperties() ?? [];
         $info = [];
         foreach ($properties as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
             $info[$property->name] = PropertyInfo::fromReflection($property);
         }
         return $info;
     }
 
     /**
+     * @template T
      * @param array<callable(PropertyInfo): bool> $filters
-     * @param callable(PropertyInfo): mixed $extractor
-     * @return array<string, PropertyInfo>
+     * @param callable(PropertyInfo): T $extractor
+     * @return array<string, T>
      */
     protected function getFilteredPropertyData(array $filters, callable $extractor) : array {
         return array_map(

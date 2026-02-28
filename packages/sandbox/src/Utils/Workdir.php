@@ -28,6 +28,10 @@ final class Workdir
     }
 
     public static function remove(string $dir): void {
+        if (is_link($dir)) {
+            @unlink($dir);
+            return;
+        }
         if (!is_dir($dir)) {
             return;
         }
@@ -40,6 +44,10 @@ final class Workdir
                 continue;
             }
             $p = $dir . '/' . $i;
+            if (is_link($p)) {
+                @unlink($p);
+                continue;
+            }
             if (is_dir($p)) {
                 self::remove($p);
                 continue;
@@ -49,4 +57,3 @@ final class Workdir
         @rmdir($dir);
     }
 }
-

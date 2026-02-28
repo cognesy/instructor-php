@@ -3,6 +3,7 @@
 namespace Cognesy\Events\Dispatchers;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Psr\EventDispatcher\StoppableEventInterface;
 use SplPriorityQueue;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyDispatcher;
 
@@ -36,7 +37,12 @@ final class SymfonyEventDispatcher implements CanHandleEvents
 
     #[\Override]
     public function dispatch(object $event): object {
-        $event = $this->dispatcher->dispatch($event); // framework listeners first
+        foreach ($this->eventTypes($event) as $eventType) {
+            $event = $this->dispatcher->dispatch($event, $eventType);
+            if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
+                break;
+            }
+        }
 
         foreach (clone $this->taps as $tap) { // taps always run, honour priority
             /** @var callable $tap */
@@ -51,13 +57,31 @@ final class SymfonyEventDispatcher implements CanHandleEvents
      */
     #[\Override]
     public function getListenersForEvent(object $event): iterable {
-        /** @var iterable<callable(object): void> $listeners */
-        $listeners = $this->dispatcher->getListeners($event::class);
-        yield from $listeners;
+        yield from $this->classListeners($event);
 
         foreach (clone $this->taps as $tap) {
             /** @var callable(object): void $tap */
             yield $tap;
         }
+    }
+
+    /**
+     * @return iterable<callable(object): void>
+     */
+    private function classListeners(object $event): iterable {
+        foreach ($this->eventTypes($event) as $type) {
+            /** @var iterable<callable(object): void> $listeners */
+            $listeners = $this->dispatcher->getListeners($type);
+            yield from $listeners;
+        }
+    }
+
+    /** @return list<string> */
+    private function eventTypes(object $event): array {
+        return array_merge(
+            [get_class($event)],
+            class_parents($event),
+            class_implements($event),
+        );
     }
 }

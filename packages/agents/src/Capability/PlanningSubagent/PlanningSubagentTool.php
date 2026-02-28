@@ -32,6 +32,7 @@ final class PlanningSubagentTool extends ContextAwareTool
     private CanUseTools $parentDriver;
     private string $plannerSystemPrompt;
     private ?NameList $plannerTools;
+    private ?Tools $plannerAdditionalTools;
     private ExecutionBudget $plannerBudget;
     private CanHandleEvents $events;
 
@@ -40,6 +41,7 @@ final class PlanningSubagentTool extends ContextAwareTool
         CanUseTools $parentDriver,
         string $plannerSystemPrompt,
         ?NameList $plannerTools = null,
+        ?Tools $plannerAdditionalTools = null,
         ?ExecutionBudget $plannerBudget = null,
         ?CanHandleEvents $events = null,
     ) {
@@ -49,6 +51,7 @@ final class PlanningSubagentTool extends ContextAwareTool
         $this->parentDriver = $parentDriver;
         $this->plannerSystemPrompt = $plannerSystemPrompt;
         $this->plannerTools = $plannerTools;
+        $this->plannerAdditionalTools = $plannerAdditionalTools;
         $this->plannerBudget = $plannerBudget ?? ExecutionBudget::unlimited();
         $this->events = EventBusResolver::using($events);
     }
@@ -104,6 +107,7 @@ final class PlanningSubagentTool extends ContextAwareTool
         ?CanUseTools $parentDriver = null,
         ?string $plannerSystemPrompt = null,
         ?NameList $plannerTools = null,
+        ?Tools $plannerAdditionalTools = null,
         ?ExecutionBudget $plannerBudget = null,
         ?CanHandleEvents $events = null,
         ?ToolCall $toolCall = null,
@@ -114,6 +118,7 @@ final class PlanningSubagentTool extends ContextAwareTool
             parentDriver: $parentDriver ?? $this->parentDriver,
             plannerSystemPrompt: $plannerSystemPrompt ?? $this->plannerSystemPrompt,
             plannerTools: $plannerTools ?? $this->plannerTools,
+            plannerAdditionalTools: $plannerAdditionalTools ?? $this->plannerAdditionalTools,
             plannerBudget: $plannerBudget ?? $this->plannerBudget,
             events: $events ?? $this->events,
         );
@@ -123,7 +128,8 @@ final class PlanningSubagentTool extends ContextAwareTool
     }
 
     private function createPlannerLoop(): AgentLoop {
-        $plannerTools = $this->filterPlannerTools($this->parentTools, $this->plannerTools);
+        $availableTools = $this->availablePlannerTools();
+        $plannerTools = $this->filterPlannerTools($availableTools, $this->plannerTools);
         $driver = $this->resolveSubagentDriver($this->parentDriver);
 
         $builder = AgentBuilder::base($this->events)
@@ -179,19 +185,27 @@ final class PlanningSubagentTool extends ContextAwareTool
         ]);
     }
 
-    private function filterPlannerTools(Tools $parentTools, ?NameList $allowList): Tools {
+    private function availablePlannerTools(): Tools {
+        if ($this->plannerAdditionalTools === null || $this->plannerAdditionalTools->isEmpty()) {
+            return $this->parentTools;
+        }
+
+        return $this->parentTools->merge($this->plannerAdditionalTools);
+    }
+
+    private function filterPlannerTools(Tools $availableTools, ?NameList $allowList): Tools {
         $plannerTools = match (true) {
-            $allowList === null => $parentTools,
-            $allowList->isEmpty() => $parentTools,
-            default => $this->filterByAllowList($parentTools, $allowList),
+            $allowList === null => $availableTools,
+            $allowList->isEmpty() => $availableTools,
+            default => $this->filterByAllowList($availableTools, $allowList),
         };
 
         return $this->removeRecursiveTools($plannerTools);
     }
 
-    private function filterByAllowList(Tools $parentTools, NameList $allowList): Tools {
+    private function filterByAllowList(Tools $availableTools, NameList $allowList): Tools {
         $filtered = [];
-        foreach ($parentTools->all() as $tool) {
+        foreach ($availableTools->all() as $tool) {
             if ($allowList->has($tool->name())) {
                 $filtered[] = $tool;
             }

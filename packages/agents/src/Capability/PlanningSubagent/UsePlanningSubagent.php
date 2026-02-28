@@ -39,6 +39,7 @@ PROMPT;
         private string $parentInstructions = self::DEFAULT_PARENT_INSTRUCTIONS,
         private string $plannerSystemPrompt = self::DEFAULT_PLANNER_SYSTEM_PROMPT,
         private ?NameList $plannerTools = null,
+        private ?Tools $plannerAdditionalTools = null,
         private ?ExecutionBudget $plannerBudget = null,
     ) {}
 
@@ -71,12 +72,19 @@ PROMPT;
     private function configurePlanningTool(CanConfigureAgent $agent): CanConfigureAgent {
         $plannerSystemPrompt = $this->plannerSystemPrompt;
         $plannerTools = $this->plannerTools;
+        $plannerAdditionalTools = $this->plannerAdditionalTools;
         $plannerBudget = $this->plannerBudget ?? ExecutionBudget::unlimited();
 
-        $deferred = new class($plannerSystemPrompt, $plannerTools, $plannerBudget) implements CanProvideDeferredTools {
+        $deferred = new class(
+            $plannerSystemPrompt,
+            $plannerTools,
+            $plannerAdditionalTools,
+            $plannerBudget,
+        ) implements CanProvideDeferredTools {
             public function __construct(
                 private string $plannerSystemPrompt,
                 private ?NameList $plannerTools,
+                private ?Tools $plannerAdditionalTools,
                 private ExecutionBudget $plannerBudget,
             ) {}
 
@@ -87,6 +95,7 @@ PROMPT;
                     parentDriver: $context->toolUseDriver(),
                     plannerSystemPrompt: $this->plannerSystemPrompt,
                     plannerTools: $this->plannerTools,
+                    plannerAdditionalTools: $this->plannerAdditionalTools,
                     plannerBudget: $this->plannerBudget,
                     events: $context->events(),
                 ));

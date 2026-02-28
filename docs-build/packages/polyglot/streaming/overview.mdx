@@ -32,7 +32,7 @@ $response = $inference->with(
     messages: 'Write a short story about a space explorer.',
     options: ['stream' => true]  // Enable streaming
 );
-// @doctest id="17fd"
+// @doctest id="858a"
 ```
 
 Once you have a streaming-enabled response, you can access the stream using the `stream()` method:
@@ -40,7 +40,7 @@ Once you have a streaming-enabled response, you can access the stream using the 
 ```php
 // Get the stream of partial responses
 $stream = $response->stream();
-// @doctest id="8af3"
+// @doctest id="00f2"
 ```
 
 
@@ -73,7 +73,7 @@ foreach ($stream as $partialResponse) {
     }
 }
 echo "\n";
-// @doctest id="1913"
+// @doctest id="6606"
 ```
 
 ### Understanding Partial Responses
@@ -98,7 +98,7 @@ foreach ($stream as $partialResponse) {
         echo "Response finished: " . $partialResponse->finishReason . "\n";
     }
 }
-// @doctest id="1720"
+// @doctest id="05a5"
 ```
 
 ## Retrieving the Final Response
@@ -112,7 +112,7 @@ $completeText = $response->get();
 // Method 2: Getting the final state from the stream
 $finalResponse = $response->stream()->final();
 $completeText = $finalResponse->content();
-// @doctest id="7ab7"
+// @doctest id="53f0"
 ```
 
 ## Stream Replay Contract
@@ -142,7 +142,7 @@ foreach ($stream->responses() as $partial) {
 }
 
 $final = $stream->final();
-// @doctest id="6d90"
+// @doctest id="86ab"
 ```
 
 Replay reuses captured stream data. It does not perform a fresh LLM call.

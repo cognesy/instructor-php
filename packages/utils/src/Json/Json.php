@@ -63,7 +63,7 @@ class Json
     // STATIC /////////////////////////////////////////////////
 
     public static function decode(string $text, mixed $default = null) : mixed {
-        if (empty($text)) {
+        if ($text === '') {
             return $default;
         }
         try {
@@ -74,7 +74,7 @@ class Json
             }
             return $default;
         }
-        return empty($decoded) ? $default : $decoded;
+        return $decoded;
     }
 
     public static function encode(mixed $json, int $options = 0) : string {

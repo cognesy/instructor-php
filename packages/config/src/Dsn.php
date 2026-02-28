@@ -67,7 +67,23 @@ class Dsn
     }
 
     public function boolParam(string $key, bool $default = false) : bool {
-        return (bool) $this->param($key, $default);
+        $value = $this->param($key, $default);
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if ($value === null) {
+            return $default;
+        }
+
+        if (!is_scalar($value)) {
+            return $default;
+        }
+
+        $parsed = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        return $parsed ?? $default;
     }
 
     public function floatParam(string $key, float $default = 0.0) : float {

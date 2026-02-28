@@ -270,6 +270,15 @@ test('converts simple message to string', function () {
     expect($message->toString())->toBe('Simple text content');
 });
 
+test('toArray preserves empty string content key', function () {
+    $message = new Message(role: 'user', content: '');
+
+    $array = $message->toArray();
+
+    expect($array)->toHaveKey('content')
+        ->and($array['content'])->toBe('');
+});
+
 //test('throws exception when converting non-text composite message to string', function () {
 //    $message = new Message('user', [
 //        ['type' => 'image', 'url' => 'http://example.com/image.jpg']

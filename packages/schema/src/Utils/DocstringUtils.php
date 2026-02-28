@@ -16,9 +16,10 @@ class DocstringUtils
             ->finally(fn(CanCarryState $state) => trim($state->value()))
             ->create();
 
-        return $pipeline
+        $result = $pipeline
             ->executeWith(ProcessingState::with($code))
             ->value();
+        return is_string($result) ? $result : '';
     }
 
     public static function getParameterDescription(string $name, string $text): string {

@@ -303,7 +303,7 @@ final readonly class Message
     // CONVERSIONS / TRANSFORMATIONS ///////////////////////////////////////
 
     public function toArray(): array {
-        return array_filter([
+        $data = [
             'id' => $this->id->toString(),
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
             'parentId' => $this->parentId !== null ? (string) $this->parentId : null,
@@ -315,7 +315,19 @@ final readonly class Message
                 default => $this->content->toString(),
             },
             '_metadata' => $this->metadata->toArray(),
-        ]);
+        ];
+
+        if ($data['parentId'] === null) {
+            unset($data['parentId']);
+        }
+        if ($data['name'] === '') {
+            unset($data['name']);
+        }
+        if ($data['_metadata'] === []) {
+            unset($data['_metadata']);
+        }
+
+        return $data;
     }
 
     public function toString(): string {

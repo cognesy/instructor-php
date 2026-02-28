@@ -182,6 +182,27 @@ describe('branching operations', function () {
         $forkedPath = $this->storage->getPath($forkedId);
         expect($forkedPath->count())->toBe(2); // Only msg1 and msg2
     });
+
+    test('fork preserves original sections along parent chain', function () {
+        $sessionId = $this->storage->createSession();
+
+        $msg1 = $this->storage->append($sessionId, 'system', new Message('system', 'System prompt'));
+        $msg2 = $this->storage->append($sessionId, 'context', new Message('user', 'Context note'));
+        $this->storage->append($sessionId, 'messages', new Message('assistant', 'Answer'));
+
+        $forkedId = $this->storage->fork($sessionId, $msg2->id());
+
+        $forkSystem = $this->storage->getSection($forkedId, 'system');
+        $forkContext = $this->storage->getSection($forkedId, 'context');
+        $forkMessages = $this->storage->getSection($forkedId, 'messages');
+
+        expect($forkSystem->count())->toBe(1);
+        expect($forkSystem->first()?->toString())->toBe('System prompt');
+        expect($forkContext->count())->toBe(1);
+        expect($forkContext->first()?->toString())->toBe('Context note');
+        expect($forkMessages->count())->toBe(0);
+        expect($this->storage->getPath($forkedId)->count())->toBe(2);
+    });
 });
 
 describe('label operations', function () {
@@ -239,5 +260,24 @@ describe('save and load roundtrip', function () {
         expect($result->newMessages)->toBe(2); // assistant + buffered
         expect($result->durationMs())->toBeGreaterThanOrEqual(0);
         expect($result->errorMessage)->toBeNull();
+    });
+
+    test('save preserves navigated leaf position for future appends', function () {
+        $sessionId = $this->storage->createSession();
+
+        $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
+        $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
+        $this->storage->append($sessionId, 'messages', new Message('user', 'Third'));
+
+        $this->storage->navigateTo($sessionId, $msg1->id());
+        expect((string) ($this->storage->getLeafId($sessionId) ?? ''))->toBe($msg1->id()->toString());
+
+        $store = $this->storage->load($sessionId);
+        $result = $this->storage->save($sessionId, $store);
+        expect($result->isSuccess())->toBeTrue();
+        expect((string) ($this->storage->getLeafId($sessionId) ?? ''))->toBe($msg1->id()->toString());
+
+        $branch = $this->storage->append($sessionId, 'messages', new Message('assistant', 'Branch'));
+        expect((string) ($branch->parentId() ?? ''))->toBe($msg1->id()->toString());
     });
 });

@@ -8,7 +8,7 @@ describe('Audio', function () {
         it('creates audio with format and base64 data', function () {
             $audio = new Audio('wav', 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
             expect($audio->format())->toBe('wav');
-            expect($audio->getByte64Bytes())->toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+            expect($audio->getBase64Bytes())->toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
         });
 
         it('supports mp3 format', function () {

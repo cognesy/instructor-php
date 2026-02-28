@@ -4,6 +4,7 @@ namespace Cognesy\Schema\Utils;
 
 use Cognesy\Schema\Data\Reference;
 use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Visitors\SchemaToJsonSchema;
 
 class ReferenceQueue
 {
@@ -51,9 +52,11 @@ class ReferenceQueue
             if ($reference === null) {
                 break;
             }
-            $definitions[$reference->classShort] = $this->schemaFactory
-                ->schema($reference->class)
-                ->toJsonSchema();
+            $schema = $this->schemaFactory->schema($reference->class);
+            $definitions[$reference->classShort] = (new SchemaToJsonSchema)->toArray(
+                $schema,
+                $this->queue(...),
+            );
         }
         return array_reverse($definitions);
     }

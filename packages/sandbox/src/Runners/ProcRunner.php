@@ -37,14 +37,19 @@ final class ProcRunner implements CanRunProcess
 
     // INTERNAL ///////////////////////////////////////////////////////////////////////
 
-    /** @return array{0:resource,1:array<int,resource>} */
+    /**
+     * @param list<string> $argv
+     * @param array<string,string> $env
+     * @return array{0:resource,1:array<int,resource>}
+     */
     private function openProcess(array $argv, string $cwd, array $env): array {
-        $desc = [0 => ['pipe', 'w'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $desc = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $proc = proc_open($argv, $desc, $pipes, $cwd, $env);
         if (!\is_resource($proc)) { throw new \RuntimeException('Failed to start ' . $this->nameForError); }
         return [$proc, $pipes];
     }
 
+    /** @param array<int,resource> $pipes */
     private function initPipes(array $pipes, ?string $stdin): void {
         if ($stdin !== null && $stdin !== '') { @fwrite($pipes[0], $stdin); }
         @fclose($pipes[0]);

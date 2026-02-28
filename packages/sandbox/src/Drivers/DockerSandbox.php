@@ -36,17 +36,19 @@ final class DockerSandbox implements CanExecuteCommand
         }
 
         $workDir = Workdir::create($this->policy);
-        $cmd = $this->buildContainerCommand($workDir, $argv);
-        $env = EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars());
-        $result = $this->makeProcRunner()->run(
-            argv: $this->buildLaunch($cmd),
-            cwd: getcwd() ?: $workDir,
-            env: $env,
-            stdin: $stdin,
-            onOutput: $onOutput,
-        );
-        Workdir::remove($workDir);
-        return $result;
+        try {
+            $cmd = $this->buildContainerCommand($workDir, $argv);
+            $env = EnvUtils::build($this->policy, EnvUtils::forbiddenEnvVars());
+            return $this->makeProcRunner()->run(
+                argv: $this->buildLaunch($cmd),
+                cwd: getcwd() ?: $workDir,
+                env: $env,
+                stdin: $stdin,
+                onOutput: $onOutput,
+            );
+        } finally {
+            Workdir::remove($workDir);
+        }
     }
 
     private function makeProcRunner(): CanRunProcess {
@@ -61,6 +63,10 @@ final class DockerSandbox implements CanExecuteCommand
         );
     }
 
+    /**
+     * @param list<string> $argv
+     * @return list<string>
+     */
     private function buildContainerCommand(string $workDir, array $argv): array {
         $builder = ContainerCommandBuilder::docker($this->dockerBin)
             ->withImage($this->image)
@@ -99,6 +105,10 @@ final class DockerSandbox implements CanExecuteCommand
         return $builder->build();
     }
 
+    /**
+     * @param list<string> $cmd
+     * @return list<string>
+     */
     private function buildLaunch(array $cmd): array {
         $setsid = ProcUtils::findSetSidPath();
         return $setsid ? array_merge([$setsid, '--'], $cmd) : $cmd;

@@ -7,4 +7,5 @@ enum ContentType: string
     case Text = 'text';
     case Image = 'image_url';
     case File = 'file';
+    case Audio = 'input_audio';
 }

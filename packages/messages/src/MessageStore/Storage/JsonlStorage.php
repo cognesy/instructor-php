@@ -53,6 +53,7 @@ class JsonlStorage implements CanStoreMessages
             'version' => self::VERSION,
             'id' => $sessionKey,
             'createdAt' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
+            'leafId' => null,
         ];
         file_put_contents($file, json_encode($header) . "\n");
 
@@ -105,14 +106,16 @@ class JsonlStorage implements CanStoreMessages
         $sessionKey = $sessionId->toString();
 
         try {
+            $this->ensureLoaded($sessionId);
+            $previousLeafId = $this->sessions[$sessionKey]['leafId'];
+
             // For JSONL, we rebuild the file from scratch
             // In production, you might want incremental appends
             $file = $this->sessionFile($sessionId);
 
             // Track existing messages for newMessages count
-            $existingIds = isset($this->sessions[$sessionKey])
-                ? array_keys($this->sessions[$sessionKey]['index'])
-                : [];
+            $existingIds = array_keys($this->sessions[$sessionKey]['index']);
+            $finalLeafId = $this->resolveLeafIdForSave($store, $previousLeafId);
 
             // Write header
             $header = [
@@ -120,11 +123,11 @@ class JsonlStorage implements CanStoreMessages
                 'version' => self::VERSION,
                 'id' => $sessionKey,
                 'createdAt' => $startedAt->format(DateTimeImmutable::ATOM),
+                'leafId' => $finalLeafId?->toString(),
             ];
             file_put_contents($file, json_encode($header) . "\n");
 
             // Write all messages
-            $leafId = null;
             $messagesStored = 0;
             $sectionsStored = 0;
             $newMessages = 0;
@@ -142,7 +145,6 @@ class JsonlStorage implements CanStoreMessages
                         'data' => $message->toArray(),
                     ];
                     file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND);
-                    $leafId = $messageId;
                     $messagesStored++;
 
                     if (!in_array($messageId, $existingIds, true)) {
@@ -152,18 +154,16 @@ class JsonlStorage implements CanStoreMessages
             }
 
             // Write labels
-            if (isset($this->sessions[$sessionKey])) {
-                foreach ($this->sessions[$sessionKey]['labels'] as $messageId => $label) {
-                    $entry = [
-                        'type' => 'label',
-                        'id' => Uuid::uuid4(),
-                        'parentId' => $leafId,
-                        'targetId' => $messageId,
-                        'label' => $label,
-                        'timestamp' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
-                    ];
-                    file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND);
-                }
+            foreach ($this->sessions[$sessionKey]['labels'] as $messageId => $label) {
+                $entry = [
+                    'type' => 'label',
+                    'id' => Uuid::uuid4(),
+                    'parentId' => $finalLeafId?->toString(),
+                    'targetId' => $messageId,
+                    'label' => $label,
+                    'timestamp' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
+                ];
+                file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND);
             }
 
             // Reload index
@@ -315,6 +315,7 @@ class JsonlStorage implements CanStoreMessages
     #[\Override]
     public function fork(MessageSessionId $sessionId, MessageId $fromMessageId): MessageSessionId {
         $this->ensureLoaded($sessionId);
+        $sessionKey = $sessionId->toString();
 
         // Get path to fork point
         $path = $this->getPath($sessionId, $fromMessageId);
@@ -324,7 +325,12 @@ class JsonlStorage implements CanStoreMessages
 
         // Copy messages
         foreach ($path->all() as $message) {
-            $this->append($newSessionId, 'messages', $message);
+            $messageId = $message->id()->toString();
+            $entry = $this->sessions[$sessionKey]['index'][$messageId] ?? null;
+            $section = is_array($entry)
+                ? ($entry['section'] ?? 'messages')
+                : 'messages';
+            $this->append($newSessionId, $section, $message);
         }
 
         return $newSessionId;
@@ -400,6 +406,7 @@ class JsonlStorage implements CanStoreMessages
         }
 
         $lineNum = 0;
+        $preferredLeafId = null;
         while (($line = fgets($handle)) !== false) {
             $lineNum++;
             $line = trim($line);
@@ -414,6 +421,10 @@ class JsonlStorage implements CanStoreMessages
 
             // Skip session header
             if ($entry['type'] === 'session') {
+                $preferredLeafValue = $entry['leafId'] ?? null;
+                if (is_string($preferredLeafValue) && $preferredLeafValue !== '') {
+                    $preferredLeafId = new MessageId($preferredLeafValue);
+                }
                 continue;
             }
 
@@ -437,5 +448,32 @@ class JsonlStorage implements CanStoreMessages
         }
 
         fclose($handle);
+
+        if ($preferredLeafId === null) {
+            return;
+        }
+        if (!isset($this->sessions[$sessionKey]['index'][$preferredLeafId->toString()])) {
+            return;
+        }
+        $this->sessions[$sessionKey]['leafId'] = $preferredLeafId;
+    }
+
+    private function resolveLeafIdForSave(MessageStore $store, ?MessageId $previousLeafId): ?MessageId {
+        $savedMessageIds = [];
+        $lastMessageId = null;
+
+        foreach ($store->sections()->all() as $section) {
+            foreach ($section->messages()->all() as $message) {
+                $messageId = $message->id()->toString();
+                $savedMessageIds[$messageId] = true;
+                $lastMessageId = $message->id();
+            }
+        }
+
+        $previousLeafKey = $previousLeafId?->toString();
+        return match (true) {
+            $previousLeafKey !== null && isset($savedMessageIds[$previousLeafKey]) => $previousLeafId,
+            default => $lastMessageId,
+        };
     }
 }

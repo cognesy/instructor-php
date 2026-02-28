@@ -448,19 +448,17 @@ final readonly class Messages implements Countable, IteratorAggregate
     }
 
     public function firstRole() : MessageRole {
-        $first = $this->first();
-        if (!($first instanceof Message)) {
+        if ($this->isEmpty()) {
             throw new \RuntimeException('Cannot get role of first message - no messages available');
         }
-        return $first->role();
+        return $this->first()->role();
     }
 
     public function lastRole() : MessageRole {
-        $last = $this->last();
-        if (!($last instanceof Message)) {
+        if ($this->isEmpty()) {
             throw new \RuntimeException('Cannot get role of last message - no messages available');
         }
-        return $last->role();
+        return $this->last()->role();
     }
 
     /**  @return Message[] @deprecated Use messageList() for collection access. */

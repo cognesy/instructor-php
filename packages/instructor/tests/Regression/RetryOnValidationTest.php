@@ -5,6 +5,8 @@ use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -13,6 +15,27 @@ use Tests\Addons\Support\FakeInferenceDriver;
 // Simple models for validation
 class SyncRetryUser { public int $age; }
 class StreamRetryUser { public int $age; }
+
+class StreamValidatedUser {
+    use ValidationMixin;
+
+    public int $age;
+
+    public function __construct(int $age = 0) {
+        $this->age = $age;
+    }
+
+    public function validate(): ValidationResult {
+        return match (true) {
+            $this->age >= 18 => ValidationResult::valid(),
+            default => ValidationResult::fieldError(
+                field: 'age',
+                value: $this->age,
+                message: 'Age must be at least 18',
+            ),
+        };
+    }
+}
 
 it('retries sync request after validation failure and succeeds on second attempt', function () {
     $driver = new FakeInferenceDriver(
@@ -99,5 +122,53 @@ it('retries streaming (transducer) request after validation failure and succeeds
     expect($attempts)->toBe(1);
     expect($limits)->toBe(0);
     // For streaming, driver calls indicate attempts (execution attempt count not exposed via stream)
+    expect($driver->streamCalls)->toBe(2);
+});
+
+it('retries streaming when driver emits pre-valued object that fails validation', function () {
+    $batch1 = [
+        (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamValidatedUser(12)),
+    ];
+    $batch2 = [
+        (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamValidatedUser(21)),
+    ];
+
+    $driver = new FakeInferenceDriver(
+        responses: [],
+        streamBatches: [$batch1, $batch2],
+    );
+
+    $events = new EventDispatcher();
+    $attempts = 0;
+    $limits = 0;
+    $events->addListener(NewValidationRecoveryAttempt::class, function () use (&$attempts) {
+        $attempts++;
+    });
+    $events->addListener(StructuredOutputRecoveryLimitReached::class, function () use (&$limits) {
+        $limits++;
+    });
+
+    $config = (new StructuredOutputConfigBuilder())
+        ->withOutputMode(OutputMode::Json)
+        ->withMaxRetries(1)
+        ->create();
+
+    $runtime = makeStructuredRuntime(
+        driver: $driver,
+        events: $events,
+        config: $config,
+    );
+
+    $pending = (new StructuredOutput($runtime))
+        ->withMessages('test')
+        ->withResponseClass(StreamValidatedUser::class)
+        ->create();
+
+    $value = $pending->stream()->finalValue();
+
+    expect($value)->toBeInstanceOf(StreamValidatedUser::class);
+    expect($value->age)->toBe(21);
+    expect($attempts)->toBe(1);
+    expect($limits)->toBe(0);
     expect($driver->streamCalls)->toBe(2);
 });

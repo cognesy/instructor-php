@@ -550,6 +550,11 @@ $sandbox = SafeSandbox::podman($policy, 'php:8.2-cli');
 
 Namespace-based isolation using Firejail.
 
+**Security baseline:**
+- Firejail driver uses Firejail's default profile behavior (no `--noprofile`).
+- Package-level resource and filesystem restrictions are applied on top of Firejail defaults.
+- If you need a custom Firejail profile, configure Firejail on the host and keep package policy limits enabled.
+
 **Pros:**
 - ✅ Good isolation
 - ✅ Lower overhead than containers

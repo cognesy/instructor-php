@@ -27,6 +27,9 @@ final class MockSandbox implements CanExecuteCommand
         $this->defaultResponse = $defaultResponse;
     }
 
+    /**
+     * @param array<string, list<ExecResult|array<string, mixed>>> $responses
+     */
     public static function withResponses(array $responses, ?ExecResult $defaultResponse = null): self {
         return new self(ExecutionPolicy::default(), $responses, $defaultResponse);
     }
@@ -65,6 +68,7 @@ final class MockSandbox implements CanExecuteCommand
         return $result;
     }
 
+    /** @param list<string> $argv */
     private function record(array $argv, ?string $stdin): void {
         $entry = $argv;
         if ($stdin !== null && $stdin !== '') {
@@ -73,6 +77,7 @@ final class MockSandbox implements CanExecuteCommand
         $this->commands[] = $entry;
     }
 
+    /** @param list<string> $argv */
     private function key(array $argv): string {
         return implode(' ', $argv);
     }

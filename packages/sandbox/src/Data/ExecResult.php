@@ -54,6 +54,7 @@ final readonly class ExecResult
         return $out;
     }
 
+    /** @return array<string, string|int|float|bool> */
     public function toArray(): array {
         return [
             'stdout' => $this->stdout,
@@ -67,4 +68,3 @@ final readonly class ExecResult
         ];
     }
 }
-

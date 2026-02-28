@@ -17,7 +17,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->withRequest($request)->get();
-// @doctest id="dbb9"
+// @doctest id="05e6"
 ```
 
 ### POST JSON
@@ -32,7 +32,7 @@ $request = new HttpRequest(
 );
 
 $response = $client->withRequest($request)->get();
-// @doctest id="5ebf"
+// @doctest id="00d2"
 ```
 
 ## Request Mutation Is Immutable
@@ -41,7 +41,7 @@ $response = $client->withRequest($request)->get();
 $request = $request
     ->withHeader('Authorization', 'Bearer ' . $token)
     ->withStreaming(false);
-// @doctest id="f306"
+// @doctest id="08f8"
 ```
 
 Each `with*()` call returns a new request.
@@ -60,7 +60,7 @@ $client = (new HttpClientBuilder())
         failOnError: true,
     ))
     ->create();
-// @doctest id="752c"
+// @doctest id="be16"
 ```
 
 ## Error Strategy

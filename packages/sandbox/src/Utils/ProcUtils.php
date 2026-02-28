@@ -71,6 +71,7 @@ final class ProcUtils
         @proc_terminate($proc, 9);
     }
 
+    /** @return list<string> */
     public static function defaultBinPaths(): array {
         return ['/usr/bin', '/usr/local/bin', '/opt/homebrew/bin', '/opt/local/bin', '/snap/bin'];
     }

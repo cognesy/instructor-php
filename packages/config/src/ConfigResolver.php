@@ -28,7 +28,7 @@ class ConfigResolver implements CanProvideConfig
             $providers
         );
         $this->suppressProviderErrors = $suppressProviderErrors;
-        $this->getCache = new CachedMap(fn(string $path, $default) => $this->resolveGet($path, $default));
+        $this->getCache = new CachedMap(fn(string $path) => $this->resolveGet($path));
         $this->hasCache = new CachedMap(fn(string $path) => $this->resolveHas($path));
     }
 
@@ -65,7 +65,14 @@ class ConfigResolver implements CanProvideConfig
 
     #[\Override]
     public function get(string $path, mixed $default = null): mixed {
-        return $this->getCache->get($path, $default);
+        $resolved = $this->getCache->get($path);
+        if ($resolved['found']) {
+            return $resolved['value'];
+        }
+        if (func_num_args() > 1) {
+            return $default;
+        }
+        throw new ConfigurationException("No valid configuration found for path '{$path}'");
     }
 
     #[\Override]
@@ -75,19 +82,15 @@ class ConfigResolver implements CanProvideConfig
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
-    private function resolveGet(string $path, mixed $default): mixed {
+    /** @return array{found:bool,value:mixed} */
+    private function resolveGet(string $path): array {
         foreach (array_keys($this->providerFactories) as $index) {
-            $value = $this->tryProviderGet($index, $path);
-            if ($value !== null) {
-                return $value;
+            $resolved = $this->tryProviderGet($index, $path);
+            if ($resolved['found']) {
+                return $resolved;
             }
         }
-
-        if ($default === null) {
-            throw new ConfigurationException("No valid configuration found for path '{$path}'");
-        }
-
-        return $default;
+        return ['found' => false, 'value' => null];
     }
 
     private function resolveHas(string $path): bool {
@@ -123,14 +126,19 @@ class ConfigResolver implements CanProvideConfig
         return $this->resolvedProviders[$index];
     }
 
-    private function tryProviderGet(int $index, string $path): mixed {
+    /** @return array{found:bool,value:mixed} */
+    private function tryProviderGet(int $index, string $path): array {
         try {
-            return $this->getProvider($index)->get($path);
+            $provider = $this->getProvider($index);
+            if (!$provider->has($path)) {
+                return ['found' => false, 'value' => null];
+            }
+            return ['found' => true, 'value' => $provider->get($path)];
         } catch (\Throwable $e) {
             if (!$this->suppressProviderErrors) {
                 throw new ConfigurationException("Failed to resolve configuration from provider.", 0, $e);
             }
-            return null;
+            return ['found' => false, 'value' => null];
         }
     }
 

@@ -10,6 +10,7 @@ final class EnvUtils
      * Build environment according to policy and forbidden patterns.
      *
      * @param list<string> $forbiddenPatterns fnmatch() patterns
+     * @return array<string,string>
      */
     public static function build(ExecutionPolicy $policy, array $forbiddenPatterns): array {
         $env = $policy->inheritEnv() ? self::readSystemEnv() : [];
@@ -36,6 +37,7 @@ final class EnvUtils
         return $out;
     }
 
+    /** @return list<string> */
     public static function forbiddenEnvVars() : array {
         return [
             'LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT',
@@ -50,6 +52,7 @@ final class EnvUtils
         ];
     }
 
+    /** @return array<string,string> */
     private static function readSystemEnv(): array {
         $out = [];
         foreach ($_ENV as $k => $v) {
@@ -63,4 +66,3 @@ final class EnvUtils
         return $out;
     }
 }
-

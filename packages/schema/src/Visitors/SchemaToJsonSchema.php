@@ -142,13 +142,13 @@ class SchemaToJsonSchema implements CanVisitSchema
     #[\Override]
     public function visitObjectRefSchema(ObjectRefSchema $schema): void {
         $className = $schema->typeDetails->class ?? 'object';
-        $class = $this->className($className);
-        $id = "#/{$this->defsLabel}/{$class}";
+        $classKey = $this->referenceKey($className);
+        $id = "#/{$this->defsLabel}/{$classKey}";
         if ($this->refCallback) {
             ($this->refCallback)(new Reference(
                 id: $id,
                 class: $className,
-                classShort: $class
+                classShort: $classKey
             ));
         }
         $this->result = array_filter([
@@ -175,8 +175,7 @@ class SchemaToJsonSchema implements CanVisitSchema
 
     // INTERNAL ////////////////////////////////////////////////////////////
 
-    private function className(string $fqcn) : string {
-        $classSegments = explode('\\', $fqcn);
-        return array_pop($classSegments);
+    private function referenceKey(string $fqcn) : string {
+        return str_replace('\\', '.', ltrim($fqcn, '\\'));
     }
 }

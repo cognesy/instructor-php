@@ -2,6 +2,7 @@
 
 namespace Cognesy\Messages;
 
+use Cognesy\Messages\Enums\ContentType;
 use Cognesy\Messages\Support\ContentInput;
 use Cognesy\Messages\Utils\Audio;
 use Cognesy\Messages\Utils\File;
@@ -17,7 +18,7 @@ final readonly class ContentPart
         string $type,
         array $fields = [],
     ) {
-        $this->type = $type;
+        $this->type = self::normalizeType($type);
         $this->fields = array_filter(
             $fields, 
             fn($value, $key) => !is_null($value) && ($value !== []),
@@ -28,7 +29,7 @@ final readonly class ContentPart
     // FACTORY METHODS //////////////////////////////////////
 
     public static function fromArray(array $content): static {
-        $type = $content['type'] ?? 'text';
+        $type = $content['type'] ?? ContentType::Text->value;
         $fields = $content;
         unset($fields['type']);
         $fields = ContentInput::normalizeFields($type, $fields);
@@ -36,23 +37,23 @@ final readonly class ContentPart
     }
 
     public static function text(string $text): static {
-        return new self('text', ['text' => $text]);
+        return new self(ContentType::Text->value, ['text' => $text]);
     }
 
     public static function imageUrl(string $url): static {
-        return new self('image_url', ['image_url' => ['url' => $url]]);
+        return new self(ContentType::Image->value, ['image_url' => ['url' => $url]]);
     }
 
     public static function image(Image $image): static {
-        return new self('image_url', $image->toContentPart()->fields());
+        return new self(ContentType::Image->value, $image->toContentPart()->fields());
     }
 
     public static function file(File $file): static {
-        return new self('file', $file->toContentPart()->fields());
+        return new self(ContentType::File->value, $file->toContentPart()->fields());
     }
 
     public static function audio(Audio $audio): static {
-        return new self('input_audio', $audio->toContentPart()->fields());
+        return new self(ContentType::Audio->value, $audio->toContentPart()->fields());
     }
 
     public static function fromAny(mixed $item): static {
@@ -92,7 +93,7 @@ final readonly class ContentPart
     }
 
     public function isTextPart(): bool {
-        return $this->type === 'text';
+        return $this->type === ContentType::Text->value;
     }
 
     public function hasText(): bool {
@@ -147,5 +148,9 @@ final readonly class ContentPart
             && ($value !== '')
             && ($value !== [])
             && (is_string($key) ? (str_starts_with($key, '_') === false) : true);
+    }
+
+    private static function normalizeType(string $type): string {
+        return ContentType::tryFrom($type)?->value ?? $type;
     }
 }

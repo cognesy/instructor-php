@@ -36,10 +36,10 @@ class ResponseGenerator implements CanGenerateResponse
 
     #[\Override]
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
-        // Fast-path: if a fully processed value is already present AND no OutputFormat override, accept it.
-        // Skip fast-path when OutputFormat is set - we need to reprocess to respect the output format.
+        // Fast-path for pre-valued responses: validate/transform object values.
+        // Skip when OutputFormat override is set - we need full reprocessing to respect it.
         if ($response->hasValue() && $responseModel->outputFormat() === null) {
-            return Result::success($response->value());
+            return $this->processPrebuiltValue($response->value(), $responseModel);
         }
 
         // Array-first pipeline: extract → deserialize → validate → transform
@@ -80,6 +80,23 @@ class ResponseGenerator implements CanGenerateResponse
                 default => Result::failure(implode('; ', $this->extractErrors($state)))
             })
             ->create();
+    }
+
+    private function processPrebuiltValue(mixed $value, ResponseModel $responseModel): Result {
+        if ($responseModel->shouldReturnArray() || !is_object($value)) {
+            return Result::success($value);
+        }
+
+        try {
+            $validated = $this->responseValidator->validate($value, $responseModel);
+            if ($validated->isFailure()) {
+                return $validated;
+            }
+            return $this->responseTransformer->transform($validated->unwrap(), $responseModel);
+        } catch (Throwable $error) {
+            $this->events->dispatch(new ResponseGenerationFailed(['error' => $error]));
+            return Result::failure($error->getMessage());
+        }
     }
 
     protected function extractErrors(CanCarryState|Failure|Exception|ValidationResult $output) : array {

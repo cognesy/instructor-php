@@ -9,6 +9,8 @@ use Cognesy\Sandbox\Drivers\HostSandbox;
 use Cognesy\Sandbox\Drivers\PodmanSandbox;
 use Cognesy\Sandbox\Drivers\FirejailSandbox;
 use Cognesy\Sandbox\Drivers\BubblewrapSandbox;
+use Cognesy\Sandbox\Enums\SandboxDriver;
+use InvalidArgumentException;
 
 final readonly class Sandbox
 {
@@ -22,13 +24,14 @@ final readonly class Sandbox
         return new self($policy);
     }
 
-    public function using(string $driver) : CanExecuteCommand {
-        return match($driver) {
-            'host' => new HostSandbox($this->policy),
-            'docker' => new DockerSandbox($this->policy),
-            'podman' => new PodmanSandbox($this->policy),
-            'firejail' => new FirejailSandbox($this->policy),
-            'bubblewrap' => new BubblewrapSandbox($this->policy),
+    public function using(string|SandboxDriver $driver) : CanExecuteCommand {
+        $normalized = $this->normalizeDriver($driver);
+        return match($normalized) {
+            SandboxDriver::Host => new HostSandbox($this->policy),
+            SandboxDriver::Docker => new DockerSandbox($this->policy),
+            SandboxDriver::Podman => new PodmanSandbox($this->policy),
+            SandboxDriver::Firejail => new FirejailSandbox($this->policy),
+            SandboxDriver::Bubblewrap => new BubblewrapSandbox($this->policy),
         };
     }
 
@@ -66,5 +69,20 @@ final readonly class Sandbox
         ?string $bubblewrapBin = null,
     ): CanExecuteCommand {
         return new BubblewrapSandbox($policy, $bubblewrapBin);
+    }
+
+    private function normalizeDriver(string|SandboxDriver $driver): SandboxDriver {
+        if ($driver instanceof SandboxDriver) {
+            return $driver;
+        }
+        $normalized = SandboxDriver::tryFrom($driver);
+        if ($normalized !== null) {
+            return $normalized;
+        }
+        $allowed = implode(', ', array_map(
+            static fn(SandboxDriver $case): string => $case->value,
+            SandboxDriver::cases(),
+        ));
+        throw new InvalidArgumentException("Unsupported sandbox driver: {$driver}. Allowed: {$allowed}");
     }
 }

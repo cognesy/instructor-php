@@ -55,12 +55,7 @@ class ConfigPresets
 
     public function get(?string $preset = null): array {
         $presetName = $preset ?: $this->defaultPresetName();
-        $presetPath = $this->presetPath($presetName);
-        $presetConfig = $this->configProvider->get($presetPath);
-        if (!is_array($presetConfig)) {
-            throw new ConfigPresetNotFoundException("Preset '{$presetName}' not found at path: {$presetPath}");
-        }
-        return $presetConfig;
+        return $this->presetConfig($presetName);
     }
 
     public function getOrDefault(?string $preset = null): array {
@@ -70,8 +65,7 @@ class ConfigPresets
         if (!$this->hasPreset($preset)) {
             return $this->default();
         }
-        $presetPath = $this->presetPath($preset);
-        return $this->configProvider->get($presetPath);
+        return $this->presetConfig($preset);
     }
 
     public function hasPreset(string $preset): bool {
@@ -103,10 +97,22 @@ class ConfigPresets
     private function defaultPresetName(): string {
         $defaultPresetPath = $this->path($this->defaultPresetKey);
         $defaultPreset = $this->configProvider->get($defaultPresetPath);
-        if (empty($defaultPreset)) {
+        if ($defaultPreset === '' || $defaultPreset === null) {
             throw new ConfigPresetNotFoundException("No default preset configured at path: {$defaultPresetPath} for group: {$this->group}");
         }
+        if (!is_string($defaultPreset)) {
+            throw new ConfigPresetNotFoundException("Invalid default preset name at path: {$defaultPresetPath} for group: {$this->group} (expected non-empty string)");
+        }
         return $defaultPreset;
+    }
+
+    private function presetConfig(string $presetName): array {
+        $presetPath = $this->presetPath($presetName);
+        $presetConfig = $this->configProvider->get($presetPath);
+        if (!is_array($presetConfig)) {
+            throw new ConfigPresetNotFoundException("Preset '{$presetName}' not found at path: {$presetPath}");
+        }
+        return $presetConfig;
     }
 
     private function presetPath(string $presetName): string {

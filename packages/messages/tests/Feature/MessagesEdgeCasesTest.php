@@ -35,6 +35,29 @@ test('handles collections with empty messages', function () {
         ->and($messages->toArray())->toBeEmpty(); // Empty messages should be filtered out
 });
 
+test('firstRole throws when collection is empty', function () {
+    $messages = Messages::empty();
+
+    expect(fn() => $messages->firstRole())
+        ->toThrow(RuntimeException::class, 'Cannot get role of first message - no messages available');
+});
+
+test('lastRole throws when collection is empty', function () {
+    $messages = Messages::empty();
+
+    expect(fn() => $messages->lastRole())
+        ->toThrow(RuntimeException::class, 'Cannot get role of last message - no messages available');
+});
+
+test('firstRole and lastRole throw when collection contains only empty messages', function () {
+    $messages = Messages::empty()->appendMessage(new Message());
+
+    expect(fn() => $messages->firstRole())
+        ->toThrow(RuntimeException::class, 'Cannot get role of first message - no messages available');
+    expect(fn() => $messages->lastRole())
+        ->toThrow(RuntimeException::class, 'Cannot get role of last message - no messages available');
+});
+
 // Test error handling
 test('fromArray normalizes completely invalid structure to user text message', function () {
     $messages = Messages::fromArray([

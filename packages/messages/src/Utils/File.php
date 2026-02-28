@@ -4,6 +4,7 @@ namespace Cognesy\Messages\Utils;
 
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Contracts\CanProvideMessages;
+use Cognesy\Messages\Enums\ContentType;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Exception;
@@ -113,7 +114,7 @@ class File implements CanProvideMessages
     }
 
     public function toContentPart() : ContentPart {
-        return new ContentPart('file', [
+        return new ContentPart(ContentType::File->value, [
             'file' => [
                 'file_data' => $this->base64bytes,
                 'file_name' => $this->fileName,

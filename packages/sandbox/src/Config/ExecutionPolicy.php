@@ -8,14 +8,22 @@ final class ExecutionPolicy
     private readonly int $timeoutSeconds;
     private readonly ?int $idleTimeoutSeconds;
     private readonly string $memoryLimit;
+    /** @var list<string> */
     private readonly array $readablePaths;
+    /** @var list<string> */
     private readonly array $writablePaths;
+    /** @var array<string,string> */
     private readonly array $env;
     private readonly bool $inheritEnv;
     private readonly bool $networkEnabled;
     private readonly int $stdoutLimitBytes;
     private readonly int $stderrLimitBytes;
 
+    /**
+     * @param list<string> $readablePaths
+     * @param list<string> $writablePaths
+     * @param array<string,string> $env
+     */
     private function __construct(
         string $baseDir = '/tmp',
         int $timeoutSeconds = 5,
@@ -68,14 +76,17 @@ final class ExecutionPolicy
         return $this->memoryLimit;
     }
 
+    /** @return list<string> */
     public function readablePaths(): array {
         return $this->readablePaths;
     }
 
+    /** @return list<string> */
     public function writablePaths(): array {
         return $this->writablePaths;
     }
 
+    /** @return array<string,string> */
     public function env(): array {
         return $this->env;
     }
@@ -118,6 +129,7 @@ final class ExecutionPolicy
         return $this->with(writablePaths: $paths);
     }
 
+    /** @param array<string,string> $env */
     public function withEnv(array $env, bool $inherit = false): self {
         return $this->with(env: $env, inheritEnv: $inherit);
     }
@@ -136,6 +148,11 @@ final class ExecutionPolicy
 
     // Internal //////////////////////////////////////////////////////////////
 
+    /**
+     * @param list<string>|null $readablePaths
+     * @param list<string>|null $writablePaths
+     * @param array<string,string>|null $env
+     */
     public function with(
         ?string $baseDir = null,
         ?int $timeoutSeconds = null,

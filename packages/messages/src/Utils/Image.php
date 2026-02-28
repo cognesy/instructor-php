@@ -5,6 +5,7 @@ namespace Cognesy\Messages\Utils;
 use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\Contracts\CanProvideMessages;
+use Cognesy\Messages\Enums\ContentType;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 use Exception;
@@ -104,7 +105,7 @@ class Image implements CanProvideMessages
             'role' => 'user',
             'content' => [
                 [
-                    'type' => 'image_url',
+                    'type' => ContentType::Image->value,
                     'image_url' => ['url' => $this->url ?: $this->base64bytes]
                 ],
             ],
@@ -140,7 +141,7 @@ class Image implements CanProvideMessages
     }
 
     public function toContentPart() : ContentPart {
-        return new ContentPart('image_url', [
+        return new ContentPart(ContentType::Image->value, [
             'image_url' => ['url' => $this->url ?: $this->base64bytes]
         ]);
     }

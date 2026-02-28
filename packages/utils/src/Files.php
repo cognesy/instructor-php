@@ -24,6 +24,15 @@ class Files
      * @return bool Returns true on success or false on failure.
      */
     public static function removeDirectory(string $directory): bool {
+        if (is_link($directory)) {
+            return @unlink($directory);
+        }
+
+        $trimmedDirectory = rtrim($directory, '/\\');
+        if ($trimmedDirectory !== '' && is_link($trimmedDirectory)) {
+            return @unlink($trimmedDirectory);
+        }
+
         // If the path is not a directory or doesn't exist, return false.
         if (!is_dir($directory)) {
             return false;
@@ -36,17 +45,23 @@ class Files
         $iterator = new RecursiveIteratorIterator($items, RecursiveIteratorIterator::CHILD_FIRST);
 
         foreach ($iterator as $fileInfo) {
+            /** @var SplFileInfo $fileInfo */
+            $path = $fileInfo->getPathname();
             if ($fileInfo->isLink() || $fileInfo->isFile()) {
                 // Remove file or symbolic link.
-                unlink($fileInfo->getPathname());
+                if (!@unlink($path)) {
+                    return false;
+                }
             } elseif ($fileInfo->isDir()) {
                 // Remove subdirectory.
-                rmdir($fileInfo->getPathname());
+                if (!@rmdir($path)) {
+                    return false;
+                }
             }
         }
 
         // Finally, remove the now-empty directory itself.
-        return rmdir($directory);
+        return @rmdir($directory);
     }
 
     /**
@@ -68,9 +83,16 @@ class Files
             throw new InvalidArgumentException("Source directory does not exist: '{$source}'");
         }
 
-        // Prevent recursively copying a directory into itself.
-        if (realpath($source) === realpath($destination)) {
-            throw new RuntimeException("Cannot copy '{$source}' into itself.");
+        $sourcePath = realpath($source);
+        $destinationPath = self::resolvePathForContainmentCheck($destination);
+
+        if ($sourcePath === false) {
+            throw new InvalidArgumentException("Source directory does not exist: '{$source}'");
+        }
+
+        // Prevent recursively copying a directory into itself or one of its descendants.
+        if ($destinationPath !== null && self::isSameOrDescendantPath($destinationPath, $sourcePath)) {
+            throw new RuntimeException('Cannot copy directory into itself or one of its descendants.');
         }
 
         // Create the destination directory if it doesn't exist.
@@ -99,6 +121,46 @@ class Files
                 }
             }
         }
+    }
+
+    private static function resolvePathForContainmentCheck(string $path): ?string {
+        $resolvedPath = realpath($path);
+        if ($resolvedPath !== false) {
+            return $resolvedPath;
+        }
+
+        $segments = [];
+        $current = $path;
+        while (realpath($current) === false) {
+            $segments[] = basename($current);
+            $parent = dirname($current);
+            if ($parent === $current) {
+                return null;
+            }
+            $current = $parent;
+        }
+
+        $base = realpath($current);
+        if ($base === false) {
+            return null;
+        }
+
+        $suffix = implode(DIRECTORY_SEPARATOR, array_reverse($segments));
+        if ($suffix === '') {
+            return $base;
+        }
+
+        return $base . DIRECTORY_SEPARATOR . $suffix;
+    }
+
+    private static function isSameOrDescendantPath(string $path, string $root): bool {
+        $normalizedPath = rtrim($path, '/\\');
+        $normalizedRoot = rtrim($root, '/\\');
+        if ($normalizedPath === $normalizedRoot) {
+            return true;
+        }
+
+        return str_starts_with($normalizedPath, $normalizedRoot . DIRECTORY_SEPARATOR);
     }
 
     /**

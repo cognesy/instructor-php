@@ -39,6 +39,10 @@ final class SymfonyProcessRunner implements CanRunProcess
 
     // INTERNAL ///////////////////////////////////////////////////////////////////////
 
+    /**
+     * @param list<string> $argv
+     * @param array<string,string> $env
+     */
     private function makeProcess(array $argv, string $cwd, array $env, ?string $stdin): Process {
         $this->tracker->start();
         $process = new Process($argv, $cwd, $env, $stdin);

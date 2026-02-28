@@ -5,6 +5,7 @@ namespace Cognesy\Messages\Support;
 use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
 use Cognesy\Messages\ContentParts;
+use Cognesy\Messages\Enums\ContentType;
 use Cognesy\Messages\Message;
 use InvalidArgumentException;
 
@@ -31,9 +32,9 @@ final class ContentInput
      */
     public static function normalizeFields(string $type, array $fields): array {
         return match ($type) {
-            'image_url' => self::normalizeImageUrlFields($fields),
-            'file' => self::normalizeFileFields($fields),
-            'input_audio' => self::normalizeAudioFields($fields),
+            ContentType::Image->value => self::normalizeImageUrlFields($fields),
+            ContentType::File->value => self::normalizeFileFields($fields),
+            ContentType::Audio->value => self::normalizeAudioFields($fields),
             default => $fields,
         };
     }

@@ -96,4 +96,36 @@ describe('Planning Subagent Capability', function () {
         expect($filtered->has('spawn_subagent'))->toBeFalse();
         expect($filtered->has(PlanningSubagentTool::TOOL_NAME))->toBeFalse();
     });
+
+    it('allows planner to use additional tools not available to parent', function () {
+        $bashTool = MockTool::returning('bash', 'Run shell command', 'match');
+
+        $driver = (new FakeAgentDriver([
+            ScenarioStep::toolCall(PlanningSubagentTool::TOOL_NAME, [
+                'specification' => "Goal: inspect code\nContext: repo\nExpected outcomes: plan\nAcceptance criteria: realistic",
+            ], executeTools: true),
+        ]))->withChildSteps([
+            ScenarioStep::toolCall('bash', ['command' => 'rg plan_with_subagent packages/agents/src']),
+            ScenarioStep::final("## Plan\n1. Inspect files\n2. Propose edits"),
+        ]);
+
+        $agent = AgentBuilder::base()
+            ->withCapability(new UseDriver($driver))
+            ->withCapability(new UsePlanningSubagent(
+                plannerTools: new NameList('bash'),
+                plannerAdditionalTools: new Tools($bashTool),
+            ))
+            ->build();
+
+        $next = null;
+        foreach ($agent->iterate(AgentState::empty()) as $state) {
+            $next = $state;
+            break;
+        }
+
+        $execution = $next->lastStepToolExecutions()->all()[0];
+
+        expect($execution->hasError())->toBeFalse();
+        expect($execution->value())->toContain('## Plan');
+    });
 });

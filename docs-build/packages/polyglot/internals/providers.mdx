@@ -37,7 +37,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="496a"
+// @doctest id="ee74"
 ```
 
 Key methods:
@@ -72,7 +72,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="8924"
+// @doctest id="21e7"
 ```
 
 Key methods:
@@ -119,7 +119,7 @@ interface CanMapRequestBody {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="f967"
+// @doctest id="242e"
 ```
 
 
@@ -152,7 +152,7 @@ interface EmbedResponseAdapter {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="eb3c"
+// @doctest id="dcc0"
 ```
 
 
@@ -176,7 +176,7 @@ abstract class BaseInferenceDriver implements CanHandleInference {
     public function makeStreamResponsesFor(InferenceRequest $request): iterable { ... }
     public function capabilities(?string $model = null): DriverCapabilities { ... }
 }
-// @doctest id="2392"
+// @doctest id="4eb3"
 ```
 
 Provider-specific drivers (e.g. `OpenAIDriver`, `AnthropicDriver`) extend `BaseInferenceDriver` and wire up their own request/response translators in the constructor.
@@ -211,7 +211,7 @@ class InferenceDriverFactory {
     public static function hasDriver(string $name): bool { ... }
     public static function registeredDrivers(): array { ... }
 }
-// @doctest id="badb"
+// @doctest id="f7d3"
 ```
 
 `InferenceDriverFactory` keeps custom drivers in static process-level state.
@@ -239,5 +239,5 @@ class EmbeddingsDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="7a9f"
+// @doctest id="e32a"
 ```

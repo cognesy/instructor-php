@@ -13,7 +13,7 @@ $requests = HttpRequestList::of(
     new HttpRequest('https://api.example.com/b', 'GET', [], '', []),
     new HttpRequest('https://api.example.com/c', 'GET', [], '', []),
 );
-// @doctest id="1cd7"
+// @doctest id="e2c4"
 ```
 
 ## Execute Immediately
@@ -23,7 +23,7 @@ $results = $client->pool($requests, maxConcurrent: 2);
 
 echo $results->successCount();
 echo $results->failureCount();
-// @doctest id="13a8"
+// @doctest id="38c6"
 ```
 
 Each entry is a `Result` (`Success` or `Failure`).
@@ -33,7 +33,7 @@ Each entry is a `Result` (`Success` or `Failure`).
 ```php
 $pendingPool = $client->withPool($requests);
 $results = $pendingPool->all(maxConcurrent: 3);
-// @doctest id="0c09"
+// @doctest id="eab6"
 ```
 
 ## Failure Handling
@@ -49,7 +49,7 @@ foreach ($results as $result) {
     $error = $result->error();
     // handle per-request failure
 }
-// @doctest id="0286"
+// @doctest id="a208"
 ```
 
 ## Driver Support

@@ -95,6 +95,12 @@ TypeDetails::undefined();                       // Unsupported type
 // Type inference from values
 $value = ['a', 'b', 'c'];
 $type = TypeDetails::fromValue($value);         // string[] if all same type
+
+// Union policy
+TypeDetails::fromTypeName('User|null');         // Supported nullable union
+TypeDetails::fromTypeName('int|float');         // Supported numeric widening -> float
+TypeDetails::fromTypeName('int|string');        // Falls back to mixed
+TypeDetails::fromTypeName('A\\X|B\\Y');         // Throws: non-scalar union unsupported
 ```
 
 ## TypeDetails Introspection API
@@ -253,6 +259,7 @@ class TypeDetailsFactory {
 $factory->fromPhpDocTypeString('array<User>');     // PHPDoc format
 $factory->fromTypeName('User[]');                   // PHP array syntax
 $factory->fromTypeName('?string');                  // Nullable types
+$factory->fromTypeName('int|string');               // Mixed fallback (no silent union narrowing)
 
 // Value-based inference
 $factory->fromValue($array);                        // Infer from actual value

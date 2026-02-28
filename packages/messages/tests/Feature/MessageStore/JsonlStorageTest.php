@@ -139,6 +139,48 @@ describe('branching with JSONL', function () {
         $forkedPath = $this->storage->getPath($forkedId);
         expect($forkedPath->count())->toBe(2);
     });
+
+    test('fork preserves original sections along parent chain', function () {
+        $sessionId = $this->storage->createSession();
+
+        $msg1 = $this->storage->append($sessionId, 'system', new Message('system', 'System prompt'));
+        $msg2 = $this->storage->append($sessionId, 'context', new Message('user', 'Context note'));
+        $this->storage->append($sessionId, 'messages', new Message('assistant', 'Answer'));
+
+        $forkedId = $this->storage->fork($sessionId, $msg2->id());
+
+        $forkSystem = $this->storage->getSection($forkedId, 'system');
+        $forkContext = $this->storage->getSection($forkedId, 'context');
+        $forkMessages = $this->storage->getSection($forkedId, 'messages');
+
+        expect($forkSystem->count())->toBe(1);
+        expect($forkSystem->first()?->toString())->toBe('System prompt');
+        expect($forkContext->count())->toBe(1);
+        expect($forkContext->first()?->toString())->toBe('Context note');
+        expect($forkMessages->count())->toBe(0);
+        expect($this->storage->getPath($forkedId)->count())->toBe(2);
+    });
+
+    test('save/load roundtrip preserves navigated leaf position for future appends', function () {
+        $sessionId = $this->storage->createSession(new MessageSessionId('00000000-0000-4000-8000-0000000000ca'));
+
+        $msg1 = $this->storage->append($sessionId, 'messages', new Message('user', 'First'));
+        $this->storage->append($sessionId, 'messages', new Message('assistant', 'Second'));
+        $this->storage->append($sessionId, 'messages', new Message('user', 'Third'));
+
+        $this->storage->navigateTo($sessionId, $msg1->id());
+        expect((string) ($this->storage->getLeafId($sessionId) ?? ''))->toBe($msg1->id()->toString());
+
+        $store = $this->storage->load($sessionId);
+        $result = $store->toStorage($this->storage, $sessionId);
+        expect($result->isSuccess())->toBeTrue();
+
+        $reloaded = new JsonlStorage($this->tempDir);
+        expect((string) ($reloaded->getLeafId($sessionId) ?? ''))->toBe($msg1->id()->toString());
+
+        $branch = $reloaded->append($sessionId, 'messages', new Message('assistant', 'Branch'));
+        expect((string) ($branch->parentId() ?? ''))->toBe($msg1->id()->toString());
+    });
 });
 
 describe('labels in JSONL', function () {

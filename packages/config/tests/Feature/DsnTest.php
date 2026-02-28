@@ -134,3 +134,25 @@ it('handles empty values', function () {
     expect($dsn->param('model'))->toBe('');
     expect($dsn->param('api_key'))->toBe('');
 });
+
+it('parses canonical boolean tokens and falls back to default for invalid values', function () {
+    $dsn = Dsn::fromString(
+        'truthy1=true,truthy2=1,truthy3=yes,truthy4=on,' .
+        'falsy1=false,falsy2=0,falsy3=no,falsy4=off,' .
+        'invalid=maybe'
+    );
+
+    expect($dsn->boolParam('truthy1'))->toBeTrue();
+    expect($dsn->boolParam('truthy2'))->toBeTrue();
+    expect($dsn->boolParam('truthy3'))->toBeTrue();
+    expect($dsn->boolParam('truthy4'))->toBeTrue();
+
+    expect($dsn->boolParam('falsy1', true))->toBeFalse();
+    expect($dsn->boolParam('falsy2', true))->toBeFalse();
+    expect($dsn->boolParam('falsy3', true))->toBeFalse();
+    expect($dsn->boolParam('falsy4', true))->toBeFalse();
+
+    expect($dsn->boolParam('invalid', false))->toBeFalse();
+    expect($dsn->boolParam('invalid', true))->toBeTrue();
+    expect($dsn->boolParam('missing', true))->toBeTrue();
+});

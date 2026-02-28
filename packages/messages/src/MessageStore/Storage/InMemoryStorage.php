@@ -69,6 +69,7 @@ class InMemoryStorage implements CanStoreMessages
 
         try {
             $this->ensureSession($sessionId);
+            $previousLeafId = $this->sessions[$sessionKey]['leafId'];
 
             // Track existing messages for newMessages count
             $existingIds = array_keys($this->sessions[$sessionKey]['messages']);
@@ -76,10 +77,13 @@ class InMemoryStorage implements CanStoreMessages
             // Clear existing and rebuild from store
             $this->sessions[$sessionKey]['messages'] = [];
             $this->sessions[$sessionKey]['sections'] = [];
+            $this->sessions[$sessionKey]['leafId'] = null;
 
             $messagesStored = 0;
             $sectionsStored = 0;
             $newMessages = 0;
+            $lastWrittenLeafId = null;
+            $savedMessageIds = [];
 
             foreach ($store->sections()->all() as $section) {
                 $sectionName = $section->name();
@@ -91,15 +95,23 @@ class InMemoryStorage implements CanStoreMessages
                     $this->sessions[$sessionKey]['messages'][$messageId] = $message;
                     $this->sessions[$sessionKey]['sections'][$sectionName][] = $messageId;
                     $messagesStored++;
+                    $savedMessageIds[$messageId] = true;
 
                     if (!in_array($messageId, $existingIds, true)) {
                         $newMessages++;
                     }
 
-                    // Update leaf to last message
-                    $this->sessions[$sessionKey]['leafId'] = $message->id();
+                    // Track last message as fallback when previous leaf is no longer present
+                    $lastWrittenLeafId = $message->id();
                 }
             }
+
+            $previousLeafKey = $previousLeafId?->toString();
+            $preservedLeafId = match (true) {
+                $previousLeafKey !== null && isset($savedMessageIds[$previousLeafKey]) => $previousLeafId,
+                default => $lastWrittenLeafId,
+            };
+            $this->sessions[$sessionKey]['leafId'] = $preservedLeafId;
 
             return StoreMessagesResult::success(
                 sessionId: $sessionId,
@@ -228,19 +240,33 @@ class InMemoryStorage implements CanStoreMessages
     #[\Override]
     public function fork(MessageSessionId $sessionId, MessageId $fromMessageId): MessageSessionId {
         $this->ensureSession($sessionId);
+        $sessionKey = $sessionId->toString();
 
         // Get path to the fork point
         $path = $this->getPath($sessionId, $fromMessageId);
+
+        // Build reverse lookup: messageId -> section name
+        $sectionByMessageId = [];
+        foreach ($this->sessions[$sessionKey]['sections'] as $sectionName => $messageIds) {
+            foreach ($messageIds as $messageId) {
+                if (!isset($sectionByMessageId[$messageId])) {
+                    $sectionByMessageId[$messageId] = $sectionName;
+                }
+            }
+        }
 
         // Create new session
         $newSessionId = $this->createSession();
         $newSessionKey = $newSessionId->toString();
 
         // Copy messages up to fork point
-        $section = 'messages'; // Default section for forked messages
         foreach ($path->all() as $message) {
             $messageId = $message->id()->toString();
+            $section = $sectionByMessageId[$messageId] ?? 'messages';
             $this->sessions[$newSessionKey]['messages'][$messageId] = $message;
+            if (!isset($this->sessions[$newSessionKey]['sections'][$section])) {
+                $this->sessions[$newSessionKey]['sections'][$section] = [];
+            }
             $this->sessions[$newSessionKey]['sections'][$section][] = $messageId;
         }
 

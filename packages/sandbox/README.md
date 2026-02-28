@@ -9,7 +9,7 @@ Sandboxed command execution for PHP with multiple drivers.
   - **Host** - Direct execution on the host system
   - **Docker** - Container isolation via Docker
   - **Podman** - Container isolation via Podman
-  - **Firejail** - Linux sandbox using Firejail
+  - **Firejail** - Linux sandbox using Firejail default profile behavior
   - **Bubblewrap** - Linux sandbox using bubblewrap (bwrap)
 - Configurable execution policies (timeout, memory, network, paths)
 - Output streaming support
@@ -26,6 +26,7 @@ composer require cognesy/instructor-sandbox
 ```php
 use Cognesy\Sandbox\Sandbox;
 use Cognesy\Sandbox\Config\ExecutionPolicy;
+use Cognesy\Sandbox\Enums\SandboxDriver;
 
 // Create a sandbox with default policy
 $sandbox = Sandbox::host(ExecutionPolicy::in('/path/to/workdir'));
@@ -35,6 +36,10 @@ $result = $sandbox->execute(['ls', '-la']);
 
 echo $result->stdout();
 echo $result->exitCode();
+
+// Or select driver explicitly via enum-safe API (recommended)
+$typedSandbox = Sandbox::with(ExecutionPolicy::in('/path/to/workdir'))
+    ->using(SandboxDriver::Host);
 ```
 
 ## Execution Policy

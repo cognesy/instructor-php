@@ -14,7 +14,7 @@ enum MessageRole : string {
         $resolved = self::tryFromString($role);
         return match (true) {
             $resolved instanceof self => $resolved,
-            default => self::User,
+            default => throw new \InvalidArgumentException("Invalid message role: {$role}"),
         };
     }
 
