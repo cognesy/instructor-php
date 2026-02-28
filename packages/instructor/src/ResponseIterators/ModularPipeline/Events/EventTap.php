@@ -14,8 +14,10 @@ use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggregate;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\SequenceTracker;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\ToolCallTracker;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
+use Cognesy\Polyglot\Inference\Collections\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Stream\Contracts\Reducer;
 
 /**
@@ -31,7 +33,8 @@ use Cognesy\Stream\Contracts\Reducer;
  */
 final class EventTap implements Reducer
 {
-    private ToolCallTracker $toolTracker;
+    private string $activeToolKey;
+    private ToolCalls $lastToolCalls;
     private SequenceTracker $sequenceTracker;
 
     public function __construct(
@@ -39,13 +42,15 @@ final class EventTap implements Reducer
         private readonly CanHandleEvents $events,
         private readonly string $expectedToolName = '',
     ) {
-        $this->toolTracker = ToolCallTracker::empty();
+        $this->activeToolKey = '';
+        $this->lastToolCalls = ToolCalls::empty();
         $this->sequenceTracker = SequenceTracker::empty();
     }
 
     #[\Override]
     public function init(): mixed {
-        $this->toolTracker = ToolCallTracker::empty();
+        $this->activeToolKey = '';
+        $this->lastToolCalls = ToolCalls::empty();
         $this->sequenceTracker = SequenceTracker::empty();
         return $this->inner->init();
     }
@@ -63,13 +68,8 @@ final class EventTap implements Reducer
     #[\Override]
     public function complete(mixed $accumulator): mixed {
         // Finalize tool calls
-        if ($this->expectedToolName !== '' && $this->toolTracker->hasActive()) {
-            $finalCall = $this->toolTracker->finalize();
-            if ($finalCall !== null) {
-                $this->events->dispatch(new StreamedToolCallCompleted([
-                    'toolCall' => $finalCall->toArray(),
-                ]));
-            }
+        if ($this->expectedToolName !== '' && $this->hasActiveTool()) {
+            $this->emitToolCompletedForActive($this->lastToolCalls);
         }
 
         // Finalize sequence
@@ -103,9 +103,7 @@ final class EventTap implements Reducer
 
         // Emission events based on Emission case
         match ($frame->emissionType) {
-            EmissionType::ObjectReady => $this->dispatchObjectReady($frame),
-            EmissionType::FinishOnly => $this->dispatchFinishOnly($frame),
-            EmissionType::DriverValue => $this->dispatchDriverValue($frame),
+            EmissionType::ObjectReady, EmissionType::DriverValue => $this->dispatchPartialResponse($frame),
             EmissionType::None => null,
         };
 
@@ -114,53 +112,157 @@ final class EventTap implements Reducer
     }
 
     private function handleToolCallEvents(PartialFrame $frame): void {
-        $previous = $this->toolTracker;
+        $source = $frame->source;
+        $toolCalls = $source->toolCalls();
 
-        // Handle tool name signal
-        if ($frame->source->toolName !== '') {
-            // If we have an active call with args, finalize it first
-            if ($this->toolTracker->hasActive() && !$this->toolTracker->argsBuffer->isEmpty()) {
-                $completedCall = $this->toolTracker->finalize();
-                if ($completedCall !== null) {
-                    $this->events->dispatch(new StreamedToolCallCompleted([
-                        'toolCall' => $completedCall->toArray(),
-                    ]));
-                }
-                $this->toolTracker = $this->toolTracker->clear();
+        $signaledKey = $this->toolSignalKey($source);
+        if ($signaledKey !== '') {
+            $this->transitionToolStart($signaledKey, $toolCalls);
+        }
+
+        if ($source->toolArgs !== '') {
+            $this->transitionToolUpdate($toolCalls);
+        }
+
+        $this->lastToolCalls = $toolCalls;
+    }
+
+    private function transitionToolStart(string $toolKey, ToolCalls $toolCalls): void {
+        if ($this->hasActiveTool() && !$this->isActiveToolKey($toolKey)) {
+            $this->emitToolCompletedForActive($toolCalls);
+        }
+
+        $this->activateToolKey($toolKey);
+        $this->emitToolStarted($toolKey, $toolCalls);
+    }
+
+    private function transitionToolUpdate(ToolCalls $toolCalls): void {
+        $activeToolKey = $this->activeToolKey;
+        if ($activeToolKey === '') {
+            $activeToolKey = $this->fallbackToolKey($toolCalls);
+            if ($activeToolKey === '') {
+                return;
             }
+            $this->activateToolKey($activeToolKey);
+        }
 
-            $this->toolTracker = $this->toolTracker->handleSignal($frame->source->toolName);
-        } else {
-            // Start if empty
-            $this->toolTracker = $this->toolTracker->startIfEmpty($this->expectedToolName);
+        $call = $this->findCallByKey($toolCalls, $activeToolKey);
+        if ($call === null) {
+            return;
+        }
 
-            // Append args if present
-            $delta = $frame->source->toolArgs;
-            if ($delta !== '') {
-                $this->toolTracker = $this->toolTracker->appendArgs($delta);
+        $this->events->dispatch(new StreamedToolCallUpdated([
+            'toolCall' => $call->toArray(),
+        ]));
+    }
+
+    private function emitToolStarted(string $toolKey, ToolCalls $toolCalls): void {
+        $call = $this->findCallByKey($toolCalls, $toolKey);
+        if ($call === null) {
+            return;
+        }
+
+        $this->events->dispatch(new StreamedToolCallStarted([
+            'toolCall' => $call->toArray(),
+        ]));
+    }
+
+    private function emitToolCompletedForActive(ToolCalls $toolCalls): void {
+        if (!$this->hasActiveTool()) {
+            return;
+        }
+
+        $activeToolKey = $this->activeToolKey;
+        $call = $this->findCallByKey($toolCalls, $activeToolKey)
+            ?? $this->findCallByKey($this->lastToolCalls, $activeToolKey);
+        if ($call === null) {
+            return;
+        }
+
+        $this->events->dispatch(new StreamedToolCallCompleted([
+            'toolCall' => $call->toArray(),
+        ]));
+    }
+
+    private function toolSignalKey(PartialInferenceResponse $source): string {
+        if ($source->toolId !== '') {
+            return 'id:' . $source->toolId;
+        }
+
+        if ($source->toolName !== '') {
+            return 'name:' . $source->toolName;
+        }
+
+        return '';
+    }
+
+    private function fallbackToolKey(ToolCalls $toolCalls): string {
+        if ($this->expectedToolName !== '') {
+            $byName = $this->findLatestCallByName($toolCalls, $this->expectedToolName);
+            if ($byName !== null) {
+                return $this->toolKeyFromCall($byName);
             }
         }
 
-        // Detect state transitions and emit events
-        if (!$previous->hasActive() && $this->toolTracker->hasActive()) {
-            // Started
-            $call = $this->toolTracker->currentCall();
-            if ($call !== null) {
-                $this->events->dispatch(new StreamedToolCallStarted([
-                    'toolCall' => $call->toArray(),
-                ]));
-            }
-        } elseif ($previous->hasActive() && $this->toolTracker->hasActive()) {
-            // Updated (args changed)
-            if (!$this->toolTracker->argsBuffer->equals($previous->argsBuffer)) {
-                $call = $this->toolTracker->currentCall();
-                if ($call !== null) {
-                    $this->events->dispatch(new StreamedToolCallUpdated([
-                        'toolCall' => $call->toArray(),
-                    ]));
+        $latest = $toolCalls->last();
+        return match (true) {
+            $latest !== null => $this->toolKeyFromCall($latest),
+            default => '',
+        };
+    }
+
+    private function findCallByKey(ToolCalls $toolCalls, string $toolKey): ?ToolCall {
+        if (str_starts_with($toolKey, 'id:')) {
+            $id = substr($toolKey, 3);
+            foreach ($toolCalls->all() as $call) {
+                if ((string) ($call->id() ?? '') === $id) {
+                    return $call;
                 }
             }
+            return null;
         }
+
+        if (str_starts_with($toolKey, 'name:')) {
+            $name = substr($toolKey, 5);
+            return $this->findLatestCallByName($toolCalls, $name);
+        }
+
+        return null;
+    }
+
+    private function findLatestCallByName(ToolCalls $toolCalls, string $name): ?ToolCall {
+        $matched = null;
+        foreach ($toolCalls->all() as $call) {
+            if ($call->name() === $name) {
+                $matched = $call;
+            }
+        }
+        return $matched;
+    }
+
+    private function toolKeyFromCall(ToolCall $call): string {
+        $id = (string) ($call->id() ?? '');
+        if ($id !== '') {
+            return 'id:' . $id;
+        }
+
+        return 'name:' . $call->name();
+    }
+
+    private function hasActiveTool(): bool {
+        return $this->activeToolKey !== '';
+    }
+
+    private function isActiveToolKey(string $toolKey): bool {
+        return $this->activeToolKey === $toolKey && $this->activeToolKey !== '';
+    }
+
+    private function activateToolKey(string $toolKey): void {
+        if ($toolKey === '') {
+            return;
+        }
+
+        $this->activeToolKey = $toolKey;
     }
 
     private function handleSequenceEvents(PartialFrame $frame): void {
@@ -188,23 +290,11 @@ final class EventTap implements Reducer
         $this->sequenceTracker = $this->sequenceTracker->advance();
     }
 
-    private function dispatchObjectReady(PartialFrame $frame): void {
+    private function dispatchPartialResponse(PartialFrame $frame): void {
         if (!$frame->hasObject()) {
             return;
         }
 
-        // Emit the typed object directly for partial update handlers
-        $this->events->dispatch(new PartialResponseGenerated(
-            $frame->object->unwrap()
-        ));
-    }
-
-    private function dispatchFinishOnly(PartialFrame $frame): void {
-        // Just note that stream finished (handled in complete())
-    }
-
-    private function dispatchDriverValue(PartialFrame $frame): void {
-        // Driver provided value directly - forward it
         $this->events->dispatch(new PartialResponseGenerated(
             $frame->object->unwrap()
         ));

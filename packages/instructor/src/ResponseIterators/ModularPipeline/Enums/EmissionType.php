@@ -21,25 +21,7 @@ enum EmissionType
     case ObjectReady;
 
     /**
-     * Stream finished but no object (emit StreamedResponseReceived only).
-     */
-    case FinishOnly;
-
-    /**
      * Driver provided value directly (emit with driver value).
      */
     case DriverValue;
-
-    public function shouldEmit(): bool {
-        return $this !== self::None;
-    }
-
-    public function reason(): string {
-        return match ($this) {
-            self::None => 'skipped',
-            self::ObjectReady => 'object_ready',
-            self::FinishOnly => 'finish_only',
-            self::DriverValue => 'driver_value',
-        };
-    }
 }

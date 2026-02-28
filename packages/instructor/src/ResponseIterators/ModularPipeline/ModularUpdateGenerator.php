@@ -20,7 +20,7 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggre
  *
  * Architecture: Uses modular pipeline with:
  * - Domain: PartialFrame, ContentBuffer, Emission, etc.
- * - Pipeline: ExtractDelta → Deserialize → UpdateSequence → Enrich
+ * - Pipeline: ExtractDelta → Deserialize → EventTap → Enrich
  * - Aggregation: StreamAggregate (replaces AggregationState)
  * - Events: EventTap (single dispatch point)
  */
@@ -78,7 +78,6 @@ final readonly class ModularUpdateGenerator implements CanStreamStructuredOutput
             source: $inferenceStream,
             responseModel: $responseModel,
             mode: $execution->outputMode(),
-            accumulatePartials: true,
         );
 
         // Create streaming state with initialized stream

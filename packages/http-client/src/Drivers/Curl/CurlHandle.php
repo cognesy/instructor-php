@@ -73,6 +73,10 @@ final class CurlHandle
         }
     }
 
+    public function isClosed(): bool {
+        return $this->handle === null;
+    }
+
     public function __destruct() {
         $this->close();
     }

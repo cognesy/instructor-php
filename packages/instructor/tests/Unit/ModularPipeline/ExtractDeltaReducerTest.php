@@ -80,7 +80,26 @@ test('extracts accumulated toolCalls snapshot in Tools mode', function() {
 
     expect($collector->collected)->toHaveCount(1)
         ->and($collector->collected[0])->toBeInstanceOf(PartialFrame::class)
-        ->and($collector->collected[0]->buffer->raw())->toBe('{"param":"value"}');
+        ->and($collector->collected[0]->buffer->raw())->toBe('{"param": "value"}');
+});
+
+test('uses raw tool args snapshot for incomplete Tools chunks', function() {
+    $collector = makeFrameCollector();
+    $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::Tools);
+
+    $reducer->init();
+
+    [$partial] = FakeStreamFactory::from(new PartialInferenceResponse(
+        toolName: 'extract',
+        toolArgs: '{"param":"va',
+        usage: Usage::none(),
+    ));
+
+    $reducer->step(null, $partial);
+
+    expect($collector->collected)->toHaveCount(1)
+        ->and($collector->collected[0])->toBeInstanceOf(PartialFrame::class)
+        ->and($collector->collected[0]->buffer->raw())->toBe('{"param":"va');
 });
 
 test('skips tool delta chunk when toolCalls snapshot is empty', function() {

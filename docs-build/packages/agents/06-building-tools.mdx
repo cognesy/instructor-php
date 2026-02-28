@@ -14,7 +14,7 @@ SimpleTool (abstract)               – lowest level; schema is manual
 └── StateAwareTool (abstract)       – adds $this->agentState
     ├── BaseTool (abstract)         – auto-schema + agent state  ← use this
     └── ContextAwareTool (abstract) – mixed args + agent state + $this->toolCall
-// @doctest id="7dc9"
+// @doctest id="2233"
 ```
 
 Pick the lowest class that gives you what you need.
@@ -76,7 +76,7 @@ class CalculatorTool extends BaseTool
         )->toArray();
     }
 }
-// @doctest id="68b0"
+// @doctest id="298d"
 ```
 
 ---
@@ -105,7 +105,7 @@ $tool = FunctionTool::fromCallable(
         };
     }
 );
-// @doctest id="bb31"
+// @doctest id="afb3"
 ```
 
 The tool name and description are inferred from the callable. For named functions the function name is used;
@@ -154,7 +154,7 @@ class AuditingTool extends ContextAwareTool
         )->toArray();
     }
 }
-// @doctest id="cea1"
+// @doctest id="fec3"
 ```
 
 ---
@@ -190,7 +190,7 @@ class MyLowLevelTool extends SimpleTool
         return [ /* ... */ ];
     }
 }
-// @doctest id="e7ba"
+// @doctest id="53a0"
 ```
 
 ---
@@ -203,7 +203,7 @@ parameters by name or positional index with an optional default:
 ```php
 $value = $this->arg($args, 'value', 0, 'default');
 //                          ↑name  ↑pos  ↑default
-// @doctest id="0976"
+// @doctest id="7ec5"
 ```
 
 This is only needed when using `ContextAwareTool` or `SimpleTool` (which receive `mixed ...$args`).
@@ -244,7 +244,7 @@ final readonly class MyToolDescriptor extends ToolDescriptor
         );
     }
 }
-// @doctest id="d667"
+// @doctest id="9a15"
 ```
 
 Wire it into your tool by overriding `descriptor()`:
@@ -273,7 +273,7 @@ class MyTool extends BaseTool
         return "Processed: {$input}";
     }
 }
-// @doctest id="c7c8"
+// @doctest id="ac34"
 ```
 
 Most built-in tools use this pattern — `BashTool` has `BashToolDescriptor`, each file tool has its own.
@@ -291,7 +291,7 @@ $tool = MockTool::returning('my_tool', 'Does something', 'fixed result');
 
 // Or with custom logic
 $tool = new MockTool('my_tool', 'Does something', fn($x) => strtoupper($x));
-// @doctest id="bc10"
+// @doctest id="b669"
 ```
 
 ---

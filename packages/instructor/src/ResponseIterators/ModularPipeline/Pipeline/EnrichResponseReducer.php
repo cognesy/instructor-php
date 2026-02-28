@@ -13,7 +13,7 @@ use Cognesy\Stream\Contracts\Reducer;
  * Only forwards frames marked for emission (explicit Emission enum).
  * Converts PartialFrame → PartialInferenceResponse.
  *
- * For Tools mode: uses buffer content (accumulated toolArgs)
+ * For Tools mode: uses buffer content built from toolCalls() snapshot.
  * For other modes: uses source content (cumulative from driver)
  */
 final class EnrichResponseReducer implements Reducer
@@ -32,7 +32,7 @@ final class EnrichResponseReducer implements Reducer
     public function step(mixed $accumulator, mixed $reducible): mixed {
         assert($reducible instanceof PartialFrame);
 
-        // For Tools mode: use buffer content (accumulated toolArgs across chunks)
+        // For Tools mode: use normalized content from current toolCalls() snapshot
         // For other modes: use source content (cumulative from driver)
         $forward = match ($this->mode) {
             OutputMode::Tools => $reducible->toPartialResponse(),

@@ -14,14 +14,14 @@ class AnthropicBodyFormat implements CanMapRequestBody
     public function __construct(
         protected LLMConfig $config,
         protected CanMapMessages $messageFormat,
-        protected bool $parallelToolCalls = false
+        protected bool $defaultParallelToolCalls = false
     ) {}
 
     #[\Override]
     public function toRequestBody(InferenceRequest $request) : array {
         $options = array_merge($this->config->options, $request->options());
 
-        $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
+        $parallelToolCalls = (bool) ($options['parallel_tool_calls'] ?? $this->defaultParallelToolCalls);
         unset(
             $options['parallel_tool_calls'],
         );
@@ -38,7 +38,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
 
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);
-            $requestBody['tool_choice'] = $this->toToolChoice($request);
+            $requestBody['tool_choice'] = $this->toToolChoice($request, $parallelToolCalls);
         }
 
         return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
@@ -77,7 +77,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
         return $anthropicTool;
     }
 
-    protected function toToolChoice(InferenceRequest $request) : array {
+    protected function toToolChoice(InferenceRequest $request, bool $parallelToolCalls) : array {
         $cachedToolChoice = $request->cachedContext()?->toolChoice();
         $toolChoice = $request->toolChoice() ?: $cachedToolChoice;
         $tools = $request->tools();
@@ -86,16 +86,16 @@ class AnthropicBodyFormat implements CanMapRequestBody
             empty($tools) => [],
             empty($toolChoice) => [
                 'type' => 'auto',
-                'disable_parallel_tool_use' => !$this->parallelToolCalls,
+                'disable_parallel_tool_use' => !$parallelToolCalls,
             ],
             is_array($toolChoice) => [
                 'type' => 'tool',
                 'name' => $toolChoice['function']['name'],
-                'disable_parallel_tool_use' => !$this->parallelToolCalls,
+                'disable_parallel_tool_use' => !$parallelToolCalls,
             ],
             default => [
                 'type' => $this->mapToolChoice($toolChoice),
-                'disable_parallel_tool_use' => !$this->parallelToolCalls,
+                'disable_parallel_tool_use' => !$parallelToolCalls,
             ],
         };
     }

@@ -13,7 +13,6 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Events\EventTapTransduc
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\DeserializeAndDeduplicate;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\EnrichResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDelta;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\UpdateSequence;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -27,10 +26,9 @@ use IteratorAggregate;
  * Assembles the full transformation pipeline:
  * 1. ExtractDelta - Convert PartialInferenceResponse → PartialFrame with buffer
  * 2. DeserializeAndDeduplicate - Create objects with dedup
- * 3. UpdateSequence - Track sequence updates (if applicable)
- * 4. EventTap - Emit all domain events
- * 5. EnrichResponse - Convert PartialFrame → PartialInferenceResponse
- * 6. AggregateStream - Accumulate into StreamAggregate
+ * 3. EventTap - Emit all domain events
+ * 4. EnrichResponse - Convert PartialFrame → PartialInferenceResponse
+ * 5. AggregateStream - Accumulate into StreamAggregate
  */
 final readonly class ModularStreamFactory
 {
@@ -54,7 +52,6 @@ final readonly class ModularStreamFactory
         iterable $source,
         ResponseModel $responseModel,
         OutputMode $mode,
-        bool $accumulatePartials = true,
     ): IteratorAggregate {
         // Build pipeline stages (transducers)
         $stages = [
@@ -68,20 +65,17 @@ final readonly class ModularStreamFactory
                 responseModel: $responseModel,
             ),
 
-            // 3. Sequences: Track sequence updates (pure state, events in EventTap)
-            new UpdateSequence(),
-
-            // 4. Events: Dispatch all domain events
+            // 3. Events: Dispatch all domain events
             new EventTapTransducer(
                 events: $this->events,
                 expectedToolName: $mode === OutputMode::Tools ? $responseModel->toolName() : '',
             ),
 
-            // 5. Enrich: Convert PartialFrame → PartialInferenceResponse
+            // 4. Enrich: Convert PartialFrame → PartialInferenceResponse
             new EnrichResponse($mode),
 
-            // 6. Terminal: Aggregate into StreamAggregate
-            new AggregateStream($accumulatePartials),
+            // 5. Terminal: Aggregate into StreamAggregate
+            new AggregateStream(),
         ];
 
         // Build transformation

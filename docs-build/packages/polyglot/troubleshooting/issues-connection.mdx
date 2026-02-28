@@ -18,7 +18,7 @@ Network connectivity problems can prevent successful API requests.
 ```php
 // In your configuration file (config/llm.php)
 'apiUrl' => 'https://api.openai.com/v1', // Correct URL
-// @doctest id="177b"
+// @doctest id="5ba0"
 ```
 
 3. **Proxy Settings**: If you're behind a proxy, configure it properly
@@ -38,7 +38,7 @@ $inference = Inference::fromRuntime(InferenceRuntime::using(
     preset: 'openai',
     httpClient: $httpClient,
 ));
-// @doctest id="fc83"
+// @doctest id="3ea0"
 ```
 
 4. **Firewall Rules**: Check if your firewall is blocking outgoing connections to API endpoints

@@ -5,6 +5,7 @@ use Cognesy\Instructor\ResponseIterators\ModularPipeline\Aggregation\StreamAggre
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Events\EventTap;
+use Cognesy\Instructor\Tests\Support\FakeStreamFactory;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Stream\Contracts\Reducer;
@@ -124,10 +125,11 @@ test('dispatches StreamedToolCallStarted when tool call begins', function() {
 
     $reducer->init();
 
-    // Tool name signal
-    $frame = PartialFrame::fromResponse(
+    // Tool name signal with accumulated tool call snapshot
+    [$partial] = FakeStreamFactory::from(
         new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none())
     );
+    $frame = PartialFrame::fromResponse($partial);
 
     $reducer->step(null, $frame);
 
@@ -149,16 +151,17 @@ test('dispatches StreamedToolCallUpdated when args accumulate', function() {
 
     $reducer->init();
 
-    // Start tool call
-    $frame1 = PartialFrame::fromResponse(
-        new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none())
+    [$partial1, $partial2] = FakeStreamFactory::from(
+        new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none()),
+        new PartialInferenceResponse(toolArgs: '{"param"', usage: Usage::none()),
     );
+
+    // Start tool call
+    $frame1 = PartialFrame::fromResponse($partial1);
     $reducer->step(null, $frame1);
 
     // Add args
-    $frame2 = PartialFrame::fromResponse(
-        new PartialInferenceResponse(toolArgs: '{"param"', usage: Usage::none())
-    );
+    $frame2 = PartialFrame::fromResponse($partial2);
     $reducer->step(null, $frame2);
 
     $toolUpdateEvents = array_filter(
@@ -179,15 +182,16 @@ test('dispatches StreamedToolCallCompleted on finalize', function() {
 
     $reducer->init();
 
-    // Start and add args
-    $frame1 = PartialFrame::fromResponse(
-        new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none())
+    [$partial1, $partial2] = FakeStreamFactory::from(
+        new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none()),
+        new PartialInferenceResponse(toolArgs: '{"param": "value"}', usage: Usage::none()),
     );
+
+    // Start and add args
+    $frame1 = PartialFrame::fromResponse($partial1);
     $reducer->step(null, $frame1);
 
-    $frame2 = PartialFrame::fromResponse(
-        new PartialInferenceResponse(toolArgs: '{"param": "value"}', usage: Usage::none())
-    );
+    $frame2 = PartialFrame::fromResponse($partial2);
     $reducer->step(null, $frame2);
 
     $reducer->complete(null);
@@ -196,6 +200,34 @@ test('dispatches StreamedToolCallCompleted on finalize', function() {
         $events->events,
         fn($e) => $e instanceof \Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted
     );
+
+    expect($toolCompleteEvents)->toHaveCount(1);
+});
+
+test('dispatches StreamedToolCallCompleted when a new tool starts', function() {
+    $events = makeEventCollector();
+    $reducer = new EventTap(
+        inner: makePassThroughReducer(),
+        events: $events,
+        expectedToolName: 'test_tool',
+    );
+
+    $reducer->init();
+
+    [$partial1, $partial2, $partial3] = FakeStreamFactory::from(
+        new PartialInferenceResponse(toolName: 'tool_a', usage: Usage::none()),
+        new PartialInferenceResponse(toolArgs: '{"a":1}', usage: Usage::none()),
+        new PartialInferenceResponse(toolName: 'tool_b', usage: Usage::none()),
+    );
+
+    $reducer->step(null, PartialFrame::fromResponse($partial1));
+    $reducer->step(null, PartialFrame::fromResponse($partial2));
+    $reducer->step(null, PartialFrame::fromResponse($partial3));
+
+    $toolCompleteEvents = array_values(array_filter(
+        $events->events,
+        fn($e) => $e instanceof \Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted
+    ));
 
     expect($toolCompleteEvents)->toHaveCount(1);
 });
@@ -257,9 +289,10 @@ test('init resets tracker state', function() {
 
     // First stream
     $reducer->init();
-    $frame1 = PartialFrame::fromResponse(
+    [$partial1] = FakeStreamFactory::from(
         new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none())
     );
+    $frame1 = PartialFrame::fromResponse($partial1);
     $reducer->step(null, $frame1);
 
     $initialEventCount = count($events->events);
@@ -268,9 +301,10 @@ test('init resets tracker state', function() {
     $reducer->init();
 
     // Should start fresh
-    $frame2 = PartialFrame::fromResponse(
+    [$partial2] = FakeStreamFactory::from(
         new PartialInferenceResponse(toolName: 'test_tool', usage: Usage::none())
     );
+    $frame2 = PartialFrame::fromResponse($partial2);
     $reducer->step(null, $frame2);
 
     // Should have new tool start event

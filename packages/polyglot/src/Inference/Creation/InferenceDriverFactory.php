@@ -43,6 +43,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class InferenceDriverFactory
 {
+    /** @var array<string, callable> */
     private static array $drivers = [];
 
     private array $bundledDrivers;
@@ -64,6 +65,23 @@ class InferenceDriverFactory
             is_callable($driver) => $driver,
             is_string($driver) => fn($config, $httpClient, $events) => new $driver($config, $httpClient, $events),
         };
+    }
+
+    public static function unregisterDriver(string $name): void {
+        unset(self::$drivers[$name]);
+    }
+
+    public static function resetDrivers(): void {
+        self::$drivers = [];
+    }
+
+    public static function hasDriver(string $name): bool {
+        return isset(self::$drivers[$name]);
+    }
+
+    /** @return array<string> */
+    public static function registeredDrivers(): array {
+        return array_keys(self::$drivers);
     }
 
     /**

@@ -62,10 +62,6 @@ final readonly class PartialFrame
         return $this->object->isSuccess() && $this->object->unwrap() !== null;
     }
 
-    public function shouldEmit(): bool {
-        return $this->emissionType->shouldEmit();
-    }
-
     public function isError(): bool {
         return $this->object->isFailure();
     }

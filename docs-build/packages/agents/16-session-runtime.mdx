@@ -38,7 +38,7 @@ interface CanRunSessionRuntime
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo;
     public function listSessions(): SessionInfoList;
 }
-// @doctest id="8ec8"
+// @doctest id="2c2b"
 ```
 
 Read methods (`getSession`, `getSessionInfo`, `listSessions`) do not mutate persisted version.
@@ -69,7 +69,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 $factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime'));
-// @doctest id="de7b"
+// @doctest id="43f1"
 ```
 
 ## Typical Flow
@@ -86,7 +86,7 @@ $updated = $runtime->execute($session->sessionId(), new SendMessage('Hello', $lo
 
 // 3) use returned persisted version for next call
 $nextVersion = $updated->version();
-// @doctest id="b1be"
+// @doctest id="6e9f"
 ```
 
 ## Built-in Actions
@@ -138,7 +138,7 @@ $hook = new class implements CanControlAgentSession {
 
 $hooks = SessionHookStack::empty()->with($hook, priority: 100);
 $runtime = new SessionRuntime($repo, $events, $hooks);
-// @doctest id="cd6d"
+// @doctest id="2259"
 ```
 
 ## Session Lifecycle vs Execution Lifecycle

@@ -25,6 +25,7 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
     private ?array $headers = null;
     private string $bufferedBody = '';
     private bool $completed = false;
+    private bool $cleanedUp = false;
 
     public function __construct(
         private readonly CurlHandle $handle,
@@ -78,33 +79,34 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
 
     public function stream(): Generator {
         $active = 1;
+        try {
+            while (true) {
+                // Yield buffered chunks
+                while (!$this->queue->isEmpty()) {
+                    $chunk = $this->queue->dequeue();
+                    $this->bufferedBody .= $chunk;
+                    $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+                    yield $chunk;
+                }
 
-        while (true) {
-            // Yield buffered chunks
-            while (!$this->queue->isEmpty()) {
-                $chunk = $this->queue->dequeue();
-                $this->bufferedBody .= $chunk;
-                $this->events->dispatch(new HttpResponseChunkReceived($chunk));
-                yield $chunk;
-            }
+                if ($active === 0) {
+                    break;
+                }
 
-            if ($active === 0) {
-                break;
-            }
+                // Drive multi handle
+                $status = curl_multi_exec($this->multi, $active);
+                if ($status !== CURLM_OK) {
+                    break;
+                }
 
-            // Drive multi handle
-            $status = curl_multi_exec($this->multi, $active);
-            if ($status !== CURLM_OK) {
-                break;
+                if ($active > 0) {
+                    curl_multi_select($this->multi, 0.1);
+                }
             }
-
-            if ($active > 0) {
-                curl_multi_select($this->multi, 0.1);
-            }
+        } finally {
+            $this->completed = true;
+            $this->cleanup();
         }
-
-        $this->completed = true;
-        $this->cleanup();
     }
 
     public function isStreamed(): bool {
@@ -128,14 +130,26 @@ final class StreamingCurlResponseAdapter implements CanAdaptHttpResponse
     }
 
     private function cleanup(): void {
-        curl_multi_remove_handle($this->multi, $this->handle->native());
+        if ($this->cleanedUp) {
+            return;
+        }
+        $this->cleanedUp = true;
+
+        if (!$this->handle->isClosed()) {
+            curl_multi_remove_handle($this->multi, $this->handle->native());
+            $this->handle->close();
+        }
         curl_multi_close($this->multi);
-        $this->handle->close();
     }
 
     public function __destruct() {
-        if (!$this->completed) {
+        if ($this->completed) {
+            return;
+        }
+        try {
             $this->cleanup();
+        } catch (\Throwable) {
+            // Do not throw from destructor.
         }
     }
 }

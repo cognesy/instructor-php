@@ -112,7 +112,7 @@ test('stream processes all source items', function() {
     expect($results)->toBeArray();
 });
 
-test('stream accumulates partials when enabled', function() {
+test('stream accumulates partial snapshots', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
         transformer: makeStreamTransformer(),
@@ -130,7 +130,6 @@ test('stream accumulates partials when enabled', function() {
         source: $source,
         responseModel: makeFactoryTestResponseModel(),
         mode: OutputMode::JsonSchema,
-        accumulatePartials: true,
     );
 
     $results = iterator_to_array($stream);
@@ -143,7 +142,7 @@ test('stream accumulates partials when enabled', function() {
         ->and($final->partial->content())->toBe('{"test": "value1"}');
 });
 
-test('stream does not accumulate partials when disabled', function() {
+test('stream always keeps latest partial snapshot', function() {
     $factory = new ModularStreamFactory(
         deserializer: makeStreamDeserializer(),
         transformer: makeStreamTransformer(),
@@ -159,13 +158,13 @@ test('stream does not accumulate partials when disabled', function() {
         source: $source,
         responseModel: makeFactoryTestResponseModel(),
         mode: OutputMode::JsonSchema,
-        accumulatePartials: false,
     );
 
     $results = iterator_to_array($stream);
     $final = end($results);
 
-    expect($final->partial)->toBeNull();
+    expect($final->partial)->not()->toBeNull()
+        ->and($final->partial?->content())->toBe('{"a": 1}{"b": 2}');
 });
 
 test('handles JsonSchema output mode', function() {

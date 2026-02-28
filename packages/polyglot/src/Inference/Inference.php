@@ -58,6 +58,14 @@ final class Inference implements CanCreateInference
         InferenceDriverFactory::registerDriver($name, $driver);
     }
 
+    public static function unregisterDriver(string $name): void {
+        InferenceDriverFactory::unregisterDriver($name);
+    }
+
+    public static function resetDrivers(): void {
+        InferenceDriverFactory::resetDrivers();
+    }
+
     // SHORTCUTS ///////////////////////////////////////////////////////////
 
     public function stream(): InferenceStream {

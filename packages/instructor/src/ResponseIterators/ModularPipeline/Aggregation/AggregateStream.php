@@ -11,29 +11,22 @@ use Cognesy\Stream\Contracts\Transducer;
  */
 final readonly class AggregateStream implements Transducer
 {
-    public function __construct(
-        private bool $accumulatePartials = false,
-    ) {}
-
     #[\Override]
     public function __invoke(Reducer $reducer): Reducer {
         // Wrap the sink so we can forward the rolling aggregate downstream
         // and let the queue-based sink enqueue it for observation.
-        $accumulate = $this->accumulatePartials;
-
-        return new class($reducer, $accumulate) implements Reducer {
+        return new class($reducer) implements Reducer {
             private StreamAggregate $aggregate;
 
             public function __construct(
                 private readonly Reducer $inner,
-                private readonly bool $accumulatePartials,
             ) {
-                $this->aggregate = StreamAggregate::empty($this->accumulatePartials);
+                $this->aggregate = StreamAggregate::empty();
             }
 
             #[\Override]
             public function init(): mixed {
-                $this->aggregate = StreamAggregate::empty($this->accumulatePartials);
+                $this->aggregate = StreamAggregate::empty();
                 return $this->inner->init();
             }
 

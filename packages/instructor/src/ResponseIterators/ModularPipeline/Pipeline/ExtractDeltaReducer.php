@@ -85,6 +85,11 @@ final class ExtractDeltaReducer implements Reducer
     }
 
     private function toolsSnapshotContent(PartialInferenceResponse $response): string {
+        $rawArgsSnapshot = $response->toolArgsSnapshot();
+        if ($rawArgsSnapshot !== '') {
+            return $rawArgsSnapshot;
+        }
+
         $toolCalls = $response->toolCalls();
         if ($toolCalls->isEmpty()) {
             return '';

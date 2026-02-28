@@ -134,6 +134,24 @@ class PartialInferenceResponse
         return $this->toolArgs ?? '';
     }
 
+    public function toolArgsSnapshot(): string {
+        if (empty($this->tools)) {
+            return '';
+        }
+
+        $lastKey = array_key_last($this->tools);
+        if ($lastKey === null) {
+            return '';
+        }
+
+        $lastTool = $this->tools[$lastKey] ?? null;
+        if (!is_array($lastTool)) {
+            return '';
+        }
+
+        return (string) ($lastTool['args'] ?? '');
+    }
+
     public function finishReason(): string {
         return $this->finishReason ?? '';
     }

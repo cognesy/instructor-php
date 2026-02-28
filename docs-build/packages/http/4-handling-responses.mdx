@@ -9,7 +9,7 @@ description: 'How to work with pending responses, metadata access, and response 
 
 ```php
 $pending = $client->withRequest($request);
-// @doctest id="23ec"
+// @doctest id="8dc9"
 ```
 
 Available access patterns:
@@ -38,7 +38,7 @@ $response = $pending->get();
 $status = $response->statusCode();
 $headers = $response->headers();
 $body = $response->body();
-// @doctest id="6b37"
+// @doctest id="6d9d"
 ```
 
 For streamed responses, consume chunks with `stream()`.

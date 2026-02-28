@@ -39,6 +39,16 @@ it('aggregates tool arguments from partial responses (single tool)', function ()
     expect($tool->value('q'))->toBe('Hello');
 });
 
+it('keeps raw cumulative tool args snapshot while assembling', function () {
+    $first = (new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()))
+        ->withAccumulatedContent(PartialInferenceResponse::empty());
+    expect($first->toolArgsSnapshot())->toBe('{"q":"Hel');
+
+    $second = (new PartialInferenceResponse(toolName: 'search', toolArgs: 'lo"}', usage: new Usage()))
+        ->withAccumulatedContent($first);
+    expect($second->toolArgsSnapshot())->toBe('{"q":"Hello"}');
+});
+
 it('accumulates multiple tools in sequence (name-based)', function () {
     $partials = [
         new PartialInferenceResponse(toolName: 'search', toolArgs: '{"q":"Hel', usage: new Usage()),

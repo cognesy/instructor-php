@@ -108,3 +108,42 @@ it('Anthropic: cache_control applied to last cached message', function () {
     expect($messages[1]['content'][0]['cache_control']['type'] ?? null)->toBe('ephemeral');
     expect(is_array($messages[2]['content'] ?? null))->toBeFalse();
 });
+
+it('Anthropic: toRequestBody does not leak parallel tool setting between calls', function () {
+    $config = new LLMConfig(
+        apiUrl: 'https://api.anthropic.com',
+        apiKey: 'KEY',
+        endpoint: '/v1/messages',
+        model: 'claude-3-haiku',
+        driver: 'anthropic',
+    );
+
+    $body = new AnthropicBodyFormat($config, new OpenAIMessageFormat());
+
+    $tools = [[
+        'type' => 'function',
+        'function' => [ 'name' => 'search', 'parameters' => ['type' => 'object'] ],
+    ]];
+
+    $first = new InferenceRequest(
+        messages: Messages::fromAny([['role' => 'user', 'content' => 'First']]),
+        model: 'claude-3-haiku',
+        tools: $tools,
+        toolChoice: 'auto',
+        options: ['parallel_tool_calls' => true],
+    );
+
+    $second = new InferenceRequest(
+        messages: Messages::fromAny([['role' => 'user', 'content' => 'Second']]),
+        model: 'claude-3-haiku',
+        tools: $tools,
+        toolChoice: 'auto',
+        options: [],
+    );
+
+    $firstJson = $body->toRequestBody($first);
+    $secondJson = $body->toRequestBody($second);
+
+    expect($firstJson['tool_choice']['disable_parallel_tool_use'] ?? null)->toBeFalse();
+    expect($secondJson['tool_choice']['disable_parallel_tool_use'] ?? null)->toBeTrue();
+});
