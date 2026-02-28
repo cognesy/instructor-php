@@ -95,12 +95,11 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$structuredOutput = (new StructuredOutput)->using('gemini');
+$structuredOutput = StructuredOutput::using('gemini');
 
 echo "PROJECT EVENTS:\n\n";
 
-$events = $structuredOutput
-    ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
+$stream = $structuredOutput
     //->onEvent(PartialInferenceResponseReceived::class, fn(PartialInferenceResponseReceived $e) => print "---\n".$e->partialInferenceResponse->content()."---\n")
     ->with(
         messages: $report,
@@ -114,7 +113,13 @@ $events = $structuredOutput
             'stream' => true,
         ],
         mode: OutputMode::Json,
-    )->get();
+    )->stream();
+
+foreach ($stream->sequence() as $sequence) {
+    displayEvent($sequence->last());
+}
+
+$events = $stream->finalValue();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
 

@@ -44,19 +44,15 @@ Text mode works consistently across all providers, making it the most portable o
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference();
-
 // Using OpenAI
-$openAIResponse = $inference
-    ->using('openai')
+$openAIResponse = Inference::using('openai')
     ->withMessages('Write a short poem about the ocean.')
     ->get();
 
 echo "OpenAI response:\n$openAIResponse\n\n";
 
 // Using Anthropic
-$anthropicResponse = $inference
-    ->using('anthropic')
+$anthropicResponse = Inference::using('anthropic')
     ->with('Write a short poem about the ocean.')
     ->get();
 

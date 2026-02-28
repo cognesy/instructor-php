@@ -467,9 +467,9 @@ $result = (new StructuredOutput)
     ->get();
 ```
 
-### Custom Response Extractor
+### Single Custom Extractor
 
-For complete control over the extraction pipeline, implement `CanExtractResponse`:
+For complete control over the extraction pipeline, pass a single custom extractor to `withExtractors()`:
 
 ```php
 use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
@@ -499,9 +499,9 @@ class CustomExtractor implements CanExtractResponse
     }
 }
 
-// Use custom extractor
+// Use one custom extractor
 $result = (new StructuredOutput)
-    ->withExtractor(new CustomExtractor())
+    ->withExtractors(new CustomExtractor())
     ->withResponseClass(User::class)
     ->with(messages: 'Extract user')
     ->get();
@@ -509,16 +509,11 @@ $result = (new StructuredOutput)
 
 ### When to Customize Extraction
 
-**Use `withExtractors()` when:**
+Use `withExtractors()` when:
 - You want to optimize for known response formats
 - You need to add support for additional formats
 - You want to change the extractor order
 - Custom extractors are automatically used for both sync and streaming
-
-**Use `withExtractor()` when:**
-- You need completely custom extraction logic
-- You're integrating with a non-standard LLM response format
-- You want to bypass the extractor chain entirely
 
 ---
 

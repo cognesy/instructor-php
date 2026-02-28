@@ -4,6 +4,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Cognesy\Polyglot\Inference\Inference;
 
 it('throws on HTTP 400 for inference', function () {
@@ -15,9 +16,7 @@ it('throws on HTTP 400 for inference', function () {
         ])));
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $act = fn() => (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
+    $act = fn() => Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->get();
@@ -34,9 +33,9 @@ it('throws on HTTP 429 for embeddings', function () {
         ])));
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $act = fn() => (new Embeddings())
-        ->withHttpClient($http)
-        ->using('openai')
+    $act = fn() => Embeddings::fromRuntime(
+        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+    )
         ->withModel('text-embedding-3-small')
         ->withInputs(['hello'])
         ->vectors();

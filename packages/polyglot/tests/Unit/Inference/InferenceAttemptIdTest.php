@@ -2,15 +2,13 @@
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Exceptions\TimeoutException;
-use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptStarted;
 use Cognesy\Polyglot\Inference\PendingInference;
+use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('uses a unique attempt id for each retry', function () {
     $events = new EventDispatcher();
@@ -20,25 +18,16 @@ it('uses a unique attempt id for each retry', function () {
         $attemptIds[] = $event->attemptId;
     });
 
-    $driver = new class implements CanProcessInferenceRequest {
-        private int $calls = 0;
-
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            $this->calls++;
-            if ($this->calls === 1) {
+    $calls = 0;
+    $driver = new FakeInferenceDriver(
+        onResponse: function () use (&$calls): InferenceResponse {
+            $calls++;
+            if ($calls === 1) {
                 throw new TimeoutException('timeout');
             }
             return new InferenceResponse(content: 'ok', finishReason: 'stop');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            return [];
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+        },
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Retry')

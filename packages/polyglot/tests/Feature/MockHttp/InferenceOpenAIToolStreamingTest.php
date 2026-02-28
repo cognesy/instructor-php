@@ -35,9 +35,7 @@ it('aggregates tool call arguments across streaming deltas', function () {
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $final = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
+    $final = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Find it')
         ->withStreaming(true)

@@ -32,8 +32,7 @@ $city = Structure::define('city', [
     Field::int('founded', 'Founding year')->required(),
 ]);
 
-$data = (new StructuredOutput)
-    ->using('openai')
+$data = StructuredOutput::using('openai')
     //->withHttpDebugPreset('on')
     ->intoArray()
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France? \

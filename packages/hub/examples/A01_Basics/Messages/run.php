@@ -40,8 +40,7 @@ $messages = Messages::empty()
 $messages->appendMessage(Message::asUser('Make it insurance related.'));
 
 print("Extracting structured data using LLM...\n\n");
-$code = (new StructuredOutput)
-    ->using('openai')
+$code = StructuredOutput::using('openai')
     ->withMessages($messages)
     ->withResponseModel(Code::class)
     ->withOutputMode(OutputMode::MdJson)

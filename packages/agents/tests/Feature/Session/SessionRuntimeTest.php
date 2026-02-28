@@ -3,11 +3,13 @@
 namespace Cognesy\Agents\Tests\Feature\Session;
 
 use Cognesy\Agents\Session\Collections\SessionInfoList;
+use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
 use Cognesy\Agents\Session\Contracts\CanExecuteSessionAction;
 use Cognesy\Agents\Session\Contracts\CanStoreSessions;
 use Cognesy\Agents\Session\Data\AgentSession;
 use Cognesy\Agents\Session\Data\AgentSessionInfo;
 use Cognesy\Agents\Session\Data\SessionId;
+use Cognesy\Agents\Session\Enums\AgentSessionStage;
 use Cognesy\Agents\Session\Events\SessionActionExecuted;
 use Cognesy\Agents\Session\Events\SessionLoaded;
 use Cognesy\Agents\Session\Events\SessionLoadFailed;
@@ -16,6 +18,7 @@ use Cognesy\Agents\Session\Events\SessionSaveFailed;
 use Cognesy\Agents\Session\Exceptions\SessionConflictException;
 use Cognesy\Agents\Session\Exceptions\SessionNotFoundException;
 use Cognesy\Agents\Session\SessionRepository;
+use Cognesy\Agents\Session\SessionHookStack;
 use Cognesy\Agents\Session\SessionRuntime;
 use Cognesy\Agents\Session\Store\InMemorySessionStore;
 use Cognesy\Agents\Template\Data\AgentDefinition;
@@ -167,4 +170,48 @@ it('execute propagates conflict exception from repository save and emits save fa
             SessionSaveFailed::class,
         ]);
     }
+});
+
+it('applies session hooks during execute and persists before-save mutations', function () {
+    [$runtime, $repo] = makeRuntime();
+    $repo->create(makeRuntimeSession('hooked'));
+
+    $trace = new class {
+        /** @var list<string> */
+        public array $stages = [];
+    };
+
+    $hook = new class($trace) implements CanControlAgentSession {
+        public function __construct(private object $trace) {}
+
+        public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
+            $this->trace->stages[] = $stage->value;
+            return match ($stage) {
+                AgentSessionStage::AfterLoad => $session->withState($session->state()->withMetadata('hook.after_load', true)),
+                AgentSessionStage::AfterAction => $session->withState($session->state()->withMetadata('hook.after_action', true)),
+                AgentSessionStage::BeforeSave => $session->suspended(),
+                default => $session,
+            };
+        }
+    };
+
+    $stack = SessionHookStack::empty()->with($hook, priority: 100);
+    $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime-test'), $stack);
+
+    $action = new class implements CanExecuteSessionAction {
+        public function executeOn(AgentSession $session): AgentSession {
+            return $session->withState($session->state()->withMetadata('action.executed', true));
+        }
+    };
+
+    $updated = $runtime->execute(SessionId::from('hooked'), $action);
+    $reloaded = $repo->load(SessionId::from('hooked'));
+
+    expect($updated->status()->value)->toBe('suspended')
+        ->and($updated->state()->metadata()->get('hook.after_load'))->toBeTrue()
+        ->and($updated->state()->metadata()->get('hook.after_action'))->toBeTrue()
+        ->and($updated->state()->metadata()->get('action.executed'))->toBeTrue()
+        ->and($trace->stages)->toBe(['after_load', 'after_action', 'before_save', 'after_save'])
+        ->and($reloaded->status()->value)->toBe('suspended')
+        ->and($reloaded->state()->metadata()->get('hook.after_load'))->toBeTrue();
 });

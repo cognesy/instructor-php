@@ -13,7 +13,7 @@ Agent templates let you define agents as data — in markdown, YAML, or JSON fil
 
 ```php
 use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 
 $definition = new AgentDefinition(
     name: 'researcher',
@@ -21,7 +21,7 @@ $definition = new AgentDefinition(
     systemPrompt: 'You are a research assistant. Find and summarize information.',
     label: 'Research Agent',           // optional display name
     llmConfig: 'anthropic',            // optional LLM preset or LLMConfig
-    budget: new AgentBudget(maxSteps: 10, maxTokens: 8000),
+    budget: new ExecutionBudget(maxSteps: 10, maxTokens: 8000),
     tools: new NameList(['bash', 'file.read']),       // optional tool allow-list
     toolsDeny: new NameList(['file.write']),           // optional tool deny-list
     capabilities: new NameList(['use_bash']),          // capability names to install
@@ -160,7 +160,7 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
 $state = $factory->instantiateAgentState($definition);
-// AgentState with systemPrompt, budget, and metadata from definition
+// AgentState with systemPrompt and metadata from definition
 ```
 
 ### DefinitionLoopFactory

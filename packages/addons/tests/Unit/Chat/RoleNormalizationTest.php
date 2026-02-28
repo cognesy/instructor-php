@@ -9,14 +9,18 @@ use Cognesy\Messages\Messages;
 use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 it('llm participant prepares messages with role mapping', function () {
     // Create fake driver to avoid live API calls
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: 'mocked response'),
     ]);
-    $inference = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
+    $inference = Inference::fromRuntime(
+        \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
+            \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver),
+        ),
+    );
     
     $participant = new LLMParticipant(name: 'assistant-a', systemPrompt: 'You are assistant A', inference: $inference);
     

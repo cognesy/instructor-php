@@ -13,12 +13,14 @@ Inference operation logging with Symfony-style context.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Logging\Enrichers\LazyEnricher;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,9 +51,12 @@ $pipeline = LoggingPipeline::create()
 echo "📋 About to demonstrate Inference logging with Symfony...\n\n";
 
 // Create inference with logging
-$inference = (new Inference)
-    ->using('openai')
-    ->wiretap($pipeline);
+$events = new EventDispatcher();
+$events->wiretap($pipeline);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    events: $events,
+));
 
 echo "🚀 Starting simple Inference to demonstrate logging...\n";
 

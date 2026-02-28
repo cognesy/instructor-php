@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../../../vendor/autoload.php';
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -100,7 +100,7 @@ final class MemoryAnalyzer
     private function measureStream(string $driver, int $payloadSize): array
     {
         $chunks = $this->makeStream($payloadSize);
-        $fakeDriver = new FakeInferenceRequestDriver(streamBatches: [$chunks]);
+        $fakeDriver = new FakeInferenceDriver(streamBatches: [$chunks]);
 
         // Clean baseline
         gc_collect_cycles();
@@ -108,7 +108,7 @@ final class MemoryAnalyzer
         $peakBefore = memory_get_peak_usage(true);
 
         $so = (new StructuredOutput)
-            ->withDriver($fakeDriver)
+            ->withRuntime(makeStructuredRuntime(driver: $fakeDriver))
             ->withConfig((new StructuredOutputConfig())->with(responseIterator: $driver))
             ->with(
                 messages: 'Test',
@@ -136,7 +136,7 @@ final class MemoryAnalyzer
     private function measureSync(string $driver, int $payloadSize): array
     {
         $json = $this->makeJson($payloadSize);
-        $fakeDriver = new FakeInferenceRequestDriver(responses: [new InferenceResponse(content: $json)]);
+        $fakeDriver = new FakeInferenceDriver(responses: [new InferenceResponse(content: $json)]);
 
         // Clean baseline
         gc_collect_cycles();
@@ -144,7 +144,7 @@ final class MemoryAnalyzer
         $peakBefore = memory_get_peak_usage(true);
 
         $so = (new StructuredOutput)
-            ->withDriver($fakeDriver)
+            ->withRuntime(makeStructuredRuntime(driver: $fakeDriver))
             ->withConfig((new StructuredOutputConfig())->with(responseIterator: $driver))
             ->with(
                 messages: 'Test',

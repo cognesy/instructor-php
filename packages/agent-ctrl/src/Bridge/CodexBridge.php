@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\Bridge;
 
 use Cognesy\AgentCtrl\Common\Execution\JsonLinesBuffer;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\Common\Execution\CliBinaryGuard;
 use Cognesy\AgentCtrl\Common\Value\PathList;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\StreamHandler;
@@ -86,6 +87,8 @@ final class CodexBridge implements AgentBridge
     #[\Override]
     public function executeStreaming(string $prompt, ?StreamHandler $handler): AgentResponse
     {
+        CliBinaryGuard::assertAvailableForDriver('codex', AgentType::Codex, $this->sandboxDriver);
+
         // Build request with timing
         $requestStart = microtime(true);
         $request = $this->buildRequest($prompt);

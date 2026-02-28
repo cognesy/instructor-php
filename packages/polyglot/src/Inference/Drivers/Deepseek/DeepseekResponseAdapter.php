@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class DeepseekResponseAdapter extends OpenAIResponseAdapter
@@ -25,12 +25,12 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
     }
 
     #[\Override]
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;
         }
-        return new PartialInferenceResponse(
+        return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $this->makeReasoningContentDelta($data),
             toolId: $this->makeToolId($data),

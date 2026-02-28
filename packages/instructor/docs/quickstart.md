@@ -46,8 +46,7 @@ class City {
 }
 
 // Step 2: Use Instructor to run LLM inference
-$city = (new StructuredOutput)
-    ->using('openai')
+$city = StructuredOutput::using('openai')
     ->withResponseClass(City::class)
     ->withMessages('What is the capital of France?')
     ->get();

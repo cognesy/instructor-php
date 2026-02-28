@@ -5,6 +5,7 @@ namespace Cognesy\Http\Middleware\EventSource;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Stream\StreamInterface;
+use Closure;
 
 /**
  * Stream wrapper that notifies listeners on chunks and assembled events
@@ -12,39 +13,66 @@ use Cognesy\Http\Stream\StreamInterface;
 final class EventSourceStream implements StreamInterface
 {
     private string $buffer = '';
+    private bool $completed = false;
+    /** @var Closure(string): (string|bool)|null */
+    private ?Closure $parser;
 
     public function __construct(
         private StreamInterface $source,
-        private HttpRequest $request,
-        private HttpResponse $response,
+        private ?HttpRequest $request,
+        private ?HttpResponse $response,
         private array $listeners,
-    ) {}
+        ?callable $parser = null,
+    ) {
+        $this->parser = $parser !== null ? Closure::fromCallable($parser) : null;
+    }
 
     #[\Override]
     public function getIterator(): \Traversable {
-        foreach ($this->source as $chunk) {
-            // Normalize newlines to \n for consistent parsing
-            $normalized = str_replace(["\r\n", "\r"], "\n", $chunk);
-            $this->buffer .= $normalized;
+        try {
+            foreach ($this->source as $chunk) {
+                $normalized = str_replace(["\r\n", "\r"], "\n", $chunk);
+                $this->buffer .= $normalized;
 
-            // Notify listeners on raw chunk received
-            foreach ($this->listeners as $listener) {
-                $listener->onStreamChunkReceived($this->request, $this->response, $chunk);
-            }
-
-            // Process complete SSE events delimited by a blank line (\n\n)
-            while (($pos = strpos($this->buffer, "\n\n")) !== false) {
-                $eventBlock = substr($this->buffer, 0, $pos);
-                $this->buffer = substr($this->buffer, $pos + 2);
-                $payload = $this->parseSseEventBlock($eventBlock);
-                if ($payload !== '') {
+                if ($this->request !== null && $this->response !== null) {
                     foreach ($this->listeners as $listener) {
-                        $listener->onStreamEventAssembled($this->request, $this->response, $payload);
+                        $listener->onStreamChunkReceived($this->request, $this->response, $chunk);
                     }
                 }
-            }
 
-            yield $chunk;
+                while (($pos = strpos($this->buffer, "\n\n")) !== false) {
+                    $eventBlock = substr($this->buffer, 0, $pos);
+                    $this->buffer = substr($this->buffer, $pos + 2);
+                    $payload = $this->parseSseEventBlock($eventBlock);
+                    if ($payload === '') {
+                        continue;
+                    }
+
+                    if ($this->request !== null && $this->response !== null) {
+                        foreach ($this->listeners as $listener) {
+                            $listener->onStreamEventAssembled($this->request, $this->response, $payload);
+                        }
+                    }
+
+                    if ($this->parser === null) {
+                        continue;
+                    }
+
+                    $mapped = ($this->parser)($payload);
+                    if (is_string($mapped) && $mapped !== '') {
+                        yield $mapped;
+                    }
+                    if ($mapped === true) {
+                        yield $payload;
+                    }
+                }
+
+                if ($this->parser === null) {
+                    yield $chunk;
+                }
+            }
+        } finally {
+            $this->completed = true;
         }
     }
 
@@ -81,6 +109,6 @@ final class EventSourceStream implements StreamInterface
 
     #[\Override]
     public function isCompleted(): bool {
-        return $this->source->isCompleted();
+        return $this->completed && $this->source->isCompleted();
     }
 }

@@ -91,3 +91,22 @@ it('with() allows overriding previously set values', function () {
     expect($req->options()['temperature'])->toBe(0.9);
 });
 
+it('with() accepts empty messages array as explicit update', function () {
+    $b = new InferenceRequestBuilder();
+    $req = $b
+        ->withMessages('Hello')
+        ->with(messages: [])
+        ->create();
+
+    expect($req->messages())->toBe([]);
+});
+
+it('with() accepts empty responseFormat array as explicit update', function () {
+    $b = new InferenceRequestBuilder();
+    $req = $b
+        ->withResponseFormat(['type' => 'json_object'])
+        ->with(responseFormat: [])
+        ->create();
+
+    expect($req->responseFormat()->isEmpty())->toBeTrue();
+});

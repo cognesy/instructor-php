@@ -8,13 +8,13 @@ use Cognesy\Polyglot\Inference\Collections\PartialInferenceResponseList;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Data\Pricing;
 use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use DateTimeImmutable;
 use Generator;
+use LogicException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -39,24 +39,24 @@ class InferenceStream
 
     private ?DateTimeImmutable $startedAt;
     private bool $firstChunkReceived = false;
-    private ?Pricing $pricing = null;
+    /** @var (Closure(InferenceResponse): InferenceResponse)|null */
+    private ?Closure $decorateFinalResponse = null;
 
     public function __construct(
         InferenceExecution         $execution,
         CanProcessInferenceRequest $driver,
         EventDispatcherInterface   $eventDispatcher,
         ?DateTimeImmutable         $startedAt = null,
-        ?ResponseCachePolicy       $cachePolicy = null,
-        ?Pricing                   $pricing = null,
+        ?Closure                   $decorateFinalResponse = null,
     ) {
         $this->execution = $execution;
         $this->driver = $driver;
         $this->events = $eventDispatcher;
         $this->startedAt = $startedAt ?? new DateTimeImmutable();
         $this->stream = $driver->makeStreamResponsesFor($execution->request());
-        $this->cachePolicy = $cachePolicy ?? ResponseCachePolicy::None;
+        $this->cachePolicy = $execution->request()->responseCachePolicy();
         $this->cachedResponses = PartialInferenceResponseList::empty();
-        $this->pricing = $pricing;
+        $this->decorateFinalResponse = $decorateFinalResponse;
     }
 
     /**
@@ -65,11 +65,16 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding partial LLM responses.
      */
     public function responses(): Generator {
-        if ($this->shouldCache() && $this->streamConsumed) {
-            foreach ($this->cachedResponses as $partialInferenceResponse) {
-                yield $partialInferenceResponse;
+        if ($this->streamConsumed) {
+            if ($this->shouldCache()) {
+                foreach ($this->cachedResponses as $partialInferenceResponse) {
+                    yield $partialInferenceResponse;
+                }
+                return;
             }
-            return;
+            throw new LogicException(
+                'Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.'
+            );
         }
 
         foreach ($this->makePartialResponses($this->stream) as $partialInferenceResponse) {
@@ -78,10 +83,7 @@ class InferenceStream
             }
             yield $partialInferenceResponse;
         }
-
-        if ($this->shouldCache()) {
-            $this->streamConsumed = true;
-        }
+        $this->streamConsumed = true;
     }
 
     /**
@@ -172,7 +174,6 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
     private function makePartialResponses(iterable $stream): Generator {
-        $priorResponse = PartialInferenceResponse::empty();
         /** @var PartialInferenceResponse $partialResponse */
         foreach ($stream as $partialResponse) {
             if ($partialResponse === null) {
@@ -185,12 +186,9 @@ class InferenceStream
                 $this->firstChunkReceived = true;
             }
 
-            // Always enrich with accumulated content/state (tools, usage, content)
-            $partialResponse = $partialResponse->withAccumulatedContent($priorResponse);
+            // Stream translator already yields accumulated snapshots.
             $this->notifyOnPartialResponse($partialResponse);
             yield $partialResponse;
-            // we need this to accumulate some fields (content, finish reason, reasoning content)
-            $priorResponse = $partialResponse;
         }
 
         $this->finalizeStream();
@@ -233,9 +231,8 @@ class InferenceStream
         $this->execution = $this->execution->withFinalizedPartialResponse();
         $response = $this->execution->response();
 
-        // Attach pricing if available
-        if ($response !== null && $this->pricing !== null && $this->pricing->hasAnyPricing()) {
-            $response = $response->withPricing($this->pricing);
+        if ($response !== null && $this->decorateFinalResponse !== null) {
+            $response = ($this->decorateFinalResponse)($response);
             $this->execution = $this->execution->withUpdatedResponse($response);
         }
 

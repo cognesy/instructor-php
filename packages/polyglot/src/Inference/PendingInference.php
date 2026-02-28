@@ -92,12 +92,13 @@ class PendingInference
             return $this->cachedStream;
         }
 
+        $this->ensureLifecycleStartedForCurrentAttempt();
+
         $stream = new InferenceStream(
             execution: $this->execution,
             driver: $this->driver,
             eventDispatcher: $this->events,
-            cachePolicy: $this->cachePolicy(),
-            pricing: $this->pricing,
+            decorateFinalResponse: $this->attachPricing(...),
         );
         $this->cachedStream = $stream;
         return $stream;
@@ -138,7 +139,12 @@ class PendingInference
         }
         $existingResponse = $this->execution->response();
         if ($existingResponse !== null) {
-            return $existingResponse;
+            $response = $this->attachPricing($existingResponse);
+            $this->execution = match (true) {
+                $response === $existingResponse => $this->execution,
+                default => $this->execution->withUpdatedResponse($response),
+            };
+            return $response;
         }
         if ($this->shouldCache() && $this->cachedResponse !== null) {
             return $this->cachedResponse;
@@ -146,11 +152,9 @@ class PendingInference
 
         // If a stream was already created, delegate to it — do not re-execute
         if ($this->cachedStream !== null) {
-            $this->dispatchInferenceStarted();
-            $this->dispatchAttemptStarted();
-
             $response = $this->cachedStream->final()
                 ?? throw new \RuntimeException('Failed to generate final response from stream');
+            $response = $this->attachPricing($response);
 
             if ($response->hasFinishedWithFailure()) {
                 $this->execution = $this->execution->withFailedAttempt(response: $response);
@@ -228,19 +232,10 @@ class PendingInference
                 }
 
                 $error = new \RuntimeException('Inference execution failed: ' . $finishReason->value);
-                $shouldRetry = $this->attemptNumber < $maxAttempts
-                    && $policy->shouldRetryException($error);
-                $this->handleAttemptFailure($error, $response, $shouldRetry);
-                if (!$shouldRetry) {
-                    $this->dispatchInferenceCompleted(isSuccess: false);
-                    $this->terminalError = $error;
-                    throw $error;
-                }
-                $delayMs = $policy->delayMsForAttempt($this->attemptNumber);
-                if ($delayMs > 0) {
-                    usleep($delayMs * 1000);
-                }
-                continue;
+                $this->handleAttemptFailure($error, $response, false);
+                $this->dispatchInferenceCompleted(isSuccess: false);
+                $this->terminalError = $error;
+                throw $error;
             }
 
             $this->handleAttemptSuccess($response);
@@ -266,9 +261,31 @@ class PendingInference
 
     private function makeResponse(InferenceRequest $request) : InferenceResponse {
         return match($this->isStreamed()) {
-            false => $this->driver->makeResponseFor($request),
-            true => $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream'),
+            false => $this->attachPricing($this->driver->makeResponseFor($request)),
+            true => $this->attachPricing(
+                $this->stream()->final() ?? throw new \RuntimeException('Failed to generate final response from stream')
+            ),
         };
+    }
+
+    private function ensureLifecycleStartedForCurrentAttempt(): void {
+        $this->dispatchInferenceStarted();
+
+        $currentAttempt = $this->execution->currentAttempt();
+        if ($currentAttempt === null || $currentAttempt->isFinalized()) {
+            $this->dispatchAttemptStarted();
+        }
+    }
+
+    private function attachPricing(InferenceResponse $response): InferenceResponse {
+        if ($this->pricing === null || !$this->pricing->hasAnyPricing()) {
+            return $response;
+        }
+        $usagePricing = $response->usage()->pricing();
+        if ($usagePricing !== null && $usagePricing->hasAnyPricing()) {
+            return $response;
+        }
+        return $response->withPricing($this->pricing);
     }
 
     // EVENT DISPATCHING ///////////////////////////////////////////////////////

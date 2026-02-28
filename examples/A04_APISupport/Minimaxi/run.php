@@ -19,7 +19,9 @@ Mode compatibility:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 enum UserType : string {
@@ -39,7 +41,13 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)->using('minimaxi');
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::using(
+        preset: 'minimaxi',
+        httpClient: $debugHttpClient,
+    )
+);
 
 $user = $structuredOutput
     ->with(
@@ -52,7 +60,6 @@ $user = $structuredOutput
         model: 'MiniMax-Text-01', // set your own value/source
         mode: OutputMode::MdJson,
     )
-    ->withHttpDebugPreset('on')
     ->get();
 
 print("Completed response model:\n\n");

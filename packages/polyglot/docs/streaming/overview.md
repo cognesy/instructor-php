@@ -110,4 +110,33 @@ $finalResponse = $response->stream()->final();
 $completeText = $finalResponse->content();
 ```
 
+## Stream Replay Contract
 
+`stream()->responses()` is one-shot by default. Once fully consumed, iterating again raises an exception.
+
+- Use `final()` to get the terminal response safely and idempotently.
+- If you need replay, opt in with `ResponseCachePolicy::Memory`:
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Inference;
+
+$inference = (new Inference())
+    ->withMessages('Write a short story about a space explorer.')
+    ->withStreaming()
+    ->withResponseCachePolicy(ResponseCachePolicy::Memory);
+
+$stream = $inference->stream();
+foreach ($stream->responses() as $partial) {
+    // first pass
+}
+
+foreach ($stream->responses() as $partial) {
+    // replayed pass
+}
+
+$final = $stream->final();
+```
+
+Replay reuses captured stream data. It does not perform a fresh LLM call.

@@ -29,6 +29,8 @@ use RuntimeException;
  *
  * Leverages ext-http's built-in connection pooling and multiplexing capabilities
  * for efficient concurrent HTTP request processing.
+ *
+ * @deprecated Planned as optional extension in v2 scope. Prefer core pool drivers.
  */
 class ExtHttpPool implements CanHandleRequestPool
 {

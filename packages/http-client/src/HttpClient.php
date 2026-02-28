@@ -7,13 +7,21 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Collections\HttpRequestList;
 use Cognesy\Http\Collections\HttpResponseList;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Creation\HttpClientDriverFactory;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Drivers\Curl\CurlDriver;
+use Cognesy\Http\Drivers\ExtHttp\ExtHttpDriver;
+use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
+use Cognesy\Http\Drivers\Laravel\LaravelDriver;
+use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
+use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
 use Cognesy\Http\Middleware\MiddlewareStack;
-use Cognesy\Http\Middleware\ServerSideEvents\StreamSSEsMiddleware;
+use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -27,6 +35,8 @@ class HttpClient
     private readonly CanHandleHttpRequest $driver;
     private readonly MiddlewareStack $middlewareStack;
     private readonly HttpClientDriverFactory $driverFactory;
+    private readonly HttpClientConfig $config;
+    private readonly ?CanHandleRequestPool $poolHandler;
 
     public static function using(string $preset) : self {
         return (new HttpClientBuilder())->withPreset($preset)->create();
@@ -40,10 +50,14 @@ class HttpClient
         ?CanHandleHttpRequest $driver = null,
         ?MiddlewareStack $middlewareStack = null,
         null|EventDispatcherInterface|CanHandleEvents $events = null,
+        ?HttpClientConfig $config = null,
+        ?CanHandleRequestPool $poolHandler = null,
     ) {
         $this->events = EventBusResolver::using($events);
         $this->driverFactory = new HttpClientDriverFactory($this->events);
-        $this->driver = $driver ?? $this->makeDefaultDriver();
+        $this->config = $this->resolveConfig($driver, $config);
+        $this->driver = $driver ?? $this->makeDefaultDriver($this->config);
+        $this->poolHandler = $poolHandler;
         $this->middlewareStack = $middlewareStack ?? new MiddlewareStack(
             events: $this->events,
             middlewares: [],
@@ -55,6 +69,8 @@ class HttpClient
             driver: $this->driver,
             middlewareStack: $middlewareStack,
             events: $this->events,
+            config: $this->config,
+            poolHandler: $this->poolHandler,
         );
     }
 
@@ -64,6 +80,8 @@ class HttpClient
             driver: $this->driver,
             middlewareStack: $newStack,
             events: $this->events,
+            config: $this->config,
+            poolHandler: $this->poolHandler,
         );
     }
 
@@ -73,6 +91,18 @@ class HttpClient
             driver: $this->driver,
             middlewareStack: $newStack,
             events: $this->events,
+            config: $this->config,
+            poolHandler: $this->poolHandler,
+        );
+    }
+
+    public function withPoolHandler(CanHandleRequestPool $poolHandler): self {
+        return new self(
+            driver: $this->driver,
+            middlewareStack: $this->middlewareStack,
+            events: $this->events,
+            config: $this->config,
+            poolHandler: $poolHandler,
         );
     }
 
@@ -94,7 +124,7 @@ class HttpClient
      * @return HttpResponseList Collection of Result objects containing HttpResponse or exceptions
      */
     public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
-        $poolHandler = $this->driverFactory->makePoolHandler($this->getConfigFromDriver());
+        $poolHandler = $this->resolvePoolHandler();
         return $poolHandler->pool($requests, $maxConcurrent);
     }
 
@@ -105,32 +135,84 @@ class HttpClient
      * @return PendingHttpPool Deferred pool execution object
      */
     public function withPool(HttpRequestList $requests): PendingHttpPool {
-        $poolHandler = $this->driverFactory->makePoolHandler($this->getConfigFromDriver());
+        $poolHandler = $this->resolvePoolHandler();
         return new PendingHttpPool($requests, $poolHandler);
     }
 
+    /**
+     * @deprecated Use withMiddleware((new EventSourceMiddleware())->withParser(...)) for explicit SSE behavior.
+     */
     public function withSSEStream() : self {
+        $sse = (new EventSourceMiddleware(true))
+            ->withParser(static fn(string $payload) => $payload);
+
         return new self(
             driver: $this->driver,
             middlewareStack: $this->middlewareStack->append(
-                new StreamSSEsMiddleware(events: $this->events)
+                $sse
             ),
             events: $this->events,
+            config: $this->config,
+            poolHandler: $this->poolHandler,
         );
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
-    private function makeDefaultDriver(): CanHandleHttpRequest {
-        return $this->driverFactory->makeDriver();
+    private function makeDefaultDriver(HttpClientConfig $config): CanHandleHttpRequest {
+        return $this->driverFactory->makeDriver(config: $config);
     }
 
-    /**
-     * Extracts configuration from the current driver to pass to pool handler.
-     */
-    private function getConfigFromDriver(): null {
-        // For now, we'll let the factory create with default config
-        // In future, we might want to extract actual config from driver
-        return null;
+    private function resolveConfig(?CanHandleHttpRequest $driver, ?HttpClientConfig $config): HttpClientConfig {
+        if ($config !== null) {
+            return $config;
+        }
+
+        if ($driver === null) {
+            return new HttpClientConfig(driver: 'curl');
+        }
+
+        $driverName = $this->resolveDriverName($driver);
+        return match (true) {
+            $driverName !== null => new HttpClientConfig(driver: $driverName),
+            default => new HttpClientConfig(),
+        };
+    }
+
+    private function resolvePoolDriverName(): string {
+        $driverName = $this->resolveDriverName($this->driver);
+        return match (true) {
+            $driverName !== null => $driverName,
+            default => throw new InvalidArgumentException(sprintf(
+                'Driver "%s" does not support request pooling via HttpClient::pool(). Use a built-in driver preset for pooling.',
+                get_debug_type($this->driver),
+            )),
+        };
+    }
+
+    private function resolvePoolHandler(): CanHandleRequestPool {
+        $configDriverName = $this->config->driver;
+        return match (true) {
+            $this->poolHandler !== null => $this->poolHandler,
+            $this->driverFactory->hasRegisteredPoolHandler($configDriverName) => $this->driverFactory->makePoolHandler(
+                config: $this->config,
+                driver: $configDriverName,
+            ),
+            default => $this->driverFactory->makePoolHandler(
+                config: $this->config,
+                driver: $this->resolvePoolDriverName(),
+            ),
+        };
+    }
+
+    private function resolveDriverName(CanHandleHttpRequest $driver): ?string {
+        return match (true) {
+            $driver instanceof CurlDriver => 'curl',
+            $driver instanceof ExtHttpDriver => 'exthttp',
+            $driver instanceof GuzzleDriver => 'guzzle',
+            $driver instanceof SymfonyDriver => 'symfony',
+            $driver instanceof LaravelDriver => 'laravel',
+            default => null,
+        };
     }
 }

@@ -6,8 +6,5 @@ order:
   - 3-making-requests
   - 4-handling-responses
   - 5-streaming-responses
-  - 7-changing-client
-  - 8-changing-client-config
-  - 9-1-custom-clients
+  - 6-pooling
   - 10-middleware
-  - 11-processing-with-middleware

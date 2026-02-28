@@ -25,7 +25,9 @@ Reasons OutputMode::Tools is not recommended:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 enum UserType : string {
@@ -45,9 +47,13 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)
-    ->using('cohere')
-    ->withHttpDebugPreset('on');
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::using(
+        preset: 'cohere',
+        httpClient: $debugHttpClient,
+    )
+);
 
 $user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",

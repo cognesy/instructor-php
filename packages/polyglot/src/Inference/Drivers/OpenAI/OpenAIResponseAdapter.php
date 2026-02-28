@@ -6,6 +6,7 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
@@ -31,20 +32,24 @@ class OpenAIResponseAdapter implements CanTranslateInferenceResponse
 
     #[\Override]
     public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $previous = PartialInferenceResponse::empty();
         foreach ($eventBodies as $eventBody) {
-            $partial = $this->fromStreamResponse($eventBody, $responseData);
-            if ($partial !== null) {
-                yield $partial;
+            $delta = $this->fromStreamResponse($eventBody, $responseData);
+            if ($delta === null) {
+                continue;
             }
+            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
+            $previous = $partial;
+            yield $partial;
         }
     }
 
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
         $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;
         }
-        return new PartialInferenceResponse(
+        return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),

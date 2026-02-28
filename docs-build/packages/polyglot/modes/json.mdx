@@ -24,7 +24,7 @@ echo "Top cities:\n";
 foreach ($response['cities'] as $city) {
     echo "- {$city['name']}: {$city['population']} million\n";
 }
-// @doctest id="bd16"
+// @doctest id="1ee6"
 ```
 
 ### Structuring JSON Responses with Instructions
@@ -64,7 +64,7 @@ echo "Top cities by population:\n";
 foreach ($response['cities'] as $index => $city) {
     echo ($index + 1) . ". {$city['name']}, {$city['country']}: {$city['population']} million\n";
 }
-// @doctest id="e8c5"
+// @doctest id="b0d9"
 ```
 
 ### Provider-Specific JSON Options
@@ -77,7 +77,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 // OpenAI example
-$inference = new Inference()->using('openai');
+$inference = Inference::using('openai');
 
 $response = $inference->with(
     messages: 'List the top 3 most populous cities in the world.',
@@ -89,7 +89,7 @@ $response = $inference->with(
 )->asJsonData();
 
 // The response will be a JSON object
-// @doctest id="da46"
+// @doctest id="58a0"
 ```
 
 ### When to Use JSON Mode

@@ -119,8 +119,7 @@ it('includes validation errors in retry messages for the next LLM attempt', func
     ];
     $driver = new RecordingInferenceRequestDriver($responses);
 
-    $result = (new StructuredOutput())
-        ->withDriver($driver)
+    $result = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('Extract details.')
         ->withResponseClass(ValidationRetryUser::class)
         ->withOutputMode(OutputMode::Json)

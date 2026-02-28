@@ -43,7 +43,11 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
         ?EventDispatcherInterface $events = null,
     ) {
         $this->extractors = $extractors ?? self::defaultExtractors();
-        $this->streamingExtractors = $streamingExtractors;
+        $this->streamingExtractors = match (true) {
+            $streamingExtractors !== null => $streamingExtractors,
+            $extractors !== null => $extractors,
+            default => null,
+        };
         $this->events = $events;
     }
 
@@ -169,11 +173,18 @@ class ResponseExtractor implements CanExtractResponse, CanProvideContentBuffer
      */
     private function resolveExtractor(CanExtractResponse|string $extractor): CanExtractResponse
     {
-        if (is_string($extractor)) {
-            return new $extractor();
+        $resolved = match (true) {
+            is_string($extractor) => new $extractor(),
+            default => $extractor,
+        };
+        if ($this->events === null || !method_exists($resolved, 'withEvents')) {
+            return $resolved;
         }
-
-        return $extractor;
+        $withEvents = $resolved->withEvents($this->events);
+        return match (true) {
+            $withEvents instanceof CanExtractResponse => $withEvents,
+            default => $resolved,
+        };
     }
 
     /**

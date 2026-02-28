@@ -20,6 +20,7 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 
 // we will use existing, bundled driver as an example, but you can provide any class that implements
@@ -45,8 +46,7 @@ $config = new LLMConfig(
     driver          : 'custom-driver',
 );
 
-$answer = (new Inference)
-    ->withLLMConfig($config)
+$answer = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->get();

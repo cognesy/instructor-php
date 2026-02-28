@@ -69,3 +69,24 @@ it('does not map tool call deltas into contentDelta', function () {
     expect($partial->contentDelta)->toBe('');
     expect($partial->toolArgs)->toContain('Hello');
 });
+
+it('maps reasoning tokens from completion_tokens_details', function () {
+    $adapter = new OpenAIResponseAdapter(new OpenAIUsageFormat());
+    $response = MockHttpResponseFactory::json([
+        'choices' => [[
+            'message' => ['content' => 'Done'],
+            'finish_reason' => 'stop',
+        ]],
+        'usage' => [
+            'prompt_tokens' => 10,
+            'completion_tokens' => 8,
+            'completion_tokens_details' => [
+                'reasoning_tokens' => 5,
+            ],
+        ],
+    ]);
+
+    $res = $adapter->fromResponse($response);
+
+    expect($res->usage()->reasoningTokens)->toBe(5);
+});

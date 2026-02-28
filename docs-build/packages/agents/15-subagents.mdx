@@ -19,7 +19,7 @@ Subagents solve these by providing:
 
 - **Context isolation** — each subagent starts with a clean conversation
 - **Specialized tools** — each subagent sees only the tools it needs
-- **Budget propagation** — parent budget flows down, preventing runaway children
+- **Per-task budgets** — each subagent definition declares its own execution limits
 - **Result aggregation** — the parent synthesizes subagent outputs into a final answer
 
 ## Quick Start
@@ -55,7 +55,7 @@ $state = AgentState::empty()->withUserMessage(
     'Review src/AgentLoop.php and src/AgentState.php, then summarize the findings.'
 );
 $result = $agent->execute($state);
-// @doctest id="9933"
+// @doctest id="39a9"
 ```
 
 The LLM sees a `spawn_subagent` tool with the available subagent names and descriptions. It decides which subagent to call and formulates the prompt for each.
@@ -77,12 +77,12 @@ The tool schema includes an enum of available subagent names and their descripti
 Parent agent step:
   1. LLM decides to call spawn_subagent(subagent: "reviewer", prompt: "Review AgentLoop.php")
   2. SpawnSubagentTool looks up "reviewer" in the registry
-  3. Creates a child AgentLoop with filtered tools and budget
+  3. Creates a child AgentLoop with filtered tools and declared budget constraints
   4. Creates child AgentState with the subagent's system prompt + user prompt
   5. Runs the child loop to completion
   6. Returns the child's final AgentState to the parent
   7. Parent LLM receives the subagent result and continues
-// @doctest id="4d1c"
+// @doctest id="09c6"
 ```
 
 The parent never sees the subagent's internal conversation — only its final output. This is the key isolation guarantee.
@@ -101,7 +101,7 @@ Each subagent is described by an `AgentDefinition`. You can register them progra
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Collections\NameList;
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 
 $registry = new AgentDefinitionRegistry();
 
@@ -111,17 +111,17 @@ $registry->registerMany(
         description: 'Searches and analyzes information',
         systemPrompt: 'You are a research assistant. Be thorough and cite sources.',
         tools: new NameList(['read_file', 'search_files']),
-        budget: new AgentBudget(maxSteps: 8, maxTokens: 4000),
+        budget: new ExecutionBudget(maxSteps: 8, maxTokens: 4000),
     ),
     new AgentDefinition(
         name: 'writer',
         description: 'Writes and edits content',
         systemPrompt: 'You are a technical writer. Write clear, concise documentation.',
         tools: new NameList(['read_file', 'write_file']),
-        budget: new AgentBudget(maxSteps: 10),
+        budget: new ExecutionBudget(maxSteps: 10),
     ),
 );
-// @doctest id="3069"
+// @doctest id="ad79"
 ```
 
 ### File-Based Definitions
@@ -131,7 +131,7 @@ Load from markdown, YAML, or JSON files:
 ```php
 $registry = new AgentDefinitionRegistry();
 $registry->loadFromDirectory('/agents/', recursive: true);
-// @doctest id="a009"
+// @doctest id="1f95"
 ```
 
 A markdown definition file:
@@ -153,7 +153,7 @@ You review code. Focus on:
 - Suggestions for improvement
 
 Be concise. Report only significant findings.
-// @doctest id="04d7"
+// @doctest id="0158"
 ```
 
 See [Agent Templates](14-agent-templates.md) for full details on definition formats and loading.
@@ -173,7 +173,7 @@ new AgentDefinition(
     systemPrompt: 'You help with various tasks.',
     // tools: null → inherits all parent tools
 );
-// @doctest id="afdb"
+// @doctest id="9d96"
 ```
 
 ### Allow-List
@@ -187,7 +187,7 @@ new AgentDefinition(
     systemPrompt: 'You analyze files. You cannot modify anything.',
     tools: new NameList(['read_file', 'list_dir', 'search_files']),
 );
-// @doctest id="fb50"
+// @doctest id="bf58"
 ```
 
 Only tools matching these names (from the parent's tool set) are passed to the subagent.
@@ -203,7 +203,7 @@ new AgentDefinition(
     systemPrompt: 'You write code. Never use bash or delete files.',
     toolsDeny: new NameList(['bash', 'edit_file']),
 );
-// @doctest id="5c42"
+// @doctest id="e97b"
 ```
 
 ### Combined Filtering
@@ -219,67 +219,46 @@ new AgentDefinition(
     toolsDeny: new NameList(['bash']),
     // Result: only read_file and write_file
 );
-// @doctest id="4dd4"
+// @doctest id="abb5"
 ```
 
-## Budget Propagation
+## Execution Budgets
 
-Budgets flow from parent to child, preventing subagents from consuming more resources than the parent has remaining.
-
-### How It Works
-
-1. Parent has a budget (e.g., 100 steps, 10000 tokens)
-2. Parent uses some resources before spawning a subagent
-3. Child's effective budget = min(definition budget, parent's remaining budget)
-4. Child runs within its effective budget
-
-```php
-// Parent budget: 100 steps
-// Parent has used 40 steps before spawning
-
-// Definition says: maxSteps: 80
-// Parent remaining: 60 steps
-// Child effective budget: min(80, 60) = 60 steps
-// @doctest id="38d2"
-```
-
-### Multi-Level Propagation
-
-Budget constraints cascade through nesting levels:
-
-```
-Root (100 steps)
-  → Level 1 gets min(definition, 100) = 80 steps
-    → Level 1 uses 30 steps, 50 remaining
-      → Level 2 gets min(definition, 50) = 50 steps
-// @doctest id="2d90"
-```
-
-This ensures the total resource usage across the entire agent tree never exceeds the root budget.
-
-### Setting Budgets
-
-On the definition:
+Each subagent definition can declare its own `ExecutionBudget` — independent per-execution resource limits applied via `UseGuards` when the subagent loop is built.
 
 ```php
 new AgentDefinition(
     name: 'quick_task',
     description: 'Fast, focused task',
     systemPrompt: 'Be concise.',
-    budget: new AgentBudget(maxSteps: 5, maxTokens: 2000, maxSeconds: 15.0),
+    budget: new ExecutionBudget(maxSteps: 5, maxTokens: 2000, maxSeconds: 15.0),
 );
-// @doctest id="dd62"
+// @doctest id="bcb9"
 ```
 
-On the parent via guards:
+Or in a definition file:
+
+```yaml
+name: quick_task
+description: Fast, focused task
+budget:
+  maxSteps: 5
+  maxTokens: 2000
+  maxSeconds: 15.0
+# @doctest id="23d0"
+```
+
+The parent's own execution limits are set separately via `UseGuards`:
 
 ```php
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->withCapability(new UseGuards(maxSteps: 50, maxTokens: 32768))
     ->build();
-// @doctest id="3432"
+// @doctest id="78dd"
 ```
+
+Recursion depth — not budget — is the primary guard against runaway subagent chains. See [Depth Control](#depth-control) below.
 
 ## Depth Control
 
@@ -301,7 +280,7 @@ $agent = AgentBuilder::base()
 $agent = AgentBuilder::base()
     ->withCapability(UseSubagents::withDepth(2, provider: $registry))
     ->build();
-// @doctest id="5348"
+// @doctest id="37ea"
 ```
 
 When the depth limit is reached, `SpawnSubagentTool` throws `SubagentDepthExceededException`, which the parent sees as a tool error.
@@ -324,7 +303,7 @@ new AgentDefinition(
     systemPrompt: 'Provide thorough, detailed analysis.',
     llmConfig: 'anthropic',            // use a different provider
 );
-// @doctest id="0d2e"
+// @doctest id="374c"
 ```
 
 When `llmConfig` is omitted, the subagent inherits the parent's LLM provider.
@@ -351,7 +330,7 @@ $agent->onEvent(SubagentSpawning::class, function (SubagentSpawning $e) {
 $agent->onEvent(SubagentCompleted::class, function (SubagentCompleted $e) {
     echo "'{$e->subagentName}' completed in {$e->steps} steps\n";
 });
-// @doctest id="53f8"
+// @doctest id="2df5"
 ```
 
 Use `AgentEventConsoleObserver` to see parent/child agent IDs in console output:
@@ -361,7 +340,7 @@ use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 
 $logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
-// @doctest id="1cda"
+// @doctest id="f342"
 ```
 
 ## Error Handling
@@ -386,7 +365,7 @@ $tool = ResearchSubagentTool::inDirectory('/my/project');
 $agent = AgentBuilder::base()
     ->withTool($tool)
     ->build();
-// @doctest id="655f"
+// @doctest id="5573"
 ```
 
 The LLM calls it with a `task` and optional `files` list. The tool spawns a subagent with read-only file access, runs the research, and returns the findings.
@@ -419,7 +398,7 @@ $agent = AgentBuilder::base()
 
 $result = $agent->execute(AgentState::empty());
 expect($result->finalResponse()->toString())->toContain('code looks good');
-// @doctest id="d18d"
+// @doctest id="ce8e"
 ```
 
 ## Typical Patterns
@@ -435,7 +414,7 @@ Parent: "Review these 5 files"
   → spawn reviewer for file3 → "1 critical bug"
   → ...
 Parent: "Summary: file1 has 2 issues, file3 has a critical bug..."
-// @doctest id="da14"
+// @doctest id="d98a"
 ```
 
 ### Specialized Roles
@@ -447,7 +426,7 @@ Parent: "Analyze this codebase and write docs"
   → spawn researcher → "The module handles X, Y, Z..."
   → spawn writer → "# Module Documentation\n..."
 Parent: combines research + docs into final output
-// @doctest id="4940"
+// @doctest id="ba27"
 ```
 
 ### Hierarchical Delegation
@@ -459,7 +438,7 @@ Orchestrator (depth 0)
   → Analyst (depth 1)
     → File reader (depth 2)
   → Writer (depth 1)
-// @doctest id="c3e8"
+// @doctest id="32d7"
 ```
 
 Control the maximum depth via `SubagentPolicy` to prevent unbounded recursion.

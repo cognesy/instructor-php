@@ -28,12 +28,12 @@ class MiddlewareStack
      * @return self
      */
     public function append(HttpMiddleware $middleware, ?string $name = null): self {
-        if ($name !== null) {
-            $this->stack[$name] = $middleware;
-        } else {
-            $this->stack[] = $middleware;
-        }
-        return $this;
+        $nextStack = $this->stack;
+        match (true) {
+            $name !== null => $nextStack[$name] = $middleware,
+            default => $nextStack[] = $middleware,
+        };
+        return new self($this->events, $nextStack);
     }
 
     /**
@@ -43,14 +43,14 @@ class MiddlewareStack
      * @return self
      */
     public function appendMany(array $middlewares): self {
+        $nextStack = $this->stack;
         foreach ($middlewares as $key => $middleware) {
-            if (is_string($key)) {
-                $this->append($middleware, $key);
-            } else {
-                $this->append($middleware);
-            }
+            match (true) {
+                is_string($key) => $nextStack[$key] = $middleware,
+                default => $nextStack[] = $middleware,
+            };
         }
-        return $this;
+        return new self($this->events, $nextStack);
     }
 
     /**
@@ -61,12 +61,11 @@ class MiddlewareStack
      * @return self
      */
     public function prepend(HttpMiddleware $middleware, ?string $name = null): self {
-        if ($name !== null) {
-            $this->stack = [$name => $middleware] + $this->stack; // Preserve associative keys
-        } else {
-            array_unshift($this->stack, $middleware); // Add to start for unnamed
-        }
-        return $this;
+        $nextStack = match (true) {
+            $name !== null => [$name => $middleware] + $this->stack,
+            default => [$middleware, ...$this->stack],
+        };
+        return new self($this->events, $nextStack);
     }
 
     /**
@@ -76,14 +75,14 @@ class MiddlewareStack
      * @return self
      */
     public function prependMany(array $middlewares): self {
-        foreach (array_reverse($middlewares) as $key => $middleware) {
-            if (is_string($key)) {
-                $this->prepend($middleware, $key);
-            } else {
-                $this->prepend($middleware);
-            }
+        $nextStack = $this->stack;
+        foreach (array_reverse($middlewares, true) as $key => $middleware) {
+            $nextStack = match (true) {
+                is_string($key) => [$key => $middleware] + $nextStack,
+                default => [$middleware, ...$nextStack],
+            };
         }
-        return $this;
+        return new self($this->events, $nextStack);
     }
 
     /**
@@ -93,10 +92,11 @@ class MiddlewareStack
      * @return self
      */
     public function remove(string $name): self {
-        if (isset($this->stack[$name])) {
-            unset($this->stack[$name]);
+        $nextStack = $this->stack;
+        if (isset($nextStack[$name])) {
+            unset($nextStack[$name]);
         }
-        return $this;
+        return new self($this->events, $nextStack);
     }
 
     /**
@@ -107,8 +107,9 @@ class MiddlewareStack
      * @return self
      */
     public function replace(string $name, HttpMiddleware $middleware): self {
-        $this->stack[$name] = $middleware;
-        return $this;
+        $nextStack = $this->stack;
+        $nextStack[$name] = $middleware;
+        return new self($this->events, $nextStack);
     }
 
     /**
@@ -117,8 +118,7 @@ class MiddlewareStack
      * @return self
      */
     public function clear(): self {
-        $this->stack = [];
-        return $this;
+        return new self($this->events);
     }
 
     /**
@@ -157,8 +157,8 @@ class MiddlewareStack
      * @return self
      */
     public function filter(callable $callback): self {
-        $this->stack = array_filter($this->stack, $callback, ARRAY_FILTER_USE_BOTH);
-        return $this;
+        $nextStack = array_filter($this->stack, $callback, ARRAY_FILTER_USE_BOTH);
+        return new self($this->events, $nextStack);
     }
 
     /**

@@ -16,11 +16,16 @@ Polyglot provides a simple way to enable HTTP debug mode:
 
 ```php
 <?php
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-// Enable HTTP debug middleware when creating the inference object
-$inference = (new Inference())
-    ->withHttpDebugPreset('on');
+// Enable HTTP debug middleware in the HTTP client used by runtime
+$http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $http,
+));
 
 // Make a request - debug output will show the request and response details
 $response = $inference->with(messages: 'What is the capital of France?')->get();
@@ -32,18 +37,26 @@ $response = $inference->with(messages: 'What is the capital of France?')->get();
 ### HTTP Debug Events
 
 When HTTP debug mode is enabled, the HTTP middleware stack dispatches debug
-events that you can listen to with `onEvent()` or `wiretap()`.
+events through the shared event bus.
 
 ```php
 <?php
 use Cognesy\Http\Events\DebugRequestURLUsed;
 use Cognesy\Http\Events\DebugResponseBodyReceived;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-$inference = (new Inference())
-    ->withHttpDebugPreset('url-only')
-    ->onEvent(DebugRequestURLUsed::class, fn(DebugRequestURLUsed $e) => dump($e->toArray()))
-    ->onEvent(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
+$events = new EventDispatcher();
+$events->addListener(DebugRequestURLUsed::class, fn(DebugRequestURLUsed $e) => dump($e->toArray()));
+$events->addListener(DebugResponseBodyReceived::class, fn(DebugResponseBodyReceived $e) => dump($e->toArray()));
+$http = (new HttpClientBuilder(events: $events))->withHttpDebugPreset('url-only')->create();
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    events: $events,
+    httpClient: $http,
+));
 
 $response = $inference->with(messages: 'What is the capital of France?')->get();
 ```
@@ -61,6 +74,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create an event dispatcher
 $events = new EventDispatcher();
@@ -76,7 +90,10 @@ $events->listen(InferenceResponseCreated::class, function (InferenceResponseCrea
 });
 
 // Create an inference object with the event dispatcher
-$inference = new Inference(events: $events);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    events: $events,
+));
 
 // Make a request
 $response = $inference->with(
@@ -99,6 +116,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Events\InferenceRequested;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a function to log to file
 function logToFile(string $message, string $filename = 'llm_debug.log'): void {
@@ -126,7 +144,10 @@ $events->listen(InferenceResponseCreated::class, function (InferenceResponseCrea
 });
 
 // Create an inference object with the custom event dispatcher
-$inference = new Inference(events: $events);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    events: $events,
+));
 
 // Make a request
 $response = $inference->with(

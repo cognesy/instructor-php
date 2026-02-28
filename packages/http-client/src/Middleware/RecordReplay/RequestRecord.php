@@ -17,7 +17,7 @@ class RequestRecord
     }
 
     public static function fromInteraction(HttpRequest $request, HttpResponse $response): self {
-        if ($request->isStreamed()) {
+        if ($response->isStreamed()) {
             return StreamedRequestRecord::fromStreamedInteraction($request, $response);
         }
 
@@ -79,7 +79,16 @@ class RequestRecord
     }
 
     public function toResponse(bool $isStreaming = false): HttpResponse {
-        // Non-streaming records should always return non-streaming responses
+        if ($isStreaming) {
+            $body = $this->responseData['body'] ?? '';
+            $chunks = $body === '' ? [] : [$body];
+            return MockHttpResponseFactory::streaming(
+                $this->responseData['statusCode'] ?? 200,
+                $this->responseData['headers'] ?? [],
+                $chunks,
+            );
+        }
+
         return MockHttpResponseFactory::success(
             $this->responseData['statusCode'] ?? 200,
             $this->responseData['headers'] ?? [],
@@ -92,7 +101,7 @@ class RequestRecord
     }
 
     public static function createAppropriate(HttpRequest $request, HttpResponse $response): RequestRecord {
-        if ($request->isStreamed()) {
+        if ($response->isStreamed()) {
             return StreamedRequestRecord::fromStreamedInteraction($request, $response);
         }
 

@@ -41,17 +41,18 @@ $structuredOutput->with(
     responseModel: Scalar::integer(),
 )->get();
 // check your console for the details on the Instructor execution
-// @doctest id="4dc8"
+// @doctest id="fadd"
 ```
 
 
-## Convenience methods for get streamed model updates
+## Stream and event options for model updates
 
-`StructuredOutput` class provides convenience methods allowing client code to receive
-model updates  when streaming is enabled:
+`StructuredOutput` exposes streamed model updates through `StructuredOutputStream`:
 
- * `onPartialUpdate(callable $callback)` - to handle partial model updates of the response
- * `onSequenceUpdate(callable $callback)` - to handle partial sequence updates of the response
+ * `stream()->partials()` - partial model snapshots
+ * `stream()->sequence()` - completed sequence-item snapshots
 
-In both cases your callback will receive updated model, so you don't have to
-extract it from the event.
+You can also subscribe to event bus notifications:
+
+ * `onEvent(PartialResponseGenerated::class, callable $callback)`
+ * `onEvent(SequenceUpdated::class, callable $callback)`

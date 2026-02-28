@@ -1,12 +1,12 @@
 ---
 title: 'HTTP Client – Pool Basics'
 docname: 'http_client_pool_basics'
+id: 'bb83'
 ---
-
 ## Overview
 
-Demonstrates executing multiple HTTP requests in parallel using the pool feature. Shows
-how to handle both successful and failed responses from the pool results.
+Deterministic pool example using an in-memory pool handler. In production, call
+`$client->pool($requests, $maxConcurrent)` with a built-in HTTP driver.
 
 ## Example
 
@@ -14,53 +14,44 @@ how to handle both successful and failed responses from the pool results.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Collections\HttpResponseList;
+use Cognesy\Http\Contracts\CanHandleRequestPool;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Data\HttpResponse;
+use Cognesy\Http\PendingHttpPool;
+use Cognesy\Utils\Result\Result;
 
-// Pool basics: execute multiple requests in parallel using the configured driver.
-// Note: This example uses real HTTP clients under the hood (default preset),
-// so it requires network access to actually run.
+final class InMemoryPool implements CanHandleRequestPool
+{
+    public function pool(HttpRequestList $requests, ?int $maxConcurrent = null): HttpResponseList {
+        $results = [];
 
-$client = HttpClient::default();
+        foreach ($requests as $request) {
+            $results[] = Result::success(HttpResponse::sync(
+                statusCode: 200,
+                headers: ['Content-Type' => 'application/json'],
+                body: json_encode(['url' => $request->url(), 'ok' => true]),
+            ));
+        }
+
+        return HttpResponseList::fromArray($results);
+    }
+}
 
 $requests = HttpRequestList::of(
-    new HttpRequest(
-        url: 'https://example.com',
-        method: 'GET',
-        headers: [],
-        body: '',
-        options: [],
-    ),
-    new HttpRequest(
-        url: 'https://www.iana.org/domains/reserved',
-        method: 'GET',
-        headers: [],
-        body: '',
-        options: [],
-    ),
-    new HttpRequest(
-        url: 'https://example.com',
-        method: 'GET',
-        headers: [],
-        body: '',
-        options: [],
-    ),
+    new HttpRequest('https://api.example.local/a', 'GET', [], '', []),
+    new HttpRequest('https://api.example.local/b', 'GET', [], '', []),
+    new HttpRequest('https://api.example.local/c', 'GET', [], '', []),
 );
 
-// Run pool with a concurrency limit (e.g., 2)
-$results = $client->pool($requests, maxConcurrent: 2);
+$pool = new PendingHttpPool($requests, new InMemoryPool());
+$results = $pool->all(maxConcurrent: 2);
 
-echo "Total: " . count($results) . "\n";
-echo "Successes: " . $results->successCount() . ", Failures: " . $results->failureCount() . "\n";
+echo "success={$results->successCount()} failures={$results->failureCount()}\n";
 
-foreach ($results as $i => $result) {
-    if ($result->isSuccess()) {
-        $resp = $result->unwrap();
-        echo sprintf("[%d] %d bytes, status %d\n", $i, strlen($resp->body()), $resp->statusCode());
-    } else {
-        echo sprintf("[%d] ERROR: %s\n", $i, (string)$result->error());
-    }
+foreach ($results->successful() as $response) {
+    echo $response->body() . "\n";
 }
 ?>
 ```

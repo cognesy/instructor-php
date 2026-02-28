@@ -111,7 +111,7 @@ describe('Usage::calculateCost', function () {
         );
 
         // (1M/1M) * 3.0 + (500K/1M) * 15.0 = 3.0 + 7.5 = 10.5
-        $cost = $usage->calculateCost($pricing);
+        $cost = $usage->cost($pricing);
 
         expect($cost)->toBe(10.5);
     });
@@ -135,7 +135,7 @@ describe('Usage::calculateCost', function () {
         // cacheRead: 2 * 0.3 = 0.6
         // cacheWrite: 0.5 * 3.75 = 1.875
         // total = 12.975
-        $cost = $usage->calculateCost($pricing);
+        $cost = $usage->cost($pricing);
 
         expect($cost)->toBeCloseTo(12.975, 6);
     });
@@ -156,7 +156,7 @@ describe('Usage::calculateCost', function () {
         // output: 0.2 * 15.0 = 3.0
         // reasoning: 0.8 * 60.0 = 48.0
         // total = 54.0
-        $cost = $usage->calculateCost($pricing);
+        $cost = $usage->cost($pricing);
 
         expect($cost)->toBe(54.0);
     });
@@ -167,7 +167,7 @@ describe('Usage::calculateCost', function () {
             outputTokens: 500,
         );
 
-        expect(fn() => $usage->calculateCost())
+        expect(fn() => $usage->cost())
             ->toThrow(\RuntimeException::class, 'Cannot calculate cost: no pricing information available');
     });
 
@@ -178,7 +178,7 @@ describe('Usage::calculateCost', function () {
             outputPerMToken: 15.0,
         );
 
-        $cost = $usage->calculateCost($pricing);
+        $cost = $usage->cost($pricing);
 
         expect($cost)->toBe(0.0);
     });
@@ -194,7 +194,7 @@ describe('Usage::calculateCost', function () {
         ))->withPricing($pricing);
 
         // No argument - uses stored pricing
-        $cost = $usage->calculateCost();
+        $cost = $usage->cost();
 
         expect($cost)->toBe(10.5);
     });
@@ -213,7 +213,7 @@ describe('Usage::calculateCost', function () {
         // input: 0.015 * 3.0 = 0.045
         // output: 0.0025 * 15.0 = 0.0375
         // total = 0.0825
-        $cost = $usage->calculateCost($pricing);
+        $cost = $usage->cost($pricing);
 
         expect($cost)->toBeCloseTo(0.0825, 6);
     });
@@ -227,6 +227,6 @@ describe('Usage::calculateCost', function () {
         $accumulated = $usage1->withAccumulated($usage2);
 
         expect($accumulated->pricing())->toBe($pricing)
-            ->and($accumulated->calculateCost())->toBe(3.0); // 1M * 3.0
+            ->and($accumulated->cost())->toBe(3.0); // 1M * 3.0
     });
 });

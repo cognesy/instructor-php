@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 
@@ -33,21 +34,25 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
 
     #[\Override]
     public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
+        $previous = PartialInferenceResponse::empty();
         foreach ($eventBodies as $eventBody) {
-            $partial = $this->fromStreamResponse($eventBody, $responseData);
-            if ($partial !== null) {
-                yield $partial;
+            $delta = $this->fromStreamResponse($eventBody, $responseData);
+            if ($delta === null) {
+                continue;
             }
+            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
+            $previous = $partial;
+            yield $partial;
         }
     }
 
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
         //$eventBody = $this->normalizeUnknownValues($responseBody);
         $data = json_decode($eventBody, true);
         if (empty($data)) {
             return null;
         }
-        return new PartialInferenceResponse(
+        return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $data['delta']['thinking_delta'] ?? '',
             toolId: $data['content_block']['id'] ?? '',
@@ -65,7 +70,18 @@ class AnthropicResponseAdapter implements CanTranslateInferenceResponse
         if (!str_starts_with($data, 'data:')) {
             return '';
         }
-        return trim(substr($data, 5));
+        $data = trim(substr($data, 5));
+        if ($data === '') {
+            return '';
+        }
+        if ($data === '[DONE]') {
+            return false;
+        }
+        $payload = json_decode($data, true);
+        if (is_array($payload) && ($payload['type'] ?? '') === 'message_stop') {
+            return false;
+        }
+        return $data;
     }
 
     // INTERNAL //////////////////////////////////////////////

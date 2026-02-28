@@ -62,8 +62,7 @@ echo "Extracting company data from:\n\n";
 foreach($companyGen as $companyDiv) {
     /** @var string $companyDiv */
     echo " > " . substr($companyDiv, 0, 32) . "...\n\n";
-    $company = (new StructuredOutput)
-        ->using('openai')
+    $company = StructuredOutput::using('openai')
         ->with(
             messages: $companyDiv,
             responseModel: Company::class,

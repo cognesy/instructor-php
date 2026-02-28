@@ -38,7 +38,7 @@ function printCostBreakdown(Usage $usage, Pricing $pricing): void {
     echo "  Input:      \${$pricing->inputPerMToken}\n";
     echo "  Output:     \${$pricing->outputPerMToken}\n";
     echo "  Cache read: \${$pricing->cacheReadPerMToken}\n";
-    echo "\nTotal cost: \$" . number_format($usage->calculateCost($pricing), 6) . "\n";
+    echo "\nTotal cost: \$" . number_format($usage->cost($pricing), 6) . "\n";
 }
 
 // OPTION 1: Configure pricing in LLM config preset
@@ -86,7 +86,7 @@ printCostBreakdown($response->usage(), $pricing);
 
 // You can also attach pricing to usage for later calculation
 $usageWithPricing = $response->usage()->withPricing($pricing);
-echo "\nCost via stored pricing: \$" . number_format($usageWithPricing->calculateCost(), 6) . "\n";
+echo "\nCost via stored pricing: \$" . number_format($usageWithPricing->cost(), 6) . "\n";
 
 
 // OPTION 3: Compare costs across different models
@@ -107,7 +107,7 @@ $models = [
 echo "For {$usage->inputTokens} input + {$usage->outputTokens} output tokens:\n\n";
 foreach ($models as $model => $prices) {
     $pricing = Pricing::fromArray($prices);
-    $cost = $usage->calculateCost($pricing);
+    $cost = $usage->cost($pricing);
     printf("  %-20s \$%.6f\n", $model, $cost);
 }
 ?>

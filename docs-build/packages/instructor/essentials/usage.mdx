@@ -46,7 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
-// @doctest id="78fc"
+// @doctest id="5d17"
 ```
 
 !!! note
@@ -70,7 +70,7 @@ $structuredOutput = (new StructuredOutput)
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
     ->withStreaming(true)               // Enable streaming
-// @doctest id="9a23"
+// @doctest id="cb03"
 ```
 
 ### Response Model Configuration
@@ -80,7 +80,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
     ->withResponseJsonSchema($schema)   // Set JSON schema directly
-// @doctest id="ad74"
+// @doctest id="4f2b"
 ```
 
 ### Output Formats
@@ -92,7 +92,7 @@ $structuredOutput = (new StructuredOutput)
     ->intoArray()                       // Return as associative array
     ->intoInstanceOf($className)        // Return as different class
     ->intoObject($selfDeserializing)    // Return as self-deserializing object
-// @doctest id="f74e"
+// @doctest id="3d08"
 ```
 
 **Example - Get raw arrays:**
@@ -104,7 +104,7 @@ $userData = (new StructuredOutput)
     ->get();
 
 // Result: ['name' => 'John Doe', 'age' => 30]
-// @doctest id="700d"
+// @doctest id="41df"
 ```
 
 **Example - Use different output class:**
@@ -116,7 +116,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Schema defines 5 fields, output has 2 fields
-// @doctest id="5c9a"
+// @doctest id="22c3"
 ```
 
 See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive documentation.
@@ -126,24 +126,28 @@ See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive doc
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
-    ->withToolName($name)               // Set tool name for Tools mode
-    ->withToolDescription($desc)        // Set tool description
-    ->withRetryPrompt($prompt)          // Set retry prompt
     ->withConfig($config)               // Set configuration object
-    ->withConfigPreset($preset)         // Use configuration preset
-// @doctest id="bc32"
+    ->withDefaultToStdClass(true)       // Use stdClass fallback for schema-less data
+// @doctest id="e234"
 ```
 
 ### LLM Provider Configuration
 ```php
-$structuredOutput = (new StructuredOutput)
-    ->using($preset)                    // Use LLM preset (e.g., 'openai')
-    ->withDsn($dsn)                     // Set connection DSN
-    ->withLLMProvider($provider)        // Set custom LLM provider
-    ->withLLMConfig($config)            // Set LLM configuration
-    ->withDriver($driver)               // Set inference driver
-    ->withHttpClient($client)           // Set HTTP client
-// @doctest id="2d92"
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$structuredOutput = StructuredOutput::using('openai');
+
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromDsn('preset=openai,model=gpt-4o-mini')
+);
+
+$provider = LLMProvider::using('openai')
+    ->withLLMConfigOverrides(['temperature' => 0.2]);
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromProvider(provider: $provider)
+);
+// @doctest id="4608"
 ```
 
 ### Processing Overrides
@@ -152,7 +156,8 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
-// @doctest id="d63b"
+    ->withExtractors(...$extractors)    // Override extractors
+// @doctest id="adc9"
 ```
 
 
@@ -180,7 +185,7 @@ $llmResponse = $structuredOutput->response();
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
-// @doctest id="c14c"
+// @doctest id="5476"
 ```
 
 ### Pending Execution with `create()`
@@ -205,21 +210,19 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
-// @doctest id="3451"
+// @doctest id="7012"
 ```
 
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
 
-When you need constructor-injected creators (for agents, addons, or DI containers), use `toRuntime()` and execute via request objects:
+When you need constructor-injected creators (for agents, addons, or DI containers), use `StructuredOutputRuntime` directly and execute via request objects:
 
 ```php
 <?php
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
-$creator = (new StructuredOutput())
-    ->using('openai')
-    ->toRuntime();
+$creator = StructuredOutputRuntime::using('openai');
 
 $request = new StructuredOutputRequest(
     messages: "His name is Jason, he is 28 years old.",
@@ -229,7 +232,7 @@ $request = new StructuredOutputRequest(
 $requestId = $request->id()->toString(); // StructuredOutputRequestId at boundary
 $person = $creator->create($request)->get();
 ?>
-// @doctest id="5514"
+// @doctest id="923f"
 ```
 
 ### Response Types Explained
@@ -256,7 +259,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="bcf2"
+// @doctest id="15d4"
 ```
 
 
@@ -294,7 +297,7 @@ $translation = (new StructuredOutput)->with(
     )
     ->get();
 ?>
-// @doctest id="caaa"
+// @doctest id="9e0e"
 ```
 
 
@@ -325,7 +328,7 @@ $person = $stream->lastUpdate()
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
-// @doctest id="1646"
+// @doctest id="ee73"
 ```
 
 
@@ -358,7 +361,7 @@ $stream = $structuredOutput->stream();     // Get streaming interface
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
-// @doctest id="8e67"
+// @doctest id="9180"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result

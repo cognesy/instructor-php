@@ -133,14 +133,16 @@ Write once, run anywhere. Switch LLM providers without changing your code:
 
 ```php
 <?php
+use Cognesy\Instructor\StructuredOutputRuntime;
+
 // Development: Use local Ollama
-$result = (new StructuredOutput)->using('ollama')->withResponseClass(Task::class)->get();
+$result = StructuredOutput::using('ollama')->withResponseClass(Task::class)->get();
 
 // Staging: Use Groq for speed
-$result = (new StructuredOutput)->using('groq')->withResponseClass(Task::class)->get();
+$result = StructuredOutput::using('groq')->withResponseClass(Task::class)->get();
 
 // Production: Use OpenAI for quality
-$result = (new StructuredOutput)->using('openai')->withResponseClass(Task::class)->get();
+$result = StructuredOutput::using('openai')->withResponseClass(Task::class)->get();
 ```
 
 ### 5. Multiple Output Modes
@@ -160,13 +162,18 @@ Get partial results as they arrive:
 
 ```php
 <?php
-$person = (new StructuredOutput)
+use Cognesy\Instructor\StructuredOutput;
+
+$stream = (new StructuredOutput)
     ->withResponseClass(Person::class)
-    ->onPartialUpdate(fn($partial) =>
-        echo "Processing: " . ($partial->name ?? '...') . "\n"
-    )
     ->with(messages: $text, options: ['stream' => true])
-    ->get();
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    echo "Processing: " . ($partial->name ?? '...') . "\n";
+}
+
+$person = $stream->finalValue();
 ```
 
 ### 7. Multimodal Inputs
@@ -175,12 +182,14 @@ Process text, images, and chat conversations with the same API:
 
 ```php
 <?php
+use Cognesy\Addons\Image\Image;
+
 // Text
 ->withMessages("Extract from this text...")
 
 // Images
-->withImages(['receipt.jpg'])
-->withMessages("Extract line items")
+->with(messages: Image::fromFile('receipt.jpg')->toMessage())
+->withPrompt("Extract line items")
 
 // Chat history
 ->withMessages([
@@ -259,9 +268,7 @@ Every provider does it differently:
 ```php
 <?php
 // Same code works everywhere
-$result = (new StructuredOutput)
-    ->using('anthropic')  // or 'openai', 'gemini', 'ollama'...
-    ->withResponseClass(Person::class)
+$result = StructuredOutput::using('anthropic')->withResponseClass(Person::class)
     ->get();
 ```
 
@@ -439,11 +446,18 @@ JSON Schema mode gives you complete-or-nothing:
 
 ```php
 <?php
-$person = (new StructuredOutput)
+use Cognesy\Instructor\StructuredOutput;
+
+$stream = (new StructuredOutput)
     ->withResponseClass(Person::class)
-    ->onPartialUpdate(fn($p) => updateUI($p))
     ->with(messages: $text, options: ['stream' => true])
-    ->get();
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    updateUI($partial);
+}
+
+$person = $stream->finalValue();
 ```
 
 ### 7. Anthropic Doesn't Have JSON Mode
@@ -467,9 +481,7 @@ $response = $anthropic->messages([
 
 ```php
 <?php
-$person = (new StructuredOutput)
-    ->using('anthropic')
-    ->withResponseClass(Person::class)
+$person = StructuredOutput::using('anthropic')->withResponseClass(Person::class)
     ->get();
 // Instructor uses tool calling or optimized prompts automatically
 ```

@@ -15,7 +15,9 @@ This is useful when you want to use a custom configuration directory instead of 
 require 'examples/boot.php';
 
 use Cognesy\Config\Settings;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
 class UserDetail
 {
@@ -27,8 +29,11 @@ class UserDetail
 // set the configuration path to custom directory
 Settings::setPath(__DIR__ . '/config');
 
-$user = (new StructuredOutput)
-    ->withHttpDebugPreset('on') // we reconfigured local debug settings to dump only request URL
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+
+$user = (new StructuredOutput(
+    StructuredOutputRuntime::fromDefaults(httpClient: $debugHttpClient)
+))
     ->withMessages('Jason is 25 years old.')
     ->withResponseClass(UserDetail::class)
     ->get();

@@ -32,13 +32,12 @@ $list = (new StructuredOutput)
 Additional, unique feature of sequences is that they can be streamed per each
 completed item in a sequence, rather than on any property update.
 
-> **NOTE** This feature requires the `stream` option to be set to `true`.
+> **NOTE** This feature requires streaming to be enabled.
 
-To receive sequence updates provide a callback via Instructor's
-`onSequenceUpdate()` that will be called each  time a new item is received from LLM.
+To receive sequence updates iterate `stream()->sequence()`.
 
-The callback provided a full sequence that has been retrieved so far. You can
-get the last added object from the sequence via `$sequence->last()`.
+Each yielded value is the current sequence snapshot. You can get the last added
+object from the sequence via `$sequence->last()`.
 
 Remember that while the sequence is being updated, the data is not validated -
 only when the sequence is fully extracted, the objects are validated and a full
@@ -63,16 +62,19 @@ $text = <<<TEXT
     and Anna is 2 years younger than him.
 TEXT;
 
-$list = (new StructuredOutput)
-    ->onSequenceUpdate(
-        fn($sequence) => updateUI($sequence->last()) // get last added object
-    )
+$stream = (new StructuredOutput)
     ->withResponseClass(Sequence::of(Person::class))
     ->with(
         messages: [['role' => 'user', 'content' => $text]],
-        options: ['stream' => true]
+        options: ['stream' => true],
     )
-    ->get();
+    ->stream();
+
+foreach ($stream->sequence() as $sequence) {
+    updateUI($sequence->last()); // get last added object
+}
+
+$list = $stream->finalValue();
 
 // now the list is fully extracted and validated
 foreach ($list as $person) {

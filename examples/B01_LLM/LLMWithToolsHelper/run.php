@@ -27,8 +27,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'population', 'founded'],
 );
 
-$data = (new Inference)
-    ->using('openai')
+$data = Inference::using('openai')
     //->withHttpDebugPreset('on')
     ->with(
         messages: [

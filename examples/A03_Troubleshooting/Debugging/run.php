@@ -21,6 +21,8 @@ This is useful for debugging the request and response when you are not getting t
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Utils\Str;
 
@@ -31,10 +33,14 @@ class User {
 
 // CASE 1.1 - normal flow, sync request
 
-$structuredOutput = (new StructuredOutput)
-    ->using('openai')
-    ->withHttpDebugPreset('on');
-    //->wiretap(fn($e) => $e->print());
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::using(
+        preset: 'openai',
+        httpClient: $debugHttpClient,
+    )
+);
+//->wiretap(fn($e) => $e->print());
 
 echo "\n### CASE 1.1 - Debugging sync request\n\n";
 $user = $structuredOutput
@@ -74,13 +80,16 @@ assert($user2->age === 21);
 // CASE 2 - forcing API error via empty LLM config
 
 // let's initialize the instructor with an incorrect LLM config
-$structuredOutput = (new StructuredOutput)
-    ->withLLMConfig(new LLMConfig(apiUrl: 'https://example.com'));
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromConfig(
+        config: new LLMConfig(apiUrl: 'https://example.com'),
+        httpClient: $debugHttpClient,
+    )
+);
 
 echo "\n### CASE 2 - Debugging with HTTP exception\n\n";
 try {
     $user = $structuredOutput
-        ->withHttpDebugPreset('on')
         ->with(
             messages: "Jason is 25 years old.",
             responseModel: User::class,

@@ -128,19 +128,20 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerInference(): void
     {
         $this->app->singleton(Inference::class, function (Container $app) {
-            $inference = new Inference(
-                events: $app->make(CanHandleEvents::class),
+            $provider = LLMProvider::new(
                 configProvider: $app->make(CanProvideConfig::class),
             );
-
-            // Use Laravel HTTP client
-            $inference->withHttpClient($app->make(HttpClient::class));
-
-            // Apply default connection
             $default = $this->configGet($app, 'instructor.default');
             if ($default) {
-                $inference->using($default);
+                $provider = $provider->withLLMPreset($default);
             }
+
+            $runtime = InferenceRuntime::fromProvider(
+                provider: $provider,
+                events: $app->make(CanHandleEvents::class),
+                httpClient: $app->make(HttpClient::class),
+            );
+            $inference = new Inference($runtime);
 
             // Apply logging if enabled
             if ($this->configGet($app, 'instructor.logging.enabled', true)) {
@@ -157,19 +158,22 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerEmbeddings(): void
     {
         $this->app->singleton(Embeddings::class, function (Container $app) {
-            $embeddings = new Embeddings(
-                events: $app->make(CanHandleEvents::class),
+            $provider = EmbeddingsProvider::new(
                 configProvider: $app->make(CanProvideConfig::class),
+                events: $app->make(CanHandleEvents::class),
             );
 
-            // Use Laravel HTTP client
-            $embeddings->withHttpClient($app->make(HttpClient::class));
-
-            // Apply default connection
             $default = $this->configGet($app, 'instructor.embeddings.default');
             if ($default) {
-                $embeddings->using($default);
+                $provider = $provider->withPreset($default);
             }
+
+            $runtime = EmbeddingsRuntime::fromProvider(
+                provider: $provider,
+                events: $app->make(CanHandleEvents::class),
+                httpClient: $app->make(HttpClient::class),
+            );
+            $embeddings = new Embeddings($runtime);
 
             // Apply logging if enabled
             if ($this->configGet($app, 'instructor.logging.enabled', true)) {
@@ -186,25 +190,29 @@ class InstructorServiceProvider extends ServiceProvider
     protected function registerStructuredOutput(): void
     {
         $this->app->bind(StructuredOutput::class, function (Container $app) {
-            $instructor = new StructuredOutput(
-                events: $app->make(CanHandleEvents::class),
+            $provider = LLMProvider::new(
                 configProvider: $app->make(CanProvideConfig::class),
             );
-
-            // Use Laravel HTTP client
-            $instructor->withHttpClient($app->make(HttpClient::class));
-
-            // Apply default connection
             $default = $this->configGet($app, 'instructor.default');
             if ($default) {
-                $instructor->using($default);
+                $provider = $provider->withLLMPreset($default);
             }
 
-            // Apply extraction settings
+            $configBuilder = new StructuredOutputConfigBuilder(
+                configProvider: $app->make(CanProvideConfig::class),
+            );
             $maxRetries = $this->configGet($app, 'instructor.extraction.max_retries');
             if ($maxRetries !== null) {
-                $instructor->withMaxRetries($maxRetries);
+                $configBuilder = $configBuilder->withMaxRetries($maxRetries);
             }
+
+            $runtime = StructuredOutputRuntime::fromProvider(
+                provider: $provider,
+                events: $app->make(CanHandleEvents::class),
+                httpClient: $app->make(HttpClient::class),
+                structuredConfig: $configBuilder->create(),
+            );
+            $instructor = new StructuredOutput($runtime);
 
             // Apply logging if enabled
             if ($this->configGet($app, 'instructor.logging.enabled', true)) {
@@ -357,9 +365,6 @@ class InstructorServiceProvider extends ServiceProvider
      */
     protected function applyLogging(Container $app, object $service): void
     {
-        if (!method_exists($service, 'wiretap')) {
-            return;
-        }
         if (!$app instanceof LaravelApplication) {
             return;
         }
@@ -373,7 +378,14 @@ class InstructorServiceProvider extends ServiceProvider
             default => LaravelLoggingFactory::defaultSetup($app),
         };
 
-        $service->wiretap($pipeline);
+        if (method_exists($service, 'wiretap')) {
+            $service->wiretap($pipeline);
+            return;
+        }
+
+        if ($service instanceof Inference) {
+            $app->make(CanHandleEvents::class)->wiretap($pipeline);
+        }
     }
 
     private function configGet(Container $app, string $path, mixed $default = null): mixed {

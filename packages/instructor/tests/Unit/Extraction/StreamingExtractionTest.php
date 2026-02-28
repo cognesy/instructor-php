@@ -120,10 +120,10 @@ describe('Streaming-Aware Extraction', function () {
             $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema);
 
             $reducer->init();
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: '{"name":"John"}',
                 usage: Usage::none(),
-            ));
+            ))->withContent('{"name":"John"}'));
 
             expect($collector->collected[0]->buffer)->toBeInstanceOf(ExtractingBuffer::class);
         });
@@ -134,10 +134,10 @@ describe('Streaming-Aware Extraction', function () {
             $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema, bufferFactory: $factory);
 
             $reducer->init();
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: '{"name":"John"}',
                 usage: Usage::none(),
-            ));
+            ))->withContent('{"name":"John"}'));
 
             expect($collector->collected[0]->buffer)->toBeInstanceOf(ExtractingBuffer::class);
         });
@@ -157,10 +157,10 @@ describe('Streaming-Aware Extraction', function () {
             );
 
             $reducer->init();
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: '{"test":true}',
                 usage: Usage::none(),
-            ));
+            ))->withContent('{"test":true}'));
 
             expect($receivedMode)->toBe(OutputMode::MdJson);
         });
@@ -258,14 +258,14 @@ describe('Streaming-Aware Extraction', function () {
             $reducer->init();
 
             // Simulate streaming with embedded JSON
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: 'Here is JSON: {"name"',
                 usage: Usage::none(),
-            ));
-            $reducer->step(null, new PartialInferenceResponse(
+            ))->withContent('Here is JSON: {"name"'));
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: ':"John"}',
                 usage: Usage::none(),
-            ));
+            ))->withContent('Here is JSON: {"name":"John"}'));
 
             // Second frame should have complete extracted JSON
             $finalBuffer = $collector->collected[1]->buffer;
@@ -290,16 +290,16 @@ describe('Streaming-Aware Extraction', function () {
             $reducer->init();
 
             // First chunk: incomplete
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: '<json>{"status"',
                 usage: Usage::none(),
-            ));
+            ))->withContent('<json>{"status"'));
 
             // Second chunk: completes the XML wrapper
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: ':"ok"}</json>',
                 usage: Usage::none(),
-            ));
+            ))->withContent('<json>{"status":"ok"}</json>'));
 
             // XmlWrapperExtractor should now succeed
             expect($collector->collected[1]->buffer->normalized())->toBe('{"status":"ok"}');
@@ -359,17 +359,17 @@ describe('Streaming-Aware Extraction', function () {
 
             // First stream
             $reducer->init();
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: '{"stream":1}',
                 usage: Usage::none(),
-            ));
+            ))->withContent('{"stream":1}'));
 
             // Second stream
             $reducer->init();
-            $reducer->step(null, new PartialInferenceResponse(
+            $reducer->step(null, (new PartialInferenceResponse(
                 contentDelta: '{"stream":2}',
                 usage: Usage::none(),
-            ));
+            ))->withContent('{"stream":2}'));
 
             // Buffer should be fresh, not accumulated from first stream
             expect($collector->collected[0]->buffer->raw())->toBe('{"stream":2}');

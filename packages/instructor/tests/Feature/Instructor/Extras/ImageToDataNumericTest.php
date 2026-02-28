@@ -35,7 +35,7 @@ JSON;
 
     $mockHttp = MockHttp::get([$json]);
     $receipt = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'Extract receipt data.']],
             responseModel: Receipt::class,

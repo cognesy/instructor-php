@@ -21,9 +21,7 @@ it('parses markdown JSON responses into arrays', function () {
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $data = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
+    $data = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withOutputMode(OutputMode::MdJson)
         ->withMessages('Q?')

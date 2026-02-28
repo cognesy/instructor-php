@@ -22,24 +22,26 @@ foreach ($stream->partials() as $partial) {
 }
 
 // Get final complete result
-$company = $stream->final();
-// @doctest id="33b7"
+$company = $stream->finalValue();
+// @doctest id="f186"
 ```
 
-### Streaming with Callbacks
+### Streaming with `partials()`
 
 ```php
-$result = StructuredOutput::with(
+$stream = StructuredOutput::with(
     messages: 'Extract data...',
     responseModel: MyModel::class,
 )
 ->withStreaming()
-->onPartialUpdate(function ($partial) {
-    // Called on each partial update
+->stream();
+
+foreach ($stream->partials() as $partial) {
     broadcast(new PartialUpdateEvent($partial));
-})
-->get();
-// @doctest id="ada8"
+}
+
+$result = $stream->finalValue();
+// @doctest id="32f1"
 ```
 
 ### Streaming Sequences
@@ -55,14 +57,12 @@ $stream = StructuredOutput::with(
     ],
 )
 ->withStreaming()
-->onSequenceUpdate(function ($items) {
-    // Called as each item is completed
-    foreach ($items as $item) {
-        echo "Found: {$item->name}\n";
-    }
-})
 ->stream();
-// @doctest id="72e4"
+
+foreach ($stream->sequence() as $items) {
+    echo "Found: {$items->last()->name}\n";
+}
+// @doctest id="14ee"
 ```
 
 ---
@@ -97,7 +97,7 @@ $user = StructuredOutput::with(
     responseModel: UserData::class,
     maxRetries: 3,
 )->get();
-// @doctest id="f1fe"
+// @doctest id="188b"
 ```
 
 ### Custom Validators
@@ -127,7 +127,7 @@ $order = StructuredOutput::with(
 )
 ->withValidators(BusinessRulesValidator::class)
 ->get();
-// @doctest id="c51d"
+// @doctest id="37a7"
 ```
 
 ### Custom Retry Prompt
@@ -139,7 +139,7 @@ $result = StructuredOutput::with(
     maxRetries: 3,
     retryPrompt: 'The extraction failed validation. Errors: {errors}. Please correct and try again.',
 )->get();
-// @doctest id="4d40"
+// @doctest id="eed7"
 ```
 
 ---
@@ -175,7 +175,7 @@ $contact = StructuredOutput::with(
 ->get();
 
 // $contact->phone === '+15551234567'
-// @doctest id="3f74"
+// @doctest id="f3ca"
 ```
 
 ---
@@ -206,7 +206,7 @@ $result = StructuredOutput::with(...)
 $result = StructuredOutput::with(...)
     ->withOutputMode(OutputMode::MdJson)
     ->get();
-// @doctest id="d600"
+// @doctest id="7b9f"
 ```
 
 ---
@@ -238,7 +238,7 @@ $person = StructuredOutput::with(
         ],
     ],
 )->get();
-// @doctest id="6efe"
+// @doctest id="63d9"
 ```
 
 ---
@@ -258,7 +258,7 @@ $medical = StructuredOutput::with(
         If information is unclear, mark as null rather than guessing.
         PROMPT,
 )->get();
-// @doctest id="6cfc"
+// @doctest id="f70e"
 ```
 
 ---
@@ -274,7 +274,7 @@ $result = StructuredOutput::with(
     toolName: 'extract_invoice',
     toolDescription: 'Extracts structured invoice data including line items, totals, and payment terms.',
 )->get();
-// @doctest id="0a3e"
+// @doctest id="a5a4"
 ```
 
 ---
@@ -311,7 +311,7 @@ class AIService
             ->get();
     }
 }
-// @doctest id="9299"
+// @doctest id="ac43"
 ```
 
 ---
@@ -337,7 +337,7 @@ class CachedExtractor
         });
     }
 }
-// @doctest id="5f78"
+// @doctest id="2373"
 ```
 
 ### Semantic Caching
@@ -369,7 +369,7 @@ class SemanticCache
         return $result;
     }
 }
-// @doctest id="a961"
+// @doctest id="d2ca"
 ```
 
 ---
@@ -404,7 +404,7 @@ class BatchExtractor
             ->dispatch();
     }
 }
-// @doctest id="6f31"
+// @doctest id="bd77"
 ```
 
 ---
@@ -435,7 +435,7 @@ class ResilientExtractor
         }
     }
 }
-// @doctest id="c5e6"
+// @doctest id="16a4"
 ```
 
 ### Fallback Providers
@@ -463,7 +463,7 @@ class FallbackExtractor
         throw new RuntimeException('All providers failed');
     }
 }
-// @doctest id="73b6"
+// @doctest id="5aff"
 ```
 
 ---
@@ -484,7 +484,7 @@ $result = StructuredOutput::with(
 $result = StructuredOutput::withModel('gpt-4o-mini')
     ->with(messages: $text, responseModel: SimpleModel::class)
     ->get();
-// @doctest id="ae40"
+// @doctest id="c2fd"
 ```
 
 ### Parallel Extraction
@@ -497,5 +497,5 @@ $results = Concurrency::run([
     fn () => StructuredOutput::with(messages: $text2, responseModel: Model::class)->get(),
     fn () => StructuredOutput::with(messages: $text3, responseModel: Model::class)->get(),
 ]);
-// @doctest id="290e"
+// @doctest id="8e47"
 ```

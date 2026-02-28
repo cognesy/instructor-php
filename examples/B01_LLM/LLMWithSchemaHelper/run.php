@@ -28,8 +28,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'population', 'founded'],
 );
 
-$data = (new Inference)
-    ->using('openai')
+$data = Inference::using('openai')
     ->with(
         messages: [
             ['role' => 'user', 'content' => 'What is capital of France? Respond with JSON data.']

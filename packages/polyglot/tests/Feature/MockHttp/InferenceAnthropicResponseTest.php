@@ -14,9 +14,7 @@ it('returns content for Anthropic messages (non-streaming)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('anthropic')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'anthropic', httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
         ->withMessages('Hello')
         ->get();

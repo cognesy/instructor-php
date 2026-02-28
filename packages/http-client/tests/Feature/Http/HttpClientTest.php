@@ -81,11 +81,11 @@ test('HTTP client with middleware', function() {
     $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
 
     // Add a simple test middleware that modifies the request
-    $httpClient->withMiddleware(new class implements HttpMiddleware {
+    $httpClient = $httpClient->withMiddleware(new class implements HttpMiddleware {
         public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
         {
             // Add a test header to the request
-            $request->withHeader('X-Test', 'Modified by middleware');
+            $request = $request->withHeader('X-Test', 'Modified by middleware');
             return $next->handle($request);
         }
     });

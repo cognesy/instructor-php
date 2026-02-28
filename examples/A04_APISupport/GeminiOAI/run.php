@@ -38,8 +38,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)
-    ->using('gemini-oai');
+$structuredOutput = StructuredOutput::using('gemini-oai');
     //->withHttpDebugPreset('detailed')
     //->wiretap(fn($e) => $e->printDebug());
 

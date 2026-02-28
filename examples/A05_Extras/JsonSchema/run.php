@@ -15,7 +15,9 @@ runtime.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 $schema = JsonSchema::object(
@@ -26,8 +28,11 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'age'],
 );
 
-$user = (new StructuredOutput)
-    ->withHttpDebugPreset('on')
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+
+$user = (new StructuredOutput(
+    StructuredOutputRuntime::fromDefaults(httpClient: $debugHttpClient)
+))
     ->withMessages("Jason is 25 years old and works as an engineer")
     ->withResponseJsonSchema($schema)
     ->withDeserializers()

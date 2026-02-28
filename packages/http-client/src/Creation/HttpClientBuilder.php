@@ -11,6 +11,7 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Events\HttpClientBuilt;
@@ -40,6 +41,7 @@ final class HttpClientBuilder
     private ?HttpClientConfig $config = null;
     private ?DebugConfig $debugConfig = null;
     private ?CanHandleHttpRequest $driver = null;
+    private ?CanHandleRequestPool $poolHandler = null;
     private ?string $driverName = null;
     private ?object $clientInstance = null;
     /** @var HttpMiddleware[] */
@@ -53,6 +55,9 @@ final class HttpClientBuilder
         $this->presets = ConfigPresets::using($configProvider);
     }
 
+    /**
+     * @deprecated Use withPreset() for explicit builder semantics.
+     */
     public function using(string $preset): self {
         return $this->withPreset($preset);
     }
@@ -62,6 +67,9 @@ final class HttpClientBuilder
         return $this;
     }
 
+    /**
+     * @deprecated Use withHttpDebugPreset() to keep method naming aligned with config group.
+     */
     public function withDebugPreset(?string $preset): self {
         return $this->withHttpDebugPreset($preset);
     }
@@ -93,6 +101,11 @@ final class HttpClientBuilder
 
     public function withDriver(CanHandleHttpRequest $driver): self {
         $this->driver = $driver;
+        return $this;
+    }
+
+    public function withPoolHandler(CanHandleRequestPool $poolHandler): self {
+        $this->poolHandler = $poolHandler;
         return $this;
     }
 
@@ -165,6 +178,8 @@ final class HttpClientBuilder
             driver: $driver,
             middlewareStack: $middlewareStack,
             events: $this->events,
+            config: $config,
+            poolHandler: $this->poolHandler,
         );
     }
 
@@ -266,7 +281,7 @@ final class HttpClientBuilder
             new PrintToConsole($debugConfig),
             new DispatchDebugEvents($debugConfig, $this->events),
         );
-        $stack->prepend($eventSource, 'internal:eventsource');
+        $stack = $stack->prepend($eventSource, 'internal:eventsource');
         return $stack;
     }
 

@@ -86,8 +86,7 @@ $messages = (new Messages)
         'Provide a code example.',
     ]); // you can pass array of strings to create multiple content parts
 
-$response = (new Inference)
-    ->using('openai')
+$response = Inference::using('openai')
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
@@ -126,8 +125,7 @@ $messages = [
     ]
 ];
 
-$response = (new Inference())
-    ->using('openai')
+$response = Inference::using('openai')
     ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
     ->get();

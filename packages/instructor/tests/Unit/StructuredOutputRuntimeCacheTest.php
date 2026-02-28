@@ -1,66 +1,47 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
-it('reuses runtime when infrastructure remains unchanged', function () {
-    $driver = new FakeInferenceRequestDriver();
-    $structuredOutput = (new StructuredOutput())
-        ->withLLMConfig(new LLMConfig(model: 'test-model'))
-        ->withDriver($driver);
+it('uses the injected runtime instance', function () {
+    $runtime = makeStructuredRuntime(driver: new FakeInferenceDriver());
+    $structuredOutput = new StructuredOutput($runtime);
 
-    $first = $structuredOutput->toRuntime();
-    $second = $structuredOutput->toRuntime();
-
-    expect($second)->toBe($first);
+    expect($structuredOutput->runtime())->toBe($runtime);
 });
 
-it('does not invalidate runtime cache on request-only mutations', function () {
-    $driver = new FakeInferenceRequestDriver();
-    $structuredOutput = (new StructuredOutput())
-        ->withLLMConfig(new LLMConfig(model: 'test-model'))
-        ->withDriver($driver);
+it('keeps runtime stable across request-only mutations', function () {
+    $runtime = StructuredOutputRuntime::fromDefaults();
+    $structuredOutput = new StructuredOutput($runtime);
 
-    $first = $structuredOutput->toRuntime();
-    $second = $structuredOutput->withMessages('hello')->toRuntime();
+    $changed = $structuredOutput
+        ->withMessages('hello')
+        ->withResponseClass(\stdClass::class);
 
-    expect($second)->toBe($first);
+    expect($changed->runtime())->toBe($runtime);
 });
 
-it('invalidates runtime cache on infrastructure mutations', function () {
-    $driver = new FakeInferenceRequestDriver();
-    $structuredOutput = (new StructuredOutput())
-        ->withLLMConfig(new LLMConfig(model: 'test-model'))
-        ->withDriver($driver);
-
-    $first = $structuredOutput->toRuntime();
-    $second = $structuredOutput->withOutputMode(OutputMode::Json)->toRuntime();
-
-    expect($second)->not->toBe($first);
-});
-
-it('invalidates runtime cache when event handler is replaced', function () {
-    $driver = new FakeInferenceRequestDriver();
-    $structuredOutput = (new StructuredOutput())
-        ->withLLMConfig(new LLMConfig(model: 'test-model'))
-        ->withDriver($driver);
-
-    $first = $structuredOutput->toRuntime();
-    $second = $structuredOutput->withEventHandler(new EventDispatcher())->toRuntime();
-
-    expect($second)->not->toBe($first);
-});
-
-it('returns a new facade instance from with mutators', function () {
-    $driver = new FakeInferenceRequestDriver();
-    $structuredOutput = (new StructuredOutput())
-        ->withLLMConfig(new LLMConfig(model: 'test-model'))
-        ->withDriver($driver);
+it('returns a new facade instance from request mutators', function () {
+    $structuredOutput = new StructuredOutput();
 
     $derived = $structuredOutput->withMessages('hello');
 
     expect($derived)->not->toBe($structuredOutput);
+});
+
+it('allows runtime replacement explicitly', function () {
+    $first = StructuredOutputRuntime::fromDefaults();
+    $second = StructuredOutputRuntime::fromDefaults();
+
+    $structuredOutput = (new StructuredOutput($first))->withRuntime($second);
+
+    expect($structuredOutput->runtime())->toBe($second);
+});
+
+it('creates a facade with runtime from preset via static using()', function () {
+    $structuredOutput = StructuredOutput::using('openai');
+
+    expect($structuredOutput)->toBeInstanceOf(StructuredOutput::class);
+    expect($structuredOutput->runtime())->toBeInstanceOf(StructuredOutputRuntime::class);
 });

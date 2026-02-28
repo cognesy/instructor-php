@@ -4,6 +4,9 @@ namespace Cognesy\Instructor\Extras\Mixin;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+/**
+ * @deprecated 2.0 Use StructuredOutput facade/runtime APIs directly.
+ */
 interface CanInferSelf
 {
     static public function infer(

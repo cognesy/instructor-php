@@ -12,7 +12,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 // Simple DTOs
 class SmokeUser { public int $age; public string $name; }
@@ -22,10 +22,9 @@ enum SmokeStatus: string { case Active = 'active'; case Inactive = 'inactive'; }
 // 1) Sync: generate response PHP object using provided response class
 it('sync: deserializes object into provided class', function () {
     $json = '{"age":30,"name":"Alex"}';
-    $driver = new FakeInferenceRequestDriver(responses: [ new InferenceResponse(content: $json) ]);
+    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
 
-    $obj = (new StructuredOutput())
-        ->withDriver($driver)
+    $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseClass(SmokeUser::class)
         ->withOutputMode(OutputMode::Json)
@@ -43,11 +42,10 @@ it('stream: yields partial updates of object progressively', function () {
         new PartialInferenceResponse(contentDelta: '0,"name":"A'),
         new PartialInferenceResponse(contentDelta: 'lex"}'),
     ];
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $stream ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
 
     $partials = [];
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
+    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseClass(SmokeUser::class)
         ->withOutputMode(OutputMode::Json)
@@ -70,8 +68,9 @@ it('scalars: integer and string deserialize correctly', function () {
     $strJson = '{"firstName":"Jamie"}';
 
     // Integer
-    $v1 = (new StructuredOutput())
-        ->withHttpClient(\Cognesy\Instructor\Tests\MockHttp::get([$intJson]))
+    $v1 = (new StructuredOutput(StructuredOutputRuntime::fromDefaults(
+        httpClient: \Cognesy\Instructor\Tests\MockHttp::get([$intJson]),
+    )))
         ->with(
             messages: [['role'=>'user','content'=>'age?']],
             responseModel: Scalar::integer('age'),
@@ -80,8 +79,9 @@ it('scalars: integer and string deserialize correctly', function () {
     expect($v1)->toBeInt()->toBe(28);
 
     // String
-    $v2 = (new StructuredOutput())
-        ->withHttpClient(\Cognesy\Instructor\Tests\MockHttp::get([$strJson]))
+    $v2 = (new StructuredOutput(StructuredOutputRuntime::fromDefaults(
+        httpClient: \Cognesy\Instructor\Tests\MockHttp::get([$strJson]),
+    )))
         ->with(
             messages: [['role'=>'user','content'=>'name?']],
             responseModel: Scalar::string('firstName'),
@@ -95,20 +95,23 @@ it('scalars: boolean, float and enum deserialize correctly', function () {
     $floatJson = '{"score":99.5}';
     $enumJson = '{"status":"active"}';
 
-    $b = (new StructuredOutput())
-        ->withHttpClient(\Cognesy\Instructor\Tests\MockHttp::get([$boolJson]))
+    $b = (new StructuredOutput(StructuredOutputRuntime::fromDefaults(
+        httpClient: \Cognesy\Instructor\Tests\MockHttp::get([$boolJson]),
+    )))
         ->with(messages: [['role'=>'user','content'=>'adult?']], responseModel: \Cognesy\Instructor\Extras\Scalar\Scalar::boolean('isAdult'))
         ->get();
     expect($b)->toBeBool()->toBe(true);
 
-    $f = (new StructuredOutput())
-        ->withHttpClient(\Cognesy\Instructor\Tests\MockHttp::get([$floatJson]))
+    $f = (new StructuredOutput(StructuredOutputRuntime::fromDefaults(
+        httpClient: \Cognesy\Instructor\Tests\MockHttp::get([$floatJson]),
+    )))
         ->with(messages: [['role'=>'user','content'=>'score?']], responseModel: \Cognesy\Instructor\Extras\Scalar\Scalar::float('score'))
         ->get();
     expect($f)->toBeFloat()->toBe(99.5);
 
-    $e = (new StructuredOutput())
-        ->withHttpClient(\Cognesy\Instructor\Tests\MockHttp::get([$enumJson]))
+    $e = (new StructuredOutput(StructuredOutputRuntime::fromDefaults(
+        httpClient: \Cognesy\Instructor\Tests\MockHttp::get([$enumJson]),
+    )))
         ->with(messages: [['role'=>'user','content'=>'status?']], responseModel: \Cognesy\Instructor\Extras\Scalar\Scalar::enum(SmokeStatus::class, 'status'))
         ->get();
     expect($e)->toBeInstanceOf(SmokeStatus::class)->toBe(SmokeStatus::Active);
@@ -117,38 +120,37 @@ it('scalars: boolean, float and enum deserialize correctly', function () {
 // 4) Sequence::of(class) as response model - sync and stream
 it('sequence: sync deserializes list of items', function () {
     $json = '{"list":[{"title":"A"},{"title":"B"}]}';
-    $driver = new FakeInferenceRequestDriver(responses: [ new InferenceResponse(content: $json) ]);
+    $driver = new FakeInferenceDriver(responses: [ new InferenceResponse(content: $json) ]);
 
     /** @var \Cognesy\Instructor\Extras\Sequence\Sequence $seq */
-    $seq = (new StructuredOutput())
-        ->withDriver($driver)
+    $seq = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseObject(Sequence::of(SmokeItem::class))
         ->withOutputMode(OutputMode::Json)
         ->getObject();
 
     expect($seq)->toBeInstanceOf(Sequence::class);
-    expect($seq->list)->toHaveCount(2);
-    expect($seq->list[0])->toBeInstanceOf(SmokeItem::class);
-    expect($seq->list[0]->title)->toBe('A');
-    expect($seq->list[1]->title)->toBe('B');
+    expect($seq->all())->toHaveCount(2);
+    expect($seq->get(0))->toBeInstanceOf(SmokeItem::class);
+    expect($seq->get(0)->title)->toBe('A');
+    expect($seq->get(1)->title)->toBe('B');
 });
 
 it('sequence: streaming yields updates with complete items', function () {
     // Stream that completes first item, then second
     // Provide pre-valued partials to simulate progressive completion
     $s1 = new \Cognesy\Instructor\Extras\Sequence\Sequence(SmokeItem::class);
-    $s1->list = [(function(){ $i=new SmokeItem(); $i->title='A'; return $i; })()];
+    $s1->push((function(){ $i=new SmokeItem(); $i->title='A'; return $i; })());
     $s2 = new \Cognesy\Instructor\Extras\Sequence\Sequence(SmokeItem::class);
-    $s2->list = [(function(){ $i=new SmokeItem(); $i->title='A'; return $i; })(), (function(){ $i=new SmokeItem(); $i->title='B'; return $i; })()];
+    $s2->push((function(){ $i=new SmokeItem(); $i->title='A'; return $i; })());
+    $s2->push((function(){ $i=new SmokeItem(); $i->title='B'; return $i; })());
     $sequenceStream = [
         (new PartialInferenceResponse(contentDelta: ''))->withValue($s1),
         (new PartialInferenceResponse(contentDelta: ''))->withValue($s2),
     ];
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $sequenceStream ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $sequenceStream ]);
 
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
+    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseObject(Sequence::of(SmokeItem::class))
         ->withOutputMode(OutputMode::Json)
@@ -163,11 +165,11 @@ it('sequence: streaming yields updates with complete items', function () {
     expect(count($updates))->toBeGreaterThanOrEqual(2);
     $first = $updates[0];
     expect($first)->toBeInstanceOf(Sequence::class);
-    expect($first->list)->toHaveCount(1);
-    expect($first->list[0]->title)->toBe('A');
+    expect($first->all())->toHaveCount(1);
+    expect($first->get(0)->title)->toBe('A');
     $last = end($updates);
-    expect($last->list)->toHaveCount(2);
-    expect($last->list[1]->title)->toBe('B');
+    expect($last->all())->toHaveCount(2);
+    expect($last->get(1)->title)->toBe('B');
 });
 
 // 5) Tools mode: sync and streaming
@@ -177,10 +179,9 @@ class RuntimeFactoryUser { public int $age; public string $name; }
 it('tools mode: sync uses tool call args as JSON', function () {
     $tool = new ToolCall('extract', ['age' => 25]);
     $resp = new InferenceResponse(content: '', finishReason: 'stop', toolCalls: new ToolCalls($tool));
-    $driver = new FakeInferenceRequestDriver(responses: [ $resp ]);
+    $driver = new FakeInferenceDriver(responses: [ $resp ]);
 
-    $obj = (new StructuredOutput())
-        ->withDriver($driver)
+    $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseClass(ToolUser::class)
         ->withOutputMode(OutputMode::Tools)
@@ -195,10 +196,9 @@ it('tools mode: streaming assembles args from tool deltas', function () {
         new PartialInferenceResponse(toolName: 'extract', toolArgs: '{"age":'),
         new PartialInferenceResponse(toolName: 'extract', toolArgs: '42}'),
     ];
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $stream ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $stream ]);
 
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
+    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseClass(ToolUser::class)
         ->withOutputMode(OutputMode::Tools)

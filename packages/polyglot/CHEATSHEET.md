@@ -3,23 +3,18 @@
 ## Main Entry Point Classes
 
 ### Inference
-**`Inference`** - Main facade for LLM inference operations with trait-based API
-- `new($events, $configProvider)` - Constructor with optional event handler and config provider
+**`Inference`** - Thin facade for LLM inference request composition and execution
+- `new(?CanCreateInference $runtime = null)` - Constructor with optional runtime
 - `registerDriver($name, $driver)` - Register custom inference driver
 
-**Provider Management (via HandlesLLMProvider trait):**
-- `withLLMProvider($provider)` - Set custom LLM provider
-- `withLLMConfig($config)` - Set explicit LLM configuration
-- `withConfigProvider($provider)` - Set configuration provider
-- `withDsn($dsn)` - Configure via DSN string
-- `using($preset)` - Use predefined configuration preset
-- `withHttpClient($client)` - Set custom HTTP client
-- `withHttpClientPreset($preset)` - Set HTTP client preset
-- `withLLMConfigOverrides($overrides)` - Override specific config values
-- `withDriver($driver)` - Set explicit inference driver
-- `withHttpDebugPreset($preset)` - Set debug configuration
+**Runtime Selection:**
+- `Inference::using($preset)` - Construct from preset-backed runtime
+- `Inference::fromDsn($dsn)` - Construct from DSN-backed runtime
+- `Inference::fromRuntime($runtime)` - Construct from explicit runtime
+- `withRuntime($runtime)` - Replace runtime on a cloned facade
+- `runtime()` - Access `CanCreateInference` runtime
 
-**Request Building (via HandlesRequestBuilder trait):**
+**Request Building:**
 - `withMessages($messages)` - Set conversation messages (string or array)
 - `withModel($model)` - Set model name
 - `withMaxTokens($maxTokens)` - Set maximum tokens
@@ -31,12 +26,12 @@
 - `withOutputMode($mode)` - Set output mode
 - `withCachedContext($messages, $tools, $toolChoice, $responseFormat)` - Set cached context
 
-**Invocation (via HandlesInvocation trait):**
+**Invocation:**
 - `withRequest($request)` - Set explicit inference request
 - `with($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode)` - Set all parameters at once
 - `create()` - Create PendingInference instance
 
-**Shortcuts (via HandlesShortcuts trait):**
+**Shortcuts:**
 - `stream()` - Get streaming response
 - `response()` - Get full response object
 - `get()` - Get response content as string

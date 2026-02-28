@@ -23,9 +23,7 @@ it('captures reasoning content from Deepseek responses', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
-        ->withHttpClient($http)
-        ->using('deepseek-r')
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'deepseek-r', httpClient: $http))
         ->withMessages('Q?')
         ->response();
 
@@ -51,9 +49,7 @@ it('extracts reasoning content from think tags when field is missing', function 
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
-        ->withHttpClient($http)
-        ->using('deepseek-r')
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'deepseek-r', httpClient: $http))
         ->withMessages('Q?')
         ->response();
 

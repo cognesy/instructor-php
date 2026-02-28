@@ -11,6 +11,7 @@ use Cognesy\Http\Drivers\Mock\MockHttpResponseFactory;
  */
 class StreamedRequestRecord extends RequestRecord
 {
+    /** @var list<string> */
     private array $chunks = [];
 
     public function __construct(array $requestData, array $responseData, array $chunks = []) {
@@ -27,20 +28,24 @@ class StreamedRequestRecord extends RequestRecord
             'options' => $request->options(),
         ];
 
-        // Collect all chunks from the stream
         $chunks = [];
         $body = '';
-
-        // Clone the generator to avoid consuming the original
-        foreach ($response->stream() as $chunk) {
-            $chunks[] = $chunk;
-            $body .= $chunk;
+        if ($response->isStreamed()) {
+            foreach ($response->stream() as $chunk) {
+                $chunks[] = $chunk;
+                $body .= $chunk;
+            }
+        } else {
+            $body = $response->body();
+            if ($body !== '') {
+                $chunks[] = $body;
+            }
         }
 
         $responseData = [
             'statusCode' => $response->statusCode(),
             'headers' => $response->headers(),
-            'body' => $body, // Store the full body too for non-streaming access
+            'body' => $body,
         ];
 
         return new self($requestData, $responseData, $chunks);
@@ -52,7 +57,7 @@ class StreamedRequestRecord extends RequestRecord
         if (!$data || !isset($data['request']) || !isset($data['response'])) {
             return null;
         }
-        $chunks = $data['chunks'] ?? [];
+        $chunks = array_values(array_filter($data['chunks'] ?? [], is_string(...)));
         return new self($data['request'], $data['response'], $chunks);
     }
 
@@ -95,44 +100,17 @@ class StreamedRequestRecord extends RequestRecord
         return !empty($this->chunks);
     }
 
+    /**
+     * @deprecated Use RequestRecord::createAppropriate() instead.
+     */
     public static function createAppropriateRecord(
         HttpRequest $request,
         HttpResponse $response,
     ): RequestRecord {
-        if ($request->isStreamed()) {
+        if ($response->isStreamed()) {
             return self::fromStreamedInteraction($request, $response);
         }
 
         return RequestRecord::fromInteraction($request, $response);
-    }
-
-    #[\Override]
-    protected function getRequestData(): array {
-        // Access request data via reflection or other mechanism
-        // This is a simplified implementation
-        return [
-            'url' => $this->getUrl(),
-            'method' => $this->getMethod(),
-            'body' => $this->getRequestBody(),
-            // Add other request data as needed
-        ];
-    }
-
-    #[\Override]
-    protected function getResponseData(): array {
-        // Access response data via reflection or other mechanism
-        // This is a simplified implementation
-        return [
-            'statusCode' => $this->getStatusCode(),
-            'body' => $this->getResponseBody(),
-            'headers' => $this->getResponseHeaders(),
-        ];
-    }
-
-    #[\Override]
-    public function getResponseHeaders(): array {
-        // This method would need to be implemented in the parent class as well
-        // This is a simplified implementation
-        return [];
     }
 }

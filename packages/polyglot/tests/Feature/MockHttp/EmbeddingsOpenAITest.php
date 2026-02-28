@@ -20,9 +20,9 @@ it('returns embeddings for OpenAI (single input)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $vectors = (new Embeddings())
-        ->withHttpClient($http)
-        ->using('openai')
+    $vectors = Embeddings::fromRuntime(
+        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+    )
         ->withModel('text-embedding-3-small')
         ->withInputs(['hello'])
         ->vectors();
@@ -45,9 +45,9 @@ it('supports runtime-style create with explicit request', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $vectors = (new Embeddings())
-        ->withHttpClient($http)
-        ->using('openai')
+    $vectors = Embeddings::fromRuntime(
+        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+    )
         ->create(new EmbeddingsRequest(
             input: ['hello'],
             model: 'text-embedding-3-small',
@@ -59,7 +59,7 @@ it('supports runtime-style create with explicit request', function () {
     expect($vectors[0]->values())->toBe([0.4, 0.5, 0.6]);
 });
 
-it('supports facade toRuntime extraction and runtime static factories', function () {
+it('supports facade runtime extraction and runtime static factories', function () {
     $mock = new MockHttpDriver();
     $mock->on()
         ->post('https://api.openai.com/v1/embeddings')
@@ -77,10 +77,10 @@ it('supports facade toRuntime extraction and runtime static factories', function
         model: 'text-embedding-3-small',
     );
 
-    $fromFacadeRuntime = (new Embeddings())
-        ->withHttpClient($http)
-        ->using('openai')
-        ->toRuntime()
+    $fromFacadeRuntime = Embeddings::fromRuntime(
+        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+    )
+        ->runtime()
         ->create($request)
         ->get()
         ->vectors();

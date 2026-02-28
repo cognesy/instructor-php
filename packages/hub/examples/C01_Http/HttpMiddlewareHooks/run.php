@@ -1,12 +1,12 @@
 ---
-title: 'HTTP Middleware (Hooks + Conditional Decoration)'
+title: 'HTTP Middleware (Hooks)'
 docname: 'http_middleware_hooks'
+id: 'b6fd'
 ---
-
 ## Overview
 
-Demonstrates BaseMiddleware hooks and conditional response decoration. Shows how to attach
-request headers, log responses, and conditionally decorate streamed responses.
+Practical `BaseMiddleware` example: enrich request headers in `beforeRequest()` and
+perform lightweight side effects in `afterRequest()`.
 
 ## Example
 
@@ -19,66 +19,42 @@ use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
-use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
-use Cognesy\Http\Stream\ArrayStream;
 
-// Scenario: Demonstrate BaseMiddleware hooks and conditional decoration
-
-class HooksExampleMiddleware extends BaseMiddleware
+class RequestIdMiddleware extends BaseMiddleware
 {
     protected function beforeRequest(HttpRequest $request): HttpRequest {
-        // attach a request-id header
-        return $request->withHeader('X-Request-ID', 'hooks-demo-123');
+        return $request->withHeader('X-Request-ID', 'req-demo-123');
     }
 
     protected function afterRequest(HttpRequest $request, HttpResponse $response): HttpResponse {
-        // log status to stdout (example side-effect)
-        fwrite(STDOUT, "afterRequest: status=" . $response->statusCode() . "\n");
+        fwrite(STDOUT, "status=" . $response->statusCode() . "\n");
         return $response;
-    }
-
-    protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool {
-        return $response->isStreamed();
-    }
-
-    protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
-        // decorate: number each emitted chunk (composition)
-        $i = 0;
-        return BaseResponseDecorator::decorate(
-            $response,
-            function (string $chunk) use (&$i): string {
-                $i += 1;
-                return sprintf("[%02d] %s", $i, $chunk);
-            }
-        );
     }
 }
 
-// Mock driver returns a streamed response (full lines as chunks for simplicity)
 $driver = new MockHttpDriver();
 $driver->addResponse(
-    HttpResponse::streaming(
+    HttpResponse::sync(
         statusCode: 200,
-        headers: ['Content-Type' => 'text/plain'],
-        stream: new ArrayStream(["alpha\n", "beta\n", "gamma\n"]),
+        headers: ['Content-Type' => 'application/json'],
+        body: json_encode(['ok' => true]),
     ),
-    url: 'https://api.example.local/lines',
+    url: 'https://api.example.local/ping',
     method: 'GET'
 );
 
-$client = new HttpClient(driver: $driver);
-$client = $client->withMiddleware(new HooksExampleMiddleware());
+$client = (new HttpClient(driver: $driver))
+    ->withMiddleware(new RequestIdMiddleware());
 
 $request = new HttpRequest(
-    url: 'https://api.example.local/lines',
+    url: 'https://api.example.local/ping',
     method: 'GET',
-    headers: ['Accept' => 'text/plain'],
+    headers: ['Accept' => 'application/json'],
     body: '',
-    options: ['stream' => true],
+    options: [],
 );
 
-foreach ($client->withRequest($request)->stream() as $chunk) {
-    echo $chunk; // chunks are numbered by middleware
-}
+$response = $client->withRequest($request)->get();
+echo $response->body() . "\n";
 ?>
 ```

@@ -8,6 +8,7 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\RecordReplay\Events\HttpInteractionRecorded;
+use Cognesy\Http\Stream\ArrayStream;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -30,11 +31,30 @@ class RecordingMiddleware implements HttpMiddleware
     #[\Override]
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         $response = $next->handle($request);
-        $this->records->save($request, $response);
-        if ($this->events !== null) {
-            $this->events->dispatch(new HttpInteractionRecorded($request, $response));
+        if (!$response->isStreamed()) {
+            $this->records->save($request, $response);
+            if ($this->events !== null) {
+                $this->events->dispatch(new HttpInteractionRecorded($request, $response));
+            }
+            return $response;
         }
-        return $response;
+
+        $chunks = [];
+        foreach ($response->stream() as $chunk) {
+            $chunks[] = $chunk;
+        }
+
+        $replayableResponse = HttpResponse::streaming(
+            statusCode: $response->statusCode(),
+            headers: $response->headers(),
+            stream: ArrayStream::from($chunks),
+        );
+
+        $this->records->save($request, $replayableResponse);
+        if ($this->events !== null) {
+            $this->events->dispatch(new HttpInteractionRecorded($request, $replayableResponse));
+        }
+        return $replayableResponse;
     }
 
     public function getRecords(): RequestRecords {

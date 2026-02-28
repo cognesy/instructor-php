@@ -28,13 +28,13 @@ class StructuredOutputStream
     private CanHandleStructuredOutputAttempts $attemptHandler;
     private EventDispatcherInterface $events;
 
-    /** @var ArrayList<StructuredOutputExecution> */
-    private ArrayList $cachedResponseStream;
-
     private StructuredOutputExecution $execution;
     private InferenceResponse|null $lastResponse = null;
     private ?InferenceResponse $finalizedResponse = null;
+    private bool $streamCompleted = false;
     private ResponseCachePolicy $cachePolicy;
+    /** @var ArrayList<InferenceResponse> */
+    private ArrayList $cachedResponses;
 
     /**
      * @param StructuredOutputExecution $execution
@@ -50,7 +50,7 @@ class StructuredOutputStream
         $this->attemptHandler = $attemptHandler;
         $this->events = $events;
         $this->cachePolicy = $execution->config()->responseCachePolicy();
-        $this->cachedResponseStream = ArrayList::empty();
+        $this->cachedResponses = ArrayList::empty();
         $this->events->dispatch(new StructuredOutputStarted(['request' => $execution->request()->toArray()]));
     }
 
@@ -146,6 +146,11 @@ class StructuredOutputStream
         if ($this->finalizedResponse !== null) {
             return $this->finalizedResponse;
         }
+        if ($this->streamCompleted && $this->lastResponse !== null) {
+            $this->finalizedResponse = $this->lastResponse;
+            $this->events->dispatch(new StructuredOutputResponseGenerated(['response' => $this->lastResponse]));
+            return $this->finalizedResponse;
+        }
         foreach ($this->streamResponses() as $_) {
             // Just consume the stream, streamResponses() handles the updates
         }
@@ -184,6 +189,19 @@ class StructuredOutputStream
      * @return Generator<InferenceResponse> Yields inference responses (partials and final).
      */
     private function streamResponses(): Generator {
+        if ($this->streamCompleted) {
+            if ($this->shouldCache()) {
+                foreach ($this->cachedResponses as $response) {
+                    $this->lastResponse = $response;
+                    $this->events->dispatch(new StructuredOutputResponseUpdated(['response' => $response]));
+                    yield $response;
+                }
+                return;
+            }
+            throw new RuntimeException(
+                'Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.'
+            );
+        }
         /** @var StructuredOutputExecution $execution */
         foreach ($this->makeStream($this->execution) as $execution) {
             // Update execution reference to capture accumulated state (including usage)
@@ -191,6 +209,9 @@ class StructuredOutputStream
             $response = $execution->inferenceResponse();
             if ($response === null) {
                 continue;
+            }
+            if ($this->shouldCache()) {
+                $this->cachedResponses = $this->cachedResponses->withAppended($response);
             }
             $this->lastResponse = $execution->inferenceResponse();
             $this->events->dispatch(new StructuredOutputResponseUpdated(['response' => $response]));
@@ -204,10 +225,7 @@ class StructuredOutputStream
      * @return Generator<StructuredOutputExecution>
      */
     private function makeStream(StructuredOutputExecution $execution) : Generator {
-        return match($this->shouldCache()) {
-            false => $this->streamWithoutCaching($execution),
-            true => $this->streamWithCaching($execution),
-        };
+        return $this->streamWithoutCaching($execution);
     }
 
     /**
@@ -221,36 +239,7 @@ class StructuredOutputStream
             yield $execution;
         }
         $this->execution = $execution;
-    }
-
-    /**
-     * Streams execution updates with caching - builds cache on first call, replays from cache on subsequent calls.
-     *
-     * @return Generator<StructuredOutputExecution>
-     */
-    private function streamWithCaching(StructuredOutputExecution $execution): Generator {
-        if ($this->cachedResponseStream->isEmpty()) {
-            yield from $this->buildAndCacheStream($execution);
-            return;
-        }
-        foreach ($this->cachedResponseStream as $item) {
-            yield $item;
-        }
-    }
-
-    /**
-     * Builds the response stream and populates the cache.
-     *
-     * @return Generator<StructuredOutputExecution>
-     */
-    private function buildAndCacheStream(StructuredOutputExecution $execution): Generator {
-        $this->cachedResponseStream = ArrayList::empty();
-        while ($this->attemptHandler->hasNext($execution)) {
-            $execution = $this->attemptHandler->nextUpdate($execution);
-            $this->cachedResponseStream = $this->cachedResponseStream->withAppended($execution);
-            yield $execution;
-        }
-        $this->execution = $execution;
+        $this->streamCompleted = true;
     }
 
     private function shouldCache(): bool {

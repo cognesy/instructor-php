@@ -33,9 +33,7 @@ it('returns content for OpenAI Responses API (non-streaming)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai-responses')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->get();
@@ -64,9 +62,7 @@ it('extracts system messages to instructions field', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai-responses')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages([
             ['role' => 'system', 'content' => 'You are a helpful assistant.'],
@@ -103,9 +99,7 @@ it('uses max_output_tokens instead of max_tokens', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai-responses')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->get();
@@ -130,9 +124,7 @@ it('maps completed status to stop finish reason', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai-responses')
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->response();
@@ -158,9 +150,7 @@ it('maps incomplete status to length finish reason and throws', function () {
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
     // incomplete status → length finish reason → treated as failure → exception
-    expect(fn() => (new Inference())
-        ->withHttpClient($http)
-        ->using('openai-responses')
+    expect(fn() => Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Write a very long story')
         ->response()
@@ -188,9 +178,7 @@ it('extracts usage information', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai-responses')
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai-responses', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hi')
         ->response();

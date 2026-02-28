@@ -23,8 +23,7 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 
-$response = (new Inference)
-    ->using('openai')
+$response = Inference::using('openai')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is capital of France? \
            Respond with function call.']],

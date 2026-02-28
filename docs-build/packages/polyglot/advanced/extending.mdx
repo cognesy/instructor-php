@@ -31,7 +31,7 @@ public function newProvider(LLMConfig $config, CanHandleHttpRequest $httpClient,
         $events
     );
 }
-// @doctest id="596a"
+// @doctest id="b587"
 ```
 
 Finally, add your provider to the `make` method's match statement.
@@ -60,7 +60,7 @@ class NewEmbeddingsDriver implements CanVectorize {
     protected function toResponse(array $response): EmbeddingsResponse { ... }
     protected function makeUsage(array $response): Usage { ... }
 }
-// @doctest id="c48b"
+// @doctest id="fae9"
 ```
 
 Then, modify the `Embeddings` class to create your driver:
@@ -74,7 +74,7 @@ protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $htt
         default => throw new InvalidArgumentException("Unknown client: {$config->providerType}"),
     };
 }
-// @doctest id="a6c6"
+// @doctest id="7263"
 ```
 
 
@@ -101,7 +101,7 @@ class YourCustomMiddleware extends BaseMiddleware {
         return $response;
     }
 }
-// @doctest id="6e21"
+// @doctest id="c7b9"
 ```
 
 Then, add your middleware to the HTTP client:
@@ -110,7 +110,11 @@ Then, add your middleware to the HTTP client:
 $httpClient = new HttpClient();
 $httpClient->withMiddleware(new YourCustomMiddleware());
 
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
-// @doctest id="172f"
+$inference = Inference::fromRuntime(
+    \Cognesy\Polyglot\Inference\InferenceRuntime::using(
+        preset: 'openai',
+        httpClient: $httpClient,
+    )
+);
+// @doctest id="633c"
 ```

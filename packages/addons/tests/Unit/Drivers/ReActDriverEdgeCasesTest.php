@@ -21,12 +21,12 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Time\FrozenClock;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 
 function _noop(): string { return 'ok'; }
 
-function makeReActDriverForEdgeCases(FakeInferenceRequestDriver $driver): ReActDriver {
+function makeReActDriverForEdgeCases(FakeInferenceDriver $driver): ReActDriver {
     $events = EventBusResolver::using(null);
     $inference = InferenceRuntime::fromProvider(
         provider: LLMProvider::new()->withDriver($driver),
@@ -45,7 +45,7 @@ function makeReActDriverForEdgeCases(FakeInferenceRequestDriver $driver): ReActD
 }
 
 it('sets react_last_decision_type for call_tool and final_answer', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: json_encode([
             'thought' => 'x', 'type' => 'call_tool', 'tool' => '_noop', 'args' => []
         ])),
@@ -76,7 +76,7 @@ it('sets react_last_decision_type for call_tool and final_answer', function () {
 
 it('records extraction failures inside failure steps (deterministic)', function () {
     // malformed JSON to trigger failure inside StructuredOutput path
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{bad json'),
     ]);
 

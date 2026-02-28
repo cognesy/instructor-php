@@ -116,3 +116,30 @@ it('handles incomplete lines correctly in synthetic OpenAI data', function () {
     $result = iterator_to_array($reader->eventsFrom($generator()));
     expect($result)->toEqual($expected);
 });
+
+it('stops reading stream when parser signals termination', function () {
+    $this->mockEventDispatcher->shouldReceive('dispatch')->times(3)->with(Mock::type(StreamEventReceived::class));
+    $this->mockEventDispatcher->shouldReceive('dispatch')->twice()->with(Mock::type(StreamEventParsed::class));
+
+    $parser = function (string $line): string|bool {
+        if ($line === 'data: [DONE]') {
+            return false;
+        }
+        return substr($line, 6);
+    };
+    $reader = new EventStreamReader(parser: $parser, events: $this->mockEventDispatcher);
+
+    $generator = function () {
+        yield 'data: {"part":1}' . "\n";
+        yield 'data: {"part":2}' . "\n";
+        yield 'data: [DONE]' . "\n";
+        yield 'data: {"part":3}' . "\n"; // must not be parsed/yielded
+    };
+
+    $result = iterator_to_array($reader->eventsFrom($generator()));
+
+    expect($result)->toEqual([
+        '{"part":1}',
+        '{"part":2}',
+    ]);
+});

@@ -41,10 +41,9 @@ $model = 'claude-sonnet-4-20250514'; // Using Sonnet for lower cache threshold (
 
 $data = file_get_contents(__DIR__ . '/../../../README.md');
 
-$inference = (new Inference)
+$inference = Inference::using('anthropic')
     //->wiretap(fn($e) => $e->print()) // wiretap to print all events
     //->withHttpDebugPreset('on') // debug HTTP traffic
-    ->using('anthropic')
     ->withCachedContext(
         messages: [
             ['role' => 'user', 'content' => 'Here is content of README.md file'],

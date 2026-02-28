@@ -76,11 +76,11 @@ class InferenceRequestBuilder
         ?array        $options = null,
         ?OutputMode  $mode = null,
     ) : static {
-        $this->messages = $messages ? Messages::fromAny($messages) : $this->messages;
+        $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
         $this->model = $model ?? $this->model;
         $this->tools = $tools ?? $this->tools;
         $this->toolChoice = $toolChoice ?? $this->toolChoice;
-        $this->responseFormat = $responseFormat ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat;
+        $this->responseFormat = $responseFormat !== null ? ResponseFormat::fromArray($responseFormat) : $this->responseFormat;
         $this->options = $options ?? $this->options;
         $this->mode = $mode ?? $this->mode;
         return $this;

@@ -1,0 +1,192 @@
+<?php declare(strict_types=1);
+
+namespace Cognesy\Doctools\Markdown;
+
+use Cognesy\Doctools\Markdown\Enums\MetadataStyle;
+use Cognesy\Doctools\Markdown\Internal\CodeBlockManipulator;
+use Cognesy\Doctools\Markdown\Internal\Lexer;
+use Cognesy\Doctools\Markdown\Internal\Parser;
+use Cognesy\Doctools\Markdown\Nodes\CodeBlockNode;
+use Cognesy\Doctools\Markdown\Nodes\ContentNode;
+use Cognesy\Doctools\Markdown\Nodes\DocumentNode;
+use Cognesy\Doctools\Markdown\Nodes\HeaderNode;
+use Cognesy\Doctools\Markdown\Nodes\Node;
+use Cognesy\Doctools\Markdown\Visitors\ReplaceCodeBlockByCallable;
+use Cognesy\Doctools\Markdown\Visitors\ToString;
+use Cognesy\Utils\Markdown\FrontMatter;
+use Iterator;
+use Symfony\Component\Yaml\Yaml;
+
+final readonly class MarkdownFile
+{
+    private function __construct(
+        private DocumentNode $document,
+        private array $metadata = [],
+        private string $path = '',
+    ) {}
+
+    public static function fromString(
+        string $text,
+        string $path = '',
+        array $metadata = [],
+    ): self {
+        $parsedDocument = FrontMatter::parse($text);
+        return new self(
+            document: self::parseMarkdown($parsedDocument->document()),
+            metadata: $metadata ?: $parsedDocument->data(),
+            path: $path,
+        );
+    }
+
+    public function codeBlock(string $id): CodeBlockManipulator {
+        return new CodeBlockManipulator($this, $id);
+    }
+
+    /**
+     * @return Iterator<CodeBlockNode>
+     * @phpstan-return Iterator<mixed, CodeBlockNode>
+     */
+    public function codeBlocks(): Iterator {
+        /** @var Iterator<mixed, CodeBlockNode> */
+        return $this->collectNodes(CodeBlockNode::class, $this->document->children);
+    }
+
+    /** @return Iterator<string> */
+    public function codeQuotes(): Iterator {
+        /** @var Iterator<mixed, ContentNode> */
+        $contentNodes = $this->collectNodes(ContentNode::class, $this->document->children);
+        return \iter\values(\iter\flatten(\iter\map(
+            /** @param ContentNode $node */
+            fn(ContentNode $node) => $node->codeQuotes(),
+            $contentNodes
+        )));
+    }
+
+    /**
+     * @return Iterator<HeaderNode>
+     * @phpstan-return Iterator<mixed, HeaderNode>
+     */
+    public function headers(): Iterator {
+        /** @var Iterator<mixed, HeaderNode> */
+        return $this->collectNodes(HeaderNode::class, $this->document->children);
+    }
+
+    public function hasCodeblocks(): bool {
+        return iterator_count($this->codeBlocks()) > 0;
+    }
+
+    public function root(): DocumentNode {
+        return $this->document;
+    }
+
+    public function withRoot(DocumentNode $document): self {
+        return new self(
+            document: $document,
+            metadata: $this->metadata,
+            path: $this->path,
+        );
+    }
+
+    public function metadata(string $key, mixed $default = null): mixed {
+        return $this->metadata[$key] ?? $default;
+    }
+
+    public function hasMetadata(string $key): bool {
+        return isset($this->metadata[$key]);
+    }
+
+    public function withMetadata(string $key, mixed $value): self {
+        return new self(
+            document: $this->document,
+            metadata: array_merge($this->metadata, [$key => $value]),
+        );
+    }
+
+    public function path(): string {
+        return $this->path;
+    }
+
+    public function withPath(string $path): self {
+        return new self(
+            document: $this->document,
+            metadata: $this->metadata,
+            path: $path,
+        );
+    }
+
+    public function toString(MetadataStyle $metadataStyle = MetadataStyle::Comments): string {
+        $content = $this->document->accept(new ToString($metadataStyle));
+        return match(true) {
+            !empty($this->metadata) => $this->makeFrontMatter($this->metadata) . $content,
+            default => $content,
+        };
+    }
+
+    /**
+     * @param callable(CodeBlockNode): CodeBlockNode $replacer
+     */
+    public function withReplacedCodeBlocks(callable $replacer) : self {
+        /** @var \Closure(CodeBlockNode): CodeBlockNode $closure */
+        $closure = \Closure::fromCallable($replacer);
+        return new self(
+            document: $this->document->accept(new ReplaceCodeBlockByCallable($closure)),
+            metadata: $this->metadata,
+            path: $this->path,
+        );
+    }
+
+    public function withInlinedCodeBlocks(): self {
+        return $this->tryInlineCodeblocks($this, dirname($this->path()));
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////
+
+    private function tryInlineCodeblocks(MarkdownFile $markdownFile, string $markdownDir): MarkdownFile {
+        $madeReplacements = false;
+        $newMarkdown = $markdownFile->withReplacedCodeBlocks(function (CodeBlockNode $codeblock) use ($markdownDir, &$madeReplacements) {
+            $includePath = $codeblock->metadata('include');
+            if (empty($includePath)) {
+                return $codeblock;
+            }
+            $includeDir = trim($includePath, '\'"');
+            // Resolve path relative to markdown file
+            $path = $markdownDir . '/' . ltrim($includeDir, './');
+            if (!file_exists($path)) {
+                throw new \RuntimeException("Codeblock include file '$path' does not exist (resolved from markdown: {$markdownDir})");
+            }
+            $content = file_get_contents($path);
+            if ($content === false) {
+                throw new \RuntimeException("Failed to read codeblock include file '$path'");
+            }
+            $madeReplacements = true;
+            return $codeblock->withContent($content);
+        });
+        return $madeReplacements ? $newMarkdown : $markdownFile;
+    }
+
+    private static function parseMarkdown(string $text) : DocumentNode {
+        $lexer = new Lexer();
+        $parser = new Parser();
+        $tokens = $lexer->tokenize($text);
+        return DocumentNode::fromIterator($parser->parse($tokens));
+    }
+
+    /**
+     * @param class-string<Node> $type
+     * @param Node[] $nodes
+     * @return Iterator<Node>
+     */
+    private function collectNodes(string $type, array $nodes): Iterator {
+        return \iter\values(\iter\filter(
+            fn($node) => $node instanceof $type,
+            $nodes,
+        ));
+    }
+
+    private function makeFrontMatter(array $metadata) : string {
+        return "---\n"
+            . Yaml::dump($metadata)
+            . "---\n"
+            . "\n";
+    }
+}

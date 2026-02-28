@@ -101,10 +101,12 @@ If validation fails, Instructor automatically retries with the LLM, providing er
 
 ## Using Different Providers
 
-Switch providers with a single method call:
+Switch providers by constructing `StructuredOutput` with the runtime you want:
 
 ```php
 <?php
+use Cognesy\Instructor\StructuredOutputRuntime;
+
 // OpenAI (default)
 $result = (new StructuredOutput)
     ->withResponseClass(Movie::class)
@@ -112,23 +114,17 @@ $result = (new StructuredOutput)
     ->get();
 
 // Anthropic Claude
-$result = (new StructuredOutput)
-    ->using('anthropic')
-    ->withResponseClass(Movie::class)
+$result = StructuredOutput::using('anthropic')->withResponseClass(Movie::class)
     ->withMessages($text)
     ->get();
 
 // Google Gemini
-$result = (new StructuredOutput)
-    ->using('gemini')
-    ->withResponseClass(Movie::class)
+$result = StructuredOutput::using('gemini')->withResponseClass(Movie::class)
     ->withMessages($text)
     ->get();
 
 // Local Ollama
-$result = (new StructuredOutput)
-    ->using('ollama')
-    ->withResponseClass(Movie::class)
+$result = StructuredOutput::using('ollama')->withResponseClass(Movie::class)
     ->withMessages($text)
     ->get();
 ```
@@ -141,6 +137,8 @@ Extract data from images using vision-capable models:
 <?php
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Addons\Image\Image;
 
 class Receipt {
     public string $vendor;
@@ -155,11 +153,11 @@ class LineItem {
     public float $amount;
 }
 
-$receipt = (new StructuredOutput)
-    ->using('openai')
-    ->withResponseClass(Receipt::class)
-    ->withImages(['path/to/receipt.jpg'])
-    ->withMessages("Extract all information from this receipt")
+$receipt = StructuredOutput::using('openai')->withResponseClass(Receipt::class)
+    ->with(
+        messages: Image::fromFile('path/to/receipt.jpg')->toMessage(),
+        prompt: "Extract all information from this receipt",
+    )
     ->get();
 
 echo $receipt->vendor; // "Whole Foods"
@@ -175,19 +173,19 @@ Get partial results as they arrive:
 
 use Cognesy\Instructor\StructuredOutput;
 
-$movie = (new StructuredOutput)
+$stream = (new StructuredOutput)
     ->withResponseClass(Movie::class)
-    ->onPartialUpdate(function($partial) {
-        // $partial contains incrementally populated fields
-        echo "Title so far: " . ($partial->title ?? 'loading...') . "\n";
-    })
     ->with(
         messages: $text,
         options: ['stream' => true]
     )
-    ->get();
+    ->stream();
 
-// $movie is the final, validated result
+foreach ($stream->partials() as $partial) {
+    echo "Title so far: " . ($partial->title ?? 'loading...') . "\n";
+}
+
+$movie = $stream->finalValue();
 ```
 
 ## Next Steps

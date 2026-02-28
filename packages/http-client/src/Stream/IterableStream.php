@@ -2,6 +2,8 @@
 
 namespace Cognesy\Http\Stream;
 
+use LogicException;
+
 /**
  * IterableStream: non-buffering wrapper over any iterable<string> source.
  *
@@ -10,6 +12,7 @@ namespace Cognesy\Http\Stream;
  */
 final class IterableStream implements StreamInterface
 {
+    private bool $started = false;
     private bool $completed = false;
 
     /**
@@ -21,6 +24,11 @@ final class IterableStream implements StreamInterface
 
     #[\Override]
     public function getIterator(): \Traversable {
+        if ($this->started) {
+            throw new LogicException('Stream is exhausted and cannot be replayed. Enable response stream caching to iterate again.');
+        }
+        $this->started = true;
+
         try {
             foreach ($this->source as $chunk) {
                 yield $chunk;
@@ -35,4 +43,3 @@ final class IterableStream implements StreamInterface
         return $this->completed;
     }
 }
-

@@ -3,19 +3,20 @@
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Exceptions\TimeoutException;
 use Cognesy\Polyglot\Inference\Config\InferenceRetryPolicy;
-use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptFailed;
+use Cognesy\Polyglot\Inference\Events\InferenceAttemptStarted;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
+use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\InferenceStarted;
 use Cognesy\Polyglot\Inference\PendingInference;
+use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 /**
  * Regression: streaming retries must not reuse a consumed/stale InferenceStream.
@@ -28,37 +29,20 @@ use Cognesy\Polyglot\Inference\PendingInference;
 it('creates a fresh stream on each retry attempt when streaming', function () {
     $events = new EventDispatcher();
 
-    $streamCallCount = 0;
-
-    $driver = new class($streamCallCount) implements CanProcessInferenceRequest {
-        private int $calls = 0;
-        private int $streamCallsRef;
-
-        public function __construct(private int &$streamCalls) {
-            $this->streamCallsRef = &$streamCalls;
-        }
-
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            $this->calls++;
-            $this->streamCalls++;
-
-            if ($this->calls === 1) {
+    $streamAttempts = 0;
+    $driver = new FakeInferenceDriver(
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+        onStream: function () use (&$streamAttempts): iterable {
+            $streamAttempts++;
+            if ($streamAttempts === 1) {
                 throw new TimeoutException('stream timeout');
             }
-
-            // Second attempt: return valid stream chunks
-            yield new PartialInferenceResponse(contentDelta: 'Hello');
-            yield new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+            return [
+                new PartialInferenceResponse(contentDelta: 'Hello'),
+                new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+            ];
+        },
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test retry')
@@ -81,7 +65,7 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
 
     expect($response->content())->toBe('Hello world');
     // The driver's makeStreamResponsesFor was called twice (first failed, second succeeded)
-    expect($streamCallCount)->toBe(2);
+    expect($driver->streamCalls)->toBe(2);
 });
 
 /**
@@ -96,7 +80,6 @@ it('creates a fresh stream on each retry attempt when streaming', function () {
 it('does not re-execute when response() is called after stream() and dispatches lifecycle events', function () {
     $events = new EventDispatcher();
 
-    $streamCallCount = 0;
     $dispatchedEvents = [];
 
     $events->addListener(InferenceStarted::class, function () use (&$dispatchedEvents): void {
@@ -109,23 +92,13 @@ it('does not re-execute when response() is called after stream() and dispatches 
         $dispatchedEvents[] = 'InferenceCompleted:' . ($e->isSuccess ? 'success' : 'failure');
     });
 
-    $driver = new class($streamCallCount) implements CanProcessInferenceRequest {
-        public function __construct(private int &$streamCalls) {}
-
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            $this->streamCalls++;
-            yield new PartialInferenceResponse(contentDelta: 'Hello');
-            yield new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+    $driver = new FakeInferenceDriver(
+        streamBatches: [[
+            new PartialInferenceResponse(contentDelta: 'Hello'),
+            new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+        ]],
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test')
@@ -144,17 +117,64 @@ it('does not re-execute when response() is called after stream() and dispatches 
     $stream = $pending->stream();
     $finalFromStream = $stream->final();
     expect($finalFromStream->content())->toBe('Hello world');
-    expect($streamCallCount)->toBe(1);
+    expect($driver->streamCalls)->toBe(1);
 
     // Second: calling response() must reuse the stream, not re-execute
     $responseResult = $pending->response();
     expect($responseResult->content())->toBe('Hello world');
-    expect($streamCallCount)->toBe(1); // still 1 — no second driver call
+    expect($driver->streamCalls)->toBe(1); // still 1 — no second driver call
 
     // Lifecycle events must be dispatched even through stream-first path
     expect($dispatchedEvents)->toContain('InferenceStarted');
     expect($dispatchedEvents)->toContain('InferenceAttemptSucceeded');
     expect($dispatchedEvents)->toContain('InferenceCompleted:success');
+});
+
+it('dispatches started events before response created in stream-first flow', function () {
+    $events = new EventDispatcher();
+    $dispatchedEvents = [];
+
+    $events->addListener(InferenceStarted::class, function () use (&$dispatchedEvents): void {
+        $dispatchedEvents[] = 'InferenceStarted';
+    });
+    $events->addListener(InferenceAttemptStarted::class, function () use (&$dispatchedEvents): void {
+        $dispatchedEvents[] = 'InferenceAttemptStarted';
+    });
+    $events->addListener(InferenceResponseCreated::class, function () use (&$dispatchedEvents): void {
+        $dispatchedEvents[] = 'InferenceResponseCreated';
+    });
+
+    $driver = new FakeInferenceDriver(
+        streamBatches: [[
+            new PartialInferenceResponse(contentDelta: 'Hello'),
+            new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+        ]],
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+    );
+
+    $request = (new InferenceRequestBuilder())
+        ->withMessages('Test')
+        ->withStreaming(true)
+        ->create();
+
+    $pending = new PendingInference(
+        execution: InferenceExecution::fromRequest($request),
+        driver: $driver,
+        eventDispatcher: $events,
+    );
+
+    $pending->stream()->final();
+    $pending->response();
+
+    $startedIndex = array_search('InferenceStarted', $dispatchedEvents, true);
+    $attemptStartedIndex = array_search('InferenceAttemptStarted', $dispatchedEvents, true);
+    $responseCreatedIndex = array_search('InferenceResponseCreated', $dispatchedEvents, true);
+
+    expect($startedIndex)->not->toBeFalse();
+    expect($attemptStartedIndex)->not->toBeFalse();
+    expect($responseCreatedIndex)->not->toBeFalse();
+    expect($startedIndex)->toBeLessThan($responseCreatedIndex);
+    expect($attemptStartedIndex)->toBeLessThan($responseCreatedIndex);
 });
 
 /**
@@ -166,35 +186,24 @@ it('creates a fresh stream for length recovery continuation', function () {
     $events = new EventDispatcher();
 
     $requestMessages = [];
-
-    $driver = new class($requestMessages) implements CanProcessInferenceRequest {
-        private int $calls = 0;
-
-        public function __construct(private array &$capturedMessages) {}
-
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            $this->calls++;
-            $this->capturedMessages[] = $request->messages();
-
-            if ($this->calls === 1) {
-                // First attempt: return content but finish with length
-                yield new PartialInferenceResponse(contentDelta: 'partial');
-                yield new PartialInferenceResponse(contentDelta: ' answer', finishReason: 'length');
-            } else {
-                // Continuation: return the rest
-                yield new PartialInferenceResponse(contentDelta: 'complete');
-                yield new PartialInferenceResponse(contentDelta: ' response', finishReason: 'stop');
+    $streamAttempts = 0;
+    $driver = new FakeInferenceDriver(
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+        onStream: function (InferenceRequest $request) use (&$requestMessages, &$streamAttempts): iterable {
+            $streamAttempts++;
+            $requestMessages[] = $request->messages();
+            if ($streamAttempts === 1) {
+                return [
+                    new PartialInferenceResponse(contentDelta: 'partial'),
+                    new PartialInferenceResponse(contentDelta: ' answer', finishReason: 'length'),
+                ];
             }
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+            return [
+                new PartialInferenceResponse(contentDelta: 'complete'),
+                new PartialInferenceResponse(contentDelta: ' response', finishReason: 'stop'),
+            ];
+        },
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Tell me everything')
@@ -241,25 +250,17 @@ it('reports partial usage in failure event when stream throws after emitting chu
         $capturedFailure = $e;
     });
 
-    $driver = new class implements CanProcessInferenceRequest {
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            // Emit a chunk with usage, then throw
+    $driver = new FakeInferenceDriver(
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+        onStream: function (): iterable {
             yield new PartialInferenceResponse(
                 contentDelta: 'partial',
                 usage: new Usage(inputTokens: 10, outputTokens: 5),
                 usageIsCumulative: true,
             );
             throw new TimeoutException('connection lost mid-stream');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+        },
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test')
@@ -322,25 +323,13 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
         expect($e->isSuccess)->toBeTrue();
     });
 
-    $streamCallCount = 0;
-
-    $driver = new class($streamCallCount) implements CanProcessInferenceRequest {
-        public function __construct(private int &$streamCalls) {}
-
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            $this->streamCalls++;
-            yield new PartialInferenceResponse(contentDelta: 'Hello');
-            yield new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+    $driver = new FakeInferenceDriver(
+        streamBatches: [[
+            new PartialInferenceResponse(contentDelta: 'Hello'),
+            new PartialInferenceResponse(contentDelta: ' world', finishReason: 'stop'),
+        ]],
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test idempotency')
@@ -358,7 +347,7 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
     // Consume the stream
     $stream = $pending->stream();
     $stream->final();
-    expect($streamCallCount)->toBe(1);
+    expect($driver->streamCalls)->toBe(1);
 
     // First response() — dispatches lifecycle events via stream-first branch
     $first = $pending->response();
@@ -370,7 +359,7 @@ it('is idempotent: response() called twice after stream dispatches lifecycle eve
     expect($second)->toBe($first); // same instance
 
     // Driver never called again
-    expect($streamCallCount)->toBe(1);
+    expect($driver->streamCalls)->toBe(1);
 
     // Each lifecycle event dispatched exactly once
     expect($eventCounts['InferenceStarted'])->toBe(1);
@@ -400,20 +389,13 @@ it('throws and dispatches failure events when stream-first response has a failed
         $capturedFailure = $e;
     });
 
-    $driver = new class implements CanProcessInferenceRequest {
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            yield new PartialInferenceResponse(contentDelta: 'truncated');
-            yield new PartialInferenceResponse(contentDelta: ' output', finishReason: 'length');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+    $driver = new FakeInferenceDriver(
+        streamBatches: [[
+            new PartialInferenceResponse(contentDelta: 'truncated'),
+            new PartialInferenceResponse(contentDelta: ' output', finishReason: 'length'),
+        ]],
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test failure detection')
@@ -462,19 +444,9 @@ it('throws and dispatches failure events when stream-first response has a failed
 it('re-throws on repeated response() calls after non-streaming failure', function () {
     $events = new EventDispatcher();
 
-    $driver = new class implements CanProcessInferenceRequest {
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            return new InferenceResponse(content: 'truncated', finishReason: 'length');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            return [];
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+    $driver = new FakeInferenceDriver(
+        responses: [new InferenceResponse(content: 'truncated', finishReason: 'length')],
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test failure idempotency')
@@ -519,23 +491,51 @@ it('re-throws on repeated response() calls after non-streaming failure', functio
     expect($thirdError)->toBe($firstError);
 });
 
+it('does not retry generic finish reason failures even when runtime exceptions are retriable', function () {
+    $events = new EventDispatcher();
+
+    $responseCalls = 0;
+    $driver = new FakeInferenceDriver(
+        onResponse: function () use (&$responseCalls): InferenceResponse {
+            $responseCalls++;
+            if ($responseCalls === 1) {
+                return new InferenceResponse(content: 'failed', finishReason: 'error');
+            }
+            return new InferenceResponse(content: 'ok', finishReason: 'stop');
+        },
+    );
+
+    $request = (new InferenceRequestBuilder())
+        ->withMessages('Test finish reason retries')
+        ->withRetryPolicy(new InferenceRetryPolicy(
+            maxAttempts: 2,
+            baseDelayMs: 0,
+            retryOnExceptions: [\RuntimeException::class],
+        ))
+        ->create();
+
+    $pending = new PendingInference(
+        execution: InferenceExecution::fromRequest($request),
+        driver: $driver,
+        eventDispatcher: $events,
+    );
+
+    expect(fn() => $pending->response())
+        ->toThrow(\RuntimeException::class, 'Inference execution failed: error');
+
+    expect($responseCalls)->toBe(1);
+});
+
 it('re-throws on repeated response() calls after stream-first failure', function () {
     $events = new EventDispatcher();
 
-    $driver = new class implements CanProcessInferenceRequest {
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            throw new \LogicException('Should not be called in streaming mode');
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            yield new PartialInferenceResponse(contentDelta: 'partial');
-            yield new PartialInferenceResponse(contentDelta: ' content', finishReason: 'content_filter');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+    $driver = new FakeInferenceDriver(
+        streamBatches: [[
+            new PartialInferenceResponse(contentDelta: 'partial'),
+            new PartialInferenceResponse(contentDelta: ' content', finishReason: 'content_filter'),
+        ]],
+        onResponse: fn() => throw new \LogicException('Should not be called in streaming mode'),
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Test stream failure idempotency')

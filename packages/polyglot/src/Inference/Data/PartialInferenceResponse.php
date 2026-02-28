@@ -80,6 +80,26 @@ class PartialInferenceResponse
         return new self();
     }
 
+    public static function fromDelta(
+        PartialInferenceResponse $previous,
+        PartialInferenceDelta $delta,
+    ) : self {
+        $current = new self(
+            contentDelta: $delta->contentDelta,
+            reasoningContentDelta: $delta->reasoningContentDelta,
+            toolId: $delta->toolId,
+            toolName: $delta->toolName,
+            toolArgs: $delta->toolArgs,
+            finishReason: $delta->finishReason,
+            usage: $delta->usage,
+            usageIsCumulative: $delta->usageIsCumulative,
+            responseData: $delta->responseData,
+        );
+        $current->value = $delta->value;
+        $current->applyAccumulationFromPrevious($previous);
+        return $current;
+    }
+
     // PUBLIC ////////////////////////////////////////////////
 
     public function value(): mixed {
@@ -154,7 +174,7 @@ class PartialInferenceResponse
         ?bool $usageIsCumulative = null,
         ?HttpResponse $responseData = null,
     ): self {
-        return new self(
+        $copy = new self(
             contentDelta: $contentDelta ?? $this->contentDelta,
             reasoningContentDelta: $reasoningContentDelta ?? $this->reasoningContentDelta,
             toolId: $toolId ?? $this->toolId,
@@ -169,67 +189,47 @@ class PartialInferenceResponse
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
         );
+
+        // Preserve derived state for immutable patch operations.
+        $copy->value = $this->value;
+        $copy->content = $this->content;
+        $copy->reasoningContent = $this->reasoningContent;
+        $copy->tools = $this->tools;
+        $copy->toolsCount = $this->toolsCount;
+        $copy->lastToolKey = $this->lastToolKey;
+        return $copy;
     }
 
     public function withReasoningContent(string $reasoningContent): self {
-        $this->reasoningContent = $reasoningContent;
-        return $this;
+        $copy = $this->with();
+        $copy->reasoningContent = $reasoningContent;
+        return $copy;
     }
 
     public function withContent(string $content): self {
-        $this->content = $content;
-        return $this;
+        $copy = $this->with();
+        $copy->content = $content;
+        return $copy;
     }
 
     public function withFinishReason(string $finishReason): self {
-        $this->finishReason = $finishReason;
-        return $this;
+        return $this->with(finishReason: $finishReason);
     }
 
     public function withValue(mixed $value): self {
-        $this->value = $value;
-        return $this;
+        $copy = $this->with();
+        $copy->value = $value;
+        return $copy;
     }
 
     public function withUsageCumulative(bool $isCumulative = true): self {
-        $this->usageIsCumulative = $isCumulative;
-        return $this;
+        return $this->with(usageIsCumulative: $isCumulative);
     }
 
     public function withAccumulatedContent(PartialInferenceResponse $previous) : self {
-        // Accumulate content using previous full content if available,
-        // otherwise fall back to previous delta; then append current delta.
-        $baseContent = $previous->content() !== ''
-            ? $previous->content()
-            : ($previous->contentDelta ?? '');
-        $this->content = $baseContent . ($this->contentDelta ?? '');
-
-        // Accumulate reasoning content similarly
-        $baseReasoning = $previous->reasoningContent() !== ''
-            ? $previous->reasoningContent()
-            : ($previous->reasoningContentDelta ?? '');
-        $this->reasoningContent = $baseReasoning . ($this->reasoningContentDelta ?? '');
-
-        // Prefer current finishReason if provided, otherwise carry over previous
-        $this->finishReason = $this->makeFinishReason($previous);
-
-        // Accumulate usage counters
-        $isCumulative = $this->usageIsCumulative || $previous->usageIsCumulative;
-        $this->usageIsCumulative = $isCumulative;
-        $this->usage = $this->accumulateUsage($previous->usage(), $this->usage(), $isCumulative);
-
-        // Preserve first HttpResponse (buffered SSE stream reference)
-        // Prefer non-default previous response when available.
-        if ($previous->responseData instanceof HttpResponse) {
-            // HttpResponse::empty() has statusCode 0; prefer any non-zero previous
-            $prevStatus = $previous->responseData->statusCode();
-            if ($prevStatus > 0) {
-                $this->responseData = $previous->responseData;
-            }
-        }
-
-        $this->accumulateTools($previous);
-        return $this;
+        $copy = $this->with();
+        $copy->applyAccumulationFromPrevious($previous);
+        return $copy;
     }
 
     /**
@@ -395,10 +395,10 @@ class PartialInferenceResponse
 
     private function accumulateUsage(Usage $previous, Usage $current, bool $isCumulative): Usage {
         if ($current->total() === 0) {
-            return Usage::copy($previous);
+            return $previous;
         }
         if ($previous->total() === 0) {
-            return Usage::copy($current);
+            return $current;
         }
 
         if ($isCumulative) {
@@ -412,5 +412,40 @@ class PartialInferenceResponse
         }
 
         return $current->withAccumulated($previous);
+    }
+
+    private function applyAccumulationFromPrevious(PartialInferenceResponse $previous) : void {
+        // Accumulate content using previous full content if available,
+        // otherwise fall back to previous delta; then append current delta.
+        $baseContent = $previous->content() !== ''
+            ? $previous->content()
+            : ($previous->contentDelta ?? '');
+        $this->content = $baseContent . ($this->contentDelta ?? '');
+
+        // Accumulate reasoning content similarly
+        $baseReasoning = $previous->reasoningContent() !== ''
+            ? $previous->reasoningContent()
+            : ($previous->reasoningContentDelta ?? '');
+        $this->reasoningContent = $baseReasoning . ($this->reasoningContentDelta ?? '');
+
+        // Prefer current finishReason if provided, otherwise carry over previous
+        $this->finishReason = $this->makeFinishReason($previous);
+
+        // Accumulate usage counters
+        $isCumulative = $this->usageIsCumulative || $previous->usageIsCumulative;
+        $this->usageIsCumulative = $isCumulative;
+        $this->usage = $this->accumulateUsage($previous->usage(), $this->usage(), $isCumulative);
+
+        // Preserve first HttpResponse (buffered SSE stream reference)
+        // Prefer non-default previous response when available.
+        if ($previous->responseData instanceof HttpResponse) {
+            // HttpResponse::empty() has statusCode 0; prefer any non-zero previous
+            $prevStatus = $previous->responseData->statusCode();
+            if ($prevStatus > 0) {
+                $this->responseData = $previous->responseData;
+            }
+        }
+
+        $this->accumulateTools($previous);
     }
 }

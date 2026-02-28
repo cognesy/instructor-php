@@ -3,7 +3,7 @@
 namespace Cognesy\Agents\Template\Data;
 
 use Cognesy\Agents\Collections\NameList;
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Utils\Metadata;
 
@@ -19,7 +19,7 @@ final readonly class AgentDefinition
         public ?NameList $tools = null,
         public ?NameList $toolsDeny = null,
         public ?NameList $skills = null,
-        public ?AgentBudget $budget = null,
+        public ?ExecutionBudget $budget = null,
         public ?Metadata $metadata = null,
     ) {}
 
@@ -29,8 +29,8 @@ final readonly class AgentDefinition
         return $this->label ?? $this->name;
     }
 
-    public function budget(): AgentBudget {
-        return $this->budget ?? AgentBudget::unlimited();
+    public function budget(): ExecutionBudget {
+        return $this->budget ?? ExecutionBudget::unlimited();
     }
 
     public function inheritsAllTools(): bool {
@@ -90,9 +90,9 @@ final readonly class AgentDefinition
         };
     }
 
-    private static function deserializeBudget(mixed $param): ?AgentBudget {
+    private static function deserializeBudget(mixed $param): ?ExecutionBudget {
         return match (true) {
-            is_array($param) => AgentBudget::fromArray($param),
+            is_array($param) => ExecutionBudget::fromArray($param),
             default => null,
         };
     }

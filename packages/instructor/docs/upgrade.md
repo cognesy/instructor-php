@@ -29,3 +29,29 @@ Correct INSTRUCTOR_CONFIG_PATHS in .env file to `config/instructor` (or your cus
 Make sure that your code follows new namespaces.
 
 Suggestion: use IDE search and replace to find and replace old namespaces with new ones.
+
+## Step 5: Streaming replay behavior
+
+In 2.0, stream iterators are one-shot by default (`ResponseCachePolicy::None`).
+
+- If your code iterates `partials()`, `responses()` or `sequence()` more than once, it will now throw.
+- `finalResponse()` and `finalValue()` are still safe to call repeatedly.
+- To enable replay, configure `ResponseCachePolicy::Memory` explicitly.
+
+## Step 6: Mixin inference traits
+
+`HandlesInference` and `HandlesSelfInference` are deprecated in 2.0.
+
+Use runtime-first APIs instead:
+
+```php
+<?php
+use Cognesy\Instructor\StructuredOutput;
+
+$user = StructuredOutput::using('openai')
+    ->with(
+        messages: 'Jason is 25 years old and works as an engineer.',
+        responseModel: User::class,
+    )
+    ->getObject();
+```

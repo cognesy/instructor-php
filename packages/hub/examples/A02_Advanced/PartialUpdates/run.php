@@ -18,7 +18,9 @@ response is received.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Utils\Cli\Console;
 
 class UserRole
@@ -65,14 +67,23 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$user = (new StructuredOutput)
-    ->using('openai')
+$stream = StructuredOutput::using('openai')->withConfig(new StructuredOutputConfig(
+        responseCachePolicy: ResponseCachePolicy::None, // use Memory if you need replay
+    ))
     ->withMessages($text)
     ->withResponseClass(UserDetail::class)
     ->withOutputMode(OutputMode::Json)
     ->withStreaming()
-    ->onPartialUpdate(partialUpdate(...))
-    ->get();
+    ->stream();
+
+$partials = [];
+foreach ($stream->partials() as $partial) {
+    // Streams are one-shot by default. Keep updates if you need to inspect them later.
+    $partials[] = $partial;
+    partialUpdate($partial);
+}
+
+$user = $stream->finalValue();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";
 echo '$user = '."\n";

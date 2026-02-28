@@ -1,5 +1,7 @@
 # HTTP Client Adapter - API Overview
 
+Immutability rule: `with*()` methods return a new instance. Reassign (`$client = $client->withMiddleware(...)`) instead of relying on in-place mutation.
+
 ## Core Classes
 
 ### `HttpClient`
@@ -9,9 +11,10 @@ Primary client for making HTTP requests with middleware support.
 - `withRequest(HttpRequest $request)` - Returns `PendingHttpResponse` for request execution
 - `pool(HttpRequestList $requests, ?int $maxConcurrent)` - Executes concurrent requests, returns `HttpResponseList`
 - `withPool(HttpRequestList $requests)` - Returns `PendingHttpPool` for deferred execution
-- `withMiddleware(HttpMiddleware $middleware, ?string $name)` - Adds middleware to client
-- `withoutMiddleware(string $name)` - Removes named middleware
-- `withMiddlewareStack(MiddlewareStack $stack)` - Replaces entire middleware stack
+- `withMiddleware(HttpMiddleware $middleware, ?string $name)` - Returns new client with middleware added
+- `withoutMiddleware(string $name)` - Returns new client with named middleware removed
+- `withMiddlewareStack(MiddlewareStack $stack)` - Returns new client with replaced middleware stack
+- `withPoolHandler(CanHandleRequestPool $poolHandler)` - Returns new client with explicit pool handler override
 
 ### `HttpClientBuilder`
 Fluent builder for configuring HTTP clients.
@@ -19,10 +22,16 @@ Fluent builder for configuring HTTP clients.
 - `withConfig(HttpClientConfig $config)` - Sets custom configuration
 - `withDsn(string $dsn)` - Configures from DSN string
 - `withDriver(CanHandleHttpRequest $driver)` - Sets custom HTTP driver
+- `withPoolHandler(CanHandleRequestPool $poolHandler)` - Sets explicit pool handler (custom/mock pooling)
 - `withMiddleware(HttpMiddleware ...$middleware)` - Adds middleware
 - `withEventBus(CanHandleEvents $events)` - Sets event dispatcher
 - `withMock(callable $configurator)` - Configures mock driver for testing
 - `create()` - Builds and returns `HttpClient`
+
+### `HttpClientDriverFactory`
+Driver and pool handler registration hooks.
+- `registerDriver(string $name, string|callable $driver)` - Registers custom driver constructor
+- `registerPoolHandler(string $name, string|callable $poolHandler)` - Registers custom pool handler constructor
 
 ### `HttpRequest`
 HTTP request data container (immutable).
@@ -79,12 +88,12 @@ Response contract for HTTP responses.
 - `toArray()` - Serialization support
 
 ### `MiddlewareStack`
-Manages HTTP middleware execution order.
-- `append(HttpMiddleware $middleware, ?string $name)` - Adds middleware to end
-- `prepend(HttpMiddleware $middleware, ?string $name)` - Adds middleware to start
-- `remove(string $name)` - Removes named middleware
-- `replace(string $name, HttpMiddleware $middleware)` - Replaces middleware
-- `clear()` - Removes all middleware
+Manages HTTP middleware execution order (immutable).
+- `append(HttpMiddleware $middleware, ?string $name)` - Returns new stack with middleware added to end
+- `prepend(HttpMiddleware $middleware, ?string $name)` - Returns new stack with middleware added to start
+- `remove(string $name)` - Returns new stack with named middleware removed
+- `replace(string $name, HttpMiddleware $middleware)` - Returns new stack with middleware replaced
+- `clear()` - Returns new empty stack
 
 ## Key Middleware
 

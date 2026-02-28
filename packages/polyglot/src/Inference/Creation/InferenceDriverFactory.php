@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Inference\Creation;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
+use Cognesy\Http\Contracts\CanManageStreamCache;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
@@ -31,6 +32,7 @@ use Cognesy\Polyglot\Inference\Drivers\OpenRouter\OpenRouterDriver;
 use Cognesy\Polyglot\Inference\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\Inference\Drivers\XAI\XAiDriver;
+use Cognesy\Polyglot\Inference\Drivers\BaseInferenceRequestDriver;
 use Cognesy\Polyglot\Inference\Events\InferenceDriverBuilt;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -67,7 +69,11 @@ class InferenceDriverFactory
     /**
      * Creates and returns an appropriate driver instance based on the given configuration.
      */
-    public function makeDriver(LLMConfig $config, HttpClient $httpClient): CanProcessInferenceRequest {
+    public function makeDriver(
+        LLMConfig $config,
+        HttpClient $httpClient,
+        ?CanManageStreamCache $streamCacheManager = null,
+    ): CanProcessInferenceRequest {
         $driver = $config->driver;
         if (empty($driver)) {
             throw new InvalidArgumentException("Provider type not specified in the configuration.");
@@ -79,6 +85,11 @@ class InferenceDriverFactory
         }
 
         $driver = $driverFactory($config, $httpClient, $this->events);
+        $driver = match (true) {
+            $streamCacheManager === null => $driver,
+            $driver instanceof BaseInferenceRequestDriver => $driver->withStreamCacheManager($streamCacheManager),
+            default => $driver,
+        };
 
         $this->events->dispatch(new InferenceDriverBuilt([
             'driverClass' => get_class($driver),

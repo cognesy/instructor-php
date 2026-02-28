@@ -14,17 +14,16 @@ use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Utils\Result\Result;
 
 /**
- * Extracts content delta from PartialInferenceResponse and accumulates it into a buffer.
+ * Builds per-frame extraction buffers from cumulative PartialInferenceResponse snapshots.
  *
  * Chooses buffer type based on OutputMode (Tools, JSON, Text, etc.).
- * Buffer accumulates all deltas across chunks - single source of truth.
+ * Buffer responsibility is normalization/parsing only - no cross-frame assembly.
  *
  * Converts raw PartialInferenceResponse into PartialFrame.
  */
 final class ExtractDeltaReducer implements Reducer
 {
     private int $frameIndex = 0;
-    private CanBufferContent $accumulatedBuffer;
 
     /**
      * @param Closure(OutputMode): CanBufferContent|null $bufferFactory Optional factory for content buffer
@@ -33,14 +32,11 @@ final class ExtractDeltaReducer implements Reducer
         private readonly Reducer $inner,
         private readonly OutputMode $mode,
         private readonly ?Closure $bufferFactory = null,
-    ) {
-        $this->accumulatedBuffer = $this->createEmptyBuffer();
-    }
+    ) {}
 
     #[\Override]
     public function init(): mixed {
         $this->frameIndex = 0;
-        $this->accumulatedBuffer = $this->createEmptyBuffer();
         return $this->inner->init();
     }
 
@@ -48,25 +44,18 @@ final class ExtractDeltaReducer implements Reducer
     public function step(mixed $accumulator, mixed $reducible): mixed {
         assert($reducible instanceof PartialInferenceResponse);
 
-        // Extract delta based on mode
-        $delta = match ($this->mode) {
-            OutputMode::Tools => $reducible->toolArgs ?: $reducible->contentDelta,
-            default => $reducible->contentDelta,
-        };
+        // Snapshot is the source of truth - reducer no longer assembles deltas.
+        $snapshot = $this->snapshotContent($reducible);
 
-        // Skip empty deltas without finish/value
-        if ($this->shouldSkip($reducible, $delta)) {
+        // Skip empty snapshots without finish/value
+        if ($this->shouldSkip($reducible, $snapshot)) {
             return $accumulator;
         }
 
-        // Always accumulate delta into persistent buffer across chunks
-        // Buffer is single source of truth for accumulated content
-        if ($delta !== '') {
-            $this->accumulatedBuffer = $this->accumulatedBuffer->assemble($delta);
-        }
+        $buffer = $this->bufferFromSnapshot($snapshot);
 
-        // Create frame from response with accumulated buffer
-        $frame = $this->createFrame($reducible, $this->frameIndex++, $this->accumulatedBuffer);
+        // Create frame from response with per-chunk snapshot buffer
+        $frame = $this->createFrame($reducible, $this->frameIndex++, $buffer);
 
         return $this->inner->step($accumulator, $frame);
     }
@@ -88,6 +77,37 @@ final class ExtractDeltaReducer implements Reducer
         return ExtractingBuffer::empty($this->mode);
     }
 
+    private function snapshotContent(PartialInferenceResponse $response): string {
+        return match ($this->mode) {
+            OutputMode::Tools => $this->toolsSnapshotContent($response),
+            default => $response->content(),
+        };
+    }
+
+    private function toolsSnapshotContent(PartialInferenceResponse $response): string {
+        $toolCalls = $response->toolCalls();
+        if ($toolCalls->isEmpty()) {
+            return '';
+        }
+
+        try {
+            return match (true) {
+                $toolCalls->hasSingle() => json_encode($toolCalls->first()?->args() ?? [], JSON_THROW_ON_ERROR),
+                default => json_encode($toolCalls->toArray(), JSON_THROW_ON_ERROR),
+            };
+        } catch (\JsonException) {
+            return '';
+        }
+    }
+
+    private function bufferFromSnapshot(string $snapshot): CanBufferContent {
+        if ($snapshot === '') {
+            return $this->createEmptyBuffer();
+        }
+
+        return $this->createEmptyBuffer()->assemble($snapshot);
+    }
+
     private function createFrame(
         PartialInferenceResponse $response,
         int $index,
@@ -102,8 +122,8 @@ final class ExtractDeltaReducer implements Reducer
         );
     }
 
-    private function shouldSkip(PartialInferenceResponse $reducible, string $delta): bool {
-        return $delta === ''
+    private function shouldSkip(PartialInferenceResponse $reducible, string $snapshot): bool {
+        return $snapshot === ''
             && $reducible->finishReason() === ''
             && !$reducible->hasValue();
     }

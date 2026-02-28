@@ -28,7 +28,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
         '{"name": "Jason", "age":28}',
     ]);
     $events = new EventSink();
-    $person = (new StructuredOutput)->withHttpClient($mockHttp)
+    $person = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
         ->with(
@@ -84,7 +84,7 @@ it('handles events for simple case - validation failure', function ($event) use 
 
     // expect exception
     $this->expectException(\Exception::class);
-    $person = (new StructuredOutput)->withHttpClient($mockHttp)
+    $person = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
@@ -134,7 +134,7 @@ it('handles events for custom case', function ($event) use ($text) {
         '{"age":28}'
     ]);
     $events = new EventSink();
-    $age = (new StructuredOutput)->withHttpClient($mockHttp)
+    $age = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->with(
             messages: [['role' => 'user', 'content' => $text]],

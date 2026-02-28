@@ -33,11 +33,22 @@ Define how Instructor should process and validate responses:
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count for failed validations
     ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
-    ->withRetryPrompt($prompt)          // Set custom retry prompt for validation failures
-    ->withSchemaName($name)             // Set schema name for documentation
-    ->withToolName($name)               // Set tool name for Tools mode
-    ->withToolDescription($description) // Set tool description for Tools mode
+    ->withDefaultToStdClass(true)       // Fallback to stdClass for schema-less payloads
 ```
+
+Stream replay policy is configured through `StructuredOutputConfig`:
+
+```php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+
+$structuredOutput = (new StructuredOutput)
+    ->withConfig(new StructuredOutputConfig(
+        responseCachePolicy: ResponseCachePolicy::None, // default in 2.0
+    ));
+```
+
+Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed updates.
 
 ## Advanced Configuration
 
@@ -46,12 +57,7 @@ Fine-tune Instructor's internal processing:
 ```php
 $structuredOutput = (new StructuredOutput)
     ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
-    ->withConfigPreset($presetName)     // Use predefined configuration preset
-    ->withConfigProvider($provider)     // Use custom configuration provider
-    ->withObjectReferences(true)        // Enable object reference handling
     ->withDefaultToStdClass(true)       // Default to stdClass for unknown types
-    ->withDeserializationErrorPrompt($prompt) // Custom deserialization error prompt
-    ->withThrowOnTransformationFailure(true)  // Throw on transformation failures
 ```
 
 ## LLM Provider Configuration
@@ -59,17 +65,20 @@ $structuredOutput = (new StructuredOutput)
 Configure connection and communication with LLM providers:
 
 ```php
-$structuredOutput = (new StructuredOutput)
-    ->using($preset)                    // Use LLM preset (e.g., 'openai', 'anthropic')
-    ->withDsn($dsn)                     // Set connection DSN
-    ->withLLMProvider($provider)        // Set custom LLM provider instance
-    ->withLLMConfig($config)            // Set LLM configuration object
-    ->withLLMConfigOverrides($overrides) // Override specific LLM config values
-    ->withDriver($driver)               // Set custom inference driver
-    ->withHttpClient($client)           // Set custom HTTP client
-    ->withHttpClientPreset($preset)     // Use HTTP client preset
-    ->withHttpDebugPreset($preset)      // Enable debug preset
-    ->withClientInstance($driverName, $instance) // Set client instance for specific driver
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$structuredOutput = StructuredOutput::using('openai');
+
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromDsn('preset=openai,model=gpt-4o-mini')
+);
+
+$provider = LLMProvider::using('openai')
+    ->withLLMConfigOverrides(['temperature' => 0.2]);
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromProvider(provider: $provider)
+);
 ```
 
 ## Processing Pipeline Overrides
@@ -81,24 +90,38 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override response validators
     ->withTransformers(...$transformers) // Override response transformers  
     ->withDeserializers(...$deserializers) // Override response deserializers
+    ->withExtractors(...$extractors)    // Override response extractors
 ```
 
-## Event Handling
+## Streaming Updates And Events
 
-Configure real-time processing callbacks:
+Handle incremental updates via stream iterators or event subscribers:
 
 ```php
+$stream = (new StructuredOutput)
+    ->withStreaming(true)
+    ->withMessages("Generate a list of tasks")
+    ->withResponseClass(Sequence::of(Task::class))
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    updateUI($partial);
+}
+
+foreach ($stream->sequence() as $sequence) {
+    processItem($sequence->last());
+}
+
 $structuredOutput = (new StructuredOutput)
-    ->onPartialUpdate($callback)        // Handle partial response updates during streaming
-    ->onSequenceUpdate($callback)       // Handle sequence item completion during streaming
+    ->onEvent(\Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class, $callback)
+    ->onEvent(\Cognesy\Instructor\Events\Request\SequenceUpdated::class, $callback);
 ```
 
 ## Configuration Examples
 
 ### Basic OpenAI Configuration
 ```php
-$result = (new StructuredOutput)
-    ->using('openai')
+$result = StructuredOutput::using('openai')
     ->withModel('gpt-4')
     ->withMaxRetries(3)
     ->withMessages("Extract person data from: John is 25 years old")
@@ -106,15 +129,19 @@ $result = (new StructuredOutput)
     ->get();
 ```
 
-### Streaming with Callbacks
+### Streaming with partials()
 ```php
-$result = (new StructuredOutput)
-    ->using('openai')
+$stream = StructuredOutput::using('openai')
     ->withStreaming(true)
-    ->onPartialUpdate(fn($partial) => updateUI($partial))
     ->withMessages("Generate a list of tasks")
     ->withResponseClass(Sequence::of(Task::class))
-    ->get();
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    updateUI($partial);
+}
+
+$result = $stream->finalValue();
 ```
 
 ### Custom Configuration Object

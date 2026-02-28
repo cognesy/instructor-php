@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\CohereV2;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
-use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 
@@ -25,12 +25,12 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
     }
 
     #[\Override]
-    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceResponse {
+    protected function fromStreamResponse(string $eventBody, ?HttpResponse $responseData = null): ?PartialInferenceDelta {
         $data = json_decode($eventBody, true);
         if (empty($data)) {
             return null;
         }
-        return new PartialInferenceResponse(
+        return new PartialInferenceDelta(
             contentDelta: $this->makeContentDelta($data),
             toolId: $data['delta']['message']['tool_calls']['function']['id'] ?? '',
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',

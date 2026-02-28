@@ -15,7 +15,8 @@ test('creates from streamed HTTP interaction', function() {
     );
     
     $chunks = ['{"part1":', '"value1",', '"part2":"value2"}'];
-    $response = MockHttpResponseFactory::streaming(chunks: $chunks);
+    $headers = ['Content-Type' => 'application/json-stream', 'X-Trace' => 'stream-test'];
+    $response = MockHttpResponseFactory::streaming(headers: $headers, chunks: $chunks);
     
     // Act
     $record = StreamedRequestRecord::fromStreamedInteraction($request, $response);
@@ -24,6 +25,7 @@ test('creates from streamed HTTP interaction', function() {
     expect($record)->toBeInstanceOf(StreamedRequestRecord::class);
     expect($record->getUrl())->toBe('https://api.example.com/stream');
     expect($record->getMethod())->toBe('GET');
+    expect($record->getResponseHeaders())->toBe($headers);
     expect($record->getResponseBody())->toBe('{"part1":"value1","part2":"value2"}');
     expect($record->getChunks())->toBe($chunks);
     expect($record->getChunkCount())->toBe(3);
@@ -41,7 +43,8 @@ test('converts streamed record to and from JSON', function() {
     );
     
     $chunks = ['{"part1":', '"value1",', '"part2":"value2"}'];
-    $response = MockHttpResponseFactory::streaming(chunks: $chunks);
+    $headers = ['Content-Type' => 'application/json-stream', 'X-Trace' => 'stream-test'];
+    $response = MockHttpResponseFactory::streaming(headers: $headers, chunks: $chunks);
     
     // Act
     $original = StreamedRequestRecord::fromStreamedInteraction($request, $response);
@@ -52,6 +55,7 @@ test('converts streamed record to and from JSON', function() {
     expect($recreated)->not()->toBeNull();
     expect($recreated)->toBeInstanceOf(StreamedRequestRecord::class);
     expect($recreated->getChunks())->toBe($chunks);
+    expect($recreated->getResponseHeaders())->toBe($headers);
     expect($recreated->getResponseBody())->toBe('{"part1":"value1","part2":"value2"}');
 });
 

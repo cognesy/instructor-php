@@ -103,9 +103,6 @@ class StructuredOutputFake
         ?string $model = null,
         ?int $maxRetries = null,
         ?array $options = null,
-        ?string $toolName = null,
-        ?string $toolDescription = null,
-        ?string $retryPrompt = null,
         ?OutputMode $mode = null,
     ): self {
         $this->messages = $messages;
@@ -133,6 +130,24 @@ class StructuredOutputFake
         return $this;
     }
 
+    public function withOption(string $key, mixed $value): self
+    {
+        $this->options[$key] = $value;
+        return $this;
+    }
+
+    public function withResponseClass(string $class): self
+    {
+        $this->responseModel = $class;
+        return $this;
+    }
+
+    public function withResponseObject(object $object): self
+    {
+        $this->responseModel = $object;
+        return $this;
+    }
+
     public function withOptions(array $options): self
     {
         $this->options = $options;
@@ -154,21 +169,6 @@ class StructuredOutputFake
         return $this;
     }
 
-    public function withHttpClient($httpClient): self
-    {
-        return $this;
-    }
-
-    public function withHttpDebugPreset(?string $preset): self
-    {
-        return $this;
-    }
-
-    public function withHttpDebug(bool $enabled = true): self
-    {
-        return $this;
-    }
-
     public function withValidators(...$validators): self
     {
         return $this;
@@ -184,12 +184,7 @@ class StructuredOutputFake
         return $this;
     }
 
-    public function onPartialUpdate(callable $callback): self
-    {
-        return $this;
-    }
-
-    public function onSequenceUpdate(callable $callback): self
+    public function withExtractors(...$extractors): self
     {
         return $this;
     }

@@ -38,7 +38,7 @@ echo "Finish reason: " . $fullResponse->finishReason() . "\n";
 echo "Usage - Total tokens: " . $fullResponse->usage()->total() . "\n";
 echo "Usage - Input tokens: " . $fullResponse->usage()->input() . "\n";
 echo "Usage - Output tokens: " . $fullResponse->usage()->output() . "\n";
-// @doctest id="32ec"
+// @doctest id="befb"
 ```
 
 
@@ -73,7 +73,7 @@ foreach ($stream as $partialResponse) {
 }
 
 echo "\n\nComplete response: " . $response->get();
-// @doctest id="3398"
+// @doctest id="da29"
 ```
 
 
@@ -113,7 +113,7 @@ $tools = [
     ],
 ];
 
-$inference = new Inference()->using('openai');
+$inference = Inference::using('openai');
 $response = $inference->with(
     messages: 'What is the weather in Paris?',
     tools: $tools,
@@ -169,5 +169,5 @@ if ($response->hasToolCalls()) {
 } else {
     echo "Response: " . $response->content() . "\n";
 }
-// @doctest id="3c99"
+// @doctest id="c868"
 ```

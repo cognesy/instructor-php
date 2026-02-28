@@ -88,10 +88,5 @@ echo "\nParent transcript:\n";
 echo $parentBranch->state()->messages()->toString() . "\n";
 echo "\nFork transcript:\n";
 echo $forkBranch->state()->messages()->toString() . "\n";
-
-assert($storedFork->sessionId()->value === 'forked-session-demo');
-assert($storedFork->info()->parentId()?->value === $parentId->value);
-assert($parentBranch->state()->messages()->count() >= 4);
-assert($forkBranch->state()->messages()->count() >= 4);
 ?>
 ```

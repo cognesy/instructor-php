@@ -9,7 +9,14 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
+/**
+ * @deprecated 2.0 Use `StructuredOutput::using(...)->with(...)->get()` or
+ *             `StructuredOutputRuntime::fromProvider(...)->create(...)->get()` instead.
+ */
 trait HandlesInference {
+    /**
+     * @deprecated 2.0 Use StructuredOutput facade/runtime directly.
+     */
     public function infer(
         string|array        $messages = '',
         string|array|object $responseModel = [],

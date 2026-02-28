@@ -14,11 +14,13 @@ Simple Inference operation logging using Monolog.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\MonologChannelWriter;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -41,9 +43,12 @@ $pipeline = LoggingPipeline::create()
 echo "📋 About to demonstrate Inference logging with Monolog...\n\n";
 
 // Create inference with logging
-$inference = (new Inference)
-    ->using('openai')
-    ->wiretap($pipeline);
+$events = new EventDispatcher();
+$events->wiretap($pipeline);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    events: $events,
+));
 
 echo "🚀 Starting Inference request...\n";
 $response = $inference

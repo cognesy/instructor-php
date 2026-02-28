@@ -29,7 +29,6 @@ final readonly class StructuredOutputPipelineFactory
         private array $validators = [],
         private array $transformers = [],
         private array $deserializers = [],
-        private ?CanExtractResponse $extractor = null,
         private array $extractors = [],
     ) {}
 
@@ -95,14 +94,13 @@ final readonly class StructuredOutputPipelineFactory
     }
 
     private function resolveExtractor(): CanExtractResponse {
-        return match (true) {
-            $this->extractor !== null => $this->extractor,
-            !empty($this->extractors) => new ResponseExtractor(
-                extractors: $this->extractors,
-                events: $this->events,
-            ),
-            default => new ResponseExtractor(events: $this->events),
-        };
+        return new ResponseExtractor(
+            extractors: match (true) {
+                empty($this->extractors) => null,
+                default => $this->extractors,
+            },
+            events: $this->events,
+        );
     }
 
 }

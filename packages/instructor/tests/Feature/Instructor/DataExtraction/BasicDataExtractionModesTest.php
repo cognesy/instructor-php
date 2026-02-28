@@ -119,7 +119,7 @@ it('extracts data via public fields', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'Jason is 28 years old. His password is secret123.']],
             responseModel: UserWithPublicFields::class,
@@ -138,7 +138,7 @@ it('handles private vs public fields correctly', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'Jason is 28 years old. His password is secret123.']],
             responseModel: UserWithPrivateFields::class,
@@ -157,7 +157,7 @@ it('extracts data via constructor parameters', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'Jason is 28 years old, lives in San Francisco. Password: mypassword.']],
             responseModel: UserWithConstructor::class,
@@ -177,7 +177,7 @@ it('handles constructor optional parameters', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'Jason is 28 years old.']],
             responseModel: UserWithConstructor::class,
@@ -197,7 +197,7 @@ it('extracts data via setter methods', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'Jane is 30 years old, lives in New York. Password: secure456.']],
             responseModel: UserWithSetters::class,
@@ -217,7 +217,7 @@ it('handles setter default values and nullable parameters', function () {
     ]);
 
     $user = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => 'This user lives in Boston.']],
             responseModel: UserWithSetters::class,
@@ -253,7 +253,7 @@ it('compares extraction modes with same data', function () {
     // Public fields - all data extracted
     $mockHttp1 = MockHttp::get([$sameJson]);
     $publicUser = (new StructuredOutput)
-        ->withHttpClient($mockHttp1)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp1))
         ->with(
             messages: [['role' => 'user', 'content' => 'TestUser is 25, password test123']],
             responseModel: UserWithPublicFields::class,
@@ -263,7 +263,7 @@ it('compares extraction modes with same data', function () {
     // Private fields - only public name extracted
     $mockHttp2 = MockHttp::get([$sameJson]);
     $privateUser = (new StructuredOutput)
-        ->withHttpClient($mockHttp2)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp2))
         ->with(
             messages: [['role' => 'user', 'content' => 'TestUser is 25, password test123']],
             responseModel: UserWithPrivateFields::class,
@@ -273,7 +273,7 @@ it('compares extraction modes with same data', function () {
     // Constructor - all data extracted via constructor
     $mockHttp3 = MockHttp::get([$sameJson]);
     $constructorUser = (new StructuredOutput)
-        ->withHttpClient($mockHttp3)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp3))
         ->with(
             messages: [['role' => 'user', 'content' => 'TestUser is 25, password test123']],
             responseModel: UserWithConstructor::class,

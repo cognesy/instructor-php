@@ -20,8 +20,7 @@ it('threads HttpClient through StructuredOutput using OpenAI adapter', function 
         ->create();
 
     $user = (new StructuredOutput)
-        ->withHttpClient($http)
-        ->using('openai')
+        ->withRuntime(makeStructuredRuntime(httpClient: $http, preset: 'openai'))
         ->with(
             messages: 'Extract user',
             responseModel: MockUser::class,
@@ -33,4 +32,3 @@ it('threads HttpClient through StructuredOutput using OpenAI adapter', function 
     expect($user->name)->toBe('Lia');
     expect($user->age)->toBe(28);
 });
-

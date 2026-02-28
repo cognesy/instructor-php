@@ -15,7 +15,7 @@ Polyglot supports context caching through the `withCachedContext()` method:
 use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object
-$inference = new Inference()->using('anthropic');
+$inference = Inference::using('anthropic');
 
 // Set up a conversation with cached context
 $inference->withCachedContext(
@@ -41,7 +41,7 @@ $response2 = $inference->with(
 
 echo "Response 2: " . $response2->content() . "\n";
 echo "Tokens from cache: " . $response2->usage()->cacheReadTokens . "\n";
-// @doctest id="1686"
+// @doctest id="356e"
 ```
 
 ### Provider Support for Context Caching
@@ -66,7 +66,7 @@ use Cognesy\Polyglot\Inference\Inference;
 $documentContent = file_get_contents('large_document.txt');
 
 // Set up cached context with the document
-$inference = new Inference()->using('anthropic');
+$inference = Inference::using('anthropic');
 $inference->withCachedContext(
     messages: [
         ['role' => 'system', 'content' => 'You will help analyze and summarize documents.'],
@@ -90,5 +90,5 @@ foreach ($questions as $index => $question) {
     echo "Answer: " . $response->content() . "\n";
     echo "Tokens from cache: " . $response->usage()->cacheReadTokens . "\n\n";
 }
-// @doctest id="8afb"
+// @doctest id="490f"
 ```

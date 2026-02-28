@@ -75,7 +75,7 @@ use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 // OpenAI example
-$inference = new Inference()->using('openai');
+$inference = Inference::using('openai');
 
 $response = $inference->with(
     messages: 'List the top 3 most populous cities in the world.',

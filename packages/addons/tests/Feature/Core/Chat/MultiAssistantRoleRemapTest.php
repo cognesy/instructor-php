@@ -12,20 +12,28 @@ use Cognesy\Messages\MessageStore\MessageStore;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 it('handles multi-participant chat with role mapping', function () {
     // Create two different assistants
-    $driverA = new FakeInferenceRequestDriver([
+    $driverA = new FakeInferenceDriver([
         new InferenceResponse(content: 'Response from A'),
     ]);
-    $inferenceA = (new Inference())->withLLMProvider(LLMProvider::new()->withDriver($driverA));
+    $inferenceA = Inference::fromRuntime(
+        \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
+            LLMProvider::new()->withDriver($driverA),
+        ),
+    );
     $assistantA = new LLMParticipant(name: 'assistantA', inference: $inferenceA, systemPrompt: 'You are assistant A');
 
-    $driverB = new FakeInferenceRequestDriver([
+    $driverB = new FakeInferenceDriver([
         new InferenceResponse(content: 'Response from B'),
     ]);
-    $inferenceB = (new Inference())->withLLMProvider(LLMProvider::new()->withDriver($driverB));
+    $inferenceB = Inference::fromRuntime(
+        \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
+            LLMProvider::new()->withDriver($driverB),
+        ),
+    );
     $assistantB = new LLMParticipant(name: 'assistantB', inference: $inferenceB, systemPrompt: 'You are assistant B');
 
     // Set up initial state with mixed messages

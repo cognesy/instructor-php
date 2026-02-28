@@ -31,9 +31,7 @@ it('handles tool calls in non-streaming OpenAI response', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Weather please')
         ->response();

@@ -1,8 +1,8 @@
 ---
 title: 'HTTP Client – Streaming Basics'
 docname: 'http_client_streaming_basics'
+id: '1eed'
 ---
-
 ## Overview
 
 Demonstrates requesting a streamed response and iterating over chunks. Uses a Mock driver

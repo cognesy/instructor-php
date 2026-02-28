@@ -120,22 +120,26 @@ See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive doc
 $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count
     ->withOutputMode($mode)             // Set output mode
-    ->withToolName($name)               // Set tool name for Tools mode
-    ->withToolDescription($desc)        // Set tool description
-    ->withRetryPrompt($prompt)          // Set retry prompt
     ->withConfig($config)               // Set configuration object
-    ->withConfigPreset($preset)         // Use configuration preset
+    ->withDefaultToStdClass(true)       // Use stdClass fallback for schema-less data
 ```
 
 ### LLM Provider Configuration
 ```php
-$structuredOutput = (new StructuredOutput)
-    ->using($preset)                    // Use LLM preset (e.g., 'openai')
-    ->withDsn($dsn)                     // Set connection DSN
-    ->withLLMProvider($provider)        // Set custom LLM provider
-    ->withLLMConfig($config)            // Set LLM configuration
-    ->withDriver($driver)               // Set inference driver
-    ->withHttpClient($client)           // Set HTTP client
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
+
+$structuredOutput = StructuredOutput::using('openai');
+
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromDsn('preset=openai,model=gpt-4o-mini')
+);
+
+$provider = LLMProvider::using('openai')
+    ->withLLMConfigOverrides(['temperature' => 0.2]);
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromProvider(provider: $provider)
+);
 ```
 
 ### Processing Overrides
@@ -144,6 +148,7 @@ $structuredOutput = (new StructuredOutput)
     ->withValidators(...$validators)    // Override validators
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
+    ->withExtractors(...$extractors)    // Override extractors
 ```
 
 
@@ -199,16 +204,14 @@ $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
 
-When you need constructor-injected creators (for agents, addons, or DI containers), use `toRuntime()` and execute via request objects:
+When you need constructor-injected creators (for agents, addons, or DI containers), use `StructuredOutputRuntime` directly and execute via request objects:
 
 ```php
 <?php
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
-$creator = (new StructuredOutput())
-    ->using('openai')
-    ->toRuntime();
+$creator = StructuredOutputRuntime::using('openai');
 
 $request = new StructuredOutputRequest(
     messages: "His name is Jason, he is 28 years old.",

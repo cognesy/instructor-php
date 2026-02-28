@@ -7,7 +7,7 @@ Polyglot allows you to use custom HTTP clients for specific connection requireme
 
 ```php
 <?php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a custom HTTP client configuration
 $httpConfig = new HttpClientConfig(
@@ -22,8 +22,10 @@ $httpConfig = new HttpClientConfig(
 $httpClient = new HttpClient('guzzle', $httpConfig);
 
 // Use the custom HTTP client with Inference
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $httpClient,
+));
 
 // Make a request with the custom HTTP client
 $response = $inference->with(

@@ -10,6 +10,7 @@ use Cognesy\Instructor\Events\Extraction\ExtractionStarted;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategyAttempted;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategyFailed;
 use Cognesy\Instructor\Events\Extraction\ExtractionStrategySucceeded;
+use Cognesy\Instructor\Extraction\Contracts\CanExtractResponse;
 use Cognesy\Instructor\Extraction\Extractors\DirectJsonExtractor;
 use Cognesy\Instructor\Extraction\Data\ExtractionInput;
 use Cognesy\Instructor\Extraction\Exceptions\ExtractionException;
@@ -174,6 +175,39 @@ describe('Extraction Events', function () {
         $withEvents->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
 
         expect(count($events))->toBeGreaterThan(0);
+    });
+
+    it('attaches dispatcher to custom extractors that support withEvents', function () {
+        $events = [];
+        $dispatcher = createEventCollector($events);
+
+        $eventAwareExtractor = new class implements CanExtractResponse {
+            private bool $hasEvents = false;
+
+            public function withEvents(EventDispatcherInterface $events): self {
+                $copy = clone $this;
+                $copy->hasEvents = true;
+                return $copy;
+            }
+
+            public function extract(ExtractionInput $input): array {
+                return ['with_events' => $this->hasEvents];
+            }
+
+            public function name(): string {
+                return 'event_aware';
+            }
+        };
+
+        $extractor = new ResponseExtractor(
+            extractors: [$eventAwareExtractor],
+            events: $dispatcher,
+        );
+
+        $response = makeResponse('{"ignored":true}');
+        $result = $extractor->extract(ExtractionInput::fromResponse($response, OutputMode::Json));
+
+        expect($result)->toBe(['with_events' => true]);
     });
 });
 

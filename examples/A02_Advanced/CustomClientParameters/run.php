@@ -21,6 +21,7 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
@@ -64,10 +65,13 @@ $llmConfig = new LLMConfig(
 
 // Get Instructor with the default client component overridden with your own
 
-$structuredOutput = (new StructuredOutput)
-    ->withEventHandler($events)
-    ->withLLMConfig($llmConfig)
-    ->withHttpClient($customClient);
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromConfig(
+        config: $llmConfig,
+        events: $events,
+        httpClient: $customClient,
+    )
+);
 
 // Call with custom model and execution mode
 

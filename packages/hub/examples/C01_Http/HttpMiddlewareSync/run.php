@@ -1,8 +1,8 @@
 ---
 title: 'HTTP Middleware (Sync)'
 docname: 'http_middleware_sync'
+id: 'bd7e'
 ---
-
 ## Overview
 
 Demonstrates synchronous HTTP middleware that adds a request header and transforms the

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\StructuredOutputRecoveryException;
@@ -8,7 +9,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 // Minimal DTOs
 class RetryFailSyncUser { public int $age; }
@@ -16,7 +17,7 @@ class RetryFailStreamUser { public int $age; }
 
 it('emits retry events and throws after max retries (sync)', function () {
     // Two failing responses (no JSON)
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [
             new InferenceResponse(content: 'not json 1'),
             new InferenceResponse(content: 'not json 2'),
@@ -29,13 +30,19 @@ it('emits retry events and throws after max retries (sync)', function () {
     $events->addListener(NewValidationRecoveryAttempt::class, function () use (&$attempts) { $attempts++; });
     $events->addListener(StructuredOutputRecoveryLimitReached::class, function () use (&$limitReached) { $limitReached++; });
 
-    $so = (new StructuredOutput())
-        ->withEventHandler($events)
-        ->withDriver($driver)
-        ->withMessages('sync failure')
-        ->withResponseClass(RetryFailSyncUser::class)
+    $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
-        ->withMaxRetries(1);
+        ->withMaxRetries(1)
+        ->create();
+    $runtime = makeStructuredRuntime(
+        driver: $driver,
+        events: $events,
+        config: $config,
+    );
+
+    $so = (new StructuredOutput($runtime))
+        ->withMessages('sync failure')
+        ->withResponseClass(RetryFailSyncUser::class);
 
     expect(function () use ($so) { $so->getObject(); })
         ->toThrow(StructuredOutputRecoveryException::class);
@@ -49,7 +56,7 @@ it('emits retry events and throws after max retries (streaming)', function () {
     // Two failing streaming attempts: no deltas in both batches
     $batch1 = [];
     $batch2 = [];
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [ $batch1, $batch2 ],
     );
@@ -60,13 +67,19 @@ it('emits retry events and throws after max retries (streaming)', function () {
     $events->addListener(NewValidationRecoveryAttempt::class, function () use (&$attempts) { $attempts++; });
     $events->addListener(StructuredOutputRecoveryLimitReached::class, function () use (&$limitReached) { $limitReached++; });
 
-    $so = (new StructuredOutput())
-        ->withEventHandler($events)
-        ->withDriver($driver)
-        ->withMessages('stream failure')
-        ->withResponseClass(RetryFailStreamUser::class)
+    $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
         ->withMaxRetries(1)
+        ->create();
+    $runtime = makeStructuredRuntime(
+        driver: $driver,
+        events: $events,
+        config: $config,
+    );
+
+    $so = (new StructuredOutput($runtime))
+        ->withMessages('stream failure')
+        ->withResponseClass(RetryFailStreamUser::class)
         ->withStreaming();
 
     expect(function () use ($so) { $so->getObject(); })
@@ -76,4 +89,3 @@ it('emits retry events and throws after max retries (streaming)', function () {
     expect($attempts)->toBe(1);
     expect($limitReached)->toBe(1);
 });
-

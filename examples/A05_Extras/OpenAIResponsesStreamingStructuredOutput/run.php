@@ -41,16 +41,20 @@ $onPartialUpdate = function (object $partial) use (&$partialsCount): void {
     dump($partial);
 };
 
-$profile = (new StructuredOutput)
-    ->using('openai-responses')
+$stream = StructuredOutput::using('openai-responses')
     // ->withHttpDebugPreset('on') // enable HTTP stack debug output if needed
     ->withOutputMode(OutputMode::JsonSchema)
     ->withResponseClass(PersonProfile::class)
     ->withMessages($text)
     ->withOptions(['max_output_tokens' => 384])
     ->withStreaming()
-    ->onPartialUpdate($onPartialUpdate)
-    ->get();
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
+    $onPartialUpdate($partial);
+}
+
+$profile = $stream->finalValue();
 
 echo "All tokens received. Final structured profile:\n";
 dump($profile);

@@ -37,7 +37,7 @@ class LogStepsHook implements HookInterface
         return $context;
     }
 }
-// @doctest id="d6b2"
+// @doctest id="4a67"
 ```
 
 ## Registering Hooks
@@ -59,7 +59,7 @@ $agent = AgentBuilder::base()
         name: 'log_steps',
     ))
     ->build();
-// @doctest id="ddd0"
+// @doctest id="1ec3"
 ```
 
 ### Via HookStack (manual)
@@ -80,7 +80,7 @@ $stack = $stack->with(
 );
 
 $loop = AgentLoop::default()->withInterceptor($stack);
-// @doctest id="3f84"
+// @doctest id="d652"
 ```
 
 ## CallableHook
@@ -96,7 +96,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
 });
 
 $stack = $stack->with($hook, HookTriggers::afterStep());
-// @doctest id="a087"
+// @doctest id="5502"
 ```
 
 ## Blocking Tool Execution
@@ -116,7 +116,7 @@ class BlockDangerousTools implements HookInterface
 }
 
 $stack = $stack->with(new BlockDangerousTools(), HookTriggers::beforeToolUse());
-// @doctest id="a0c7"
+// @doctest id="bf48"
 ```
 
 ## Modifying State
@@ -128,7 +128,7 @@ $hook = new CallableHook(function (HookContext $ctx): HookContext {
     $state = $ctx->state()->withMetadata('custom_key', 'value');
     return $ctx->withState($state);
 });
-// @doctest id="b536"
+// @doctest id="11bf"
 ```
 
 ## Built-in Guard Hooks
@@ -145,7 +145,7 @@ $agent = AgentBuilder::base()
         maxExecutionTime: 30.0,
     ))
     ->build();
-// @doctest id="e2f6"
+// @doctest id="4dcd"
 ```
 
 ### Manual registration
@@ -172,7 +172,7 @@ $stack = $stack
     ->with($stepsGuard, HookTriggers::beforeStep(), priority: 200)
     ->with($tokenGuard, HookTriggers::beforeStep(), priority: 200)
     ->with($timeGuard, HookTriggers::with(HookTrigger::BeforeExecution, HookTrigger::BeforeStep), priority: 200);
-// @doctest id="9be8"
+// @doctest id="9859"
 ```
 
 ## Hook Priority

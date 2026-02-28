@@ -6,7 +6,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 
 // Simple response class for deserialization
@@ -16,12 +16,12 @@ class TestUserStruct {
 }
 
 it('deserializes basic JSON into response class', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"name":"Jason","age":25}')
     ]);
 
     $user = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: TestUserStruct::class,
@@ -38,12 +38,12 @@ it('uses tool call args in Tools mode when present', function () {
     $toolCalls = new ToolCalls(
         new ToolCall('extract', ['name' => 'Jane', 'age' => 22])
     );
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: $toolCalls)
     ]);
 
     $user = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: TestUserStruct::class,
@@ -57,12 +57,12 @@ it('uses tool call args in Tools mode when present', function () {
 });
 
 it('caches processed response within the same PendingStructuredOutput', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"name":"A","age":1}')
     ]);
 
     $pending = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: TestUserStruct::class,
@@ -90,12 +90,12 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
     $toolCalls = new ToolCalls(
         new ToolCall('extract', ['name' => 'Jason', 'age' => 25])
     );
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: $toolCalls)
     ]);
 
     $user = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: $schema,
@@ -110,12 +110,12 @@ it('returns stdClass when defaultToStdClass is enabled for JSON schema output', 
 });
 
 it('supports runtime-style create with explicit request', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"name":"Mia","age":31}')
     ]);
 
     $pending = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->withOutputMode(OutputMode::Json)
         ->create(new StructuredOutputRequest(
             messages: 'Extract user',

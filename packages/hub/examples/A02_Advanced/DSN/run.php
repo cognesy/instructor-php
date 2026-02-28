@@ -16,15 +16,15 @@ CLI arguments or environment variables.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 
 class User {
     public int $age;
     public string $name;
 }
 
-$user = (new StructuredOutput)
+$user = (new StructuredOutput(StructuredOutputRuntime::fromDsn('preset=xai,model=grok-2')))
     //->wiretap(fn($e) => $e->print())
-    ->withDsn('preset=xai,model=grok-2')
     ->withMessages("Our user Jason is 25 years old.")
     ->withresponseClass(User::class)
     ->get();

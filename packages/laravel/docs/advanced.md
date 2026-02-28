@@ -22,22 +22,24 @@ foreach ($stream->partials() as $partial) {
 }
 
 // Get final complete result
-$company = $stream->final();
+$company = $stream->finalValue();
 ```
 
-### Streaming with Callbacks
+### Streaming with `partials()`
 
 ```php
-$result = StructuredOutput::with(
+$stream = StructuredOutput::with(
     messages: 'Extract data...',
     responseModel: MyModel::class,
 )
 ->withStreaming()
-->onPartialUpdate(function ($partial) {
-    // Called on each partial update
+->stream();
+
+foreach ($stream->partials() as $partial) {
     broadcast(new PartialUpdateEvent($partial));
-})
-->get();
+}
+
+$result = $stream->finalValue();
 ```
 
 ### Streaming Sequences
@@ -53,13 +55,11 @@ $stream = StructuredOutput::with(
     ],
 )
 ->withStreaming()
-->onSequenceUpdate(function ($items) {
-    // Called as each item is completed
-    foreach ($items as $item) {
-        echo "Found: {$item->name}\n";
-    }
-})
 ->stream();
+
+foreach ($stream->sequence() as $items) {
+    echo "Found: {$items->last()->name}\n";
+}
 ```
 
 ---

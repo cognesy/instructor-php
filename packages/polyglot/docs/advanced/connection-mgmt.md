@@ -17,19 +17,15 @@ implement fallback strategies or leverage the strengths of different models and 
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = new Inference();
-
 // Use OpenAI
-$openaiResponse = $inference
-    ->using('openai')
+$openaiResponse = Inference::using('openai')
     ->withMessages('What is the capital of France?')
     ->get();
 
 echo "OpenAI response: $openaiResponse\n";
 
 // Switch to Anthropic
-$anthropicResponse = $inference
-    ->using('anthropic')
+$anthropicResponse = Inference::using('anthropic')
     ->withMessages('What is the capital of Germany?')
     ->get();
 
@@ -52,7 +48,7 @@ function withFallback(array $providers, callable $requestFn) {
 
     foreach ($providers as $provider) {
         try {
-            $inference = (new Inference)->using($provider);
+            $inference = Inference::using($provider);
             return $requestFn($inference);
         } catch (HttpRequestException $e) {
             $lastException = $e;
@@ -92,7 +88,6 @@ You might want to select providers based on cost considerations:
 use Cognesy\Polyglot\Inference\Inference;
 
 class CostAwareLLM {
-    private $inference;
     private $providers = [
         'low' => [
             'preset' => 'ollama',
@@ -108,14 +103,10 @@ class CostAwareLLM {
         ],
     ];
 
-    public function __construct() {
-        $this->inference = new Inference();
-    }
-
     public function ask(string $question, string $tier = 'medium'): string {
         $provider = $this->providers[$tier] ?? $this->providers['medium'];
 
-        return $this->inference->using($provider['preset'])
+        return Inference::using($provider['preset'])
             ->with(
                 messages: $question,
                 model: $provider['model']
@@ -154,7 +145,6 @@ You can implement a strategy to select the most appropriate provider for each re
 use Cognesy\Polyglot\Inference\Inference;
 
 class GroupOfExperts {
-    private $inference;
     private $providerStrategies = [
         'creative' => 'anthropic',
         'factual' => 'openai',
@@ -162,16 +152,12 @@ class GroupOfExperts {
         'default' => 'openai',
     ];
 
-    public function __construct() {
-        $this->inference = new Inference();
-    }
-
     public function ask(string $question, string $taskType = 'default'): string {
         // Select the appropriate provider based on the task type
         $preset = $this->providerStrategies[$taskType] ?? $this->providerStrategies['default'];
 
         // Use the selected provider
-        return $this->inference->using($preset)
+        return Inference::using($preset)
             ->with(messages: $question)
             ->get();
     }

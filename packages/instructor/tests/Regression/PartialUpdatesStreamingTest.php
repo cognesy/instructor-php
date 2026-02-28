@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 class StreamUser
 {
@@ -11,30 +12,36 @@ class StreamUser
     public function __construct(int $count) { $this->count = $count; }
 }
 
-it('calls onPartialUpdate for each partial value', function () {
+it('yields each partial value via stream partials()', function () {
     // Prepare a deterministic stream of partial responses with values already set
     $p1 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(1));
     $p2 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(2));
     $p3 = (new PartialInferenceResponse(contentDelta: ''))->withValue(new StreamUser(3));
 
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [[ $p1, $p2, $p3 ]],
     );
 
     $received = [];
 
-    $so = (new StructuredOutput())
-        ->withDriver($driver)
+    $config = (new StructuredOutputConfigBuilder())
+        ->withOutputMode(OutputMode::Json)
+        ->create();
+    $runtime = makeStructuredRuntime(
+        driver: $driver,
+        config: $config,
+    );
+
+    $so = (new StructuredOutput($runtime))
         ->withMessages('ignored for test')
         ->withResponseClass(StreamUser::class)
-        ->withOutputMode(OutputMode::Json)
-        ->withStreaming()
-        ->onPartialUpdate(function ($partial) use (&$received) { $received[] = $partial; });
+        ->withStreaming();
 
-    // Consume the stream to trigger events
-    $stream = $so->stream();
-    foreach ($stream->responses() as $r) { /* consume */ }
+    // Consume stream partials and collect values.
+    foreach ($so->stream()->partials() as $partial) {
+        $received[] = $partial;
+    }
 
     // Verify handler was called per each partial
     expect(count($received))->toBe(3);

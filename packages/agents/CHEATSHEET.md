@@ -22,12 +22,12 @@ Root namespace: `Cognesy\Agents`
 
 | Class | Role |
 |---|---|
-| `AgentState` | Immutable session+execution state. Named constructor: `empty()`. Key setup mutators: `withUserMessage()`, `withSystemPrompt()`, `withBudget()`, `withLLMConfig()`, `withMetadata()`. Key output accessors: `finalResponse()`, `currentResponse()`, `usage()`, `stepCount()`, `errors()`, `shouldStop()`. `forNextExecution()` resets execution while preserving session — called automatically by `AgentLoop` for terminal states. Serializable via `toArray()`/`fromArray()`. |
+| `AgentState` | Immutable session+execution state. Named constructor: `empty()`. Key setup mutators: `withUserMessage()`, `withSystemPrompt()`, `withLLMConfig()`, `withMetadata()`. Key output accessors: `finalResponse()`, `currentResponse()`, `usage()`, `stepCount()`, `errors()`, `shouldStop()`. `forNextExecution()` resets execution while preserving session — called automatically by `AgentLoop` for terminal states. Serializable via `toArray()`/`fromArray()`. |
 | `ExecutionState` | Per-execution transient data: `executionId`, `status`, steps, continuation, timing. `fresh()` factory creates new UUID. |
 | `AgentStep` | Single step result: `id`, `stepType: AgentStepType`, `outputMessages`, `toolExecutions`, `errors`, `usage`, `finishReason`. |
 | `StepExecution` | Wraps `AgentStep` with timing (`startedAt`, `completedAt`, `duration`) and continuation state. |
 | `ToolExecution` | Records one tool call result. Wraps `ToolCall` + `Result` + timing (`startedAt`, `completedAt`). `wasBlocked()`, `hasError()`, `error()`, `errorMessage()`, `value()` are computed from `Result`. `blocked()` static factory for hook-blocked calls. |
-| `AgentBudget` | Resource limits: `?maxSteps`, `?maxTokens`, `?maxSeconds`, `?maxCost`, `?deadline`. `unlimited()`, `remaining()`, `cappedBy()`, `isExhausted()`. |
+| `ExecutionBudget` | Per-execution resource limits declared on `AgentDefinition`: `?maxSteps`, `?maxTokens`, `?maxSeconds`, `?maxCost`, `?deadline`. `unlimited()`, `isEmpty()`, `isExhausted()`. Applied as `UseGuards` when the agent loop is built. |
 
 ---
 
@@ -350,7 +350,6 @@ Persisted, multi-turn agent sessions with optimistic concurrency.
 | `SuspendSession` | Set status to `Suspended` |
 | `ClearSession` | Reset state, keep definition |
 | `ChangeModel(string)` | Swap LLM config |
-| `ChangeBudget(AgentBudget)` | Update resource limits |
 | `ChangeSystemPrompt(string)` | Replace system prompt |
 | `WriteMetadata(array)` | Merge metadata into session state |
 | `UpdateTask(...)` | Update task in session state |

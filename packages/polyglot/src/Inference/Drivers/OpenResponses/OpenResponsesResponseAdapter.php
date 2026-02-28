@@ -7,6 +7,7 @@ use Cognesy\Polyglot\Inference\Collections\ToolCalls;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceDelta;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCallId;
@@ -54,6 +55,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
     #[\Override]
     public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable {
         $ctx = new OpenResponsesStreamContext();
+        $previous = PartialInferenceResponse::empty();
 
         foreach ($eventBodies as $eventBody) {
             $data = json_decode($eventBody, true);
@@ -64,7 +66,7 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
             $eventType = $data['type'] ?? '';
             $this->updateItemContext($ctx, $data);
 
-            yield new PartialInferenceResponse(
+            $delta = new PartialInferenceDelta(
                 contentDelta: $this->extractStreamContentDelta($ctx, $data, $eventType),
                 reasoningContentDelta: $this->extractStreamReasoningDelta($ctx, $data, $eventType),
                 toolId: $this->extractStreamToolId($ctx, $data, $eventType),
@@ -75,6 +77,10 @@ class OpenResponsesResponseAdapter implements CanTranslateInferenceResponse
                 usageIsCumulative: true,
                 responseData: $responseData,
             );
+
+            $partial = PartialInferenceResponse::fromDelta($previous, $delta);
+            $previous = $partial;
+            yield $partial;
         }
     }
 

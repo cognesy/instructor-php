@@ -76,10 +76,16 @@ final readonly class CachedContext
         }
 
         $messages = $data['messages'] ?? [];
+        $rawExamples = $data['examples'] ?? [];
         $messagesData = match (true) {
             $messages instanceof Messages => $messages->toArray(),
             is_array($messages) => $messages,
             is_string($messages) => $messages,
+            default => [],
+        };
+        $examples = match (true) {
+            $rawExamples instanceof ExampleList => $rawExamples->all(),
+            is_array($rawExamples) => self::examplesFromArray($rawExamples),
             default => [],
         };
 
@@ -87,7 +93,19 @@ final readonly class CachedContext
             messages: $messagesData,
             system: $data['system'] ?? '',
             prompt: $data['prompt'] ?? '',
-            examples: $data['examples'] ?? [],
+            examples: $examples,
         );
+    }
+
+    private static function examplesFromArray(array $data) : array {
+        return array_values(array_filter(array_map(
+            fn(mixed $example) => match (true) {
+                $example instanceof Example => $example,
+                is_array($example) => Example::fromArray($example),
+                is_string($example) => Example::fromJson($example),
+                default => null,
+            },
+            $data,
+        )));
     }
 }

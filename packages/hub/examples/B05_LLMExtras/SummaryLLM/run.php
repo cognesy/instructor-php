@@ -40,8 +40,7 @@ $report = <<<EOT
     customer approval.
     EOT;
 
-$summary = (new Inference)
-    ->using('openai')
+$summary = Inference::using('openai')
     ->with(messages: [
         ['role' => 'user', 'content' => 'Content to summarize:'],
         ['role' => 'user', 'content' => $report],

@@ -53,9 +53,29 @@ $anthropicOptions = [
     'stream' => true,
 ];
 
-$inference = new Inference()->using('anthropic');
+$inference = Inference::using('anthropic');
 $response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $anthropicOptions
 )->toText();
 ```
+
+## Response Stream Cache Policy
+
+You can control stream replay behavior explicitly:
+
+- `ResponseCachePolicy::None` (default): one-shot stream, lowest memory usage.
+- `ResponseCachePolicy::Memory`: enable stream replay from captured data.
+
+```php
+<?php
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
+use Cognesy\Polyglot\Inference\Inference;
+
+$inference = (new Inference())
+    ->withMessages('Summarize this transcript')
+    ->withStreaming(true)
+    ->withResponseCachePolicy(ResponseCachePolicy::Memory);
+```
+
+With `None`, stream iterators remain one-shot. With `Memory`, second-pass iteration replays captured chunks without making a new provider call.

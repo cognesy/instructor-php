@@ -38,7 +38,7 @@ interface CanRunSessionRuntime
     public function getSessionInfo(SessionId $sessionId): AgentSessionInfo;
     public function listSessions(): SessionInfoList;
 }
-// @doctest id="951f"
+// @doctest id="8ec8"
 ```
 
 Read methods (`getSession`, `getSessionInfo`, `listSessions`) do not mutate persisted version.
@@ -69,7 +69,7 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 $factory = new SessionFactory(new DefinitionStateFactory());
 $repo = new SessionRepository(new InMemorySessionStore());
 $runtime = new SessionRuntime($repo, new EventDispatcher('session-runtime'));
-// @doctest id="3d25"
+// @doctest id="de7b"
 ```
 
 ## Typical Flow
@@ -86,7 +86,7 @@ $updated = $runtime->execute($session->sessionId(), new SendMessage('Hello', $lo
 
 // 3) use returned persisted version for next call
 $nextVersion = $updated->version();
-// @doctest id="26ec"
+// @doctest id="b1be"
 ```
 
 ## Built-in Actions
@@ -98,7 +98,6 @@ Lifecycle:
 
 Configuration/state:
 - `ChangeModel`
-- `ChangeBudget`
 - `ChangeSystemPrompt`
 - `WriteMetadata`
 - `UpdateTask`
@@ -108,6 +107,39 @@ Execution/branching:
 - `ForkSession`
 
 All actions are immutable and return `AgentSession`.
+
+## Session Hooks
+
+`SessionRuntime` can optionally intercept lifecycle stages via `CanControlAgentSession`.
+
+Stages:
+- `after_load`
+- `after_action`
+- `before_save`
+- `after_save`
+
+Use `SessionHookStack` to compose multiple interceptors with priority ordering:
+
+```php
+use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Enums\AgentSessionStage;
+use Cognesy\Agents\Session\SessionHookStack;
+use Cognesy\Agents\Session\SessionRuntime;
+
+$hook = new class implements CanControlAgentSession {
+    public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
+        return match ($stage) {
+            AgentSessionStage::BeforeSave => $session->suspended(),
+            default => $session,
+        };
+    }
+};
+
+$hooks = SessionHookStack::empty()->with($hook, priority: 100);
+$runtime = new SessionRuntime($repo, $events, $hooks);
+// @doctest id="cd6d"
+```
 
 ## Session Lifecycle vs Execution Lifecycle
 

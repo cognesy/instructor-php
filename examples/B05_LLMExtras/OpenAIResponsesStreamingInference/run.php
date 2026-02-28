@@ -22,8 +22,7 @@ use Cognesy\Utils\Str;
 $expectedPhrase = 'paris';
 $prompt = 'Describe the history of Paris in exactly 3 sentences.';
 
-$stream = (new Inference)
-    ->using('openai-responses')
+$stream = Inference::using('openai-responses')
     ->onEvent(PartialInferenceResponseCreated::class, fn(PartialInferenceResponseCreated $e) => $e->print())
     ->withMessages($prompt)
     ->withOptions(['max_output_tokens' => 256])

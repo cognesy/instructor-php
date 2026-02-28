@@ -26,9 +26,7 @@ it('handles tool calls in non-streaming Gemini response', function () {
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $response = (new Inference())
-        ->withHttpClient($http)
-        ->using('gemini')
+    $response = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Search')
         ->response();

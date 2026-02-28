@@ -14,7 +14,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Tokenizer;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 it('moves overflow messages into buffer while keeping recent messages', function () {
     $messages = Messages::fromString('First message.', 'user')
@@ -42,8 +42,12 @@ it('compiles messages in summary-buffer-messages order with system prompt first'
         $captured = $event->data['messages'] ?? null;
     });
 
-    $driver = new FakeInferenceRequestDriver([new InferenceResponse(content: 'ok')]);
-    $inference = (new Inference())->withLLMProvider(LLMProvider::new()->withDriver($driver));
+    $driver = new FakeInferenceDriver([new InferenceResponse(content: 'ok')]);
+    $inference = Inference::fromRuntime(
+        \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
+            LLMProvider::new()->withDriver($driver),
+        ),
+    );
     $participant = new LLMParticipant(
         name: 'expert',
         systemPrompt: 'SYS',

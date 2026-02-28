@@ -5,8 +5,10 @@ docname: 'basic_use_mixin'
 
 ## Overview
 
-Instructor provides `HandlesSelfInference` trait that you can use to enable
-extraction capabilities directly on class via static `infer()` method.
+`HandlesSelfInference` is deprecated in 2.0.
+Prefer runtime-first usage via `StructuredOutput::using(...)->with(...)->getObject()`.
+
+Legacy mixin usage is still available and shown below for migration reference.
 
 `infer()` method returns an instance of the class with the data extracted
 using the Instructor.
@@ -25,6 +27,20 @@ static public function infer(
     Mode $mode = OutputMode::Tools, // (optional) The mode to use for inference
     ?LLM $llm = null         // (optional) LLM instance to use for inference
 ) : static;
+```
+
+Recommended replacement:
+
+```php
+<?php
+use Cognesy\Instructor\StructuredOutput;
+
+$user = StructuredOutput::using('openai')
+    ->with(
+        messages: 'Jason is 25 years old and works as an engineer.',
+        responseModel: User::class,
+    )
+    ->getObject();
 ```
 
 ## Example

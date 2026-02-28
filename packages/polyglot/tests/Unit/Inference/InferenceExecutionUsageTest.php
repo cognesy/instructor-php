@@ -30,9 +30,12 @@ it('includes current attempt usage until finalized', function () {
     // One finalized response
     $exec = $exec->withSuccessfulAttempt(new InferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 1)));
 
-    // Simulate streaming: add partial responses to current (not finalized) attempt
-    $exec = $exec->withNewPartialResponse(new PartialInferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3)));
-    $exec = $exec->withNewPartialResponse(new PartialInferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 2)));
+    // Simulate streaming with cumulative snapshots: (2,3) then (3,5)
+    $p1 = new PartialInferenceResponse(usage: new Usage(inputTokens: 2, outputTokens: 3));
+    $p2 = (new PartialInferenceResponse(usage: new Usage(inputTokens: 1, outputTokens: 2)))
+        ->withAccumulatedContent($p1);
+    $exec = $exec->withNewPartialResponse($p1);
+    $exec = $exec->withNewPartialResponse($p2);
 
     $usageDuring = $exec->usage();
     // Expect finalized (2) + current partials ( (2+3)+(1+2) = 8 ) = 10 total

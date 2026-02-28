@@ -203,7 +203,7 @@ Different providers may support unique parameters and features. You can pass the
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = (new Inference())->using('openai');
+$inference = Inference::using('openai');
 
 $response = $inference->with(
     messages: 'Generate a creative story.',
@@ -227,7 +227,7 @@ $response = $inference->with(
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = (new Inference())->using('anthropic');
+$inference = Inference::using('anthropic');
 
 $response = $inference->with(
     messages: 'Generate a creative story.',
@@ -270,7 +270,7 @@ return [
             'maxTokens' => 2048,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,
-            // HTTP client configuration is defined via HttpClientBuilder or facade-level methods
+            // HTTP client configuration is defined via HttpClientBuilder + InferenceRuntime
         ],
 
         // Other connections...
@@ -286,6 +286,7 @@ You can also create custom configurations at runtime using the `LLMConfig` class
 <?php
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a custom configuration
 $customConfig = new LLMConfig(
@@ -299,7 +300,7 @@ $customConfig = new LLMConfig(
 );
 
 // Use the custom configuration
-$inference = (new Inference)->withLLMConfig($customConfig);
+$inference = Inference::fromRuntime(InferenceRuntime::fromConfig($customConfig));
 
 $response = $inference->with(
     messages: 'What are the benefits of using custom configurations?'
@@ -391,8 +392,7 @@ $config = new LLMConfig(
 );
 
 // now we're calling inference using our configuration
-$answer = (new Inference)
-    ->withLLMConfig($config)
+$answer = Inference::fromRuntime(InferenceRuntime::fromConfig($config))
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

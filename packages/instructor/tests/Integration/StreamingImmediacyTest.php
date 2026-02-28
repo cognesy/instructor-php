@@ -6,7 +6,7 @@ use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseUpdated;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 
 class StreamUserStructA { public int $age; public string $name; }
@@ -18,7 +18,7 @@ it('dispatches per-chunk updates immediately when streaming', function () {
         new PartialInferenceResponse(contentDelta: '30}', finishReason: 'stop', usage: new Usage(outputTokens: 1)),
     ];
 
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [ $chunks ]
     );
@@ -27,8 +27,7 @@ it('dispatches per-chunk updates immediately when streaming', function () {
     $captured = [];
     $events->wiretap(function ($e) use (&$captured) { $captured[] = $e; });
 
-    $stream = (new StructuredOutput(events: $events))
-        ->withDriver($driver)
+    $stream = (new StructuredOutput(makeStructuredRuntime(driver: $driver, events: $events)))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStructA::class,

@@ -22,7 +22,9 @@ use Cognesy\Dynamic\Structure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 class CustomConfigProvider implements CanProvideConfig
 {
@@ -146,11 +148,15 @@ $customClient = (new HttpClientBuilder(
     ->withPreset('symfony')
     ->create();
 
-$structuredOutput = (new StructuredOutput(
+$llmProvider = LLMProvider::new(configProvider: $configProvider)
+    ->withLLMPreset('deepseek');
+$structuredOutput = new StructuredOutput(
+    StructuredOutputRuntime::fromProvider(
+        provider: $llmProvider,
         events: $events,
-        configProvider: $configProvider,
-    ))
-    ->withHttpClient($customClient);
+        httpClient: $customClient,
+    )
+);
 
 // Call with custom model and execution mode
 
@@ -160,7 +166,6 @@ class User {
 }
 
 $user = $structuredOutput
-    ->using('deepseek') // Use 'deepseek' preset defined in our config provider
     ->wiretap(fn($e) => $e->print())
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)

@@ -21,12 +21,12 @@ use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 
 function _react_add(int $a, int $b): int { return $a + $b; }
 
-function makeReActDriverForDriverTest(FakeInferenceRequestDriver $driver, bool $finalViaInference = false): ReActDriver {
+function makeReActDriverForDriverTest(FakeInferenceDriver $driver, bool $finalViaInference = false): ReActDriver {
     $events = EventBusResolver::using(null);
     $inference = InferenceRuntime::fromProvider(
         provider: LLMProvider::new()->withDriver($driver),
@@ -46,7 +46,7 @@ function makeReActDriverForDriverTest(FakeInferenceRequestDriver $driver, bool $
 }
 
 it('runs a ReAct call then final answer', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         // step 1: call tool
         new InferenceResponse(content: json_encode([
             'thought' => 'I will add numbers',
@@ -81,7 +81,7 @@ it('runs a ReAct call then final answer', function () {
 });
 
 it('surfaces tool arg validation errors as observation', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: json_encode([
             'thought' => 'I will add numbers',
             'type' => 'call_tool',
@@ -119,7 +119,7 @@ it('surfaces tool arg validation errors as observation', function () {
 });
 
 it('can finalize via Inference when configured', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: json_encode([
             'thought' => 'I have the result already',
             'type' => 'final_answer',

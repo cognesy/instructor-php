@@ -207,6 +207,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 | `UseBash` | Bash command execution tool (with sandbox policy) |
 | `UseFileTools` | File read/write/edit tools (scoped to a base directory) |
 | `UseSubagents` | Subagent spawning tool with depth control |
+| `UsePlanningSubagent` | Planning tool that runs an isolated planner subagent and returns a markdown plan |
 | `UseStructuredOutputs` | Schema-based data extraction tool + persistence hook |
 | `UseSummarization` | Message-to-buffer and buffer summarization hooks |
 | `UseSelfCritique` | Self-critique loop hook |

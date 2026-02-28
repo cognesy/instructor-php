@@ -19,7 +19,7 @@ Subagents solve these by providing:
 
 - **Context isolation** — each subagent starts with a clean conversation
 - **Specialized tools** — each subagent sees only the tools it needs
-- **Budget propagation** — parent budget flows down, preventing runaway children
+- **Per-task budgets** — each subagent definition declares its own execution limits
 - **Result aggregation** — the parent synthesizes subagent outputs into a final answer
 
 ## Quick Start
@@ -76,7 +76,7 @@ The tool schema includes an enum of available subagent names and their descripti
 Parent agent step:
   1. LLM decides to call spawn_subagent(subagent: "reviewer", prompt: "Review AgentLoop.php")
   2. SpawnSubagentTool looks up "reviewer" in the registry
-  3. Creates a child AgentLoop with filtered tools and budget
+  3. Creates a child AgentLoop with filtered tools and declared budget constraints
   4. Creates child AgentState with the subagent's system prompt + user prompt
   5. Runs the child loop to completion
   6. Returns the child's final AgentState to the parent
@@ -99,7 +99,7 @@ Each subagent is described by an `AgentDefinition`. You can register them progra
 use Cognesy\Agents\Template\AgentDefinitionRegistry;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 use Cognesy\Agents\Collections\NameList;
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 
 $registry = new AgentDefinitionRegistry();
 
@@ -109,14 +109,14 @@ $registry->registerMany(
         description: 'Searches and analyzes information',
         systemPrompt: 'You are a research assistant. Be thorough and cite sources.',
         tools: new NameList(['read_file', 'search_files']),
-        budget: new AgentBudget(maxSteps: 8, maxTokens: 4000),
+        budget: new ExecutionBudget(maxSteps: 8, maxTokens: 4000),
     ),
     new AgentDefinition(
         name: 'writer',
         description: 'Writes and edits content',
         systemPrompt: 'You are a technical writer. Write clear, concise documentation.',
         tools: new NameList(['read_file', 'write_file']),
-        budget: new AgentBudget(maxSteps: 10),
+        budget: new ExecutionBudget(maxSteps: 10),
     ),
 );
 ```
@@ -213,53 +213,31 @@ new AgentDefinition(
 );
 ```
 
-## Budget Propagation
+## Execution Budgets
 
-Budgets flow from parent to child, preventing subagents from consuming more resources than the parent has remaining.
-
-### How It Works
-
-1. Parent has a budget (e.g., 100 steps, 10000 tokens)
-2. Parent uses some resources before spawning a subagent
-3. Child's effective budget = min(definition budget, parent's remaining budget)
-4. Child runs within its effective budget
-
-```php
-// Parent budget: 100 steps
-// Parent has used 40 steps before spawning
-
-// Definition says: maxSteps: 80
-// Parent remaining: 60 steps
-// Child effective budget: min(80, 60) = 60 steps
-```
-
-### Multi-Level Propagation
-
-Budget constraints cascade through nesting levels:
-
-```
-Root (100 steps)
-  → Level 1 gets min(definition, 100) = 80 steps
-    → Level 1 uses 30 steps, 50 remaining
-      → Level 2 gets min(definition, 50) = 50 steps
-```
-
-This ensures the total resource usage across the entire agent tree never exceeds the root budget.
-
-### Setting Budgets
-
-On the definition:
+Each subagent definition can declare its own `ExecutionBudget` — independent per-execution resource limits applied via `UseGuards` when the subagent loop is built.
 
 ```php
 new AgentDefinition(
     name: 'quick_task',
     description: 'Fast, focused task',
     systemPrompt: 'Be concise.',
-    budget: new AgentBudget(maxSteps: 5, maxTokens: 2000, maxSeconds: 15.0),
+    budget: new ExecutionBudget(maxSteps: 5, maxTokens: 2000, maxSeconds: 15.0),
 );
 ```
 
-On the parent via guards:
+Or in a definition file:
+
+```yaml
+name: quick_task
+description: Fast, focused task
+budget:
+  maxSteps: 5
+  maxTokens: 2000
+  maxSeconds: 15.0
+```
+
+The parent's own execution limits are set separately via `UseGuards`:
 
 ```php
 $agent = AgentBuilder::base()
@@ -267,6 +245,8 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseGuards(maxSteps: 50, maxTokens: 32768))
     ->build();
 ```
+
+Recursion depth — not budget — is the primary guard against runaway subagent chains. See [Depth Control](#depth-control) below.
 
 ## Depth Control
 

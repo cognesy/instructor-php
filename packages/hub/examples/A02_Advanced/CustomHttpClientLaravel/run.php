@@ -12,7 +12,10 @@ docname: 'custom_http_client_laravel'
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Illuminate\Http\Client\Factory;
 
 class User {
@@ -21,16 +24,22 @@ class User {
 }
 
 $yourLaravelClientInstance = new Factory();
-
-$user = (new StructuredOutput())
-    ->using('openai')
-    //->withHttpDebugPreset('on')
-    //->wiretap(fn($e) => $e->print())
-    ->withLLMConfigOverrides(['apiUrl' => 'https://api.openai.com/v1'])
+$provider = LLMProvider::using('openai')
+    ->withConfigOverrides(['apiUrl' => 'https://api.openai.com/v1']);
+$customClient = (new HttpClientBuilder)
     ->withClientInstance(
         driverName: 'laravel',
-        clientInstance: $yourLaravelClientInstance
+        clientInstance: $yourLaravelClientInstance,
     )
+    ->create();
+
+$user = (new StructuredOutput(
+    runtime: StructuredOutputRuntime::fromProvider(
+        provider: $provider,
+        httpClient: $customClient,
+    ),
+))
+    //->wiretap(fn($e) => $e->print())
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->withOutputMode(OutputMode::Tools)

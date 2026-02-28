@@ -35,8 +35,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)
-    ->using('huggingface');
+$structuredOutput = StructuredOutput::using('huggingface');
     //->withHttpDebugPreset('on');
 
 $user = $structuredOutput

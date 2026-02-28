@@ -25,9 +25,7 @@ it('returns content for OpenAI chat completions (non-streaming)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
         ->withModel('gpt-4o-mini')
         ->withMessages('Hello')
         ->get();
@@ -54,9 +52,7 @@ it('supports runtime-style create with explicit request', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
         ->create(new InferenceRequest(
             messages: 'Hello',
             model: 'gpt-4o-mini',
@@ -66,7 +62,7 @@ it('supports runtime-style create with explicit request', function () {
     expect($content)->toBe('Hi from request!');
 });
 
-it('supports facade toRuntime extraction and runtime static factories', function () {
+it('supports facade runtime extraction and runtime static factories', function () {
     $mock = new MockHttpDriver();
     $mock->on()
         ->post('https://api.openai.com/v1/chat/completions')
@@ -89,10 +85,8 @@ it('supports facade toRuntime extraction and runtime static factories', function
         model: 'gpt-4o-mini',
     );
 
-    $fromFacadeRuntime = (new Inference())
-        ->withHttpClient($http)
-        ->using('openai')
-        ->toRuntime()
+    $fromFacadeRuntime = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'openai', httpClient: $http))
+        ->runtime()
         ->create($request)
         ->get();
 

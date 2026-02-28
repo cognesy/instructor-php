@@ -9,12 +9,18 @@ class OpenAIUsageFormat implements CanMapUsage
 {
     #[\Override]
     public function fromData(array $data): Usage {
+        $usage = $data['usage'] ?? [];
+
         return new Usage(
-            inputTokens: (int) ($data['usage']['prompt_tokens'] ?? 0),
-            outputTokens: (int) ($data['usage']['completion_tokens'] ?? 0),
+            inputTokens: (int) ($usage['prompt_tokens'] ?? 0),
+            outputTokens: (int) ($usage['completion_tokens'] ?? 0),
             cacheWriteTokens: 0,
-            cacheReadTokens: (int) ($data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0),
-            reasoningTokens: (int) ($data['usage']['prompt_tokens_details']['reasoning_tokens'] ?? 0),
+            cacheReadTokens: (int) ($usage['prompt_tokens_details']['cached_tokens'] ?? 0),
+            reasoningTokens: (int) (
+                $usage['completion_tokens_details']['reasoning_tokens']
+                ?? $usage['prompt_tokens_details']['reasoning_tokens']
+                ?? 0
+            ),
         );
     }
 }

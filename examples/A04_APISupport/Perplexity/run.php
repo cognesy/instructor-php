@@ -35,8 +35,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)
-    ->using('perplexity');
+$structuredOutput = StructuredOutput::using('perplexity');
 
 $user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old. He is the admin of this project. He likes playing football and reading books.",

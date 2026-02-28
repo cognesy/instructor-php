@@ -3,7 +3,7 @@
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 
 // 1) Public properties
@@ -32,12 +32,12 @@ class SO_Constructor_User {
 }
 
 it('deserializes via public properties', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"name":"Alice","age":30}')
     ]);
 
     $user = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: SO_PublicProps_User::class,
@@ -51,12 +51,12 @@ it('deserializes via public properties', function () {
 });
 
 it('deserializes via setters', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"name":"Bob","age":28}')
     ]);
 
     $user = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: SO_Setter_User::class,
@@ -70,12 +70,12 @@ it('deserializes via setters', function () {
 });
 
 it('deserializes via constructor args', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"name":"Cara","age":33}')
     ]);
 
     $user = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: SO_Constructor_User::class,

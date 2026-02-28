@@ -4,16 +4,15 @@ description: 'How to use the Inference class in Polyglot for LLM requests'
 ---
 
 The `Inference` class is the primary facade for making requests to LLM providers in Polyglot.
-It provides a unified interface for configuring providers, building requests, and executing inference operations.
+It is a thin request facade: runtime/provider/http/event assembly lives in `InferenceRuntime`.
 
 
 ## Architecture Overview
 
-The `Inference` class combines functionality through traits:
-- **HandlesLLMProvider**: Provider configuration and driver management
-- **HandlesRequestBuilder**: Request construction and configuration  
-- **HandlesInvocation**: Request execution and PendingInference creation
-- **HandlesShortcuts**: Convenient methods for common response formats
+The `Inference` facade focuses on:
+- **Request builder methods** (`withMessages`, `withModel`, `withOptions`, etc.)
+- **Execution shortcuts** (`get`, `response`, `stream`, `asJson`, `asJsonData`)
+- **Runtime handoff** via `runtime()` / `withRuntime()`
 
 
 ## Basic Usage
@@ -28,32 +27,24 @@ $response = (new Inference())
     ->get();
 
 // Using a specific provider
-$response = (new Inference())
-    ->using('openai')
+$response = Inference::using('openai')
     ->withMessages('Explain quantum physics')
     ->get();
 ```
 
 
-## LLM Provider Configuration Methods
+## Runtime Selection
 
-Configure the underlying LLM provider:
+Create a facade with constructor sugar or inject a custom runtime:
 
 ```php
-// Provider selection and configuration
-$inference->using('openai');                           // Use preset configuration
-$inference->withDsn('openai://model=gpt-4');          // Configure via DSN
-$inference->withLLMConfig($customConfig);              // Explicit configuration
-$inference->withConfigProvider($configProvider);      // Custom config provider
-$inference->withLLMConfigOverrides(['temperature' => 0.7]);
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
-// HTTP client configuration
-$inference->withHttpClient($customHttpClient);        // Custom HTTP client
-$inference->withHttpClientPreset('debug');           // HTTP client preset
-$inference->withHttpDebugPreset('verbose');          // Debug configuration
-
-// Driver management
-$inference->withDriver($customDriver);               // Custom inference driver
+$inference = Inference::using('openai');               // Preset-based runtime
+$inference = Inference::fromDsn('preset=openai,model=gpt-4o-mini');
+$inference = Inference::fromRuntime(
+    InferenceRuntime::using('openai')
+);
 ```
 
 
@@ -111,16 +102,14 @@ $inference->withRequest($existingRequest);
 
 ## Runtime-First Usage (`CanCreateInference`)
 
-For constructor-injected creators, convert the facade to runtime and call `create()` with an explicit `InferenceRequest`:
+For constructor-injected creators, call `runtime()` and execute explicit requests:
 
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Inference;
 
-$creator = (new Inference())
-    ->using('openai')
-    ->toRuntime();
+$creator = Inference::using('openai')->runtime();
 
 $request = new InferenceRequest(
     messages: 'What is the capital of France?',

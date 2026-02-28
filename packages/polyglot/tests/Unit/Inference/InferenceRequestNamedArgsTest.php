@@ -21,7 +21,7 @@ it('uses default retry and cache policies when constructor args are omitted', fu
     $request = new InferenceRequest(messages: 'Hello');
 
     expect($request->retryPolicy())->toBeNull();
-    expect($request->responseCachePolicy())->toBe(ResponseCachePolicy::Memory);
+    expect($request->responseCachePolicy())->toBe(ResponseCachePolicy::None);
 });
 
 it('uses typed request id', function () {

@@ -9,9 +9,9 @@ use Cognesy\Stream\Contracts\Reducer;
 use Cognesy\Stream\Contracts\Transducer;
 
 /**
- * Extract delta from PartialInferenceResponse based on output mode.
+ * Extract snapshot content from PartialInferenceResponse based on output mode.
  *
- * Trans Transducer that creates ExtractDeltaReducer.
+ * Transducer that creates ExtractDeltaReducer.
  */
 final readonly class ExtractDelta implements Transducer
 {

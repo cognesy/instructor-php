@@ -33,9 +33,7 @@ it('Gemini golden: tools + JSON mode + streaming functionCall', function () {
         ]
     ]];
 
-    $stream = (new Inference())
-        ->withHttpClient($http)
-        ->using('gemini')
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withTools($tools)
         ->withToolChoice('auto')

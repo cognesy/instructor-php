@@ -31,11 +31,11 @@ into Instructor event system, including:
 
 ## Response model updates
 
-Additionally, `StructuredOutput` class provides convenience methods allowing client code to
-receive model updates when streaming is enabled:
+`StructuredOutput` exposes model updates when streaming is enabled through:
 
- - `onPartialUpdate()` - to handle partial model updates of the response
- - `onSequenceUpdate()` - to handle partial sequence updates of the response
+ - `stream()->partials()` - for partial model updates
+ - `stream()->sequence()` - for sequence updates
+ - `onEvent()` with `PartialResponseGenerated` / `SequenceUpdated` for event-bus handling
 
 
 ## Error handling

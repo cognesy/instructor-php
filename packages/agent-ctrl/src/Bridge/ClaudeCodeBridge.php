@@ -10,6 +10,7 @@ use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\MessageEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Dto\StreamEvent\StreamEvent;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\OutputFormat;
 use Cognesy\AgentCtrl\ClaudeCode\Domain\Enum\PermissionMode;
+use Cognesy\AgentCtrl\Common\Execution\CliBinaryGuard;
 use Cognesy\AgentCtrl\Common\Execution\JsonLinesBuffer;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
 use Cognesy\AgentCtrl\Common\Value\PathList;
@@ -79,6 +80,8 @@ final class ClaudeCodeBridge implements AgentBridge
         $previousDirectory = $this->switchToWorkingDirectory();
 
         try {
+            CliBinaryGuard::assertAvailableForDriver('claude', AgentType::ClaudeCode, $this->sandboxDriver);
+
             // Build request with timing
             $requestStart = microtime(true);
             $request = $this->buildRequest($prompt);

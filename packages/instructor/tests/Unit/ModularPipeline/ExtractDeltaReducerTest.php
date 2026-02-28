@@ -2,6 +2,7 @@
 
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline\ExtractDeltaReducer;
+use Cognesy\Instructor\Tests\Support\FakeStreamFactory;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
@@ -27,16 +28,16 @@ function makeFrameCollector(): Reducer {
     };
 }
 
-test('extracts contentDelta in JsonSchema mode', function() {
+test('extracts content snapshot in JsonSchema mode', function() {
     $collector = makeFrameCollector();
     $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema);
 
     $reducer->init();
 
-    $partial = new PartialInferenceResponse(
+    $partial = (new PartialInferenceResponse(
         contentDelta: '{"key": "value"}',
         usage: Usage::none(),
-    );
+    ))->withContent('{"key": "value"}');
 
     $reducer->step(null, $partial);
 
@@ -45,16 +46,16 @@ test('extracts contentDelta in JsonSchema mode', function() {
         ->and($collector->collected[0]->buffer->raw())->toBe('{"key": "value"}');
 });
 
-test('extracts contentDelta in MdJson mode', function() {
+test('extracts content snapshot in MdJson mode', function() {
     $collector = makeFrameCollector();
     $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::MdJson);
 
     $reducer->init();
 
-    $partial = new PartialInferenceResponse(
+    $partial = (new PartialInferenceResponse(
         contentDelta: '```json\n{"data": 1}\n```',
         usage: Usage::none(),
-    );
+    ))->withContent('```json\n{"data": 1}\n```');
 
     $reducer->step(null, $partial);
 
@@ -63,25 +64,26 @@ test('extracts contentDelta in MdJson mode', function() {
         ->and($collector->collected[0]->buffer->raw())->toBe('```json\n{"data": 1}\n```');
 });
 
-test('extracts toolArgs in Tools mode', function() {
+test('extracts accumulated toolCalls snapshot in Tools mode', function() {
     $collector = makeFrameCollector();
     $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::Tools);
 
     $reducer->init();
 
-    $partial = new PartialInferenceResponse(
+    [$partial] = FakeStreamFactory::from(new PartialInferenceResponse(
+        toolName: 'extract',
         toolArgs: '{"param": "value"}',
         usage: Usage::none(),
-    );
+    ));
 
     $reducer->step(null, $partial);
 
     expect($collector->collected)->toHaveCount(1)
         ->and($collector->collected[0])->toBeInstanceOf(PartialFrame::class)
-        ->and($collector->collected[0]->buffer->raw())->toBe('{"param": "value"}');
+        ->and($collector->collected[0]->buffer->raw())->toBe('{"param":"value"}');
 });
 
-test('falls back to contentDelta when toolArgs empty in Tools mode', function() {
+test('skips tool delta chunk when toolCalls snapshot is empty', function() {
     $collector = makeFrameCollector();
     $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::Tools);
 
@@ -89,14 +91,14 @@ test('falls back to contentDelta when toolArgs empty in Tools mode', function() 
 
     $partial = new PartialInferenceResponse(
         contentDelta: 'fallback content',
-        toolArgs: '', // Empty
+        toolArgs: '{"param":"value"}',
         usage: Usage::none(),
     );
 
-    $reducer->step(null, $partial);
+    $result = $reducer->step([], $partial);
 
-    expect($collector->collected)->toHaveCount(1)
-        ->and($collector->collected[0]->buffer->raw())->toBe('fallback content');
+    expect($collector->collected)->toBeEmpty()
+        ->and($result)->toBe([]);
 });
 
 test('skips empty deltas without finish reason or value', function() {
@@ -162,11 +164,17 @@ test('handles multiple consecutive deltas', function() {
 
     $reducer->init();
 
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'chunk1', usage: Usage::none()));
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'chunk2', usage: Usage::none()));
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'chunk3', usage: Usage::none()));
+    [$partial1, $partial2, $partial3] = FakeStreamFactory::from(
+        new PartialInferenceResponse(contentDelta: 'chunk1', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'chunk2', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'chunk3', usage: Usage::none()),
+    );
 
-    // Buffer now accumulates across all frames - single source of truth
+    $reducer->step(null, $partial1);
+    $reducer->step(null, $partial2);
+    $reducer->step(null, $partial3);
+
+    // Buffer reflects snapshot from each frame
     expect($collector->collected)->toHaveCount(3)
         ->and($collector->collected[0]->buffer->raw())->toBe('chunk1')
         ->and($collector->collected[1]->buffer->raw())->toBe('chunk1chunk2')
@@ -179,9 +187,15 @@ test('increments frame index for each partial', function() {
 
     $reducer->init();
 
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'a', usage: Usage::none()));
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'b', usage: Usage::none()));
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'c', usage: Usage::none()));
+    [$partial1, $partial2, $partial3] = FakeStreamFactory::from(
+        new PartialInferenceResponse(contentDelta: 'a', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'b', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'c', usage: Usage::none()),
+    );
+
+    $reducer->step(null, $partial1);
+    $reducer->step(null, $partial2);
+    $reducer->step(null, $partial3);
 
     expect($collector->collected[0]->metadata->index)->toBe(0)
         ->and($collector->collected[1]->metadata->index)->toBe(1)
@@ -192,9 +206,16 @@ test('init resets frame index for next stream', function() {
     $collector = makeFrameCollector();
     $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema);
 
+    [$first] = FakeStreamFactory::from(
+        new PartialInferenceResponse(contentDelta: 'first', usage: Usage::none()),
+    );
+    [$second] = FakeStreamFactory::from(
+        new PartialInferenceResponse(contentDelta: 'second', usage: Usage::none()),
+    );
+
     // First stream
     $reducer->init();
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'first', usage: Usage::none()));
+    $reducer->step(null, $first);
 
     expect($collector->collected[0]->metadata->index)->toBe(0);
 
@@ -202,23 +223,29 @@ test('init resets frame index for next stream', function() {
     $reducer->init();
     expect($collector->collected)->toBeEmpty(); // Collector was reset via init
 
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'second', usage: Usage::none()));
+    $reducer->step(null, $second);
 
     expect($collector->collected[0]->metadata->index)->toBe(0); // Index reset
 });
 
-test('accumulates buffer content across frames', function() {
+test('uses content snapshots across frames', function() {
     $collector = makeFrameCollector();
     $reducer = new ExtractDeltaReducer(inner: $collector, mode: OutputMode::JsonSchema);
 
     $reducer->init();
 
-    // Feed JSON in parts
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: '{"key"', usage: Usage::none()));
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: ': "val', usage: Usage::none()));
-    $reducer->step(null, new PartialInferenceResponse(contentDelta: 'ue"}', usage: Usage::none()));
+    [$partial1, $partial2, $partial3] = FakeStreamFactory::from(
+        new PartialInferenceResponse(contentDelta: '{"key"', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: ': "val', usage: Usage::none()),
+        new PartialInferenceResponse(contentDelta: 'ue"}', usage: Usage::none()),
+    );
 
-    // Buffer accumulates content across all frames - single source of truth
+    // Feed cumulative snapshots
+    $reducer->step(null, $partial1);
+    $reducer->step(null, $partial2);
+    $reducer->step(null, $partial3);
+
+    // Buffer matches each snapshot
     expect($collector->collected[0]->buffer->raw())->toBe('{"key"')
         ->and($collector->collected[1]->buffer->raw())->toBe('{"key": "val')
         ->and($collector->collected[2]->buffer->raw())->toBe('{"key": "value"}');

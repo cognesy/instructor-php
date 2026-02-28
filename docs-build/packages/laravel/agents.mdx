@@ -23,7 +23,7 @@ $response = AgentCtrl::claudeCode()
 if ($response->isSuccess()) {
     echo $response->text();
 }
-// @doctest id="5e42"
+// @doctest id="72d8"
 ```
 
 ## Agent Selection
@@ -42,8 +42,8 @@ $response = AgentCtrl::claudeCode()
     ->execute('Refactor the User model to use DTOs');
 
 echo $response->text();
-echo "Session ID: " . $response->sessionId;
-// @doctest id="bd18"
+echo "Session ID: " . (string) ($response->sessionId() ?? '');
+// @doctest id="8c88"
 ```
 
 ### Codex
@@ -54,7 +54,7 @@ Best for OpenAI-powered code generation:
 $response = AgentCtrl::codex()
     ->withModel('codex')
     ->execute('Write unit tests for the UserService class');
-// @doctest id="b5bb"
+// @doctest id="dbba"
 ```
 
 ### OpenCode
@@ -65,7 +65,7 @@ Best for multi-model flexibility:
 $response = AgentCtrl::openCode()
     ->withModel('anthropic/claude-sonnet-4-5')
     ->execute('Analyze the codebase architecture');
-// @doctest id="82ee"
+// @doctest id="bfb0"
 ```
 
 ### Dynamic Selection
@@ -73,13 +73,13 @@ $response = AgentCtrl::openCode()
 Select agent type at runtime:
 
 ```php
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\Enum\AgentType;
 
 $agentType = AgentType::from(config('app.default_agent'));
 
 $response = AgentCtrl::make($agentType)
     ->execute('Generate API documentation');
-// @doctest id="d8eb"
+// @doctest id="b6aa"
 ```
 
 ## Configuration
@@ -94,9 +94,8 @@ AgentCtrl::claudeCode()
     ->withTimeout(300)                        // Execution timeout in seconds
     ->inDirectory('/path/to/project')         // Working directory
     ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
-    ->withMaxRetries(3)                       // Retry on failure
     ->execute('Your prompt');
-// @doctest id="baec"
+// @doctest id="6a81"
 ```
 
 ### Laravel Configuration
@@ -134,7 +133,7 @@ Configure defaults in `config/instructor.php`:
         'timeout' => env('OPENCODE_TIMEOUT'),
     ],
 ],
-// @doctest id="b754"
+// @doctest id="eb1d"
 ```
 
 ### Environment Variables
@@ -153,7 +152,7 @@ CODEX_MODEL=codex
 
 # OpenCode
 OPENCODE_MODEL=anthropic/claude-sonnet-4-5
-// @doctest id="d5f7"
+// @doctest id="5fae"
 ```
 
 ## Streaming
@@ -176,7 +175,7 @@ $response = AgentCtrl::claudeCode()
         echo "\nDone! Exit code: " . $response->exitCode;
     })
     ->executeStreaming('Generate a REST API for products');
-// @doctest id="11c2"
+// @doctest id="5180"
 ```
 
 ## Response Object
@@ -192,7 +191,7 @@ $response->isSuccess();      // bool - True if exitCode is 0
 
 // Metadata
 $response->exitCode;         // int - Process exit code
-$response->sessionId;        // ?string - Session ID for resuming
+$response->sessionId();      // AgentSessionId|null - Session ID for resuming
 $response->agentType;        // AgentType - Which agent was used
 
 // Usage (when available)
@@ -212,7 +211,7 @@ foreach ($response->toolCalls as $call) {
     $call->output;           // ?string - Tool output
     $call->isError;          // bool - If tool call failed
 }
-// @doctest id="45af"
+// @doctest id="91a0"
 ```
 
 ## Session Management
@@ -224,13 +223,13 @@ Resume previous sessions for continued work:
 $response = AgentCtrl::claudeCode()
     ->execute('Start refactoring the User model');
 
-$sessionId = $response->sessionId;
+$sessionId = (string) ($response->sessionId() ?? '');
 
 // Later: Resume the session
 $response = AgentCtrl::claudeCode()
     ->resumeSession($sessionId)
     ->execute('Continue with the Address model');
-// @doctest id="28c2"
+// @doctest id="454d"
 ```
 
 ## Error Handling
@@ -269,7 +268,7 @@ try {
     Log::error('Agent exception', ['error' => $e->getMessage()]);
     return null;
 }
-// @doctest id="db93"
+// @doctest id="c83f"
 ```
 
 ## Testing
@@ -315,7 +314,7 @@ test('handles multiple agent calls', function () {
 });
 
 test('can create custom fake responses', function () {
-    use Cognesy\Auxiliary\Agents\Enum\AgentType;
+    use Cognesy\AgentCtrl\Enum\AgentType;
     use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 
     $customResponse = AgentCtrlFake::response(
@@ -331,7 +330,7 @@ test('can create custom fake responses', function () {
 
     expect($response->cost)->toBe(0.05);
 });
-// @doctest id="1f10"
+// @doctest id="a5be"
 ```
 
 ### Available Assertions
@@ -390,7 +389,7 @@ class CodeGenerationService
         return "Generate a Laravel migration for:\n" . json_encode($schema, JSON_PRETTY_PRINT);
     }
 }
-// @doctest id="927f"
+// @doctest id="d18a"
 ```
 
 ### Queued Code Generation
@@ -429,7 +428,7 @@ GenerateCodeJob::dispatch(
     'Generate a complete CRUD controller for Products',
     app_path('Http/Controllers/ProductController.php')
 );
-// @doctest id="d2d4"
+// @doctest id="ad55"
 ```
 
 ### Interactive Code Review
@@ -456,11 +455,11 @@ class CodeReviewer
         return [
             'review' => $response->text(),
             'success' => $response->isSuccess(),
-            'session' => $response->sessionId,
+            'session' => (string) ($response->sessionId() ?? ''),
         ];
     }
 }
-// @doctest id="2725"
+// @doctest id="b423"
 ```
 
 ## Sandbox Drivers
@@ -476,7 +475,7 @@ Control agent execution isolation:
 | `bubblewrap` | Minimal sandbox | CI/CD environments |
 
 ```php
-use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
+use Cognesy\Sandbox\Enums\SandboxDriver;
 
 // Development (direct execution)
 AgentCtrl::claudeCode()
@@ -487,7 +486,7 @@ AgentCtrl::claudeCode()
 AgentCtrl::claudeCode()
     ->withSandboxDriver(SandboxDriver::Docker)
     ->execute('...');
-// @doctest id="7a11"
+// @doctest id="5237"
 ```
 
 ## Best Practices

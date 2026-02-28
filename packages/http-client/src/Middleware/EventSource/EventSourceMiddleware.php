@@ -17,6 +17,8 @@ class EventSourceMiddleware extends BaseMiddleware
 {
     /** @var CanListenToHttpEvents[] */
     private array $listeners = [];
+    /** @var callable(string): (string|bool)|null */
+    private $parser = null;
 
     public function __construct(
         protected bool $enabled = true,
@@ -29,6 +31,14 @@ class EventSourceMiddleware extends BaseMiddleware
                 default => throw new \InvalidArgumentException('Handler must implement CanHandleHttpEvents interface.')
             };
         }
+        return $this;
+    }
+
+    /**
+     * @param callable(string): (string|bool) $parser
+     */
+    public function withParser(callable $parser): self {
+        $this->parser = $parser;
         return $this;
     }
 
@@ -60,6 +70,11 @@ class EventSourceMiddleware extends BaseMiddleware
 
     #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
-        return EventSourceResponseDecorator::decorate($request, $response, $this->listeners);
+        return EventSourceResponseDecorator::decorate(
+            request: $request,
+            response: $response,
+            listeners: $this->listeners,
+            parser: $this->parser,
+        );
     }
 }

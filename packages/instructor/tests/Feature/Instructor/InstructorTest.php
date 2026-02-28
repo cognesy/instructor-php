@@ -12,7 +12,7 @@ $mockHttp = MockHttp::get([
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($mockHttp, $text) {
-    $structuredOutput = (new StructuredOutput)->withHttpClient($mockHttp);
+    $structuredOutput = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp));
     $person = $structuredOutput->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -24,7 +24,7 @@ it('handles direct call', function () use ($mockHttp, $text) {
 
 it('handles onEvent()', function () use ($mockHttp, $text) {
     $events = new EventSink();
-    $structuredOutput = (new StructuredOutput)->withHttpClient($mockHttp);
+    $structuredOutput = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp));
     $person = $structuredOutput->onEvent(StructuredOutputRequestReceived::class, fn($e) => $events->onEvent($e))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -37,7 +37,7 @@ it('handles onEvent()', function () use ($mockHttp, $text) {
 
 it('handles wiretap()', function () use ($mockHttp, $text) {
     $events = new EventSink();
-    $structuredOutput = (new StructuredOutput)->withHttpClient($mockHttp);
+    $structuredOutput = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp));
     $person = $structuredOutput->wiretap(fn($e) => $events->onEvent($e))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,

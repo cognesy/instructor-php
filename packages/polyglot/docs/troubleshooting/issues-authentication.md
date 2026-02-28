@@ -38,22 +38,19 @@ echo "Anthropic API key format is incorrect\n";
 ```php
 <?php
 use Cognesy\Polyglot\Inference\Inference;
-use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 function testApiKey(string $preset): bool {
     try {
-        $llm = (new LLMFactory)->fromPreset($preset);
-        $inference = new Inference($llm);
-        $inference->with(
+        Inference::using($preset)->with(
             messages: 'Test message',
             options: ['max_tokens' => 5]
         )->get();
 
-        echo "Connection using '$connection' is working correctly\n";
+        echo "Connection using '{$preset}' is working correctly\n";
         return true;
     } catch (HttpRequestException $e) {
-        echo "Error with connection '$connection': " . $e->getMessage() . "\n";
+        echo "Error with connection '{$preset}': " . $e->getMessage() . "\n";
         return false;
     }
 }

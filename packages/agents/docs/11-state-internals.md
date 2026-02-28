@@ -20,11 +20,6 @@ AgentState (readonly)
   |   |-- metadata: Metadata
   |   |-- systemPrompt: string
   |   |-- responseFormat: ResponseFormat
-  |-- budget: AgentBudget
-  |   |-- maxSteps: ?int
-  |   |-- maxTokens: ?int
-  |   |-- maxSeconds: ?float
-  |   |-- maxCost: ?float
   |   |-- deadline: ?DateTimeImmutable
   |-- execution: ?ExecutionState    # null between executions
       |-- executionId: ExecutionId
@@ -60,10 +55,6 @@ $state->messages();
 $state->metadata();
 $state->context()->systemPrompt();
 
-// AgentBudget
-$state->budget()->maxSteps;
-$state->budget()->isExhausted();
-
 // Execution
 $state->status();                    // ExecutionStatus enum
 $state->execution()?->executionId()->toString();
@@ -81,21 +72,21 @@ $state->hasFinalResponse();
 $state->finalResponse()->toString();
 ```
 
-## AgentBudget
+## ExecutionBudget
 
-Budgets propagate through delegation chains. Each subagent inherits the remaining budget:
+`ExecutionBudget` declares per-execution resource limits on an `AgentDefinition`. It is applied as a `UseGuards` capability when the agent loop is built — not stored in `AgentState`.
 
 ```php
-$budget = new AgentBudget(maxSteps: 20, maxTokens: 10000, maxSeconds: 60.0);
+use Cognesy\Agents\Data\ExecutionBudget;
 
-// After 5 steps and 3000 tokens:
-$remaining = $budget->remaining(stepsUsed: 5, tokensUsed: 3000);
-// maxSteps: 15, maxTokens: 7000, maxSeconds: 60.0
-
-// Cap by another budget:
-$capped = $budget->cappedBy(new AgentBudget(maxSteps: 10));
-// maxSteps: 10 (takes minimum)
+$definition = new AgentDefinition(
+    name: 'my-agent',
+    // ...
+    budget: new ExecutionBudget(maxSteps: 20, maxTokens: 10000, maxSeconds: 60.0),
+);
 ```
+
+Each subagent receives its own declared budget. Recursion depth is controlled separately via `SubagentPolicy::maxDepth`.
 
 ## Serialization
 

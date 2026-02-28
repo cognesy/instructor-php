@@ -18,7 +18,7 @@ it('returns array output for dynamic schema when intoArray is used', function ()
     ]);
 
     $data = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->intoArray()
         ->withMessages([['role' => 'user', 'content' => 'What is the capital of France?']])
         ->withResponseJsonSchema($city->toJsonSchema())

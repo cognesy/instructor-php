@@ -48,7 +48,7 @@ Capability/           # Use* capabilities (Core, Bash, File, Subagent, etc.)
 Collections/          # Tools, AgentSteps, StepExecutions, ErrorList, etc.
 Context/              # AgentContext, message compilers (CanCompileMessages)
 Continuation/         # StopSignal, StopReason, ExecutionContinuation
-Data/                 # AgentState, ExecutionState, AgentStep, AgentBudget
+Data/                 # AgentState, ExecutionState, AgentStep, ExecutionBudget
 Drivers/              # ToolCallingDriver, ReActDriver, FakeAgentDriver
 Enums/                # AgentStepType, ExecutionStatus
 Events/               # Agent event system

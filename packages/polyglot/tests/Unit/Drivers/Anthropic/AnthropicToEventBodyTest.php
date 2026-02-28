@@ -44,3 +44,11 @@ it('handles data: with no payload as empty string', function () {
     expect($this->adapter->toEventBody('data:'))->toBe('');
     expect($this->adapter->toEventBody('data: '))->toBe('');
 });
+
+it('returns false for explicit done markers', function () {
+    expect($this->adapter->toEventBody('data: [DONE]'))->toBeFalse();
+});
+
+it('returns false for message_stop payload', function () {
+    expect($this->adapter->toEventBody('data: {"type":"message_stop"}'))->toBeFalse();
+});

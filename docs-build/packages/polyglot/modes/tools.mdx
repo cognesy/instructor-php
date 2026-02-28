@@ -12,7 +12,7 @@ Tools mode enables function calling, allowing the model to request specific acti
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-$inference = new Inference()->using('openai');  // Tools are best supported by OpenAI
+$inference = Inference::using('openai');  // Tools are best supported by OpenAI
 
 // Define a tool for weather information
 $weatherTool = [
@@ -136,7 +136,7 @@ function simulateWeatherApi(string $location, string $unit): array {
         'humidity' => 65,
     ];
 }
-// @doctest id="7db1"
+// @doctest id="ffe4"
 ```
 
 ## Controlling Tool Usage
@@ -148,7 +148,7 @@ You can control how tools are used with the `toolChoice` parameter:
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-$inference = new Inference()->using('openai');
+$inference = Inference::using('openai');
 
 // Let the model decide whether to use tools
 $autoResponse = $inference->with(
@@ -178,7 +178,7 @@ $noToolResponse = $inference->with(
     toolChoice: 'none',
     mode: OutputMode::Tools
 )->response();
-// @doctest id="7e40"
+// @doctest id="9b58"
 ```
 
 
@@ -191,7 +191,7 @@ You can also stream tool calls to provide real-time feedback:
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
-$inference = new Inference()->using('openai');
+$inference = Inference::using('openai');
 
 $response = $inference->with(
     messages: 'What\'s the weather like in Paris today?',
@@ -250,7 +250,7 @@ if (!empty($toolName) && !empty($toolArgs)) {
         echo "Error parsing tool arguments: " . $e->getMessage() . "\n";
     }
 }
-// @doctest id="b9f6"
+// @doctest id="96cf"
 ```
 
 

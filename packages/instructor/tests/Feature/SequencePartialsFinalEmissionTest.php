@@ -4,7 +4,7 @@ use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 it('partials engine emits all completed sequence items including final one', function () {
     if (!class_exists('SeqPerson')) {
@@ -20,10 +20,9 @@ it('partials engine emits all completed sequence items including final one', fun
         new PartialInferenceResponse(contentDelta: ']}', finishReason: 'stop'),
     ];
 
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
 
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
+    $pending = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages('ignored')
         ->withResponseObject(Sequence::of('SeqPerson'))
         ->withOutputMode(OutputMode::Json)
@@ -38,4 +37,3 @@ it('partials engine emits all completed sequence items including final one', fun
     expect($updates[2]->count())->toBe(3);
     expect($updates[3]->count())->toBe(4);
 });
-

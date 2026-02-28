@@ -37,7 +37,7 @@ class User {
 }
 
 // Get Instructor object with client defined in config.php under 'presets/openai' key
-$structuredOutput = (new StructuredOutput)->using('openai');
+$structuredOutput = StructuredOutput::using('openai');
 
 // Call with custom model and execution mode
 $user = $structuredOutput->with(

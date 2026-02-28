@@ -17,7 +17,7 @@ Streaming responses can encounter specific problems.
 
 ```php
 <?php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a custom HTTP client with longer timeouts
 $config = new HttpClientConfig(
@@ -27,8 +27,10 @@ $config = new HttpClientConfig(
 );
 
 $httpClient = new HttpClient('guzzle', $config);
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $httpClient,
+));
 
 // Use streaming with the custom client
 $response = $inference->with(
@@ -41,7 +43,7 @@ foreach ($stream as $partial) {
     echo $partial->contentDelta;
     flush();
 }
-// @doctest id="a76d"
+// @doctest id="339a"
 ```
 
 2. **Buffer Flushing**: Ensure output buffers are properly flushed during streaming
@@ -55,7 +57,7 @@ foreach ($stream as $partial) {
     }
     flush();
 }
-// @doctest id="d0e1"
+// @doctest id="77a3"
 ```
 
 3. **Error Handling in Streams**: Implement specific error handling for streams
@@ -87,7 +89,7 @@ try {
 } catch (RequestException $e) {
     echo "Request failed: " . $e->getMessage() . "\n";
 }
-// @doctest id="519d"
+// @doctest id="00a7"
 ```
 
 4. **Fallback to Non-streaming**: Implement a fallback to non-streaming mode
@@ -119,5 +121,5 @@ function getResponse(string $prompt, bool $preferStreaming = true): string {
     // Fallback to non-streaming
     return $inference->with(messages: $prompt)->toText();
 }
-// @doctest id="8832"
+// @doctest id="caf0"
 ```

@@ -107,6 +107,10 @@ Then, add your middleware to the HTTP client:
 $httpClient = new HttpClient();
 $httpClient->withMiddleware(new YourCustomMiddleware());
 
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
+$inference = Inference::fromRuntime(
+    \Cognesy\Polyglot\Inference\InferenceRuntime::using(
+        preset: 'openai',
+        httpClient: $httpClient,
+    )
+);
 ```

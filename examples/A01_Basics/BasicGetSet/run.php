@@ -72,8 +72,7 @@ $text = <<<TEXT
     TEXT;
 
 
-$user = (new StructuredOutput)
-    ->using('openai')
+$user = StructuredOutput::using('openai')
     //->withHttpDebugPreset('on')
     ->withMessages($text)
     ->withResponseClass(UserWithSetter::class)

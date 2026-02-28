@@ -36,16 +36,20 @@ $text = <<<TEXT
 print("INPUT:\n$text\n\n");
 
 print("OUTPUT:\n");
-$list = (new StructuredOutput)
-    ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
+$stream = (new StructuredOutput)
     //->wiretap(fn($e) => $e->print())
     ->with(
         messages: $text,
         responseModel: Sequence::of(Person::class),
         options: ['stream' => true],
     )
-    ->get();
+    ->stream();
 
+foreach ($stream->sequence() as $sequence) {
+    dump($sequence->last());
+}
+
+$list = $stream->finalValue();
 
 dump(count($list));
 

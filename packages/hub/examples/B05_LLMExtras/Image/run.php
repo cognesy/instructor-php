@@ -29,8 +29,7 @@ $messages = Messages::empty()
         ->addContentPart(Image::fromFile(__DIR__ . '/car-damage.jpg')->toContentPart())
     );
 
-$response = (new Inference)
-    ->using('openai')
+$response = Inference::using('openai')
     ->withModel('gpt-4o-mini')
     ->withMessages($messages)
     ->get();

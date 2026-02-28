@@ -24,7 +24,7 @@ Network connectivity problems can prevent successful API requests.
 
 ```php
 // Using custom HTTP client with proxy settings
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $config = new HttpClientConfig(
     requestTimeout: 30,
@@ -33,8 +33,10 @@ $config = new HttpClientConfig(
 );
 
 $httpClient = new HttpClient('guzzle', $config);
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $httpClient,
+));
 ```
 
 4. **Firewall Rules**: Check if your firewall is blocking outgoing connections to API endpoints

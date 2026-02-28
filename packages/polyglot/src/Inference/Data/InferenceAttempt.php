@@ -149,14 +149,6 @@ class InferenceAttempt
     }
 
     public function withNewPartialResponse(PartialInferenceResponse $partialResponse): self {
-        // If we already have a partial and incoming looks like a delta (no accumulated content),
-        // accumulate to keep usage/content correct in non-stream test paths.
-        if ($this->accumulatedPartial !== null
-            && !$partialResponse->hasContent()
-            && !$partialResponse->hasReasoningContent()
-        ) {
-            $partialResponse = $partialResponse->withAccumulatedContent($this->accumulatedPartial);
-        }
         return $this->with(
             accumulatedPartial: $partialResponse,
             isFinalized: false,
@@ -207,4 +199,5 @@ class InferenceAttempt
     private function errorsToStringArray(array $errors) : array {
         return array_map(fn($e) => $e instanceof Throwable ? $e->getMessage() : (string) $e, $errors);
     }
+
 }

@@ -17,7 +17,7 @@ Streaming responses can encounter specific problems.
 
 ```php
 <?php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Create a custom HTTP client with longer timeouts
 $config = new HttpClientConfig(
@@ -27,8 +27,10 @@ $config = new HttpClientConfig(
 );
 
 $httpClient = new HttpClient('guzzle', $config);
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $httpClient,
+));
 
 // Use streaming with the custom client
 $response = $inference->with(

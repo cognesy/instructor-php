@@ -25,8 +25,7 @@ print("Input text:\n");
 print($text . "\n\n");
 
 print("Extracting structured data using LLM...\n\n");
-$user = (new StructuredOutput)
-    ->using('openai')
+$user = StructuredOutput::using('openai')
     ->withMessages($text)
     ->withModel('gpt-3.5-turbo')
     ->withResponseClass(User::class)

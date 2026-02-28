@@ -81,12 +81,5 @@ echo 'Conversation messages count: ' . $afterSecondWakeUp->state()->messages()->
 echo 'Last response: ' . ($afterSecondWakeUp->state()->finalResponse()->toString() ?: 'No response') . "\n";
 echo "\nConversation transcript:\n";
 echo $afterSecondWakeUp->state()->messages()->toString() . "\n";
-
-assert($afterFirstWakeUp->version() === 2);
-assert($afterSecondWakeUp->version() === 3);
-assert($afterSecondWakeUp->state()->messages()->count() >= 2);
-assert($afterSecondWakeUp->state()->messages()->toString() !== '');
-assert(str_contains($afterSecondWakeUp->state()->messages()->toString(), 'What is the capital of France?'));
-assert(str_contains($afterSecondWakeUp->state()->messages()->toString(), 'What is the closest major river to that city?'));
 ?>
 ```

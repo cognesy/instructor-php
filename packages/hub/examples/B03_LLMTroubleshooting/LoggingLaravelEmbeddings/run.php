@@ -19,7 +19,9 @@ use Cognesy\Logging\Filters\LogLevelFilter;
 use Cognesy\Logging\Formatters\MessageTemplateFormatter;
 use Cognesy\Logging\Pipeline\LoggingPipeline;
 use Cognesy\Logging\Writers\PsrLoggerWriter;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 use Illuminate\Http\Request;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -49,10 +51,13 @@ $pipeline = LoggingPipeline::create()
 
 echo "📋 About to demonstrate Embeddings logging with Laravel context...\n\n";
 
-// Create embeddings with logging
-$embeddings = (new Embeddings)
-    ->using('openai')
-    ->wiretap($pipeline);
+// Attach wiretap listener to the runtime event bus
+$events = new EventDispatcher();
+$events->wiretap($pipeline);
+
+$embeddings = Embeddings::fromRuntime(
+    EmbeddingsRuntime::using(preset: 'openai', events: $events)
+);
 
 echo "🚀 Starting Embeddings generation...\n";
 $vectors = $embeddings

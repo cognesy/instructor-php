@@ -18,9 +18,7 @@ it('returns content for Gemini generateContent (non-streaming)', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $content = (new Inference())
-        ->withHttpClient($http)
-        ->using('gemini')
+    $content = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'gemini', httpClient: $http))
         ->withModel('gemini-1.5-flash')
         ->withMessages('Hello')
         ->get();

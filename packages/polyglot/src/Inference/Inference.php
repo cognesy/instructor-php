@@ -2,72 +2,57 @@
 
 namespace Cognesy\Polyglot\Inference;
 
-use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
-use Cognesy\Events\Traits\HandlesEvents;
-use Cognesy\Http\Creation\HttpClientBuilder;
-use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\CanAcceptLLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanCreateInference;
-use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
-use Cognesy\Polyglot\Inference\Contracts\CanResolveLLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\HasExplicitInferenceDriver;
 use Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
-use Cognesy\Polyglot\Inference\Data\InferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Polyglot\Inference\Pricing\StaticPricingResolver;
 use Cognesy\Polyglot\Inference\Streaming\InferenceStream;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Inference class is facade for handling inference requests and responses.
  */
-class Inference implements CanAcceptLLMConfig, CanCreateInference
+final class Inference implements CanCreateInference
 {
-    use HandlesEvents;
-
-    use Traits\HandlesLLMProvider;
     use Traits\HandlesRequestBuilder;
 
-    /** @var HttpClient|null Facade-level HTTP client (optional) */
-    protected ?HttpClient $httpClient = null;
-    /** @var string|null Facade-level HTTP debug preset (optional) */
-    protected ?string $httpDebugPreset = null;
-
-    /** @var InferenceDriverFactory|null */
-    private ?InferenceDriverFactory $inferenceFactory = null;
-    private ?int $inferenceFactoryEventBusId = null;
-    private ?InferenceRuntime $runtimeCache = null;
-    private bool $runtimeCacheDirty = true;
+    private CanCreateInference $runtime;
 
     /**
      * Constructor for initializing dependencies and configurations.
      */
     public function __construct(
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
-        ?CanProvideConfig $configProvider = null,
+        ?CanCreateInference $runtime = null,
     ) {
-        $this->events = EventBusResolver::using($events);
         $this->requestBuilder = new InferenceRequestBuilder();
-        $this->llmProvider = LLMProvider::new(
-            $configProvider,
-        );
+        $this->runtime = $runtime ?? InferenceRuntime::fromProvider(LLMProvider::new());
     }
 
-    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
+    public static function using(string $preset): self {
+        return new self(InferenceRuntime::using($preset));
+    }
+
+    public static function fromDsn(string $dsn): self {
+        return new self(InferenceRuntime::fromDsn($dsn));
+    }
+
+    public static function fromRuntime(CanCreateInference $runtime): self {
+        return new self($runtime);
+    }
+
+    public function withRuntime(CanCreateInference $runtime): self {
         $copy = clone $this;
-        $copy->events = EventBusResolver::using($events);
-        $copy->invalidateRuntimeCache();
+        $copy->runtime = $runtime;
         return $copy;
     }
 
+    public function runtime(): CanCreateInference {
+        return $this->runtime;
+    }
+
     /**
-     * @param string|callable(LLMConfig, HttpClient, EventDispatcherInterface): CanProcessInferenceRequest $driver
+     * @param string|callable $driver
      */
     public static function registerDriver(string $name, string|callable $driver): void {
         InferenceDriverFactory::registerDriver($name, $driver);
@@ -128,79 +113,6 @@ class Inference implements CanAcceptLLMConfig, CanCreateInference
     }
 
     public function create(?InferenceRequest $request = null): PendingInference {
-        $request = $request ?? $this->requestBuilder->create();
-        return $this->toRuntime()->create($request);
-    }
-
-    public function toRuntime(): InferenceRuntime {
-        if (!$this->runtimeCacheDirty && $this->runtimeCache !== null) {
-            return $this->runtimeCache;
-        }
-
-        $this->runtimeCache = $this->makeRuntime();
-        $this->runtimeCacheDirty = false;
-        return $this->runtimeCache;
-    }
-
-    // INTERNAL ////////////////////////////////////////////////////////////
-
-    private function makeRuntime(): InferenceRuntime {
-        $resolver = $this->llmResolver ?? $this->llmProvider;
-        $config = $resolver->resolveConfig();
-
-        $httpClient = $this->makeHttpClient();
-        $inferenceDriver = $this->makeInferenceDriver($httpClient, $resolver, $config);
-
-        return new InferenceRuntime(
-            driver: $inferenceDriver,
-            events: $this->events,
-            pricingResolver: new StaticPricingResolver($config->getPricing()),
-        );
-    }
-
-    private function getInferenceFactory(): InferenceDriverFactory {
-        $eventsId = spl_object_id($this->events);
-        if ($this->inferenceFactory === null || $this->inferenceFactoryEventBusId !== $eventsId) {
-            $this->inferenceFactory = new InferenceDriverFactory($this->events);
-            $this->inferenceFactoryEventBusId = $eventsId;
-        }
-        return $this->inferenceFactory;
-    }
-
-    private function makeInferenceDriver(
-        HttpClient $httpClient,
-        CanResolveLLMConfig $resolver,
-        LLMConfig $config,
-    ) : CanProcessInferenceRequest {
-        // Prefer explicit driver if provided via interface
-        $explicit = $resolver instanceof HasExplicitInferenceDriver
-            ? $resolver->explicitInferenceDriver()
-            : null;
-
-        if ($explicit !== null) {
-            return $explicit;
-        }
-
-        return $this->getInferenceFactory()->makeDriver(
-            config: $config,
-            httpClient: $httpClient
-        );
-    }
-
-    private function makeHttpClient() : HttpClient {
-        // Ensure HttpClient is available; build default if not provided
-        if ($this->httpClient !== null) {
-            return $this->httpClient;
-        }
-        $builder = new HttpClientBuilder(events: $this->events);
-        if ($this->httpDebugPreset !== null) {
-            $builder = $builder->withHttpDebugPreset($this->httpDebugPreset);
-        }
-        return $builder->create();
-    }
-
-    protected function invalidateRuntimeCache(): void {
-        $this->runtimeCache = null;
-        $this->runtimeCacheDirty = true;
+        return $this->runtime->create($request ?? $this->requestBuilder->create());
     }
 }

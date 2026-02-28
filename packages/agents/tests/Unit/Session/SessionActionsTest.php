@@ -3,9 +3,7 @@
 namespace Cognesy\Agents\Tests\Unit\Session;
 
 use Cognesy\Agents\CanControlAgentLoop;
-use Cognesy\Agents\Data\AgentBudget;
 use Cognesy\Agents\Data\AgentState;
-use Cognesy\Agents\Session\Actions\ChangeBudget;
 use Cognesy\Agents\Session\Actions\ChangeModel;
 use Cognesy\Agents\Session\Actions\ChangeSystemPrompt;
 use Cognesy\Agents\Session\Actions\ClearSession;
@@ -57,15 +55,6 @@ it('change model action updates llm config on state', function () {
     $updated = (new ChangeModel($config))->executeOn($session);
 
     expect($updated->state()->llmConfig()?->model)->toBe('test-model');
-});
-
-it('change budget action updates budget on state', function () {
-    $session = makeActionSession();
-    $budget = new AgentBudget(maxSteps: 7);
-
-    $updated = (new ChangeBudget($budget))->executeOn($session);
-
-    expect($updated->state()->budget()->maxSteps)->toBe(7);
 });
 
 it('change system prompt action updates context system prompt', function () {

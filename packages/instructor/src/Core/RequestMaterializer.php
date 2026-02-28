@@ -38,8 +38,11 @@ class RequestMaterializer implements CanMaterializeRequest
             ->with(['json_schema' => json_encode($this->makeJsonSchema($execution->responseModel()))])
             ->renderMessages($output->toMessages());
 
-        // Temporary safeguard to keep messages present; isolated for easy removal.
-        return $this->ensureNonEmptyMessages($rendered, $request)->toArray();
+        if ($rendered->isEmpty()) {
+            throw new Exception('Request materialization produced no messages after rendering. Check chatStructure configuration.');
+        }
+
+        return $rendered->toArray();
     }
 
     protected function makeMessageStore(StructuredOutputExecution $execution) : MessageStore {
@@ -255,34 +258,6 @@ class RequestMaterializer implements CanMaterializeRequest
 
     protected function makeJsonSchema(?ResponseModel $responseModel) : array {
         return $responseModel?->toJsonSchema() ?? [];
-    }
-
-    /**
-     * TEMP: Ensure we always provide a non-empty messages array to the driver.
-     * If rendering unexpectedly results in no messages, fall back to original
-     * request messages or synthesize minimal content from prompt/system.
-     * This helper is isolated for easy removal once the root cause is fixed.
-     */
-    private function ensureNonEmptyMessages(Messages $rendered, StructuredOutputRequest $request) : Messages {
-        if (!$rendered->isEmpty()) {
-            return $rendered;
-        }
-
-        $fallback = Messages::empty();
-
-        if (!$request->messages()->isEmpty()) {
-            $fallback = $fallback->appendMessages($request->messages());
-        }
-
-        if ($fallback->isEmpty() && !empty($request->prompt())) {
-            $fallback = $fallback->appendMessage(new Message(role: 'user', content: $request->prompt()));
-        }
-
-        if ($fallback->isEmpty() && !empty($request->system())) {
-            $fallback = $fallback->appendMessage(new Message(role: 'system', content: $request->system()));
-        }
-
-        return $fallback;
     }
 
     private function mergeMessageStores(MessageStore $baseStore, MessageStore $sourceStore): MessageStore {

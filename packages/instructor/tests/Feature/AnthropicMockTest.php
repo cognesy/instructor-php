@@ -40,8 +40,7 @@ it('works with Anthropic mock responses in tools mode', function () {
         events: new EventDispatcher()
     );
 
-    $obj = (new StructuredOutput())
-        ->withDriver($driver)
+    $obj = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->withMessages([['role' => 'user', 'content' => 'test']])
         ->withResponseClass(AnthropicTestUser::class)
         ->withOutputMode(OutputMode::Tools)
@@ -78,8 +77,7 @@ it('works with Anthropic mock responses for scalars', function () {
         events: new EventDispatcher()
     );
 
-    $v1 = (new StructuredOutput())
-        ->withDriver($driver)
+    $v1 = (new StructuredOutput(makeStructuredRuntime(driver: $driver)))
         ->with(
             messages: [['role'=>'user','content'=>'age?']],
             responseModel: Scalar::integer('age'),

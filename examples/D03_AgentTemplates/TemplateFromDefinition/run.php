@@ -22,7 +22,7 @@ Key concepts:
 require 'examples/boot.php';
 
 use Cognesy\Agents\Capability\AgentCapabilityRegistry;
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Events\Support\AgentEventConsoleObserver;
 use Cognesy\Agents\Template\Data\AgentDefinition;
@@ -38,7 +38,7 @@ $definition = new AgentDefinition(
     description: 'Answers short geography questions.',
     systemPrompt: 'You are concise and precise.',
     llmConfig: 'openai',
-    budget: new AgentBudget(maxSteps: 3),
+    budget: new ExecutionBudget(maxSteps: 3),
 );
 
 $loop = (new DefinitionLoopFactory($capabilities))

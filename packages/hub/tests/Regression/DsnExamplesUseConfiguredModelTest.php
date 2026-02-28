@@ -13,7 +13,7 @@ function dsnStringFromExample(string $path): string {
     }
 
     $matches = [];
-    $matched = preg_match('/withDsn\((["\'])(.+?)\\1\)/', $content, $matches);
+    $matched = preg_match('/(?:with|from)Dsn\((["\'])(.+?)\\1\)/', $content, $matches);
     if ($matched !== 1) {
         throw new RuntimeException("Missing withDsn() call in example: {$path}");
     }

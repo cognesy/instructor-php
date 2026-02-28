@@ -2,6 +2,8 @@
 
 PHP integration for the OpenAI Codex CLI (`codex exec` command).
 
+> Advanced internals documentation. For typical usage, prefer the unified `AgentCtrl` facade in [`../../README.md`](../../README.md).
+
 ## Overview
 
 This module provides a structured PHP API for invoking the Codex CLI in headless/non-interactive mode. It supports:

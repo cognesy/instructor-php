@@ -97,17 +97,20 @@ class HttpRequest
     // MUTATORS /////////////////////////////////////////////////////////////////////
 
     public function withHeader(string $key, string $value) : self {
-        $this->headers[$key] = $value;
-        return $this;
+        $copy = clone $this;
+        $copy->headers[$key] = $value;
+        $copy->updatedAt = new DateTimeImmutable();
+        return $copy;
     }
 
     /**
      * Set the request URL
      */
     public function withStreaming(bool $streaming) : self {
-        $this->options['stream'] = $streaming;
-        $this->updatedAt = new DateTimeImmutable();
-        return $this;
+        $copy = clone $this;
+        $copy->options['stream'] = $streaming;
+        $copy->updatedAt = new DateTimeImmutable();
+        return $copy;
     }
 
     // SERIALIZATION ////////////////////////////////////////////////////////////////

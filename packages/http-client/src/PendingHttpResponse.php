@@ -7,40 +7,44 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Generator;
 
+/**
+ * Deferred request execution with explicit sync and stream response caches.
+ */
 class PendingHttpResponse
 {
     private readonly CanHandleHttpRequest $driver;
     private readonly HttpRequest $request;
 
-    private ?HttpResponse $response = null;
+    private ?HttpResponse $syncResponse = null;
+    private ?HttpResponse $streamedResponse = null;
 
     public function __construct(
         HttpRequest $request,
         CanHandleHttpRequest $driver,
     ) {
-        $this->request = $request;
+        $this->request = clone $request;
         $this->driver = $driver;
     }
 
     public function get(): HttpResponse {
-        return $this->makeResponse($this->request);
+        return $this->getConfiguredResponse();
     }
 
     public function statusCode(): int {
         return $this
-            ->makeResponse($this->request)
+            ->getMetadataResponse()
             ->statusCode();
     }
 
     public function headers(): array {
         return $this
-            ->makeResponse($this->request)
+            ->getMetadataResponse()
             ->headers();
     }
 
     public function content(): string {
         return $this
-            ->makeResponse($this->request)
+            ->getConfiguredResponse()
             ->body();
     }
 
@@ -48,26 +52,52 @@ class PendingHttpResponse
      * Stream response chunks using the configured adapter chunk size.
      *
      * Chunk sizing is controlled by adapters and HttpClientConfig::streamChunkSize.
+     * Streaming and sync execution are cached independently to avoid mode collisions.
      *
      * @return Generator<string>
      */
     public function stream(): Generator {
         yield from $this
-            ->makeResponse($this->request->withStreaming(true))
+            ->getStreamedResponse()
             ->stream();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////
 
-    /**
-     * @param HttpRequest $request
-     * @return HttpResponse
-     */
-    private function makeResponse(HttpRequest $request): HttpResponse {
-        if (empty($this->response)) {
-            $this->response = $this->driver->handle($request);
+    private function getSyncResponse(): HttpResponse {
+        if ($this->syncResponse === null) {
+            $this->syncResponse = $this->driver->handle($this->makeSyncRequest());
         }
+        return $this->syncResponse;
+    }
 
-        return $this->response;
+    private function getStreamedResponse(): HttpResponse {
+        if ($this->streamedResponse === null) {
+            $this->streamedResponse = $this->driver->handle($this->makeStreamedRequest());
+        }
+        return $this->streamedResponse;
+    }
+
+    private function getMetadataResponse(): HttpResponse {
+        return match (true) {
+            $this->syncResponse !== null => $this->syncResponse,
+            $this->streamedResponse !== null => $this->streamedResponse,
+            default => $this->getConfiguredResponse(),
+        };
+    }
+
+    private function getConfiguredResponse(): HttpResponse {
+        return match (true) {
+            $this->request->isStreamed() => $this->getStreamedResponse(),
+            default => $this->getSyncResponse(),
+        };
+    }
+
+    private function makeSyncRequest(): HttpRequest {
+        return (clone $this->request)->withStreaming(false);
+    }
+
+    private function makeStreamedRequest(): HttpRequest {
+        return (clone $this->request)->withStreaming(true);
     }
 }

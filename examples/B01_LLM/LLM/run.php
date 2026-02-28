@@ -35,8 +35,7 @@ assert(Str::contains($answer, 'Berlin'));
 
 
 // EXAMPLE 2: customize inference options using fluent API
-$response = (new Inference)
-    ->using('openai') // optional, default is set in /config/llm.php
+$response = Inference::using('openai') // optional, default is set in /config/llm.php
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->create();

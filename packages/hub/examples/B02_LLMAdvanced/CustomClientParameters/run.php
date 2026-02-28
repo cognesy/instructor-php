@@ -22,6 +22,7 @@ use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Utils\Str;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
@@ -61,12 +62,14 @@ $config = new LLMConfig(
 );
 
 // Call inference API with custom client and configuration
+$events->addListener(Event::class, fn(Event $e) => $e->print());
+$runtime = InferenceRuntime::fromConfig(
+    config: $config,
+    events: $events,
+    httpClient: $customClient,
+);
 
-$answer = (new Inference)
-    ->withEventHandler($events)
-    ->withLLMConfig($config)
-    ->withHttpClient($customClient)
-    ->wiretap(fn(Event $e) => $e->print())
+$answer = Inference::fromRuntime($runtime)
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

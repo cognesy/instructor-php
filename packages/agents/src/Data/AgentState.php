@@ -28,7 +28,6 @@ use Throwable;
  * - Identity: agentId, parentAgentId
  * - Session timing: createdAt, updatedAt
  * - Context: messages, metadata, system prompt, response format
- * - Budget: resource limits inherited from parent or definition
  *
  * Execution data (optional, null when between executions):
  * - Execution identity: executionId
@@ -47,7 +46,6 @@ final readonly class AgentState
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
     private ?LLMConfig $llmConfig;
-    private AgentBudget $budget;
     private int $executionCount; // allows agent to recognize e.g. first execution
 
     // Context data - messages, system prompt, etc
@@ -62,7 +60,6 @@ final readonly class AgentState
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
         ?AgentContext      $context = null,
-        ?AgentBudget       $budget = null,
         ?LLMConfig         $llmConfig = null,
         int                $executionCount = 0,
         ?ExecutionState    $execution = null,
@@ -75,7 +72,6 @@ final readonly class AgentState
         $this->createdAt = $createdAt ?? $now;
         $this->updatedAt = $updatedAt ?? $this->createdAt;
         $this->context = $context ?? new AgentContext();
-        $this->budget = $budget ?? AgentBudget::unlimited();
         $this->llmConfig = $llmConfig;
         $this->executionCount = $executionCount;
 
@@ -126,7 +122,6 @@ final readonly class AgentState
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
             context: $this->context,
-            budget: $this->budget,
             llmConfig: $this->llmConfig,
             executionCount: $this->executionCount,
             execution: null,
@@ -141,7 +136,6 @@ final readonly class AgentState
         ?DateTimeImmutable $createdAt = null,
         ?DateTimeImmutable $updatedAt = null,
         ?AgentContext      $context = null,
-        ?AgentBudget       $budget = null,
         ?LLMConfig         $llmConfig = null,
         ?int               $executionCount = null,
         ?ExecutionState    $execution = null,
@@ -152,7 +146,6 @@ final readonly class AgentState
             createdAt: $createdAt ?? $this->createdAt,
             updatedAt: $updatedAt ?? new DateTimeImmutable(),
             context: $context ?? $this->context,
-            budget: $budget ?? $this->budget,
             llmConfig: $llmConfig ?? $this->llmConfig,
             executionCount: $executionCount ?? $this->executionCount,
             execution: $execution ?? $this->execution,
@@ -228,20 +221,12 @@ final readonly class AgentState
         return $this->context;
     }
 
-    public function budget(): AgentBudget {
-        return $this->budget;
-    }
-
     public function llmConfig(): ?LLMConfig {
         return $this->llmConfig;
     }
 
     public function executionCount(): int {
         return $this->executionCount;
-    }
-
-    public function withBudget(AgentBudget $budget): self {
-        return $this->with(budget: $budget);
     }
 
     public function withLLMConfig(?LLMConfig $llmConfig): self {
@@ -251,7 +236,6 @@ final readonly class AgentState
             createdAt: $this->createdAt,
             updatedAt: new DateTimeImmutable(),
             context: $this->context,
-            budget: $this->budget,
             llmConfig: $llmConfig,
             executionCount: $this->executionCount,
             execution: $this->execution,
@@ -471,7 +455,6 @@ final readonly class AgentState
             'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
             'updatedAt' => $this->updatedAt->format(DateTimeImmutable::ATOM),
             'context' => $this->context->toArray(),
-            'budget' => $this->budget->toArray(),
             'llmConfig' => $this->llmConfig?->toArray(),
             'executionCount' => $this->executionCount,
             'execution' => $this->execution?->toArray(),
@@ -481,11 +464,6 @@ final readonly class AgentState
     public static function fromArray(array $data): self {
         $execution = match (true) {
             is_array($data['execution'] ?? null) => ExecutionState::fromArray($data['execution']),
-            default => null,
-        };
-
-        $budget = match (true) {
-            is_array($data['budget'] ?? null) => AgentBudget::fromArray($data['budget']),
             default => null,
         };
 
@@ -500,7 +478,6 @@ final readonly class AgentState
             createdAt: self::parseDateFrom($data, 'createdAt'),
             updatedAt: self::parseDateFrom($data, 'updatedAt'),
             context: AgentContext::fromArray($data['context'] ?? []),
-            budget: $budget,
             llmConfig: $llmConfig,
             executionCount: $data['executionCount'] ?? 0,
             execution: $execution,

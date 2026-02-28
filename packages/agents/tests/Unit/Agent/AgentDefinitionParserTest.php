@@ -2,7 +2,7 @@
 
 namespace Cognesy\Agents\Tests\Unit\Agent;
 
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 use Cognesy\Agents\Template\Data\AgentDefinition;
 
 describe('AgentDefinition::fromArray', function () {
@@ -25,7 +25,7 @@ describe('AgentDefinition::fromArray', function () {
         expect($definition->label())->toBe('Partner Assistant');
         expect($definition->description)->toBe('Partner management helper');
         expect($definition->systemPrompt)->toContain('Partner Management Assistant');
-        expect($definition->budget())->toEqual(new AgentBudget(maxSteps: 8, maxTokens: 50000, maxSeconds: 300.0));
+        expect($definition->budget())->toEqual(new ExecutionBudget(maxSteps: 8, maxTokens: 50000, maxSeconds: 300.0));
         expect($definition->tools->all())->toBe(['tools', 'actions', 'invoke_action']);
         expect($definition->toolsDeny->all())->toBe(['bash']);
         expect($definition->capabilities->all())->toBe(['tool_discovery', 'work_context']);

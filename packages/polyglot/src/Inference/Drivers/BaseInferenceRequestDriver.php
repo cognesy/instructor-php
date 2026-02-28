@@ -5,7 +5,10 @@ namespace Cognesy\Polyglot\Inference\Drivers;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\Contracts\CanManageStreamCache;
+use Cognesy\Http\Enums\StreamCachePolicy;
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Stream\StreamCacheManager;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
@@ -14,6 +17,7 @@ use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\ResponseCachePolicy;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Errors\ProviderErrorClassifier;
 use Cognesy\Polyglot\Inference\Events\InferenceFailed;
@@ -32,6 +36,7 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
         protected EventDispatcherInterface $events,
         protected CanTranslateInferenceRequest $requestTranslator,
         protected CanTranslateInferenceResponse $responseTranslator,
+        protected ?CanManageStreamCache $streamCacheManager = null,
     ) {}
 
     #[\Override]
@@ -48,7 +53,15 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
     public function makeStreamResponsesFor(InferenceRequest $request): iterable {
         $httpRequest = $this->toHttpRequest($request);
         $httpResponse = $this->makeHttpResponse($httpRequest);
+        $cachePolicy = $this->toStreamCachePolicy($request->responseCachePolicy());
+        $httpResponse = $this->streamCacheManager()->manage($httpResponse, $cachePolicy);
         return $this->httpResponseToInferenceStream($httpResponse);
+    }
+
+    public function withStreamCacheManager(?CanManageStreamCache $streamCacheManager): static {
+        $copy = clone $this;
+        $copy->streamCacheManager = $streamCacheManager;
+        return $copy;
     }
 
     /**
@@ -84,12 +97,6 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
         } catch (Throwable $e) {
             $this->dispatchInferenceProcessingFailed($httpResponse, $e);
             throw $e;
-        }
-
-        // Attach pricing from config if available
-        $pricing = $this->config->getPricing();
-        if ($pricing->hasAnyPricing()) {
-            $inferenceResponse = $inferenceResponse->withPricing($pricing);
         }
 
         $this->events->dispatch(new InferenceResponseCreated(['response' => $inferenceResponse->toArray()]));
@@ -136,6 +143,17 @@ abstract class BaseInferenceRequestDriver implements CanProcessInferenceRequest
 
     protected function toEventBody(string $data): string|bool {
         return $this->responseTranslator->toEventBody($data);
+    }
+
+    private function streamCacheManager(): CanManageStreamCache {
+        return $this->streamCacheManager ?? new StreamCacheManager();
+    }
+
+    private function toStreamCachePolicy(ResponseCachePolicy $policy): StreamCachePolicy {
+        return match ($policy) {
+            ResponseCachePolicy::None => StreamCachePolicy::None,
+            ResponseCachePolicy::Memory => StreamCachePolicy::Memory,
+        };
     }
 
     // EVENTS //////////////////////////////////////////////////

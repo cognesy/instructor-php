@@ -94,7 +94,6 @@ Lifecycle:
 
 Configuration/state:
 - `ChangeModel`
-- `ChangeBudget`
 - `ChangeSystemPrompt`
 - `WriteMetadata`
 - `UpdateTask`
@@ -104,6 +103,38 @@ Execution/branching:
 - `ForkSession`
 
 All actions are immutable and return `AgentSession`.
+
+## Session Hooks
+
+`SessionRuntime` can optionally intercept lifecycle stages via `CanControlAgentSession`.
+
+Stages:
+- `after_load`
+- `after_action`
+- `before_save`
+- `after_save`
+
+Use `SessionHookStack` to compose multiple interceptors with priority ordering:
+
+```php
+use Cognesy\Agents\Session\Contracts\CanControlAgentSession;
+use Cognesy\Agents\Session\Data\AgentSession;
+use Cognesy\Agents\Session\Enums\AgentSessionStage;
+use Cognesy\Agents\Session\SessionHookStack;
+use Cognesy\Agents\Session\SessionRuntime;
+
+$hook = new class implements CanControlAgentSession {
+    public function onStage(AgentSessionStage $stage, AgentSession $session): AgentSession {
+        return match ($stage) {
+            AgentSessionStage::BeforeSave => $session->suspended(),
+            default => $session,
+        };
+    }
+};
+
+$hooks = SessionHookStack::empty()->with($hook, priority: 100);
+$runtime = new SessionRuntime($repo, $events, $hooks);
+```
 
 ## Session Lifecycle vs Execution Lifecycle
 

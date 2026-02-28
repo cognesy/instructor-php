@@ -31,10 +31,10 @@
             "composer_name": "cognesy/instructor-config"
         },
         {
-            "local": "packages/doctor",
-            "repo": "cognesy/instructor-doctor",
-            "github_name": "instructor-doctor",
-            "composer_name": "cognesy/instructor-doctor"
+            "local": "packages/doctools",
+            "repo": "cognesy/instructor-doctools",
+            "github_name": "instructor-doctools",
+            "composer_name": "cognesy/instructor-doctools"
         },
         {
             "local": "packages/dynamic",

@@ -62,8 +62,7 @@ class User
 
 // Extract data with logging
 echo "🚀 Starting StructuredOutput extraction...\n";
-$user = (new StructuredOutput)
-    ->using('openai')
+$user = StructuredOutput::using('openai')
     ->wiretap($pipeline)
     ->withMessages("Jason is 25 years old.")
     ->withResponseClass(User::class)

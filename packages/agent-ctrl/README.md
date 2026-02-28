@@ -11,6 +11,27 @@ The Unified Agent Bridge provides:
 - **Common Response Format** - Normalized `AgentResponse` across all agents
 - **Streaming Support** - Real-time callbacks for text and tool events
 
+## Capability Matrix
+
+| Capability | Claude Code | Codex | OpenCode |
+|------------|-------------|-------|----------|
+| Unified builder API | yes | yes | yes |
+| `execute()` and `executeStreaming()` | yes | yes | yes |
+| Streaming callbacks (`onText`, `onToolUse`, `onComplete`, `onError`) | yes | yes | yes |
+| Session continue/resume | yes | yes | yes |
+| Token usage in normalized response | no | yes | yes |
+| Cost in normalized response | no | no | yes |
+| Provider-specific advanced options | yes | yes | yes |
+
+## Non-Goals
+
+`agent-ctrl` intentionally does not provide:
+- Multi-agent orchestration platform
+- Remote execution control plane (REST server, SSH orchestration)
+- Built-in retry/backoff workflow engine for command execution
+
+For production orchestration/governance concerns, keep those concerns outside this package.
+
 ## Quick Start
 
 ### Basic Usage
@@ -180,7 +201,7 @@ AgentResponse (normalized output)
 
 ## See Also
 
-- [ClaudeCode Bridge](../ClaudeCode/README.md)
-- [OpenAICodex Bridge](../OpenAICodex/README.md)
-- [OpenCode Bridge](../OpenCode/README.md)
-- [Common Components](../Common/)
+- [ClaudeCode Bridge (Advanced Internals)](./src/ClaudeCode/README.md)
+- [OpenAICodex Bridge (Advanced Internals)](./src/OpenAICodex/README.md)
+- [OpenCode Bridge (Advanced Internals)](./src/OpenCode/README.md)
+- [Common Components](./src/Common/)

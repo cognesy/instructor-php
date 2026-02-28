@@ -21,6 +21,8 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Events\Event;
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Str;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
@@ -112,16 +114,15 @@ $customClient = (new HttpClientBuilder(
     )
     ->create();
 
-$inference = (new Inference(
-        events: $events,
-        configProvider: $configProvider,
-    ))
-    ->withHttpClient($customClient);
+$provider = LLMProvider::new($configProvider)->withLLMPreset('deepseek');
+$runtime = InferenceRuntime::fromProvider(
+    provider: $provider,
+    events: $events,
+    httpClient: $customClient,
+);
+$events->addListener(Event::class, fn(Event $e) => $e->print());
 
-$answer = $inference
-    ->using('deepseek') // Use 'deepseek' preset from CustomLLMConfigProvider
-    //->withHttpDebugPreset('on')
-    ->wiretap(fn(Event $e) => $e->print())
+$answer = Inference::fromRuntime($runtime)
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withMaxTokens(256)
     ->withStreaming()

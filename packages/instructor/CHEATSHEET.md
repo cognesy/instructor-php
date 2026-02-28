@@ -369,15 +369,18 @@ class UserDetail {
     public array $hobbies;
 }
 
-$user = (new StructuredOutput)
+$stream = (new StructuredOutput)
     ->withMessages($text)
     ->withResponseClass(UserDetail::class)
     ->withStreaming()
-    ->onPartialUpdate(function($partial) {
+    ->stream();
+
+foreach ($stream->partials() as $partial) {
         // Update UI or process partial data
         echo "Progress: " . json_encode($partial) . "\n";
-    })
-    ->get();
+}
+
+$user = $stream->finalValue();
 ```
 
 ### Sequence Streaming
@@ -385,14 +388,19 @@ $user = (new StructuredOutput)
 Stream each completed item in a sequence:
 
 ```php
-$people = (new StructuredOutput)
-    ->onSequenceUpdate(fn($seq) => echo "New person: {$seq->last()->name}\n")
+$stream = (new StructuredOutput)
     ->with(
         messages: $text,
         responseModel: Sequence::of(Person::class),
-        options: ['stream' => true]
+        options: ['stream' => true],
     )
-    ->get();
+    ->stream();
+
+foreach ($stream->sequence() as $seq) {
+    echo "New person: {$seq->last()->name}\n";
+}
+
+$people = $stream->finalValue();
 ```
 
 ### Custom Prompts
@@ -746,19 +754,22 @@ function importContacts(string $text): array {
 function processDocument(string $filePath): Deal {
     $text = extractTextFromPdf($filePath);
 
-    $deal = (new StructuredOutput)
+    $stream = (new StructuredOutput)
         ->withMessages($text)
         ->withResponseClass(Deal::class)
         ->withStreaming()
-        ->onPartialUpdate(function($partial) {
+        ->stream();
+
+    foreach ($stream->partials() as $partial) {
             // Broadcast progress to UI
             broadcast('deal-extraction-progress', [
                 'company' => $partial->company ?? 'Extracting...',
                 'value' => $partial->dealValue ?? 0,
                 'stage' => $partial->stage ?? 'Unknown',
             ]);
-        })
-        ->get();
+    }
+
+    $deal = $stream->finalValue();
 
     return $deal;
 }
@@ -917,7 +928,7 @@ $company = (new StructuredOutput)
 ```php
 // Good: Shows progress for multi-page PDFs
 ->withStreaming()
-->onPartialUpdate(fn($p) => updateProgress($p))
+->stream()->partials()
 
 // Bad: User waits with no feedback
 ->get()
@@ -978,10 +989,8 @@ $company = (new StructuredOutput)
 
 ```php
 // Ensure streaming is enabled + use partial update handler
-->withStreaming()
-->onPartialUpdate(fn($partial) => dump($partial))
-->with(messages: $text, responseModel: User::class)
-->get(); // NOTE: Use get(), not stream()
+->with(messages: $text, responseModel: User::class, options: ['stream' => true])
+->stream();
 
 // For manual streaming control
 $stream = (new StructuredOutput)
@@ -1020,8 +1029,6 @@ foreach ($stream->partials() as $partial) {
 
 // Event handling
 ->onEvent($eventClass, $callback)
-->onPartialUpdate($callback)
-->onSequenceUpdate($callback)
 ->wiretap($callback)
 ```
 
@@ -1060,7 +1067,7 @@ Example::fromText($input, $output)
 | Extract single value | `->with(messages: $text, responseModel: Scalar::string('name'))->get()` |
 | Handle missing data | `->with(messages: $text, responseModel: Maybe::is(User::class))->get()` |
 | Validate and retry | `->with(messages: $text, responseModel: User::class, maxRetries: 3)->get()` |
-| Stream with progress | `->withStreaming()->onPartialUpdate($cb)->with(...)->get()` |
+| Stream with progress | `->with(..., options: ['stream' => true])->stream()->partials()` |
 | Extract from image | `->with(messages: Image::fromFile($path)->toMessage(), ...)->get()` |
 | Extract from web | `Webpage::get($url)->asMarkdown()` then extract |
 | Change provider | `->using('anthropic')->with(...)->get()` |

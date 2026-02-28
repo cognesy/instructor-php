@@ -33,9 +33,7 @@ it('Anthropic golden: streaming text + tool_use aggregation', function () {
         ]
     ]];
 
-    $stream = (new Inference())
-        ->withHttpClient($http)
-        ->using('anthropic')
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'anthropic', httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
         ->withTools($tools)
         ->withToolChoice('auto')

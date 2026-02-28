@@ -37,7 +37,7 @@ JSON;
 
     $mockHttp = MockHttp::get([$json]);
     $tasks = (new StructuredOutput)
-        ->withHttpClient($mockHttp)
+        ->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))
         ->with(
             messages: 'Transcription text',
             responseModel: Tasks::class,

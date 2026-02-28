@@ -8,9 +8,10 @@ use Cognesy\Addons\Chat\Data\ChatState;
 use Cognesy\Addons\Chat\Data\ChatStep;
 use Cognesy\Addons\Chat\Selectors\LLMSelector\LLMBasedCoordinator;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 it('LLMBasedCoordinator selects participant by LLM response', function () {
     $p1 = new class implements CanParticipateInChat {
@@ -25,11 +26,14 @@ it('LLMBasedCoordinator selects participant by LLM response', function () {
     $participants = new Participants($p1, $p2);
     $state = new ChatState();
 
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '{"participantName": "assistant", "reason": "Assistant should respond"}'),
     ]);
-    $structuredOutput = (new StructuredOutput())
-        ->withLLMProvider(LLMProvider::new()->withDriver($driver));
+    $structuredOutput = new StructuredOutput(
+        StructuredOutputRuntime::fromProvider(
+            provider: LLMProvider::new()->withDriver($driver),
+        )
+    );
     
     $selector = new LLMBasedCoordinator(structuredOutput: $structuredOutput);
     $choice = $selector->nextParticipant($state, $participants);

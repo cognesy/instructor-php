@@ -17,7 +17,6 @@ final readonly class DefinitionStateFactory implements CanInstantiateAgentState
         $state = $seed ?? AgentState::empty();
         $state = $this->withSystemPrompt($state, $definition);
         $state = $this->withMetadata($state, $definition);
-        $state = $this->withBudget($state, $definition);
         return $this->withLLMConfig($state, $definition);
     }
 
@@ -38,16 +37,6 @@ final readonly class DefinitionStateFactory implements CanInstantiateAgentState
 
         $mergedMetadata = $state->metadata()->withMergedData($definition->metadata->toArray());
         return $state->with(context: $state->context()->withMetadata($mergedMetadata));
-    }
-
-    private function withBudget(AgentState $state, AgentDefinition $definition): AgentState {
-        $definitionBudget = $definition->budget();
-
-        if ($definitionBudget->isEmpty()) {
-            return $state;
-        }
-
-        return $state->withBudget($state->budget()->cappedBy($definitionBudget));
     }
 
     private function withLLMConfig(AgentState $state, AgentDefinition $definition): AgentState {

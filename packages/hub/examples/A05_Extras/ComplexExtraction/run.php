@@ -99,8 +99,7 @@ $structuredOutput = new StructuredOutput;
 
 echo "PROJECT EVENTS:\n\n";
 
-$events = $structuredOutput
-    ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
+$stream = $structuredOutput
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
@@ -113,7 +112,13 @@ $events = $structuredOutput
     )
     //->withHttpDebugPreset('on')
     ->withStreaming()
-    ->get();
+    ->stream();
+
+foreach ($stream->sequence() as $sequence) {
+    displayEvent($sequence->last());
+}
+
+$events = $stream->finalValue();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
 

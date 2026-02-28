@@ -12,7 +12,6 @@ use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentDepthExceededException
 use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentExecutionException;
 use Cognesy\Agents\Capability\Subagent\Exceptions\SubagentNotFoundException;
 use Cognesy\Agents\Collections\Tools;
-use Cognesy\Agents\Data\AgentBudget;
 use Cognesy\Agents\Data\AgentId;
 use Cognesy\Agents\Data\AgentState;
 use Cognesy\Agents\Drivers\CanUseTools;
@@ -189,33 +188,20 @@ final class SpawnSubagentTool extends ContextAwareTool
             $subagentDriver = $subagentDriver->withLLMConfig($llmConfig);
         }
 
-        // Compute effective budget: parent's remaining capped by definition limits
-        $effectiveBudget = $this->computeEffectiveBudget($spec);
-
         $builder = AgentBuilder::base($this->events)
             ->withCapability(new UseTools(...$tools->all()))
             ->withCapability(new UseDriver($subagentDriver));
 
-        $builder = $this->applyBudgetConstraints($builder, $effectiveBudget);
+        $builder = $this->applyBudget($builder, $spec);
 
         return $builder->build();
     }
 
-    private function computeEffectiveBudget(AgentDefinition $spec): AgentBudget {
-        $parentBudget = $this->agentState?->budget() ?? AgentBudget::unlimited();
-        $parentExecution = $this->agentState?->execution();
-
-        $remainingBudget = match ($parentExecution) {
-            null => $parentBudget,
-            default => $parentBudget->remainingFrom($parentExecution),
-        };
-
-        $definitionBudget = $spec->budget();
-
-        return $remainingBudget->cappedBy($definitionBudget);
-    }
-
-    private function applyBudgetConstraints(AgentBuilder $builder, AgentBudget $budget): AgentBuilder {
+    private function applyBudget(AgentBuilder $builder, AgentDefinition $spec): AgentBuilder {
+        $budget = $spec->budget();
+        if ($budget->isEmpty()) {
+            return $builder;
+        }
         return $builder->withCapability(new UseGuards(
             maxSteps: $budget->maxSteps,
             maxTokens: $budget->maxTokens,
@@ -231,11 +217,8 @@ final class SpawnSubagentTool extends ContextAwareTool
         $messages = $this->appendSkillMessages($messages, $spec);
         $messages = $messages->appendMessage(Message::asUser($prompt));
 
-        $effectiveBudget = $this->computeEffectiveBudget($spec);
-
         return AgentState::empty()
             ->withMessages($messages)
-            ->withBudget($effectiveBudget)
             ->with(parentAgentId: $parentAgentId);
     }
 

@@ -23,8 +23,7 @@ use Cognesy\Utils\Str;
 
 require 'examples/boot.php';
 
-$answer = (new Inference)
-    ->using('minimaxi') // see /config/llm.php
+$answer = Inference::using('minimaxi') // see /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 256]

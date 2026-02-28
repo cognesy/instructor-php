@@ -10,7 +10,7 @@ use Cognesy\Addons\StepByStep\Continuation\Criteria\StepsLimit;
 use Cognesy\Messages\Message;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Inference;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 it('runs a two-turn human ⇄ llm conversation deterministically', function () {
     $human = new ExternalParticipant(
@@ -18,10 +18,14 @@ it('runs a two-turn human ⇄ llm conversation deterministically', function () {
         provider: fn() => new Message(role: 'user', content: 'Hello')
     );
 
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: 'Hi!'),
     ]);
-    $inference = (new Inference())->withLLMProvider(\Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver));
+    $inference = Inference::fromRuntime(
+        \Cognesy\Polyglot\Inference\InferenceRuntime::fromProvider(
+            \Cognesy\Polyglot\Inference\LLMProvider::new()->withDriver($driver),
+        ),
+    );
     $assistant = new LLMParticipant(name: 'assistant', inference: $inference);
 
     $participants = new Participants($human, $assistant);

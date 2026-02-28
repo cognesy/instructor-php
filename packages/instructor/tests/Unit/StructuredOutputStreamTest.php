@@ -4,7 +4,7 @@ use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 
 class StreamUserStruct { public int $age; public string $name; }
@@ -16,13 +16,13 @@ it('assembles streamed content into final typed value and accumulates usage', fu
         new PartialInferenceResponse(contentDelta: '30}', finishReason: 'stop', usage: new Usage(outputTokens: 3)),
     ];
 
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [ $chunks ]
     );
 
     $stream = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStruct::class,
@@ -46,13 +46,13 @@ it('accumulates usage correctly via stream->usage() after iterating responses', 
         new PartialInferenceResponse(contentDelta: '25}', finishReason: 'stop', usage: new Usage(inputTokens: 50, outputTokens: 3)),
     ];
 
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [ $chunks ]
     );
 
     $stream = (new StructuredOutput)
-        ->withDriver($driver)
+        ->withRuntime(makeStructuredRuntime(driver: $driver))
         ->with(
             messages: 'Extract user',
             responseModel: StreamUserStruct::class,

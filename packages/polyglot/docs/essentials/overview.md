@@ -62,7 +62,7 @@ use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object with a specific connection
 $inference = new Inference();
-$answer = $inference->using('anthropic')
+$answer = Inference::using('anthropic')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France?']]
     )->get();
@@ -132,8 +132,7 @@ The `toText()` method returns text completion from the LLM response.
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$answer = (new Inference)
-    ->using('openai') // optional, default is set in /config/llm.php
+$answer = Inference::using('openai') // optional, default is set in /config/llm.php
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->get();
@@ -219,7 +218,11 @@ method with the connection preset name.
 <?php
 // ...
 $answer = (new Inference)
-    ->using('ollama') // see /config/llm.php
+    ->withMessages('What is the capital of France')
+    ->get();
+// ...
+
+$answer = Inference::using('ollama') // see /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
@@ -244,26 +247,23 @@ Polyglot makes it easy to switch between different LLM providers at runtime.
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-// Create an inference object
-$inference = new Inference();
-
 // Use the default provider (set in config)
-$defaultResponse = $inference->with(
+$defaultResponse = (new Inference())->with(
     messages: 'What is the capital of France?'
 )->get();
 
 echo "Default provider response: $defaultResponse\n\n";
 
-// Switch to Anthropic
-$anthropicResponse = $inference->using('anthropic')
+// Use Anthropic
+$anthropicResponse = Inference::using('anthropic')
     ->with(
         messages: 'What is the capital of Germany?'
     )->get();
 
 echo "Anthropic response: $anthropicResponse\n\n";
 
-// Switch to Mistral
-$mistralResponse = $inference->using('mistral')
+// Use Mistral
+$mistralResponse = Inference::using('mistral')
     ->with(
         messages: 'What is the capital of Italy?'
     )->get();
@@ -271,9 +271,9 @@ $mistralResponse = $inference->using('mistral')
 echo "Mistral response: $mistralResponse\n\n";
 
 // You can create a new instance for each provider
-$openAI = (new Inference())->using('openai');
-$anthropic = (new Inference())->using('anthropic');
-$mistral = (new Inference())->using('mistral');
+$openAI = Inference::using('openai');
+$anthropic = Inference::using('anthropic');
+$mistral = Inference::using('mistral');
 
 // And use them independently
 $responses = [
@@ -298,7 +298,7 @@ Each provider offers multiple models with different capabilities, context length
 <?php
 use Cognesy\Polyglot\Inference\Inference;
 
-$inference = (new Inference())->using('openai');
+$inference = Inference::using('openai');
 
 // Use the default model (set in config)
 $defaultModelResponse = $inference->with(

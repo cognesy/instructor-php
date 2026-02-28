@@ -63,10 +63,7 @@ class ResponseGenerator implements CanGenerateResponse
         $skipValidation = $responseModel->shouldReturnArray();
 
         return Pipeline::builder(ErrorStrategy::FailFast)
-            ->through(fn(array $data) => match (true) {
-                empty($data) => Result::failure('No data extracted from response'),
-                default => Result::success($data)
-            })
+            ->through(fn(array $data) => Result::success($data))
             ->through(fn(array $data) => $this->responseDeserializer->deserialize($data, $responseModel))
             ->through(fn($response) => match (true) {
                 $skipValidation => Result::success($response),

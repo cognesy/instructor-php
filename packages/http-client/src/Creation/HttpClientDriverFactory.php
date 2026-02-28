@@ -26,6 +26,7 @@ use Symfony\Component\HttpClient\HttpClient;
 class HttpClientDriverFactory
 {
     protected static array $drivers = [];
+    protected static array $poolHandlers = [];
 
     protected EventDispatcherInterface $events;
 
@@ -49,6 +50,23 @@ class HttpClientDriverFactory
             is_string($driver) => fn($config, $events) => new $driver($config, $events),
             default => $driver,
         };
+    }
+
+    /**
+     * Registers a custom pool handler with the specified name.
+     *
+     * @param string $name
+     * @param class-string|callable(HttpClientConfig, EventDispatcherInterface): CanHandleRequestPool $poolHandler
+     */
+    public static function registerPoolHandler(string $name, string|callable $poolHandler): void {
+        self::$poolHandlers[$name] = match (true) {
+            is_string($poolHandler) => fn($config, $events) => new $poolHandler($config, $events),
+            default => $poolHandler,
+        };
+    }
+
+    public function hasRegisteredPoolHandler(string $name): bool {
+        return isset(self::$poolHandlers[$name]);
     }
 
     /**
@@ -93,7 +111,7 @@ class HttpClientDriverFactory
         $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'curl')]);
         $name = $config->driver;
 
-        $poolClosure = $this->defaultPoolHandlers($name);
+        $poolClosure = self::$poolHandlers[$name] ?? $this->defaultPoolHandlers($name);
         return $poolClosure($config, $this->events);
     }
 

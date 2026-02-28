@@ -39,16 +39,7 @@ class RequestRecords
         if ($json === false) {
             return null;
         }
-        $record = RequestRecord::fromJson($json);
-
-        // Ensure we return the right type of record based on the request
-        if ($record !== null && $request->isStreamed() && !$record->isStreamed()) {
-            // If we have a regular record but need a streamed one, return null
-            // This forces re-recording with the correct type
-            return null;
-        }
-
-        return $record;
+        return RequestRecord::fromJson($json);
     }
 
     public function delete(HttpRequest $request): bool {

@@ -3,6 +3,7 @@
 use Cognesy\Instructor\Collections\StructuredOutputAttemptList;
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Data\StructuredOutputExecution;
+use Cognesy\Instructor\Tests\Support\FakeStreamFactory;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution as PgInferenceExecution;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest as PgInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse as PgInferenceResponse;
@@ -41,10 +42,14 @@ it('accumulates usage for finalized attempts plus current partials until finaliz
         isFinalized: true,
     );
 
-    // Current in-progress attempt with partials: (2,3) and (1,2)
+    // Current in-progress attempt with cumulative partial snapshots: (2,3) then (3,5)
     $pg2 = PgInferenceExecution::fromRequest(new PgInferenceRequest());
-    $pg2 = $pg2->withNewPartialResponse(new PgPartial(usage: new PgUsage(inputTokens: 2, outputTokens: 3)));
-    $pg2 = $pg2->withNewPartialResponse(new PgPartial(usage: new PgUsage(inputTokens: 1, outputTokens: 2)));
+    [$p1, $p2] = FakeStreamFactory::from(
+        new PgPartial(usage: new PgUsage(inputTokens: 2, outputTokens: 3)),
+        new PgPartial(usage: new PgUsage(inputTokens: 1, outputTokens: 2)),
+    );
+    $pg2 = $pg2->withNewPartialResponse($p1);
+    $pg2 = $pg2->withNewPartialResponse($p2);
     $attemptCurrent = new StructuredOutputAttempt(
         inferenceExecution: $pg2,
         isFinalized: false,
@@ -61,5 +66,26 @@ it('accumulates usage for finalized attempts plus current partials until finaliz
     // Expect finalized (2 total) + current partials (8 total) = 10 total; input 4, output 6
     expect($usage->input())->toBe(1 + 2 + 1)
         ->and($usage->output())->toBe(1 + 3 + 2)
+        ->and($usage->total())->toBe(10);
+});
+
+it('counts usage from failed attempts recorded via withFailedAttempt', function () {
+    $exec = (new StructuredOutputExecution(
+        request: new \Cognesy\Instructor\Data\StructuredOutputRequest(messages: '', requestedSchema: []),
+    ))->withFailedAttempt(
+        inferenceResponse: new PgInferenceResponse(
+            content: 'bad json',
+            finishReason: 'error',
+            usage: new PgUsage(inputTokens: 4, outputTokens: 6),
+        ),
+        errors: ['Validation failed'],
+    );
+
+    expect($exec->attemptCount())->toBe(1);
+    expect($exec->attempts()->last()?->isFinalized())->toBeTrue();
+
+    $usage = $exec->usage();
+    expect($usage->input())->toBe(4)
+        ->and($usage->output())->toBe(6)
         ->and($usage->total())->toBe(10);
 });

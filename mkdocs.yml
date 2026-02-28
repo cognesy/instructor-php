@@ -191,11 +191,12 @@ nav:
           - { 'Making Requests': packages/http/3-making-requests.md }
           - { 'Handling Responses': packages/http/4-handling-responses.md }
           - { 'Streaming Responses': packages/http/5-streaming-responses.md }
+          - { Pooling: packages/http/6-pooling.md }
+          - { Middleware: packages/http/10-middleware.md }
+          - { 'Processing With Middleware': packages/http/11-processing-with-middleware.md }
           - { 'Changing Client': packages/http/7-changing-client.md }
           - { 'Changing Client Config': packages/http/8-changing-client-config.md }
           - { 'Custom Clients': packages/http/9-1-custom-clients.md }
-          - { Middleware: packages/http/10-middleware.md }
-          - { 'Processing With Middleware': packages/http/11-processing-with-middleware.md }
       -
         Laravel:
           - { Overview: packages/laravel/index.md }
@@ -209,6 +210,13 @@ nav:
           - { Testing: packages/laravel/testing.md }
           - { Advanced: packages/laravel/advanced.md }
           - { Troubleshooting: packages/laravel/troubleshooting.md }
+      -
+        Doctools:
+          - { Overview: packages/doctools/index.md }
+          - { 'Navigation Ordering': packages/doctools/navigation-ordering.md }
+          - { 'Package Discovery': packages/doctools/package-discovery.md }
+          - { 'Examples Configuration': packages/doctools/examples-configuration.md }
+          - { 'Llm Docs': packages/doctools/llm-docs.md }
   -
     Cookbook:
       -

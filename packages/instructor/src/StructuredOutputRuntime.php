@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -36,7 +37,6 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         private readonly array $validators = [],
         private readonly array $transformers = [],
         private readonly array $deserializers = [],
-        private readonly ?CanExtractResponse $extractor = null,
         private readonly array $extractors = [],
     ) {}
 
@@ -55,6 +55,23 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             ),
             events: $events,
             config: self::resolveStructuredConfig($structuredConfig),
+        );
+    }
+
+    public static function fromDefaults(
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanProvideConfig $configProvider = null,
+        ?HttpClient $httpClient = null,
+        ?StructuredOutputConfig $structuredConfig = null,
+    ): self {
+        $provider = LLMProvider::new(configProvider: $configProvider);
+        $config = $structuredConfig ?? (new StructuredOutputConfigBuilder(configProvider: $configProvider))->create();
+
+        return self::fromProvider(
+            provider: $provider,
+            events: $events,
+            httpClient: $httpClient,
+            structuredConfig: $config,
         );
     }
 
@@ -138,7 +155,6 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
             validators: $this->validators,
             transformers: $this->transformers,
             deserializers: $this->deserializers,
-            extractor: $this->extractor,
             extractors: $this->extractors,
         );
 
@@ -149,10 +165,86 @@ final class StructuredOutputRuntime implements CanCreateStructuredOutput
         );
     }
 
+    public function events(): CanHandleEvents {
+        return $this->events;
+    }
+
+    public function config(): StructuredOutputConfig {
+        return $this->config;
+    }
+
+    /** @return array<CanValidateObject|class-string<CanValidateObject>> */
+    public function validators(): array {
+        return $this->validators;
+    }
+
+    /** @return array<CanTransformData|class-string<CanTransformData>> */
+    public function transformers(): array {
+        return $this->transformers;
+    }
+
+    /** @return array<CanDeserializeClass|class-string<CanDeserializeClass>> */
+    public function deserializers(): array {
+        return $this->deserializers;
+    }
+
+    /** @return array<CanExtractResponse|class-string<CanExtractResponse>> */
+    public function extractors(): array {
+        return $this->extractors;
+    }
+
+    public function withConfig(StructuredOutputConfig $config): self {
+        return $this->with(config: $config);
+    }
+
+    /** @param array<CanValidateObject|class-string<CanValidateObject>> $validators */
+    public function withValidators(array $validators): self {
+        return $this->with(validators: $validators);
+    }
+
+    /** @param array<CanTransformData|class-string<CanTransformData>> $transformers */
+    public function withTransformers(array $transformers): self {
+        return $this->with(transformers: $transformers);
+    }
+
+    /** @param array<CanDeserializeClass|class-string<CanDeserializeClass>> $deserializers */
+    public function withDeserializers(array $deserializers): self {
+        return $this->with(deserializers: $deserializers);
+    }
+
+    /** @param array<CanExtractResponse|class-string<CanExtractResponse>> $extractors */
+    public function withExtractors(array $extractors): self {
+        return $this->with(extractors: $extractors);
+    }
+
     private static function resolveStructuredConfig(?StructuredOutputConfig $config): StructuredOutputConfig {
         if ($config !== null) {
             return $config;
         }
         return (new StructuredOutputConfigBuilder())->create();
+    }
+
+    /**
+     * @param array<CanValidateObject|class-string<CanValidateObject>>|null $validators
+     * @param array<CanTransformData|class-string<CanTransformData>>|null $transformers
+     * @param array<CanDeserializeClass|class-string<CanDeserializeClass>>|null $deserializers
+     * @param array<CanExtractResponse|class-string<CanExtractResponse>>|null $extractors
+     */
+    private function with(
+        ?StructuredOutputConfig $config = null,
+        ?array $validators = null,
+        ?array $transformers = null,
+        ?array $deserializers = null,
+        ?array $extractors = null,
+    ): self {
+        return new self(
+            inference: $this->inference,
+            events: $this->events,
+            config: $config ?? $this->config,
+            validators: $validators ?? $this->validators,
+            transformers: $transformers ?? $this->transformers,
+            deserializers: $deserializers ?? $this->deserializers,
+            extractors: $extractors ?? $this->extractors,
+        );
     }
 }

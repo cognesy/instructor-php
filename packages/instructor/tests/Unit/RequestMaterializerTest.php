@@ -162,4 +162,14 @@ describe('RequestMaterializer', function () {
         expect($hasFeedback)->toBeTrue();
         expect($hasCorrected)->toBeTrue();
     });
+
+    it('throws when chat structure removes all materialized sections', function () {
+        $config = new StructuredOutputConfig(chatStructure: ['missing-section']);
+        $materializer = new RequestMaterializer($config);
+        $request = makeRequest(messages: [['role' => 'user', 'content' => 'Input']], system: '', prompt: '');
+        $execution = makeExecution(request: $request, config: $config);
+
+        expect(fn() => $materializer->toMessages($execution))
+            ->toThrow(Exception::class, 'Request materialization produced no messages');
+    });
 });

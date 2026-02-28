@@ -76,4 +76,42 @@ describe('ResponseGenerator', function () {
         expect($result->isFailure())->toBeTrue();
         expect($result->errorMessage())->toContain('Empty response content');
     });
+
+    it('accepts empty object payload as valid extracted data', function () {
+        $events = Mockery::mock(EventDispatcher::class);
+        $events->shouldReceive('dispatch')->byDefault()->andReturnUsing(fn($e) => $e);
+        $config = new StructuredOutputConfig();
+        $gen = new ResponseGenerator(
+            responseDeserializer: new FakeDeserializer($events, $config),
+            responseValidator: new FakeValidator($events, $config),
+            responseTransformer: new FakeTransformer($events, $config),
+            events: $events,
+            extractor: new ResponseExtractor(events: $events),
+        );
+
+        $resp = new InferenceResponse(content: '{}');
+        $result = $gen->makeResponse($resp, makeResponseModelForStd(), OutputMode::Json);
+
+        expect($result->isSuccess())->toBeTrue();
+        expect($result->unwrap()->data)->toBe([]);
+    });
+
+    it('accepts empty array payload as valid extracted data', function () {
+        $events = Mockery::mock(EventDispatcher::class);
+        $events->shouldReceive('dispatch')->byDefault()->andReturnUsing(fn($e) => $e);
+        $config = new StructuredOutputConfig();
+        $gen = new ResponseGenerator(
+            responseDeserializer: new FakeDeserializer($events, $config),
+            responseValidator: new FakeValidator($events, $config),
+            responseTransformer: new FakeTransformer($events, $config),
+            events: $events,
+            extractor: new ResponseExtractor(events: $events),
+        );
+
+        $resp = new InferenceResponse(content: '[]');
+        $result = $gen->makeResponse($resp, makeResponseModelForStd(), OutputMode::Json);
+
+        expect($result->isSuccess())->toBeTrue();
+        expect($result->unwrap()->data)->toBe([]);
+    });
 });

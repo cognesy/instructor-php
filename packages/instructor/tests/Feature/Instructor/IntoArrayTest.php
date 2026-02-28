@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Cognesy\Instructor\Tests\Feature\Instructor;
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
 use Cognesy\Instructor\Tests\MockHttp;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
  * Test-first validation for intoArray() flow.
@@ -39,7 +41,7 @@ it('returns array when intoArray() is called', function () use ($mockHttp) {
     $text = "His name is John, he is 30 years old.";
 
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(messages: [['role' => 'user', 'content' => $text]])
@@ -55,7 +57,7 @@ it('schema comes from class, output is array', function () use ($mockHttp) {
     // The schema sent to LLM is from IntoArrayUser::class
     // But the return type is array
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(messages: [['role' => 'user', 'content' => $text]])
@@ -72,7 +74,7 @@ it('returns object when intoArray() is NOT called (backward compatible)', functi
     $text = "His name is John, he is 30 years old.";
 
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: IntoArrayUser::class,
@@ -89,7 +91,7 @@ it('allows different target class with intoInstanceOf()', function () use ($mock
 
     // Schema from IntoArrayUser, but deserialize to IntoArrayUserDTO
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->withResponseClass(IntoArrayUser::class)
         ->intoInstanceOf(IntoArrayUserDTO::class)
         ->with(messages: [['role' => 'user', 'content' => $text]])
@@ -105,7 +107,7 @@ it('getArray() works when used with intoArray()', function () use ($mockHttp) {
 
     // getArray() requires result to already be an array (via intoArray())
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(
@@ -122,7 +124,7 @@ it('intoArray() works with JSON Schema mode', function () use ($mockHttp) {
     $text = "His name is John, he is 30 years old.";
 
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(
@@ -139,7 +141,7 @@ it('intoArray() preserves all data types', function () use ($mockHttp) {
     $text = "His name is John, he is 30 years old.";
 
     $result = (new StructuredOutput())
-        ->withHttpClient($mockHttp)
+        ->withRuntime(StructuredOutputRuntime::fromDefaults(httpClient: $mockHttp))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(messages: [['role' => 'user', 'content' => $text]])
@@ -167,9 +169,12 @@ it('streaming with intoArray() returns array as final value', function () {
         })
         ->create();
 
-    $result = (new StructuredOutput())
-        ->withHttpClient($http)
-        ->using('openai')
+    $runtime = StructuredOutputRuntime::fromProvider(
+        provider: LLMProvider::using('openai'),
+        httpClient: $http,
+    );
+
+    $result = (new StructuredOutput($runtime))
         ->withResponseClass(IntoArrayUser::class)
         ->intoArray()
         ->with(
@@ -185,4 +190,3 @@ it('streaming with intoArray() returns array as final value', function () {
     expect($result['name'])->toBe('John');
     expect($result['age'])->toBe(30);
 });
-

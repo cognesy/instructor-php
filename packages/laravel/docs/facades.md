@@ -84,7 +84,8 @@ $items = StructuredOutput::with(...)->getArray();
 
 | Method | Description |
 |--------|-------------|
-| `using(string $preset)` | Switch to a different connection |
+| `using(string $preset)` | Switch to a different connection preset |
+| `withRuntime(CanCreateStructuredOutput)` | Replace runtime directly (advanced) |
 | `with(...)` | Configure extraction with all parameters |
 | `withMessages(...)` | Set input messages |
 | `withResponseModel(...)` | Set the response model class |
@@ -98,6 +99,8 @@ $items = StructuredOutput::with(...)->getArray();
 | `withStreaming(bool)` | Enable streaming |
 | `withValidators(...)` | Add custom validators |
 | `withTransformers(...)` | Add data transformers |
+| `withDeserializers(...)` | Add custom deserializers |
+| `withExtractors(...)` | Add custom extractors |
 | `get()` | Execute and return result |
 | `stream()` | Execute and return stream |
 
@@ -187,7 +190,7 @@ $embedding = Embeddings::withInputs('Hello world')->first();
 $embeddings = Embeddings::withInputs([
     'First text',
     'Second text',
-])->all();
+])->vectors();
 ```
 
 ### Switching Connections
@@ -211,8 +214,8 @@ $embedding = Embeddings::withInputs('Test')
 ```php
 $response = Embeddings::withInputs('Test')->get();
 
-$vectors = $response->embeddings;
-$usage = $response->usage;
+$vectors = $response->vectors();
+$usage = $response->usage();
 ```
 
 ### Available Methods
@@ -224,7 +227,7 @@ $usage = $response->usage;
 | `withModel(string)` | Override model |
 | `withOptions(array)` | Set options |
 | `first()` | Get first embedding vector |
-| `all()` | Get all embedding vectors |
+| `vectors()` | Get all embedding vectors |
 | `get()` | Get full response object |
 
 ---

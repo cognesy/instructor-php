@@ -47,8 +47,7 @@ class Summary {
     public array $keywords = [];
 }
 
-$summary = (new StructuredOutput)
-    ->using('openai')
+$summary = StructuredOutput::using('openai')
     ->with(
         messages: $report,
         responseModel: Summary::class,

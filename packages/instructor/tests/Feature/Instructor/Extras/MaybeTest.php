@@ -11,7 +11,7 @@ it('supports simple properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $maybePerson = (new StructuredOutput)->withHttpClient($mockHttp)->with(
+    $maybePerson = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Maybe::is(Person::class),
     )->get();
@@ -30,7 +30,7 @@ it('handles missing information', function () {
     ]);
 
     $text = "This text contains no person information.";
-    $maybePerson = (new StructuredOutput)->withHttpClient($mockHttp)->with(
+    $maybePerson = (new StructuredOutput)->withRuntime(makeStructuredRuntime(httpClient: $mockHttp))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Maybe::is(Person::class),
     )->get();

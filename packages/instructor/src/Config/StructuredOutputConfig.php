@@ -84,7 +84,7 @@ final readonly class StructuredOutputConfig
         $this->defaultToStdClass = $defaultToStdClass ?? false;
         $this->deserializationErrorPrompt = $deserializationErrorPrompt ?? "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
         $this->throwOnTransformationFailure = $throwOnTransformationFailure ?? false;
-        $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::Memory;
+        $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::None;
     }
 
     public function toArray(): array {
@@ -117,10 +117,10 @@ final readonly class StructuredOutputConfig
                 default => OutputMode::Tools,
             };
             $config['responseCachePolicy'] = match (true) {
-                !isset($config['responseCachePolicy']) => ResponseCachePolicy::Memory,
+                !isset($config['responseCachePolicy']) => ResponseCachePolicy::None,
                 is_string($config['responseCachePolicy']) => ResponseCachePolicy::from($config['responseCachePolicy']),
                 $config['responseCachePolicy'] instanceof ResponseCachePolicy => $config['responseCachePolicy'],
-                default => ResponseCachePolicy::Memory,
+                default => ResponseCachePolicy::None,
             };
             $instance = new self(...$config);
         } catch (Throwable $e) {

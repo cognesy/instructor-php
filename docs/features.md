@@ -112,8 +112,10 @@ Process images with vision-capable models:
 
 ```php
 <?php
-->withImages(['path/to/image.jpg'])
-->withMessages("Extract all text from this document")
+use Cognesy\Addons\Image\Image;
+
+->with(messages: Image::fromFile('path/to/image.jpg')->toMessage())
+->withPrompt("Extract all text from this document")
 ```
 
 **Supported formats:** JPEG, PNG, GIF, WebP
@@ -285,18 +287,22 @@ foreach ($stream->partials() as $partial) {
 $final = $stream->finalValue();
 ```
 
-Or use the callback approach:
+Or subscribe to streaming events:
 
 ```php
 <?php
-$article = (new StructuredOutput)
-    ->withResponseClass(Article::class)
-    ->onPartialUpdate(fn($partial) => updateUI($partial))
+use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+
+$stream = (new StructuredOutput)
+    ->onEvent(PartialResponseGenerated::class, fn(PartialResponseGenerated $event) => updateUI($event->partialResponse))
     ->with(
+        responseModel: Article::class,
         messages: $text,
-        options: ['stream' => true]
+        options: ['stream' => true],
     )
-    ->get();
+    ->stream();
+
+$article = $stream->finalValue();
 ```
 
 ### Sequence Streaming
@@ -308,13 +314,18 @@ Stream sequence items as they complete:
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 
 $list = (new StructuredOutput)
-    ->onSequenceUpdate(fn($seq) => processComplete($seq->last()))
     ->withResponseClass(Sequence::of(Person::class))
     ->with(
         messages: $text,
-        options: ['stream' => true]
+        options: ['stream' => true],
     )
-    ->get();
+    ->stream();
+
+foreach ($list->sequence() as $seq) {
+    processComplete($seq->last());
+}
+
+$final = $list->finalValue();
 ```
 
 ---
@@ -346,15 +357,15 @@ $list = (new StructuredOutput)
 
 ```php
 <?php
-// Use preset from config
-->using('anthropic')
+use Cognesy\Instructor\StructuredOutputRuntime;
 
-// Or configure inline
-->withConfig(new LLMConfig(
-    apiUrl: 'https://api.example.com',
-    apiKey: $apiKey,
-    model: 'model-name'
-))
+// Use preset from config
+$structuredOutput = StructuredOutput::using('anthropic');
+
+// Or configure runtime explicitly (advanced)
+$structuredOutput = (new StructuredOutput)->withRuntime(
+    StructuredOutputRuntime::fromDsn('preset=anthropic,model=claude-3-5-sonnet-latest')
+);
 ```
 
 ---
@@ -447,8 +458,12 @@ Override default extraction prompts:
 
 ```php
 <?php
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+
 ->withPrompt("Extract the following fields precisely: ...")
-->withRetryPrompt("The previous attempt had errors: {errors}. Please correct.")
+->withConfig(new StructuredOutputConfig(
+    retryPrompt: "The previous attempt had errors: {errors}. Please correct."
+))
 ```
 
 ### Event System
@@ -457,16 +472,17 @@ Monitor internal processing:
 
 ```php
 <?php
-use Cognesy\Instructor\Events;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 
 $instructor = new StructuredOutput();
 
-$instructor->onEvent(Events\RequestSent::class, function($event) {
-    logger()->info('Request sent', $event->toArray());
+$instructor->onEvent(StructuredOutputRequestReceived::class, function($event) {
+    logger()->info('Request received', $event->toArray());
 });
 
-$instructor->onEvent(Events\ResponseReceived::class, function($event) {
-    logger()->info('Response received', $event->toArray());
+$instructor->onEvent(StructuredOutputResponseGenerated::class, function($event) {
+    logger()->info('Response generated', $event->toArray());
 });
 ```
 
@@ -476,7 +492,7 @@ See all LLM interactions:
 
 ```php
 <?php
-->withDebug(true)
+->wiretap(fn($event) => logger()->debug((string) $event))
 ```
 
 Outputs:

@@ -103,12 +103,11 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$structuredOutput = (new StructuredOutput)->using('anthropic');
+$structuredOutput = StructuredOutput::using('anthropic');
 
 echo "PROJECT EVENTS:\n\n";
 
-$events = $structuredOutput
-    ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
+$stream = $structuredOutput
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
@@ -120,7 +119,13 @@ $events = $structuredOutput
             'max_tokens' => 4096,
             'stream' => true,
         ])
-    ->get();
+    ->stream();
+
+foreach ($stream->sequence() as $sequence) {
+    displayEvent($sequence->last());
+}
+
+$events = $stream->finalValue();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
 //dump($events->list);

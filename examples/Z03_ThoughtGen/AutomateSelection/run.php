@@ -33,8 +33,7 @@ class AutomateSelection {
     }
 
     private function embed(array $inputs) : array {
-        $resp = (new Embeddings)
-            ->using('openai')
+        $resp = Embeddings::using('openai')
             ->withInputs($inputs)
             ->get();
         return $resp->toValuesArray();
@@ -132,4 +131,3 @@ dump($selected);
 
 1) Automatic Chain of Thought Prompting in Large Language Models (https://arxiv.org/abs/2210.03493)
 2) The Prompt Report: A Systematic Survey of Prompting Techniques (https://arxiv.org/abs/2406.06608)
-

@@ -1,17 +1,14 @@
 <?php
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Polyglot\Inference\Contracts\CanProcessInferenceRequest;
 use Cognesy\Polyglot\Inference\Creation\InferenceRequestBuilder;
-use Cognesy\Polyglot\Inference\Data\DriverCapabilities;
 use Cognesy\Polyglot\Inference\Data\InferenceExecution;
-use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Events\InferenceAttemptSucceeded;
 use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\InferenceUsageReported;
 use Cognesy\Polyglot\Inference\PendingInference;
+use Cognesy\Polyglot\Tests\Support\FakeInferenceDriver;
 
 it('dispatches completion events once for streamed responses', function () {
     $events = new EventDispatcher();
@@ -20,19 +17,11 @@ it('dispatches completion events once for streamed responses', function () {
         $captured[] = $event;
     });
 
-    $driver = new class implements CanProcessInferenceRequest {
-        public function makeResponseFor(InferenceRequest $request): InferenceResponse {
-            return InferenceResponse::empty();
-        }
-
-        public function makeStreamResponsesFor(InferenceRequest $request): iterable {
-            yield new PartialInferenceResponse(contentDelta: 'Hello', finishReason: 'stop');
-        }
-
-        public function capabilities(?string $model = null): DriverCapabilities {
-            return new DriverCapabilities();
-        }
-    };
+    $driver = new FakeInferenceDriver(
+        streamBatches: [[
+            new PartialInferenceResponse(contentDelta: 'Hello', finishReason: 'stop'),
+        ]],
+    );
 
     $request = (new InferenceRequestBuilder())
         ->withMessages('Hi')

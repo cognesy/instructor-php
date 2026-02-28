@@ -11,14 +11,20 @@ For more details see the [Events](events.mdx) section.
 
 ## HTTP Debugging
 
-The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.
+Enable HTTP debug middleware while constructing runtime:
 
 ```php
-$result = (new StructuredOutput)
-    ->withHttpDebugPreset('on')
+use Cognesy\Http\Creation\HttpClientBuilder;
+use Cognesy\Instructor\StructuredOutputRuntime;
+
+$debugHttpClient = (new HttpClientBuilder)->withHttpDebugPreset('on')->create();
+
+$result = (new StructuredOutput(
+    StructuredOutputRuntime::fromDefaults(httpClient: $debugHttpClient)
+))
     ->with(
         messages: "Jason is 25 years old",
-        responseModel: User:class,
+        responseModel: User::class,
     )
     ->get();
 ```
@@ -30,4 +36,3 @@ including:
  - response status, headers, and body.
 
 This is useful for debugging the request and response when you are not getting the expected results.
-

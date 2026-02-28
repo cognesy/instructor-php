@@ -18,14 +18,14 @@ Network connectivity problems can prevent successful API requests.
 ```php
 // In your configuration file (config/llm.php)
 'apiUrl' => 'https://api.openai.com/v1', // Correct URL
-// @doctest id="ed0b"
+// @doctest id="177b"
 ```
 
 3. **Proxy Settings**: If you're behind a proxy, configure it properly
 
 ```php
 // Using custom HTTP client with proxy settings
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use Cognesy\Polyglot\Inference\Inference;use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 $config = new HttpClientConfig(
     requestTimeout: 30,
@@ -34,9 +34,11 @@ $config = new HttpClientConfig(
 );
 
 $httpClient = new HttpClient('guzzle', $config);
-$inference = new Inference();
-$inference->withHttpClient($httpClient);
-// @doctest id="3839"
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $httpClient,
+));
+// @doctest id="fc83"
 ```
 
 4. **Firewall Rules**: Check if your firewall is blocking outgoing connections to API endpoints

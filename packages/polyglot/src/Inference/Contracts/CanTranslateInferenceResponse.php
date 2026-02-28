@@ -9,7 +9,11 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 interface CanTranslateInferenceResponse
 {
     public function fromResponse(HttpResponse $response): ?InferenceResponse;
-    /** @return iterable<PartialInferenceResponse> */
+    /**
+     * Yields cumulative partial snapshots preserving provider deltas.
+     *
+     * @return iterable<PartialInferenceResponse>
+     */
     public function fromStreamResponses(iterable $eventBodies, ?HttpResponse $responseData = null): iterable;
     public function toEventBody(string $data): string|bool;
 }

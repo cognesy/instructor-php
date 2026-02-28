@@ -31,7 +31,10 @@ which might be helpful in the case you are using OpenAI - organization.
 
 ```php
 <?php
-use Cognesy\Instructor\StructuredOutput;use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\StructuredOutputRuntime;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 // Create instance of OpenAI client initialized with custom parameters
 $config = new LLMConfig(
@@ -45,8 +48,11 @@ $config = new LLMConfig(
     driver: 'openai',
 ));
 
-/// Get Instructor with the default configuration overridden with your own
-$structuredOutput = (new StructuredOutput)->withLLMConfig($driver);
+// Get Instructor with the default configuration overridden with your own
+$runtime = StructuredOutputRuntime::fromProvider(
+    provider: LLMProvider::new()->withLLMConfig($config),
+);
+$structuredOutput = new StructuredOutput($runtime);
 
 $person = $structuredOutput->with(
     messages: [['role' => 'user', 'content' => $text]],

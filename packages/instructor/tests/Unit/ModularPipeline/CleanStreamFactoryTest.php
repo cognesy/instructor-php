@@ -8,6 +8,7 @@ use Cognesy\Instructor\Creation\StructuredOutputSchemaRenderer;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\ModularStreamFactory;
+use Cognesy\Instructor\Tests\Support\FakeStreamFactory;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\Usage;
@@ -72,11 +73,11 @@ test('creates observable stream from iterable source', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"key"', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: ': "val', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: 'ue"}', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -94,11 +95,11 @@ test('stream processes all source items', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"a": 1}', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: '{"b": 2}', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: '{"c": 3}', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -119,11 +120,11 @@ test('stream accumulates partials when enabled', function() {
     );
 
     // Simulate incremental JSON streaming like real API
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"test', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: '": "val', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: 'ue1"}', finishReason: 'stop', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -149,10 +150,10 @@ test('stream does not accumulate partials when disabled', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"a": 1}', usage: Usage::none()),
         new PartialInferenceResponse(contentDelta: '{"b": 2}', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -174,9 +175,9 @@ test('handles JsonSchema output mode', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"test": true}', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -196,13 +197,13 @@ test('handles Tools output mode', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(
             toolName: 'test_tool',
             toolArgs: '{"param": "value"}',
             usage: Usage::none()
         ),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -223,7 +224,7 @@ test('stream accumulates usage across chunks', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         (new PartialInferenceResponse(
             contentDelta: '{"a": 1}',
             usage: new Usage(inputTokens: 10, outputTokens: 5)
@@ -232,7 +233,7 @@ test('stream accumulates usage across chunks', function() {
             contentDelta: '{"b": 2}',
             usage: new Usage(inputTokens: 15, outputTokens: 8)
         ))->withContent('{"a": 1}{"b": 2}'),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -254,13 +255,13 @@ test('stream handles finish reason', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         (new PartialInferenceResponse(
             contentDelta: '{"test": true}',
             finishReason: 'stop',
             usage: Usage::none()
         ))->withContent('{"test": true}'),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -291,9 +292,9 @@ test('factory uses provided deserializer', function() {
         events: makeStreamEvents(),
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"test": true}', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,
@@ -332,9 +333,9 @@ test('factory uses provided event handler', function() {
         events: $customEvents,
     );
 
-    $source = [
+    $source = FakeStreamFactory::from(
         new PartialInferenceResponse(contentDelta: '{"test": true}', usage: Usage::none()),
-    ];
+    );
 
     $stream = $factory->makeStream(
         source: $source,

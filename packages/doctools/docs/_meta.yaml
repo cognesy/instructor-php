@@ -1,0 +1,5 @@
+# Navigation order for Doctor documentation
+order:
+  - index
+  - navigation-ordering
+  - package-discovery

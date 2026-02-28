@@ -14,7 +14,7 @@ use Cognesy\Agents\Hook\Collections\HookTriggers;
 use Cognesy\Agents\Hook\Collections\RegisteredHooks;
 use Cognesy\Agents\Hook\Enums\HookTrigger;
 use Cognesy\Agents\Hook\HookStack;
-use Cognesy\Agents\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Agents\Tests\Support\FakeInferenceDriver;
 use Cognesy\Agents\Tool\ToolExecutor;
 use Cognesy\Agents\Tool\Tools\MockTool;
 use Cognesy\Events\Dispatchers\EventDispatcher;
@@ -56,7 +56,7 @@ function makeRetrospectiveLoop(
         name: 'execution_retrospective',
     );
 
-    $fakeDriver = new FakeInferenceRequestDriver($inferenceResponses);
+    $fakeDriver = new FakeInferenceDriver($inferenceResponses);
     $llm = LLMProvider::new()->withDriver($fakeDriver);
     $driver = new ToolCallingDriver(
         inference: InferenceRuntime::fromProvider($llm, events: $events),

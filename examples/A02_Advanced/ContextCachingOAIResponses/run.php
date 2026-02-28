@@ -58,7 +58,7 @@ multiple requests.
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 $cacheKey = 'context_cache_structured_oai_responses_readme_v1';
 
-$cached = (new StructuredOutput)->using('openai-responses')->withCachedContext(
+$cached = StructuredOutput::using('openai-responses')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
     prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',

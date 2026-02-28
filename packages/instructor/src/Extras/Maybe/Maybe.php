@@ -1,15 +1,16 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\Instructor\Extras\Maybe;
 
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Visitors\SchemaToJsonSchema;
-use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
-class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
+final class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {
     /** @var class-string */
     private string $class = '';
@@ -18,16 +19,12 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 
     private mixed $value = null;
     private bool $hasValue = false;
-    /** If no value, provide reason */
     private string $error = '';
 
-    private SchemaFactory $schemaFactory;
-    private SymfonyDeserializer $deserializer;
-
-    public function __construct() {
-        $this->schemaFactory = new SchemaFactory(useObjectReferences: false);
-        $this->deserializer = new SymfonyDeserializer();
-    }
+    public function __construct(
+        private readonly SchemaFactory $schemaFactory = new SchemaFactory(useObjectReferences: false),
+        private readonly CanDeserializeClass $deserializer = new SymfonyDeserializer(),
+    ) {}
 
     public static function is(string $class, string $name = '', string $description = '') : self {
         $instance = new self();
@@ -54,15 +51,16 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         $schema = $this->schemaFactory->schema($this->class);
         $schemaData = (new SchemaToJsonSchema)->toArray($schema);
         $schemaData['x-title'] = $this->name ?: TypeDetails::fromTypeName($this->class)->classOnly();
-        $schemaData['description'] = $this->description ?: "Correctly extracted values of ".$schemaData['x-title'];
+        $schemaData['description'] = $this->description ?: ('Correctly extracted values of ' . $schemaData['x-title']);
         $schemaData['x-php-class'] = $this->class;
+
         return [
             'type' => 'object',
-            'x-php-class' => Maybe::class,
+            'x-php-class' => self::class,
             'properties' => [
                 'hasValue' => ['type' => 'boolean', 'description' => 'True if value extracted, false if data not available'],
                 'value' => $schemaData,
-                'error' => ['type' => 'string', "description" => "Obligatory if no value extracted - provide reason"],
+                'error' => ['type' => 'string', 'description' => 'Obligatory if no value extracted - provide reason'],
             ],
             'required' => ['hasValue'],
         ];
@@ -71,12 +69,14 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     #[\Override]
     public function fromArray(array $data, ?string $toolName = null): static {
         $this->hasValue = (bool) ($data['hasValue'] ?? false);
-        $this->error = $data['error'] ?? '';
+        $this->error = (string) ($data['error'] ?? '');
+
         if ($this->hasValue && isset($data['value']) && is_array($data['value'])) {
             /** @var class-string $class */
             $class = $this->class;
             $this->value = $this->deserializer->fromArray($data['value'], $class);
         }
+
         return $this;
     }
 }

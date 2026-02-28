@@ -2,6 +2,8 @@
 
 **Purpose**: Controlled, sandboxed invocation of the `claude` CLI with a type-safe PHP API, real-time streaming support, and comprehensive DTO parsing.
 
+> Advanced internals documentation. For typical usage, prefer the unified `AgentCtrl` facade in [`../../README.md`](../../README.md).
+
 ## Table of Contents
 
 - [Overview](#overview)

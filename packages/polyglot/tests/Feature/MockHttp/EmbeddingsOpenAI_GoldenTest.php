@@ -3,6 +3,7 @@
 use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRuntime;
 
 it('OpenAI embeddings golden: multiple inputs + usage', function () {
     $mock = new MockHttpDriver();
@@ -18,9 +19,9 @@ it('OpenAI embeddings golden: multiple inputs + usage', function () {
         ]);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $res = (new Embeddings())
-        ->withHttpClient($http)
-        ->using('openai')
+    $res = Embeddings::fromRuntime(
+        EmbeddingsRuntime::using(preset: 'openai', httpClient: $http)
+    )
         ->withModel('text-embedding-3-small')
         ->withInputs(['hello', 'world'])
         ->get();
@@ -29,4 +30,3 @@ it('OpenAI embeddings golden: multiple inputs + usage', function () {
     expect($res->vectors()[0]->values())->toBe([0.1, 0.2]);
     expect($res->usage()->input())->toBe(8);
 });
-

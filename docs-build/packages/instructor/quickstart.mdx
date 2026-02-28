@@ -14,7 +14,7 @@ Run following command in your terminal:
 
 ```bash
 composer require cognesy/instructor-php
-# @doctest id="d737"
+# @doctest id="f183"
 ```
 
 
@@ -47,14 +47,13 @@ class City {
 }
 
 // Step 2: Use Instructor to run LLM inference
-$city = (new StructuredOutput)
-    ->using('openai')
+$city = StructuredOutput::using('openai')
     ->withResponseClass(City::class)
     ->withMessages('What is the capital of France?')
     ->get();
 
 var_dump($city);
-// @doctest id="fcb1"
+// @doctest id="2399"
 ```
 
 <Warning>
@@ -77,7 +76,7 @@ php test-instructor.php
 #   ["population"]=>
 #   int(2148000)
 # }
-# @doctest id="6039"
+# @doctest id="bbb2"
 ```
 
 

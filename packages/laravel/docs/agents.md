@@ -41,7 +41,7 @@ $response = AgentCtrl::claudeCode()
     ->execute('Refactor the User model to use DTOs');
 
 echo $response->text();
-echo "Session ID: " . $response->sessionId;
+echo "Session ID: " . (string) ($response->sessionId() ?? '');
 ```
 
 ### Codex
@@ -69,7 +69,7 @@ $response = AgentCtrl::openCode()
 Select agent type at runtime:
 
 ```php
-use Cognesy\Auxiliary\Agents\Enum\AgentType;
+use Cognesy\AgentCtrl\Enum\AgentType;
 
 $agentType = AgentType::from(config('app.default_agent'));
 
@@ -89,7 +89,6 @@ AgentCtrl::claudeCode()
     ->withTimeout(300)                        // Execution timeout in seconds
     ->inDirectory('/path/to/project')         // Working directory
     ->withSandboxDriver(SandboxDriver::Host)  // Sandbox isolation
-    ->withMaxRetries(3)                       // Retry on failure
     ->execute('Your prompt');
 ```
 
@@ -183,7 +182,7 @@ $response->isSuccess();      // bool - True if exitCode is 0
 
 // Metadata
 $response->exitCode;         // int - Process exit code
-$response->sessionId;        // ?string - Session ID for resuming
+$response->sessionId();      // AgentSessionId|null - Session ID for resuming
 $response->agentType;        // AgentType - Which agent was used
 
 // Usage (when available)
@@ -214,7 +213,7 @@ Resume previous sessions for continued work:
 $response = AgentCtrl::claudeCode()
     ->execute('Start refactoring the User model');
 
-$sessionId = $response->sessionId;
+$sessionId = (string) ($response->sessionId() ?? '');
 
 // Later: Resume the session
 $response = AgentCtrl::claudeCode()
@@ -303,7 +302,7 @@ test('handles multiple agent calls', function () {
 });
 
 test('can create custom fake responses', function () {
-    use Cognesy\Auxiliary\Agents\Enum\AgentType;
+    use Cognesy\AgentCtrl\Enum\AgentType;
     use Cognesy\Instructor\Laravel\Testing\AgentCtrlFake;
 
     $customResponse = AgentCtrlFake::response(
@@ -441,7 +440,7 @@ class CodeReviewer
         return [
             'review' => $response->text(),
             'success' => $response->isSuccess(),
-            'session' => $response->sessionId,
+            'session' => (string) ($response->sessionId() ?? ''),
         ];
     }
 }
@@ -460,7 +459,7 @@ Control agent execution isolation:
 | `bubblewrap` | Minimal sandbox | CI/CD environments |
 
 ```php
-use Cognesy\Auxiliary\Agents\Common\Enum\SandboxDriver;
+use Cognesy\Sandbox\Enums\SandboxDriver;
 
 // Development (direct execution)
 AgentCtrl::claudeCode()

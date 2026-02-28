@@ -70,7 +70,7 @@ class InferenceRequest
         };
 
         $this->messages = $this->normalizeMessages($messages);
-        $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::Memory;
+        $this->responseCachePolicy = $responseCachePolicy ?? ResponseCachePolicy::None;
     }
 
     // ACCESSORS //////////////////////////////////////

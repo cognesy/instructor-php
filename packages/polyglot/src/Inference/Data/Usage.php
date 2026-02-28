@@ -4,14 +4,13 @@ namespace Cognesy\Polyglot\Inference\Data;
 
 class Usage
 {
-    private ?Pricing $pricing = null;
-
     public function __construct(
         public int $inputTokens = 0,
         public int $outputTokens = 0,
         public int $cacheWriteTokens = 0,
         public int $cacheReadTokens = 0,
         public int $reasoningTokens = 0,
+        public ?Pricing $pricing = null,
     ) {}
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////
@@ -27,23 +26,11 @@ class Usage
             cacheWriteTokens: (int) ($value['cacheWrite'] ?? 0),
             cacheReadTokens: (int) ($value['cacheRead'] ?? 0),
             reasoningTokens: (int) ($value['reasoning'] ?? 0),
+            pricing: Pricing::fromArray($value['pricing'] ?? []),
         );
-    }
-
-    public static function copy(Usage $usage) : self {
-        $new = new self(
-            inputTokens: $usage->inputTokens,
-            outputTokens: $usage->outputTokens,
-            cacheWriteTokens: $usage->cacheWriteTokens,
-            cacheReadTokens: $usage->cacheReadTokens,
-            reasoningTokens: $usage->reasoningTokens,
-        );
-        $new->pricing = $usage->pricing;
-        return $new;
     }
 
     // ACCESSORS /////////////////////////////////////////////////////////
-
     public function total() : int {
         return $this->inputTokens
             + $this->outputTokens
@@ -70,68 +57,6 @@ class Usage
         return $this->pricing;
     }
 
-    // MUTATORS ///////////////////////////////////////////////////////////
-
-    /**
-     * Safely adds two integers, throwing an exception if the result would overflow
-     *
-     * @throws \InvalidArgumentException When token counts are unrealistically large
-     */
-    private function safeAdd(int $a, int $b, string $fieldName): int {
-        // Reasonable upper limit for token counts (1 million tokens)
-        $maxReasonableTokens = 1_000_000;
-
-        if ($a > $maxReasonableTokens || $b > $maxReasonableTokens) {
-            throw new \InvalidArgumentException(
-                "Unrealistic token count detected in {$fieldName}: {$a} + {$b}. " .
-                "This indicates a bug in token accumulation logic. " .
-                "Token counts should not exceed {$maxReasonableTokens}."
-            );
-        }
-
-        return $a + $b;
-    }
-
-    public function withAccumulated(Usage $usage) : self {
-        $new = new self(
-            inputTokens: $this->safeAdd($this->inputTokens, $usage->inputTokens, 'inputTokens'),
-            outputTokens: $this->safeAdd($this->outputTokens, $usage->outputTokens, 'outputTokens'),
-            cacheWriteTokens: $this->safeAdd($this->cacheWriteTokens, $usage->cacheWriteTokens, 'cacheWriteTokens'),
-            cacheReadTokens: $this->safeAdd($this->cacheReadTokens, $usage->cacheReadTokens, 'cacheReadTokens'),
-            reasoningTokens: $this->safeAdd($this->reasoningTokens, $usage->reasoningTokens, 'reasoningTokens'),
-        );
-        $new->pricing = $this->pricing ?? $usage->pricing;
-        return $new;
-    }
-
-    public function withPricing(Pricing $pricing): self {
-        $new = self::copy($this);
-        $new->pricing = $pricing;
-        return $new;
-    }
-
-    // TRANSFORMERS ////////////////////////////////////////////////////////
-
-    public function toString() : string {
-        return "Tokens: {$this->total()} (i:{$this->inputTokens} o:{$this->outputTokens} c:{$this->cache()} r:{$this->reasoningTokens})";
-    }
-
-    public function toArray() : array {
-        return [
-            'input' => $this->inputTokens,
-            'output' => $this->outputTokens,
-            'cacheWrite' => $this->cacheWriteTokens,
-            'cacheRead' => $this->cacheReadTokens,
-            'reasoning' => $this->reasoningTokens,
-        ];
-    }
-
-    public function clone() : self {
-        return self::copy($this);
-    }
-
-    // COST CALCULATION ////////////////////////////////////////////////////
-
     /**
      * Calculate total cost in USD.
      * Uses stored pricing if no argument provided.
@@ -139,7 +64,7 @@ class Usage
      *
      * @throws \RuntimeException If no pricing available
      */
-    public function calculateCost(?Pricing $pricing = null): float {
+    public function cost(?Pricing $pricing = null): float {
         $pricing = $pricing ?? $this->pricing;
 
         if ($pricing === null) {
@@ -157,5 +82,57 @@ class Usage
             + ($this->reasoningTokens / 1_000_000) * $pricing->reasoningPerMToken;
 
         return round($cost, 6);
+    }
+
+    // MUTATORS ///////////////////////////////////////////////////////////
+
+    public function withAccumulated(Usage $usage) : self {
+        return new self(
+            inputTokens: $this->inputTokens + $usage->inputTokens,
+            outputTokens: $this->outputTokens + $usage->outputTokens,
+            cacheWriteTokens: $this->cacheWriteTokens + $usage->cacheWriteTokens,
+            cacheReadTokens: $this->cacheReadTokens + $usage->cacheReadTokens,
+            reasoningTokens: $this->reasoningTokens + $usage->reasoningTokens,
+            pricing: $this->pricing ?? $usage->pricing,
+        );
+    }
+
+    public function withPricing(Pricing $pricing): self {
+        return $this->with(pricing: $pricing);
+    }
+
+    public function with(
+        ?int $inputTokens = null,
+        ?int $outputTokens = null,
+        ?int $cacheWriteTokens = null,
+        ?int $cacheReadTokens = null,
+        ?int $reasoningTokens = null,
+        ?Pricing $pricing = null,
+    ) : self {
+        return new self(
+            inputTokens: $inputTokens ?? $this->inputTokens,
+            outputTokens: $outputTokens ?? $this->outputTokens,
+            cacheWriteTokens: $cacheWriteTokens ?? $this->cacheWriteTokens,
+            cacheReadTokens: $cacheReadTokens ?? $this->cacheReadTokens,
+            reasoningTokens: $reasoningTokens ?? $this->reasoningTokens,
+            pricing: $pricing ?? $this->pricing,
+        );
+    }
+
+    // SERIALIZATION ///////////////////////////////////////////////////////
+
+    public function toString() : string {
+        return "Tokens: {$this->total()} (i:{$this->inputTokens} o:{$this->outputTokens} c:{$this->cache()} r:{$this->reasoningTokens})";
+    }
+
+    public function toArray() : array {
+        return [
+            'input' => $this->inputTokens,
+            'output' => $this->outputTokens,
+            'cacheWrite' => $this->cacheWriteTokens,
+            'cacheRead' => $this->cacheReadTokens,
+            'reasoning' => $this->reasoningTokens,
+            'pricing' => $this->pricing?->toArray(),
+        ];
     }
 }

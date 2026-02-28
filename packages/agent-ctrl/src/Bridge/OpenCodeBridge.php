@@ -4,6 +4,7 @@ namespace Cognesy\AgentCtrl\Bridge;
 
 use Cognesy\AgentCtrl\Common\Execution\JsonLinesBuffer;
 use Cognesy\AgentCtrl\Common\Execution\SandboxCommandExecutor;
+use Cognesy\AgentCtrl\Common\Execution\CliBinaryGuard;
 use Cognesy\AgentCtrl\Contract\AgentBridge;
 use Cognesy\AgentCtrl\Contract\StreamHandler;
 use Cognesy\AgentCtrl\Dto\AgentResponse;
@@ -77,6 +78,8 @@ final class OpenCodeBridge implements AgentBridge
         $previousDirectory = $this->switchToWorkingDirectory();
 
         try {
+            CliBinaryGuard::assertAvailableForDriver('opencode', AgentType::OpenCode, $this->sandboxDriver);
+
             // Build request with timing
             $requestStart = microtime(true);
             $request = $this->buildRequest($prompt);

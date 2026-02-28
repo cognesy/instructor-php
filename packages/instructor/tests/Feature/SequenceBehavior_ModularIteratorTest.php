@@ -5,7 +5,7 @@ use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Instructor\Tests\Support\FakeInferenceRequestDriver;
+use Cognesy\Instructor\Tests\Support\FakeInferenceDriver;
 
 /**
  * Tests verifying critical sequence behavior for MODULAR response iterator:
@@ -33,11 +33,12 @@ it('[modular] partials() yields multiple updates per sequence item as chunks arr
         new PartialInferenceResponse(contentDelta: ',"age":35}]}', finishReason: 'stop'),
     ];
 
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
 
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
-        ->withConfig(new StructuredOutputConfig())
+    $pending = (new StructuredOutput(makeStructuredRuntime(
+        driver: $driver,
+        config: new StructuredOutputConfig(),
+    )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -84,11 +85,12 @@ it('[modular] sequence() yields single update per COMPLETED sequence item only',
         new PartialInferenceResponse(contentDelta: ',"age":35}]}', finishReason: 'stop'),
     ];
 
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
 
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
-        ->withConfig(new StructuredOutputConfig())
+    $pending = (new StructuredOutput(makeStructuredRuntime(
+        driver: $driver,
+        config: new StructuredOutputConfig(),
+    )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -134,11 +136,12 @@ it('[modular] sequence() does not yield incomplete items even if many chunks arr
         new PartialInferenceResponse(contentDelta: ',{"name":"Eve","age":45}]}', finishReason: 'stop'),
     ];
 
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
 
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
-        ->withConfig(new StructuredOutputConfig())
+    $pending = (new StructuredOutput(makeStructuredRuntime(
+        driver: $driver,
+        config: new StructuredOutputConfig(),
+    )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -171,10 +174,11 @@ it('[modular] partials() yields MORE updates than sequence() for same stream', f
     ];
 
     // Test partials()
-    $driver = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
-    $pending = (new StructuredOutput())
-        ->withDriver($driver)
-        ->withConfig(new StructuredOutputConfig())
+    $driver = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
+    $pending = (new StructuredOutput(makeStructuredRuntime(
+        driver: $driver,
+        config: new StructuredOutputConfig(),
+    )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),
@@ -187,10 +191,11 @@ it('[modular] partials() yields MORE updates than sequence() for same stream', f
     }
 
     // Test sequence()
-    $driver2 = new FakeInferenceRequestDriver(responses: [], streamBatches: [ $chunks ]);
-    $pending2 = (new StructuredOutput())
-        ->withDriver($driver2)
-        ->withConfig(new StructuredOutputConfig())
+    $driver2 = new FakeInferenceDriver(responses: [], streamBatches: [ $chunks ]);
+    $pending2 = (new StructuredOutput(makeStructuredRuntime(
+        driver: $driver2,
+        config: new StructuredOutputConfig(),
+    )))
         ->with(
             messages: 'test',
             responseModel: Sequence::of('ModularPerson'),

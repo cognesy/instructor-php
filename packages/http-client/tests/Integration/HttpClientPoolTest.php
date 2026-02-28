@@ -1,11 +1,15 @@
 <?php
 
 use Cognesy\Http\Collections\HttpRequestList;
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Drivers\Curl\Pool\CurlPool;
+use Cognesy\Http\Drivers\Guzzle\GuzzlePool;
+use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\PendingHttpPool;
-use Cognesy\Utils\Result\Success;
 use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Success;
 use Cognesy\Http\Tests\Support\IntegrationTestServer;
 
 beforeEach(function() {
@@ -150,6 +154,28 @@ test('different drivers can be used for pooling', function() {
 
     expect($results)->toHaveCount(1);
     expect($resultArray[0])->toBeInstanceOf(Success::class);
+});
+
+test('withPool uses matching pool handler for selected driver', function() {
+    $curlPendingPool = HttpClient::default()->withPool(HttpRequestList::empty());
+    $guzzlePendingPool = HttpClient::using('guzzle')->withPool(HttpRequestList::empty());
+
+    $poolHandlerProperty = new \ReflectionProperty(PendingHttpPool::class, 'poolHandler');
+
+    $curlPoolHandler = $poolHandlerProperty->getValue($curlPendingPool);
+    $guzzlePoolHandler = $poolHandlerProperty->getValue($guzzlePendingPool);
+
+    expect($curlPoolHandler)->toBeInstanceOf(CurlPool::class);
+    expect($guzzlePoolHandler)->toBeInstanceOf(GuzzlePool::class);
+});
+
+test('pooling is rejected for external non-pooling drivers', function() {
+    $client = (new HttpClientBuilder())
+        ->withDriver(new MockHttpDriver())
+        ->create();
+
+    expect(fn() => $client->withPool(HttpRequestList::empty()))
+        ->toThrow(\InvalidArgumentException::class, 'does not support request pooling');
 });
 
 // Clean up server after all tests complete

@@ -25,8 +25,7 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 
 function testApiKey(string $preset): bool {
     try {
-        $llm = LLMProvider::using($preset);
-        $inference = new Inference($preset);
+        $inference = Inference::using($preset);
         $response = $inference->with(
             messages: 'Test message',
             options: ['max_tokens' => 5]
@@ -54,12 +53,16 @@ Use debug mode to see the actual requests and responses:
 
 ```php
 <?php
+use Cognesy\Http\Creation\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 // Enable debug mode
-$inference = new Inference()
-    ->using('openai')
-    ->withHttpDebugPreset('on');
+$http = (new HttpClientBuilder())->withHttpDebugPreset('on')->create();
+$inference = Inference::fromRuntime(InferenceRuntime::using(
+    preset: 'openai',
+    httpClient: $http,
+));
 
 // Make a request
 $response = $inference->with(

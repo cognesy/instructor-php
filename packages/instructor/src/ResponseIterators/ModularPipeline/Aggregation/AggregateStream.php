@@ -8,8 +8,6 @@ use Cognesy\Stream\Contracts\Transducer;
 
 /**
  * Terminal transducer for stream aggregation.
- *
- * Creates AggregateStreamReducer.
  */
 final readonly class AggregateStream implements Transducer
 {

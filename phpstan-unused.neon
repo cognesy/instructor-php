@@ -14,7 +14,7 @@ parameters:
 		- packages/agents/src
 		- packages/auxiliary/src
 		- packages/config/src
-		- packages/doctor/src
+		- packages/doctools/src
 		- packages/dynamic/src
 		- packages/evals/src
 		- packages/events/src

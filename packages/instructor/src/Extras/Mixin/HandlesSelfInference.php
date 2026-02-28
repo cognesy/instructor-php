@@ -14,6 +14,9 @@ use Cognesy\Polyglot\Inference\LLMProvider;
  * This trait provides a static method `infer` that allows the class to perform inference
  * using the provided parameters. It utilizes runtime-first structured extraction to handle the
  * inference process.
+ *
+ * @deprecated 2.0 Use `StructuredOutput::using(...)->with(...)->getObject()`
+ *             or `StructuredOutputRuntime::fromProvider(...)->create(...)->getInstanceOf(...)`.
  */
 trait HandlesSelfInference {
     /**
@@ -35,6 +38,8 @@ trait HandlesSelfInference {
      * @param HttpClient|null $httpClient
      * @return static
      * @throws \Exception
+     *
+     * @deprecated 2.0 Use StructuredOutput facade/runtime directly.
      */
     public static function infer(
         string|array $messages = '',

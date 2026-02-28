@@ -49,8 +49,7 @@ $inputs = array_merge([$query], $documents);
 $topK = 3;
 
 // generate embeddings for query and documents (in a single request)
-$response = (new Embeddings)
-    ->using('openai')
+$response = Embeddings::using('openai')
     ->withInputs($inputs)
     ->get();
 

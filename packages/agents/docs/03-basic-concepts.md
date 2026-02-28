@@ -30,8 +30,7 @@ Immutable value object holding everything about an agent's session and execution
 ```php
 $state = AgentState::empty()
     ->withSystemPrompt('You are helpful.')
-    ->withUserMessage('Hello')
-    ->withBudget(new AgentBudget(maxSteps: 10));
+    ->withUserMessage('Hello');
 ```
 
 ## AgentContext

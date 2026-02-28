@@ -1,20 +1,21 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Instructor\Creation\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\StructuredOutputRecoveryLimitReached;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 // Simple models for validation
 class SyncRetryUser { public int $age; }
 class StreamRetryUser { public int $age; }
 
 it('retries sync request after validation failure and succeeds on second attempt', function () {
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [
             new InferenceResponse(content: 'not json'),
             new InferenceResponse(content: '{"age":21}'),
@@ -26,13 +27,19 @@ it('retries sync request after validation failure and succeeds on second attempt
     $events->addListener(NewValidationRecoveryAttempt::class, function() use (&$attempts){ $attempts++; });
     $events->addListener(StructuredOutputRecoveryLimitReached::class, function() use (&$limits){ $limits++; });
 
-    $pending = (new StructuredOutput())
-        ->withEventHandler($events)
-        ->withDriver($driver)
-        ->withMessages('test')
-        ->withResponseClass(SyncRetryUser::class)
+    $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
         ->withMaxRetries(1)
+        ->create();
+    $runtime = makeStructuredRuntime(
+        driver: $driver,
+        events: $events,
+        config: $config,
+    );
+
+    $pending = (new StructuredOutput($runtime))
+        ->withMessages('test')
+        ->withResponseClass(SyncRetryUser::class)
         ->create();
 
     $result = $pending->getObject();
@@ -58,7 +65,7 @@ it('retries streaming (transducer) request after validation failure and succeeds
         new PartialInferenceResponse(contentDelta: '36}'),
     ];
 
-    $driver = new FakeInferenceRequestDriver(
+    $driver = new FakeInferenceDriver(
         responses: [],
         streamBatches: [ $batch1, $batch2 ],
     );
@@ -68,13 +75,19 @@ it('retries streaming (transducer) request after validation failure and succeeds
     $events->addListener(NewValidationRecoveryAttempt::class, function() use (&$attempts){ $attempts++; });
     $events->addListener(StructuredOutputRecoveryLimitReached::class, function() use (&$limits){ $limits++; });
 
-    $pending = (new StructuredOutput())
-        ->withEventHandler($events)
-        ->withDriver($driver)
-        ->withMessages('test')
-        ->withResponseClass(StreamRetryUser::class)
+    $config = (new StructuredOutputConfigBuilder())
         ->withOutputMode(OutputMode::Json)
         ->withMaxRetries(1)
+        ->create();
+    $runtime = makeStructuredRuntime(
+        driver: $driver,
+        events: $events,
+        config: $config,
+    );
+
+    $pending = (new StructuredOutput($runtime))
+        ->withMessages('test')
+        ->withResponseClass(StreamRetryUser::class)
         ->create();
 
     // Use the streaming path

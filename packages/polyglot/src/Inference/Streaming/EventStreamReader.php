@@ -44,6 +44,9 @@ class EventStreamReader
         foreach ($this->readLines($stream) as $line) {
             $this->events->dispatch(new StreamEventReceived($line));
             $processedData = $this->processLine($line);
+            if ($processedData === false) {
+                break;
+            }
             if ($processedData !== null) {
                 $this->events->dispatch(new StreamEventParsed($processedData));
                 yield $processedData;
@@ -78,15 +81,18 @@ class EventStreamReader
      * and optionally performs a debug dump if needed.
      *
      * @param string $line The input line to be processed.
-     * @return string|null Returns the processed data as a string, or null if the line is empty or cannot be parsed.
+     * @return string|bool|null Returns processed data string, false for explicit stream termination, or null to skip.
      */
-    protected function processLine(string $line): ?string {
+    protected function processLine(string $line): string|bool|null {
         $line = trim($line);
         if ($line === '') {
             return null;
         }
         $data = $this->parse($line);
-        if ($data === false || $data === true) {
+        if ($data === false) {
+            return false;
+        }
+        if ($data === true || $data === '') {
             return null;
         }
         return $data;

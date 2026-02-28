@@ -13,7 +13,7 @@ Agent templates let you define agents as data — in markdown, YAML, or JSON fil
 
 ```php
 use Cognesy\Agents\Template\Data\AgentDefinition;
-use Cognesy\Agents\Data\AgentBudget;
+use Cognesy\Agents\Data\ExecutionBudget;
 
 $definition = new AgentDefinition(
     name: 'researcher',
@@ -21,12 +21,12 @@ $definition = new AgentDefinition(
     systemPrompt: 'You are a research assistant. Find and summarize information.',
     label: 'Research Agent',           // optional display name
     llmConfig: 'anthropic',            // optional LLM preset or LLMConfig
-    budget: new AgentBudget(maxSteps: 10, maxTokens: 8000),
+    budget: new ExecutionBudget(maxSteps: 10, maxTokens: 8000),
     tools: new NameList(['bash', 'file.read']),       // optional tool allow-list
     toolsDeny: new NameList(['file.write']),           // optional tool deny-list
     capabilities: new NameList(['use_bash']),          // capability names to install
 );
-// @doctest id="ed14"
+// @doctest id="5a76"
 ```
 
 All fields except `name`, `description`, and `systemPrompt` are optional.
@@ -53,7 +53,7 @@ capabilities:
 
 You are a research assistant. Find and summarize information accurately.
 Use available tools to search and verify your findings.
-// @doctest id="6ce3"
+// @doctest id="dd57"
 ```
 
 The body after the frontmatter becomes the `systemPrompt`.
@@ -67,7 +67,7 @@ systemPrompt: |
   You are a research assistant. Find and summarize information.
 budget:
   maxSteps: 10
-# @doctest id="3c4a"
+# @doctest id="c51c"
 ```
 
 ### JSON
@@ -79,7 +79,7 @@ budget:
   "systemPrompt": "You are a research assistant.",
   "budget": { "maxSteps": 10 }
 }
-// @doctest id="6a19"
+// @doctest id="f2dd"
 ```
 
 ## Loading Definitions
@@ -93,7 +93,7 @@ use Cognesy\Agents\Template\AgentDefinitionLoader;
 
 $loader = new AgentDefinitionLoader();
 $definition = $loader->loadFile('/path/to/researcher.md');
-// @doctest id="7b5b"
+// @doctest id="6a71"
 ```
 
 Supported extensions: `.md`, `.json`, `.yaml`, `.yml`.
@@ -124,7 +124,7 @@ $registry->get('researcher');    // AgentDefinition (throws if not found)
 $registry->has('researcher');    // bool
 $registry->names();              // ['researcher', 'writer', ...]
 $registry->count();              // int
-// @doctest id="bc1e"
+// @doctest id="0bee"
 ```
 
 Loading errors are collected silently — check `$registry->errors()` for any files that failed to parse.
@@ -151,7 +151,7 @@ $loader = new AgentDefinitionLoader([
     'toml' => new TomlDefinitionParser(),
     'md' => new MarkdownDefinitionParser(),   // keep defaults
 ]);
-// @doctest id="f422"
+// @doctest id="f4a8"
 ```
 
 ## Instantiation Factories
@@ -167,8 +167,8 @@ use Cognesy\Agents\Template\Factory\DefinitionStateFactory;
 
 $factory = new DefinitionStateFactory();
 $state = $factory->instantiateAgentState($definition);
-// AgentState with systemPrompt, budget, and metadata from definition
-// @doctest id="9aef"
+// AgentState with systemPrompt and metadata from definition
+// @doctest id="dc9a"
 ```
 
 ### DefinitionLoopFactory
@@ -186,7 +186,7 @@ $capabilities->register('use_bash', new UseBash());
 
 $factory = new DefinitionLoopFactory($capabilities);
 $loop = $factory->instantiateAgentLoop($definition);
-// @doctest id="299c"
+// @doctest id="c43f"
 ```
 
 If definitions reference named tools (`tools` / `toolsDeny`), provide a tool registry to `DefinitionLoopFactory`:
@@ -201,7 +201,7 @@ $factory = new DefinitionLoopFactory(
     capabilities: $capabilities,
     tools: $tools,
 );
-// @doctest id="ad6c"
+// @doctest id="c57b"
 ```
 
 ## Using with Subagents
@@ -215,7 +215,7 @@ $registry->loadFromDirectory('/agents/');
 $agent = AgentBuilder::base()
     ->withCapability(new UseSubagents(provider: $registry))
     ->build();
-// @doctest id="9858"
+// @doctest id="83b1"
 ```
 
 When the agent spawns a subagent by name, the registry provides the definition, and the factory creates the corresponding loop and state.
@@ -238,5 +238,5 @@ Templates do not persist run state. To persist and resume executions over time, 
 ```php
 $data = $definition->toArray();
 $restored = AgentDefinition::fromArray($data);
-// @doctest id="8dd5"
+// @doctest id="0423"
 ```

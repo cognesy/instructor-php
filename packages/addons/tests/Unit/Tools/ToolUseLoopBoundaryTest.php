@@ -15,7 +15,7 @@ use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\InferenceRuntime;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Tests\Addons\Support\FakeInferenceRequestDriver;
+use Tests\Addons\Support\FakeInferenceDriver;
 
 
 function _inc_lb(int $x): int { return $x + 1; }
@@ -40,7 +40,7 @@ it('hasNextStep stops when criteria block first step', function () {
 });
 
 it('finalStep respects StepsLimit(1)', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: new ToolCalls(new ToolCall('_inc_lb', ['x' => 1]))),
     ]);
     $tools = new Tools(FunctionTool::fromCallable(_inc_lb(...)));
@@ -62,7 +62,7 @@ it('finalStep respects StepsLimit(1)', function () {
 });
 
 it('accumulates usage across steps', function () {
-    $driver = new FakeInferenceRequestDriver([
+    $driver = new FakeInferenceDriver([
         new InferenceResponse(content: '', toolCalls: new ToolCalls(new ToolCall('_inc_lb', ['x' => 1])), usage: new Usage(2,3)),
         new InferenceResponse(content: 'ok', usage: new Usage(4,5)),
     ]);

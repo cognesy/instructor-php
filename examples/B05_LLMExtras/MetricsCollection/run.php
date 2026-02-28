@@ -23,6 +23,7 @@ use Cognesy\Polyglot\Inference\Events\InferenceCompleted;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\StreamFirstChunkReceived;
 use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\InferenceRuntime;
 
 final class StreamMetricsCollector extends MetricsCollector
 {
@@ -81,7 +82,8 @@ $metrics->exportTo(new CallbackExporter(function (iterable $metrics): void {
 }));
 
 $prompt = 'In one sentence, explain why streaming responses help UX.';
-$stream = (new Inference($events))
+$runtime = InferenceRuntime::using(preset: 'openai', events: $events);
+$stream = Inference::fromRuntime($runtime)
     ->withMessages($prompt)
     ->withOptions(['max_tokens' => 64])
     ->withStreaming()

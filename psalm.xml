@@ -19,7 +19,7 @@
         <directory name="packages/addons/src" />
         <directory name="packages/auxiliary/src" />
         <directory name="packages/config/src" />
-        <directory name="packages/doctor/src" />
+        <directory name="packages/doctools/src" />
         <directory name="packages/dynamic/src" />
         <directory name="packages/evals/src" />
         <directory name="packages/events/src" />

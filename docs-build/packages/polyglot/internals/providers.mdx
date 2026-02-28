@@ -37,7 +37,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Inference\Creation\InferenceDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="5927"
+// @doctest id="1fde"
 ```
 
 Key methods:
@@ -72,7 +72,7 @@ $httpClient = (new \Cognesy\Http\Creation\HttpClientBuilder())->create();
 $config = $provider->resolveConfig();
 $driver = (new \Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory($events))
     ->makeDriver($config, $httpClient);
-// @doctest id="5404"
+// @doctest id="539c"
 ```
 
 Key methods:
@@ -119,7 +119,7 @@ interface CanMapRequestBody {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="d784"
+// @doctest id="5afc"
 ```
 
 
@@ -152,7 +152,7 @@ interface EmbedResponseAdapter {
 interface CanMapUsage {
     public function fromData(array $data): Usage;
 }
-// @doctest id="829b"
+// @doctest id="1ed9"
 ```
 
 
@@ -176,7 +176,7 @@ abstract class BaseInferenceDriver implements CanHandleInference {
     public function makeStreamResponsesFor(InferenceRequest $request): iterable { ... }
     public function capabilities(?string $model = null): DriverCapabilities { ... }
 }
-// @doctest id="a296"
+// @doctest id="7ca0"
 ```
 
 Provider-specific drivers (e.g. `OpenAIDriver`, `AnthropicDriver`) extend `BaseInferenceDriver` and wire up their own request/response translators in the constructor.
@@ -207,7 +207,7 @@ class InferenceDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="ae9f"
+// @doctest id="7fef"
 ```
 
 ### EmbeddingsDriverFactory
@@ -232,5 +232,5 @@ class EmbeddingsDriverFactory {
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
 }
-// @doctest id="d056"
+// @doctest id="439a"
 ```

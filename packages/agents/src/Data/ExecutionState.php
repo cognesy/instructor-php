@@ -224,9 +224,9 @@ final readonly class ExecutionState
         return $this->with(continuation: $this->continuation->withNewStopSignal($signal));
     }
 
-    public function withCurrentStep(?AgentStep $step): self {
+    public function withCurrentStep(AgentStep $step): self {
         return $this->with(
-            currentStepStartedAt: ($step !== null) ? new DateTimeImmutable() : $this->currentStepStartedAt,
+            currentStepStartedAt: new DateTimeImmutable(),
             currentStep: $step,
         );
     }

@@ -249,6 +249,7 @@ final readonly class StructuredOutputExecution
         );
         $attempt = new StructuredOutputAttempt(
             inferenceExecution: $inferenceExecution,
+            isFinalized: true,
             errors: $errors,
         );
         // IMPORTANT: Do not use with() here because it coalesces null values.

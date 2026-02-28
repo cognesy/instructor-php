@@ -7,11 +7,14 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Data\HttpResponse;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Middleware\EventSource\EventSourceResponseDecorator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Handles processing of streaming responses by converting raw chunks
  * into properly processed SSE data lines.
+ *
+ * @deprecated Use EventSourceMiddleware::withParser() instead.
  */
 class StreamSSEsMiddleware extends BaseMiddleware
 {
@@ -37,6 +40,11 @@ class StreamSSEsMiddleware extends BaseMiddleware
 
     #[\Override]
     protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
-        return ServerSideEventResponseDecorator::decorate($request, $response, $this->parser);
+        return EventSourceResponseDecorator::decorate(
+            request: $request,
+            response: $response,
+            listeners: [],
+            parser: $this->parser,
+        );
     }
 }

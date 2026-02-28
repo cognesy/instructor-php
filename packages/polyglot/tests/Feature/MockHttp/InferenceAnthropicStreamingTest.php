@@ -16,9 +16,7 @@ it('streams partial responses and assembles final content (Anthropic SSE)', func
         ], addDone: false);
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = (new Inference())
-        ->withHttpClient($http)
-        ->using('anthropic')
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'anthropic', httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
         ->withMessages('Greet')
         ->withStreaming(true)
@@ -61,9 +59,7 @@ it('correctly accumulates cumulative token usage in streaming (regression test)'
 
     $http = (new HttpClientBuilder())->withDriver($mock)->create();
 
-    $stream = (new Inference())
-        ->withHttpClient($http)
-        ->using('anthropic')
+    $stream = Inference::fromRuntime(\Cognesy\Polyglot\Inference\InferenceRuntime::using(preset: 'anthropic', httpClient: $http))
         ->withModel('claude-3-haiku-20240307')
         ->withMessages('Test cumulative usage')
         ->withStreaming(true)

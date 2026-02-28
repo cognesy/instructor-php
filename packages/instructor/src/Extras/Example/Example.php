@@ -64,6 +64,7 @@ class Example implements CanProvideMessages, JsonSerializable
             input: $data['input'],
             output: $data['output'],
             isStructured: $data['structured'] ?? true,
+            template: $data['template'] ?? '',
         );
     }
 
@@ -142,16 +143,12 @@ class Example implements CanProvideMessages, JsonSerializable
     }
 
     public function toArray() : array {
-        // TODO: should this use TextRepresentation class?
-        return match(true) {
-            is_array($this->output) => $this->output,
-            is_scalar($this->output) => ['value' => $this->output],
-            is_object($this->output) && $this->output instanceof BackedEnum => ['value' => $this->output->value()],
-            is_object($this->output) && method_exists($this->output, 'toArray') => $this->output->toArray(),
-            is_object($this->output) && method_exists($this->output, 'toJson') => $this->output->toJson(),
-            is_object($this->output) => get_object_vars($this->output),
-            default => [],
-        };
+        return [
+            'input' => $this->serializeValue($this->input),
+            'output' => $this->serializeValue($this->output),
+            'structured' => $this->isStructured,
+            'template' => $this->template,
+        ];
     }
 
     public function clone() : self {
@@ -161,5 +158,17 @@ class Example implements CanProvideMessages, JsonSerializable
             isStructured: $this->isStructured,
             template: $this->template
         );
+    }
+
+    private function serializeValue(mixed $value) : mixed {
+        return match(true) {
+            is_array($value) => $value,
+            is_scalar($value), $value === null => $value,
+            is_object($value) && $value instanceof BackedEnum => $value->value,
+            is_object($value) && method_exists($value, 'toArray') => $value->toArray(),
+            is_object($value) && method_exists($value, 'toJson') => $value->toJson(),
+            is_object($value) => get_object_vars($value),
+            default => null,
+        };
     }
 }

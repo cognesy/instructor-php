@@ -2,64 +2,88 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\HttpClient;
-use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\EventBusResolver;
-use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Polyglot\Embeddings\Contracts\CanCreateEmbeddings;
-use Cognesy\Polyglot\Embeddings\Contracts\CanResolveEmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Embeddings is a facade responsible for generating embeddings for provided input data
  */
-class Embeddings implements CanCreateEmbeddings
+final class Embeddings implements CanCreateEmbeddings
 {
-    use HandlesEvents;
-
-    use Traits\HandlesInitMethods;
     use Traits\HandlesFluentMethods;
     use Traits\HandlesShortcuts;
-    use Traits\HandlesInvocation;
 
-    protected EmbeddingsProvider $embeddingsProvider;
-    protected ?CanResolveEmbeddingsConfig $embeddingsResolver = null;
-    protected ?EmbeddingsRuntime $runtimeCache = null;
-    protected bool $runtimeCacheDirty = true;
-    /** @var HttpClient|null Facade-level HTTP client (optional) */
-    protected ?HttpClient $httpClient = null;
-    /** @var string|null Facade-level HTTP debug preset (optional) */
-    protected ?string $httpDebugPreset = null;
+    private CanCreateEmbeddings $runtime;
 
     public function __construct(
-        null|CanHandleEvents|EventDispatcherInterface $events = null,
-        ?CanProvideConfig $configProvider = null,
+        ?CanCreateEmbeddings $runtime = null,
     ) {
-        $this->events = EventBusResolver::using($events);
-        $this->embeddingsProvider = EmbeddingsProvider::new(
-            $this->events,
-            $configProvider,
-        );
+        $this->runtime = $runtime ?? EmbeddingsRuntime::fromProvider(EmbeddingsProvider::new());
     }
 
-    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events): static {
+    public static function using(string $preset): self {
+        return new self(EmbeddingsRuntime::using($preset));
+    }
+
+    public static function fromDsn(string $dsn): self {
+        return new self(EmbeddingsRuntime::fromDsn($dsn));
+    }
+
+    public static function fromRuntime(CanCreateEmbeddings $runtime): self {
+        return new self($runtime);
+    }
+
+    public function withRuntime(CanCreateEmbeddings $runtime): self {
         $copy = clone $this;
-        $copy->events = EventBusResolver::using($events);
-        $copy->invalidateRuntimeCache();
+        $copy->runtime = $runtime;
+        return $copy;
+    }
+
+    public function runtime(): CanCreateEmbeddings {
+        return $this->runtime;
+    }
+
+    public function withRequest(EmbeddingsRequest $request): static {
+        $copy = clone $this;
+        $copy->inputs = $request->inputs();
+        $copy->options = $request->options();
+        $copy->model = $request->model();
+        $copy->retryPolicy = $request->retryPolicy();
         return $copy;
     }
 
     /**
-     * @param callable(Config\EmbeddingsConfig, HttpClient, EventDispatcherInterface): Contracts\CanHandleVectorization|string $driver
+     * @param string|array<int, string> $input
+     * @param array<string, mixed> $options
+     */
+    public function with(
+        string|array $input = [],
+        array $options = [],
+        string $model = '',
+    ) : static {
+        $copy = clone $this;
+        $copy->inputs = $input;
+        $copy->options = $options;
+        $copy->model = $model;
+        return $copy;
+    }
+
+    public function create(?EmbeddingsRequest $request = null): PendingEmbeddings {
+        $request ??= new EmbeddingsRequest(
+            input: $this->inputs,
+            options: $this->options,
+            model: $this->model,
+            retryPolicy: $this->retryPolicy,
+        );
+
+        return $this->runtime->create($request);
+    }
+
+    /**
+     * @param string|callable $driver
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
         EmbeddingsDriverFactory::registerDriver($name, $driver);
-    }
-
-    protected function invalidateRuntimeCache(): void {
-        $this->runtimeCache = null;
-        $this->runtimeCacheDirty = true;
     }
 }
