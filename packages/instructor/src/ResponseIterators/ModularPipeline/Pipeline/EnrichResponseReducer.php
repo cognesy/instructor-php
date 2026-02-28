@@ -8,10 +8,10 @@ use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Stream\Contracts\Reducer;
 
 /**
- * Enriches PartialFrame back to PartialInferenceResponse for emission.
+ * Enriches PartialFrame back to PartialInferenceResponse.
  *
- * Only forwards frames marked for emission (explicit Emission enum).
- * Converts PartialFrame → PartialInferenceResponse.
+ * Forwards all frames downstream after enrichment.
+ * EmissionType controls event dispatch in EventTap, not forwarding here.
  *
  * For Tools mode: uses buffer content built from toolCalls() snapshot.
  * For other modes: uses source content (cumulative from driver)

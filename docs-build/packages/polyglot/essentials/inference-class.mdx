@@ -30,7 +30,7 @@ $response = (new Inference())
 $response = Inference::using('openai')
     ->withMessages('Explain quantum physics')
     ->get();
-// @doctest id="e3e7"
+// @doctest id="aa37"
 ```
 
 
@@ -46,7 +46,7 @@ $inference = Inference::fromDsn('preset=openai,model=gpt-4o-mini');
 $inference = Inference::fromRuntime(
     InferenceRuntime::using('openai')
 );
-// @doctest id="56a5"
+// @doctest id="1432"
 ```
 
 
@@ -76,7 +76,7 @@ $inference->withOptions(['temperature' => 0.5]);    // Additional options
 // Advanced features
 $inference->withStreaming(true);                     // Enable streaming
 $inference->withCachedContext($messages, $tools);   // Context caching
-// @doctest id="b345"
+// @doctest id="06c2"
 ```
 
 
@@ -101,7 +101,7 @@ $pending = $inference->create();
 
 // Direct request execution
 $inference->withRequest($existingRequest);
-// @doctest id="0318"
+// @doctest id="8382"
 ```
 
 ## Runtime-First Usage (`CanCreateInference`)
@@ -121,7 +121,7 @@ $request = new InferenceRequest(
 );
 
 $response = $creator->create($request)->get();
-// @doctest id="55fd"
+// @doctest id="6582"
 ```
 
 
@@ -140,7 +140,7 @@ $data = $inference->asJsonData();                    // Parsed array
 
 // Streaming
 $stream = $inference->stream();                      // InferenceStream object
-// @doctest id="52a3"
+// @doctest id="af10"
 ```
 
 
@@ -156,5 +156,21 @@ Inference::registerDriver('custom-provider', CustomDriver::class);
 Inference::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomDriver($config, $httpClient);
 });
-// @doctest id="4184"
+// @doctest id="4fc4"
 ```
+
+### Driver Registry Lifecycle
+
+Custom inference drivers are stored in a static registry.
+In long-running workers (Swoole/RoadRunner) and tests, manage this lifecycle explicitly:
+
+```php
+// Remove one custom driver
+Inference::unregisterDriver('custom-provider');
+
+// Clear all custom inference drivers
+Inference::resetDrivers();
+// @doctest id="ad49"
+```
+
+Use `resetDrivers()` in test teardown / `afterEach` to avoid cross-test pollution.

@@ -38,6 +38,18 @@ final readonly class SequenceTracker
     }
 
     /**
+     * Consume sequence update and return pending updates with advanced tracker.
+     */
+    public function consume(Sequenceable $sequence): SequenceTrackingResult {
+        $updated = $this->update($sequence);
+
+        return new SequenceTrackingResult(
+            tracker: $updated->advance(),
+            updates: $updated->pending(),
+        );
+    }
+
+    /**
      * Get pending updates (items not yet confirmed as emitted).
      *
      * Returns sequence snapshots for each new item from previousLength

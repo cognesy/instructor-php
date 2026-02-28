@@ -23,7 +23,7 @@ $structuredOutput = (new StructuredOutput)
     ->withOption($key, $value)          // Set individual LLM option
     ->withStreaming(true)               // Enable streaming responses
     ->withCachedContext($messages, $system, $prompt, $examples) // Use cached context
-// @doctest id="7f2a"
+// @doctest id="16f5"
 ```
 
 ## Response Configuration
@@ -35,7 +35,7 @@ $structuredOutput = (new StructuredOutput)
     ->withMaxRetries(3)                 // Set retry count for failed validations
     ->withOutputMode(OutputMode::Tools) // Set output mode (Tools, Json, JsonSchema, MdJson)
     ->withDefaultToStdClass(true)       // Fallback to stdClass for schema-less payloads
-// @doctest id="71af"
+// @doctest id="c3b2"
 ```
 
 Stream replay policy is configured through `StructuredOutputConfig`:
@@ -48,7 +48,7 @@ $structuredOutput = (new StructuredOutput)
     ->withConfig(new StructuredOutputConfig(
         responseCachePolicy: ResponseCachePolicy::None, // default in 2.0
     ));
-// @doctest id="e53a"
+// @doctest id="3da9"
 ```
 
 Use `ResponseCachePolicy::Memory` if you need second-pass replay of streamed updates.
@@ -61,7 +61,7 @@ Fine-tune Instructor's internal processing:
 $structuredOutput = (new StructuredOutput)
     ->withConfig($configObject)         // Use custom StructuredOutputConfig instance
     ->withDefaultToStdClass(true)       // Default to stdClass for unknown types
-// @doctest id="4e34"
+// @doctest id="b6d6"
 ```
 
 ## LLM Provider Configuration
@@ -83,7 +83,7 @@ $provider = LLMProvider::using('openai')
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="8b72"
+// @doctest id="fa69"
 ```
 
 ## Processing Pipeline Overrides
@@ -96,7 +96,7 @@ $structuredOutput = (new StructuredOutput)
     ->withTransformers(...$transformers) // Override response transformers  
     ->withDeserializers(...$deserializers) // Override response deserializers
     ->withExtractors(...$extractors)    // Override response extractors
-// @doctest id="1683"
+// @doctest id="0854"
 ```
 
 ## Streaming Updates And Events
@@ -121,7 +121,7 @@ foreach ($stream->sequence() as $sequence) {
 $structuredOutput = (new StructuredOutput)
     ->onEvent(\Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated::class, $callback)
     ->onEvent(\Cognesy\Instructor\Events\Request\SequenceUpdated::class, $callback);
-// @doctest id="6c8b"
+// @doctest id="0fb2"
 ```
 
 ## Configuration Examples
@@ -134,7 +134,7 @@ $result = StructuredOutput::using('openai')
     ->withMessages("Extract person data from: John is 25 years old")
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="9212"
+// @doctest id="6e2e"
 ```
 
 ### Streaming with partials()
@@ -150,7 +150,7 @@ foreach ($stream->partials() as $partial) {
 }
 
 $result = $stream->finalValue();
-// @doctest id="d7ff"
+// @doctest id="f916"
 ```
 
 ### Custom Configuration Object
@@ -166,5 +166,5 @@ $result = (new StructuredOutput)
     ->withMessages($input)
     ->withResponseClass(Person::class)
     ->get();
-// @doctest id="e914"
+// @doctest id="f74f"
 ```

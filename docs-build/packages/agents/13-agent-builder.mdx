@@ -27,7 +27,7 @@ $agent = AgentBuilder::base()
 
 $state = AgentState::empty()->withUserMessage('List files in /tmp');
 $result = $agent->execute($state);
-// @doctest id="3ecc"
+// @doctest id="9871"
 ```
 
 `AgentBuilder` is about **composition at construction time**. It does not manage persistence or multi-request lifecycle. For that, use session runtime (see [Session Runtime](16-session-runtime.md)).
@@ -41,7 +41,7 @@ $result = $agent->execute($state);
 ```php
 $builder->withCapability(CanProvideAgentCapability $capability): self;
 $builder->build(): CanControlAgentLoop;
-// @doctest id="8dce"
+// @doctest id="d66e"
 ```
 
 **`CanConfigureAgent`** (capability-facing):
@@ -63,7 +63,7 @@ $agent->deferredTools(): DeferredToolProviders;
 $agent->withDeferredTools(DeferredToolProviders $deferredTools): self;
 
 $agent->events(): CanHandleEvents;
-// @doctest id="2a1a"
+// @doctest id="8ea9"
 ```
 
 ## Writing a Capability
@@ -93,7 +93,7 @@ class UseRateLimiting implements CanProvideAgentCapability
         return $agent->withHooks($hooks);
     }
 }
-// @doctest id="7452"
+// @doctest id="aff2"
 ```
 
 Capabilities can configure any aspect of the agent: tools, hooks, driver, compiler, and deferred tool providers.
@@ -121,7 +121,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->tools()->merge(new Tools($myTool))
     );
 }
-// @doctest id="e60f"
+// @doctest id="0b55"
 ```
 
 ### Adding Hooks
@@ -137,7 +137,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
     );
     return $agent->withHooks($hooks);
 }
-// @doctest id="08dc"
+// @doctest id="f30c"
 ```
 
 ### Deferred Tools
@@ -160,7 +160,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
         $agent->deferredTools()->withProvider($deferred)
     );
 }
-// @doctest id="53cb"
+// @doctest id="7ffe"
 ```
 
 `UseSubagents` uses this pattern — the `SpawnSubagentTool` needs the parent's driver and event bus, which are only finalized at build time.
@@ -183,7 +183,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 
     return $agent;
 }
-// @doctest id="2269"
+// @doctest id="57af"
 ```
 
 ### Capability Names
@@ -234,7 +234,7 @@ public function configure(CanConfigureAgent $agent): CanConfigureAgent {
 $agent = AgentBuilder::base()
     ->withCapability(new UseLLMConfig(preset: 'anthropic'))
     ->build();
-// @doctest id="2215"
+// @doctest id="909f"
 ```
 
 ### File system agent with guards
@@ -245,7 +245,7 @@ $agent = AgentBuilder::base()
     ->withCapability(new UseFileTools(baseDir: '/home/user/workspace'))
     ->withCapability(new UseGuards(maxSteps: 15, maxExecutionTime: 60.0))
     ->build();
-// @doctest id="f67f"
+// @doctest id="a62a"
 ```
 
 ### Agent with custom hook
@@ -265,7 +265,7 @@ $agent = AgentBuilder::base()
         priority: 100,
     ))
     ->build();
-// @doctest id="2f15"
+// @doctest id="489c"
 ```
 
 ### Custom context compiler
@@ -281,7 +281,7 @@ $agent = AgentBuilder::base()
         fn(CanCompileMessages $inner) => new TokenLimitingCompiler($inner, maxTokens: 4000)
     ))
     ->build();
-// @doctest id="ae76"
+// @doctest id="ec8d"
 ```
 
 ## Build Resolution Order
@@ -320,7 +320,7 @@ $agent = AgentBuilder::base($events)
 // Or attach a logger after building
 $logger = new AgentEventConsoleObserver(useColors: true, showTimestamps: true);
 $agent->wiretap($logger->wiretap());
-// @doctest id="cd6d"
+// @doctest id="6809"
 ```
 
 ## Immutability
@@ -335,7 +335,7 @@ $base = AgentBuilder::base()
 $bashAgent = $base->withCapability(new UseBash())->build();
 $fileAgent = $base->withCapability(new UseFileTools(baseDir: '.'))->build();
 // $base is unchanged
-// @doctest id="abe2"
+// @doctest id="f991"
 ```
 
 ## Builder Internals
@@ -355,7 +355,7 @@ AgentConfigurator (internal, implements CanConfigureAgent)
   → deferredTools: DeferredToolProviders
   → events: CanHandleEvents
   → toAgentLoop(): resolves driver → tools → interceptor → AgentLoop
-// @doctest id="32b8"
+// @doctest id="635e"
 ```
 
 Each `capability.configure(configurator)` call returns a new `AgentConfigurator` with the applied changes. When all capabilities are installed, `toAgentLoop()` runs the resolution pipeline and produces the final `AgentLoop`.

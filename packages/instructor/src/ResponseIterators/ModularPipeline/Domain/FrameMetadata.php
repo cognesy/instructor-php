@@ -9,14 +9,9 @@ final readonly class FrameMetadata
 {
     public function __construct(
         public int $index,
-        public float $timestamp,
     ) {}
 
     public static function at(int $index): self {
-        return new self($index, microtime(true));
-    }
-
-    public function next(): self {
-        return new self($this->index + 1, microtime(true));
+        return new self($index);
     }
 }

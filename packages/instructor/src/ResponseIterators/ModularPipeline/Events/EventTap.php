@@ -275,19 +275,13 @@ final class EventTap implements Reducer
             return;
         }
 
-        // Update tracker
-        $this->sequenceTracker = $this->sequenceTracker->update($object);
-
-        // Get pending updates
-        $pending = $this->sequenceTracker->pending();
+        $result = $this->sequenceTracker->consume($object);
+        $this->sequenceTracker = $result->tracker;
 
         // Emit events for each pending update
-        foreach ($pending as $update) {
+        foreach ($result->updates as $update) {
             $this->events->dispatch(new SequenceUpdated($update));
         }
-
-        // Advance tracker (confirm emitted)
-        $this->sequenceTracker = $this->sequenceTracker->advance();
     }
 
     private function dispatchPartialResponse(PartialFrame $frame): void {

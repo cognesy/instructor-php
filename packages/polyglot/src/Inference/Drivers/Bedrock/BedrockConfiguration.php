@@ -107,9 +107,7 @@ class BedrockConfiguration
 
     public static function validateModel(string $modelId): bool
     {
-        // Accept any model ID that follows Bedrock patterns
-        // Common patterns: provider.model-name-version:variant
-        return preg_match('/^[a-z0-9-]+\.[a-z0-9-]+(:\d+)?$/', $modelId) === 1;
+        return true;
     }
 
     public static function getModelFamily(string $modelId): ?string

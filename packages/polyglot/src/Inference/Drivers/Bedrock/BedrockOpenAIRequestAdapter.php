@@ -18,12 +18,6 @@ class BedrockOpenAIRequestAdapter implements CanTranslateInferenceRequest
     #[\Override]
     public function toHttpRequest(InferenceRequest $request): HttpRequest
     {
-        // Validate model ID format
-        $modelId = $request->model() ?: $this->config->model;
-        if ($modelId) {
-            $this->validateModelId($modelId);
-        }
-
         return new HttpRequest(
             url: $this->toUrl($request),
             method: 'POST',
@@ -72,22 +66,9 @@ class BedrockOpenAIRequestAdapter implements CanTranslateInferenceRequest
             throw new \InvalidArgumentException("Unsupported AWS region for Bedrock: {$region}");
         }
 
-        // Warn if region has limited access
-        if (BedrockConfiguration::isRegionLimited($region)) {
-            // Note: In production, you might want to use a proper logger
-            error_log("Warning: Bedrock region {$region} has limited access and may require special permissions");
-        }
-
         // Build region-specific endpoint using configuration helper
         $baseUrl = BedrockConfiguration::buildEndpoint($region);
 
         return "{$baseUrl}{$this->config->endpoint}";
-    }
-
-    protected function validateModelId(string $modelId): void
-    {
-        if (!BedrockConfiguration::validateModel($modelId)) {
-            throw new \InvalidArgumentException("Invalid Bedrock model ID format: {$modelId}");
-        }
     }
 }

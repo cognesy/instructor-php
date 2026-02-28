@@ -18,7 +18,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
         return $next->handle($request);
     }
 }
-// @doctest id="faa9"
+// @doctest id="7483"
 ```
 
 ## Register Middleware (Immutable)
@@ -26,7 +26,7 @@ final class AddHeaderMiddleware implements HttpMiddleware
 ```php
 $client = $client->withMiddleware(new AddHeaderMiddleware(), 'request-id');
 $client = $client->withoutMiddleware('request-id');
-// @doctest id="a54c"
+// @doctest id="d4c8"
 ```
 
 ## Typical Middleware Use Cases
@@ -45,7 +45,7 @@ use Cognesy\Http\Middleware\RetryPolicy;
 $client = (new HttpClientBuilder())
     ->withRetryPolicy(new RetryPolicy(maxRetries: 3))
     ->create();
-// @doctest id="a15c"
+// @doctest id="5d0c"
 ```
 
 Use the event bus for debug/observability rather than embedding verbose logging directly in middleware logic.

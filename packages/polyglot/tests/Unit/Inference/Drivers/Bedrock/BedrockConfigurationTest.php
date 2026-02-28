@@ -46,23 +46,13 @@ class BedrockConfigurationTest extends TestCase
         BedrockConfiguration::buildEndpoint('invalid-region');
     }
 
-    public function test_validates_model_ids(): void
+    public function test_allows_any_model_id_string(): void
     {
-        // Valid Anthropic models
         $this->assertTrue(BedrockConfiguration::validateModel('anthropic.claude-3-5-sonnet-20241022-v2:0'));
-        $this->assertTrue(BedrockConfiguration::validateModel('anthropic.claude-3-haiku-20240307-v1:0'));
-
-        // Valid Meta models
-        $this->assertTrue(BedrockConfiguration::validateModel('meta.llama3-1-405b-instruct-v1:0'));
-
-        // Valid Amazon models
-        $this->assertTrue(BedrockConfiguration::validateModel('amazon.titan-text-express-v1'));
-
-        // Invalid formats
-        $this->assertFalse(BedrockConfiguration::validateModel(''));
-        $this->assertFalse(BedrockConfiguration::validateModel('invalid'));
-        $this->assertFalse(BedrockConfiguration::validateModel('claude-3-sonnet'));
-        $this->assertFalse(BedrockConfiguration::validateModel('anthropic/claude-3-sonnet'));
+        $this->assertTrue(BedrockConfiguration::validateModel('us.anthropic.claude-3-5-sonnet-20241022-v2:0'));
+        $this->assertTrue(BedrockConfiguration::validateModel('arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0'));
+        $this->assertTrue(BedrockConfiguration::validateModel('invalid'));
+        $this->assertTrue(BedrockConfiguration::validateModel(''));
     }
 
     public function test_extracts_model_family(): void

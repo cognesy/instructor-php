@@ -15,7 +15,7 @@ use Cognesy\Utils\Result\Result;
  * - Source data (the raw partial response)
  * - Progressive transformation (buffer → object via Result monad)
  * - Emission decision (explicit enum, no boolean flags)
- * - Metadata (index, timestamps for observability)
+ * - Metadata (index for observability)
  *
  * Design: Pure data carrier with no business logic.
  * All state is immutable, transformations return new instances.
@@ -95,16 +95,6 @@ final readonly class PartialFrame
             object: $this->object,
             emissionType: $emission,
             metadata: $this->metadata,
-        );
-    }
-
-    public function withMetadata(FrameMetadata $metadata): self {
-        return new self(
-            source: $this->source,
-            buffer: $this->buffer,
-            object: $this->object,
-            emissionType: $this->emissionType,
-            metadata: $metadata,
         );
     }
 

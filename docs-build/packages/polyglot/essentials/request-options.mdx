@@ -35,7 +35,7 @@ $response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $options
 )->toText();
-// @doctest id="d535"
+// @doctest id="dd5e"
 ```
 
 
@@ -59,7 +59,7 @@ $response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $anthropicOptions
 )->toText();
-// @doctest id="d4a8"
+// @doctest id="7cba"
 ```
 
 ## Response Stream Cache Policy
@@ -78,7 +78,7 @@ $inference = (new Inference())
     ->withMessages('Summarize this transcript')
     ->withStreaming(true)
     ->withResponseCachePolicy(ResponseCachePolicy::Memory);
-// @doctest id="38dd"
+// @doctest id="e710"
 ```
 
 With `None`, stream iterators remain one-shot. With `Memory`, second-pass iteration replays captured chunks without making a new provider call.

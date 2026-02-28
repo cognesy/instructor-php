@@ -151,3 +151,18 @@ Inference::registerDriver('custom-provider', function($config, $httpClient) {
     return new CustomDriver($config, $httpClient);
 });
 ```
+
+### Driver Registry Lifecycle
+
+Custom inference drivers are stored in a static registry.
+In long-running workers (Swoole/RoadRunner) and tests, manage this lifecycle explicitly:
+
+```php
+// Remove one custom driver
+Inference::unregisterDriver('custom-provider');
+
+// Clear all custom inference drivers
+Inference::resetDrivers();
+```
+
+Use `resetDrivers()` in test teardown / `afterEach` to avoid cross-test pollution.

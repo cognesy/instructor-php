@@ -102,12 +102,11 @@ class StructuredOutputStream
                 throw new Exception('Expected Sequenceable, got ' . get_class($value));
             }
 
-            $tracker = $tracker->update($value);
-            $pending = $tracker->pending();
-            foreach ($pending as $completedSequence) {
+            $result = $tracker->consume($value);
+            foreach ($result->updates as $completedSequence) {
                 yield $completedSequence;
             }
-            $tracker = $tracker->advance();
+            $tracker = $result->tracker;
         }
 
         // Finalize - yield remaining completed items

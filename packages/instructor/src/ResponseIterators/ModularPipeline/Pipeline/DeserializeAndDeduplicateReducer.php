@@ -4,12 +4,11 @@ namespace Cognesy\Instructor\ResponseIterators\ModularPipeline\Pipeline;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\ContentHash;
-use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\DeduplicationState;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Domain\PartialFrame;
 use Cognesy\Instructor\ResponseIterators\ModularPipeline\Enums\EmissionType;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformResponse;
 use Cognesy\Stream\Contracts\Reducer;
+use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
@@ -17,27 +16,25 @@ use Throwable;
  * Deserializes, transforms, and deduplicates partial objects.
  *
  * Always uses buffer.parsed() as source - buffer is single source of truth.
- * Uses DeduplicationState to track hash of last emitted object.
+ * Tracks hash of last emitted object locally.
  * Only emits when object content changes.
  *
  * Sets Emission to ObjectReady when object should be emitted.
  */
 final class DeserializeAndDeduplicateReducer implements Reducer
 {
-    private DeduplicationState $state;
+    private string $lastObjectHash = '';
 
     public function __construct(
         private readonly Reducer $inner,
         private readonly CanDeserializeResponse $deserializer,
         private readonly CanTransformResponse $transformer,
         private readonly ResponseModel $responseModel,
-    ) {
-        $this->state = DeduplicationState::empty();
-    }
+    ) {}
 
     #[\Override]
     public function init(): mixed {
-        $this->state = DeduplicationState::empty();
+        $this->lastObjectHash = '';
         return $this->inner->init();
     }
 
@@ -47,51 +44,42 @@ final class DeserializeAndDeduplicateReducer implements Reducer
 
         // If driver already provided a value, emit it directly
         if ($reducible->source->hasValue()) {
-            $frame = $reducible
-                ->withObject(Result::success($reducible->source->value()))
-                ->withEmission(EmissionType::DriverValue);
-            return $this->inner->step($accumulator, $frame);
+            return $this->forward(
+                $accumulator,
+                $reducible
+                    ->withObject(Result::success($reducible->source->value()))
+                    ->withEmission(EmissionType::DriverValue),
+            );
         }
 
         // If no content available, forward unchanged
         if (!$reducible->hasContent()) {
-            return $this->inner->step($accumulator, $reducible);
+            return $this->forward($accumulator, $reducible);
         }
 
         // Use buffer's parsed content as single source of truth
         $parsed = $reducible->buffer->parsed();
         if ($parsed === null) {
-            return $this->inner->step($accumulator, $reducible);
+            return $this->forward($accumulator, $reducible);
         }
 
         $result = $this->createObject($parsed);
 
         // Handle errors - forward with error in Result, no dedup update
         if ($result->isFailure()) {
-            $frame = $reducible->withObject($result);
-            return $this->inner->step($accumulator, $frame);
+            return $this->forward($accumulator, $reducible->withObject($result));
         }
 
-        $object = $result->unwrap();
+        $objectHash = $this->hashObject($result->unwrap());
+        $shouldEmit = $objectHash !== $this->lastObjectHash;
+        $this->lastObjectHash = $objectHash;
 
-        // Use object content as dedup key (hash of object)
-        $dedupKey = $object;
-
-        // Check if object should be emitted (hash changed)
-        if (!$this->state->shouldEmit($dedupKey)) {
-            // Same object, don't emit - update hash but keep emission as None
-            $this->state = $this->state->withHash(ContentHash::of($dedupKey));
-            $frame = $reducible->withObject($result);
-            return $this->inner->step($accumulator, $frame);
+        $frame = $reducible->withObject($result);
+        if ($shouldEmit) {
+            $frame = $frame->withEmission(EmissionType::ObjectReady);
         }
 
-        // Object changed - update hash and mark for emission
-        $this->state = $this->state->withHash(ContentHash::of($dedupKey));
-        $frame = $reducible
-            ->withObject($result)
-            ->withEmission(EmissionType::ObjectReady);
-
-        return $this->inner->step($accumulator, $frame);
+        return $this->forward($accumulator, $frame);
     }
 
     #[\Override]
@@ -123,5 +111,13 @@ final class DeserializeAndDeduplicateReducer implements Reducer
         } catch (Throwable $e) {
             return Result::failure($e->getMessage());
         }
+    }
+
+    private function hashObject(mixed $object): string {
+        return hash('xxh3', Json::encode($object));
+    }
+
+    private function forward(mixed $accumulator, PartialFrame $frame): mixed {
+        return $this->inner->step($accumulator, $frame);
     }
 }

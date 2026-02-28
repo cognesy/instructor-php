@@ -37,7 +37,7 @@ AgentState (readonly)
           |-- inferenceResponse
           |-- toolExecutions: ToolExecutions (items have ToolExecutionId)
           |-- errors: ErrorList
-// @doctest id="0140"
+// @doctest id="42f6"
 ```
 
 ## Key Accessors
@@ -71,7 +71,7 @@ $state->hasErrors();
 // Final output
 $state->hasFinalResponse();
 $state->finalResponse()->toString();
-// @doctest id="9a8b"
+// @doctest id="4ec5"
 ```
 
 ## ExecutionBudget
@@ -86,7 +86,7 @@ $definition = new AgentDefinition(
     // ...
     budget: new ExecutionBudget(maxSteps: 20, maxTokens: 10000, maxSeconds: 60.0),
 );
-// @doctest id="64d5"
+// @doctest id="feaa"
 ```
 
 Each subagent receives its own declared budget. Recursion depth is controlled separately via `SubagentPolicy::maxDepth`.
@@ -98,5 +98,5 @@ All state objects support `toArray()` / `fromArray()` for persistence:
 ```php
 $data = $state->toArray();
 $restored = AgentState::fromArray($data);
-// @doctest id="c1c2"
+// @doctest id="a248"
 ```

@@ -46,7 +46,7 @@ var_dump($person);
 //     age: 28
 // }
 ?>
-// @doctest id="b130"
+// @doctest id="fcb3"
 ```
 
 !!! note
@@ -70,7 +70,7 @@ $structuredOutput = (new StructuredOutput)
     ->withModel($modelName)             // Set LLM model
     ->withOptions($options)             // Set LLM options
     ->withStreaming(true)               // Enable streaming
-// @doctest id="4f17"
+// @doctest id="5083"
 ```
 
 ### Response Model Configuration
@@ -80,7 +80,7 @@ $structuredOutput = (new StructuredOutput)
     ->withResponseClass($className)     // Set response class specifically
     ->withResponseObject($object)       // Set response object instance
     ->withResponseJsonSchema($schema)   // Set JSON schema directly
-// @doctest id="e3d2"
+// @doctest id="366d"
 ```
 
 ### Output Formats
@@ -92,7 +92,7 @@ $structuredOutput = (new StructuredOutput)
     ->intoArray()                       // Return as associative array
     ->intoInstanceOf($className)        // Return as different class
     ->intoObject($selfDeserializing)    // Return as self-deserializing object
-// @doctest id="6cf6"
+// @doctest id="ac34"
 ```
 
 **Example - Get raw arrays:**
@@ -104,7 +104,7 @@ $userData = (new StructuredOutput)
     ->get();
 
 // Result: ['name' => 'John Doe', 'age' => 30]
-// @doctest id="cffd"
+// @doctest id="9908"
 ```
 
 **Example - Use different output class:**
@@ -116,7 +116,7 @@ $dto = (new StructuredOutput)
     ->get();
 
 // Schema defines 5 fields, output has 2 fields
-// @doctest id="b347"
+// @doctest id="eb81"
 ```
 
 See: [Output Formats Guide](../advanced/output_formats.md) for comprehensive documentation.
@@ -128,7 +128,7 @@ $structuredOutput = (new StructuredOutput)
     ->withOutputMode($mode)             // Set output mode
     ->withConfig($config)               // Set configuration object
     ->withDefaultToStdClass(true)       // Use stdClass fallback for schema-less data
-// @doctest id="869f"
+// @doctest id="321d"
 ```
 
 ### LLM Provider Configuration
@@ -147,7 +147,7 @@ $provider = LLMProvider::using('openai')
 $structuredOutput = (new StructuredOutput)->withRuntime(
     StructuredOutputRuntime::fromProvider(provider: $provider)
 );
-// @doctest id="fa7e"
+// @doctest id="03f5"
 ```
 
 ### Processing Overrides
@@ -157,7 +157,7 @@ $structuredOutput = (new StructuredOutput)
     ->withTransformers(...$transformers) // Override transformers
     ->withDeserializers(...$deserializers) // Override deserializers
     ->withExtractors(...$extractors)    // Override extractors
-// @doctest id="54bf"
+// @doctest id="f69c"
 ```
 
 
@@ -185,7 +185,7 @@ $llmResponse = $structuredOutput->response();
 // Get streaming interface
 $stream = $structuredOutput->stream();
 ?>
-// @doctest id="bb01"
+// @doctest id="ea35"
 ```
 
 ### Pending Execution with `create()`
@@ -210,7 +210,7 @@ $json = $pending->toJson();      // Convert result to JSON string
 $array = $pending->toArray();    // Convert result to array
 $jsonObj = $pending->toJsonObject(); // Convert result to Json object
 ?>
-// @doctest id="ce31"
+// @doctest id="7729"
 ```
 
 ### Runtime-First Execution (`CanCreateStructuredOutput`)
@@ -232,7 +232,7 @@ $request = new StructuredOutputRequest(
 $requestId = $request->id()->toString(); // StructuredOutputRequestId at boundary
 $person = $creator->create($request)->get();
 ?>
-// @doctest id="81de"
+// @doctest id="9b34"
 ```
 
 ### Response Types Explained
@@ -259,7 +259,7 @@ $value = (new StructuredOutput)
     )
     ->get();
 ?>
-// @doctest id="de08"
+// @doctest id="d5a8"
 ```
 
 
@@ -297,7 +297,7 @@ $translation = (new StructuredOutput)->with(
     )
     ->get();
 ?>
-// @doctest id="8a44"
+// @doctest id="8ec3"
 ```
 
 
@@ -328,7 +328,7 @@ $person = $stream->lastUpdate()
 // ...to, for example, save it to the database
 $db->save($person);
 ?>
-// @doctest id="d239"
+// @doctest id="8ae6"
 ```
 
 
@@ -361,7 +361,7 @@ $stream = $structuredOutput->stream();     // Get streaming interface
 $pending = $structuredOutput->create();
 $result = $pending->get();                 // Same methods available
 $json = $pending->toJson();               // Plus utility methods
-// @doctest id="92e3"
+// @doctest id="a5a5"
 ```
 
 - **`get()`**: Returns the parsed and validated structured result

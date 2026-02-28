@@ -201,8 +201,15 @@ class InferenceDriverFactory {
     
     // Driver registration
     public static function registerDriver(string $name, string|callable $driver): void { ... }
+    public static function unregisterDriver(string $name): void { ... }
+    public static function resetDrivers(): void { ... }
+    public static function hasDriver(string $name): bool { ... }
+    public static function registeredDrivers(): array { ... }
 }
 ```
+
+`InferenceDriverFactory` keeps custom drivers in static process-level state.
+For tests and long-running workers, call `resetDrivers()` to prevent stale registrations from leaking between runs/requests.
 
 ### EmbeddingsDriverFactory
 

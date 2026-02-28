@@ -101,18 +101,18 @@ class BedrockOpenAIRequestAdapterTest extends TestCase
         $adapter->toHttpRequest($inferenceRequest);
     }
 
-    public function test_throws_exception_for_invalid_model_id(): void
+    public function test_allows_any_model_id_string(): void
     {
         $adapter = $this->createAdapter();
 
         $inferenceRequest = new InferenceRequest(
             messages: Messages::fromArray([['role' => 'user', 'content' => 'Hello']]),
-            model: 'invalid-model-id'
+            model: 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
         );
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid Bedrock model ID format: invalid-model-id');
-        $adapter->toHttpRequest($inferenceRequest);
+        $httpRequest = $adapter->toHttpRequest($inferenceRequest);
+
+        $this->assertEquals('POST', $httpRequest->method());
     }
 
     public function test_supports_streaming_requests(): void

@@ -13,7 +13,7 @@ $request = (new HttpRequest(
     body: '',
     options: [],
 ))->withStreaming(true);
-// @doctest id="d2b3"
+// @doctest id="0f27"
 ```
 
 ## Consume Chunks
@@ -23,7 +23,7 @@ foreach ($client->withRequest($request)->stream() as $chunk) {
     // parse or forward chunk
     echo $chunk;
 }
-// @doctest id="f6a9"
+// @doctest id="d621"
 ```
 
 ## Middleware + Streaming
@@ -32,7 +32,7 @@ You can transform stream chunks in middleware before downstream consumers receiv
 
 ```php
 $client = $client->withMiddleware($myStreamMiddleware);
-// @doctest id="fa82"
+// @doctest id="bf17"
 ```
 
 Keep stream middleware focused and cheap; avoid heavy buffering unless required.

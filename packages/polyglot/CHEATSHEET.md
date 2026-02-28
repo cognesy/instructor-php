@@ -6,6 +6,8 @@
 **`Inference`** - Thin facade for LLM inference request composition and execution
 - `new(?CanCreateInference $runtime = null)` - Constructor with optional runtime
 - `registerDriver($name, $driver)` - Register custom inference driver
+- `unregisterDriver($name)` - Unregister one custom inference driver
+- `resetDrivers()` - Clear all custom inference drivers (useful in tests/workers)
 
 **Runtime Selection:**
 - `Inference::using($preset)` - Construct from preset-backed runtime

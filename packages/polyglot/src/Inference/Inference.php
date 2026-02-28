@@ -69,7 +69,7 @@ final class Inference implements CanCreateInference
     // SHORTCUTS ///////////////////////////////////////////////////////////
 
     public function stream(): InferenceStream {
-        return $this->create()->stream();
+        return $this->withStreaming(true)->create()->stream();
     }
 
     public function response(): InferenceResponse {
